@@ -467,9 +467,8 @@ void WebSocketDispatchOnFinishOpeningHandshake(
   DCHECK(connect_delegate);
   if (headers.get()) {
     connect_delegate->OnFinishOpeningHandshake(
-        std::make_unique<WebSocketHandshakeResponseInfo>(
-            url, headers->response_code(), headers->GetStatusText(), headers,
-            response_time));
+        std::make_unique<WebSocketHandshakeResponseInfo>(url, headers,
+                                                         response_time));
   }
 }
 

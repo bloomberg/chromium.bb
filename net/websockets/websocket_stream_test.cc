@@ -609,8 +609,8 @@ TEST_P(WebSocketStreamCreateTest, HandshakeInfo) {
   // mainly only in this test case.
   EXPECT_EQ(GURL("ws://www.example.org/"), request_info_->url);
   EXPECT_EQ(GURL("ws://www.example.org/"), response_info_->url);
-  EXPECT_EQ(101, response_info_->status_code);
-  EXPECT_EQ("Switching Protocols", response_info_->status_text);
+  EXPECT_EQ(101, response_info_->headers->response_code());
+  EXPECT_EQ("Switching Protocols", response_info_->headers->GetStatusText());
   ASSERT_EQ(12u, request_headers.size());
   EXPECT_EQ(HeaderKeyValuePair("Host", "www.example.org"), request_headers[0]);
   EXPECT_EQ(HeaderKeyValuePair("Connection", "Upgrade"), request_headers[1]);
@@ -1459,7 +1459,7 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessPasswordInUrl) {
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(response_info_);
-  EXPECT_EQ(101, response_info_->status_code);
+  EXPECT_EQ(101, response_info_->headers->response_code());
 }
 
 TEST_P(WebSocketStreamCreateBasicAuthTest, FailureIncorrectPasswordInUrl) {
@@ -1486,7 +1486,7 @@ TEST_P(WebSocketStreamCreateDigestAuthTest, DigestPasswordInUrl) {
   EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
   ASSERT_TRUE(response_info_);
-  EXPECT_EQ(101, response_info_->status_code);
+  EXPECT_EQ(101, response_info_->headers->response_code());
 }
 
 TEST_P(WebSocketMultiProtocolStreamCreateTest, Incomplete) {
