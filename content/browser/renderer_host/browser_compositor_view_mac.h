@@ -149,6 +149,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // ui::LayerObserver implementation:
   void LayerDestroyed(ui::Layer* layer) override;
 
+  cc::DeadlinePolicy GetDeadlinePolicy() const;
+
   // The state of |delegated_frame_host_| and |recyclable_compositor_| to
   // manage being visible, occluded, hidden, or drawn via a ui::Layer. Note that
   // TransitionToState will transition through each intermediate state according
