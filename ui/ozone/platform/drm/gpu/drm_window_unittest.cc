@@ -97,7 +97,7 @@ void DrmWindowTest::SetUp() {
   last_swap_buffers_result_ = gfx::SwapResult::SWAP_FAILED;
 
   message_loop_.reset(new base::MessageLoopForUI);
-  drm_ = new ui::MockDrmDevice(false);
+  drm_ = new ui::MockDrmDevice();
   buffer_generator_.reset(new ui::MockDumbBufferGenerator());
   screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
@@ -154,7 +154,7 @@ TEST_F(DrmWindowTest, CheckCursorSurfaceAfterChangingDevice) {
                   gfx::Point(4, 2), 0);
 
   // Add another device.
-  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice(false);
+  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice();
   screen_manager_->AddDisplayController(drm, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(
       drm, kDefaultCrtc, kDefaultConnector,

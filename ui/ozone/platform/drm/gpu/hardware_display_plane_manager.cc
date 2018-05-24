@@ -16,14 +16,12 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane_dummy.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 namespace {
 
-constexpr float kFixedPointScaleValue = 1 << 16;
+const float kFixedPointScaleValue = 65536.0f;
 
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<display::GammaRampRGBEntry>& source) {
@@ -171,34 +169,82 @@ HardwareDisplayPlaneManager::~HardwareDisplayPlaneManager() {
 bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   drm_ = drm;
 
+  // Try to get all of the planes if possible, so we don't have to try to
+  // discover hidden primary planes.
   bool has_universal_planes = false;
-// Try to get all of the planes if possible, so we don't have to try to
-// discover hidden primary planes.
 #if defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
-  has_universal_planes =
-      drm_->SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-#endif
+  has_universal_planes = drm->SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+#endif  // defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
 
   if (!InitializeCrtcProperties(drm))
     return false;
 
-  ScopedDrmPlaneResPtr plane_resources = drm->GetPlaneResources();
+  ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(drm->get_fd()));
   if (!plane_resources) {
-    PLOG(ERROR) << "Failed to get plane resources.";
+    PLOG(ERROR) << "Failed to get plane resources";
     return false;
   }
 
+  uint32_t num_planes = plane_resources->count_planes;
   std::set<uint32_t> plane_ids;
-  for (uint32_t i = 0; i < plane_resources->count_planes; ++i) {
-    plane_ids.insert(plane_resources->planes[i]);
-    std::unique_ptr<HardwareDisplayPlane> plane(
-        CreatePlane(plane_resources->planes[i]));
+  for (uint32_t i = 0; i < num_planes; ++i) {
+    // TODO(hoegsberg) crbug.com/763760: We've rolled back the
+    // downstream, incompatible drmModeGetPlane2 ioctl for now while
+    // we update libdrm to the upstream per-plane IN_FORMATS property
+    // API. This drops support for compressed and tiled framebuffers
+    // in the interim, but once the buildroots and SDKs have pulled in
+    // the new libdrm we'll add it back by reading the property.
+    ScopedDrmPlanePtr drm_plane(
+        drmModeGetPlane(drm->get_fd(), plane_resources->planes[i]));
+    if (!drm_plane) {
+      PLOG(ERROR) << "Failed to get plane " << i;
+      return false;
+    }
 
-    if (plane->Initialize(drm)) {
-      // CRTC controllers always assume they have a cursor plane and the
-      // cursor plane is updated via cursor specific DRM API. Hence, we don't
-      // keep track of cursor plane here to avoid re-using it for any other
-      // purpose.
+    ScopedDrmObjectPropertyPtr drm_plane_properties(drmModeObjectGetProperties(
+        drm->get_fd(), plane_resources->planes[i], DRM_MODE_OBJECT_PLANE));
+
+    std::vector<uint32_t> supported_formats;
+    std::vector<drm_format_modifier> supported_format_modifiers;
+
+    if (drm_plane_properties) {
+      for (uint32_t j = 0; j < drm_plane_properties->count_props; j++) {
+        ScopedDrmPropertyPtr property(
+            drmModeGetProperty(drm->get_fd(), drm_plane_properties->props[j]));
+        if (strcmp(property->name, "IN_FORMATS") == 0) {
+          ScopedDrmPropertyBlobPtr blob(drmModeGetPropertyBlob(
+              drm->get_fd(), drm_plane_properties->prop_values[j]));
+
+          auto* data = static_cast<const uint8_t*>(blob->data);
+          auto* header = reinterpret_cast<const drm_format_modifier_blob*>(data);
+          auto* formats =
+              reinterpret_cast<const uint32_t*>(data + header->formats_offset);
+          auto* modifiers = reinterpret_cast<const drm_format_modifier*>(
+              data + header->modifiers_offset);
+
+          for (uint32_t k = 0; k < header->count_formats; k++)
+            supported_formats.push_back(formats[k]);
+          for (uint32_t k = 0; k < header->count_modifiers; k++)
+            supported_format_modifiers.push_back(modifiers[k]);
+        }
+      }
+    }
+
+    if (supported_formats.empty()) {
+      uint32_t formats_size = drm_plane->count_formats;
+      for (uint32_t j = 0; j < formats_size; j++)
+        supported_formats.push_back(drm_plane->formats[j]);
+    }
+
+    plane_ids.insert(drm_plane->plane_id);
+    std::unique_ptr<HardwareDisplayPlane> plane(
+        CreatePlane(drm_plane->plane_id, drm_plane->possible_crtcs));
+
+    if (plane->Initialize(drm, supported_formats, supported_format_modifiers,
+                          false, false)) {
+      // CRTC controllers always assume they have a cursor plane and the cursor
+      // plane is updated via cursor specific DRM API. Hence, we dont keep
+      // track of Cursor plane here to avoid re-using it for any other purpose.
       if (plane->type() != HardwareDisplayPlane::kCursor)
         planes_.push_back(std::move(plane));
     }
@@ -212,8 +258,10 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     for (size_t i = 0; i < crtc_properties_.size(); ++i) {
       if (plane_ids.find(crtc_properties_[i].id - 1) == plane_ids.end()) {
         std::unique_ptr<HardwareDisplayPlane> dummy_plane(
-            new HardwareDisplayPlaneDummy(crtc_properties_[i].id - 1, 1 << i));
-        if (dummy_plane->Initialize(drm)) {
+            CreatePlane(crtc_properties_[i].id - 1, (1 << i)));
+        if (dummy_plane->Initialize(drm, std::vector<uint32_t>(),
+                                    std::vector<drm_format_modifier>(), true,
+                                    false)) {
           planes_.push_back(std::move(dummy_plane));
         }
       }
@@ -223,7 +271,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   std::sort(planes_.begin(), planes_.end(),
             [](const std::unique_ptr<HardwareDisplayPlane>& l,
                const std::unique_ptr<HardwareDisplayPlane>& r) {
-              return l->id() < r->id();
+              return l->plane_id() < r->plane_id();
             });
 
   PopulateSupportedFormats();
@@ -231,8 +279,10 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
 }
 
 std::unique_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
-    uint32_t id) {
-  return std::make_unique<HardwareDisplayPlane>(id);
+    uint32_t plane_id,
+    uint32_t possible_crtcs) {
+  return std::unique_ptr<HardwareDisplayPlane>(
+      new HardwareDisplayPlane(plane_id, possible_crtcs));
 }
 
 HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(

@@ -8,7 +8,6 @@
 #include "base/time/time.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
