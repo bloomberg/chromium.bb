@@ -11,10 +11,6 @@
 #include "base/timer/timer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace views {
-class Label;
-}
-
 namespace chromeos {
 
 // Shows a modal warning dialog that the idle action is imminent. Since the
@@ -30,18 +26,19 @@ class IdleActionWarningDialogView : public views::DialogDelegateView {
   // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
   bool Cancel() override;
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   ~IdleActionWarningDialogView() override;
 
-  void UpdateLabel();
+  void UpdateTitle();
 
   base::TimeTicks idle_action_time_;
-
-  views::Label* label_;
-
   base::RepeatingTimer update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleActionWarningDialogView);
