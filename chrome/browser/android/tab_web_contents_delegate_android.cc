@@ -460,15 +460,6 @@ void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
   manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
 }
 
-void TabWebContentsDelegateAndroid::OnAudioStateChanged(
-    WebContents* web_contents,
-    bool audible) {
-  SoundContentSettingObserver* sound_content_setting_observer =
-      SoundContentSettingObserver::FromWebContents(web_contents);
-  if (sound_content_setting_observer)
-    sound_content_setting_observer->OnAudioStateChanged(audible);
-}
-
 void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {

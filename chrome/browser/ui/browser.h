@@ -498,8 +498,6 @@ class Browser : public TabStripModelObserver,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
                                          const GURL& resource_url) override;
-  void OnAudioStateChanged(content::WebContents* web_contents,
-                           bool is_audible) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
   gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
