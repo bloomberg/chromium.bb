@@ -3892,6 +3892,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppShortcutSearchName,
      flag_descriptions::kEnableAppShortcutSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list::features::kEnableAppShortcutSearch)},
+
+    {"enable-drag-tabs-in-tablet-mode",
+     flag_descriptions::kEnableDragTabsInTabletModeName,
+     flag_descriptions::kEnableDragTabsInTabletModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDragTabsInTabletMode)},
 #endif  // OS_CHROMEOS
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

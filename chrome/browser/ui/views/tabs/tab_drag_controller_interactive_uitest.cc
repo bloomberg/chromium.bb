@@ -554,6 +554,40 @@ class DetachToBrowserTabDragControllerTest
     InProcessBrowserTest::AddBlankTabAndShow(browser);
   }
 
+  // Returns true if the tab dragging info is correctly set on the attached
+  // browser window. On Chrome OS, the info includes two window properties.
+  bool IsTabDraggingInfoSet(TabStrip* attached_tabstrip,
+                            TabStrip* source_tabstrip) {
+    DCHECK(attached_tabstrip);
+#if defined(OS_CHROMEOS)
+    aura::Window* dragged_window =
+        attached_tabstrip->GetWidget()->GetNativeWindow();
+    aura::Window* source_window =
+        (source_tabstrip && source_tabstrip != attached_tabstrip)
+            ? source_tabstrip->GetWidget()->GetNativeWindow()
+            : nullptr;
+    return dragged_window->GetProperty(ash::kIsDraggingTabsKey) &&
+           dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey) ==
+               source_window;
+#else
+    return true;
+#endif
+  }
+
+  // Returns true if the tab dragging info is correctly cleared on the attached
+  // browser window.
+  bool IsTabDraggingInfoCleared(TabStrip* attached_tabstrip) {
+    DCHECK(attached_tabstrip);
+#if defined(OS_CHROMEOS)
+    aura::Window* dragged_window =
+        attached_tabstrip->GetWidget()->GetNativeWindow();
+    return !dragged_window->GetProperty(ash::kIsDraggingTabsKey) &&
+           !dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey);
+#else
+    return true;
+#endif
+  }
+
   Browser* browser() const { return InProcessBrowserTest::browser(); }
 
  private:
@@ -583,10 +617,14 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   ASSERT_TRUE(PressInput(tab_1_center));
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(DragInputTo(tab_0_center));
+  // Test that the dragging info is correctly set on |tab_strip|.
+  EXPECT_TRUE(IsTabDraggingInfoSet(tab_strip, tab_strip));
   ASSERT_TRUE(ReleaseInput());
   EXPECT_EQ("1 0", IDString(model));
   EXPECT_FALSE(TabDragController::IsActive());
   EXPECT_FALSE(tab_strip->IsDragSessionActive());
+  // Test that the dragging info is properly cleared after dragging.
+  EXPECT_TRUE(IsTabDraggingInfoCleared(tab_strip));
 
   // The tab strip should no longer have capture because the drag was ended and
   // mouse/touch was released.
@@ -666,6 +704,19 @@ void DragToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
   ASSERT_FALSE(target_tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
 
+  // Test that after the tabs are detached from the source tabstrip (in this
+  // case |not_attached_tab_strip|), the tab dragging info should be properly
+  // cleared on the source tabstrip.
+  EXPECT_TRUE(test->IsTabDraggingInfoCleared(not_attached_tab_strip));
+  // At this moment there should be a new browser window for the dragged tabs.
+  EXPECT_EQ(3u, test->browser_list->size());
+  Browser* new_browser = test->browser_list->get(2);
+  TabStrip* new_tab_strip = GetTabStripForBrowser(new_browser);
+  ASSERT_TRUE(new_tab_strip->IsDragSessionActive());
+  // Test that the tab dragging info should be correctly set on the new window.
+  EXPECT_TRUE(
+      test->IsTabDraggingInfoSet(new_tab_strip, not_attached_tab_strip));
+
   // Drag to target_tab_strip. This should stop the nested loop from dragging
   // the window.
   gfx::Point target_point(target_tab_strip->width() -1,
@@ -703,12 +754,15 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_TRUE(TabDragController::IsActive());
   EXPECT_FALSE(GetIsDragged(browser()));
+  EXPECT_TRUE(IsTabDraggingInfoCleared(tab_strip));
+  EXPECT_TRUE(IsTabDraggingInfoSet(tab_strip2, tab_strip));
 
   // Release mouse or touch, stopping the drag session.
   ASSERT_TRUE(ReleaseInput());
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_TRUE(IsTabDraggingInfoCleared(tab_strip2));
   EXPECT_EQ("100 0", IDString(browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
   EXPECT_FALSE(GetIsDragged(browser2));
