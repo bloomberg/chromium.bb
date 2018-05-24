@@ -15,7 +15,7 @@
       <div slot="title">
         [[getDialogTitle_(isFolder_, isEdit_)]]
       </div>
-      <div slot="body">
+      <div slot="body" style="height: [[getHeightOfBody_(isFolder_)]]px">
         <paper-input always-float-label id="name"
             label="$i18n{editDialogNameInput}"
             value="{{titleValue_}}"
