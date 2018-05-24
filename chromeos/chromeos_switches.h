@@ -47,7 +47,6 @@ CHROMEOS_EXPORT extern const char kCrosRegion[];
 CHROMEOS_EXPORT extern const char kCrosRegionsMode[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeHide[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeOverride[];
-CHROMEOS_EXPORT extern const char kCrostiniFiles[];
 CHROMEOS_EXPORT extern const char kDataSaverPromptDemoMode[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
 CHROMEOS_EXPORT extern const char kDefaultWallpaperIsOem[];
