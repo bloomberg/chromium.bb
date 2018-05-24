@@ -51,6 +51,82 @@ namespace autofill {
 
 namespace {
 
+constexpr char kAutocompleteUsername[] = "username";
+constexpr char kAutocompleteCurrentPassword[] = "current-password";
+constexpr char kAutocompleteNewPassword[] = "new-password";
+constexpr char kAutocompleteCreditCardPrefix[] = "cc-";
+
+// Parses the string with the value of an autocomplete attribute. If any of the
+// tokens "username", "current-password" or "new-password" are present, returns
+// an appropriate enum value, picking an arbitrary one if more are applicable.
+// Otherwise, it returns CREDIT_CARD if a token with a "cc-" prefix is found.
+// Otherwise, returns NONE.
+AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
+  std::vector<base::StringPiece> tokens =
+      base::SplitStringPiece(attribute, base::kWhitespaceASCII,
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  bool cc_seen = false;
+  for (base::StringPiece token : tokens) {
+    if (base::LowerCaseEqualsASCII(token, kAutocompleteUsername))
+      return AutocompleteFlag::USERNAME;
+    if (base::LowerCaseEqualsASCII(token, kAutocompleteCurrentPassword))
+      return AutocompleteFlag::CURRENT_PASSWORD;
+    if (base::LowerCaseEqualsASCII(token, kAutocompleteNewPassword))
+      return AutocompleteFlag::NEW_PASSWORD;
+
+    if (!cc_seen) {
+      cc_seen = base::StartsWith(token, kAutocompleteCreditCardPrefix,
+                                 base::CompareCase::SENSITIVE);
+    }
+  }
+  return cc_seen ? AutocompleteFlag::CREDIT_CARD : AutocompleteFlag::NONE;
+}
+
+// Helper to spare map::find boilerplate when caching element's autocomplete
+// attributes.
+class AutocompleteCache {
+ public:
+  AutocompleteCache();
+
+  ~AutocompleteCache();
+
+  // Computes and stores the AutocompleteFlag for |element| based on its
+  // autocomplete attribute. Note that this cannot be done on-demand during
+  // RetrieveFor, because the cache spares space and look-up time by not storing
+  // AutocompleteFlag::NONE values, hence for all elements without an
+  // autocomplete attribute, every retrieval would result in a new computation.
+  void Store(const WebInputElement& element);
+
+  // Retrieves the value previously stored for |element|.
+  AutocompleteFlag RetrieveFor(const WebInputElement& element) const;
+
+ private:
+  std::map<WebInputElement, AutocompleteFlag> cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteCache);
+};
+
+AutocompleteCache::AutocompleteCache() = default;
+
+AutocompleteCache::~AutocompleteCache() = default;
+
+void AutocompleteCache::Store(const WebInputElement& element) {
+  const AutocompleteFlag flag = AutocompleteFlagForElement(element);
+  // Only store non-trivial flags. Most of the elements will have the NONE
+  // value, so spare storage and lookup time by assuming anything not stored in
+  // |cache_| has the NONE flag.
+  if (flag != AutocompleteFlag::NONE)
+    cache_[element] = flag;
+}
+
+AutocompleteFlag AutocompleteCache::RetrieveFor(
+    const WebInputElement& element) const {
+  auto it = cache_.find(element);
+  if (it == cache_.end())
+    return AutocompleteFlag::NONE;
+  return it->second;
+}
+
 // Describes fields filtering criteria. More priority criteria has higher value
 // in the enum. The fields with the maximal criteria are considered in a form,
 // others are ignored. Criteria for password and username fields are calculated
@@ -114,11 +190,6 @@ const char kLoginAndSignupRegex[] =
     "N+P"  // Sign-up section.
     ".*";  // Anything beyond that.
 
-const char kAutocompleteUsername[] = "username";
-const char kAutocompleteCurrentPassword[] = "current-password";
-const char kAutocompleteNewPassword[] = "new-password";
-const char kAutocompleteCreditCardPrefix[] = "cc-";
-
 struct LoginAndSignupLazyInstanceTraits
     : public base::internal::DestructorAtExitLazyInstanceTraits<re2::RE2> {
   static re2::RE2* New(void* instance) {
@@ -176,7 +247,8 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
 void LocateSpecificPasswords(std::vector<WebInputElement> passwords,
                              WebInputElement* current_password,
                              WebInputElement* new_password,
-                             WebInputElement* confirmation_password) {
+                             WebInputElement* confirmation_password,
+                             const AutocompleteCache& autocomplete_cache) {
   DCHECK(!passwords.empty());
   DCHECK(current_password && current_password->IsNull());
   DCHECK(new_password && new_password->IsNull());
@@ -185,16 +257,17 @@ void LocateSpecificPasswords(std::vector<WebInputElement> passwords,
   // First, look for elements marked with either autocomplete='current-password'
   // or 'new-password' -- if we find any, take the hint, and treat the first of
   // each kind as the element we are looking for.
-  for (const WebInputElement& it : passwords) {
-    if (HasAutocompleteAttributeValue(it, kAutocompleteCurrentPassword) &&
+  for (const WebInputElement& password : passwords) {
+    const AutocompleteFlag flag = autocomplete_cache.RetrieveFor(password);
+    if (flag == AutocompleteFlag::CURRENT_PASSWORD &&
         current_password->IsNull()) {
-      *current_password = it;
-    } else if (HasAutocompleteAttributeValue(it, kAutocompleteNewPassword) &&
+      *current_password = password;
+    } else if (flag == AutocompleteFlag::NEW_PASSWORD &&
                new_password->IsNull()) {
-      *new_password = it;
+      *new_password = password;
     } else if (!new_password->IsNull() &&
-               (new_password->Value() == it.Value())) {
-      *confirmation_password = it;
+               (new_password->Value() == password.Value())) {
+      *confirmation_password = password;
     }
   }
 
@@ -525,16 +598,23 @@ bool GetPasswordForm(
     }
   }
 
+  // Fill the cache with autocomplete flags.
+  AutocompleteCache autocomplete_cache;
+  for (const WebInputElement& input : enabled_inputs) {
+    autocomplete_cache.Store(input);
+  }
+
   // Narrow the scope further: drop credit-card fields.
   std::vector<WebInputElement> plausible_inputs;
   plausible_inputs.reserve(enabled_inputs.size());
   for (const WebInputElement& input : enabled_inputs) {
-    if (HasAutocompleteAttributeValue(input, kAutocompleteCurrentPassword) ||
-        HasAutocompleteAttributeValue(input, kAutocompleteNewPassword)) {
+    const AutocompleteFlag flag = autocomplete_cache.RetrieveFor(input);
+    if (flag == AutocompleteFlag::CURRENT_PASSWORD ||
+        flag == AutocompleteFlag::NEW_PASSWORD) {
       // A field marked as a password is considered not a credit-card field, no
       // matter what.
       plausible_inputs.push_back(input);
-    } else if (!HasCreditCardAutocompleteAttributes(input) &&
+    } else if (flag != AutocompleteFlag::CREDIT_CARD &&
                !IsCreditCardVerificationPasswordField(input)) {
       // Otherwise ensure that nothing hints that |input| is a credit-card
       // field.
@@ -569,7 +649,8 @@ bool GetPasswordForm(
   // made readonly by JavaScript before submission, it remains interesting. If
   // the password was marked via the autocomplete attribute, it also remains
   // interesting.
-  base::EraseIf(plausible_inputs, [&field_value_and_properties_map](
+  base::EraseIf(plausible_inputs, [&field_value_and_properties_map,
+                                   &autocomplete_cache](
                                       const WebInputElement& input) {
     if (!input.IsPasswordFieldForAutofill())
       return false;
@@ -582,8 +663,9 @@ bool GetPasswordForm(
       return false;
     }
     // Check whether the field was explicitly marked as password.
-    if (HasAutocompleteAttributeValue(input, kAutocompleteCurrentPassword) ||
-        HasAutocompleteAttributeValue(input, kAutocompleteNewPassword)) {
+    const AutocompleteFlag flag = autocomplete_cache.RetrieveFor(input);
+    if (flag == AutocompleteFlag::CURRENT_PASSWORD ||
+        flag == AutocompleteFlag::NEW_PASSWORD) {
       return false;
     }
     return true;
@@ -607,12 +689,13 @@ bool GetPasswordForm(
   // Finally, remove all password fields for which we have a negative
   // prediction, unless they are explicitly marked by the autocomplete attribute
   // as a password.
-  base::EraseIf(plausible_inputs, [&predicted_elements](
+  base::EraseIf(plausible_inputs, [&predicted_elements, &autocomplete_cache](
                                       const WebInputElement& input) {
     if (!input.IsPasswordFieldForAutofill())
       return false;
-    if (HasAutocompleteAttributeValue(input, kAutocompleteCurrentPassword) ||
-        HasAutocompleteAttributeValue(input, kAutocompleteNewPassword)) {
+    const AutocompleteFlag flag = autocomplete_cache.RetrieveFor(input);
+    if (flag == AutocompleteFlag::CURRENT_PASSWORD ||
+        flag == AutocompleteFlag::NEW_PASSWORD) {
       return false;
     }
     auto possible_password_element_iterator = predicted_elements.find(input);
@@ -644,12 +727,13 @@ bool GetPasswordForm(
   WebInputElement username_by_attribute;
   for (const WebInputElement& input : plausible_inputs) {
     if (!input.IsPasswordFieldForAutofill()) {
-      if (HasAutocompleteAttributeValue(input, kAutocompleteUsername)) {
+      if (autocomplete_cache.RetrieveFor(input) == AutocompleteFlag::USERNAME) {
         // Only consider the first occurrence of autocomplete='username'.
         // Multiple occurences hint at the attribute being used incorrectly, in
         // which case sticking to the first one is just a bet.
-        if (username_by_attribute.IsNull())
+        if (username_by_attribute.IsNull()) {
           username_by_attribute = input;
+        }
       }
     }
   }
@@ -738,7 +822,8 @@ bool GetPasswordForm(
   WebInputElement new_password;
   WebInputElement confirmation_password;
   LocateSpecificPasswords(std::move(plausible_passwords), &password,
-                          &new_password, &confirmation_password);
+                          &new_password, &confirmation_password,
+                          autocomplete_cache);
 
   // Choose the username element.
   WebInputElement username_element;
@@ -843,8 +928,10 @@ bool GetPasswordForm(
     password_form->new_password_value = new_password.Value().Utf16();
     password_form->new_password_value_is_default =
         new_password.GetAttribute("value") == new_password.Value();
-    if (HasAutocompleteAttributeValue(new_password, kAutocompleteNewPassword))
+    if (autocomplete_cache.RetrieveFor(new_password) ==
+        AutocompleteFlag::NEW_PASSWORD) {
       password_form->new_password_marked_by_site = true;
+    }
     if (!confirmation_password.IsNull()) {
       password_form->confirmation_password_element =
           FieldName(confirmation_password, "anonymous_confirmation_password");
@@ -887,6 +974,13 @@ bool GetPasswordForm(
 }
 
 }  // namespace
+
+AutocompleteFlag AutocompleteFlagForElement(const WebInputElement& element) {
+  static const base::NoDestructor<WebString> kAutocomplete(("autocomplete"));
+  return ExtractAutocompleteFlag(
+      element.GetAttribute(*kAutocomplete)
+          .Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD));
+}
 
 re2::RE2* CreateMatcher(void* instance, const char* pattern) {
   re2::RE2::Options options;
@@ -1010,40 +1104,6 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   // No actual action on the form, so use the the origin as the action.
   password_form->action = password_form->origin;
   return password_form;
-}
-
-bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
-                                   base::StringPiece value_in_lowercase) {
-  CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
-  const std::string autocomplete_value =
-      element.GetAttribute(kAutocomplete)
-          .Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-
-  std::vector<base::StringPiece> tokens =
-      base::SplitStringPiece(autocomplete_value, base::kWhitespaceASCII,
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return std::find_if(tokens.begin(), tokens.end(),
-                      [value_in_lowercase](base::StringPiece token) {
-                        return base::LowerCaseEqualsASCII(token,
-                                                          value_in_lowercase);
-                      }) != tokens.end();
-}
-
-bool HasCreditCardAutocompleteAttributes(
-    const blink::WebInputElement& element) {
-  CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
-  const std::string autocomplete_value =
-      element.GetAttribute(kAutocomplete)
-          .Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
-
-  std::vector<base::StringPiece> tokens =
-      base::SplitStringPiece(autocomplete_value, base::kWhitespaceASCII,
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return std::find_if(
-             tokens.begin(), tokens.end(), [](base::StringPiece token) {
-               return base::StartsWith(token, kAutocompleteCreditCardPrefix,
-                                       base::CompareCase::INSENSITIVE_ASCII);
-             }) != tokens.end();
 }
 
 bool IsCreditCardVerificationPasswordField(

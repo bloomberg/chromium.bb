@@ -99,7 +99,8 @@ std::vector<blink::WebInputElement> FindNewPasswordElementsMarkedBySite(
   std::vector<blink::WebInputElement> passwords;
 
   auto is_new_password_field = [](const blink::WebInputElement& element) {
-    return HasAutocompleteAttributeValue(element, "new-password");
+    return AutocompleteFlagForElement(element) ==
+           AutocompleteFlag::NEW_PASSWORD;
   };
 
   auto field_iter =
