@@ -14,11 +14,11 @@
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/named_platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/invitation.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -93,11 +93,13 @@ TEST_F(InvitationTest, InvalidArguments) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoExtractMessagePipeFromInvitation(
                                               invitation, 0, nullptr, nullptr));
 
-  PlatformChannelPair channel;
+  PlatformChannel channel;
   MojoPlatformHandle endpoint_handle;
   endpoint_handle.struct_size = sizeof(endpoint_handle);
-  EXPECT_EQ(MOJO_RESULT_OK, ScopedInternalPlatformHandleToMojoPlatformHandle(
-                                channel.PassServerHandle(), &endpoint_handle));
+  PlatformHandleToMojoPlatformHandle(
+      channel.TakeLocalEndpoint().TakePlatformHandle(), &endpoint_handle);
+  ASSERT_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
+
   MojoInvitationTransportEndpoint valid_endpoint;
   valid_endpoint.struct_size = sizeof(valid_endpoint);
   valid_endpoint.type = MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL;
@@ -235,44 +237,45 @@ base::Process InvitationTest::LaunchChildTestClient(
       base::GetMultiProcessTestChildBaseCommandLine());
 
   base::LaunchOptions launch_options;
-  base::Optional<PlatformChannelPair> channel;
-  base::Optional<NamedPlatformChannelPair> named_channel;
-  ScopedInternalPlatformHandle server_handle;
+  base::Optional<PlatformChannel> channel;
+  base::Optional<NamedPlatformChannel> named_channel;
+  PlatformHandle local_endpoint_handle;
   if (transport_type == TransportType::kChannel) {
     channel.emplace();
 #if defined(OS_FUCHSIA)
-    channel->PrepareToPassClientHandleToChildProcess(
-        &command_line, &launch_options.handles_to_transfer);
+    channel->PrepareToPassRemoteEndpoint(&launch_options.handles_to_transfer,
+                                         &command_line);
 #elif defined(OS_POSIX)
-    channel->PrepareToPassClientHandleToChildProcess(
-        &command_line, &launch_options.fds_to_remap);
+    channel->PrepareToPassRemoteEndpoint(&launch_options.fds_to_remap,
+                                         &command_line);
 #elif defined(OS_WIN)
     launch_options.start_hidden = true;
-    channel->PrepareToPassClientHandleToChildProcess(
-        &command_line, &launch_options.handles_to_inherit);
+    channel->PrepareToPassRemoteEndpoint(&launch_options.handles_to_inherit,
+                                         &command_line);
 #else
 #error "Platform not yet supported."
 #endif
-    server_handle = channel->PassServerHandle();
+    local_endpoint_handle = channel->TakeLocalEndpoint().TakePlatformHandle();
   } else {
 #if defined(OS_FUCHSIA)
     NOTREACHED() << "Named pipe support does not exist for Mojo on Fuchsia.";
 #else
-    NamedPlatformChannelPair::Options named_channel_options;
+    NamedPlatformChannel::Options named_channel_options;
 #if !defined(OS_WIN)
     CHECK(base::PathService::Get(base::DIR_TEMP,
                                  &named_channel_options.socket_dir));
 #endif
     named_channel.emplace(named_channel_options);
-    named_channel->PrepareToPassClientHandleToChildProcess(&command_line);
-    server_handle = named_channel->PassServerHandle();
+    named_channel->PassServerNameOnCommandLine(&command_line);
+    local_endpoint_handle =
+        named_channel->TakeServerEndpoint().TakePlatformHandle();
 #endif
   }
 
   MojoPlatformHandle endpoint_handle;
-  endpoint_handle.struct_size = sizeof(endpoint_handle);
-  CHECK_EQ(MOJO_RESULT_OK, ScopedInternalPlatformHandleToMojoPlatformHandle(
-                               std::move(server_handle), &endpoint_handle));
+  PlatformHandleToMojoPlatformHandle(std::move(local_endpoint_handle),
+                                     &endpoint_handle);
+  CHECK_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
   MojoHandle invitation;
   CHECK_EQ(MOJO_RESULT_OK, MojoCreateInvitation(nullptr, &invitation));
@@ -285,7 +288,7 @@ base::Process InvitationTest::LaunchChildTestClient(
   base::Process child_process = base::SpawnMultiProcessTestChild(
       test_client_name, command_line, launch_options);
   if (channel)
-    channel->ChildProcessLaunched();
+    channel->RemoteProcessLaunched();
 
   MojoPlatformProcessHandle process_handle;
   process_handle.struct_size = sizeof(process_handle);
@@ -314,18 +317,16 @@ class TestClientBase : public InvitationTest {
  public:
   static MojoHandle AcceptInvitation() {
     const auto& command_line = *base::CommandLine::ForCurrentProcess();
-    ScopedInternalPlatformHandle channel_endpoint =
-        NamedPlatformChannelPair::PassClientHandleFromParentProcess(
-            command_line);
+    PlatformChannelEndpoint channel_endpoint =
+        NamedPlatformChannel::ConnectToServer(command_line);
     if (!channel_endpoint.is_valid()) {
-      channel_endpoint = PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess());
+      channel_endpoint =
+          PlatformChannel::RecoverPassedEndpointFromCommandLine(command_line);
     }
     MojoPlatformHandle endpoint_handle;
-    endpoint_handle.struct_size = sizeof(endpoint_handle);
-    CHECK_EQ(MOJO_RESULT_OK,
-             ScopedInternalPlatformHandleToMojoPlatformHandle(
-                 std::move(channel_endpoint), &endpoint_handle));
+    PlatformHandleToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
+                                       &endpoint_handle);
+    CHECK_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
 
     MojoInvitationTransportEndpoint transport_endpoint;
     transport_endpoint.struct_size = sizeof(transport_endpoint);
