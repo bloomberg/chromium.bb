@@ -206,8 +206,13 @@ class GPU_GLES2_EXPORT Shader : public base::RefCounted<Shader> {
   // of the underlying shader service id.
   void Destroy();
 
-  void IncUseCount();
-  void DecUseCount();
+  void IncUseCount() { ++use_count_; }
+
+  void DecUseCount() {
+    --use_count_;
+    DCHECK_GE(use_count_, 0);
+  }
+
   void MarkForDeletion();
   void DeleteServiceID();
 
@@ -305,7 +310,7 @@ class GPU_GLES2_EXPORT ShaderManager {
   typedef base::hash_map<GLuint, scoped_refptr<Shader> > ShaderMap;
   ShaderMap shaders_;
 
-  void RemoveShader(Shader* shader);
+  void RemoveShaderIfUnused(Shader* shader);
 
   // Used to notify the watchdog thread of progress during destruction,
   // preventing time-outs when destruction takes a long time. May be null when
