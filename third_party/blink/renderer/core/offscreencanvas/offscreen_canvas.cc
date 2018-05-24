@@ -45,6 +45,18 @@ OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
 
 OffscreenCanvas::~OffscreenCanvas() = default;
 
+void OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
+                             const SkIRect& damage_rect) {
+  if (!HasPlaceholderCanvas())
+    return;
+
+  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
+  current_frame_damage_rect_.join(damage_rect);
+  GetOrCreateFrameDispatcher()->DispatchFrameSync(
+      std::move(bitmap_image), commit_start_time, current_frame_damage_rect_);
+  current_frame_damage_rect_ = SkIRect::MakeEmpty();
+}
+
 void OffscreenCanvas::Dispose() {
   if (context_) {
     context_->DetachHost();
@@ -79,6 +91,9 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
     frame_dispatcher_->Reshape(size_);
   }
   current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
+  if (context_) {
+    context_->DidDraw();
+  }
 }
 
 void OffscreenCanvas::SetNeutered() {
@@ -288,6 +303,9 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
   if (rect.IsEmpty())
     return;
 
+  if (!HasPlaceholderCanvas())
+    return;
+
   GetOrCreateFrameDispatcher()->SetNeedsBeginFrame(true);
 }
 
@@ -298,8 +316,10 @@ void OffscreenCanvas::BeginFrame() {
 
 void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
                                 const SkIRect& damage_rect) {
-  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
   current_frame_damage_rect_.join(damage_rect);
+  if (current_frame_damage_rect_.isEmpty())
+    return;
+  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
   GetOrCreateFrameDispatcher()->DispatchFrame(
       std::move(image), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();

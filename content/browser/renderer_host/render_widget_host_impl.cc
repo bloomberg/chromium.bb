@@ -2840,6 +2840,15 @@ void RenderWidgetHostImpl::SetWantsAnimateOnlyBeginFrames() {
     view_->SetWantsAnimateOnlyBeginFrames();
 }
 
+void RenderWidgetHostImpl::SubmitCompositorFrameSync(
+    const viz::LocalSurfaceId& local_surface_id,
+    viz::CompositorFrame frame,
+    viz::mojom::HitTestRegionListPtr hit_test_region_list,
+    uint64_t submit_time,
+    const SubmitCompositorFrameSyncCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void RenderWidgetHostImpl::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,

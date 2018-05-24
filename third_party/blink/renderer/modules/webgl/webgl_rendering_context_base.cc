@@ -740,6 +740,19 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
   return ImageBitmap::Create(image);
 }
 
+void WebGLRenderingContextBase::commit() {
+  int width = GetDrawingBuffer()->Size().Width();
+  int height = GetDrawingBuffer()->Size().Height();
+
+  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+  scoped_refptr<StaticBitmapImage> image =
+      GetStaticBitmapImage(&image_release_callback);
+  GetDrawingBuffer()->SwapPreviousFrameCallback(
+      std::move(image_release_callback));
+
+  Host()->Commit(std::move(image), SkIRect::MakeWH(width, height));
+}
+
 scoped_refptr<StaticBitmapImage>
 WebGLRenderingContextBase::GetStaticBitmapImage(
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
@@ -1343,6 +1356,16 @@ void WebGLRenderingContextBase::MarkContextChanged(
   }
 }
 
+void WebGLRenderingContextBase::DidDraw(const SkIRect& dirty_rect) {
+  MarkContextChanged(kCanvasChanged);
+  CanvasRenderingContext::DidDraw(dirty_rect);
+}
+
+void WebGLRenderingContextBase::DidDraw() {
+  MarkContextChanged(kCanvasChanged);
+  CanvasRenderingContext::DidDraw();
+}
+
 void WebGLRenderingContextBase::PushFrame() {
   if (!marked_canvas_dirty_)
     return;
@@ -1350,9 +1373,6 @@ void WebGLRenderingContextBase::PushFrame() {
   marked_canvas_dirty_ = false;
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
-  if (!GetDrawingBuffer()) {
-    return Host()->PushFrame(nullptr, SkIRect::MakeWH(width, height));
-  }
 
   std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
   scoped_refptr<StaticBitmapImage> image =

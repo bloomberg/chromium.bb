@@ -66,6 +66,14 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       uint64_t submit_time) override {
     DoSubmitCompositorFrame(id, &frame);
   }
+  void SubmitCompositorFrameSync(
+      const viz::LocalSurfaceId& id,
+      viz::CompositorFrame frame,
+      viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
+      uint64_t submit_time,
+      const SubmitCompositorFrameSyncCallback callback) override {
+    DoSubmitCompositorFrame(id, &frame);
+  }
 
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
 

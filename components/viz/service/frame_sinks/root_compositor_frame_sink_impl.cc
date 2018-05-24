@@ -112,7 +112,8 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
   }
 
   const auto result = support_->MaybeSubmitCompositorFrame(
-      local_surface_id, std::move(frame), std::move(hit_test_region_list));
+      local_surface_id, std::move(frame), std::move(hit_test_region_list),
+      SubmitCompositorFrameSyncCallback());
   if (result == CompositorFrameSinkSupport::ACCEPTED)
     return;
 
@@ -123,6 +124,15 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
   compositor_frame_sink_binding_.CloseWithReason(static_cast<uint32_t>(result),
                                                  reason);
   OnClientConnectionLost();
+}
+
+void RootCompositorFrameSinkImpl::SubmitCompositorFrameSync(
+    const LocalSurfaceId& local_surface_id,
+    CompositorFrame frame,
+    mojom::HitTestRegionListPtr hit_test_region_list,
+    uint64_t submit_time,
+    SubmitCompositorFrameSyncCallback callback) {
+  NOTIMPLEMENTED();
 }
 
 void RootCompositorFrameSinkImpl::DidNotProduceFrame(

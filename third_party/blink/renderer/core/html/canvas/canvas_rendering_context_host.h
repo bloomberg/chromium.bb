@@ -63,6 +63,11 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   // TODO(fserb): remove this.
   virtual bool IsOffscreenCanvas() const { return false; }
 
+  virtual void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
+                      const SkIRect& damage_rect) {
+    NOTIMPLEMENTED();
+  }
+
   bool IsPaintable() const;
 
   virtual void RegisterContextToDispatch(CanvasRenderingContext*) {}

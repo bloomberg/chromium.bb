@@ -49,19 +49,15 @@ OffscreenCanvasFrameDispatcher::OffscreenCanvasFrameDispatcher(
     mojom::blink::EmbeddedFrameSinkProviderPtr provider;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&provider));
+    DCHECK(provider);
 
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-    auto* scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
-    if (scheduler)
-      task_runner = scheduler->CompositorTaskRunner();
-    viz::mojom::blink::CompositorFrameSinkClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client), task_runner);
-    provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client),
+    binding_.Bind(mojo::MakeRequest(&client_ptr_));
+    provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
                                         mojo::MakeRequest(&sink_));
   }
   offscreen_canvas_resource_provider_ =
-      std::make_unique<OffscreenCanvasResourceProvider>(
-          size_.Width(), size_.Height(), sink_.get());
+      std::make_unique<OffscreenCanvasResourceProvider>(size_.Width(),
+                                                        size_.Height(), this);
 }
 
 OffscreenCanvasFrameDispatcher::~OffscreenCanvasFrameDispatcher() = default;
@@ -128,24 +124,56 @@ void OffscreenCanvasFrameDispatcher::PostImageToPlaceholder(
                       placeholder_canvas_id_, std::move(image), resource_id));
 }
 
+void OffscreenCanvasFrameDispatcher::DispatchFrameSync(
+    scoped_refptr<StaticBitmapImage> image,
+    double commit_start_time,
+    const SkIRect& damage_rect) {
+  viz::CompositorFrame frame;
+  if (!PrepareFrame(std::move(image), commit_start_time, damage_rect, &frame))
+    return;
+
+  pending_compositor_frames_++;
+  WTF::Vector<viz::ReturnedResource> resources;
+  sink_->SubmitCompositorFrameSync(
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      std::move(frame), nullptr, 0, &resources);
+  DidReceiveCompositorFrameAck(resources);
+}
+
 void OffscreenCanvasFrameDispatcher::DispatchFrame(
     scoped_refptr<StaticBitmapImage> image,
     double commit_start_time,
     const SkIRect& damage_rect) {
-  if (!image || !VerifyImageSize(image->Size()))
+  viz::CompositorFrame frame;
+  if (!PrepareFrame(std::move(image), commit_start_time, damage_rect, &frame))
     return;
+
+  pending_compositor_frames_++;
+  sink_->SubmitCompositorFrame(
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+      std::move(frame), nullptr, 0);
+}
+
+bool OffscreenCanvasFrameDispatcher::PrepareFrame(
+    scoped_refptr<StaticBitmapImage> image,
+    double commit_start_time,
+    const SkIRect& damage_rect,
+    viz::CompositorFrame* frame) {
+  if (!image || !VerifyImageSize(image->Size()))
+    return false;
 
   offscreen_canvas_resource_provider_->IncNextResourceId();
 
+  // For frameless canvas, we don't get a valid frame_sink_id and should drop.
   if (!frame_sink_id_.is_valid()) {
     PostImageToPlaceholderIfNotBlocked(
         std::move(image),
         offscreen_canvas_resource_provider_->GetNextResourceId());
-    return;
+    return false;
   }
-  viz::CompositorFrame frame;
+
   // TODO(crbug.com/652931): update the device_scale_factor
-  frame.metadata.device_scale_factor = 1.0f;
+  frame->metadata.device_scale_factor = 1.0f;
   if (current_begin_frame_ack_.sequence_number ==
       viz::BeginFrameArgs::kInvalidFrameNumber) {
     // TODO(eseckler): This shouldn't be necessary when OffscreenCanvas no
@@ -154,7 +182,7 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
   } else {
     current_begin_frame_ack_.has_damage = true;
   }
-  frame.metadata.begin_frame_ack = current_begin_frame_ack_;
+  frame->metadata.begin_frame_ack = current_begin_frame_ack_;
 
   const gfx::Rect bounds(size_.Width(), size_.Height());
   const int kRenderPassId = 1;
@@ -204,7 +232,7 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
       scoped_refptr<StaticBitmapImage> accelerated_image =
           image->MakeAccelerated(SharedGpuContext::ContextProviderWrapper());
       if (!accelerated_image)
-        return;
+        return false;
       offscreen_canvas_resource_provider_
           ->SetTransferableResourceToStaticBitmapImage(resource,
                                                        accelerated_image);
@@ -222,7 +250,7 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
       std::move(image),
       offscreen_canvas_resource_provider_->GetNextResourceId());
 
-  frame.resource_list.push_back(std::move(resource));
+  frame->resource_list.push_back(std::move(resource));
 
   viz::TextureDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
@@ -247,7 +275,7 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
                SK_ColorTRANSPARENT, vertex_opacity, yflipped, kNearestNeighbor,
                false);
 
-  frame.render_pass_list.push_back(std::move(pass));
+  frame->render_pass_list.push_back(std::move(pass));
 
   double elapsed_time = WTF::CurrentTimeTicksInSeconds() - commit_start_time;
 
@@ -340,10 +368,7 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
     change_size_for_next_commit_ = false;
   }
 
-  pending_compositor_frames_++;
-  sink_->SubmitCompositorFrame(
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-      std::move(frame), nullptr, 0);
+  return true;
 }
 
 void OffscreenCanvasFrameDispatcher::DidReceiveCompositorFrameAck(
@@ -396,7 +421,6 @@ void OffscreenCanvasFrameDispatcher::OnBeginFrame(
 
   current_begin_frame_ack_ = viz::BeginFrameAck(
       begin_frame_args.source_id, begin_frame_args.sequence_number, false);
-
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&
        base::TimeTicks::Now() > begin_frame_args.deadline)) {
@@ -409,6 +433,7 @@ void OffscreenCanvasFrameDispatcher::OnBeginFrame(
   current_begin_frame_ack_.sequence_number =
       viz::BeginFrameArgs::kInvalidFrameNumber;
 }
+
 void OffscreenCanvasFrameDispatcher::ReclaimResources(
     const WTF::Vector<viz::ReturnedResource>& resources) {
   offscreen_canvas_resource_provider_->ReclaimResources(resources);
@@ -442,6 +467,17 @@ void OffscreenCanvasFrameDispatcher::Reshape(const IntSize& size) {
     offscreen_canvas_resource_provider_->Reshape(size_.Width(), size_.Height());
     change_size_for_next_commit_ = true;
   }
+}
+
+void OffscreenCanvasFrameDispatcher::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    ::gpu::mojom::blink::MailboxPtr id) {
+  sink_->DidAllocateSharedBitmap(std::move(buffer), std::move(id));
+}
+
+void OffscreenCanvasFrameDispatcher::DidDeleteSharedBitmap(
+    ::gpu::mojom::blink::MailboxPtr id) {
+  sink_->DidDeleteSharedBitmap(std::move(id));
 }
 
 }  // namespace blink

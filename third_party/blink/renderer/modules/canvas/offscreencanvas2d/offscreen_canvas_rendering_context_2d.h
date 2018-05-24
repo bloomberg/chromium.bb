@@ -47,6 +47,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     return static_cast<OffscreenCanvas*>(Host());
   }
 
+  void commit();
+
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
   ContextType GetContextType() const override { return kContext2d; }

@@ -63,6 +63,12 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
+  void SubmitCompositorFrameSync(
+      const LocalSurfaceId& local_surface_id,
+      CompositorFrame frame,
+      mojom::HitTestRegionListPtr hit_test_region_list,
+      uint64_t submit_time,
+      SubmitCompositorFrameSyncCallback callback) override;
 
  private:
   // DisplayClient:

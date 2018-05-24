@@ -23,6 +23,8 @@ class CompositorFrameSink;
 
 namespace blink {
 
+class OffscreenCanvasFrameDispatcher;
+
 class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
  public:
   // The CompositorFrameSink given here must be kept alive as long as this
@@ -30,7 +32,7 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   // display compositor.
   OffscreenCanvasResourceProvider(int width,
                                   int height,
-                                  viz::mojom::blink::CompositorFrameSink*);
+                                  OffscreenCanvasFrameDispatcher*);
 
   ~OffscreenCanvasResourceProvider();
 
@@ -81,10 +83,7 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
   std::unique_ptr<FrameResource> CreateOrRecycleFrameResource();
   void ReclaimResourceInternal(const ResourceMap::iterator&);
 
-  // Holds a pointer to the FrameSink where SharedBitmapIds are reported on
-  // allocation and destruction, in order to later give those ids to the display
-  // compositor in a DrawQuad to present the resource.
-  viz::mojom::blink::CompositorFrameSink* const sink_;
+  OffscreenCanvasFrameDispatcher* frame_dispatcher_;
   int width_;
   int height_;
   unsigned next_resource_id_ = 0;

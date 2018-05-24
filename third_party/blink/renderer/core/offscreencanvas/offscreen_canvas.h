@@ -109,6 +109,8 @@ class CORE_EXPORT OffscreenCanvas final
                  const SkIRect& damage_rect) override;
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
+  void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
+              const SkIRect& damage_rect) override;
 
   // Partial CanvasResourceHost implementation
   void NotifyGpuContextLost() override{};

@@ -52,6 +52,12 @@ void OffscreenCanvasRenderingContext2D::Trace(blink::Visitor* visitor) {
   BaseRenderingContext2D::Trace(visitor);
 }
 
+void OffscreenCanvasRenderingContext2D::commit() {
+  SkIRect damage_rect(dirty_rect_for_commit_);
+  dirty_rect_for_commit_.setEmpty();
+  Host()->Commit(TransferToStaticBitmapImage(), damage_rect);
+}
+
 // BaseRenderingContext2D implementation
 bool OffscreenCanvasRenderingContext2D::OriginClean() const {
   return Host()->OriginClean();
