@@ -31,7 +31,6 @@ DevToolsEyeDropper::DevToolsEyeDropper(content::WebContents* web_contents,
       last_cursor_x_(-1),
       last_cursor_y_(-1),
       host_(nullptr),
-      video_consumer_binding_(this),
       use_video_capture_api_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
           base::FeatureList::IsEnabled(
@@ -73,11 +72,7 @@ void DevToolsEyeDropper::AttachToHost(content::RenderWidgetHost* host) {
                              media::COLOR_SPACE_UNSPECIFIED);
   video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromSeconds(1) /
                                        kMaxFrameRate);
-
-  // Start video capture.
-  viz::mojom::FrameSinkVideoConsumerPtr consumer;
-  video_consumer_binding_.Bind(mojo::MakeRequest(&consumer));
-  video_capturer_->Start(std::move(consumer));
+  video_capturer_->Start(this);
 }
 
 void DevToolsEyeDropper::DetachFromHost() {
@@ -87,7 +82,6 @@ void DevToolsEyeDropper::DetachFromHost() {
   content::CursorInfo cursor_info;
   cursor_info.type = blink::WebCursorInfo::kTypePointer;
   host_->SetCursor(cursor_info);
-  video_consumer_binding_.Close();
   video_capturer_.reset();
   host_ = nullptr;
 }

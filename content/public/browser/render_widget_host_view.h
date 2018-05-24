@@ -23,21 +23,13 @@ class Rect;
 class Size;
 }
 
-namespace mojo {
-template <class T>
-class InterfacePtr;
-}
-
 namespace ui {
 enum class DomCode;
 class TextInputClient;
 }
 
 namespace viz {
-namespace mojom {
-class FrameSinkVideoCapturer;
-using FrameSinkVideoCapturerPtr = mojo::InterfacePtr<FrameSinkVideoCapturer>;
-}  // namespace mojom
+class ClientFrameSinkVideoCapturer;
 }  // namespace viz
 
 namespace content {
@@ -229,7 +221,8 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // of media::VideoFrames captured from this view. The capturer is configured
   // to target this view, so there is no need to call ChangeTarget() before
   // Start(). See viz.mojom.FrameSinkVideoCapturer for documentation.
-  virtual viz::mojom::FrameSinkVideoCapturerPtr CreateVideoCapturer() = 0;
+  virtual std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
+  CreateVideoCapturer() = 0;
 
   // Notification that a node was touched.
   // The |editable| parameter indicates if the node is editable, for e.g.

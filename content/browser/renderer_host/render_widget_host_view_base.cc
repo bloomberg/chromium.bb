@@ -207,11 +207,10 @@ void RenderWidgetHostViewBase::CopyFromSurface(
   std::move(callback).Run(SkBitmap());
 }
 
-viz::mojom::FrameSinkVideoCapturerPtr
+std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
 RenderWidgetHostViewBase::CreateVideoCapturer() {
-  viz::mojom::FrameSinkVideoCapturerPtr video_capturer;
-  GetHostFrameSinkManager()->CreateVideoCapturer(
-      mojo::MakeRequest(&video_capturer));
+  std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer =
+      GetHostFrameSinkManager()->CreateVideoCapturer();
   video_capturer->ChangeTarget(GetFrameSinkId());
   return video_capturer;
 }
