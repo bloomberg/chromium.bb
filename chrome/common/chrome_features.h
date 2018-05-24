@@ -209,10 +209,6 @@ extern const base::Feature kWarnBeforeQuitting;
 
 extern const base::Feature kMaterialDesignIncognitoNTP;
 
-#if !defined(OS_ANDROID)
-extern const base::Feature kMediaRemoting;
-#endif
-
 extern const base::Feature kModalPermissionPrompts;
 
 #if defined(OS_WIN)

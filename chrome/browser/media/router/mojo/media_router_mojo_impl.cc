@@ -27,7 +27,6 @@
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -436,11 +435,8 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
           new HangoutsMediaRouteController(route_id, context_, this);
       break;
     case RouteControllerType::kMirroring:
-      // TODO(imcheng): Remove this check when remoting is default enabled.
       route_controller =
-          base::FeatureList::IsEnabled(features::kMediaRemoting)
-              ? new MirroringMediaRouteController(route_id, context_, this)
-              : new MediaRouteController(route_id, context_, this);
+          new MirroringMediaRouteController(route_id, context_, this);
       break;
   }
   DCHECK(route_controller);
