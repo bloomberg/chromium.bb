@@ -38,37 +38,7 @@
 #endif
 
 #if defined(OS_WIN)
-
-#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
-
-#if defined(ARCH_CPU_BIG_ENDIAN)
-inline uint16_t ntohs(uint16_t x) {
-  return x;
-}
-inline uint16_t htons(uint16_t x) {
-  return x;
-}
-inline uint32_t ntohl(uint32_t x) {
-  return x;
-}
-inline uint32_t htonl(uint32_t x) {
-  return x;
-}
-#else
-inline uint16_t ntohs(uint16_t x) {
-  return WTF::Bswap16(x);
-}
-inline uint16_t htons(uint16_t x) {
-  return WTF::Bswap16(x);
-}
-inline uint32_t ntohl(uint32_t x) {
-  return WTF::Bswap32(x);
-}
-inline uint32_t htonl(uint32_t x) {
-  return WTF::Bswap32(x);
-}
-#endif
-
+#include <winsock2.h>
 #endif  // defined(OS_WIN)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_ORDER_H_
