@@ -173,8 +173,8 @@ static_library("utility") {
 
   if (enable_basic_printing) {
     deps += [
-      "//components/printing/service/public/cpp:factory",
-      "//components/printing/service/public/interfaces",
+      "//components/services/pdf_compositor/public/cpp:factory",
+      "//components/services/pdf_compositor/public/interfaces",
     ]
   }
 

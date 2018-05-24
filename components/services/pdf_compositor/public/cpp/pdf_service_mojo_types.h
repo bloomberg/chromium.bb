@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PRINTING_SERVICE_PUBLIC_CPP_PDF_SERVICE_MOJO_TYPES_H_
-#define COMPONENTS_PRINTING_SERVICE_PUBLIC_CPP_PDF_SERVICE_MOJO_TYPES_H_
+#ifndef COMPONENTS_SERVICES_PDF_COMPOSITOR_PUBLIC_CPP_PDF_SERVICE_MOJO_TYPES_H_
+#define COMPONENTS_SERVICES_PDF_COMPOSITOR_PUBLIC_CPP_PDF_SERVICE_MOJO_TYPES_H_
 
 #include "base/containers/flat_map.h"
 
@@ -14,4 +14,4 @@ using ContentToFrameMap = base::flat_map<uint32_t, uint64_t>;
 
 }  // namespace printing
 
-#endif  // COMPONENTS_PRINTING_SERVICE_PUBLIC_CPP_PDF_SERVICE_MOJO_TYPES_H_
+#endif  // COMPONENTS_SERVICES_PDF_COMPOSITOR_PUBLIC_CPP_PDF_SERVICE_MOJO_TYPES_H_

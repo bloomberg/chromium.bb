@@ -3395,8 +3395,8 @@ jumbo_split_static_library("browser") {
     ]
     deps += [
       "//components/printing/browser",
-      "//components/printing/service/public/cpp:utils",
-      "//components/printing/service/public/interfaces",
+      "//components/services/pdf_compositor/public/cpp:utils",
+      "//components/services/pdf_compositor/public/interfaces",
       "//printing",
     ]
 

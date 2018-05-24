@@ -398,7 +398,7 @@ chrome_packaged_services = [
 
 if (enable_basic_printing) {
   chrome_packaged_services +=
-      [ "//components/printing/service:pdf_compositor_manifest" ]
+      [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
 }
 
 if (enable_print_preview) {

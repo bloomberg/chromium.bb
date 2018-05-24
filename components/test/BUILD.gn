@@ -65,9 +65,7 @@ if (enable_basic_printing) {
   # There is only one service in catalog, which depends on printing feature.
   # When more services are added, the condition can be moved inside of catalog.
   catalog("components_unittests_catalog") {
-    embedded_services = [
-      "//components/printing/service:pdf_compositor_service_unittest_manifest",
-    ]
+    embedded_services = [ "//components/services/pdf_compositor:pdf_compositor_service_unittest_manifest" ]
   }
 
   catalog_cpp_source("components_unittests_catalog_source") {

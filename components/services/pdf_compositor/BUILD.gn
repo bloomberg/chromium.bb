@@ -7,7 +7,7 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
-static_library("service") {
+static_library("pdf_compositor") {
   sources = [
     "pdf_compositor_impl.cc",
     "pdf_compositor_impl.h",
@@ -30,8 +30,8 @@ static_library("service") {
   ]
 
   public_deps = [
-    "//components/printing/service/public/cpp:utils",
-    "//components/printing/service/public/interfaces",
+    "//components/services/pdf_compositor/public/cpp:utils",
+    "//components/services/pdf_compositor/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -55,11 +55,11 @@ if (enable_basic_printing) {
       "//third_party/skia/include/core",
     ]
     deps = [
-      ":service",
+      ":pdf_compositor",
       "//base/test:test_support",
       "//cc/paint:paint",
       "//components/crash/core/common:crash_key",
-      "//components/printing/service/public/interfaces",
+      "//components/services/pdf_compositor/public/interfaces",
       "//services/service_manager/public/cpp:service_test_support",
       "//skia",
       "//testing/gmock",

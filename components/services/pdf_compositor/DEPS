@@ -3,6 +3,7 @@ include_rules = [
   "+components/crash/core/common/crash_key.h",
   "+components/discardable_memory/client",
   "+content/public/child",  # Windows direct write proxy access.
+  "+content/public/common",
   "+content/public/utility",
   "+mojo/public/cpp",
   "+printing/common",

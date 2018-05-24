@@ -115,7 +115,7 @@ service_manifest("headless_browser_manifest_overlay") {
 service_manifest("headless_packaged_services_manifest_overlay") {
   source = "lib/browser/headless_packaged_services_manifest_overlay.json"
   packaged_services =
-      [ "//components/printing/service:pdf_compositor_manifest" ]
+      [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
 }
 
 grit("resources") {
@@ -484,8 +484,8 @@ component("headless") {
       deps += [
         "//components/printing/browser",
         "//components/printing/renderer",
-        "//components/printing/service/public/cpp:factory",
-        "//components/printing/service/public/interfaces",
+        "//components/services/pdf_compositor/public/cpp:factory",
+        "//components/services/pdf_compositor/public/interfaces",
       ]
     }
 
@@ -660,7 +660,7 @@ test("headless_unittests") {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
     deps += [
       "//components/printing/browser",
-      "//components/printing/service/public/cpp:factory",
+      "//components/services/pdf_compositor/public/cpp:factory",
       "//third_party/blink/public:blink",
     ]
   }
@@ -832,7 +832,7 @@ test("headless_browsertests") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/browser",
-      "//components/printing/service/public/cpp:factory",
+      "//components/services/pdf_compositor/public/cpp:factory",
       "//pdf",
     ]
   }
@@ -960,7 +960,7 @@ static_library("headless_shell_lib") {
     deps += [
       "//components/printing/browser",
       "//components/printing/renderer",
-      "//components/printing/service/public/cpp:factory",
+      "//components/services/pdf_compositor/public/cpp:factory",
     ]
   }
 

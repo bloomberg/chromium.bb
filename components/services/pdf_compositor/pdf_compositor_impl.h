@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PRINTING_SERVICE_PDF_COMPOSITOR_IMPL_H_
-#define COMPONENTS_PRINTING_SERVICE_PDF_COMPOSITOR_IMPL_H_
+#ifndef COMPONENTS_SERVICES_PDF_COMPOSITOR_PDF_COMPOSITOR_IMPL_H_
+#define COMPONENTS_SERVICES_PDF_COMPOSITOR_PDF_COMPOSITOR_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -17,8 +17,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/shared_memory.h"
 #include "base/optional.h"
-#include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
-#include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
+#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -188,4 +188,4 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
 
 }  // namespace printing
 
-#endif  // COMPONENTS_PRINTING_SERVICE_PDF_COMPOSITOR_IMPL_H_
+#endif  // COMPONENTS_SERVICES_PDF_COMPOSITOR_PDF_COMPOSITOR_IMPL_H_
