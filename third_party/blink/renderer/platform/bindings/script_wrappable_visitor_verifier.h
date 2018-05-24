@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_VISITOR_VERIFIER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_VISITOR_VERIFIER_H_
 
+#include "base/logging.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/heap/gc_info.h"
 
 namespace blink {
 
@@ -16,21 +18,22 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
  protected:
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
   void Visit(const TraceWrapperDescriptor& descriptor) final {
-    if (!HeapObjectHeader::FromPayload(descriptor.base_object_payload)
-             ->IsWrapperHeaderMarked()) {
-      // If this branch is hit, it means that a white (not discovered by
-      // traceWrappers) object was assigned as a member to a black object
-      // (already processed by traceWrappers). Black object will not be
-      // processed anymore so White object will remain undetected and
-      // therefore its wrapper and all wrappers reachable from it would be
-      // collected.
-
-      // This means there is a write barrier missing somewhere. Check the
-      // backtrace to see which types are causing this and review all the
-      // places where white object is set to a black object.
-      descriptor.missed_write_barrier_callback();
-      NOTREACHED();
-    }
+    HeapObjectHeader* header =
+        HeapObjectHeader::FromPayload(descriptor.base_object_payload);
+    const char* name = GCInfoTable::Get()
+                           .GCInfoFromIndex(header->GcInfoIndex())
+                           ->name_(descriptor.base_object_payload);
+    // If this FATAL is hit, it means that a white (not discovered by
+    // TraceWrappers) object was assigned as a member to a black object (already
+    // processed by TraceWrappers). The black object will not be processed
+    // anymore so white object will remain undetected and therefore its wrapper
+    // and all wrappers reachable from it would be collected.
+    //
+    // This means there is a write barrier missing somewhere. Check the
+    // backtrace to see which types are causing this and review all the places
+    // where white object is set to a black object.
+    LOG_IF(FATAL, !header->IsWrapperHeaderMarked())
+        << "Write barrier missed for " << name;
   }
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) final {}

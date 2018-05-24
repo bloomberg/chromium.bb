@@ -28,7 +28,6 @@ using TraceCallback = VisitorCallback;
 using TraceWrappersCallback = void (*)(ScriptWrappableVisitor*, void*);
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
-using MissedWriteBarrierCallback = void (*)();
 using NameCallback = const char* (*)(const void* self);
 
 // Callback used for unit testing the marking of conservative pointers
