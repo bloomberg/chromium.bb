@@ -889,8 +889,17 @@ int SpdySession::GetPushedStream(const GURL& url,
   streams_pushed_and_claimed_count_++;
 
   // If the stream is still open, update its priority to that of the request.
-  if (!(*stream)->IsClosed())
+  if (!(*stream)->IsClosed() && (*stream)->priority() != priority) {
     (*stream)->SetPriority(priority);
+
+    auto updates = priority_dependency_state_.OnStreamUpdate(
+        (*stream)->stream_id(), ConvertRequestPriorityToSpdyPriority(priority));
+    for (auto u : updates) {
+      ActiveStreamMap::iterator it = active_streams_.find(u.id);
+      DCHECK(it != active_streams_.end());
+      EnqueuePriorityFrame(u.id, u.parent_stream_id, u.weight, u.exclusive);
+    }
+  }
 
   return OK;
 }
@@ -1128,20 +1137,6 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
   }
 
   return data_buffer;
-}
-
-void SpdySession::UpdateStreamPriority(spdy::SpdyStreamId stream_id,
-                                       RequestPriority priority) {
-  DCHECK_NE(stream_id, 0u);
-  DCHECK(active_streams_.find(stream_id) != active_streams_.end());
-
-  auto updates = priority_dependency_state_.OnStreamUpdate(
-      stream_id, ConvertRequestPriorityToSpdyPriority(priority));
-  for (auto u : updates) {
-    ActiveStreamMap::iterator it = active_streams_.find(u.id);
-    DCHECK(it != active_streams_.end());
-    EnqueuePriorityFrame(u.id, u.parent_stream_id, u.weight, u.exclusive);
-  }
 }
 
 void SpdySession::CloseActiveStream(spdy::SpdyStreamId stream_id, int status) {

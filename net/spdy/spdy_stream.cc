@@ -211,8 +211,9 @@ void SpdyStream::SetPriority(RequestPriority priority) {
     return;
   }
   priority_ = priority;
-  if (session_ && stream_id_ != 0)
-    session_->UpdateStreamPriority(stream_id_, priority_);
+
+  // TODO(bnc): Fix https://crbug.com/841511 and call
+  // session_->UpdateStreamPriority().
 }
 
 bool SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
