@@ -181,12 +181,13 @@ class BASE_EXPORT TimeDelta {
   struct timespec ToTimeSpec() const;
 #endif
 
-  // Returns the time delta in some unit. The F versions return a floating
-  // point value, the "regular" versions return a rounded-down value.
-  //
-  // InMillisecondsRoundedUp() instead returns an integer that is rounded up
-  // to the next full millisecond.
+  // Returns the time delta in some unit. The InXYZF versions return a floating
+  // point value. The InXYZ versions return a truncated value (aka rounded
+  // towards zero, std::trunc() behavior). The InXYZFloored() versions round to
+  // lesser integers (std::floor() behavior). The XYZRoundedUp() versions round
+  // up to greater integers (std::ceil() behavior).
   int InDays() const;
+  int InDaysFloored() const;
   int InHours() const;
   int InMinutes() const;
   double InSecondsF() const;

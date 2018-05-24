@@ -45,6 +45,19 @@ int TimeDelta::InDays() const {
   return static_cast<int>(delta_ / Time::kMicrosecondsPerDay);
 }
 
+int TimeDelta::InDaysFloored() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int>::max();
+  }
+  int result = delta_ / Time::kMicrosecondsPerDay;
+  int64_t remainder = delta_ - (result * Time::kMicrosecondsPerDay);
+  if (remainder < 0) {
+    --result;  // Use floor(), not trunc() rounding behavior.
+  }
+  return result;
+}
+
 int TimeDelta::InHours() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
@@ -98,8 +111,12 @@ int64_t TimeDelta::InMillisecondsRoundedUp() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int64_t>::max();
   }
-  return (delta_ + Time::kMicrosecondsPerMillisecond - 1) /
-      Time::kMicrosecondsPerMillisecond;
+  int64_t result = delta_ / Time::kMicrosecondsPerMillisecond;
+  int64_t remainder = delta_ - (result * Time::kMicrosecondsPerMillisecond);
+  if (remainder > 0) {
+    ++result;  // Use ceil(), not trunc() rounding behavior.
+  }
+  return result;
 }
 
 int64_t TimeDelta::InMicroseconds() const {

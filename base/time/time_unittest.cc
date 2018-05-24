@@ -1129,6 +1129,47 @@ TEST(TimeDelta, FromAndIn) {
   EXPECT_EQ(TimeDelta::FromNanosecondsD(12345.678).InNanoseconds(), 12000);
 }
 
+TEST(TimeDelta, InRoundsTowardsZero) {
+  EXPECT_EQ(TimeDelta::FromHours(23).InDays(), 0);
+  EXPECT_EQ(TimeDelta::FromHours(-23).InDays(), 0);
+  EXPECT_EQ(TimeDelta::FromMinutes(59).InHours(), 0);
+  EXPECT_EQ(TimeDelta::FromMinutes(-59).InHours(), 0);
+  EXPECT_EQ(TimeDelta::FromSeconds(59).InMinutes(), 0);
+  EXPECT_EQ(TimeDelta::FromSeconds(-59).InMinutes(), 0);
+  EXPECT_EQ(TimeDelta::FromMilliseconds(999).InSeconds(), 0);
+  EXPECT_EQ(TimeDelta::FromMilliseconds(-999).InSeconds(), 0);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(999).InMilliseconds(), 0);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(-999).InMilliseconds(), 0);
+}
+
+TEST(TimeDelta, InDaysFloored) {
+  EXPECT_EQ(TimeDelta::FromHours(-25).InDaysFloored(), -2);
+  EXPECT_EQ(TimeDelta::FromHours(-24).InDaysFloored(), -1);
+  EXPECT_EQ(TimeDelta::FromHours(-23).InDaysFloored(), -1);
+
+  EXPECT_EQ(TimeDelta::FromHours(-1).InDaysFloored(), -1);
+  EXPECT_EQ(TimeDelta::FromHours(0).InDaysFloored(), 0);
+  EXPECT_EQ(TimeDelta::FromHours(1).InDaysFloored(), 0);
+
+  EXPECT_EQ(TimeDelta::FromHours(23).InDaysFloored(), 0);
+  EXPECT_EQ(TimeDelta::FromHours(24).InDaysFloored(), 1);
+  EXPECT_EQ(TimeDelta::FromHours(25).InDaysFloored(), 1);
+}
+
+TEST(TimeDelta, InMillisecondsRoundedUp) {
+  EXPECT_EQ(TimeDelta::FromMicroseconds(-1001).InMillisecondsRoundedUp(), -1);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(-1000).InMillisecondsRoundedUp(), -1);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(-999).InMillisecondsRoundedUp(), 0);
+
+  EXPECT_EQ(TimeDelta::FromMicroseconds(-1).InMillisecondsRoundedUp(), 0);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(0).InMillisecondsRoundedUp(), 0);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(1).InMillisecondsRoundedUp(), 1);
+
+  EXPECT_EQ(TimeDelta::FromMicroseconds(999).InMillisecondsRoundedUp(), 1);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(1000).InMillisecondsRoundedUp(), 1);
+  EXPECT_EQ(TimeDelta::FromMicroseconds(1001).InMillisecondsRoundedUp(), 2);
+}
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 TEST(TimeDelta, TimeSpecConversion) {
   TimeDelta delta = TimeDelta::FromSeconds(0);
