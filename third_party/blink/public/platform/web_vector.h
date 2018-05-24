@@ -168,6 +168,7 @@ class WebVector {
   }
 
   void Swap(WebVector<T>& other) { data_.swap(other.data_); }
+  void Clear() { data_.clear(); }
 
  private:
   std::vector<T> data_;

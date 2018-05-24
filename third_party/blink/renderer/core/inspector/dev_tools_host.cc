@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
 
+#include "third_party/blink/public/web/web_menu_item_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -51,8 +52,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/context_menu.h"
-#include "third_party/blink/renderer/platform/context_menu_item.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -64,8 +63,8 @@ namespace blink {
 class FrontendMenuProvider final : public ContextMenuProvider {
  public:
   static FrontendMenuProvider* Create(DevToolsHost* devtools_host,
-                                      const Vector<ContextMenuItem>& items) {
-    return new FrontendMenuProvider(devtools_host, items);
+                                      WebVector<WebMenuItemInfo> items) {
+    return new FrontendMenuProvider(devtools_host, std::move(items));
   }
 
   ~FrontendMenuProvider() override {
@@ -86,29 +85,27 @@ class FrontendMenuProvider final : public ContextMenuProvider {
       devtools_host_->ClearMenuProvider();
       devtools_host_ = nullptr;
     }
-    items_.clear();
+    items_.Clear();
   }
 
-  void PopulateContextMenu(ContextMenu* menu) override {
-    for (size_t i = 0; i < items_.size(); ++i)
-      menu->AppendItem(items_[i]);
+  WebVector<WebMenuItemInfo> PopulateContextMenu() override {
+    return std::move(items_);
   }
 
-  void ContextMenuItemSelected(const ContextMenuItem* item) override {
-    if (!devtools_host_)
+  void ContextMenuItemSelected(unsigned action) override {
+    if (!devtools_host_ || action >= DevToolsHost::kMaxContextMenuAction)
       return;
-    int item_number = item->Action() - kContextMenuItemBaseCustomTag;
     devtools_host_->EvaluateScript("DevToolsAPI.contextMenuItemSelected(" +
-                                   String::Number(item_number) + ")");
+                                   String::Number(action) + ")");
   }
 
  private:
   FrontendMenuProvider(DevToolsHost* devtools_host,
-                       const Vector<ContextMenuItem>& items)
-      : devtools_host_(devtools_host), items_(items) {}
+                       WebVector<WebMenuItemInfo> items)
+      : devtools_host_(devtools_host), items_(std::move(items)) {}
 
   Member<DevToolsHost> devtools_host_;
-  Vector<ContextMenuItem> items_;
+  WebVector<WebMenuItemInfo> items_;
 };
 
 DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
@@ -201,10 +198,10 @@ void DevToolsHost::sendMessageToEmbedder(const String& message) {
 void DevToolsHost::ShowContextMenu(LocalFrame* target_frame,
                                    float x,
                                    float y,
-                                   const Vector<ContextMenuItem>& items) {
+                                   WebVector<WebMenuItemInfo> items) {
   DCHECK(frontend_frame_);
   FrontendMenuProvider* menu_provider =
-      FrontendMenuProvider::Create(this, items);
+      FrontendMenuProvider::Create(this, std::move(items));
   menu_provider_ = menu_provider;
   float zoom = target_frame->PageZoomFactor();
   {
