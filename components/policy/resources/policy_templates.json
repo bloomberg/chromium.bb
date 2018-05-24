@@ -11159,10 +11159,7 @@
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
       'desc': '''
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
+      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites you want to isolate. This setting, SitePerProcess, isolates all sites.
       If the policy is enabled, each site will run in its own process.
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
@@ -11187,11 +11184,7 @@
       'tags': ['system-security'],
       'desc': '''
       This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
+      If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
       If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
       ''',
@@ -11212,10 +11205,7 @@
       'tags': ['system-security'],
       'desc': '''
       This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
+      You might want to look at the IsolateOrigins policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOrigins with a list of the sites you want to isolate. This setting, SitePerProcess, isolates all sites.
       If the policy is enabled, each site will run in its own process.
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
@@ -11264,10 +11254,7 @@
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
       'desc': '''
-      You might want to look at the IsolateOriginsAndroid policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOriginsAndroid with a list of the sites you want to isolate. This setting,
-      SitePerProcessAndroid, isolates all sites.
+      You might want to look at the IsolateOriginsAndroid policy setting to get the best of both worlds, isolation and limited impact for users, by using IsolateOriginsAndroid with a list of the sites you want to isolate. This setting, SitePerProcessAndroid, isolates all sites.
       If the policy is enabled, each site will run in its own process.
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
