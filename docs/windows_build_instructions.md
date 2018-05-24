@@ -23,7 +23,7 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of September, 2017 (R503915) Chromium requires Visual Studio 2017 update 3.x
+As of September, 2017 (R503915) Chromium requires Visual Studio 2017 (15.7.2)
 to build. The clang-cl compiler is used but Visual Studio's header files,
 libraries, and some tools are required. Visual Studio Community Edition should
 work if its license is appropriate for you. You must install the "Desktop
