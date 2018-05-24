@@ -43,10 +43,6 @@ crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-resolved-values.html
 # https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
 crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
 
-# Needs bidi adjustment for SelectionController
-crbug.com/811502 editing/selection/mouse/drag_selects_bidi_image.html [ Failure ]
-crbug.com/811502 fast/text/selection/hebrew-selection.html [ Failure ]
-
 # New passes
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-due-to-large-margin-after-left-right.html [ Pass ]
@@ -213,7 +209,6 @@ crbug.com/714962 editing/selection/offset-from-point-complex-scripts.html [ Fail
 crbug.com/714962 editing/selection/offset-from-point.html [ Failure Pass ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/591099 editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout ]
-crbug.com/591099 editing/selection/select-bidi-run.html [ Failure ]
 crbug.com/591099 editing/selection/selection-button-text.html [ Failure Pass ]
 crbug.com/591099 editing/selection/skip-over-contenteditable.html [ Failure ]
 crbug.com/591099 editing/selection/transformed-selection-rects.html [ Failure Pass ]

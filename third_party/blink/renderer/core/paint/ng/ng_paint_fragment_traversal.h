@@ -32,6 +32,10 @@ struct NGPaintFragmentTraversalContext {
   bool IsNull() const { return !parent; }
   const NGPaintFragment* GetFragment() const;
 
+  bool operator==(const NGPaintFragmentTraversalContext& other) const {
+    return parent == other.parent && index == other.index;
+  }
+
   const NGPaintFragment* parent = nullptr;
   unsigned index = 0;
 };

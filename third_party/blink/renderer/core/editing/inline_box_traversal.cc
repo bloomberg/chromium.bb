@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 
 #include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
@@ -40,6 +41,21 @@ class AbstractInlineBox {
   bool IsNull() const { return !IsNotNull(); }
   bool IsOldLayout() const { return type_ == InstanceType::kOldLayout; }
   bool IsNG() const { return type_ == InstanceType::kNG; }
+
+  bool operator==(const AbstractInlineBox& other) const {
+    if (type_ != other.type_)
+      return false;
+    switch (type_) {
+      case InstanceType::kNull:
+        return true;
+      case InstanceType::kOldLayout:
+        return inline_box_ == other.inline_box_;
+      case InstanceType::kNG:
+        return paint_fragment_ == other.paint_fragment_;
+    }
+    NOTREACHED();
+    return false;
+  }
 
   const InlineBox& GetInlineBox() const {
     DCHECK(IsOldLayout());
@@ -164,9 +180,24 @@ bool IsAtFragmentStart(const NGCaretPosition& caret_position) {
       const NGPhysicalTextFragment& text_fragment =
           ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
-      DCHECK(*caret_position.text_offset == text_fragment.StartOffset() ||
-             *caret_position.text_offset == text_fragment.EndOffset());
       return *caret_position.text_offset == text_fragment.StartOffset();
+  }
+  NOTREACHED();
+  return false;
+}
+
+// Returns whether |caret_position| is at the end of its fragment.
+bool IsAtFragmentEnd(const NGCaretPosition& caret_position) {
+  switch (caret_position.position_type) {
+    case NGCaretPositionType::kBeforeBox:
+      return false;
+    case NGCaretPositionType::kAfterBox:
+      return true;
+    case NGCaretPositionType::kAtTextOffset:
+      const NGPhysicalTextFragment& text_fragment =
+          ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+      DCHECK(caret_position.text_offset.has_value());
+      return *caret_position.text_offset == text_fragment.EndOffset();
   }
   NOTREACHED();
   return false;
@@ -175,6 +206,7 @@ bool IsAtFragmentStart(const NGCaretPosition& caret_position) {
 // Returns whether |caret_position| is at the left or right side of fragment.
 SideAffinity GetSideAffinity(const NGCaretPosition& caret_position) {
   DCHECK(caret_position.fragment);
+  DCHECK(IsAtFragmentStart(caret_position) || IsAtFragmentEnd(caret_position));
   const bool is_at_start = IsAtFragmentStart(caret_position);
   const bool is_at_left_side =
       is_at_start ==
@@ -237,6 +269,17 @@ class AbstractInlineBoxAndSideAffinity {
     return {
         &fragment, NGCaretPositionType::kAtTextOffset,
         is_at_start ? text_fragment.StartOffset() : text_fragment.EndOffset()};
+  }
+
+  PositionInFlatTree GetPosition() const {
+    DCHECK(box_.IsNotNull());
+    if (box_.IsNG())
+      return ToPositionInFlatTree(ToNGCaretPosition().ToPositionInDOMTree());
+
+    const InlineBoxPosition inline_box_position = ToInlineBoxPosition();
+    return PositionInFlatTree::EditingPositionOf(
+        inline_box_position.inline_box->GetLineLayoutItem().GetNode(),
+        inline_box_position.offset_in_box);
   }
 
   AbstractInlineBox GetBox() const { return box_; }
@@ -586,7 +629,6 @@ class HitTestAdjuster {
 };
 
 // Adjustment algorithm at the end of creating range selection
-// TODO(xiaochengh): Generalize the implementation for LayoutNG
 class RangeSelectionAdjuster {
   STATIC_ONLY(RangeSelectionAdjuster);
 
@@ -640,9 +682,9 @@ class RangeSelectionAdjuster {
     RenderedPosition() = default;
     static RenderedPosition Create(const VisiblePositionInFlatTree&);
 
-    bool IsNull() const { return !inline_box_; }
+    bool IsNull() const { return box_.IsNull(); }
     bool operator==(const RenderedPosition& other) const {
-      return inline_box_ == other.inline_box_ &&
+      return box_ == other.box_ &&
              bidi_boundary_type_ == other.bidi_boundary_type_;
     }
 
@@ -658,7 +700,7 @@ class RangeSelectionAdjuster {
         return false;
       if (bidi_boundary_type_ == other.bidi_boundary_type_)
         return false;
-      return inline_box_->BidiLevel() >= other.inline_box_->BidiLevel();
+      return box_.BidiLevel() >= other.box_.BidiLevel();
     }
 
     // Callable only when |this| is at boundary of a bidi run. Returns true if
@@ -666,35 +708,83 @@ class RangeSelectionAdjuster {
     bool BidiRunContains(const RenderedPosition& other) const {
       DCHECK(AtBidiBoundary());
       DCHECK(!other.IsNull());
-      UBiDiLevel level = inline_box_->BidiLevel();
-      if (level > other.inline_box_->BidiLevel())
+      UBiDiLevel level = box_.BidiLevel();
+      if (level > other.box_.BidiLevel())
         return false;
-      const InlineBox& boundary_of_other =
+      const AbstractInlineBox boundary_of_other =
           bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
-              ? InlineBoxTraversal::
-                    FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-                        *other.inline_box_, level)
-              : InlineBoxTraversal::
-                    FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-                        *other.inline_box_, level);
-      return inline_box_ == &boundary_of_other;
+              ? FindBoundaryOfEntireBidiRunIgnoringLineBreak<TraverseLeft>(
+                    other.box_, level)
+              : FindBoundaryOfEntireBidiRunIgnoringLineBreak<TraverseRight>(
+                    other.box_, level);
+      return box_ == boundary_of_other;
     }
 
     PositionInFlatTree GetPosition() const {
       DCHECK(AtBidiBoundary());
-      const int offset = bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
-                             ? inline_box_->CaretLeftmostOffset()
-                             : inline_box_->CaretRightmostOffset();
-      return PositionInFlatTree::EditingPositionOf(
-          inline_box_->GetLineLayoutItem().GetNode(), offset);
+      DCHECK(box_.IsNotNull());
+      const SideAffinity side =
+          bidi_boundary_type_ == BidiBoundaryType::kLeftBoundary
+              ? SideAffinity::kLeft
+              : SideAffinity::kRight;
+      return AbstractInlineBoxAndSideAffinity(box_, side).GetPosition();
     }
 
    private:
     enum class BidiBoundaryType { kNotBoundary, kLeftBoundary, kRightBoundary };
-    RenderedPosition(const InlineBox* box, BidiBoundaryType type)
-        : inline_box_(box), bidi_boundary_type_(type) {}
+    RenderedPosition(const AbstractInlineBox& box, BidiBoundaryType type)
+        : box_(box), bidi_boundary_type_(type) {}
 
-    const InlineBox* inline_box_ = nullptr;
+    static BidiBoundaryType GetPotentialBidiBoundaryType(
+        const InlineBoxPosition& box_position) {
+      DCHECK(box_position.inline_box);
+      const InlineBox& box = *box_position.inline_box;
+      const int offset = box_position.offset_in_box;
+      if (offset == box.CaretLeftmostOffset())
+        return BidiBoundaryType::kLeftBoundary;
+      if (offset == box.CaretRightmostOffset())
+        return BidiBoundaryType::kRightBoundary;
+      return BidiBoundaryType::kNotBoundary;
+    }
+
+    static BidiBoundaryType GetPotentialBidiBoundaryType(
+        const NGCaretPosition& caret_position) {
+      DCHECK(!caret_position.IsNull());
+      if (!IsAtFragmentStart(caret_position) &&
+          !IsAtFragmentEnd(caret_position))
+        return BidiBoundaryType::kNotBoundary;
+      return GetSideAffinity(caret_position) == SideAffinity::kLeft
+                 ? BidiBoundaryType::kLeftBoundary
+                 : BidiBoundaryType::kRightBoundary;
+    }
+
+    // Helper function for Create().
+    static RenderedPosition CreateUncanonicalized(
+        const VisiblePositionInFlatTree& position) {
+      if (position.IsNull() ||
+          !position.DeepEquivalent().AnchorNode()->GetLayoutObject())
+        return RenderedPosition();
+      const PositionInFlatTreeWithAffinity adjusted =
+          ComputeInlineAdjustedPosition(position.ToPositionWithAffinity());
+      if (adjusted.IsNull())
+        return RenderedPosition();
+
+      if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
+        const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+        if (caret_position.IsNull())
+          return RenderedPosition();
+        return RenderedPosition(AbstractInlineBox(*caret_position.fragment),
+                                GetPotentialBidiBoundaryType(caret_position));
+      }
+
+      const InlineBoxPosition box_position = ComputeInlineBoxPosition(adjusted);
+      if (!box_position.inline_box)
+        return RenderedPosition();
+      return RenderedPosition(AbstractInlineBox(*box_position.inline_box),
+                              GetPotentialBidiBoundaryType(box_position));
+    }
+
+    AbstractInlineBox box_;
     BidiBoundaryType bidi_boundary_type_ = BidiBoundaryType::kNotBoundary;
   };
 
@@ -717,47 +807,40 @@ class RangeSelectionAdjuster {
 RangeSelectionAdjuster::RenderedPosition
 RangeSelectionAdjuster::RenderedPosition::Create(
     const VisiblePositionInFlatTree& position) {
-  if (position.IsNull())
-    return RenderedPosition();
-  InlineBoxPosition box_position =
-      ComputeInlineBoxPosition(position.ToPositionWithAffinity());
-  if (!box_position.inline_box)
-    return RenderedPosition();
+  const RenderedPosition uncanonicalized = CreateUncanonicalized(position);
+  const BidiBoundaryType potential_type = uncanonicalized.bidi_boundary_type_;
+  if (potential_type == BidiBoundaryType::kNotBoundary)
+    return uncanonicalized;
+  const AbstractInlineBox& box = uncanonicalized.box_;
+  DCHECK(box.IsNotNull());
 
-  const InlineBox* box = box_position.inline_box;
-  const int offset = box_position.offset_in_box;
-
-  // When at bidi boundary, ensure that |inline_box_| belongs to the higher-
-  // level bidi run.
+  // When at bidi boundary, ensure that |box_| belongs to the higher-level bidi
+  // run.
 
   // For example, abc FED |ghi should be changed into abc FED| ghi
-  if (offset == box->CaretLeftmostOffset()) {
-    const InlineBox* prev_box = box->PrevLeafChildIgnoringLineBreak();
-    if (prev_box && prev_box->BidiLevel() > box->BidiLevel()) {
+  if (potential_type == BidiBoundaryType::kLeftBoundary) {
+    const AbstractInlineBox prev_box = box.PrevLeafChildIgnoringLineBreak();
+    if (prev_box.IsNotNull() && prev_box.BidiLevel() > box.BidiLevel())
       return RenderedPosition(prev_box, BidiBoundaryType::kRightBoundary);
-    }
     BidiBoundaryType type =
-        prev_box && prev_box->BidiLevel() == box->BidiLevel()
+        prev_box.IsNotNull() && prev_box.BidiLevel() == box.BidiLevel()
             ? BidiBoundaryType::kNotBoundary
             : BidiBoundaryType::kLeftBoundary;
     return RenderedPosition(box, type);
   }
 
+  // potential_type == BidiBoundaryType::kRightBoundary
   // For example, abc| FED ghi should be changed into abc |FED ghi
-  if (offset == box->CaretRightmostOffset()) {
-    const InlineBox* next_box = box->NextLeafChildIgnoringLineBreak();
-    if (next_box && next_box->BidiLevel() > box->BidiLevel()) {
-      return RenderedPosition(next_box, BidiBoundaryType::kLeftBoundary);
-    }
-    BidiBoundaryType type =
-        next_box && next_box->BidiLevel() == box->BidiLevel()
-            ? BidiBoundaryType::kNotBoundary
-            : BidiBoundaryType::kRightBoundary;
-    return RenderedPosition(box, type);
-  }
-
-  return RenderedPosition(box, BidiBoundaryType::kNotBoundary);
+  const AbstractInlineBox next_box = box.NextLeafChildIgnoringLineBreak();
+  if (next_box.IsNotNull() && next_box.BidiLevel() > box.BidiLevel())
+    return RenderedPosition(next_box, BidiBoundaryType::kLeftBoundary);
+  BidiBoundaryType type =
+      next_box.IsNotNull() && next_box.BidiLevel() == box.BidiLevel()
+          ? BidiBoundaryType::kNotBoundary
+          : BidiBoundaryType::kRightBoundary;
+  return RenderedPosition(box, type);
 }
+
 }  // namespace
 
 const InlineBox* InlineBoxTraversal::FindLeftBidiRun(const InlineBox& box,
