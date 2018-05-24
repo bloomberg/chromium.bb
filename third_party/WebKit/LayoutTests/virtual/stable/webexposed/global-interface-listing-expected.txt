@@ -1216,6 +1216,7 @@ interface Document : Node
     getter onended
     getter onerror
     getter onfocus
+    getter onfreeze
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -1254,6 +1255,7 @@ interface Document : Node
     getter onreadystatechange
     getter onreset
     getter onresize
+    getter onresume
     getter onscroll
     getter onsearch
     getter onseeked
@@ -1288,6 +1290,7 @@ interface Document : Node
     getter title
     getter visibilityState
     getter vlinkColor
+    getter wasDiscarded
     getter webkitCurrentFullScreenElement
     getter webkitFullscreenElement
     getter webkitFullscreenEnabled
@@ -1386,6 +1389,7 @@ interface Document : Node
     setter onended
     setter onerror
     setter onfocus
+    setter onfreeze
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -1424,6 +1428,7 @@ interface Document : Node
     setter onreadystatechange
     setter onreset
     setter onresize
+    setter onresume
     setter onscroll
     setter onsearch
     setter onseeked
