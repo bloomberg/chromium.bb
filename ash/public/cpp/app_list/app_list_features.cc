@@ -13,6 +13,8 @@ namespace features {
 
 const base::Feature kEnableAnswerCard{"EnableAnswerCard",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableAppShortcutSearch{"EnableAppShortcutSearch",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearch{"EnablePlayStoreAppSearch",
@@ -25,6 +27,10 @@ const base::Feature kEnableSettingsShortcutSearch{
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
   return base::FeatureList::IsEnabled(kEnableAnswerCard);
+}
+
+bool IsAppShortcutSearchEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppShortcutSearch);
 }
 
 bool IsBackgroundBlurEnabled() {

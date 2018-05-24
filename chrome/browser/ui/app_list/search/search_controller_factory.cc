@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_web_contents.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
@@ -43,7 +44,9 @@ constexpr size_t kMaxLauncherSearchResults = 2;
 // TODO(753947): Consider progressive algorithm of getting Play Store results.
 constexpr size_t kMaxPlayStoreResults = 12;
 
+// TODO(warx): Need UX spec.
 constexpr size_t kMaxAppDataResults = 6;
+constexpr size_t kMaxAppShortcutResults = 4;
 
 // TODO(wutao): Need UX spec.
 constexpr size_t kMaxSettingsShortcutResults = 6;
@@ -129,6 +132,14 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(
         settings_shortcut_group_id,
         std::make_unique<SettingsShortcutProvider>(profile));
+  }
+
+  if (features::IsAppShortcutSearchEnabled()) {
+    size_t app_shortcut_group_id =
+        controller->AddGroup(kMaxAppShortcutResults, 1.0, kBoostOfApps);
+    controller->AddProvider(app_shortcut_group_id,
+                            std::make_unique<ArcAppShortcutsSearchProvider>(
+                                profile, list_controller));
   }
 
   return controller;

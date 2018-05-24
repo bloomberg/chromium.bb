@@ -389,7 +389,7 @@ void FakeAppInstance::GetIcingGlobalQueryResults(
 }
 
 void FakeAppInstance::GetAppShortcutItems(
-    const std::string& pacakge_name,
+    const std::string& package_name,
     GetAppShortcutItemsCallback callback) {
   // Fake app shortcut items results.
   std::vector<mojom::AppShortcutItemPtr> fake_app_shortcut_items;
@@ -403,7 +403,8 @@ void FakeAppInstance::GetAppShortcutItems(
   for (int i = 0; i < 3; ++i) {
     fake_app_shortcut_items.push_back(mojom::AppShortcutItem::New(
         base::StringPrintf("ShortcutId %d", i),
-        base::StringPrintf("ShortLabel %d", i), fake_icon_png_data));
+        base::StringPrintf("ShortLabel %d", i), fake_icon_png_data,
+        package_name.empty() ? "FakeAppPackageName" : package_name));
   }
 
   std::move(callback).Run(std::move(fake_app_shortcut_items));

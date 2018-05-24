@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 31
+// Next MinVersion: 32
 
 module arc.mojom;
 
@@ -167,6 +167,9 @@ struct AppShortcutItem {
 
   // The icon for this shortcut, decoded in the utility process.
   array<uint8> icon_png;
+
+  // The package name of the publisher app.
+  [MinVersion=31] string? package_name;
 };
 
 // Next method ID: 18
@@ -340,7 +343,8 @@ interface AppInstance {
   // happens) is ignored, and uninstall option should appear in the UI.
   [MinVersion=2] UninstallPackage@5(string package_name);
 
-  // Sends a request to ARC to get app shortcuts for app with |package_name|.
+  // Sends a request to ARC to get app shortcuts for app with |package_name|. If
+  // |package_name| is empty, it will query for all launchable activities.
   [MinVersion=29] GetAppShortcutItems@23(string package_name) =>
       (array<AppShortcutItem> shortcut_items);
 

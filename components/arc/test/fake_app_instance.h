@@ -131,7 +131,7 @@ class FakeAppInstance : public mojom::AppInstance {
       const std::string& query,
       int32_t max_results,
       GetIcingGlobalQueryResultsCallback callback) override;
-  void GetAppShortcutItems(const std::string& pacakge_name,
+  void GetAppShortcutItems(const std::string& package_name,
                            GetAppShortcutItemsCallback callback) override;
   void StartPaiFlow() override;
 
