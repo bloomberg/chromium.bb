@@ -88,6 +88,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/generic_sensor/motion_data.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -342,6 +343,14 @@ RendererBlinkPlatformImpl::WrapURLLoaderFactory(
           network::mojom::URLLoaderFactoryPtrInfo(
               std::move(url_loader_factory_handle),
               network::mojom::URLLoaderFactory::Version_)));
+}
+
+std::unique_ptr<blink::WebURLLoaderFactory>
+RendererBlinkPlatformImpl::WrapSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
+  return std::make_unique<WebURLLoaderFactoryImpl>(
+      RenderThreadImpl::current()->resource_dispatcher()->GetWeakPtr(),
+      std::move(factory));
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle>

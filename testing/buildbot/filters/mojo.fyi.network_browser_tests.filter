@@ -200,10 +200,6 @@
 -PredictorBrowserTest.SubframeInitiatesPreconnects
 -PredictorBrowserTest.SubframeLearning
 
-# Support URLLoaderFactories from embedder in shared workers.
-# https://crbug.com/839982
--ExtensionApiTestWithSwitch.ExtensionDebugger
-
 # https://crbug.com/832749
 # Add DMServer header
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
