@@ -35,6 +35,7 @@ include_rules = [
   "+base/synchronization/atomic_flag.h",
   "+base/synchronization/cancellation_flag.h",
   "+base/synchronization/lock.h",
+  "+base/task/sequence_manager",
   "+base/threading/platform_thread.h",
   "+base/threading/sequenced_task_runner_handle.h",
   "+base/threading/thread.h",

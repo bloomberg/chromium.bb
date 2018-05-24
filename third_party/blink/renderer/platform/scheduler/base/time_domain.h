@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
-#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 
 namespace base {
