@@ -18,7 +18,27 @@
 
 namespace blink {
 
-LayoutCustom::LayoutCustom(Element* element) : LayoutBlockFlow(element) {
+// This scope should be added when about to perform a web-developer defined
+// layout. This sets the phase_ flag which changes how children are sized.
+class LayoutCustomPhaseScope {
+  STACK_ALLOCATED();
+
+ public:
+  explicit LayoutCustomPhaseScope(LayoutCustom& layout_custom)
+      : layout_custom_(layout_custom) {
+    layout_custom_.phase_ = LayoutCustomPhase::kCustom;
+  }
+
+  ~LayoutCustomPhaseScope() {
+    layout_custom_.phase_ = LayoutCustomPhase::kFallback;
+  }
+
+ private:
+  LayoutCustom& layout_custom_;
+};
+
+LayoutCustom::LayoutCustom(Element* element)
+    : LayoutBlockFlow(element), phase_(LayoutCustomPhase::kFallback) {
   DCHECK(element);
 }
 
@@ -96,6 +116,8 @@ void LayoutCustom::UpdateBlockLayout(bool relayout_children) {
 
 bool LayoutCustom::PerformLayout(bool relayout_children,
                                  SubtreeLayoutScope* layout_scope) {
+  LayoutCustomPhaseScope phase_scope(*this);
+
   // We need to fallback to block layout if we don't have a registered
   // definition yet.
   if (state_ == kUnloaded)
