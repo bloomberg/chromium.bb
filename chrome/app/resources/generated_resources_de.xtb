@@ -336,7 +336,7 @@
 <translation id="1503914375822320413">Unerwarteter Fehler beim Kopieren: $1</translation>
 <translation id="150411034776756821"><ph name="SITE" /> entfernen</translation>
 <translation id="1504682556807808151">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website speichern?</translation>
-<translation id="1505091014076919009">Alle Ihre angemeldeten Google-Konten von Apps und Websites können hier verwaltet werden.</translation>
+<translation id="1505091014076919009">Hier können alle Ihre angemeldeten Google-Konten von Apps und Websites verwaltet werden.</translation>
 <translation id="1506061864768559482">Suchmaschine</translation>
 <translation id="1507048939308275033">Sie haben die Möglichkeit, SMS auf Ihrem Chromebook zu lesen und darauf zu antworten</translation>
 <translation id="1507170440449692343">Diese Seite darf nicht auf Ihre Kamera zugreifen.</translation>
@@ -1057,7 +1057,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> nutzt <ph name="USAGE" /> MB an Festplattenspeicher.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" entfernen?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> konnte die Installation nicht abschließen, wird jedoch weiterhin über das Datenträgerabbild ausgeführt.</translation>
-<translation id="2635176084534510129">Genießen Sie personalisierte Erlebnisse, wie bessere Inhaltsempfehlungen und Übersetzungen</translation>
 <translation id="2635276683026132559">Signatur</translation>
 <translation id="2636625531157955190">Chrome kann nicht auf das Bild zugreifen.</translation>
 <translation id="2638087589890736295">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten</translation>
@@ -1347,7 +1346,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3061707000357573562">Patchdienst</translation>
 <translation id="3064410671692449875">Daten reichen nicht aus</translation>
 <translation id="3065041951436100775">Feedback zur Tab-Beendigung</translation>
-<translation id="3066642396596108483">Synchronisieren Sie Ihre Lesezeichen, Passwörter und den Verlauf auf allen Geräten</translation>
 <translation id="3067198179881736288">App installieren?</translation>
 <translation id="3067198360141518313">Dieses Plug-in ausführen</translation>
 <translation id="3071624960923923138">Wenn Sie einen neuen Tab öffnen möchten, klicken Sie hier</translation>
@@ -1613,7 +1611,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="347670947055184738">Hoppla! Das System konnte die Richtlinie für Ihr Gerät nicht abrufen.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> weiterhin Zugriff auf Kamera und Mikrofon gestatten</translation>
 <translation id="3478685642445675458">Entsperren Sie Ihr Profil, bevor Sie eine Person entfernen.</translation>
-<translation id="347919930506963698">Chrome optimal nutzen</translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3480892288821151001">Fenster links verankern</translation>
 <translation id="3484273680291419129">Schädliche Software wird entfernt...</translation>
@@ -1715,7 +1712,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3627320433825461852">Noch weniger als 1 Minute</translation>
 <translation id="3627588569887975815">Link in Inko&amp;gnito-Fenster öffnen</translation>
 <translation id="3627671146180677314">Verlängerungszeit für Netscape-Zertifikate</translation>
-<translation id="3627879631695760395"><ph name="APP" /> wird installiert…</translation>
+<translation id="3627879631695760395"><ph name="APP" /> installieren</translation>
 <translation id="3630995161997703415">Fügen Sie diese Website Ihrer Ablage hinzu, um sie jederzeit zu verwenden</translation>
 <translation id="3635030235490426869">Tab 1</translation>
 <translation id="3636096452488277381">Hallo <ph name="USER_GIVEN_NAME" /></translation>
@@ -1756,7 +1753,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3691267899302886494"><ph name="HOST" /> möchte Ihren Bildschirm freigeben</translation>
 <translation id="3693415264595406141">Passwort:</translation>
 <translation id="3694027410380121301">Vorherigen Tab auswählen</translation>
-<translation id="3697100740575341996">Ihr IT-Administrator hat Chrome-Extras für Ihr Gerät deaktiviert. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-Mail-Adresse</translation>
 <translation id="3700888195348409686">(<ph name="PAGE_ORIGIN" />) wird präsentiert</translation>
 <translation id="3702500414347826004">Ihre "Beim Start"-Seiten wurden geändert und enthalten nun <ph name="URL" />.</translation>
@@ -2133,7 +2129,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4289540628985791613">Übersicht</translation>
 <translation id="4296575653627536209">Betreuten Nutzer hinzufügen</translation>
 <translation id="4297322094678649474">Sprachen ändern</translation>
-<translation id="4299141727003252811">Google kann Ihre Browseraktivitäten, die Inhalte mancher von Ihnen besuchter Websites und andere Browserinteraktionen nutzen, um Chrome und andere Google-Dienste, wie Übersetzer, die Google-Suche und Anzeigen zu personalisieren.</translation>
 <translation id="4300305918532693141">Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lang (2 s)</translation>
 <translation id="4306119971288449206">Für Apps muss der Inhaltstyp "<ph name="CONTENT_TYPE" />" bereitgestellt werden</translation>
@@ -2456,7 +2451,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="484921817528146567">Letzter Ablageartikel</translation>
 <translation id="4849286518551984791">Koordinierte Weltzeit (UTC/GMT)</translation>
 <translation id="4849517651082200438">Nicht installieren</translation>
-<translation id="4850258771229959924">In den Entwicklertools ansehen</translation>
 <translation id="4850669014075537160">Scrollen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4853020600495124913">In &amp;neuem Fenster öffnen</translation>
@@ -3543,7 +3537,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6473842110411557830">Powerwash-Illustration</translation>
 <translation id="6474706907372204693">Vorherige Eingabemethode</translation>
 <translation id="6474884162850599008">Verbindung zu Google Drive-Konto aufheben</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> möchte überprüfen, ob Sie ein unterstütztes Chrome OS-Gerät verwenden. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> möchte den Inhalt Ihres Bildschirms teilen. Wählen Sie aus, was geteilt werden soll.</translation>
 <translation id="6478248366783946499">Schädliche Datei beibehalten?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> wird geöffnet...</translation>
@@ -4211,7 +4204,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7518150891539970662">WebRTC-Protokolle (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Erstellen</translation>
-<translation id="7526413953848747421">Damit nutzen Sie in Chrome leistungsfähige Google-Dienste wie die Rechtschreibprüfung und die Funktion "Zum Suchen tippen"</translation>
 <translation id="7529411698175791732">Prüfen Sie Ihre Internetverbindung. Wenn das Problem weiterhin besteht, melden Sie sich ab und wieder an.</translation>
 <translation id="7530016656428373557">Entladerate in Watt</translation>
 <translation id="7531779363494549572">Gehen Sie zu "Einstellungen" &gt; "Apps &amp; Benachrichtigungen" &gt; "Benachrichtigungen".</translation>
@@ -5237,6 +5229,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9094982973264386462">Entfernen</translation>
 <translation id="9095253524804455615">Entfernen</translation>
 <translation id="9099674669267916096">Seitenzahl</translation>
+<translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9100765901046053179">Erweiterte Einstellungen</translation>
 <translation id="9101691533782776290">App starten</translation>
 <translation id="9102610709270966160">Erweiterung aktivieren</translation>

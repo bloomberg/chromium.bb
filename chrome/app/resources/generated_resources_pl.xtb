@@ -1061,7 +1061,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2633199387167390344">Aplikacja <ph name="NAME" /> używa <ph name="USAGE" /> MB na dysku.</translation>
 <translation id="2633212996805280240">Usunąć „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="263325223718984101">Nie można ukończyć instalacji produktu <ph name="PRODUCT_NAME" />. Będzie on nadal uruchamiany z obrazu dysku.</translation>
-<translation id="2635176084534510129">Korzystaj z bardziej spersonalizowanych funkcji takich jak lepsze sugerowanie treści i inteligentniejszy Tłumacz</translation>
 <translation id="2635276683026132559">Podpisywanie</translation>
 <translation id="2636625531157955190">Chrome nie może otworzyć obrazu.</translation>
 <translation id="2638087589890736295">Wpisz hasło, by rozpocząć synchronizację</translation>
@@ -1351,7 +1350,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3061707000357573562">Zastosowanie poprawki do usługi</translation>
 <translation id="3064410671692449875">Niewystarczające dane</translation>
 <translation id="3065041951436100775">Informacje o zakończeniu działania karty.</translation>
-<translation id="3066642396596108483">Synchronizuj zakładki, historię i hasła na wszystkich swoich urządzeniach</translation>
 <translation id="3067198179881736288">Zainstalować aplikację?</translation>
 <translation id="3067198360141518313">Uruchom wtyczkę</translation>
 <translation id="3071624960923923138">Kliknij tutaj, by otworzyć nową kartę</translation>
@@ -1617,7 +1615,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="347670947055184738">Ups. System nie mógł pobrać zasad dotyczących Twojego urządzenia.</translation>
 <translation id="347785443197175480">Nadal zezwalaj witrynie <ph name="HOST" /> na dostęp do kamery i mikrofonu</translation>
 <translation id="3478685642445675458">Aby usunąć osobę, odblokuj swój profil.</translation>
-<translation id="347919930506963698">Jeszcze więcej możliwości dzięki Chrome</translation>
 <translation id="3479552764303398839">Nie teraz</translation>
 <translation id="3480892288821151001">Umieść okno po lewej</translation>
 <translation id="3484273680291419129">Usuwam szkodliwe oprogramowanie…</translation>
@@ -1760,7 +1757,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> chce udostępnić Twój ekran</translation>
 <translation id="3693415264595406141">Hasło:</translation>
 <translation id="3694027410380121301">Wybierz poprzednią kartę</translation>
-<translation id="3697100740575341996">Administrator IT wyłączył gadżety Chrome dla tego urządzenia. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Adres e-mail</translation>
 <translation id="3700888195348409686">Wyświetlasz prezentację (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Strony początkowe zostały zmienione i zawierają <ph name="URL" />.</translation>
@@ -1863,7 +1859,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3835522725882634757">O nie! Ten serwer wysyła dane, których aplikacja <ph name="PRODUCT_NAME" /> nie rozumie. <ph name="BEGIN_LINK" />Zgłoś błąd<ph name="END_LINK" /> i dołącz <ph name="BEGIN2_LINK" />nieprzetworzony wykaz<ph name="END2_LINK" />.</translation>
 <translation id="3838085852053358637">Nie udało się wczytać rozszerzenia</translation>
 <translation id="3838486795898716504">Więcej o <ph name="PAGE_TITLE" /></translation>
-<translation id="3838543471119263078">Pliki cookie oraz inne dane stron i wtyczek</translation>
+<translation id="3838543471119263078">Pliki cookie oraz inne dane witryn i wtyczek</translation>
 <translation id="383891835335927981">Żadna strona nie jest powiększana ani pomniejszana</translation>
 <translation id="3839516600093027468">Zawsze blokuj stronie <ph name="HOST" /> dostęp do schowka</translation>
 <translation id="3840053866656739575">Połączenie z Chromeboxem zostało utracone. Przysuń się bliżej lub sprawdź urządzenie – spróbujemy połączyć się ponownie.</translation>
@@ -2137,7 +2133,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="4289540628985791613">Przegląd</translation>
 <translation id="4296575653627536209">Dodaj nadzorowanego użytkownika</translation>
 <translation id="4297322094678649474">Zmień języki</translation>
-<translation id="4299141727003252811">Google może używać Twojej aktywności związanej z przeglądaniem niektórych odwiedzonych przez Ciebie stron internetowych i innymi interakcjami z przeglądarką, by spersonalizować Chrome i inne usługi Google takie jak Tłumacz, wyszukiwarka czy reklamy.</translation>
 <translation id="4300305918532693141">Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">długie (2 s)</translation>
 <translation id="4306119971288449206">Aplikacje muszą być udostępniane z parametrem content-type „<ph name="CONTENT_TYPE" />”</translation>
@@ -2460,7 +2455,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="484921817528146567">Ostatni element na półce</translation>
 <translation id="4849286518551984791">Uniwersalny czas koordynowany (UTC/GMT)</translation>
 <translation id="4849517651082200438">Nie instaluj</translation>
-<translation id="4850258771229959924">Wyświetl w Narzędziach dla programistów</translation>
 <translation id="4850669014075537160">Przewijanie</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4853020600495124913">Otwórz w &amp;nowym oknie</translation>
@@ -3547,7 +3541,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="6473842110411557830">Ilustracja: myjka ciśnieniowa</translation>
 <translation id="6474706907372204693">Poprzednia metoda wprowadzania</translation>
 <translation id="6474884162850599008">Odłącz konto na Dysku Google</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> chce sprawdzić, czy używasz odpowiedniego urządzenia z Chrome OS. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> chce udostępnić zawartość Twojego ekranu. Wybierz elementy, które chcesz udostępnić.</translation>
 <translation id="6478248366783946499">Zachować niebezpieczny plik?</translation>
 <translation id="6483805311199035658">Otwieram <ph name="FILE" />...</translation>
@@ -4205,7 +4198,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="7518150891539970662">Dzienniki WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Utwórz</translation>
-<translation id="7526413953848747421">Korzystaj w Chrome z przydatnych usług Google, takich jak sprawdzanie pisowni czy Kliknij, by wyszukać</translation>
 <translation id="7529411698175791732">Sprawdź połączenie z internetem. Jeśli problem nie ustąpi, wyloguj się i zaloguj ponownie.</translation>
 <translation id="7530016656428373557">Szybkość rozładowywania w watach</translation>
 <translation id="7531779363494549572">Otwórz Ustawienia &gt; Aplikacje i powiadomienia &gt; Powiadomienia.</translation>
@@ -5229,6 +5221,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9094982973264386462">Usuń</translation>
 <translation id="9095253524804455615">Usuń</translation>
 <translation id="9099674669267916096">Liczba stron</translation>
+<translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9100765901046053179">Ustawienia zaawansowane</translation>
 <translation id="9101691533782776290">Uruchom aplikację</translation>
 <translation id="9102610709270966160">Włącz rozszerzenie</translation>

@@ -112,7 +112,7 @@
 <translation id="2010555995361223825">ChromeVox మెనులు</translation>
 <translation id="2045490512405922022">ఎంచుకోబడలేదు</translation>
 <translation id="20601713649439366">మునుపటి గణిత వ్యక్తీకరణ లేదు.</translation>
-<translation id="2063539687800151747">ప్రాచీన లిపి శాస్త్రం</translation>
+<translation id="2063539687800151747">పరిచయ వాక్యం</translation>
 <translation id="207477615537953741">అర్థ వివరణలు ఆపివేయబడ్డాయి</translation>
 <translation id="2086961585857038472">తదుపరి పదం</translation>
 <translation id="2089387485033699258">en</translation>
@@ -181,7 +181,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">తనిఖీ చేయబడింది</translation>
 <translation id="27527859628328957">తదుపరి ఫోకస్ చేయగల అంశానికి వెళ్లండి</translation>
-<translation id="276402504937943375">toc</translation>
+<translation id="276402504937943375">విషయ పట్టిక</translation>
 <translation id="2770781857296573485">సమూహ విశ్లేషణలోకి ప్రవేశించండి</translation>
 <translation id="2777845298774924149">నిష్క్రమించింది</translation>
 <translation id="2781264313200109999">లింక్ ప్రారంభం</translation>
@@ -526,7 +526,7 @@
 <translation id="532371086589123547"><ph name="VALUE" />, వచన పెట్టె</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, లింక్</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
-<translation id="5349770431644471053">వెనుక లింక్‌</translation>
+<translation id="5349770431644471053">వెనుకకు తీసుకువెళ్లే లింక్‌</translation>
 <translation id="536031132345979795">నిరంతరంగా చదివేటప్పుడు వెనుకకు దాటవేయండి</translation>
 <translation id="5368000168321181111">శబ్ద హెచ్చరికలు ఆపివేయబడ్డాయి</translation>
 <translation id="5374320867641260420">తదుపరి బటన్ లేదు.</translation>
@@ -712,13 +712,13 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">మునుపటి జాబితా</translation>
 <translation id="7041173719775863268">ఎంపికను ముగించండి</translation>
-<translation id="7048792632163898198">తదుపరి అందించిన కొన్ని షార్ట్‌కట్‌లు ChromeVox ఆదేశాలు కావు, అయినప్పటికీ Chrome నుండి అత్యధిక ప్రయోజనాలు పొందడంలో అవి చాలా ఉపయోగకరంగా ఉంటాయి.
+<translation id="7048792632163898198">ఈ వాక్యం తర్వాతన అందించిన కొన్ని షార్ట్‌కట్‌లు ChromeVox ఆదేశాలు కావు, అయినప్పటికీ Chrome నుండి అత్యధిక ప్రయోజనాలు పొందడంలో అవి చాలా ఉపయోగకరంగా ఉంటాయి.
 బటన్‌లు మరియు లింక్‌ల వంటి చర్య చేయదగిన అంశాలను ముందుకు నావిగేట్ చేయడానికి, Tab కీని నొక్కండి. వెనుకకు నావిగేట్ చేయడానికి, Shift+Tabని నొక్కండి. 
 ఓమ్నిపెట్టెగా కూడా పిలువబడే Chrome బ్రౌజర్ చిరునామా పెట్టెలోకి ప్రవేశించడానికి, Control + Lని నొక్కండి. 
 ఆటోమేటిక్‌గా కొత్త ట్యాబ్‍‍ను తెరిచి, దాని వద్దకు వెళ్లడానికి Control+Tని నొక్కండి. మీ కర్సర్ ఓమ్నిపెట్టెలో ఉంటుంది. 
 ట్యాబ్‌ను మూసివేయడానికి, Control+Wని నొక్కండి. 
 తెరిచిన ట్యాబ్‌లలో ముందుకు వెళ్లడానికి, Control+Tabని ఉపయోగించండి. 
-Chrome బ్రౌజర్ మెనును తెరవడానికి, Alt+Fని నొక్కండి.</translation>
+Chrome బ్రౌజర్ మెనూను తెరవడానికి, Alt+Fని నొక్కండి.</translation>
 <translation id="7086377898680121060">ప్రకాశాన్ని పెంచుతుంది</translation>
 <translation id="7095834689119144465">వచన సంఖ్యను మాత్రమే సవరించండి</translation>
 <translation id="7096001299300236431">మునుపటి మీడియా</translation>

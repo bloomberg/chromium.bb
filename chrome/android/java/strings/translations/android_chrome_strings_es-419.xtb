@@ -353,7 +353,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4409723563706114196">Usar las predicciones de página</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
+<translation id="4434045419905280838">Ventanas emergentes y redirec.</translation>
 <translation id="4445444302979002552">Usar los servicios de predicción para sugerir términos de búsqueda y sitios web</translation>
 <translation id="4452411734226507615">Cierra la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
@@ -697,6 +697,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Primera experiencia de ejecución de Chrome</translation>
+<translation id="741204030948306876">Sí, acepto</translation>
 <translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="7423538860840206698">Se impidió la lectura del portapapeles</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>

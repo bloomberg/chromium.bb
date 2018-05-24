@@ -35,7 +35,7 @@
 <translation id="1225437811932752266">Complimenti! Hai imparato le nozioni fondamentali per l'utilizzo di ChromeVox. Ricorda che puoi aprire il menu dei comandi di ChromeVox in qualsiasi momento premendo il tasto per la ricerca + Punto. Per avere altre informazioni su ChromeVox e Chrome OS, consulta gli articoli riportati di seguito.
 Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsante di chiusura e fai clic su di esso.</translation>
 <translation id="1229276918471378188">Collegamento precedente</translation>
-<translation id="1236794971743289975">nota finale</translation>
+<translation id="1236794971743289975">Nota finale</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Intestazione livello 6 successiva</translation>
 <translation id="1275718070701477396">Selezionato</translation>
@@ -471,7 +471,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4877261390094455813">Inserisci una query di ricerca.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Link interno</translation>
-<translation id="492295894462528572">Introduzione</translation>
+<translation id="492295894462528572">Premessa</translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4953585991029886728">Modifica testo</translation>
 <translation id="4954534434583049121">Citazione lunga precedente</translation>
@@ -712,7 +712,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="7037042857287298941">Elenco precedente</translation>
 <translation id="7041173719775863268">Termina selezione</translation>
 <translation id="7048792632163898198">Le scorciatoie riportate di seguito non sono comandi di ChromeVox, ma sono comunque molto utili per usare al meglio Chrome.
-Per avanzare tra gli elementi che consentono di eseguire azioni, come pulsanti e link, premi il tasto TAB. Per tornare indietro premi MAIUSC + TAB.
+Per avanzare tra gli elementi su cui è possibile eseguire azioni, come pulsanti e link, premi il tasto TAB. Per tornare indietro premi MAIUSC + TAB.
 Per accedere alla casella dell'indirizzo del browser Chrome, chiamata anche omnibox, premi CTRL + L.
 Per aprire e accedere automaticamente a una nuova scheda, premi CTRL + T. Il puntatore verrà posizionato nella omnibox.
 Per chiudere una scheda, premi CTRL + W.
@@ -725,7 +725,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="712735679809149106">eco parole</translation>
 <translation id="713824876195128146">Citazione lunga successiva</translation>
 <translation id="7143034430156387447">Consente di passare tra braille a sei e otto punti</translation>
-<translation id="7157306005867877619">Riassunto</translation>
+<translation id="7157306005867877619">Abstract</translation>
 <translation id="7161425887892204659">Fine della corrispondenza di testo</translation>
 <translation id="7161771961008409533">Pulsante popup</translation>
 <translation id="7165714724802225287">È attivo lo stile del display interfoliazione.</translation>
@@ -780,7 +780,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Pronuncia l'URL della pagina corrente</translation>
 <translation id="7609363189280667021">Attiva/disattiva sottotitoli braille</translation>
-<translation id="761303759119251275">Ringraziamenti</translation>
+<translation id="761303759119251275">Ringraziamento</translation>
 <translation id="762020119231868829">Mette in pausa tutti i widget multimediali che sono in riproduzione</translation>
 <translation id="7625690649919402823">Tabella successiva</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grado <ph name="GRADE" /></translation>

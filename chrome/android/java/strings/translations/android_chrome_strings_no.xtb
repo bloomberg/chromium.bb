@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="1513352483775369820">Bokmerker og nettlogg</translation>
 <translation id="1513858653616922153">Slett passordet</translation>
+<translation id="1516229014686355813">«Trykk for å søke» sender det valgte ordet og den aktive siden som kontekst til Google Søk. Du kan slå av dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Linken er åpnet i Chrome</translation>
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="4042870126885713738">Vis forslag når en nettadresse ikke fungerer eller en tilkobling ikke kan opprettes</translation>
 <translation id="4046123991198612571">Neste spor</translation>
+<translation id="4048707525896921369">Finn ut om emner på nettsteder uten å forlate siden. «Trykk for å søke» sender et ord og omkringliggende kontekst til Google Søk, slik at definisjoner, bilder, søkeresultater og annen informasjon returneres.
+
+Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du vil avgrense søket, drar du panelet hele veien opp og trykker på søkeboksen.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
@@ -693,6 +697,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="7403691278183511381">Førsteinntrykk ved bruk av Chrome</translation>
+<translation id="741204030948306876">Ja, jeg er med</translation>
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7423538860840206698">Blokkert fra å lese utklippstavlen</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>

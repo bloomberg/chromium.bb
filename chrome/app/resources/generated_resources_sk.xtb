@@ -1061,7 +1061,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2633199387167390344">Aplikácia alebo rozšírenie <ph name="NAME" /> využíva <ph name="USAGE" /> MB miesta na disku.</translation>
 <translation id="2633212996805280240">Odstrániť rozšírenie <ph name="EXTENSION_NAME" />?</translation>
 <translation id="263325223718984101">Inštaláciu prehliadača <ph name="PRODUCT_NAME" /> sa nepodarilo dokončiť, ale bude sa naďalej spúšťať z jeho obrazu disku.</translation>
-<translation id="2635176084534510129">Získajte prispôsobenejšie prostredia, napríklad lepšie návrhy obsahu a inteligentnejší Prekladač.</translation>
 <translation id="2635276683026132559">Podpísanie</translation>
 <translation id="2636625531157955190">Prehliadač Chrome nemôže získať prístup k obrazu.</translation>
 <translation id="2638087589890736295">Spustenie synchronizácie vyžaduje prístupovú frázu</translation>
@@ -1351,7 +1350,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3061707000357573562">Služba opráv</translation>
 <translation id="3064410671692449875">Nedostatok dát</translation>
 <translation id="3065041951436100775">Spätná väzba týkajúca sa vynútene ukončenej karty</translation>
-<translation id="3066642396596108483">Synchronizujte si záložky, heslá a históriu vo všetkých zariadeniach</translation>
 <translation id="3067198179881736288">Inštalovať aplikáciu?</translation>
 <translation id="3067198360141518313">Spustiť tento doplnok</translation>
 <translation id="3071624960923923138">Kliknite tu a otvorte novú kartu</translation>
@@ -1617,7 +1615,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="347670947055184738">Ojoj! Systému sa nepodarilo načítať pravidlo pre vaše zariadenie.</translation>
 <translation id="347785443197175480">Aj naďalej povoliť stránkam <ph name="HOST" /> prístup ku kamere a mikrofónu</translation>
 <translation id="3478685642445675458">Skôr ako odstránite osobu, odomknite svoj profil.</translation>
-<translation id="347919930506963698">Vyťažte z Chromu ešte viac</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3480892288821151001">Prichytiť okno vľavo</translation>
 <translation id="3484273680291419129">Odstraňujte sa škodlivý softvér…</translation>
@@ -1760,7 +1757,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> chce zdieľať vašu obrazovku</translation>
 <translation id="3693415264595406141">Heslo:</translation>
 <translation id="3694027410380121301">Vybrať predchádzajúcu kartu</translation>
-<translation id="3697100740575341996">Váš správca IT zakázal na vašom zariadení propagačné ponuky Chrome Goodies. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-mailová adresa</translation>
 <translation id="3700888195348409686">Prebieha prezentácia (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Vaše stránky pri spustení boli zmenené tak, aby zahŕňali webovú adresu <ph name="URL" />.</translation>
@@ -2137,7 +2133,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4289540628985791613">Prehľad</translation>
 <translation id="4296575653627536209">Pridať kontrolovaného používateľa</translation>
 <translation id="4297322094678649474">Zmeniť jazyky</translation>
-<translation id="4299141727003252811">Google môže použiť vašu históriu prehliadania, obsah na niektorých navštívených weboch a ďalšie interakcie s prehliadačom na prispôsobenie Chromu a ďalších služieb Googlu, ako sú napríklad Prekladač, Vyhľadávanie a reklamy.</translation>
 <translation id="4300305918532693141">Ak chcete zmeniť toto nastavenie, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">dlhé (2 s)</translation>
 <translation id="4306119971288449206">Aplikácie musia byť poskytované s typom obsahu „<ph name="CONTENT_TYPE" />“</translation>
@@ -2460,7 +2455,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="484921817528146567">Posledná položka na poličke</translation>
 <translation id="4849286518551984791">Univerzálny koordinovaný čas (UTC/GMT)</translation>
 <translation id="4849517651082200438">Neinštalovať</translation>
-<translation id="4850258771229959924">Zobraziť v nástrojoch pre vývojárov</translation>
 <translation id="4850669014075537160">Posúvanie</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4853020600495124913">Otvoriť v &amp;novom okne</translation>
@@ -3547,7 +3541,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6473842110411557830">Ilustrácia obnovenia Powerwash</translation>
 <translation id="6474706907372204693">Predchádzajúca metóda vstupu</translation>
 <translation id="6474884162850599008">Odpojiť účet služby Disk Google</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> chce overiť, či používate vhodné zariadenie so systémom Chrome OS. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">Aplikácia <ph name="APP_NAME" /> chce zdieľať obsah vašej obrazovky. Vyberte, čo chcete zdieľať.</translation>
 <translation id="6478248366783946499">Ponechať nebezpečný súbor?</translation>
 <translation id="6483805311199035658">Otváranie súboru <ph name="FILE" />...</translation>
@@ -4210,7 +4203,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7518150891539970662">Denníky WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Vytvoriť</translation>
-<translation id="7526413953848747421">Prineste si do Chromu výkonné služby Googlu, napríklad kontrolu pravopisu a vyhľadávanie klepnutím</translation>
 <translation id="7529411698175791732">Skontrolujte internetové pripojenie. Ak problém pretrváva, skúste sa odhlásiť a znovu prihlásiť.</translation>
 <translation id="7530016656428373557">Vybíjanie batérie (W)</translation>
 <translation id="7531779363494549572">Prejdite do časti Nastavenia &gt; Aplikácie a upozornenia &gt; Upozornenia.</translation>
@@ -5234,6 +5226,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9094982973264386462">Odstrániť</translation>
 <translation id="9095253524804455615">Odstrániť</translation>
 <translation id="9099674669267916096">Počet strán</translation>
+<translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9100765901046053179">Rozšírené nastavenia</translation>
 <translation id="9101691533782776290">Spustiť aplikáciu</translation>
 <translation id="9102610709270966160">Povoliť rozšírenie</translation>

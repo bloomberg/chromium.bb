@@ -92,12 +92,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
 <translation id="1397855852561539316">Foreslået webadresse fra standardsøgemaskinen</translation>
-<translation id="1424081297104898791">Giver dig mulighed for at styre, hvor Udviklerværktøjer kan bruges.
-
-      Hvis denne politik er indstillet til "DeveloperToolsDisallowedForForceInstalledExtensions" (værdi 0, som er standard for virksomhedsbrugere), kan der generelt opnås adgang til Udviklerværktøjer og JavaScript-konsol, men der kan ikke opnås adgang til dem i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
-      Hvis denne politik er indstillet til "DeveloperToolsAllowed" (værdi 1, som er standard for ikke-administrerede brugere), kan Udviklerværktøjer og JavaScript-konsol åbnes og bruges i alle sammenhænge – også i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
-      Hvis denne politik er indstillet til "DeveloperToolsDisallowed" (værdi 2), kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje samt menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsol, deaktiveres.
-      Hvis den forældede politik DeveloperToolsDisabled er angivet som sand, ignoreres værdien af denne politik, og Udviklerværktøjer deaktiveres.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
@@ -678,7 +672,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2874209944580848064">Bemærkning om <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-opslag, når godkendelsen af Kerberos forhandles</translation>
-<translation id="2884728160143956392">Tillad cookies, der kun bruges i én session, på disse websites</translation>
 <translation id="2893546967669465276">Send systemlogfiler til administrationsserveren</translation>
 <translation id="2899002520262095963">Android-apps kan anvende de netværkskonfigurationer og CA-certifikater, der er angivet via denne politik, men de har ikke adgang til bestemte konfigurationsmuligheder.</translation>
 <translation id="2906874737073861391">Liste over AppPack-udvidelser</translation>
@@ -720,16 +713,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
 
           Denne politik respekteres kun, hvis politikken 'DefaultSearchProviderEnabled' aktiveres.</translation>
-<translation id="3056439054015239107">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få
-      det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne)
-      ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere.
-      Denne indstilling, SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere SitePerProcess manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      </translation>
 <translation id="306887062252197004">Med denne politik kan brugere af funktionen WebDriver tilsidesætte
       politikker, der kan forstyrre processen.
 
@@ -1182,13 +1165,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4483649828988077221">Deaktiver automatisk opdatering</translation>
 <translation id="4485425108474077672">Konfigurer webadressen for siden Ny fane</translation>
 <translation id="4492287494009043413">Deaktiver screenshots</translation>
-<translation id="4497968613298501984">Konfigurer listen over webadresser til virksomhedslogin (kun HTTP- og HTTPS-adresser). Fingeraftryk registreres som adgangskoder på disse webadresser og anvendes til at registrere genbrug af adgangskoder.
-      Denne indstilling bør kun bruges af G Suite-brugere, der benytter et SSO/SAML-system.
-      Sørg for, at dine sider til login følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms, så <ph name="PRODUCT_NAME" /> registrerer fingeraftryk som adgangskoder på korrekt vis.
-
-      Hvis denne indstilling er aktiveret, registrerer tjenesten til adgangskodebeskyttelse fingeraftryk som adgangskoder på disse webadresser med henblik på at registrere genbrug af adgangskoder.
-      Hvis denne indstilling er deaktiveret eller ikke er angivet, registrerer tjenesten til adgangskodebeskyttelse kun fingeraftryk som adgangskoder på https://accounts.google.com.
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="450537894712826981">Konfigurerer cachestørrelsen, som <ph name="PRODUCT_NAME" /> vil bruge til at lagre cachelagrede filer på disken.
 
       Hvis du indstiller denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne cachestørrelse, uanset om brugeren har markeret flaget "--media-cache-size" eller ej. Værdien, der er angivet i denne politik, er ikke en hård grænse, men snarere en forslag til et cachelagringssystem, Enhver værdi under et par megabyte er for lille og vil blive rundet op til et fornuftigt minimum.
@@ -1315,13 +1291,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
       Hvis denne politik ikke angives eller ikke udfyldes, kan alle brugere logge ind på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillad fuldskærmstilstand</translation>
-<translation id="4868249328547841081">Konfigurer webadressen til ændring af adgangskoder (kun HTTP- og HTTPS-adresser). Tjenesten til adgangskodebeskyttelse sender brugerne videre til denne webadresse, så de kan ændre deres adgangskoder, hvis de er blevet udsat for phishing.
-      Denne indstilling bør kun bruges af G Suite-brugere, der benytter et SSO/SAML-system.
-      Sørg for, at din side til ændring af adgangskode følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms, så <ph name="PRODUCT_NAME" /> registrerer det nye fingeraftryk som adgangskode på korrekt vis på den pågældende side til ændring af adgangskode.
-
-      Hvis denne indstilling er aktiveret, sender tjenesten til adgangskodebeskyttelse brugerne videre til denne webadresse, så de kan ændre deres adgangskoder, hvis de er blevet udsat for phishing.
-      Hvis denne indstilling er deaktiveret eller ikke er angivet, sender tjenesten til adgangskodebeskyttelse brugerne videre til https://myaccounts.google.com, så de kan ændre deres adgangskoder.
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="4869787217450099946">Angiver om aktiveringslåse for skærm er tilladt. Der kan anmodes om aktiveringslåse vha. Power Management Extension API.
 
           Hvis denne politik er angivet til sand eller ikke er angivet, indfries aktiveringslåse for skærm med strømstyring.
@@ -1497,7 +1466,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis denne politik er angivet, kan brugeren kun konfigurere <ph name="PRODUCT_OS_NAME" /> til at blive vist på et af de sprog, der angives af denne politik. Hvis politikken ikke er angivet eller er angivet med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises på alle understøttede sprog. Hvis denne politik er angivet med en liste, der indeholder ugyldige værdier, ignoreres alle ugyldige værdier. Hvis en bruger tidligere konfigurerede <ph name="PRODUCT_OS_NAME" /> til at blive vist på et sprog, der ikke tillades af denne politik, ændres visningssproget til et tilladt sprog, næste gang brugeren logger ind. Hvis brugeren har konfigureret foretrukne sprog, og et af de foretrukne sprog er tilladt af denne politik, skifter <ph name="PRODUCT_OS_NAME" /> til det pågældende sprog. Ellers skifter <ph name="PRODUCT_OS_NAME" /> til den første gyldige værdi, der er angivet af denne politik, eller til en alternativ landestandard (som i øjeblikket er en-US), hvis politikken kun indeholder ugyldige poster.</translation>
 <translation id="5464816904705580310">Konfigurer indstillingerne for administrerede brugere.</translation>
 <translation id="546726650689747237">Forsinkelse på skærmnedtoning, når strømforsyning er tilsluttet</translation>
-<translation id="5469484020713359236">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites med tilladelse til at angive cookies. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultCookiesSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="5469825884154817306">Bloker billeder på disse websites</translation>
 <translation id="5475361623548884387">Aktiver udskrivning</translation>
 <translation id="547601067149622666">Tillad ikke annoncer på websites med påtrængende annoncer</translation>
@@ -1788,7 +1756,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis den er angivet som sand eller ikke er angivet, scanner Oprydningsværktøj til Chrome systemet med jævne mellemrum for uønsket software. Hvis der findes uønsket software, bliver brugeren spurgt, om den skal fjernes. Manuel aktivering af Oprydningsværktøj til Chrome via chrome://settings er slået til.
 
       Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
-<translation id="6417861582779909667">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som ikke har tilladelse til at anvende cookies. Hvis denne politik ikke angives, vil den globale standardværdi blive anvendt for alle websites, enten fra politikken "DefaultCookiesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="6426205278746959912">Du kan ikke tvinge Android-apps til at bruge en proxy. En undergruppe af proxyindstillinger er tilgængelige for Android-apps, hvilket de frivilligt kan vælge at overholde:
 
           Hvis du vælger aldrig at bruge en proxyserver, oplyses Android-apps om, at der ikke er konfigureret en proxy.
@@ -1808,13 +1775,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Du kan se, hvilke websites der har tilladelse til at køre Flash, i politikkerne "DefaultPluginsSetting", "PluginsAllowedForUrls" og "PluginsBlockedForUrls".
 
       Hvis denne indstilling er deaktiveret eller ikke er angivet, kan Flash-indhold af anden oprindelse eller mindre indhold blive blokeret.</translation>
-<translation id="6535639183431116351">Denne politik er udfaset i M68. Brug DeveloperToolsAvailability i stedet for.
-
-      Deaktiverer Udviklerværktøjer og JavaScript-konsol.
-
-      Hvis du aktiverer denne indstilling, kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje og alle menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsol, bliver deaktiveret.
-
-      Hvis du angiver denne indstilling som deaktiveret eller ikke angiver den, kan brugeren benytte Udviklerværktøjer og JavaScript-konsol.</translation>
 <translation id="653608967792832033">Angiver den tid uden brugerinput, der aktiverer skærmlåsen, når enheden kører på batteri.
 
           Hvis denne politik indstilles til en højere værdi end nul, angives den tid, som brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> låser skærmen.
@@ -1923,16 +1883,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hukommelsesoplysninger rapporteres dog stadigvæk til siden uanset indstillingsværdien, men de rapporterede
       størrelser er kvantiseret, og opdateringsfrekvensen er begrænset af sikkerhedsmæssige hensyn. Du kan få
       nøjagtige data i realtid ved at bruge værktøjer som f.eks. Telemetri.</translation>
-<translation id="6870914592443697993">
-      Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
-      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af websitet
-      https://eksempel.dk/.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, anvendes platformens standardindstillinger for isolering af websites på loginskærmen.
-      </translation>
 <translation id="6894178810167845842">Webadresse for siden Ny fane</translation>
 <translation id="6899705656741990703">Registrer proxyindstillinger automatisk</translation>
 <translation id="6903814433019432303">Denne politik er kun aktiv i detailtilstand.
@@ -2054,13 +2004,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Forbindelsestyper, der tillades til opdateringer</translation>
 <translation id="7194407337890404814">Standardsøgemaskinens navn</translation>
-<translation id="7199300565886109054">Gør det muligt at indstille en liste over webadressemønstre, der angiver websites, hvor det er tilladt at indstille cookies, der kun bruges i én session.
-
-          Hvis denne politik ikke konfigureres, bruges den globale standardværdi til alle websites, enten fra politikken "DefaultCookiesSetting", hvis denne er indstillet, og ellers brugerens personlige konfiguration.
-
-          Bemærk, at hvis <ph name="PRODUCT_NAME" /> kører i "baggrundstilstand", lukkes sessionen muligvis ikke, når det sidste browservindue lukkes. I stedet forbliver den aktiv, indtil browseren afsluttes. Se politikken "BackgroundModeEnabled" for at få flere oplysninger om konfiguration af denne adfærd.
-
-          Hvis politikken "RestoreOnStartup" er indstillet til at gendanne webadresser fra tidligere sessioner, overholdes denne politik ikke, og cookies gemmes permanent for disse websites.</translation>
 <translation id="7202925763179776247">Tillad begrænsninger af download</translation>
 <translation id="7207095846245296855">Gennemtving Google Beskyttet søgning</translation>
 <translation id="7216442368414164495">Giv brugerne tilladelse til at tilvælge udvidet rapportering af Beskyttet browsing</translation>
@@ -2287,13 +2230,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Siden Ny fane</translation>
 <translation id="7788511847830146438">Pr. profil</translation>
-<translation id="7801886189430766248">Når denne politik angives som sand, uploades Android-appdata til alternative servere for Android, hvorfra de gendannes, efter kompatible apps er installeret igen.
-
-      Når politikken er angivet til falsk, deaktiveres Android-tjenesten til sikkerhedskopiering.
-
-      Hvis denne indstilling konfigureres, kan brugerne ikke selv ændre den.
-
-      Hvis denne indstilling ikke konfigureres, kan brugerne selv slå Android Backup Service til eller fra i appen Android Indstillinger.</translation>
 <translation id="780603170519840350">Deaktiverer håndhævelse af krav vedrørende Certifikatgennemsigtighed for en liste over hash-koder fra subjectPublicKeyInfo.
 
       Politikken tillader, at kravene om offentliggørelse via Certifikatgennemsigtighed ikke håndhæves for certifikatkæder, der indeholder certifikater med en af de angivne hash-koder fra subjectPublicKeyInfo. Dermed kan certifikater, der ellers ikke ville være godkendt, fordi de ikke er blevet offentliggjort korrekt, fortsat anvendes til virksomhedshosts.
@@ -2432,7 +2368,7 @@ Disse politikker er udelukkende beregnet til at blive brugt til konfiguration af
 
 Du behøver ikke at konfigurere disse indstillinger manuelt. Du kan downloade tilgængelige Windows-, Mac- og Linux-skabeloner på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
-Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via GPO, selvom levering af politikker via registreringsdatabasen fortsat understøttes for forekomster i Windows, der er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
+Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via GPO, selvom provisionering af politikker via registreringsdatabasen fortsat understøttes for forekomster i Windows, der er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="8274603902181597201">Slet brugerens eCryptfs-hovedmapper, og start med en frisk ext4-krypteret hovedmappe.</translation>
 <translation id="8279832363395120715">Fjerner følsomme dele vedrørende personlige oplysninger og sikkerhed i webadresser af typen https://, før de overføres til PAC-scripter (Proxy Auto Config), som anvendes af <ph name="PRODUCT_NAME" /> i forbindelse med proxyopløsning.
 

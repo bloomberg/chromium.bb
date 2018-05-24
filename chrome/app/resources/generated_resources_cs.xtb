@@ -1062,7 +1062,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2633199387167390344">Aplikace nebo rozšíření <ph name="NAME" /> používá <ph name="USAGE" /> MB místa na disku.</translation>
 <translation id="2633212996805280240">Odstranit rozšíření <ph name="EXTENSION_NAME" />?</translation>
 <translation id="263325223718984101">Aplikace <ph name="PRODUCT_NAME" /> nemůže dokončit svou instalaci, ale bude se i nadále spouštět z bitové kopie disku.</translation>
-<translation id="2635176084534510129">Získejte přizpůsobenější prostředí, jako jsou lepší návrhy obsahu a chytřejší Překladač</translation>
 <translation id="2635276683026132559">Podepisování</translation>
 <translation id="2636625531157955190">Chrome nemůže přistupovat k obrázku.</translation>
 <translation id="2638087589890736295">K zahájení synchronizace je potřeba heslová fráze.</translation>
@@ -1352,7 +1351,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3061707000357573562">Služba oprav</translation>
 <translation id="3064410671692449875">Nedostatek dat</translation>
 <translation id="3065041951436100775">Zpětná vazba k ukončení procesu karty</translation>
-<translation id="3066642396596108483">Synchronizujte si záložky, hesla a historii do všech svých zařízení</translation>
 <translation id="3067198179881736288">Nainstalovat aplikaci?</translation>
 <translation id="3067198360141518313">Spustit plugin</translation>
 <translation id="3071624960923923138">Kliknutím sem otevřete novou kartu</translation>
@@ -1616,7 +1614,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="347670947055184738">Jejda! Systému se nepodařilo načíst zásady pro vaše zařízení.</translation>
 <translation id="347785443197175480">Povolit webu <ph name="HOST" /> přístup k webové kameře a mikrofonu i nadále</translation>
 <translation id="3478685642445675458">Před odebráním osoby prosím odemkněte svůj profil.</translation>
-<translation id="347919930506963698">Získejte v Chromu další funkce</translation>
 <translation id="3479552764303398839">Teď ne</translation>
 <translation id="3480892288821151001">Ukotvit okno vlevo</translation>
 <translation id="3484273680291419129">Odstraňování škodlivého softwaru...</translation>
@@ -1759,7 +1756,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3691267899302886494">Web <ph name="HOST" /> chce sdílet vaši obrazovku</translation>
 <translation id="3693415264595406141">Heslo:</translation>
 <translation id="3694027410380121301">Vybrat předchozí kartu</translation>
-<translation id="3697100740575341996">Váš správce IT pro vaše zařízení využití promoakcí Chrome Goodies zakázal. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-mailová adresa</translation>
 <translation id="3700888195348409686">Probíhá prezentace (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Mezi počáteční stránky byla přidána adresa <ph name="URL" />.</translation>
@@ -2135,7 +2131,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4289540628985791613">Přehled</translation>
 <translation id="4296575653627536209">Přidat dozorovaného uživatele</translation>
 <translation id="4297322094678649474">Změnit jazyky</translation>
-<translation id="4299141727003252811">Google vám může prohlížeč Chrome a další služby, jako jsou Překladač, Vyhledávání a reklamy, přizůpsobit na základě vyhledávácí aktivity, obsahu některých navštívených stránek a další interakce s prohlížečem.</translation>
 <translation id="4300305918532693141">Chcete-li toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">dlouhá (2 s)</translation>
 <translation id="4306119971288449206">Aplikace musí být poskytovány s typem obsahu <ph name="CONTENT_TYPE" /></translation>
@@ -2458,7 +2453,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="484921817528146567">Poslední položka v poličce</translation>
 <translation id="4849286518551984791">Coordinated Universal Time (UTC/GMT)</translation>
 <translation id="4849517651082200438">Neinstalovat</translation>
-<translation id="4850258771229959924">Zobrazit v Nástrojích pro vývojáře</translation>
 <translation id="4850669014075537160">Posouvání</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4853020600495124913">Otevřít v &amp;novém okně</translation>
@@ -3544,7 +3538,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6473842110411557830">Ilustrace funkce Powerwash</translation>
 <translation id="6474706907372204693">Předchozí metoda zadávání</translation>
 <translation id="6474884162850599008">Odpojit účet Disku Google</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> chce ověřit, zda používáte vhodné zařízení se systémem Chrome OS. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">Aplikace <ph name="APP_NAME" /> chce sdílet obsah vaší obrazovky. Vyberte, co chcete sdílet.</translation>
 <translation id="6478248366783946499">Ponechat nebezpečný soubor?</translation>
 <translation id="6483805311199035658">Otevírání souboru <ph name="FILE" />...</translation>
@@ -4207,7 +4200,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7518150891539970662">Protokoly WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Vytvořit</translation>
-<translation id="7526413953848747421">Získejte do Chromu užitečné služby Google, jako je kontrola pravopisu a vyhledání klepnutím</translation>
 <translation id="7529411698175791732">Zkontrolujte připojení k internetu. Pokud problém přetrvává, zkuste se odhlásit a znovu přihlásit.</translation>
 <translation id="7530016656428373557">Rychlost vybíjení ve wattech</translation>
 <translation id="7531779363494549572">Přejděte na Nastavení &gt; Aplikace a oznámení &gt; Oznámení</translation>
@@ -5229,6 +5221,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9094982973264386462">Odstranit</translation>
 <translation id="9095253524804455615">Odstranit</translation>
 <translation id="9099674669267916096">Počet stránek</translation>
+<translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9100765901046053179">Rozšířená nastavení</translation>
 <translation id="9101691533782776290">Spustit aplikaci</translation>
 <translation id="9102610709270966160">Aktivovat rozšíření</translation>

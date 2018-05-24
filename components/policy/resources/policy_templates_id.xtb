@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
-<translation id="1424081297104898791">Memungkinkan Anda mengontrol lokasi penggunaan Developer Tools.
-
-      Jika kebijakan ini ditetapkan ke 'DeveloperToolsDisallowedForForceInstalledExtensions' (nilai 0, yang merupakan nilai default untuk pengguna perusahaan), Developer Tools dan konsol JavaScript secara umum dapat diakses, namun tidak dapat diakses dalam konteks ekstensi yang diinstal oleh kebijakan perusahaan.
-      Jika kebijakan ini ditetapkan ke 'DeveloperToolsAllowed' (nilai 1, yang merupakan nilai default untuk pengguna tidak terkelola), Developer Tools dan konsol JavaScript dapat diakses dan digunakan dalam semua konteks, termasuk dalam konteks ekstensi yang diinstal oleh kebijakan perusahaan.
-      Jika kebijakan ini ditetapkan ke 'DeveloperToolsDisallowed' (nilai 2), Developer Tools tidak dapat diakses dan elemen situs tidak dapat diperiksa lagi. Semua pintasan keyboard dan semua menu atau entri menu konteks untuk membuka Developer Tools atau Konsol JavaScript akan dinonaktifkan.
-      Jika kebijakan lama DeveloperToolsDisabled ditetapkan ke true, nilai untuk kebijakan ini diabaikan dan Developer Tools dinonaktifkan.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
@@ -672,7 +666,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2874209944580848064">Catatan untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang mendukung aplikasi Android:</translation>
 <translation id="2877225735001246144">Nonaktifkan pencarian CNAME saat menegosiasikan autentikasi Kerberos</translation>
-<translation id="2884728160143956392">Izinkan cookie sesi saja di situs-situs tersebut</translation>
 <translation id="2893546967669465276">Mengirim log sistem ke server pengelolaan</translation>
 <translation id="2899002520262095963">Aplikasi Android dapat menggunakan konfigurasi jaringan dan sertifikat CA yang disetel melalui kebijakan ini, namun tidak memiliki akses ke beberapa opsi konfigurasi.</translation>
 <translation id="2906874737073861391">Daftar ekstensi AppPack</translation>
@@ -714,9 +707,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
           Kebijakan ini adalah opsional. Jika tidak disetel, penggantian istilah penelusuran tidak akan dilakukan.
 
           Kebijakan ini hanya akan ditaati jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
-<translation id="3056439054015239107">
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ini ke nilai yang sama. Jika nilai tidak cocok, mungkin terjadi penundaan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan. Anda dapat mempertimbangkan setelan kebijakan IsolateOrigins untuk mendapatkan yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan IsolateOrigins yang berisi daftar situs yang ingin Anda isolasi. Setelan ini, SitePerProcess, mengisolasi semua situs. Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri. Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual. Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
-      </translation>
 <translation id="306887062252197004">Kebijakan ini memungkinkan pengguna fitur WebDriver mengganti kebijakan
       yang dapat mengganggu pengoperasiannya.
 
@@ -1164,13 +1154,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="4483649828988077221">Nonaktifkan Update Otomatis</translation>
 <translation id="4485425108474077672">Mengonfigurasi URL halaman Tab Baru</translation>
 <translation id="4492287494009043413">Menonaktifkan pengambilan screenshot</translation>
-<translation id="4497968613298501984">Mengonfigurasi daftar URL login perusahaan (khusus skema HTTP dan HTTPS). Sidik jari sandi akan diambil di URL tersebut dan digunakan untuk deteksi penggunaan ulang sandi.
-      Setelan ini sebaiknya hanya digunakan oleh pengguna G Suite yang menggunakan sistem SSO/SMAL.
-      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi dengan benar, harap pastikan bahwa halaman login Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengambil sidik jari sandi di URL tersebut untuk tujuan deteksi penggunaan ulang sandi.
-      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi hanya akan mengambil sidik jari sandi di https://accounts.google.com.
-      Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file media di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--media-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.
@@ -1296,13 +1279,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini dibiarkan tidak disetel atau kosong, semua pengguna dapat masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Izinkan mode layar penuh</translation>
-<translation id="4868249328547841081">Mengonfigurasi URL ubah sandi (khusus skema HTTP dan HTTPS). Layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya jika mereka menjadi sasaran phishing.
-      Setelan ini sebaiknya hanya digunakan oleh pengguna GSuite yang menggunakan sistem SSO/SAML.
-      Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi baru di halaman ubah sandi ini dengan benar, harap pastikan bahwa halaman ubah sandi Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengarahkan pengguna ke URL ini untuk mengubah sandinya jika mereka menjadi sasaran phishing.
-      Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi akan mengarahkan pengguna ke https://myaccounts.google.com untuk mengubah sandinya.
-      Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Menentukan apakah penguncian layar saat bangun diizinkan atau tidak. Penguncian layar saat bangun dapat diminta dengan ekstensi melalui API ekstensi pengelola daya.
 
           Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat bangun akan diterima demi pengelolaan daya.
@@ -1480,7 +1456,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini ditetapkan, pengguna hanya dapat mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan di salah satu lokal yang ditentukan oleh kebijakan tersebut. Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, <ph name="PRODUCT_OS_NAME" /> dapat ditampilkan di semua lokal yang didukung. Jika kebijakan ini ditetapkan ke daftar yang memuat nilai yang tidak valid, maka semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna telah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam bahasa yang tidak diizinkan oleh kebijakan ini, lokal tampilan akan dialihkan ke lokal yang diizinkan saat berikutnya pengguna login. Jika pengguna telah mengonfigurasi beberapa lokal pilihan, dan salah satu lokal pilihan itu diizinkan oleh kebijakan ini, maka <ph name="PRODUCT_OS_NAME" /> akan dialihkan ke lokal tersebut. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan dialihkan ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal fallback (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
 <translation id="5464816904705580310">Mengonfigurasi setelan untuk pengguna yang dikelola.</translation>
 <translation id="546726650689747237">Penundaan peredupan layar saat menggunakan daya AC</translation>
-<translation id="5469484020713359236">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menyetel cookie. Jika kebijakan ini dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultCookiesSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="5469825884154817306">Cekal gambar pada situs ini</translation>
 <translation id="5475361623548884387">Aktifkan pencetakan</translation>
 <translation id="547601067149622666">Jangan izinkan iklan di situs yang menayangkan iklan mengganggu</translation>
@@ -1771,7 +1746,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika ditetapkan ke true atau tidak ditetapkan, Pembersih Chrome akan memindai sistem secara berkala untuk menemukan software yang tidak diinginkan, dan jika ditemukan, akan menanyakan kepada pengguna apakah ia ingin menghapusnya atau tidak. Pembersih Chrome dapat dipicu secara manual dari chrome://setting.
 
       Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan dengan domain <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menyetel cookie. Jika kebijakan ini dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultCookiesSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="6426205278746959912">Anda tidak dapat memaksa aplikasi Android untuk menggunakan proxy. Bagian setelan proxy disediakan untuk aplikasi Android, yang dapat dipilih untuk dipatuhi secara sukarela:
 
           Jika Anda memilih untuk tidak pernah menggunakan server proxy, aplikasi Android akan diberi tahu bahwa tidak ada proxy yang dikonfigurasi.
@@ -1791,13 +1765,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Untuk mengontrol situs yang diizinkan untuk menjalankan Flash, lihat kebijakan "DefaultPluginsSetting", "PluginsAllowedForUrls", dan "PluginsBlockedForUrls".
 
       Jika setelan ini dinonaktifkan atau tidak disetel, konten Flash dari asal lainnya atau konten kecil dapat diblokir.</translation>
-<translation id="6535639183431116351">Kebijakan ini tidak digunakan lagi pada M68; sebagai gantinya gunakan DeveloperToolsAvailability.
-
-      Menonaktifkan Developer Tools dan konsol JavaScript.
-
-      Jika Anda mengaktifkan setelan ini, Developer Tools tidak dapat diakses dan elemen situs tidak dapat diperiksa lagi. Semua pintasan keyboard dan semua menu atau entri menu konteks untuk membuka Developer Tools atau Konsol JavaScript akan dinonaktifkan.
-
-      Jika opsi ini dinonaktifkan atau tidak ditetapkan, pengguna dapat menggunakan Developer Tools dan konsol JavaScript.</translation>
 <translation id="653608967792832033">Menentukan panjang waktu tanpa masukan pengguna sebelum layar terkunci ketika menggunakan daya baterai.
 
           Saat kebijakan ini disetel ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan panjang waktu pengguna tetap menganggur sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
@@ -1906,9 +1873,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Bagaimanapun juga info memori dilaporkan ke halaman, terlepas dari nilai opsinya, namun ukuran yang dilaporkan
       dikuantisasi dan tingkat pembaruan dibatasi karena alasan keamanan. Untuk memperoleh data akurat dalam waktu nyata,
       silakan gunakan alat seperti Telemetri.</translation>
-<translation id="6870914592443697993">
-      Kebijakan ini berlaku untuk layar login. Lihat juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan dengan nilai yang sama. Jika nilainya tidak sama, dapat menimbulkan penundaan saat memasukkan sesi pengguna ketika nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan. Jika kebijakan ini diaktifkan, setiap asal yang diberi nama di daftar yang dipisahkan koma akan dijalankan dalam prosesnya masing-masing. Tindakan ini juga akan mengisolasi asal yang diberi nama oleh subdomain; misalnya, menentukan https://example.com/ juga akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari situs https://example.com/. Jika kebijakan ini dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual. Jika kebijakan tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
-      </translation>
 <translation id="6894178810167845842">URL halaman Tab Baru</translation>
 <translation id="6899705656741990703">Mendeteksi setelan proxy secara otomatis</translation>
 <translation id="6903814433019432303">Kebijakan ini aktif dalam mode eceran saja.
@@ -2037,13 +2001,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Jenis sambungan yang diizinkan untuk pembaruan</translation>
 <translation id="7194407337890404814">Nama penyedia penelusuran default</translation>
-<translation id="7199300565886109054">Memungkinkan Anda menyetel daftar pola URL yang menetapkan situs yang diizinkan menyetel sesi cookie saja.
-
-          Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs baik dari kebijakan 'DefaultCookiesSetting' jika disetel, maupun konfigurasi pribadi pengguna.
-
-          Perhatikan bahwa jika <ph name="PRODUCT_NAME" /> berjalan dalam 'mode latar belakang', sesi mungkin tidak akan ditutup ketika jendela browser yang terakhir ditutup, namun sebagai gantinya akan tetap aktif hingga keluar dari browser. Lihat kebijakan 'BackgroundModeEnabled' untuk informasi selengkapnya tentang cara mengonfigurasi perilaku ini.
-
-          Jika kebijakan "RestoreOnStartup" disetel untuk memulihkan URL dari sesi sebelumnya, kebijakan ini akan diabaikan dan cookie akan disimpan secara permanen untuk situs tersebut.</translation>
 <translation id="7202925763179776247">Izinkan batasan download</translation>
 <translation id="7207095846245296855">Paksa Google SafeSearch</translation>
 <translation id="7216442368414164495">Memungkinkan pengguna ikut serta dalam pelaporan yang diperluas Safe Browsing</translation>
@@ -2266,13 +2223,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Halaman Tab Baru</translation>
 <translation id="7788511847830146438">Per Profil</translation>
-<translation id="7801886189430766248">Jika kebijakan ini disetel ke true, data aplikasi Android akan diupload ke server Backup Android dan dipulihkan saat pemasangan ulang aplikasi untuk aplikasi yang kompatibel.
-
-      Jika kebijakan ini disetel ke false, Android Backup Service akan dinonaktifkan.
-
-      Jika setelan ini dikonfigurasi, pengguna tidak dapat mengubahnya sendiri.
-
-      Jika setelan ini tidak dikonfigurasi, pengguna dapat mengaktifkan dan menonaktifkan Android Backup Service di aplikasi Setelan Android.</translation>
 <translation id="780603170519840350">Menonaktifkan penerapan persyaratan Transparansi Sertifikat untuk daftar hash subjectPublicKeyInfo.
 
       Kebijakan ini memungkinkan untuk menonaktifkan persyaratan pengungkapan Transparansi Sertifikat untuk rantai sertifikat yang berisi sertifikat dengan salah satu hash subjectPublicKeyInfo yang ditentukan. Hal ini memungkinkan sertifikat yang dapat dianggap tidak tepercaya, karena tidak diungkapkan secara publik dengan sesuai, terus digunakan untuk host Perusahaan.

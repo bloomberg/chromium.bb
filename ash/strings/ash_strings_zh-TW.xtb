@@ -260,6 +260,7 @@
 <translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME" />」已配對成功，可供所有使用者使用。如要移除配對，請使用「設定」。</translation>
 <translation id="6715542151869432661">找不到行動裝置。</translation>
 <translation id="671928215901716392">鎖定螢幕</translation>
+<translation id="6723839937902243910">電源</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
 <translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
@@ -346,6 +347,7 @@
 <translation id="8921624153894383499">Google 助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8984179138335769204">快速啓動</translation>
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="9079731690316798640">Wi-Fi：<ph name="ADDRESS" /></translation>

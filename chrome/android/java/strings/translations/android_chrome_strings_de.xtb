@@ -317,7 +317,7 @@
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4048707525896921369">Erfahren Sie mehr zu Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" wird ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
 
-Drücken Sie zur Anpassung des Suchbegriffs lange auf den entsprechenden Begriff. Sie können Ihre Suche auch verfeinern, indem Sie das Feld ganz nach oben schieben und auf das Suchfeld tippen.</translation>
+Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begriff etwas länger gedrückt. Sie können Ihre Suche auch verfeinern, indem Sie das Feld ganz nach oben schieben und auf das Suchfeld tippen.</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="4084682180776658562">Lesezeichen</translation>
@@ -698,6 +698,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Eindruck beim ersten Ausführen von Chrome</translation>
+<translation id="741204030948306876">Ja, bitte</translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>

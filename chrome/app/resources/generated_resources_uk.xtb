@@ -1061,7 +1061,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> використовує <ph name="USAGE" /> МБ місця на диску.</translation>
 <translation id="2633212996805280240">Видалити "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> не вдалося завершити встановлення, але він продовжить працювати, використовуючи своє зображення диска.</translation>
-<translation id="2635176084534510129">Більш персоналізовані налаштування, як-от кращі пропозиції вмісту та розумніший Перекладач</translation>
 <translation id="2635276683026132559">Підписування</translation>
 <translation id="2636625531157955190">Chrome не може отримати доступ до зображення.</translation>
 <translation id="2638087589890736295">Введіть парольну фразу, щоб почати синхронізацію</translation>
@@ -1351,7 +1350,6 @@
 <translation id="3061707000357573562">Служба виправлень</translation>
 <translation id="3064410671692449875">Недостатньо даних</translation>
 <translation id="3065041951436100775">Відповідь "Вкладка закрилась".</translation>
-<translation id="3066642396596108483">Синхронізуйте закладки, паролі й історію на всіх своїх пристроях</translation>
 <translation id="3067198179881736288">Установити додаток?</translation>
 <translation id="3067198360141518313">Запустити цей плагін</translation>
 <translation id="3071624960923923138">Натисніть тут, щоб відкрити нову вкладку</translation>
@@ -1617,7 +1615,6 @@
 <translation id="347670947055184738">На жаль, системі не вдалось отримати правило для вашого пристрою.</translation>
 <translation id="347785443197175480">Продовжити надавати хосту <ph name="HOST" /> доступ до ваших камери та мікрофона</translation>
 <translation id="3478685642445675458">Перш ніж видалити особу, розблокуйте свій профіль.</translation>
-<translation id="347919930506963698">Отримайте ще більше від Chrome</translation>
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="3480892288821151001">Закріпити вікно ліворуч</translation>
 <translation id="3484273680291419129">Вилучення зловмисного програмного забезпечення…</translation>
@@ -1760,7 +1757,6 @@
 <translation id="3691267899302886494">Сайт <ph name="HOST" /> хоче отримати доступ до вашого екрана</translation>
 <translation id="3693415264595406141">Пароль:</translation>
 <translation id="3694027410380121301">Вибрати попередню вкладку</translation>
-<translation id="3697100740575341996">Ваш ІТ-адміністратор вимкнув корисні програми Chrome для вашого пристрою. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Електронна адреса</translation>
 <translation id="3700888195348409686">Транслюється (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Стартові сторінки змінено на <ph name="URL" />.</translation>
@@ -2137,7 +2133,6 @@
 <translation id="4289540628985791613">Огляд</translation>
 <translation id="4296575653627536209">Додати контрольованого користувача</translation>
 <translation id="4297322094678649474">Змінити мови</translation>
-<translation id="4299141727003252811">Google може використовувати ваші дані веб-перегляду, вміст із деяких відвіданих сайтів та інші дії у веб-переглядачі, щоб персоналізувати Chrome та інші сервіси Google, як-от Перекладач, Пошук і оголошення.</translation>
 <translation id="4300305918532693141">Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">довга затримка (2 с)</translation>
 <translation id="4306119971288449206">Додатки мають наповнюватися вмістом типу "<ph name="CONTENT_TYPE" />"</translation>
@@ -2207,7 +2202,7 @@
 <translation id="4425149324548788773">Мій диск</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="4430369329743628066">Закладку додано</translation>
-<translation id="4434045419905280838">Спливаючі вікна й переспрямуван.</translation>
+<translation id="4434045419905280838">Спливаючі вікна й переадресація</translation>
 <translation id="443454694385851356">Застарілий (небезпечно)</translation>
 <translation id="443464694732789311">Продовжити</translation>
 <translation id="443475966875174318">Оновити або видалити несумісні додатки</translation>
@@ -2460,7 +2455,6 @@
 <translation id="484921817528146567">Останній елемент полиці</translation>
 <translation id="4849286518551984791">Універсальний час (UTC/GMT)</translation>
 <translation id="4849517651082200438">Не встановлювати</translation>
-<translation id="4850258771229959924">Переглянути в інструментах розробника</translation>
 <translation id="4850669014075537160">Прокручування</translation>
 <translation id="4850886885716139402">Перегляд</translation>
 <translation id="4853020600495124913">Відкрити в &amp;новому вікні</translation>
@@ -3547,7 +3541,6 @@
 <translation id="6473842110411557830">Ілюстрація Powerwash</translation>
 <translation id="6474706907372204693">Попередній спосіб введення</translation>
 <translation id="6474884162850599008">Від’єднати обліковий запис Google Диска</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> хоче перевірити, чи ви використовуєте придатний пристрій з ОС Chrome. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">Додаток <ph name="APP_NAME" /> хоче показувати вміст вашого екрана. Виберіть, що показувати.</translation>
 <translation id="6478248366783946499">Завантажити небезпечний файл?</translation>
 <translation id="6483805311199035658">Відкривається файл <ph name="FILE" />...</translation>
@@ -3907,7 +3900,7 @@
 <translation id="7052237160939977163">Надсилати дані відстеження ефективності</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Блокувати</translation>
-<translation id="7055152154916055070">Переспрямування заблоковано:</translation>
+<translation id="7055152154916055070">Переадресацію заблоковано:</translation>
 <translation id="7056526158851679338">&amp;Перевірити пристрої</translation>
 <translation id="7059858479264779982">Увімкнути автозапуск</translation>
 <translation id="7059893117020417984">Щоб переглядати веб-сторінки конфіденційно, натисніть значок меню з трьома крапками й відкрийте вікно в режимі анонімного перегляду</translation>
@@ -4212,7 +4205,6 @@
 <translation id="7518150891539970662">Журнали WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Створити</translation>
-<translation id="7526413953848747421">Користуйтеся в Chrome потужними сервісами Google, як-от перевірка орфографії й пошук дотиком</translation>
 <translation id="7529411698175791732">Перевірте з’єднання з Інтернетом. Якщо проблема не зникне, вийдіть з облікового запису та знову ввійдіть.</translation>
 <translation id="7530016656428373557">Швидкість розряджання акумулятора у ватах</translation>
 <translation id="7531779363494549572">Перейдіть у меню "Налаштування" &gt; "Додатки та сповіщення" &gt; "Сповіщення".</translation>
@@ -5236,6 +5228,7 @@
 <translation id="9094982973264386462">Видалити</translation>
 <translation id="9095253524804455615">Видалити</translation>
 <translation id="9099674669267916096">Кількість сторінок</translation>
+<translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9100765901046053179">Розширені налаштування</translation>
 <translation id="9101691533782776290">Запустити програму</translation>
 <translation id="9102610709270966160">Увімкнути розширення</translation>

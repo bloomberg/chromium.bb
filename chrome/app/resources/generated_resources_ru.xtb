@@ -1062,7 +1062,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> использует <ph name="USAGE" /> МБ дискового пространства.</translation>
 <translation id="2633212996805280240">Удалить "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> не может завершить установку, однако продолжит работу со своего образа на диске.</translation>
-<translation id="2635176084534510129">Получайте рекомендации, точные переводы и другой персональный контент.</translation>
 <translation id="2635276683026132559">Подпись</translation>
 <translation id="2636625531157955190">У Chrome нет доступа к изображению.</translation>
 <translation id="2638087589890736295">Чтобы начать синхронизацию, введите кодовую фразу</translation>
@@ -1352,7 +1351,6 @@
 <translation id="3061707000357573562">Исправление сервиса</translation>
 <translation id="3064410671692449875">Недостаточно данных</translation>
 <translation id="3065041951436100775">Сообщение о вкладке, закрытой из-за отсутствия ответа.</translation>
-<translation id="3066642396596108483">Синхронизируйте закладки, пароли и историю на всех своих устройствах.</translation>
 <translation id="3067198179881736288">Установить приложение?</translation>
 <translation id="3067198360141518313">Запустить подключаемый модуль</translation>
 <translation id="3071624960923923138">Нажмите здесь, чтобы открыть новую вкладку</translation>
@@ -1618,7 +1616,6 @@
 <translation id="347670947055184738">Не удалось извлечь правила для вашего устройства.</translation>
 <translation id="347785443197175480">Предоставить сайту <ph name="HOST" /> доступ к камере и микрофону</translation>
 <translation id="3478685642445675458">Разблокируйте свой профиль, прежде чем удалять другой.</translation>
-<translation id="347919930506963698">Сделайте Chrome ещё удобнее</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3480892288821151001">Закрепить окно слева</translation>
 <translation id="3484273680291419129">Удаление вредоносного ПО...</translation>
@@ -1761,7 +1758,6 @@
 <translation id="3691267899302886494">Сайт <ph name="HOST" /> запрашивает доступ к вашему экрану.</translation>
 <translation id="3693415264595406141">Пароль:</translation>
 <translation id="3694027410380121301">Выбрать предыдущую вкладку</translation>
-<translation id="3697100740575341996">Chrome Goodies на данном устройстве отключены администратором. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Адрес электронной почты</translation>
 <translation id="3700888195348409686">Показ на другом экране (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Стартовые страницы были изменены и теперь содержат URL <ph name="URL" />.</translation>
@@ -2138,7 +2134,6 @@
 <translation id="4289540628985791613">Обзор</translation>
 <translation id="4296575653627536209">Создать контролируемый профиль</translation>
 <translation id="4297322094678649474">Настройки перевода</translation>
-<translation id="4299141727003252811">Google может использовать данные браузера, например, о действиях в нем и о контенте на некоторых посещенных вами сайтах, чтобы персонализировать Chrome, рекламу и сервисы Google, такие как Переводчик и Поиск.</translation>
 <translation id="4300305918532693141">Чтобы изменить эту настройку, <ph name="BEGIN_LINK" />сбросьте параметры синхронизации<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">длинная (2 с)</translation>
 <translation id="4306119971288449206">Приложения должны иметь тип контента "<ph name="CONTENT_TYPE" />"</translation>
@@ -2461,7 +2456,6 @@
 <translation id="484921817528146567">Последний объект на панели запуска</translation>
 <translation id="4849286518551984791">Всемирное координированное время (UTC/GMT)</translation>
 <translation id="4849517651082200438">Не устанавливать</translation>
-<translation id="4850258771229959924">Просмотреть в Инструментах разработчика</translation>
 <translation id="4850669014075537160">Прокрутка</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4853020600495124913">Открыть в &amp;новом окне</translation>
@@ -3548,7 +3542,6 @@
 <translation id="6473842110411557830">Иллюстрация Powerwash</translation>
 <translation id="6474706907372204693">Предыдущий способ ввода</translation>
 <translation id="6474884162850599008">Отключить аккаунт Google Диска</translation>
-<translation id="6475079491906995455">Сервис "<ph name="SERVICE_NAME" />" запрашивает информацию об устройстве Chrome OS. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> хочет предоставить доступ к вашему экрану. Выберите окно, которое нужно показать.</translation>
 <translation id="6478248366783946499">Сохранить опасный файл?</translation>
 <translation id="6483805311199035658">Открывается <ph name="FILE" />...</translation>
@@ -4213,7 +4206,6 @@
 <translation id="7518150891539970662">Журналы WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Создать</translation>
-<translation id="7526413953848747421">Дополните Chrome удобнейшими функциями Google, например проверкой правописания и быстрым поиском.</translation>
 <translation id="7529411698175791732">Проверьте подключение к Интернету. Если оно установлено, попробуйте выйти из аккаунта и войти снова.</translation>
 <translation id="7530016656428373557">Скорость разрядки в ваттах</translation>
 <translation id="7531779363494549572">Откройте настройки устройства и выберите "Приложения и уведомления &gt; Уведомления".</translation>
@@ -5237,6 +5229,7 @@
 <translation id="9094982973264386462">Удалить</translation>
 <translation id="9095253524804455615">Удалить</translation>
 <translation id="9099674669267916096">Количество страниц</translation>
+<translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9100765901046053179">Дополнительные настройки</translation>
 <translation id="9101691533782776290">Запустить</translation>
 <translation id="9102610709270966160">Включить расширение</translation>

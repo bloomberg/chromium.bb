@@ -92,12 +92,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
-<translation id="1424081297104898791">Omogoča nadzor nad tem, kje se lahko uporabijo orodja za razvijalce.
-
-      Če je ta pravilnik nastavljen na »DeveloperToolsDisallowedForForceInstalledExtensions« (vrednost 0, ki je privzeta za uporabnike v podjetjih), je dostop do orodij za razvijalce in konzole JavaScript na splošno mogoč, vendar ne v kontekstu razširitev, nameščenih s pravilnikom podjetja.
-      Če je ta pravilnik nastavljen na »DeveloperToolsAllowed« (vrednost 1, ki je privzeta za uporabnike, ki niso upravljani), sta dostop do orodij za razvijalce in konzole JavaScript ter njuna uporaba mogoča v vseh kontekstih, vključno s kontekstom razširitev, nameščenih s pravilnikom podjetja.
-      Če je ta pravilnik nastavljen na »DeveloperToolsDisallowed« (vrednost 2), dostop do orodij za razvijalce ni mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.
-      Če je starejši pravilnik DeveloperToolsDisabled omogočen, bo vrednost tega pravilnika prezrta, orodja za razvijalce pa onemogočena.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
@@ -704,7 +698,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2874209944580848064">Opomba glede naprav s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo aplikacije za Android:</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
-<translation id="2884728160143956392">Na teh mestih dovoli samo sejne piškotke</translation>
 <translation id="2893546967669465276">Pošiljanje sistemskih dnevnikov v strežnik za upravljanje</translation>
 <translation id="2899002520262095963">Aplikacije za Android lahko uporabljajo omrežne konfiguracije in potrdila overitelja potrdil, nastavljena s tem pravilnikom, vendar nimajo dostopa do nekaterih možnosti konfiguracij.</translation>
 <translation id="2906874737073861391">Seznam razširitev AppPack</translation>
@@ -748,16 +741,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Pravilnik je izbiren. Če ga ne nastavite, iskalni izrazi ne bodo nadomeščeni.
 
           Pravilnik se upošteva samo, če je pravilnik »DefaultSearchProviderEnabled« omogočen.</translation>
-<translation id="3056439054015239107">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-      Oglejte si nastavitev pravilnika IsolateOrigins,
-      če želite izkoristiti prednosti obeh funkcij, osamitve in omejenega vpliva za uporabnike, tako da uporabite
-      pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
-      SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik SitePerProcess.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      </translation>
 <translation id="306887062252197004">Ta pravilnik uporabnikom funkcije WebDriver omogoča preglasitev
       pravilnikov, ki lahko ovirajo njeno delovanje.
 
@@ -1226,13 +1209,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4483649828988077221">Onemogoči samodejno posodabljanje</translation>
 <translation id="4485425108474077672">Konfiguriranje URL-ja strani »Nov zavihek«</translation>
 <translation id="4492287494009043413">Onemogoči ustvarjanje posnetkov zaslona</translation>
-<translation id="4497968613298501984">Konfiguriranje seznama URL-jev prijave za poslovna okolja (samo sheme HTTP in HTTPS). Na teh URL-jih bo zajet prstni odtis gesla in uporabljen za odkrivanje vnovične uporabe enakega gesla.
-      To nastavitev naj uporabijo samo uporabniki storitve GSuite, ki uporabljajo sistem enotne prijave/SAML.
-      Če želite, da bo <ph name="PRODUCT_NAME" /> pravilno zajel prstne odtise gesel, poskrbite, da so strani za prijavo skladne s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Če je ta nastavitev omogočena, bo storitev za zaščito gesel na teh URL-jih zajela prstni odtis gesla in ga uporabila za odkrivanje vnovične uporabe enakega gesla.
-      Če je ta nastavitev onemogočena ali ni nastavljena, bo storitev za zaščito gesel prstni odtis gesla zajela samo na naslovu https://accounts.google.com.
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih predstavnostnih datotek na disku.
 
 Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabil navedeno velikost predpomnilnika, ne glede na to, ali je uporabnik nastavil zastavico »--media-cache-size«. Vrednost, navedena v tem pravilniku, ni fiksna omejitev, temveč predlog predpomnilniškemu sistemu. Vrednosti pod nekaj megabajti so premajhne in bodo zaokrožene na razumno minimalno vrednost.
@@ -1360,13 +1336,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen oziroma je prazen, se lahko v storitev <ph name="PRODUCT_NAME" /> prijavi vsak uporabnik.</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
-<translation id="4868249328547841081">Konfiguriranje URL-ja za spremembo gesla (samo sheme HTTP in HTTPS). Storitev za zaščito gesel pošlje uporabnike na ta URL, da spremenijo gesla, če so bila uporabljena za lažno predstavljanje.
-      To nastavitev naj uporabijo samo uporabniki storitve GSuite, ki uporabljajo sistem enotne prijave/SAML.
-      Če želite, da bo <ph name="PRODUCT_NAME" /> pravično zajel prstni odtis novega gesla na tej strani za spremembo gesla, poskrbite, da je stran za spremembo gesla skladna s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Če je ta nastavitev omogočena, storitev za zaščito gesel pošlje uporabnike na ta URL, da spremenijo gesla, če so bila uporabljena za lažno predstavljanje.
-      Če je ta nastavitev onemogočena ali ni nastavljena, storitev za zaščito gesel pošlje uporabnike na naslov https://myaccounts.google.com, da spremenijo geslo.
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Določa, ali je dovoljeno zaklepanje preklopa zaslona iz mirovanja. Zaklepanje preklopa zaslona iz mirovanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje porabe.
 
           Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
@@ -1567,9 +1536,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik nastavljen, lahko uporabnik konfigurira <ph name="PRODUCT_OS_NAME" /> za prikaz samo v enem od jezikov, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, je <ph name="PRODUCT_OS_NAME" /> lahko prikazan v vseh podprtih jezikih. Če je ta pravilnik nastavljen na seznam z neveljavnimi vrednostmi, bodo vse neveljavne vrednosti prezrte. Če je uporabnik <ph name="PRODUCT_OS_NAME" /> v preteklosti konfiguriral za prikaz v jeziku, ki ga ta pravilnik ne dovoljuje, bo jezik prikaza preklopljen v dovoljen jezik, ko se uporabnik naslednjič prijavi. Če je uporabnik konfiguriral prednostne jezike in enega izmed njih dovoljuje ta pravilnik, bo <ph name="PRODUCT_OS_NAME" /> preklopil v ta jezik. V nasprotnem primeru bo <ph name="PRODUCT_OS_NAME" /> preklopil na prvo veljavno vrednost, ki jo določa ta pravilnik, ali rezervni jezik (trenutno je to ameriška angleščina, en-US), če ta pravilnik vsebuje samo neveljavne vnose.</translation>
 <translation id="5464816904705580310">Konfiguriranje nastavitev za upravljane uporabnike.</translation>
 <translation id="546726650689747237">Časovni zamik zatemnitve zaslona ob napajanju iz električnega omrežja</translation>
-<translation id="5469484020713359236">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko nastavljajo piškotke.
-
-          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultCookiesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
 <translation id="5475361623548884387">Omogoči tiskanje</translation>
 <translation id="547601067149622666">Ne dovoli oglasov na spletnih mestih z vsiljivimi oglasi</translation>
@@ -1876,9 +1842,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik omogočen ali ni nastavljen, Chromovo orodje za čiščenje redno pregleduje, ali je v sistemu neželena programska oprema, in če jo najde, uporabnik prejme poziv, ali jo želi odstraniti. Ročna sprožitev Chromovega orodja za čiščenje v nastavitvah chrome://settings je omogočena.
 
       Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Omogoča nastavitev seznama vzorcev URL-jev, ki določajo spletna mesta, ki jim ni dovoljeno nastavljati piškotkov.
-
-          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultCookiesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="6426205278746959912">Aplikacij za Android ni mogoče prisiliti, da bi uporabljale strežnik proxy. Aplikacije za Android imajo na voljo podnabor nastavitev strežnika proxy, ki jih lahko prostovoljno upoštevajo:
 
           Če izberete, da se strežnik proxy ne uporablja, so aplikacije za Android obveščene, da strežnik proxy ni konfiguriran.
@@ -1898,13 +1861,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če želite nadzirati, katerim spletnim mestom je dovoljeno izvajati vsebino Flash, si oglejte pravilnika »DefaultPluginsSetting«, »PluginsAllowedForUrls« in »PluginsBlockedForUrls«.
 
       Če je ta nastavitev onemogočena ali ni nastavljena, bo vsebina Flash drugega izvora ali majhna vsebina blokirana.</translation>
-<translation id="6535639183431116351">Ta pravilnik je zastarel v M68. Namesto tega uporabite pravilnik DeveloperToolsAvailability.
-
-      Onemogoči orodja za razvijalce in konzolo JavaScript.
-
-      Če to nastavitev omogočite, dostop do orodij za razvijalce ne bo mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.
-
-      Če to možnost onemogočite ali je ne nastavite, lahko uporabnik uporablja orodja za razvijalce in konzolo JavaScript.</translation>
 <translation id="653608967792832033">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz akumulatorja.
 
           Če je pravilnik nastavljen na vrednost nad nič, določa trajanje, v katerem mora biti uporabnik nedejaven in po preteku katerega <ph name="PRODUCT_OS_NAME" /> zaklene zaslon.
@@ -2013,16 +1969,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Podatki o pomnilniku se vseeno pošiljajo strani, ne glede na vrednost možnosti, vendar se poslane vrednosti
       kvantizirajo in je hitrost posodobitev iz varnostnih razlogov omejena. Če želite sprotne natančne podatke,
       uporabite orodja, kot je Telemetry.</translation>
-<translation id="6870914592443697993">
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-      Če je pravilnik omogočen, se bo vsak naveden izvor
-      s seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/, bo kot
-      del spletnega mesta https://example.com/ osamljeno
-      tudi spletno mesto https://foo.example.com/.
-      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
-      Če pravilnik ni konfiguriran, bodo za zaslon za prijavo uporabljene privzete nastavitve osamitve spletnih mest v okolju.
-      </translation>
 <translation id="6894178810167845842">URL strani »Nov zavihek«</translation>
 <translation id="6899705656741990703">Samodejno zaznavanje nastavitev proxyja</translation>
 <translation id="6903814433019432303">Ta pravilnik je aktiven samo v maloprodajnem načinu.
@@ -2165,13 +2111,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Dovoljene vrste povezav za posodobitve</translation>
 <translation id="7194407337890404814">Privzeto ime iskalnika</translation>
-<translation id="7199300565886109054">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim je dovoljeno nastavljati piškotke samo za trenutno sejo.
-
-          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultCookiesSetting«, kadar je ta nastavljen, v nasprotnem primeru pa iz uporabnikove osebne konfiguracije.
-
-          Če se <ph name="PRODUCT_NAME" /> izvaja v ozadju, se seja ob zaprtju zadnjega okna brskalnika morda ne bo zaprla, temveč bo aktivna, dokler se ne zapre brskalnik. Več informacij o konfiguriranju tega delovanja je na voljo v pravilniku »BackgroundModeEnabled«.
-
-          Če je pravilnik »RestoreOnStartup« nastavljen, da se obnovijo URL-ji prejšnjih sej, ta pravilnik ne bo upoštevan in piškotki za ta spletna mesta bodo trajno shranjeni.</translation>
 <translation id="7202925763179776247">Omogoči omejitve prenosov</translation>
 <translation id="7207095846245296855">Uveljavi Google Varno iskanje</translation>
 <translation id="7216442368414164495">Uporabnikom dovoli prijavo za razširjeno poročanje za Varno brskanje</translation>
@@ -2404,13 +2343,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Stran »Nov zavihek«</translation>
 <translation id="7788511847830146438">Za profil</translation>
-<translation id="7801886189430766248">Če je ta pravilnik omogočen, so podatki aplikacij za Android naloženi v strežnike storitve Android Backup Service in znova obnovljeni iz njih ob vnovični namestitvi združljivih aplikacij.
-
-      Če je ta pravilnik onemogočen, je storitev Android Backup Service izklopljena.
-
-      Če je ta nastavitev konfigurirana, je uporabniki ne morejo spremeniti sami.
-
-      Če ta nastavitev ni konfigurirana, uporabniki lahko vklopijo in izklopijo storitev Android Backup Service v aplikaciji za nastavitve v Androidu.</translation>
 <translation id="780603170519840350">Onemogoči uveljavljanje zahtev za preglednost potrdil za seznam zgoščevalnih vrednosti subjectPublicKeyInfo.
 
       S tem pravilnikom lahko onemogočite zahteve za razkritje za preglednost potrdil za verige potrdil, ki vsebujejo potrdila z eno od navedenih zgoščevalnih vrednosti subjectPublicKeyInfo. To omogoča, da potrdila, ki sicer ne bi bila zaupanja vredna, ker niso bila pravilno javno razkrita, še naprej uporabljate za gostitelje v poslovnih okoljih.

@@ -105,7 +105,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="283291358677939992">Cerca a la pàgina...</translation>
 <translation id="2834956026595107950"><ph name="TITLE" />, <ph name="STATE" />, <ph name="URL" /></translation>
 <translation id="2843803966603263712">Restableix config. Traductor</translation>
-<translation id="285960592395650245">Torna a baixar</translation>
+<translation id="285960592395650245">Torna a provar la baixada</translation>
 <translation id="2870560284913253234">Lloc</translation>
 <translation id="2871695793448672541">Contrasenya amagada</translation>
 <translation id="2898963176829412617">Carpeta nova…</translation>
@@ -425,7 +425,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8870413625673593573">Tancades recentment</translation>
 <translation id="8881801611828450202">Cerca aquesta imatge a <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sincronització de Google Chrome</translation>
-<translation id="895541991026785598">Informeu d'un problema</translation>
+<translation id="895541991026785598">Informa d'un problema</translation>
 <translation id="8971089644512329999">D'acord</translation>
 <translation id="8981454092730389528">Controls d'activitat de Google</translation>
 <translation id="8985320356172329008">Heu iniciat la sessió a Google com a</translation>

@@ -1057,7 +1057,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> از <ph name="USAGE" /> مگابایت فضای دیسک را استفاده می‌کند.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" حذف شود؟</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> نمی‌تواند نصب را کامل انجام دهد، اما از تصویر دیسک خود همچنان اجرا می‌کند.</translation>
-<translation id="2635176084534510129">تجربه‌های شخصی‌سازی‌شده‌تری (مثل پیشنهادهای بهتر برای محتوا و ترجمه هوشمندتر) دریافت کنید</translation>
 <translation id="2635276683026132559">امضا</translation>
 <translation id="2636625531157955190">‏Chrome نمی‌تواند به تصویر دسترسی پیدا کند.</translation>
 <translation id="2638087589890736295">برای شروع همگام‌سازی به عبارت عبور نیاز است</translation>
@@ -1347,7 +1346,6 @@
 <translation id="3061707000357573562">سرویس وصله</translation>
 <translation id="3064410671692449875">داده ناکافی</translation>
 <translation id="3065041951436100775">بازخورد بسته شدن برگه.</translation>
-<translation id="3066642396596108483">در همه دستگاه‌هایتان نشانک‌ها، گذرواژه‌ها و سابقه را همگام‌سازی کنید</translation>
 <translation id="3067198179881736288">برنامه نصب شود؟</translation>
 <translation id="3067198360141518313">اجرای این افزایه</translation>
 <translation id="3071624960923923138">برای باز کردن برگه جدید، می‌توانید اینجا را کلیک کنید</translation>
@@ -1613,7 +1611,6 @@
 <translation id="347670947055184738">وای! سیستم نتوانست خط‌مشی را برای دستگاهتان واکشی کند.</translation>
 <translation id="347785443197175480">همچنان دسترسی به دوربین و میکروفون شما، توسط <ph name="HOST" /> مجاز باشد</translation>
 <translation id="3478685642445675458">لطفاً قبل از حذف کردن شخصی، قفل نمایه‌تان را باز کنید.</translation>
-<translation id="347919930506963698">‏دریافت موارد به‌مراتب بیشتری از Chrome</translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="3480892288821151001">متصل کردن پنجره در چپ</translation>
 <translation id="3484273680291419129">درحال پاک کردن نرم‌افزار مضر…</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> می‌خواهد صفحه شما را هم‌رسانی کند</translation>
 <translation id="3693415264595406141">گذرواژه:</translation>
 <translation id="3694027410380121301">انتخاب برگه قبلی</translation>
-<translation id="3697100740575341996">‏سرپرست IT شما Chrome Goodies را برای دستگاه شما غیرفعال کرده است. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">آدرس ايميل</translation>
 <translation id="3700888195348409686">درحال ارائه (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">صفحه‌های شروع تغییر کردند تا <ph name="URL" /> به آن‌ها اضافه شود.</translation>
@@ -2133,7 +2129,6 @@
 <translation id="4289540628985791613">مرور کلی</translation>
 <translation id="4296575653627536209">افزودن کاربر تحت نظارت</translation>
 <translation id="4297322094678649474">تغییر زبان‌ها</translation>
-<translation id="4299141727003252811">‏ممکن است Google از فعالیت مرورتان، محتوای موجود در برخی سایت‌هایی که بازدید می‌کنید و سایر تعاملات مرورگر برای شخصی‌سازی کردن Chrome و سایر سرویس‌های Google (مثل «ترجمه»، «جستجو» و آگهی‌ها) استفاده کند.</translation>
 <translation id="4300305918532693141">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">طولانی (۲ ثانیه)</translation>
 <translation id="4306119971288449206">نوع محتوای برنامه باید «<ph name="CONTENT_TYPE" />» باشد</translation>
@@ -2456,7 +2451,6 @@
 <translation id="484921817528146567">آخرین مورد قفسه</translation>
 <translation id="4849286518551984791">‏زمان هماهنگ جهانی (UTC/GMT)</translation>
 <translation id="4849517651082200438">نصب نشود</translation>
-<translation id="4850258771229959924">مشاهده در ابزارهای برنامه‌نویس</translation>
 <translation id="4850669014075537160">پیمایش</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4853020600495124913">باز کردن در پنجره &amp;جدید</translation>
@@ -3543,7 +3537,6 @@
 <translation id="6473842110411557830">‏تصویر Powerwash</translation>
 <translation id="6474706907372204693">روش ورودی قبلی</translation>
 <translation id="6474884162850599008">‏قطع ارتباط حساب Google Drive</translation>
-<translation id="6475079491906995455">‏<ph name="SERVICE_NAME" /> می‌خواهد بررسی کند که آیا شما درحال استفاده از دستگاهی با سیستم عامل Chrome واجد شرایط هستید یا خیر.<ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> می‌خواهد محتوای صفحه شما را به اشتراک بگذارد. آنچه را می‌خواهید به اشتراک بگذارید، انتخاب کنید.</translation>
 <translation id="6478248366783946499">فایل خطرناک حفظ شود؟</translation>
 <translation id="6483805311199035658">در حال باز کردن <ph name="FILE" />...</translation>
@@ -4210,7 +4203,6 @@
 <translation id="7518150891539970662">‏گزارش‌های WebRTC ‏(<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7525067979554623046">ایجاد</translation>
-<translation id="7526413953848747421">‏سرویس‌های قدرتمند Google (مثل غلط‌گیر املا و ضربه برای جستجو) را به Chrome بیاورید</translation>
 <translation id="7529411698175791732">اتصال اینترنت را بررسی کنید. اگر مشکل حل نشد، از سیستم خارج شوید و دوباره به آن وارد شوید.</translation>
 <translation id="7530016656428373557">نسبت تخلیه به وات</translation>
 <translation id="7531779363494549572">به «تنظیمات &gt; برنامه‌ها و اعلان‌ها &gt; اعلان‌ها» بروید.</translation>
@@ -5234,6 +5226,7 @@
 <translation id="9094982973264386462">پاک کردن</translation>
 <translation id="9095253524804455615">پاک کردن</translation>
 <translation id="9099674669267916096">تعداد صفحه</translation>
+<translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9100765901046053179">تنظیمات پیشرفته</translation>
 <translation id="9101691533782776290">راه‌اندازی برنامه</translation>
 <translation id="9102610709270966160">فعال کردن افزونه</translation>

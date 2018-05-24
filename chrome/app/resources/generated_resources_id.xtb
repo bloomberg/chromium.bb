@@ -1061,7 +1061,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> menggunakan <ph name="USAGE" /> MB ruang disk.</translation>
 <translation id="2633212996805280240">Hapus "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> tidak dapat menyelesaikan pemasangan, tetapi akan terus dijalankan dari citra diskanya.</translation>
-<translation id="2635176084534510129">Dapatkan pengalaman yang lebih dipersonalisasi, seperti saran konten yang lebih baik dan Terjemahan yang lebih cerdas</translation>
 <translation id="2635276683026132559">Penandatanganan</translation>
 <translation id="2636625531157955190">Chrome tidak dapat mengakses gambar.</translation>
 <translation id="2638087589890736295">Perlu frasa sandi untuk memulai sinkronisasi</translation>
@@ -1351,7 +1350,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3061707000357573562">Layanan Patch</translation>
 <translation id="3064410671692449875">Data tidak cukup</translation>
 <translation id="3065041951436100775">Masukan tab yang ditutup.</translation>
-<translation id="3066642396596108483">Sinkronkan bookmark, sandi, dan histori di semua perangkat Anda</translation>
 <translation id="3067198179881736288">Instal aplikasi?</translation>
 <translation id="3067198360141518313">Jalankan plugin ini</translation>
 <translation id="3071624960923923138">Anda dapat mengklik di sini untuk membuka tab baru</translation>
@@ -1617,7 +1615,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="347670947055184738">Maaf!  Sistem gagal mengambil kebijakan untuk perangkat Anda.</translation>
 <translation id="347785443197175480">Terus izinkan <ph name="HOST" /> untuk mengakses kamera dan mikrofon Anda</translation>
 <translation id="3478685642445675458">Buka kunci profil sebelum menghapus orang.</translation>
-<translation id="347919930506963698">Optimalkan Chrome</translation>
 <translation id="3479552764303398839">Jangan sekarang</translation>
 <translation id="3480892288821151001">Galangkan jendela ke kiri</translation>
 <translation id="3484273680291419129">Menghapus software berbahaya...</translation>
@@ -1760,7 +1757,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> ingin berbagi layar Anda</translation>
 <translation id="3693415264595406141">Sandi:</translation>
 <translation id="3694027410380121301">Pilih Tab Sebelumnya</translation>
-<translation id="3697100740575341996">Administrator TI Anda telah menonaktifkan Chrome Goodies untuk perangkat Anda. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Alamat email</translation>
 <translation id="3700888195348409686">Menampilkan (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Halaman awal diubah untuk menyertakan <ph name="URL" />.</translation>
@@ -2137,7 +2133,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4289540628985791613">Ikhtisar</translation>
 <translation id="4296575653627536209">Tambahkan Pengguna yang Dilindungi</translation>
 <translation id="4297322094678649474">Ubah Bahasa</translation>
-<translation id="4299141727003252811">Google mungkin menggunakan aktivitas browsing Anda, konten di beberapa situs yang dibuka, dan interaksi browser lainnya untuk mempersonalisasi Chrome dan layanan Google lain seperti Terjemahan, Penelusuran, dan iklan.</translation>
 <translation id="4300305918532693141">Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lama (2 dtk)</translation>
 <translation id="4306119971288449206">Aplikasi harus disediakan dengan jenis konten "<ph name="CONTENT_TYPE" />"</translation>
@@ -2460,7 +2455,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="484921817528146567">Item rak terakhir</translation>
 <translation id="4849286518551984791">Waktu Universal Terkoordinasi (UTC/GMT)</translation>
 <translation id="4849517651082200438">Jangan Dipasang</translation>
-<translation id="4850258771229959924">Lihat di Alat Pengembang</translation>
 <translation id="4850669014075537160">Gulir</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4853020600495124913">Buka di &amp;jendela baru</translation>
@@ -3547,7 +3541,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6473842110411557830">Ilustrasi Powerwash</translation>
 <translation id="6474706907372204693">Metode masukan sebelumnya</translation>
 <translation id="6474884162850599008">Memutuskan hubungan akun Google Drive</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> ingin memastikan bahwa Anda menggunakan perangkat Chrome OS yang memenuhi syarat. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> ingin membagikan konten layar Anda. Pilih yang ingin Anda bagikan.</translation>
 <translation id="6478248366783946499">Simpan file berbahaya?</translation>
 <translation id="6483805311199035658">Membuka <ph name="FILE" />...</translation>
@@ -4212,7 +4205,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="7518150891539970662">Log WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7525067979554623046">Buat</translation>
-<translation id="7526413953848747421">Bawa layanan Google yang canggih ke Chrome, seperti periksa ejaan dan tap untuk menelusuri</translation>
 <translation id="7529411698175791732">Periksa koneksi internet Anda. Jika masalah tetap berlanjut, coba logout lalu login lagi.</translation>
 <translation id="7530016656428373557">Laju Penggunaan Daya dalam Watt</translation>
 <translation id="7531779363494549572">Buka Setelan &gt; Aplikasi &amp; notifikasi &gt; Notifikasi.</translation>
@@ -5236,6 +5228,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9094982973264386462">Hapus</translation>
 <translation id="9095253524804455615">Hapus</translation>
 <translation id="9099674669267916096">Hitungan halaman</translation>
+<translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9100765901046053179">Setelan lanjutan</translation>
 <translation id="9101691533782776290">Luncurkan aplikasi</translation>
 <translation id="9102610709270966160">Aktifkan Ekstensi</translation>

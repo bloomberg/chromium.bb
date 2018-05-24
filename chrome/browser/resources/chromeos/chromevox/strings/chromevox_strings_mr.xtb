@@ -421,7 +421,7 @@
 <translation id="4471074325120394300">कोणतेही दुवे नाहीत.</translation>
 <translation id="4476183483923481720">नवीन रेखा</translation>
 <translation id="4482330759234983253">मागील सारणी</translation>
-<translation id="4491109536499578614">प्रतिमा</translation>
+<translation id="4491109536499578614">इमेज</translation>
 <translation id="4517854969512651305">मूल्य वाढवा</translation>
 <translation id="4529987814483543472">क्लासिक मुख्य नकाशा</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{स्लॅश}one{# स्लॅश}other{# स्लॅश}}</translation>
@@ -586,7 +586,7 @@
 <translation id="5728409797179002635">कोणतीही सारणी आढळली नाही.</translation>
 <translation id="5732189279857692565">हे दुसरे शीर्षक आहे. सुरु ठेवा; Search+H किंंवा Search+Shift+H दाबा</translation>
 <translation id="5748623122140342504">मागील स्तर 5 शीर्षक</translation>
-<translation id="5750633686117194034">कोणताही सुधारक दाबलेला नाही; कृपया एक किंवा अधिक मॉडिफायर दाबा आणि धरून ठेवा; एकदा पूर्ण झाल्यानंतर आपली बोटे उचलून घ्या म्हणजे आपल्याला सेट झालेल्या की ऐकू येतील. बाहेर पडण्यासाठी टॅब.</translation>
+<translation id="5750633686117194034">कोणताही सुधारक दाबलेला नाही; कृपया एक किंवा अधिक मॉडिफायर दाबा आणि धरून ठेवा; एकदा पूर्ण झाल्यानंतर तुमची बोटे उचलून घ्या म्हणजे आपल्याला सेट झालेल्या की ऐकू येतील. बाहेर पडण्यासाठी टॅब.</translation>
 <translation id="5760594853119905566">परिशिष्ट</translation>
 <translation id="5788275253279308023">गुप्त विंडो <ph name="TITLE" /> टॅब</translation>
 <translation id="5806206155699461681">विशिष्ट साइट वर्धित करा (Google शोध सारख्या).</translation>
@@ -632,7 +632,7 @@
 <translation id="6138576064440631958">$1 कॉर्ड</translation>
 <translation id="6142308968191113180">मथळा 4</translation>
 <translation id="6164829606128959761">मीटर</translation>
-<translation id="6169420925157477918">मोठ्या वर्णनासह प्रतिमा</translation>
+<translation id="6169420925157477918">मोठ्या वर्णनासह इमेज</translation>
 <translation id="6186305613600865047">पृष्ठाच्या तळाशी जंप करा</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Down</translation>

@@ -123,7 +123,7 @@
 <translation id="2121067395472282800">एक्सेस कुंजी:<ph name="KEY" /></translation>
 <translation id="2138345533858834403">स्क्रीन के सबसे ऊपर स्थित ChromeVox फलक में रीफ़्रेश
         किए जा सकने वाले ब्रेल प्रदर्शन का आउटपुट की नकल प्रस्तुत करता है.</translation>
-<translation id="2163782704988363449">शुद्धिपत्र</translation>
+<translation id="2163782704988363449">गलतियां</translation>
 <translation id="2169714232367507776">वर्तमान आइटम पर क्लिक करें</translation>
 <translation id="2179452035581866348">ChromeVox आपको आवश्यक और अतिरिक्त जानकारी देने के लिए ध्वनियों का उपयोग करता है. हर ध्वनि का क्या अर्थ है, इसे सीखकर आप अधिक तेज़ी से नेविगेट करने के लिए इन ध्वनियों का उपयोग कर सकते हैं. अपने आपको सहज महसूस करने पर आप बोली में विस्तृत विवरणों को बंद कर सकते हैं और पेज के बारे में आवश्‍यक जानकारी के लिए उन पर विश्वास कर सकते हैं. यहां ध्वनियों की पूरी सूची और उनके अर्थ दिए गए हैं.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कोष्ठक}one{# बंद कोष्ठक}other{# बंद कोष्ठक}}</translation>
@@ -330,7 +330,7 @@
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्‍स चेक न‍हीं किया गया</translation>
 <translation id="3589661172894441357">शब्दावली</translation>
 <translation id="3599054940393788245">गणना में नहीं</translation>
-<translation id="360241989769010433">स्वीकृतियां</translation>
+<translation id="360241989769010433">धन्यवाद</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{बैकटिक}one{# बैकटिक}other{# बैकटिक}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
@@ -568,7 +568,7 @@
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">लॉग</translation>
 <translation id="5628125749885014029">h4</translation>
-<translation id="5632083598315326067">ग्राफ़िक्स प्रतीक</translation>
+<translation id="5632083598315326067">ग्राफ़िक्स चिह्न</translation>
 <translation id="5637871198229500030">कोई पिछली तालिका नहीं.</translation>
 <translation id="5653397561111110475">Chromebook टच स्क्रीन एक्सेस-योग्यता सुविधाओं का उपयोग करें</translation>
 <translation id="5655682562155942719">आदेशों पर जाएं</translation>
@@ -593,7 +593,7 @@
 <translation id="5806206155699461681">विशिष्ट साइटें (जैसे Google खोज) एन्‍हांस करें.</translation>
 <translation id="5819072574982403430">ट्री आइटम</translation>
 <translation id="5826479389509458994">पंक्ति <ph name="ROW" /> स्तंभ <ph name="COL" /></translation>
-<translation id="5847883414085148048">निष्ठा</translation>
+<translation id="5847883414085148048">लगन</translation>
 <translation id="5850707923114094062">पीछे पैन करें</translation>
 <translation id="5851548754964597211">टैब सूची</translation>
 <translation id="5859752971144398932">ढूंढें पेज से बाहर हो गया.</translation>
@@ -604,7 +604,7 @@
 <translation id="5887397643266327462">ब्रेल कैप्शन सक्षम किए गए.</translation>
 <translation id="5891934789323004067">तालिका</translation>
 <translation id="5899860758576822363">जब ChromeVox बोल रहा हो, तब कम वॉल्यूम में चलाएं</translation>
-<translation id="5921587111466148855">अध्याय</translation>
+<translation id="5921587111466148855">पाठ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{बराबर}one{# बराबर चिह्न}other{# बराबर चिह्न}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5948123859135882163">गणितीय व्यंजकों की व्याख्या को संरचनात्मक और शब्दार्थ विज्ञान के बीच टॉगल करें</translation>
@@ -712,13 +712,13 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="7041173719775863268">चयन समाप्त करें</translation>
-<translation id="7048792632163898198">अगले कुछ शॉर्टकट ChromeVox आदेश नहीं हैं, लेकिन फिर भी Chrome का ज़्यादा से ज़्यादा लाभ लेने के लिए वे बहुत उपयोगी हैं.
-बटन और लिंक जैसे कार्रवाई योग्य आइटम के ज़रिए आगे नेविगेट करने के लिए, Tab कुंजी दबाएं. पीछे नेविगेट करने के लिए, Shift+Tab दबाएं.
-Chrome ब्राउज़र पता बॉक्स डालने के लिए, जिसे omnibox भी कहा जाता है, Control + L दबाएं.
+<translation id="7048792632163898198">अगले कुछ शॉर्टकट ChromeVox निर्देश नहीं हैं लेकिन फिर भी Chrome का ज़्यादा से ज़्यादा फ़ायदा उठाने के लिए वे बहुत उपयोगी हैं.
+बटन और लिंक जैसे कार्रवाई आइटम से आगे जाने के लिए, Tab बटन दबाएं. पीछे जाने के लिए, Shift+Tab दबाएं.
+'Chrome ब्राउज़र पता बॉक्स' खोलने के लिए, जिसे omnibox भी कहा जाता है, Control + L दबाएं.
 अपने आप नया टैब खोलने और उस पर जाने के लिए, Control+T दबाएं. आपका कर्सर omnibox में होगा.
 कोई टैब बंद करने के लिए, Control+W दबाएं.
-खुले टैब में आगे जाने के लिए, Control+Tab का इस्तेमाल करें.
-Chrome ब्राउज़र मेनू खोलने के लिए, Alt+F दबाएं.</translation>
+अगले खुले हुए टैब में जाने के लिए, Control+Tab का इस्तेमाल करें.
+'Chrome ब्राउज़र मेन्यू' खोलने के लिए, Alt+F दबाएं.</translation>
 <translation id="7086377898680121060">स्क्रीन की रोशनी बढ़ाएं</translation>
 <translation id="7095834689119144465">केवल संख्यात्मक लेख संपादित करें</translation>
 <translation id="7096001299300236431">पिछला मीडिया</translation>

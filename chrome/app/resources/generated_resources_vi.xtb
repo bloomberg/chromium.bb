@@ -1062,7 +1062,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> đang sử dụng <ph name="USAGE" /> MB dung lượng đĩa.</translation>
 <translation id="2633212996805280240">Xóa "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> không thể hoàn tất cài đặt nhưng sẽ tiếp tục chạy từ hình ảnh đĩa của trình duyệt này.</translation>
-<translation id="2635176084534510129">Tận hưởng trải nghiệm cá nhân hóa hơn, chẳng hạn như đề xuất nội dung phù hợp hơn và Dịch thông minh hơn</translation>
 <translation id="2635276683026132559">Ký</translation>
 <translation id="2636625531157955190">Chrome không thể truy cập hình ảnh.</translation>
 <translation id="2638087589890736295">Yêu cầu cụm mật khẩu để bắt đầu đồng bộ hóa</translation>
@@ -1184,7 +1183,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2796424461616874739">Đã hết thời gian xác thực khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="2796740370559399562">Tiếp tục cho phép cookie</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
-<translation id="2800760947029405028">Tải hình ảnh lên</translation>
+<translation id="2800760947029405028">Tải ảnh lên</translation>
 <translation id="2803375539583399270">Nhập mã PIN</translation>
 <translation id="2805646850212350655">Hệ thống Tệp Mã hóa của Microsoft</translation>
 <translation id="2805756323405976993">Ứng dụng</translation>
@@ -1352,7 +1351,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3061707000357573562">Dịch vụ vá lỗi</translation>
 <translation id="3064410671692449875">Không đủ dữ liệu</translation>
 <translation id="3065041951436100775">Phản hồi tab bị lỗi.</translation>
-<translation id="3066642396596108483">Đồng bộ hóa dấu trang, mật khẩu và lịch sử trên tất cả các thiết bị của bạn</translation>
 <translation id="3067198179881736288">Cài đặt ứng dụng?</translation>
 <translation id="3067198360141518313">Chạy plugin này</translation>
 <translation id="3071624960923923138">Bạn có thể nhấp vào đây để mở tab mới</translation>
@@ -1618,7 +1616,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="347670947055184738">Rất tiếc! Hệ thống không tìm nạp được chính sách cho thiết bị của bạn.</translation>
 <translation id="347785443197175480">Tiếp tục cho phép <ph name="HOST" /> truy cập vào máy ảnh và micrô của bạn</translation>
 <translation id="3478685642445675458">Vui lòng mở khóa hồ sơ của bạn trước khi xóa một người.</translation>
-<translation id="347919930506963698">Khai thác nhiều hơn nữa từ Chrome</translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
 <translation id="3480892288821151001">Gắn cửa sổ về phía bên trái</translation>
 <translation id="3484273680291419129">Đang xóa phần mềm độc hại...</translation>
@@ -1761,7 +1758,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> muốn chia sẻ màn hình của bạn</translation>
 <translation id="3693415264595406141">Mật khẩu:</translation>
 <translation id="3694027410380121301">Chọn Tab Trước</translation>
-<translation id="3697100740575341996">Quản trị viên CNTT của bạn đã tắt Chrome Goodies cho thiết bị của bạn. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Địa chỉ email</translation>
 <translation id="3700888195348409686">Đang hiển thị (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Trang khởi động của bạn đã được thay đổi để bao gồm <ph name="URL" />.</translation>
@@ -2138,7 +2134,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="4289540628985791613">Tổng quan</translation>
 <translation id="4296575653627536209">Thêm người dùng được giám sát</translation>
 <translation id="4297322094678649474">Thay đổi ngôn ngữ</translation>
-<translation id="4299141727003252811">Google có thể sử dụng hoạt động duyệt web của bạn, nội dung trên một số trang web bạn truy cập và các tương tác khác với trình duyệt để cá nhân hóa Chrome cũng như những dịch vụ khác của Google như Dịch, Tìm kiếm và quảng cáo.</translation>
 <translation id="4300305918532693141">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lâu (2 giây)</translation>
 <translation id="4306119971288449206">Ứng dụng phải được cung cấp loại nội dung "<ph name="CONTENT_TYPE" />"</translation>
@@ -2461,7 +2456,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="484921817528146567">Mục giá sau cùng</translation>
 <translation id="4849286518551984791">Giờ phối hợp quốc tế (UTC/GMT)</translation>
 <translation id="4849517651082200438">Không cài đặt</translation>
-<translation id="4850258771229959924">Xem trong Công cụ nhà phát triển</translation>
 <translation id="4850669014075537160">Cuộn</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4853020600495124913">Mở trong &amp;cửa sổ mới</translation>
@@ -3548,7 +3542,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6473842110411557830">Minh họa Powerwash</translation>
 <translation id="6474706907372204693">Phương thức nhập trước đó</translation>
 <translation id="6474884162850599008">Ngắt kết nối tài khoản Google Drive</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> muốn kiểm tra xem thiết bị Chrome OS bạn đang sử dụng có đủ điều kiện hay không. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> muốn chia sẻ nội dung trên màn hình của bạn. Chọn nội dung bạn muốn chia sẻ.</translation>
 <translation id="6478248366783946499">Giữ tệp nguy hiểm?</translation>
 <translation id="6483805311199035658">Đang mở <ph name="FILE" />...</translation>
@@ -4213,7 +4206,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="7518150891539970662">Nhật ký WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Tạo</translation>
-<translation id="7526413953848747421">Cung cấp các dịch vụ mạnh mẽ của Google như kiểm tra lỗi chính tả và nhấn để tìm kiếm trên Chrome</translation>
 <translation id="7529411698175791732">Kiểm tra kết nối Internet. Nếu sự cố vẫn tiếp diễn, hãy thử đăng xuất và đăng nhập lại.</translation>
 <translation id="7530016656428373557">Tốc độ phóng điện tính bằng Watt</translation>
 <translation id="7531779363494549572">Chuyển đến Cài đặt &gt; Ứng dụng và thông báo &gt; Thông báo.</translation>
@@ -5237,6 +5229,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9094982973264386462">Xóa</translation>
 <translation id="9095253524804455615">Xóa</translation>
 <translation id="9099674669267916096">Số lượng trang</translation>
+<translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9100765901046053179">Cài đặt nâng cao</translation>
 <translation id="9101691533782776290">Chạy ứng dụng</translation>
 <translation id="9102610709270966160">Bật tiện ích</translation>

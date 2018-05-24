@@ -1061,7 +1061,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> <ph name="USAGE" /> ሜባ የዲስክ ቦታ እየተጠቀመ ነው።</translation>
 <translation id="2633212996805280240">«<ph name="EXTENSION_NAME" />» ይወገድ?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ጭነቱን ሊያጠናቅቅ አልቻለም፣ ግን ከዲስክ ምስሉ መሄዱን ይቀጥላል።</translation>
-<translation id="2635176084534510129">እንደ የተሻለ የይዘት አስተያየት ጥቆማዎች እና ይበልጥ ዘመናዊ ትርጉምን ያሉ ይበልጥ ግላዊነት የተላበሱ ተሞክሮዎችን ያግኙ</translation>
 <translation id="2635276683026132559">መፈረም</translation>
 <translation id="2636625531157955190">Chrome ምስሉን ሊደርስበት አልቻለም።</translation>
 <translation id="2638087589890736295">ስምረትን ለመጀመር የይለፍ ሐረግ ያስፈልጋል</translation>
@@ -1351,7 +1350,6 @@
 <translation id="3061707000357573562">የመጠገኛ አገልግሎት</translation>
 <translation id="3064410671692449875">በቂ ያልሆነ ውሂብ</translation>
 <translation id="3065041951436100775">የትር ተገድሏል ግብረመልስ።</translation>
-<translation id="3066642396596108483">የእርስዎን ዕልባቶች፣ ታሪክ እና የይለፍ ቃላት በሁሉም መሣሪያዎችዎ ላይ ያስምሩ</translation>
 <translation id="3067198179881736288">መተግበሪያ ይጫን?</translation>
 <translation id="3067198360141518313">ይህን ተሰኪ አሂድ</translation>
 <translation id="3071624960923923138">አዲስ ትር ለመክፈት እዚህ ጠቅ ማድረግ ይችላሉ</translation>
@@ -1617,7 +1615,6 @@
 <translation id="347670947055184738">ውይ!  ሥርዓቱ ለመሣሪያዎ መመሪያን ማግኘት አልተሳካለትም።</translation>
 <translation id="347785443197175480"><ph name="HOST" /> ካሜራዎን እና ማይክሮፎንዎን እንዲደርስ መፍቀዱን ይቀጥሉ</translation>
 <translation id="3478685642445675458">አንድ ሰው ከማስወገድዎ በፊት እባክዎ የእርስዎን መገለጫ ይክፈቱ።</translation>
-<translation id="347919930506963698">ከChrome ይበልጥ ተጨማሪ ያግኙ</translation>
 <translation id="3479552764303398839">አሁን አይደለም</translation>
 <translation id="3480892288821151001">መስኮት ግራ ላይ ትከል</translation>
 <translation id="3484273680291419129">ጎጂ ሶፍትዌርን በማስወገድ ላይ...</translation>
@@ -1760,7 +1757,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> የእርስዎን ማያ ገጽ ማጋራት ይፈልጋል</translation>
 <translation id="3693415264595406141">የይለፍ ቃል፦</translation>
 <translation id="3694027410380121301">ቀዳሚ ትርን ምረጥ</translation>
-<translation id="3697100740575341996">የእርስዎ አይ ቲ አስተዳዳሪ Chrome Goodies ለመሣሪያዎ አሰናክሏል። <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">የኢሜይል አድራሻ</translation>
 <translation id="3700888195348409686">(<ph name="PAGE_ORIGIN" />) በማቅረብ ላይ</translation>
 <translation id="3702500414347826004">የእርስዎ የጅምር ገጾች <ph name="URL" />ን ለማካተት ተቀይረዋል።</translation>
@@ -2135,7 +2131,6 @@
 <translation id="4289540628985791613">ማጠቃለያ</translation>
 <translation id="4296575653627536209">ክትትል የሚደረግበት ተጠቃሚ አክል</translation>
 <translation id="4297322094678649474">ቋንቋዎችን ይቀይሩ</translation>
-<translation id="4299141727003252811">Chromeን እና እንደ ትርጉም፣ ፍለጋ እና ማስታወቂያዎች ያሉ ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ Google የእርስዎን የአሰሳ እንቅስቃሴ፣ እርስዎ በጎበኟቸው አንዳንድ ጣቢያዎች ላይ ያሉ ይዘቶችን እና ሌሎች የአሰሽ መስተጋብሮችን ሊጠቀም ይችላል።</translation>
 <translation id="4300305918532693141">ይህን ቅንብር ለመለወጥ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
 <translation id="4305227814872083840">ረጅም (2 ሴ)</translation>
 <translation id="4306119971288449206">መተግበሪያዎች በይዘት አይነት «<ph name="CONTENT_TYPE" />» ሊቀርቡ ይገባል</translation>
@@ -2458,7 +2453,6 @@
 <translation id="484921817528146567">የመጨረሻው የመደርደሪያ ንጥል</translation>
 <translation id="4849286518551984791">የተቀነባበረ ሁለገብ ሰዓት (ዩቲሲ/ጂኤምቲ)</translation>
 <translation id="4849517651082200438">አትጫን</translation>
-<translation id="4850258771229959924">የገንቢ መሳሪያዎችን ውስጥ ይመልከቱ</translation>
 <translation id="4850669014075537160">ሽብለላ</translation>
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="4853020600495124913">&amp;በአዲስ መስኮት ውስጥ ክፈት</translation>
@@ -3544,7 +3538,6 @@
 <translation id="6473842110411557830">የPowerwash ሥዕል</translation>
 <translation id="6474706907372204693">ቀዳሚ የግቤት ስልት</translation>
 <translation id="6474884162850599008">የGoogle Drive መለያን አላቅቅ</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> ብቁ የሆነ የChrome ሥርዓተ ክወና መሣሪያ እየተጠቀሙ መሆንዎን ማረጋገጥ ይፈልጋል። <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> የማያ ገጽዎን ይዘቶች ማጋራት ይፈልጋል። ምን ማጋራት እንደሚፈልጉ ይምረጡ።</translation>
 <translation id="6478248366783946499">አደገኛ ፋይል ይቀመጥ?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> በመክፈት ላይ…</translation>
@@ -4209,7 +4202,6 @@
 <translation id="7518150891539970662">የWebRTC ምዝግብ ማስታወሻዎች (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
 <translation id="7525067979554623046">ፍጠር</translation>
-<translation id="7526413953848747421">እንደ የሥርዓተ ፊደል አጻጻፍ ማረሚያ ያሉ ኃይለኛ የGoogle አገልግሎቶችን ያምጡና ወደ Chrome ለመፈለግ መታ ያድርጉ</translation>
 <translation id="7529411698175791732">የበይነመረብ ግንኙነትዎን ይፈትሹ። ችግሩ ከቀጠለ ዘግተው ወጥተው እንደገና ለመግባት ይሞክሩ።</translation>
 <translation id="7530016656428373557">የትፋት ፍጥነት በዋት</translation>
 <translation id="7531779363494549572">ወደ ቅንብሮች &gt; መተግበሪያዎች እና ማሳወቂያዎች &gt; ማሳወቂያዎች ይሂዱ።</translation>
@@ -5238,6 +5230,7 @@ nil</translation>
 <translation id="9094982973264386462">አስወግድ</translation>
 <translation id="9095253524804455615">አስወግድ</translation>
 <translation id="9099674669267916096">የገጽ ብዛት</translation>
+<translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9100765901046053179">የላቁ ቅንብሮች</translation>
 <translation id="9101691533782776290">መተግበሪያ አስጀምር</translation>
 <translation id="9102610709270966160">ቅጥያውን አንቃ</translation>

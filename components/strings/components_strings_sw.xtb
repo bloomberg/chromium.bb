@@ -183,7 +183,7 @@
 <translation id="2181821976797666341">Sera</translation>
 <translation id="2183608646556468874">Nambari ya Simu</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{Anwani 1}other{Anwani #}}</translation>
-<translation id="2187317261103489799">Gundua (chaguo-msingi)</translation>
+<translation id="2187317261103489799">Gundua (chaguo msingi)</translation>
 <translation id="2202020181578195191">Andika mwaka sahihi wa kuisha kwa muda wa matumizi</translation>
 <translation id="2212735316055980242">Sera haikupatikana</translation>
 <translation id="2213606439339815911">Inachukua viingizo...</translation>
@@ -208,7 +208,7 @@
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2365563543831475020">Ripoti ya kuacha kufanya kazi iliyochukuliwa <ph name="CRASH_TIME" /> haikupakiwa</translation>
 <translation id="2367567093518048410">Kiwango</translation>
-<translation id="2384307209577226199">Biashara chaguo-msingi</translation>
+<translation id="2384307209577226199">Biashara chaguo msingi</translation>
 <translation id="2386255080630008482">Cheti cha seva kimebatilishwa.</translation>
 <translation id="2392959068659972793">Onyesha sera zisizowekwa thamani</translation>
 <translation id="239429038616798445">Mbinu hii ya usafirishaji haipatikani. Jaribu mbinu tofauti.</translation>
@@ -361,7 +361,7 @@
 <translation id="3399952811970034796">Mahali Bidhaa Itapelekwa</translation>
 <translation id="3422248202833853650">Jaribu kuondoka kwenye programu nyingine ili upate nafasi zaidi.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> haiwezi kufikiwa kwa sasa.</translation>
-<translation id="3427092606871434483">Ruhusu (chaguo-msingi)</translation>
+<translation id="3427092606871434483">Ruhusu (chaguo msingi)</translation>
 <translation id="3427342743765426898">Rudia Kuhariri</translation>
 <translation id="342781501876943858">Chromium inapendekeza ubadilishe nenosiri lako ikiwa ulilitumia tena kwenye tovuti zingine.</translation>
 <translation id="3431636764301398940">Hifadhi kadi hii kwenye kifaa hiki</translation>
@@ -457,7 +457,7 @@
 <translation id="4130226655945681476">Kukagua kebo za mtandao, modemu au kisambaza data</translation>
 <translation id="413544239732274901">Pata maelezo zaidi</translation>
 <translation id="4148925816941278100">American Express</translation>
-<translation id="4151403195736952345">Tumia chaguo-msingi la kimataifa (Gundua)</translation>
+<translation id="4151403195736952345">Tumia chaguo msingi la kimataifa (Gundua)</translation>
 <translation id="4165986682804962316">Mipangilio ya tovuti</translation>
 <translation id="4169947484918424451">Je, unataka Chromium ihifadhi kadi hii?</translation>
 <translation id="4171400957073367226">Sahihi mbaya ya uthibitishaji</translation>
@@ -496,7 +496,7 @@
 <translation id="4275830172053184480">Washa upya kifaa chako</translation>
 <translation id="4277028893293644418">Badilisha nenosiri</translation>
 <translation id="4280429058323657511">, muda wa kutumika utakwisha <ph name="EXPIRATION_DATE_ABBR" /></translation>
-<translation id="4312866146174492540">Zuia (chaguo-msingi)</translation>
+<translation id="4312866146174492540">Zuia (chaguo msingi)</translation>
 <translation id="4325863107915753736">Haikupata makala</translation>
 <translation id="4326324639298822553">Angalia tarehe kuisha kwa muda wa matumizi halafu ujajibu tena</translation>
 <translation id="4331708818696583467">Si Salama</translation>
@@ -800,7 +800,7 @@
 <translation id="6753269504797312559">Thamani ya sera</translation>
 <translation id="6757797048963528358">Kifaa chako kiko katika hali tuli.</translation>
 <translation id="6778737459546443941">Mzazi wako bado hajaiidhinisha</translation>
-<translation id="679355240208270552">Imepuuzwa kwa sababu utafutaji chaguo-msingi umezimwa na sera.</translation>
+<translation id="679355240208270552">Imepuuzwa kwa sababu utafutaji chaguo msingi umezimwa na sera.</translation>
 <translation id="681021252041861472">Sehemu Hii Sharti Ijazwe</translation>
 <translation id="6810899417690483278">Kitambulisho cha kubadilisha ili kukufaa</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -884,7 +884,7 @@
 <translation id="7444046173054089907">Tovuti hii imezuiwa</translation>
 <translation id="7445762425076701745">Utambulisho wa seva ambayo umejiunga kwayo hauwezi kuhalalishwa kikamilifu. Umeunganishwa kwenye seva kwa kutumia jina ambalo ni halali tu katika mtandao wako, ambalo mamlaka ya cheti cha nje hayana njia ya kuhalalisha umiliki wake. Kama baadhi ya mamlaka ya cheti yatatoa vyeti vya majina haya bila kujali, hakuna njia ya kuhakikisha umeunganishwa kwenye tovuti inayohitajika na sio mshambulizi.</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /> kuhusu hitilafu hii.</translation>
-<translation id="7455133967321480974">Tumia chaguo-msingi la duniani (Zuia)</translation>
+<translation id="7455133967321480974">Tumia chaguo msingi la duniani (Zuia)</translation>
 <translation id="7460163899615895653">Vichupo vyako vya hivi majuzi kutoka kwenye vifaa vingine vitaonekana hapa</translation>
 <translation id="7469372306589899959">Inathibitisha kadi</translation>
 <translation id="7473891865547856676">La Asante</translation>
@@ -974,9 +974,9 @@
 <translation id="8012647001091218357">Hatukuweza kuwafikia wazazi wako wakati huu. Tafadhali jaribu tena.</translation>
 <translation id="8025119109950072390">Wavamizi kwenye tovuti hii wanaweza kukulaghai ili ufanye kitu hatari kama vile kusakinisha programu au kuonyesha maelezo yako binafsi (kwa mfano, manenosiri, nambari za simu au kadi za mikopo).</translation>
 <translation id="8034522405403831421">Ukurasa huu ni wa lugha ya <ph name="SOURCE_LANGUAGE" />. Je, ungependa kuutasfiri kuwa <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8037357227543935929">Uliza (chaguo-msingi)</translation>
+<translation id="8037357227543935929">Uliza (chaguo msingi)</translation>
 <translation id="8041089156583427627">Tuma Maoni</translation>
-<translation id="8041940743680923270">Tumia chaguo-msingi la duniani (Uliza)</translation>
+<translation id="8041940743680923270">Tumia chaguo msingi la duniani (Uliza)</translation>
 <translation id="8042918947222776840">Chagua Mbinu ya Kuchukua Bidhaa</translation>
 <translation id="8057711352706143257">Haikuweka mipangilio ya "<ph name="SOFTWARE_NAME" />" kwa njia sahihi. Kwa kawaida, kuondoa "<ph name="SOFTWARE_NAME" />" hurekebisha tatizo hili. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8079031581361219619">Ungependa kupakia upya tovuti?</translation>
@@ -989,7 +989,7 @@
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8149426793427495338">Kompyuta yako iko katika hali tuli.</translation>
 <translation id="8150722005171944719">Faili katika <ph name="URL" /> haisomeki. Huenda imeondolewa, kusogezwa, au idhini za faili huenda zinazuia ufikiaji.</translation>
-<translation id="8184538546369750125">Tumia chaguo-msingi la duniani (Ruhusu)</translation>
+<translation id="8184538546369750125">Tumia chaguo msingi la duniani (Ruhusu)</translation>
 <translation id="8191494405820426728">Kitambulisho cha Kuacha Kufanya Kazi <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">Tendua hatua</translation>
 <translation id="8201077131113104583">URL ya sasisho si sahihi kwa kiendelezi chenye Kitambulisho "<ph name="EXTENSION_ID" />".</translation>

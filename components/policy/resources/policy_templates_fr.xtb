@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
-<translation id="1424081297104898791">Cette option vous permet de définir dans quels cas les outils pour les développeurs peuvent être utilisés.
-
-      Si cette règle est définie sur "'DeveloperToolsDisallowedForForceInstalledExtensions" (valeur 0, la valeur par défaut pour les utilisateurs professionnels), il est possible d'accéder aux outils pour les développeurs et à la console JavaScript dans tous les cas, sauf dans le cadre des extensions installées par la stratégie d'entreprise.
-      Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1, la valeur par défaut pour les utilisateurs non gérés), il est possible d'accéder aux outils pour les développeurs et à la console JavaScript et de les utiliser dans tous les cas, y compris dans le cadre des extensions installées par la stratégie d'entreprise.
-      Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), il n'est pas possible d'accéder aux outils pour les développeurs, et il n'est plus possible d'inspecter les éléments des sites Web. Les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript, sont désactivés.
-      Si l'ancienne règle "DeveloperToolsDisabled" est définie sur "true", la valeur de cette règle est ignorée et les outils pour les développeurs sont désactivés.</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
@@ -712,7 +706,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2874209944580848064">Remarque concernant les appareils <ph name="PRODUCT_OS_NAME" /> compatibles avec les applications Android :</translation>
 <translation id="2877225735001246144">Désactiver la consultation CNAME lors de la négociation de l'authentification Kerberos</translation>
-<translation id="2884728160143956392">Autoriser les cookies limités à la session sur ces sites</translation>
 <translation id="2893546967669465276">Envoyer des journaux système au serveur de gestion</translation>
 <translation id="2899002520262095963">Les applications Android peuvent utiliser les configurations réseau et les certificats CA définis par cette règle, mais elles n'ont pas accès à certaines options de configuration.</translation>
 <translation id="2906874737073861391">Liste des extensions AppPack</translation>
@@ -756,16 +749,6 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
           Cette règle est facultative. Si vous ne la définissez pas, aucun remplacement des termes de recherche n'est effectué.
 
           Cette règle ne s'applique que si la règle 'DefaultSearchProviderEnabled' est activée.</translation>
-<translation id="3056439054015239107">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins
-      pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité
-      sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites
-      que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      </translation>
 <translation id="306887062252197004">Cette règle permet aux utilisateurs de la fonctionnalité WebDriver d'ignorer
       les règles pouvant affecter son fonctionnement.
 
@@ -1235,13 +1218,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4483649828988077221">Désactiver les mises à jour automatiques</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
-<translation id="4497968613298501984">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). L'empreinte numérique du mot de passe est capturée au niveau de ces URL et sert à détecter les mots de passe réutilisés.
-      Seuls les utilisateurs de GSuite disposant d'un système SSO/SMAL peuvent tirer parti de ce paramètre.
-      Afin que <ph name="PRODUCT_NAME" /> capture correctement les empreintes numériques de vos mots de passe, veuillez vous assurer que vos pages de connexion respectent les instructions fournies à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si ce paramètre est activé, le service de protection par mot de passe capture l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
-      Si ce paramètre est désactivé ou s'il n'a pas été défini, le service ne capture l'empreinte numérique du mot de passe que sur https://accounts.google.com.
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers multimédias en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--media-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.
@@ -1369,12 +1345,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
       Si cette règle est laissée vide ou n'est pas définie, n'importe quel utilisateur peut alors se connecter à <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Autoriser le mode plein écran</translation>
-<translation id="4868249328547841081">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe redirige les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe s'ils ont été victimes d'une attaque d'hameçonnage.
-      Seuls les utilisateurs de GSuite disposant d'un système SSO/SMAL peuvent tirer parti de ce paramètre.
-      Afin que <ph name="PRODUCT_NAME" /> capture correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, veuillez vous assurer que cette page respecte les instructions fournies à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-      Si ce paramètre est activé, le service de protection par mot de passe redirigera les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe s'ils ont été victimes d'une attaque d'hameçonnage.
-      Si ce paramètre est désactivé ou n'est pas défini, le service les redirigera vers https://accounts.google.com afin qu'ils modifient leur mot de passe.
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Indique si les WakeLock forçant l'activation de l'écran sont autorisés. Ces WakeLock peuvent être demandés par des extensions par le biais de l'API d'extension de gestion de l'alimentation.
 
           Si cette règle est définie sur "true" ou si elle n'est pas définie, les WakeLock forçant l'activation de l'écran sont pris en compte pour la gestion de l'alimentation.
@@ -1577,9 +1547,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si cette règle est définie, l'utilisateur ne peut configurer l'affichage de <ph name="PRODUCT_OS_NAME" /> que dans l'une des langues définies par cette règle. Si cette règle n'est pas définie ou si elle est définie sur une liste vide, <ph name="PRODUCT_OS_NAME" /> peut s'afficher dans toutes les langues compatibles. Si la règle est définie sur une liste contenant des valeurs non valides, toutes les valeurs non valides sont ignorées. Si un utilisateur a précédemment configuré l'affichage de <ph name="PRODUCT_OS_NAME" /> dans une langue qui n'est pas autorisée par cette règle, la langue d'affichage basculera sur une langue autorisée la prochaine fois que l'utilisateur de connectera. Si l'utilisateur a configuré des langues préférées et que l'une d'entre elles est autorisée par cette règle, <ph name="PRODUCT_OS_NAME" /> s'affiche dans cette langue. Sinon, <ph name="PRODUCT_OS_NAME" /> s'affiche dans la langue définie par la première valeur valide spécifiée par cette règle, ou dans une langue de remplacement (actuellement, en-US), si cette règle contient uniquement des entrées non valides.</translation>
 <translation id="5464816904705580310">Configurer les paramètres des utilisateurs gérés</translation>
 <translation id="546726650689747237">Délai d'assombrissement de l'écran (secteur)</translation>
-<translation id="5469484020713359236">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à définir des cookies. 
-
-Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultCookiesSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="547601067149622666">Ne pas autoriser les annonces sur les sites présentant des annonces intrusives</translation>
@@ -1887,9 +1854,6 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
       Si elle est définie sur "true" ou qu'elle n'est pas définie, l'outil de nettoyage de Chrome analyse régulièrement le système pour détecter les éventuels logiciels indésirables et, s'il en trouve, un message s'affiche demandant à l'utilisateur s'il souhaite les supprimer. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings est activé.
 
       Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à définir des cookies. 
-
-Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultCookiesSetting ", ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="6426205278746959912">Vous ne pouvez pas forcer les applications Android à utiliser un proxy. Celles-ci disposent d'un sous-ensemble de paramètres proxy qu'elles peuvent choisir d'utiliser ou non :
 
           Si vous choisissez de ne jamais utiliser de serveur proxy, vous signalez aux applications Android qu'aucun proxy n'est configuré.
@@ -1909,13 +1873,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Pour contrôler quels sites Web sont autorisés à exécuter Flash, reportez-vous aux règles "DefaultPluginsSetting", "PluginsAllowedForUrls" et "PluginsBlockedForUrls".
 
       Si ce paramètre est désactivé ou s'il n'est pas défini, le contenu Flash provenant d'autres sources ou de petite taille risque d'être bloqué.</translation>
-<translation id="6535639183431116351">Cette règle est obsolète dans M68. Veuillez utiliser DeveloperToolsAvailability à la place.
-
-      Désactive les outils de développement et la console JavaScript.
-
-      Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés.
-
-      Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur a accès aux outils de développement et à la console JavaScript.</translation>
 <translation id="653608967792832033">Indiquer le délai d'inactivité au terme duquel l'écran est verrouillé en cas d'utilisation de la batterie
 
           Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
@@ -2024,16 +1981,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Les informations relatives à la mémoire sont tout de même consignées sur cette page, quelle que soit l'option retenue, mais les tailles indiquées sont
       quantifiées et la fréquence des mises à jour est limitée pour des raisons de sécurité. Pour obtenir des données en temps réel précises,
       veuillez utiliser un outil tel que Telemetry.</translation>
-<translation id="6870914592443697993">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur la même valeur. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par une virgule exécute son propre processus.
-      Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez
-      "https://example.com/", https://foo.example.com/ est également isolé en tant que partie
-      du site https://example.com/.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
-      </translation>
 <translation id="6894178810167845842">URL de la page "Nouvel onglet"</translation>
 <translation id="6899705656741990703">Détecter automatiquement les paramètres de proxy</translation>
 <translation id="6903814433019432303">Cette politique n'est active qu'en mode Point de vente.
@@ -2177,13 +2124,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Types de connexion autorisés pour les mises à jour</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
-<translation id="7199300565886109054">Permet de définir une liste de formats d'URL qui déterminent les sites autorisés à créer des cookies spécifiques à chaque session.
-
-          Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle DefaultCookiesSetting si elle est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
-
-          Notez que si <ph name="PRODUCT_NAME" /> est exécuté en arrière-plan, il se peut que la session reste ouverte lorsque la dernière fenêtre de navigateur est fermée. Elle reste alors active jusqu'à ce que le navigateur soit fermé. Pour plus d'informations sur la configuration de ce comportement, consultez la règle BackgroundModeEnabled.
-
-          Si la règle RestoreOnStartup est définie de manière à restaurer les URL des sessions précédentes, elle n'est pas respectée. Les cookies sont alors stockés de façon permanente pour ces sites.</translation>
 <translation id="7202925763179776247">Autoriser les restrictions de téléchargement</translation>
 <translation id="7207095846245296855">Forcer Google SafeSearch</translation>
 <translation id="7216442368414164495">Permettre aux utilisateurs d'activer la création de rapports détaillés dans le cadre de la navigation sécurisée</translation>
@@ -2417,13 +2357,6 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
            <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Page Nouvel onglet</translation>
 <translation id="7788511847830146438">Par profil</translation>
-<translation id="7801886189430766248">Lorsque cette règle est définie sur "True", les données des applications Android sont sauvegardées via Android Backup Service. Elles sont ensuite restaurées au moment de la réinstallation des applications (valable pour les applications compatibles uniquement).
-
-      Lorsque cette règle est définie sur "False", Android Backup Service est désactivé.
-
-      Si ce paramètre est configuré, les utilisateurs ne peuvent pas le modifier eux-mêmes.
-
-      Si ce paramètre n'est pas configuré, les utilisateurs peuvent activer et désactiver Android Backup Service dans l'application Paramètres de leur appareil Android.</translation>
 <translation id="780603170519840350">Désactive l'application des règles de transparence des certificats pour une liste de hachages subjectPublicKeyInfo.
 
       Cette règle permet de désactiver les exigences de divulgation stipulées dans les règles de transparence des certificats concernant les chaînes de certificat qui contiennent des certificats avec un des hachages subjectPublicKeyInfo spécifiés. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés concernant les hôtes Enterprise.

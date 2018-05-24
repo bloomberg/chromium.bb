@@ -1060,7 +1060,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> sta utilizzando <ph name="USAGE" /> MB di spazio su disco.</translation>
 <translation id="2633212996805280240">Rimuovere "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> non è stato in grado di completare l'installazione ma continuerà a essere eseguito dall'immagine disco.</translation>
-<translation id="2635176084534510129">Vivi esperienze più personalizzate, ad esempio grazie a suggerimenti di contenuti migliori e al servizio Traduttore più efficiente.</translation>
 <translation id="2635276683026132559">Firma</translation>
 <translation id="2636625531157955190">Chrome non riesce ad accedere all'immagine.</translation>
 <translation id="2638087589890736295">Passphrase obbligatoria per avviare la sincronizzazione</translation>
@@ -1350,7 +1349,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="3061707000357573562">Servizio di applicazione patch</translation>
 <translation id="3064410671692449875">Dati insufficienti</translation>
 <translation id="3065041951436100775">Feedback relativo alle schede ignorate</translation>
-<translation id="3066642396596108483">Sincronizza i tuoi preferiti, le password e la cronologia su tutti i tuoi dispositivi</translation>
 <translation id="3067198179881736288">Vuoi installare l'app?</translation>
 <translation id="3067198360141518313">Esegui questo plug-in</translation>
 <translation id="3071624960923923138">Puoi fare clic qui per aprire una nuova scheda</translation>
@@ -1614,7 +1612,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="347670947055184738">Spiacenti. Il sistema non è riuscito a recuperare le norme del tuo dispositivo.</translation>
 <translation id="347785443197175480">Continua a consentire l'accesso di <ph name="HOST" /> alla webcam e al microfono</translation>
 <translation id="3478685642445675458">Sblocca il tuo profilo prima di rimuovere una persona.</translation>
-<translation id="347919930506963698">Utilizza ancora meglio Chrome</translation>
 <translation id="3479552764303398839">Non adesso</translation>
 <translation id="3480892288821151001">Aggancia la finestra a sinistra</translation>
 <translation id="3484273680291419129">Rimozione del software dannoso...</translation>
@@ -1757,7 +1754,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3691267899302886494"><ph name="HOST" /> vuole condividere il tuo schermo</translation>
 <translation id="3693415264595406141">Password:</translation>
 <translation id="3694027410380121301">Seleziona scheda precedente</translation>
-<translation id="3697100740575341996">Il tuo amministratore IT ha disattivato gli extra di Chrome per il tuo dispositivo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Indirizzo email</translation>
 <translation id="3700888195348409686">Presentazione di (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Le pagine iniziali sono state modificate per includere <ph name="URL" />.</translation>
@@ -2134,7 +2130,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4289540628985791613">Panoramica</translation>
 <translation id="4296575653627536209">Aggiungi utente supervisionato</translation>
 <translation id="4297322094678649474">Cambia le lingue</translation>
-<translation id="4299141727003252811">Google potrebbe usare la tua attività di navigazione, i contenuti di alcuni siti che visiti e altre interazioni con il browser per personalizzare Chrome, altri servizi Google come Traduttore e la Ricerca e gli annunci.</translation>
 <translation id="4300305918532693141">Per modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">lungo (2 s)</translation>
 <translation id="4306119971288449206">Le app devono essere installate con il tipo di contenuto "<ph name="CONTENT_TYPE" />"</translation>
@@ -2457,7 +2452,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="484921817528146567">Ultimo elemento della shelf</translation>
 <translation id="4849286518551984791">Coordinated Universal Time (UTC/GMT)</translation>
 <translation id="4849517651082200438">Non installare</translation>
-<translation id="4850258771229959924">Visualizza in Strumenti per sviluppatori</translation>
 <translation id="4850669014075537160">Scorrimento</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4853020600495124913">Apri in &amp;un'altra finestra</translation>
@@ -2936,7 +2930,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5543983818738093899">Verifica dello stato in corso...</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">Trova</translation>
-<translation id="5551573675707792127">Tastiera e inserimento testo</translation>
+<translation id="5551573675707792127">Tastiera e input di testo</translation>
 <translation id="5553089923092577885">Mapping dei criteri dei certificati</translation>
 <translation id="5554489410841842733">Questa icona sarà visibile quando l'estensione potrà interagire nella pagina corrente.</translation>
 <translation id="5554573843028719904">Altra rete Wi-Fi...</translation>
@@ -3110,7 +3104,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5809725759695043233">Hai app che sono ottimizzate per i Chromebook</translation>
 <translation id="5814126672212206791">Tipo di connessione</translation>
 <translation id="5815645614496570556">Indirizzo X.400</translation>
-<translation id="5816434091619127343">Le modifiche renderebbero la stampante inutilizzabile.</translation>
+<translation id="5816434091619127343">Le modifiche richieste renderebbero la stampante inutilizzabile.</translation>
 <translation id="5817918615728894473">Accoppia</translation>
 <translation id="5821565227679781414">Crea scorciatoia</translation>
 <translation id="5826507051599432481">Nome comune (CN)</translation>
@@ -3543,7 +3537,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6473842110411557830">Illustrazione Powerwash</translation>
 <translation id="6474706907372204693">Metodo di immissione precedente</translation>
 <translation id="6474884162850599008">Scollega account Google Drive</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> chiede di controllare che tu stia utilizzando un dispositivo Chrome OS idoneo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> vuole condividere i contenuti del tuo schermo. Scegli i contenuti che desideri condividere.</translation>
 <translation id="6478248366783946499">Conservare il file pericoloso?</translation>
 <translation id="6483805311199035658">Apertura di <ph name="FILE" /> in corso...</translation>
@@ -4201,7 +4194,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7518150891539970662">Log WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Crea</translation>
-<translation id="7526413953848747421">Usa in Chrome gli efficaci servizi di Google, come il controllo ortografico e Tocca per cercare</translation>
 <translation id="7529411698175791732">Controlla la connessione a Internet. Se il problema persiste, prova a uscire e ad accedere di nuovo.</translation>
 <translation id="7530016656428373557">Velocità di esaurimento in watt</translation>
 <translation id="7531779363494549572">Seleziona Impostazioni &gt; App e notifiche &gt; Notifiche.</translation>
@@ -5223,6 +5215,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9094982973264386462">Rimuovi</translation>
 <translation id="9095253524804455615">Rimuovi</translation>
 <translation id="9099674669267916096">Numero di pagine</translation>
+<translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9100765901046053179">Impostazioni avanzate</translation>
 <translation id="9101691533782776290">Avvia app</translation>
 <translation id="9102610709270966160">Attiva estensione</translation>

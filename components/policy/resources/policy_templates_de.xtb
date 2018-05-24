@@ -92,12 +92,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1387596372902085462">Festlegen, ob der veralteten Symantec-PKI vertraut werden soll</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
-<translation id="1424081297104898791">Mit dieser Richtlinie legen Sie fest, wo Entwicklertools verwendet werden können.
-
-      Wenn diese Richtlinie auf "DeveloperToolsDisallowedForForceInstalledExtensions" (Wert 0; Standardeinstellung für Unternehmensnutzer) gesetzt ist, kann generell auf die Entwicklertools und die JavaScript-Konsole zugegriffen werden. In Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, ist der Zugriff aber nicht möglich.
-      Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1; Standardeinstellung für nicht verwaltete Nutzer) gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch in Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
-      Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.
-      Wenn die alte Richtlinie "DeveloperToolsDisabled" auf "true" gesetzt ist, wird der Wert dieser Richtlinie ignoriert und die Entwicklertools sind deaktiviert.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
@@ -319,7 +313,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Wenn Sie die Einstellung deaktivieren, wird "Zum Suchen tippen" vollständig deaktiviert.
 
-      Wird die Richtlinie nicht konfiguriert, entspricht dies einer Aktivierung, siehe Beschreibung oben.</translation>
+      Wird die Richtlinie nicht konfiguriert, ist die Funktion aktiviert (siehe Beschreibung oben).</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
@@ -673,7 +667,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
 <translation id="2877225735001246144">CNAME-Suche bei der Aushandlung der Kerberos-Authentifizierung deaktivieren</translation>
-<translation id="2884728160143956392">Auf diesen Websites Cookies für die jeweilige Sitzung zulassen</translation>
 <translation id="2893546967669465276">Systemprotokolle an den Verwaltungsserver senden</translation>
 <translation id="2899002520262095963">Android-Apps können die über diese Richtlinie festgelegten Netzwerkkonfigurationen und CA-Zertifikate verwenden, haben jedoch keinen Zugriff auf bestimmte Konfigurationsoptionen.</translation>
 <translation id="2906874737073861391">Liste der AppPack-Erweiterungen</translation>
@@ -715,16 +708,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
 
           Diese Richtlinie wird nur angewendet, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="3056439054015239107">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-      Sie sollten sich die "IsolateOrigins"-Richtlinieneinstellung ansehen,
-      um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten.
-      Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten.
-      Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird auf jeder Website ein eigener Prozess ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      </translation>
 <translation id="306887062252197004">Diese Richtlinie erlaubt es Nutzern der WebDriver-Funktion, Richtlinien zu überschreiben, die die Verwendung von WebDriver beeinträchtigen können.
 
 Diese Richtlinie deaktiviert aktuell die Richtlinien SitePerProcess und IsolateOrigins.
@@ -1166,13 +1149,6 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4483649828988077221">Automatische Updates deaktivieren</translation>
 <translation id="4485425108474077672">URL für "Neuer Tab"-Seite konfigurieren</translation>
 <translation id="4492287494009043413">Aufnahme von Screenshots deaktivieren</translation>
-<translation id="4497968613298501984">Mit dieser Richtlinie wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Fingerabdruck für die Autorisierung wird unter diesen URLs registriert und für die Prüfung der Wiederverwendung des Passworts genutzt.
-      Die Einstellung sollte nur von G Suite-Nutzern verwendet werden, die ein SSO/SAML-System nutzen.
-      Stellen Sie sicher, dass Ihre Anmeldeseiten den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung auf diesen URLs, der dann zur Prüfung der Wiederverwendung des Passworts genutzt wird.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung nur auf https://accounts.google.com.
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="450537894712826981">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME" /> zum Speichern von Mediendateien im Cache auf dem Datenträger verwendet.
 
       Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die angegebene Cache-Größe unabhängig davon, ob der Nutzer den Parameter "--media-cache-size" angegeben hat oder nicht. Der in dieser Richtlinie angegebene Wert ist keine festgelegte Grenze, sondern mehr ein Richtwert für das Caching-System. Werte, die unter wenigen Megabytes liegen, sind zu klein und werden auf einen sinnvollen Minimalwert aufgerundet.
@@ -1299,13 +1275,6 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 
       Werden diese Richtlinien weder festgelegt noch ausgefüllt, kann sich jeder Nutzer in <ph name="PRODUCT_NAME" /> anmelden.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
-<translation id="4868249328547841081">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, die Opfer eines Phishingangriffs geworden sind, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
-      Die Einstellung sollte nur von G Suite-Nutzern verwendet werden, die ein SSO-/SAML-System nutzen.
-      Stellen Sie sicher, dass Ihre Anmeldeseiten den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, die Opfer eines Phishingangriffs geworden sind, an diese URL weiter, damit sie ihr Passwort ändern können.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="4869787217450099946">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API angefordert werden.
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung zugelassen.
@@ -1483,7 +1452,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
       Wenn diese Richtlinie festgelegt ist, kann der Nutzer <ph name="PRODUCT_OS_NAME" /> nur in einer der durch diese Richtlinie angegebenen Sprachen anzeigen lassen. Wenn diese Richtlinie nicht festgelegt ist oder auf eine leere Liste verweist, so kann <ph name="PRODUCT_OS_NAME" /> in allen unterstützten Sprachen angezeigt werden. Wenn diese Richtlinie auf eine Liste mit ungültigen Werten verweist, werden alle ungültigen Werte ignoriert. Falls ein Nutzer <ph name="PRODUCT_OS_NAME" /> zuvor so konfiguriert hat, dass es in einer Sprache angezeigt wird, die nicht durch diese Richtlinie zugelassen ist, wird die Anzeigesprache in eine zulässige Sprache geändert, wenn sich der Nutzer das nächste Mal anmeldet. Falls der Nutzer bevorzugte Sprachen konfiguriert hatte und eine der bevorzugten Sprachen durch diese Richtlinie zugelassen ist, wechselt <ph name="PRODUCT_OS_NAME" /> zu dieser Sprache. Andernfalls wechselt <ph name="PRODUCT_OS_NAME" /> zum ersten gültigen Wert, der durch diese Richtlinie angegeben ist, oder – falls diese Richtlinie nur ungültige Einträge enthält – zu einer Ersatzsprache (derzeit en-US).</translation>
 <translation id="5464816904705580310">Konfiguriert Einstellungen für verwaltete Nutzer</translation>
 <translation id="546726650689747237">Verzögerung für die Bildschirmabdunkelung im Netzbetrieb</translation>
-<translation id="5469484020713359236">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Speichern von Cookies gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultCookiesSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="5469825884154817306">Bilder auf diesen Websites blockieren</translation>
 <translation id="5475361623548884387">Drucken aktivieren</translation>
 <translation id="547601067149622666">Werbung auf Websites mit aufdringlichen Werbeanzeigen nicht zulassen</translation>
@@ -1774,7 +1742,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Wenn "true" oder nichts festgelegt ist, scannt der Chrome Software Cleaner das System regelmäßig nach unerwünschter Software. Wird welche gefunden, so wird der Nutzer gefragt, ob sie entfernt werden soll. Das manuelle Starten des Chrome Software Cleaners über chrome://settings/cleanup ist aktiviert.
 
       Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die nicht mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
-<translation id="6417861582779909667">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, die keine Cookies speichern dürfen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt für alle Websites der globale Standardwert der Richtlinie "DefaultCookiesSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="6426205278746959912">Android-Apps können nicht zur Verwendung eines Proxys gezwungen werden. 
 Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf freiwilliger Basis übernommen werden:
 
@@ -1795,13 +1762,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
       Um festzulegen, welche Websites Flash-Inhalte ausführen dürfen, verwenden Sie die Richtlinien "DefaultPluginsSetting", "PluginsAllowedForUrls" und "PluginsBlockedForUrls".
 
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, werden Flash-Inhalte aus anderen Quellen oder kleine Inhalte möglicherweise blockiert.</translation>
-<translation id="6535639183431116351">Diese Richtlinie wurde in M68 eingestellt. Bitte verwenden Sie stattdessen DeveloperToolsAvailability.
-
-      Hiermit werden die Entwicklertools und die JavaScript-Konsole deaktiviert.
-
-      Wenn Sie diese Einstellung aktivieren, ist kein Zugriff auf die Entwicklertools möglich und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.
-
-      Ist diese Option deaktiviert oder nicht konfiguriert, können die Entwicklertools und die JavaScript-Konsole verwendet werden.</translation>
 <translation id="653608967792832033">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb gesperrt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm sperrt.
@@ -1909,16 +1869,6 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
 <translation id="687046793986382807">Diese Richtlinie gilt ab <ph name="PRODUCT_NAME" /> Version 35 nicht mehr.
 
 Speicherinformationen werden unabhängig von der gewählten Option an die Seite weitergegeben, allerdings werden die gemeldeten Größen quantisiert und die Aktualisierungshäufigkeit wird aus Sicherheitsgründen begrenzt. Um genaue Daten in Echtzeit zu erhalten, können Sie Tools wie Telemetry verwenden.</translation>
-<translation id="6870914592443697993">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten
-      Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
-      Dadurch werden auch durch Subdomains benannte Ursprünge isoliert; wenn
-      Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil
-      der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine Website-Isolierung statt und Feldtests von "IsolateOrigins" und "SitePerProcess" werden ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
-      </translation>
 <translation id="6894178810167845842">URL für "Neuer Tab"-Seite</translation>
 <translation id="6899705656741990703">Proxy-Einstellungen automatisch erkennen</translation>
 <translation id="6903814433019432303">Diese Richtlinie ist nur im Händlermodus aktiv.
@@ -2049,13 +1999,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
-<translation id="7199300565886109054">Erlaubt Ihnen die Festlegung einer Liste mit URL-Mustern, die Websites angeben, die Cookies für die jeweilige Sitzung setzen dürfen
-
-          Wenn diese Richtlinie nicht konfiguriert ist, wird der globale Standardwert für alle Websites verwendet, die entweder in der Richtlinie "DefaultCookiesSetting", wenn diese konfiguriert ist, oder in der persönlichen Konfiguration des Nutzers enthalten sind.
-
-          Wenn <ph name="PRODUCT_NAME" /> im Hintergrundmodus ausgeführt wird, wird die Sitzung unter Umständen nicht geschlossen, wenn das letzte Browserfenster geschlossen wird, sondern bleibt aktiv, bis der Browser beendet wird. Weitere Informationen zur Konfiguration dieses Verhaltens finden Sie unter der Richtlinie "BackgroundModeEnabled".
-
-          Falls die Richtlinie "RestoreOnStartup" zur Wiederherstellung von URLs aus vorherigen Sitzungen festgelegt ist, wird diese Richtlinie ignoriert und Cookies werden dauerhaft für die jeweiligen Websites gespeichert.</translation>
 <translation id="7202925763179776247">Download-Einschränkungen zulassen</translation>
 <translation id="7207095846245296855">Google SafeSearch erzwingen</translation>
 <translation id="7216442368414164495">Ermöglicht Nutzern die Aktivierung erweiterter Berichterstellung bei Verwendung von Safe Browsing</translation>
@@ -2278,13 +2221,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">"Neuer Tab"-Seite</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
-<translation id="7801886189430766248">Wenn diese Richtlinie auf "true" gesetzt ist, werden Android-App-Daten auf die Android Backup Server geladen und bei Neuinstallationen kompatibler Apps wiederhergestellt.
-
-      Wenn diese Richtlinie auf "false" gesetzt wird, wird der Android Backup Service deaktiviert.
-
-      Wenn diese Einstellung konfiguriert ist, können Nutzer diese nicht selbständig ändern.
-
-      Wenn diese Einstellung nicht konfiguriert ist, können Nutzer den Android Backup Service in den Android-Einstellungen aktivieren und deaktivieren.</translation>
 <translation id="780603170519840350">Hiermit wird das Erzwingen von Zertifikatstransparenz-Anforderungen für eine Liste mit subjectPublicKeyInfo-Hashes deaktiviert.
 
       Diese Richtlinie ermöglicht es, Zertifikatstransparenz-Offenlegungsanforderungen für jene Zertifikatsketten zu deaktivieren, die Zertifikate mit einem der angegebenen subjectPublicKeyInfo-Hashes enthalten. Dadurch werden Zertifikate erlaubt, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Diese Zertifikate können dann weiterhin für Unternehmenshosts verwendet werden.

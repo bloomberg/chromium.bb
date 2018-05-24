@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
-<translation id="1424081297104898791">Ļauj noteikt, kādos gadījumos izstrādātāja rīki ir lietojami.
-
-      Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowedForForceInstalledExtensions” (vērtība “0” — noklusējuma vērtība korporatīvajiem lietotājiem), izstrādātāja rīki un JavaScript konsole ir pieejami, taču tiem nevar piekļūt paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku.
-      Ja politikai ir iestatīta vērtība “DeveloperToolsAllowed” (vērtība “1” — noklusējuma vērtība nepārvaldītiem lietotājiem), izstrādātāja rīkiem un JavaScript konsolei var piekļūt un tos var izmantot visos gadījumos, tostarp arī paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku.
-      Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowed” (vērtība “2”), izstrādātāja rīkiem nevar piekļūt un tīmekļa vietnes elementus vairs nevar pārbaudīt. Tiek atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu komandas, ar kuru palīdzību tiek atvērti izstrādātāju rīki vai JavaScript konsole.
-      Ja mantotajai politikai DeveloperToolsDisabled ir iestatīta vērtība “True”, šīs politikas vērtība tiek ignorēta un izstrādātāju rīki tiek atspējoti.</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1427655258943162134">Starpniekservera adrese vai URL</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
@@ -705,7 +699,6 @@
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
-<translation id="2884728160143956392">Atļauj izmantot tikai sesijai lietojamos sīkfailus šajās vietnēs</translation>
 <translation id="2893546967669465276">Sistēmas žurnālu sūtīšana pārvaldības serverim</translation>
 <translation id="2899002520262095963">Android lietotnes var izmantot tīkla konfigurācijas un CA sertifikātus, kas iestatīti, izmantojot šo politiku, bet lietotnēm nav piekļuves dažām konfigurācijas opcijām.</translation>
 <translation id="2906874737073861391">AppPack paplašinājumu saraksts</translation>
@@ -749,16 +742,6 @@
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
-<translation id="3056439054015239107">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu,
-      lai gūtu vislabākos rezultātus, izolētu tikai vietnes,
-      kuras vēlaties izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot politiku
-      SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, neviena saite netiks izolēta un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="306887062252197004">Ar šo politiku funkcijas WebDriver lietotāji var ignorēt
       politikas, kas var ietekmēt šīs funkcijas darbību.
 
@@ -1222,13 +1205,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4483649828988077221">Automātiskās atjaunināšanas atspējošana</translation>
 <translation id="4485425108474077672">Konfigurēt jaunas cilnes lapas URL</translation>
 <translation id="4492287494009043413">Ekrānuzņēmumu izveides atspējošana</translation>
-<translation id="4497968613298501984">Izmantojot šo politiku, var konfigurēt uzņēmuma pieteikšanās URL sarakstu (tikai HTTP un HTTPS shēmas). Šajos URL tiks tverts paroles ciparfails, lai noteiktu atkārtotu paroles lietošanu.
-      Šo iestatījumu ieteicams izmantot tikai G Suite lietotājiem, kas izmanto vienotas pierakstīšanās/SAML sistēmu.
-      Lai <ph name="PRODUCT_NAME" /> pareizi tvertu paroles ciparfailu, pieteikšanās lapām ir jāatbilst šīm vadlīnijām: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ja šis iestatījums ir iespējots, paroles aizsardzības pakalpojums šajos URL tver paroles ciparfailu, lai noteiktu atkārtotu paroles lietošanu.
-      Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, paroles aizsardzības pakalpojums tver paroles ciparfailu tikai vietnē https://accounts.google.com.
-      Šī politika ir pieejama tikai tādās Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu.</translation>
 <translation id="450537894712826981">Konfigurē kešatmiņas lielumu, kas tiks izmantots pārlūkā <ph name="PRODUCT_NAME" />, lai kešatmiņā ievietotos multivides failus uzglabātu diskā.
 
       Ja iestatīsiet šo politiku, pārlūkā <ph name="PRODUCT_NAME" /> tiks izmantots norādītais kešatmiņas lielums neatkarīgi no tā, vai lietotājs ir norādījis atzīmi “--media-cache-size”. Šajā politikā norādītā vērtība nav stingri noteikts ierobežojums, bet drīzāk kā ieteikums kešdarbes sistēmai, turklāt jebkura vērtība, kas ir zemāka par dažiem megabaitiem, ir pārāk maza un tiks noapaļota uz saprātīgu minimālo vērtību.
@@ -1356,13 +1332,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika netiek iestatīta vai tiek atstāta tukša, produktā <ph name="PRODUCT_NAME" /> var pierakstīties jebkurš lietotājs.</translation>
 <translation id="4858735034935305895">Atļaut pilnekrāna režīmu</translation>
-<translation id="4868249328547841081">Izmantojot šo politiku, var konfigurēt paroles maiņas URL (tikai HTTP un HTTPS shēmas). Paroles aizsardzības pakalpojums novirzīs lietotājus uz šo URL, lai nomainītu paroles, ja tās ir pikšķerētas.
-      Šo iestatījumu ieteicams izmantot tikai G Suite lietotājiem, kas izmanto vienotas pierakstīšanās/SAML sistēmu.
-      Lai <ph name="PRODUCT_NAME" /> pareizi tvertu paroles ciparfailu šajā paroles maiņas lapā, paroles maiņas lapai ir jāatbilst šīm vadlīnijām: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ja šis iestatījums ir iespējots, paroles aizsardzības pakalpojums novirzīs lietotājus uz šo URL, lai nomainītu pikšķerētas paroles.
-      Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, paroles aizsardzības pakalpojums nosūtīs lietotājus uz vietni https://myaccounts.google.com, lai nomainītu paroli.
-      Šī politika ir pieejama tikai tādās Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu.</translation>
 <translation id="4869787217450099946">Norāda, vai ir atļauta ekrāna aktivizēšanas bloķēšana. Izmantojot barošanas pārvaldības paplašinājuma API, ekrāna aktivizēšanas bloķēšanu var pieprasīt paplašinājumi.
 
           Ja politikai ir iestatīta vērtība “true” vai politika nav iestatīta, barošanas pārvaldībā tiks veikta ekrāna aktivizēšanas bloķēšana.
@@ -1566,9 +1535,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika ir iestatīta, lietotājs var konfigurēt operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu tikai šajā politikā norādītajās lokalizācijās. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, operētājsistēma <ph name="PRODUCT_OS_NAME" /> var tikt attēlota visās atbalstītajās lokalizācijās. Ja politikai iestatītajā sarakstā ir nederīgas vērtības, tās tiks ignorētas. Ja lietotājs iepriekš konfigurēja operētājsistēmas <ph name="PRODUCT_OS_NAME" /> attēlošanu lokalizācijā, kas šajā politikā nav atļauta, nākamajā lietotāja pierakstīšanās reizē lokalizācija tiks mainīta uz politikā atļautu lokalizāciju. Ja lietotājs iepriekš konfigurēja vēlamās lokalizācijas un viena no vēlamajām lokalizācijām ir atļauta šajā politikā, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantota attiecīgā lokalizācija. Ja vēlamā lokalizācija nav iestatīta, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tika izmantota pirmā derīgā politikā norādītā vērtība vai atkāpšanās lokalizācija (šobrīd “en-US”), ja politikā ir norādītas nederīgas vērtības.</translation>
 <translation id="5464816904705580310">Konfigurē iestatījumus pārvaldītajiem lietotājiem.</translation>
 <translation id="546726650689747237">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar maiņstrāvu</translation>
-<translation id="5469484020713359236">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts iestatīt sīkfailus.
-
-          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultCookiesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="5469825884154817306">Bloķē attēlus šajās vietnēs</translation>
 <translation id="5475361623548884387">Iespējo drukāšanu</translation>
 <translation id="547601067149622666">Neatļaut reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas</translation>
@@ -1871,9 +1837,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja politikai ir iestatīta vērtība “True” vai politika nav iestatīta, Chrome tīrīšanas rīks sistēmā periodiski meklē nevēlamu programmatūru un, ja šāda programmatūra tiek atrasta, lietotājam tiks parādīta ziņojums ar jautājumu, vai šo programmatūru noņemt. Manuāla Chrome tīrīšanas rīka aktivizēšana sadaļā chrome://settings ir iespējota.
 
       Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
-<translation id="6417861582779909667">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts iestatīt sīkfailus.
-
-          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultCookiesSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="6426205278746959912">Jūs nevarat piespiest Android lietotnēm izmantot starpniekserveri. Starpniekservera iestatījumu apakškopa ir padarīta pieejama Android lietotnēm, un tajās var brīvi izvēlēties izmantot šo apakškopu.
 
           Ja izvēlēsieties nekad neizmantot starpniekserveri, Android lietotnes tiks informētas, ka nav konfigurēts neviens starpniekserveris.
@@ -1893,13 +1856,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Lai noteiktu, kurās vietnēs varēs palaist Flash saturu, skatiet politikas “DefaultPluginsSetting”, “PluginsAllowedForUrls” un “PluginsBlockedForUrls”.
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, Flash saturs ar citu izcelsmi vai mazais saturs var tikt bloķēts.</translation>
-<translation id="6535639183431116351">Šī politika versijā M68 ir novecojusi, izmantojiet politiku DeveloperToolsAvailability.
-
-      Atspējo izstrādātāju rīkus un JavaScript konsoli.
-
-      Ja šis iestatījums tiek iespējots, izstrādātāju rīkiem nevarēs piekļūt un tīmekļa vietnes elementus vairs nevarēs pārbaudīt. Tiek atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu komandas, ar kuru palīdzību tiek atvērti izstrādātāja rīki vai JavaScript konsole.
-
-      Ja šī opcija ir atspējota vai nav iestatīta, lietotājs varēs izmantot izstrādātāja rīkus un JavaScript konsoli.</translation>
 <translation id="653608967792832033">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā ekrāns tiek bloķēts (ja ierīce darbojas ar akumulatora jaudu).
 
           Ja šai politikai ir iestatīta vērtība, kas ir lielāka par nulli, tā norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiek bloķēts ekrāns.
@@ -2007,16 +1963,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Neatkarīgi no opcijas vērtības joprojām tiek sniegta informācija par katras lapas patērēto atmiņu, taču informācijas daudzums tiek
       kvantēts, un atjauninājumu biežums drošības nolūkā tiek ierobežots. Lai iegūtu precīzus reāllaika datus,
       lūdzu, izmantojiet tādus rīkus kā Telemetry.</translation>
-<translation id="6870914592443697993">
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei
-      tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc 
-      apakšdomēniem, piemēram, norādot https://example.com/, tiks izolēta arī
-      vietne https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, neviena saite netiks izolēta un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja politika nav konfigurēta, pierakstīšanās ekrānam tiks izmantotas platformas vietņu izolēšanas noklusējuma iestatījumi.
-      </translation>
 <translation id="6894178810167845842">Jaunas cilnes lapas URL</translation>
 <translation id="6899705656741990703">Automātiski atklāt starpniekservera iestatījumus</translation>
 <translation id="6903814433019432303">Šī politika darbojas tikai mazumtirdzniecības režīmā.
@@ -2160,13 +2106,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Savienojumu veidi, kuru laikā ir atļauts veikt atjaunināšanu</translation>
 <translation id="7194407337890404814">Noklusējuma meklētājprogrammas nosaukums</translation>
-<translation id="7199300565886109054">Varat iestatīt URL šablonu sarakstu par vietnēm, kurās ir atļauts iestatīt tikai sesijai paredzētus sīkfailus.
-
-          Ja šī politika netiek iestatīta, visām vietnēm tiek izmantota vispārējā noklusējuma vērtība no politikas DefaultCookiesSetting (ja tāda ir iestatīta) vai no lietotāja personīgās konfigurācijas.
-
-          Ņemiet vērā: ja <ph name="PRODUCT_NAME" /> darbojas fona režīmā, sesija var netikt aizvērta līdz ar pārlūka pēdējā loga aizvēršanu un var palikt aktīva, kamēr nav pārtraukta pārlūka darbība. Plašāku informāciju par šādas darbības konfigurēšanu skatiet politikā BackgroundModeEnabled.
-
-          Ja ir iestatīta politika RestoreOnStartup, lai atjaunotu vietrāžus URL no iepriekšējām sesijām, šī politika netiek ievērota un attiecīgo saišu sīkfaili tiek glabāti pastāvīgi.</translation>
 <translation id="7202925763179776247">Lejupielādes ierobežojumu atļaušana</translation>
 <translation id="7207095846245296855">Filtra Google droša meklēšana piespiedu izmantošana</translation>
 <translation id="7216442368414164495">Lietotāju atļauja izvēlēties Drošas pārlūkošanas izvērstos pārskatus</translation>
@@ -2398,13 +2337,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Jaunas cilnes lapa</translation>
 <translation id="7788511847830146438">Katram profilam</translation>
-<translation id="7801886189430766248">Ja šai politikai ir iestatīta vērtība “Patiess”, Android lietotņu dati tiek augšupielādēti Android dublēšanas serveros un tiek atjaunoti no tiem, atkārtoti instalējot saderīgās lietotnes.
-
-      Ja šai politikai ir iestatīta vērtība “Nepatiesa”, pakalpojums Android Backup Service tiks izslēgts.
-
-      Ja šis iestatījums ir konfigurēts, lietotāji paši nevar to mainīt.
-
-      Ja šis iestatījums nav konfigurēts, lietotāji Android lietotnē Iestatījumi var ieslēgt un izslēgt pakalpojumu Android Backup Service.</translation>
 <translation id="780603170519840350">Atspējo Certificate Transparency prasību piemērošanu “subjectPublicKeyInfo” jaucējkodiem.
 
       Šī politika ļauj atspējot Certificate Transparency atklāšanas prasības sertifikātu ķēdēm, kurās ir sertifikāti ar vienu no norādītajiem “subjectPublicKeyInfo” jaucējkodiem. Tādējādi uzņēmumu saimniekdatoriem var izmantot sertifikātus, kas citādi tiktu uzskatīti par neuzticamiem, jo to informācija nav pareizi publiski atklāta.

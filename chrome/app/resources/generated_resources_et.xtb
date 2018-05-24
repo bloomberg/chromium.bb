@@ -336,7 +336,7 @@
 <translation id="1503914375822320413">Kopeerimine ebaõnnestus, ootamatu viga: $1</translation>
 <translation id="150411034776756821">Eemalda sait <ph name="SITE" /></translation>
 <translation id="1504682556807808151">Kas soovite, et rakendus <ph name="PASSWORD_MANAGER_BRAND" /> salvestaks parooli selle saidi jaoks?</translation>
-<translation id="1505091014076919009">Kõiki teie sisselogitud Google'i kontosid rakendustest ja veebisaitidelt saab hallata siin.</translation>
+<translation id="1505091014076919009">Siin saab hallata kõiki teie Google'i kontosid, kuhu olete rakendustes ja veebisaitidel sisse loginud.</translation>
 <translation id="1506061864768559482">Otsingumootor</translation>
 <translation id="1507048939308275033">Lugege Chromebookis tekstsõnumeid ja vastake neile</translation>
 <translation id="1507170440449692343">Sellel lehel on juurdepääs teie kaamerale blokeeritud.</translation>
@@ -1061,7 +1061,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> kasutab <ph name="USAGE" /> MB kettaruumi.</translation>
 <translation id="2633212996805280240">Kas eemaldada „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ei suutnud installimist lõpule viia, kuid jätkab käitamist kettakujutiselt.</translation>
-<translation id="2635176084534510129">Hankige isikupärasemaid kasutuskogemusi, näiteks paremaid sisusoovitusi ja nutikam tõlge</translation>
 <translation id="2635276683026132559">Allkirjastamine</translation>
 <translation id="2636625531157955190">Chrome ei pääse kujutisele juurde.</translation>
 <translation id="2638087589890736295">Sünkroonimise alustamiseks on vaja parooli</translation>
@@ -1351,7 +1350,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="3061707000357573562">Teenuse paikamine</translation>
 <translation id="3064410671692449875">Andmeid pole piisavalt</translation>
 <translation id="3065041951436100775">Tagasiside vahelehe sulgumise kohta.</translation>
-<translation id="3066642396596108483">Sünkroonige oma järjehoidjad, paroolid ja ajalugu kõigis oma seadmetes</translation>
 <translation id="3067198179881736288">Kas soovite rakenduse installida?</translation>
 <translation id="3067198360141518313">Käita pistikprogramm</translation>
 <translation id="3071624960923923138">Uue vahelehe avamiseks võite klõpsata siin</translation>
@@ -1617,7 +1615,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="347670947055184738">Vabandust! Süsteemil ei õnnestunud teie seadme jaoks eeskirju tuua.</translation>
 <translation id="347785443197175480">Luba hostile <ph name="HOST" /> jätkuvalt juurdepääs kaamerale ja mikrofonile</translation>
 <translation id="3478685642445675458">Enne inimese eemaldamist avage oma profiil.</translation>
-<translation id="347919930506963698">Kasutage Chrome'i veelgi paremal moel</translation>
 <translation id="3479552764303398839">Mitte praegu</translation>
 <translation id="3480892288821151001">Doki aken vasakule</translation>
 <translation id="3484273680291419129">Kahjuliku tarkvara eemaldamine …</translation>
@@ -1760,7 +1757,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> soovib teie ekraani jagada</translation>
 <translation id="3693415264595406141">Parool:</translation>
 <translation id="3694027410380121301">Vali eelmine vaheleht</translation>
-<translation id="3697100740575341996">Teie IT-administraator on Chrome'i lisad teie seadmes keelanud. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-posti aadress</translation>
 <translation id="3700888195348409686">Esitlemine (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Käivitamisel avatavaid lehti muudeti aadressi <ph name="URL" /> kaasamiseks.</translation>
@@ -2137,7 +2133,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4289540628985791613">Ülevaade</translation>
 <translation id="4296575653627536209">Jälgitava kasutaja lisamine</translation>
 <translation id="4297322094678649474">Keelte vahetamine</translation>
-<translation id="4299141727003252811">Google võib kasutada teie sirvimistegevusi, mõne külastatud saidi sisu ja teisi interaktsioone sirvimisel, et isikupärastada Chrome'i ning teisi Google'i teenuseid, nagu Tõlge, Otsing ja reklaamid.</translation>
 <translation id="4300305918532693141">Selle seade muutmiseks tuleb teil <ph name="BEGIN_LINK" />sünkroonimine lähtestada<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">pikk (2 s)</translation>
 <translation id="4306119971288449206">Rakendusi tuleb esitada sisu tüübiga „<ph name="CONTENT_TYPE" />”</translation>
@@ -2460,7 +2455,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="484921817528146567">Viimane riiuliüksus</translation>
 <translation id="4849286518551984791">Koordineeritud maailmaaeg (UTC/GMT)</translation>
 <translation id="4849517651082200438">Ära installi</translation>
-<translation id="4850258771229959924">Kuva arendaja tööriistades</translation>
 <translation id="4850669014075537160">Kerimine</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="4853020600495124913">Ava &amp;uues aknas</translation>
@@ -3547,7 +3541,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6473842110411557830">Powerwashi joonis</translation>
 <translation id="6474706907372204693">Eelmine sisestusmeetod</translation>
 <translation id="6474884162850599008">Google Drive'i konto ühenduse katkestamine</translation>
-<translation id="6475079491906995455">Teenus <ph name="SERVICE_NAME" /> soovib kontrollida, kas kasutate sobilikku Chrome OS-i seadet. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">Rakendus <ph name="APP_NAME" /> soovib jagada teie ekraani sisu. Valige, mida soovite jagada.</translation>
 <translation id="6478248366783946499">Kas soovite ohtliku faili säilitada?</translation>
 <translation id="6483805311199035658">Avatakse <ph name="FILE" />...</translation>
@@ -4212,7 +4205,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7518150891539970662">WebRTC logid (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7525067979554623046">Loo</translation>
-<translation id="7526413953848747421">Lisage Chrome'i võimsad Google'i teenused, nagu Õigekirjakontroll ja Puudutage otsimiseks</translation>
 <translation id="7529411698175791732">Kontrollige oma Interneti-ühendust. Probleemi jätkumisel logige välja ja uuesti sisse.</translation>
 <translation id="7530016656428373557">Tühjenemise määr vattides</translation>
 <translation id="7531779363494549572">Avage jaotis Seaded &gt; Rakendused ja märguanded &gt; Märguanded.</translation>
@@ -5237,6 +5229,7 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="9094982973264386462">Eemalda</translation>
 <translation id="9095253524804455615">Eemalda</translation>
 <translation id="9099674669267916096">Lehtede arv</translation>
+<translation id="9100610230175265781">Parool on vajalik</translation>
 <translation id="9100765901046053179">Täpsemad seaded</translation>
 <translation id="9101691533782776290">Rakenduse käivitamine</translation>
 <translation id="9102610709270966160">Luba laiendus</translation>

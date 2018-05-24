@@ -1062,7 +1062,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> は <ph name="USAGE" /> MB のディスク領域を使用しています。</translation>
 <translation id="2633212996805280240">「<ph name="EXTENSION_NAME" />」を削除しますか？</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> のインストールを完了できませんでした。ただし、今後もディスク イメージから実行できます。</translation>
-<translation id="2635176084534510129">おすすめコンテンツや翻訳などを、より自分に合った方法で利用できるようになります</translation>
 <translation id="2635276683026132559">署名</translation>
 <translation id="2636625531157955190">Chrome から画像にアクセスできません。</translation>
 <translation id="2638087589890736295">同期を開始するには、パスフレーズが必要です</translation>
@@ -1352,7 +1351,6 @@
 <translation id="3061707000357573562">サービスへのパッチの適用</translation>
 <translation id="3064410671692449875">データが不足しています</translation>
 <translation id="3065041951436100775">タブの強制終了に関するフィードバック。</translation>
-<translation id="3066642396596108483">お使いのすべての端末でブックマーク、パスワード、履歴が同期されます</translation>
 <translation id="3067198179881736288">アプリをインストールしますか？</translation>
 <translation id="3067198360141518313">このプラグインを実行する</translation>
 <translation id="3071624960923923138">ここをクリックすると新しいタブが開きます</translation>
@@ -1618,7 +1616,6 @@
 <translation id="347670947055184738">デバイスのポリシーを取得できませんでした。</translation>
 <translation id="347785443197175480"><ph name="HOST" /> によるカメラとマイクへのアクセスを引き続き許可する</translation>
 <translation id="3478685642445675458">ユーザーを削除するにはまずプロフィールのロックを解除してください。</translation>
-<translation id="347919930506963698">Chrome をさらに活用</translation>
 <translation id="3479552764303398839">後で</translation>
 <translation id="3480892288821151001">ウィンドウを左に固定</translation>
 <translation id="3484273680291419129">有害なソフトウェアを削除しています...</translation>
@@ -1761,7 +1758,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> から、画面の共有許可を求められています</translation>
 <translation id="3693415264595406141">パスワード:</translation>
 <translation id="3694027410380121301">前のタブを選択</translation>
-<translation id="3697100740575341996">IT 管理者が、お使いのデバイスに対して Chrome Goodies を無効にしています。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">メール アドレス</translation>
 <translation id="3700888195348409686">表示中（<ph name="PAGE_ORIGIN" />）</translation>
 <translation id="3702500414347826004">起動ページに <ph name="URL" /> が追加されました。</translation>
@@ -2138,7 +2134,6 @@
 <translation id="4289540628985791613">概要</translation>
 <translation id="4296575653627536209">監視対象ユーザーを追加</translation>
 <translation id="4297322094678649474">言語を変更</translation>
-<translation id="4299141727003252811">Google は、ユーザーの閲覧行動、アクセスしたサイトのコンテンツ、他のブラウザでの操作に関するデータを使用して、Chrome やその他の Google サービス（翻訳、検索、広告など）をカスタマイズします。</translation>
 <translation id="4300305918532693141">この設定を変更するには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します。</translation>
 <translation id="4305227814872083840">長い（2 秒）</translation>
 <translation id="4306119971288449206">アプリはコンテンツタイプ「<ph name="CONTENT_TYPE" />」で配信される必要があります</translation>
@@ -2461,7 +2456,6 @@
 <translation id="484921817528146567">最後のシェルフ アイテム</translation>
 <translation id="4849286518551984791">協定世界時（UTC / GMT）</translation>
 <translation id="4849517651082200438">インストールしない</translation>
-<translation id="4850258771229959924">デベロッパー ツールを表示</translation>
 <translation id="4850669014075537160">スクロール</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4853020600495124913">新しいウィンドウで開く(&amp;N)</translation>
@@ -2941,7 +2935,7 @@
 <translation id="5543983818738093899">ステータスを確認しています...</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">検索</translation>
-<translation id="5551573675707792127">キーボードと入力方法</translation>
+<translation id="5551573675707792127">キーボードとテキスト入力</translation>
 <translation id="5553089923092577885">証明書ポリシーのマッピング</translation>
 <translation id="5554489410841842733">このアイコンは、ページで拡張機能が使用できる場合に表示されます。</translation>
 <translation id="5554573843028719904">他の Wi-Fi ネットワーク....</translation>
@@ -3548,7 +3542,6 @@
 <translation id="6473842110411557830">Powerwash の説明図</translation>
 <translation id="6474706907372204693">前の入力方法</translation>
 <translation id="6474884162850599008">Google ドライブ アカウントを切断</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> により、お使いの Chrome OS デバイスが対象かどうかの確認が行われます。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> が画面コンテンツの共有をリクエストしています。共有する部分を選択してください。</translation>
 <translation id="6478248366783946499">危険なファイルを保存しますか？</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> を開いています...</translation>
@@ -4215,7 +4208,6 @@
 <translation id="7518150891539970662">WebRTC ログ（<ph name="WEBRTC_LOG_COUNT" /> 件）</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7525067979554623046">作成</translation>
-<translation id="7526413953848747421">スペルチェックやタップして検索など、Google の便利なサービスを Chrome で利用できるようになります</translation>
 <translation id="7529411698175791732">インターネット接続を確認してください。問題が解消しない場合は、ログアウトして再度ログインしてみてください。</translation>
 <translation id="7530016656428373557">放電率（ワット）</translation>
 <translation id="7531779363494549572">[設定] &gt; [アプリと通知] &gt; [通知] の順に選択します。</translation>
@@ -4349,7 +4341,7 @@
 <translation id="7754704193130578113">ダウンロード前に各ファイルの保存場所を確認する</translation>
 <translation id="7758450972308449809">ディスプレイの外枠を調整します</translation>
 <translation id="7760004034676677601">この起動ページでよろしいですか？</translation>
-<translation id="7760756088376329221">Google フォト アルバムを選択</translation>
+<translation id="7760756088376329221">Google フォトアルバムを選択</translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" />（<ph name="DOWNLOAD_DOMAIN" /> から）</translation>
 <translation id="7765158879357617694">移動</translation>
@@ -5239,6 +5231,7 @@
 <translation id="9094982973264386462">削除</translation>
 <translation id="9095253524804455615">削除</translation>
 <translation id="9099674669267916096">ページ数</translation>
+<translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9100765901046053179">詳細設定</translation>
 <translation id="9101691533782776290">アプリを起動</translation>
 <translation id="9102610709270966160">拡張機能を有効にする</translation>

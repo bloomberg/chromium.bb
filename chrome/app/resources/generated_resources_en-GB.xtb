@@ -1061,7 +1061,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> is using <ph name="USAGE" /> MB of disk space.</translation>
 <translation id="2633212996805280240">Remove "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> couldn't complete installation, but will continue to run from its disk image.</translation>
-<translation id="2635176084534510129">Get more personalised experiences, such as better content suggestions and smarter Translate</translation>
 <translation id="2635276683026132559">Signing</translation>
 <translation id="2636625531157955190">Chrome cannot access the image.</translation>
 <translation id="2638087589890736295">Passphrase required to start sync</translation>
@@ -1351,7 +1350,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3061707000357573562">Patch Service</translation>
 <translation id="3064410671692449875">Insufficient data</translation>
 <translation id="3065041951436100775">Tab killed feedback.</translation>
-<translation id="3066642396596108483">Sync your bookmarks, passwords and history on all your devices</translation>
 <translation id="3067198179881736288">Install app?</translation>
 <translation id="3067198360141518313">Run this plug-in</translation>
 <translation id="3071624960923923138">You can click here to open a new tab</translation>
@@ -1617,7 +1615,6 @@ I don't think this site should be blocked!</translation>
 <translation id="347670947055184738">Oops!  The system failed to fetch policy for your device.</translation>
 <translation id="347785443197175480">Continue allowing <ph name="HOST" /> to access your camera and microphone</translation>
 <translation id="3478685642445675458">Please unlock your profile before removing a person.</translation>
-<translation id="347919930506963698">Get even more from Chrome</translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3480892288821151001">Dock window left</translation>
 <translation id="3484273680291419129">Removing harmful software...</translation>
@@ -1760,7 +1757,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> wants to share your screen</translation>
 <translation id="3693415264595406141">Password:</translation>
 <translation id="3694027410380121301">Select Previous Tab</translation>
-<translation id="3697100740575341996">Your IT administrator has disabled Chrome Goodies for your device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Email address</translation>
 <translation id="3700888195348409686">Presenting (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Your start-up pages were changed to include <ph name="URL" />.</translation>
@@ -2137,7 +2133,6 @@ I don't think this site should be blocked!</translation>
 <translation id="4289540628985791613">Overview</translation>
 <translation id="4296575653627536209">Add Supervised User</translation>
 <translation id="4297322094678649474">Change Languages</translation>
-<translation id="4299141727003252811">Google may use your browsing activity, content on some sites that you visit and other browser interactions to personalise Chrome and other Google services such as Translate, Search and ads.</translation>
 <translation id="4300305918532693141">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="4305227814872083840">long (2s)</translation>
 <translation id="4306119971288449206">Apps must be served with content-type '<ph name="CONTENT_TYPE" />'</translation>
@@ -2460,7 +2455,6 @@ I don't think this site should be blocked!</translation>
 <translation id="484921817528146567">Last shelf item</translation>
 <translation id="4849286518551984791">Coordinated Universal Time (UTC/GMT)</translation>
 <translation id="4849517651082200438">Don't Install</translation>
-<translation id="4850258771229959924">View in Developer Tools</translation>
 <translation id="4850669014075537160">Scrolling</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4853020600495124913">Open in &amp;new window</translation>
@@ -3547,7 +3541,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6473842110411557830">Powerwash illustration</translation>
 <translation id="6474706907372204693">Previous input method</translation>
 <translation id="6474884162850599008">Disconnect Google Drive account</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> wants to check if you are using an eligible Chrome OS device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> wants to share the contents of your screen. Choose what you'd like to share.</translation>
 <translation id="6478248366783946499">Keep dangerous file?</translation>
 <translation id="6483805311199035658">Opening <ph name="FILE" />...</translation>
@@ -4212,7 +4205,6 @@ I don't think this site should be blocked!</translation>
 <translation id="7518150891539970662">WebRTC logs (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Create</translation>
-<translation id="7526413953848747421">Bring powerful Google services such as spell check and tap to search to Chrome</translation>
 <translation id="7529411698175791732">Check your Internet connection. If the problem continues, try signing out and signing in again.</translation>
 <translation id="7530016656428373557">Discharge Rate in Watts</translation>
 <translation id="7531779363494549572">Go to Settings &gt; Apps &amp; notifications &gt; Notifications.</translation>
@@ -5236,6 +5228,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9094982973264386462">Remove</translation>
 <translation id="9095253524804455615">Remove</translation>
 <translation id="9099674669267916096">Page count</translation>
+<translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9100765901046053179">Advanced settings</translation>
 <translation id="9101691533782776290">Launch app</translation>
 <translation id="9102610709270966160">Enable Extension</translation>

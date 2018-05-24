@@ -12,7 +12,7 @@
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1066396345355680611">Mogelijk heb je geen toegang meer tot beveiligde content van <ph name="SITE" /> en sommige andere sites.</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
-<translation id="1074497978438210769">Niet veilig</translation>
+<translation id="1074497978438210769">Niet beveiligd</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
 <translation id="1088860948719068836">Naam op kaart toevoegen</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> altijd vertalen</translation>
@@ -112,7 +112,7 @@
 <translation id="1655462015569774233">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is gisteren verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Is dat correct? Zo niet, dan moet je de klok van je systeem aanpassen en vervolgens deze pagina vernieuwen.}}</translation>
 <translation id="1656489000284462475">Ophaaltijd</translation>
 <translation id="1663943134801823270">Kaarten en adressen zijn afkomstig uit Chrome. Je kunt ze beheren in <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
-<translation id="1676269943528358898"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Google Chrome deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit kan gebeuren als een aanvaller probeert zich als <ph name="SITE" /> voor te doen of als een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Google Chrome de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
+<translation id="1676269943528358898"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Google Chrome deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit kan gebeuren als een aanvaller probeert zich als <ph name="SITE" /> voor te doen of als een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Google Chrome de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
 <translation id="1706954506755087368">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van morgen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is zogenaamd van # dagen in de toekomst. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.}}</translation>
 <translation id="1710259589646384581">Besturingssysteem</translation>
@@ -338,7 +338,7 @@
 <translation id="3303855915957856445">Geen zoekresultaten gevonden</translation>
 <translation id="3305707030755673451">Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="3320021301628644560">Factuuradres toevoegen</translation>
-<translation id="3338095232262050444">Veilig</translation>
+<translation id="3338095232262050444">Beveiligd</translation>
 <translation id="3340978935015468852">instellingen</translation>
 <translation id="3345135638360864351">Je verzoek om toegang tot deze site kan niet worden verzonden naar <ph name="NAME" />. Probeer het opnieuw.</translation>
 <translation id="3355823806454867987">Proxyinstellingen wijzigen...</translation>
@@ -483,7 +483,7 @@
     &lt;p&gt;Als de fout nog steeds wordt weergegeven, neem je contact op met de eigenaar van de website.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Voer Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Geldig</translation>
-<translation id="4250431568374086873">Je verbinding met deze site is niet volledig veilig</translation>
+<translation id="4250431568374086873">Je verbinding met deze site is niet volledig beveiligd</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="425582637250725228">Wijzigingen die je hebt aangebracht, worden mogelijk niet opgeslagen.</translation>
 <translation id="4258748452823770588">Onjuiste handtekening</translation>
@@ -495,7 +495,7 @@
 <translation id="4312866146174492540">Blokkeren (standaard)</translation>
 <translation id="4325863107915753736">Kan artikel niet vinden</translation>
 <translation id="4326324639298822553">Controleer de vervaldatum en probeer het opnieuw</translation>
-<translation id="4331708818696583467">Niet veilig</translation>
+<translation id="4331708818696583467">Niet beveiligd</translation>
 <translation id="4340982228985273705">Deze computer is niet gedetecteerd als een zakelijk beheerde computer. Overeenkomstig het beleid kunnen alleen automatisch extensies worden geïnstalleerd die worden gehost in de Chrome Web Store. De update-URL van de Chrome Web Store is <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Geaccepteerde creditcards</translation>
 <translation id="4356973930735388585">Cybercriminelen op deze site proberen mogelijk gevaarlijke programma's op je computer te installeren waarmee je gegevens worden gestolen of verwijderd (bijvoorbeeld foto's, wachtwoorden, berichten en creditcards).</translation>
@@ -727,7 +727,7 @@
 <translation id="6157877588268064908">Selecteer een adres om verzendmethoden en vereisten te bekijken</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6169916984152623906">Je kunt nu privé browsen, zodat andere mensen die dit apparaat gebruiken, jouw activiteit niet kunnen zien. Downloads en bladwijzers worden echter wel opgeslagen.</translation>
-<translation id="6177128806592000436">Je verbinding met deze site is niet veilig</translation>
+<translation id="6177128806592000436">Je verbinding met deze site is niet beveiligd</translation>
 <translation id="6203231073485539293">Controleer je internetverbinding</translation>
 <translation id="6218753634732582820">Adres verwijderen uit Chromium?</translation>
 <translation id="6221345481584921695">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />malware gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Websites die normaal gesproken veilig zijn, worden soms geïnfecteerd met malware. De schadelijke content is afkomstig van <ph name="SUBRESOURCE_HOST" />, een bekende distributeur van malware.</translation>
@@ -990,7 +990,7 @@
 <translation id="8201077131113104583">Ongeldige update-URL voor de extensie met de ID '<ph name="EXTENSION_ID" />'.</translation>
 <translation id="8202097416529803614">Besteloverzicht</translation>
 <translation id="8205463626947051446">Site geeft opdringerige advertenties weer</translation>
-<translation id="8211406090763984747">Verbinding is veilig</translation>
+<translation id="8211406090763984747">Verbinding is beveiligd</translation>
 <translation id="8218327578424803826">Toegewezen locatie:</translation>
 <translation id="8225771182978767009">De persoon die deze computer heeft geconfigureerd, heeft deze site geblokkeerd.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
@@ -1048,7 +1048,7 @@
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728672262656704056">Je bent incognito</translation>
 <translation id="8730621377337864115">Gereed</translation>
-<translation id="8738058698779197622">Als je een veilige verbinding tot stand wilt brengen, moet je klok goed zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chromium deze certificaten niet verifiëren.</translation>
+<translation id="8738058698779197622">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok goed zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chromium deze certificaten niet verifiëren.</translation>
 <translation id="8740359287975076522">Het &lt;abbr id="dnsDefinition"&gt;DNS-adres&lt;/abbr&gt; van <ph name="HOST_NAME" /> kan niet worden gevonden. Er wordt een diagnose van het probleem uitgevoerd.</translation>
 <translation id="874846938927089722">Geaccepteerde creditcards en prepaidkaarten</translation>
 <translation id="8759274551635299824">Deze kaart is verlopen</translation>
@@ -1097,7 +1097,7 @@
 <translation id="9076283476770535406">De site kan content voor volwassenen bevatten</translation>
 <translation id="9078964945751709336">Meer informatie vereist</translation>
 <translation id="9080712759204168376">Besteloverzicht</translation>
-<translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
+<translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>
 <translation id="910908805481542201">Help me dit op te lossen</translation>
 <translation id="9128870381267983090">Verbinding maken met netwerk</translation>

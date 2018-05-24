@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Lås opp med fingeravtrykk</translation>
 <translation id="1919743966458266018">Snarveien for å åpne oppgavebehandlingen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1928739107511554905">For å laste ned oppdateringen, bruk berøringsskjermen til å starte Chromebooken på nytt med tastaturet tilkoblet.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Trege taster</translation>
 <translation id="2509468283778169019">Caps Lock er på</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
+<translation id="2575685495496069081">Multipålogging har blitt deaktivert</translation>
 <translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Send</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Ta skjermdump av et område</translation>
 <translation id="371370241367527062">Mikrofon foran</translation>
 <translation id="3771549900096082774">Høykontrastmodus</translation>
+<translation id="3773700760453577392">En administrator har deaktivert multipålogging for <ph name="USER_EMAIL" />. Alle brukere må logge av for å fortsette.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Høyttaler (intern)</translation>
@@ -257,6 +260,7 @@
 <translation id="6713285437468012787">Nå er Bluetooth-enheten «<ph name="DEVICE_NAME" />» koblet til og tilgjengelig for alle brukere. Du kan oppheve denne tilkoblingen via Innstillinger.</translation>
 <translation id="6715542151869432661">Fant ingen mobilenheter.</translation>
 <translation id="671928215901716392">Lås skjerm</translation>
+<translation id="6723839937902243910">Strøm</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="683971173229319003">Søk+L</translation>

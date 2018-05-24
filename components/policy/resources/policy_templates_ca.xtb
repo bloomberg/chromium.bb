@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
 <translation id="1397855852561539316">URL de suggeriments del proveïdor de cerca predeterminat</translation>
-<translation id="1424081297104898791">Et permet controlar on es poden utilitzar les Eines per a desenvolupadors.
-
-      Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és l'opció predeterminada per a usuaris d'empresa), es podrà accedir en general a les Eines per a desenvolupadors i a la Consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1, que és l'opció predeterminada per a usuaris no gestionats), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la Consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
-      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.
-      Si la política heretada DeveloperToolsDisabled s'estableix en "true", el valor d'aquesta política s'ignorarà i les Eines per a desenvolupadors es desactivaran.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
 <translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
@@ -315,11 +309,11 @@
 <translation id="2082205219176343977">Configura la versió mínima de Chrome que es permet al dispositiu.</translation>
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Activa la creació d'informes d'ús i de dades relacionades amb bloqueigs</translation>
-<translation id="2111016292707172233">Permet que la funció Tocar per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
+<translation id="2111016292707172233">Permet que la funció Tocar per cercar estigui disponible a la visualització de contingut a <ph name="PRODUCT_NAME" />.
 
-      Si activeu aquesta opció, l'usuari tindrà a la seva disposició la funció Tocar per cercar i podrà activar-la i desactivar-la.
+      Si actives aquesta opció, l'usuari veurà la funció Tocar per cercar i podrà activar-la i desactivar-la.
 
-      Si desactiveu aquesta opció, la funció Tocar per cercar estarà totalment desactivada.
+      Si desactives aquesta opció, la funció Tocar per cercar estarà totalment desactivada.
 
       Deixar aquesta política sense establir és igual que activar l'opció, amb el funcionament descrit abans.</translation>
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
@@ -673,7 +667,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
-<translation id="2884728160143956392">Permet les galetes només de sessió en aquests llocs</translation>
 <translation id="2893546967669465276">Envia registres del sistema al servidor de gestió</translation>
 <translation id="2899002520262095963">Les aplicacions per a Android poden utilitzar les configuracions de xarxa i els certificats de CA establerts a través d'aquesta política, però no tenen accés a algunes opcions de configuració.</translation>
 <translation id="2906874737073861391">Llista d'extensions d'AppPack</translation>
@@ -715,16 +708,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
-<translation id="3056439054015239107">
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
-      Pots utilitzar la política IsolateOrigins amb una llista
-      dels llocs web que vols aïllar per treure el màxim partit de les dues opcions:
-      aïllar llocs web amb el mínim impacte possible per als usuaris. L'opció
-      SitePerProcess aïlla tots els llocs web.
-      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
-      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar SitePerProcess manualment.
-      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
-      </translation>
 <translation id="306887062252197004">Aquesta política permet que els usuaris de la funció WebDriver substitueixin
       polítiques que podrien interferir amb el seu funcionament.
 
@@ -1168,13 +1151,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4483649828988077221">Desactiva l'actualització automàtica</translation>
 <translation id="4485425108474077672">Configura l'URL de la pàgina Pestanya nova</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
-<translation id="4497968613298501984">Configura la llista d'URL d'inici de sessió per a empreses (només esquemes HTTP i HTTPS). L'empremta digital de la contrasenya es capturarà en aquests URL i s'utilitzarà per detectar la reutilització de contrasenyes.
-      Aquesta opció de configuració només l'han de fer servir els usuaris de G Suite que facin servir un sistema SSO/SAML.
-      Perquè <ph name="PRODUCT_NAME" /> pugui capturar les empremtes digitals correctament, assegura't que les pàgines d'inici de sessió compleixin les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes capturarà l'empremta digital de la contrasenya en aquests URL per detectar la reutilització de contrasenyes.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes només capturarà l'empremta digital de la contrasenya a https://accounts.google.com.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers multimèdia de la memòria cau al disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà la mida de memòria cau proporcionada, tant si l'usuari ha marcat "--disk-cache-size" com si no. El valor que s'especifica en aquesta política no és un límit estricte, és més aviat un suggeriment per al sistema de memòria cau; qualsevol valor per sota d'uns quants megabytes és massa petit i s'arrodonirà a l'alça per arribar a un mínim acceptable.
@@ -1300,13 +1276,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si aquesta política es deixa sense definir o en blanc, qualsevol usuari pot iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permet el mode de pantalla completa</translation>
-<translation id="4868249328547841081">Configura l'URL per canviar la contrasenya (només esquemes HTTP i HTTPS). El servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya si han estat víctimes d'un atac de pesca.
-      Aquesta opció de configuració només l'han de fer servir els usuaris de G Suite que facin servir un sistema SSO/SAML.
-      Perquè <ph name="PRODUCT_NAME" /> pugui capturar correctament l'empremta digital de la nova contrasenya en aquesta pàgina per canviar de contrasenya, assegura't que la pàgina segueixi les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya si han estat víctimes d'un atac de pesca.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes enviarà els usuaris a https://myaccounts.google.com perquè canviïn la contrasenya.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Especifica si es permeten els wake locks de la pantalla. Les extensions poden sol·licitar wake locks de la pantalla a través de l'API de l'extensió de gestió de l'alimentació.
 
           Si aquesta aplicació es defineix com a vertadera o no es defineix, es compliran els wake locks de la pantalla per a la gestió d'alimentació.
@@ -1481,7 +1450,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política s'estableix, l'usuari només podrà configurar <ph name="PRODUCT_OS_NAME" /> perquè es mostri en una de les configuracions regionals especificades per aquesta política. Si aquesta política no s'estableix o s'estableix en una llista buida, <ph name="PRODUCT_OS_NAME" /> es podrà mostrar en totes les configuracions regionals admeses. Si aquesta política s'estableix en una llista amb valors no vàlids, tots els valors no vàlids s'ignoraran. Si un usuari ha configurat prèviament <ph name="PRODUCT_OS_NAME" /> perquè es mostri en un idioma que aquesta política no admet, la configuració regional de visualització canviarà a una configuració regional permesa la propera vegada que l'usuari iniciï la sessió. Si l'usuari ha establert una configuració regional com a preferida i aquesta política l'admet, <ph name="PRODUCT_OS_NAME" /> canviarà a aquesta configuració regional. En canvi, si aquesta política només conté entrades no vàlides, <ph name="PRODUCT_OS_NAME" /> canviarà al primer valor vàlid que especifiqui aquesta política o a una configuració regional alternativa (actualment, en-US).</translation>
 <translation id="5464816904705580310">Defineix les opcions de configuració per a usuaris gestionats.</translation>
 <translation id="546726650689747237">Retard de l'atenuació de pantalla quan s'utilitza alimentació</translation>
-<translation id="5469484020713359236">Permet definir una llista de patrons d'URL per especificar els llocs que poden emmagatzemar galetes. Si no es defineix aquesta política, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultCookiesSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="5469825884154817306">Bloqueja les imatges en aquests llocs</translation>
 <translation id="5475361623548884387">Activa la impressió</translation>
 <translation id="547601067149622666">No permetis els anuncis als llocs web amb anuncis intrusius</translation>
@@ -1771,7 +1739,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si s'estableix en "true" o es deixa sense establir, Neteja de Chrome escanejarà regularment el sistema per detectar programari no desitjat i, si en troba, preguntarà a l'usuari si el vol suprimir. L'activació manual de Neteja de Chrome des de chrome://settings estarà activada.
 
       Aquesta política no està disponible en les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Permet definir una llista de patrons d'URL per especificar els llocs que no poden emmagatzemar galetes. Si no es defineix aquesta política, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "'DefaultCookiesSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
 <translation id="6426205278746959912">No pots forçar que les aplicacions d'Android utilitzin un servidor intermediari. Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari, que poden decidir si respectar-les:
 
           Si decideixes no utilitzar mai un servidor intermediari, s'informarà les aplicacions per a Android que no hi ha cap servidor intermediari configurat.
@@ -1791,13 +1758,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Per controlar quins llocs web poden executar Flash, consulta les polítiques "DefaultPluginsSetting", "PluginsAllowedForUrls" i "PluginsBlockedForUrls".
 
       Si aquesta opció de configuració està desactivada o no es defineix, és possible que es bloquegi el contingut Flash d'altres orígens o de mida reduïda.</translation>
-<translation id="6535639183431116351">Aquesta política es considera obsoleta a M68; en lloc seu, utilitza DeveloperToolsAvailability.
-
-      Desactiva les Eines per a desenvolupadors i la Consola de JavaScript.
-
-      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals que obrin les Eines per a desenvolupadors o la Consola de JavaScript.
-
-      Si aquesta opció es desactiva o no s'estableix, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.</translation>
 <translation id="653608967792832033">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es bloqueja quan el dispositiu funciona amb bateria.
 
           Quan aquesta política es defineix en un valor superior a zero, indica el temps que l'usuari ha de romandre inactiu abans <ph name="PRODUCT_OS_NAME" /> no bloquegi la pantalla.
@@ -1906,16 +1866,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       De tota manera, la informació de la memòria es notifica sense importar el valor de l'opció, però les mides de les quals s'envia la notificació es
       quantifiquen i el percentatge d'actualitzacions es limita per motius de seguretat. Per obtenir dades precises en temps real,
       utilitzeu eines com ara Telemetry.</translation>
-<translation id="6870914592443697993">
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política de l'usuari.
-      Si la política s'activa, cadascun dels orígens indicats en una
-      llista separada per comes s'executarà amb el seu propi procés. Així mateix,
-      s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/,
-      l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web
-      https://example.com/).
-      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran activar IsolateOrigins manualment.
-      Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminat a la plataforma.
-      </translation>
 <translation id="6894178810167845842">URL de la pàgina Pestanya nova</translation>
 <translation id="6899705656741990703">Configuració de la detecció automàtica de servidors intermediaris</translation>
 <translation id="6903814433019432303">Aquesta política només està activa al mode de venta.
@@ -2036,13 +1986,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipus de connexions permesos per a actualitzacions</translation>
 <translation id="7194407337890404814">Nom del proveïdor de cerca predeterminat</translation>
-<translation id="7199300565886109054">Us permet definir una llista de patrons d'URL que especifiquin llocs que tenen permès establir galetes només de sessió.
-
-          Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat per a tots els llocs, bé des de la política DefaultCookiesSetting (si està configurada), o bé des de la configuració personal definida per l'usuari en cas contrari.
-
-          Tingueu en compte que, si <ph name="PRODUCT_NAME" /> s'està executant en segon pla, és possible que la sessió no es tanqui en tancar l'última finestra del navegador, sinó que pot continuar activa fins que es tanqui el navegador. Consulteu la política BackgroundModeEnabled per obtenir més informació sobre com es configura aquest comportament.
-
-          Si la política RestoreOnStartup s'estableix per restaurar els URL de les sessions anteriors, aquesta política no es respectarà i les galetes s'emmagatzemaran permanentment per a aquests llocs.</translation>
 <translation id="7202925763179776247">Permet les restriccions de baixada</translation>
 <translation id="7207095846245296855">Força l'aplicació de Google SafeSearch</translation>
 <translation id="7216442368414164495">Permet que els usuaris activin els informes ampliats de Navegació segura</translation>
@@ -2264,13 +2207,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pàgina Pestanya nova</translation>
 <translation id="7788511847830146438">Per perfil</translation>
-<translation id="7801886189430766248">Quan aquesta política s'estableix en "true", les dades de les aplicacions d'Android es pengen als servidors d'Android Backup per poder restaurar-les en tornar a instal·lar aplicacions compatibles.
-
-      Quan aquesta política s'estableix en "false", Android Backup Service es desactiva.
-
-      Si aquesta opció de configuració està definida, els usuaris no poden canviar-la.
-
-      Si no està definida, els usuaris poden activar i desactivar Android Backup Service a l'aplicació Configuració d'Android.</translation>
 <translation id="780603170519840350">Desactiva l'aplicació dels requisits de Transparència de certificats als resums de subjectPublicKeyInfo inclosos en una llista.
 
       Aquesta política permet desactivar els requisits de divulgació de Transparència de certificats en cadenes de certificats que contenen certificats amb un dels resums de subjectPublicKeyInfo especificats. Això permet continuar utilitzant en amfitrions empresarials els certificats que, d'una altra manera, no es considerarien de confiança per no haver-se divulgat correctament.

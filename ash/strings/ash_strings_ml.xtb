@@ -154,6 +154,7 @@
 <translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
 <translation id="4017989525502048489">ലേസർ പോയിന്റർ</translation>
 <translation id="4072264167173457037">ഇടത്തരം സിഗ്നൽ</translation>
+<translation id="4217571870635786043">പറഞ്ഞ് കൊടുക്കൽ</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +171,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="453661520163887813">പൂർത്തിയാകാൻ ശേഷിക്കുന്ന സമയം <ph name="TIME" /></translation>
 <translation id="4544944664594876241">സ്‌ക്രീൻ ലോക്കുചെയ്യുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
+<translation id="4570957409596482333">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക ബട്ടൺ</translation>
 <translation id="4659419629803378708">ChromeVox പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായുള്ള പാസ്‌വേഡ്</translation>
 <translation id="479989351350248267">search</translation>
@@ -258,6 +260,7 @@
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
 <translation id="6715542151869432661">മൊബൈലുകളൊന്നും കണ്ടെത്തിയില്ല.</translation>
 <translation id="671928215901716392">സ്‌ക്രീൻ ലോക്കുചെയ്യുക</translation>
+<translation id="6723839937902243910">പവർ</translation>
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="683971173229319003">തിരയൽ+L</translation>
@@ -291,6 +294,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ഉടമ)</translation>
 <translation id="7647488630410863958">നിങ്ങളുടെ അറിയിപ്പുകൾ കാണാൻ ഉപകരണം അൺലോക്കുചെയ്യുക</translation>
 <translation id="7649070708921625228">സഹായം</translation>
+<translation id="7654687942625752712">സംഭാഷണ ഫീഡ്‌ബാക്ക് പ്രവർത്തനരഹിതമാക്കാൻ രണ്ട് വോളിയം കീകളും രണ്ട് സെക്കൻഡ് നേരത്തേക്ക് അമർത്തിപ്പിടിക്കുക.</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7692480393933218409">കണക്‌റ്റുചെയ്‌ത USB-C ഉപകരണങ്ങൾ ചാർജ്ജുചെയ്യുന്നു</translation>
 <translation id="776344839111254542">അപ്‌ഡേറ്റുചെയ്‌ത വിശദാംശങ്ങൾ കാണാൻ ‌ക്ലിക്കുചെയ്യുക</translation>

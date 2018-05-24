@@ -92,11 +92,6 @@
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
-<translation id="1424081297104898791">Lar deg styre hvor utviklerverktøy kan brukes.
-      Hvis denne regelen er angitt som «DeveloperToolsDisallowedForForceInstalledExtensions» (verdi 0, som er standardverdien for bedriftsbrukere), kan utviklerverktøyene og JavaScript-konsollen brukes generelt, men de kan ikke brukes i konteksten til utvidelser installert av virksomhetens retningslinjer.
-      Hvis denne regelen er angitt som «DeveloperToolsAllowed» (verdi 1, som er standardverdien for brukere som ikke administreres), kan utviklerverktøyene og JavaScript-konsollen brukes i alle kontekster, inkludert konteksten til utvidelser installer av virksomhetens retningslinjer.
-      Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller hurtigmenyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.
-      Hvis den eldre regelen DeveloperToolsDisabled er angitt som «true» (sann), ignoreres denne regelen, og utviklerverktøyene deaktiveres.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
@@ -324,6 +319,13 @@
 <translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
+<translation id="2111016292707172233">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
+
+      Hvis du slår på denne innstillingen, blir «Trykk for å søke»-funksjonen tilgjengelig for brukerne, og de kan velge om de vil slå den på eller av.
+
+      Hvis du slår av denne innstillingen, slås «Trykk for å søke» helt av.
+
+      Hvis regelen ikke spesifiseres, har det samme effekt som å slå den på. Se beskrivelsen ovenfor.</translation>
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
@@ -684,7 +686,6 @@
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
-<translation id="2884728160143956392">Tillat informasjonskapsler som kun gjelder for den aktuelle økten på disse nettstedene</translation>
 <translation id="2893546967669465276">Send systemlogger til administrasjonstjeneren</translation>
 <translation id="2899002520262095963">Android-apper kan bruke nettverkskonfigurasjoner og CA-sertifikater som angis via denne regelen, men de har ikke tilgang til alle konfigurasjonsalternativene.</translation>
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
@@ -727,16 +728,6 @@
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er angitt.</translation>
-<translation id="3056439054015239107">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="SITE_PER_PROCESS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Du kan endre innstillingen av IsolateOrigins-regelen for å få det beste
-      fra begge verdener – isolering og begrenset innvirkning for brukere – ved
-      å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
-      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, er det ingen nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      </translation>
 <translation id="306887062252197004">Denne regelen tillater at brukere av WebDriver-funksjoner overstyrer
       regler som kan forstyrre bruk av WebDriver.
 
@@ -892,6 +883,7 @@
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Feltet med én linje er avviklet og den fjernes i nær fremtid. Begynn å bruke tekstfeltet med flere linjer nedenfor.)</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autentisering basert på klientsertifikater</translation>
@@ -995,6 +987,7 @@
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
 
       Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse.</translation>
+<translation id="3874773863217952418">Slå på Trykk for å søke</translation>
 <translation id="3877517141460819966">Modus for integrert tofaktor-autentisering</translation>
 <translation id="388237772682176890">Denne regelen ble avviklet i M53 og fjernet i M54, fordi støtten for SPDY/3.1 ble fjernet.
 
@@ -1188,13 +1181,6 @@
 <translation id="4483649828988077221">Slå av automatisk oppdatering</translation>
 <translation id="4485425108474077672">Konfigurer nettadressen for Ny fane-siden</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
-<translation id="4497968613298501984">Konfigurer listen over påloggingsadresser for bedrifter (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å gjenkjenne gjenbruk av passord.
-      Denne innstillingen bør bare brukes av GSuite-brukere som bruker et SSO/SAML-system.
-      For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykk for passord riktig, må du påse at påloggingssidene følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne innstillingen er aktivert, registrerer tjenesten for passordbeskyttelse fingeravtrykk for passord på disse nettadressene, for å gjenkjenne gjenbruk av passord.
-      Hvis denne innstillingen er deaktivert eller ikke er angitt, registrerer tjenesten for passordbeskyttelse bare fingeravtrykk for passord på https://accounts.google.com.
-      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="450537894712826981">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede mediafiler på disken.
 
       Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--media-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
@@ -1261,6 +1247,11 @@
 
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
+<translation id="4680936297850947973">Avviklet i M68. Bruk DefaultPopupsSetting i stedet.
+
+      Du kan se en fullstendig forklaring ved å gå til https://www.chromestatus.com/features/5675755719622656.
+      Hvis denne regelen er aktivert, kan nettsteder navigere og åpne nye vinduer eller faner samtidig.
+      Hvis denne regelen er deaktivert eller ikke er angitt, kan ikke nettsteder navigere og åpne nye vinduer eller faner samtidig.</translation>
 <translation id="4680961954980851756">Aktiver Autofyll</translation>
 <translation id="4722122254122249791">Slå på nettstedsisolering for spesifiserte opprinnelser</translation>
 <translation id="4722399051042571387">Hvis denne regelen er angitt som «false» (usann), kan ikke brukerne angi PIN-koder som er svake og enkle å gjette.
@@ -1315,13 +1306,6 @@
 
       Hvis denne retningslinjen ikke angis eller står tom, kan alle brukere logge seg på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
-<translation id="4868249328547841081">Konfigurer nettadressen for endring av passord (bare HTTP- og HTTPS-protokoller). Tjenesten for passordbeskyttelse sender brukerne til denne nettadressen for å bytte passord hvis de har blitt utsatt for nettfisking.
-      Denne innstillingen bør bare brukes av GSuite-brukere som bruker et SSO/SAML-system.
-      For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykket for det nye passordet på denne siden for passordbytte, må du påse at siden for passordbytte følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne innstillingen er aktivert, sender tjenesten for passordbeskyttelse brukerne til denne nettadressen hvis de har blitt utsatt for nettfisking.
-      Hvis denne innstillingen er deaktivert eller ikke er angitt, sender tjenesten for passordbeskyttelse brukerne til https://myaccounts.google.com for å bytte passord.
-      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="4869787217450099946">Angir om det er tillatt med låser for skjermaktivering. Låser for skjermaktivering kan forespørres via utvidelses API-en for strømsparing.
 
           Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.
@@ -1512,12 +1496,9 @@
           Standardinnstillingen som brukes når denne retningslinjen er angitt, er for å tillate vertstjeneren å foreta gjengivelsen, men du kan velge å overstyre dette sånn at <ph name="PRODUCT_FRAME_NAME" /> som standard gjengir HTML-sider.</translation>
 <translation id="5459155981813668716">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
 
-      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på et språk som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillat lokalitet nesten gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokaliteter tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
+      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på et språk som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillatt lokalitet neste gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokalitetene tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
 <translation id="5464816904705580310">Konfigurer innstillinger for administrerte brukere.</translation>
 <translation id="546726650689747237">Forsinkelse for lysdemping på skjermen når enheten kjører på vekselstrøm</translation>
-<translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
-
-          Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="5475361623548884387">Aktiver utskrift</translation>
 <translation id="547601067149622666">Ikke tillat annonser på nettsteder med forstyrrende annonser</translation>
@@ -1819,14 +1800,11 @@
       Hvis du aktiverer denne innstillingen eller ikke angir noen verdi, fortsetter autofyll-funksjonen å være under brukerens kontroll. Dette gjør at de kan konfigurere autofyll-profiler og slå autofyll-funksjonen på og av etter eget ønske.</translation>
 <translation id="6394350458541421998">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_OS_NAME" /> versjon 29. Bruk innstillingen PresentationScreenDimDelayScale i stedet.</translation>
 <translation id="6401669939808766804">Logg brukeren av</translation>
-<translation id="6412477120967771054">Hvis denne regelen er angitt som «false» (usann), stoppes opprydningsverktøyet for Chrome i å gjennomsøke systemet etter unønsket programvare og gjennomføre opprydning. Manuell utløsing av opprydningsverktøyet for Chrome via chrome://settings/cleanup er deaktivert.
+<translation id="6412477120967771054">Hvis denne regelen er angitt som «false» (usann), hindres opprydningsverktøyet for Chrome fra å gjennomsøke systemet etter uønsket programvare og gjennomføre opprydning. Manuell utløsing av opprydningsverktøyet for Chrome via chrome://settings/cleanup er deaktivert.
 
       Hvis regelen er angitt som «true» (sann) eller ikke er angitt, gjennomsøker opprydningsverktøyet for Chrome systemet regelmessig etter uønsket programvare, og hvis det blir oppdaget, blir brukeren spurt om det skal fjernes. Manuell utløsing av opprydningsverktøyet for Chrome via chrome://settings/cleanup er aktivert.
 
       Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
-<translation id="6417861582779909667">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å stille inn informasjonskapsler.
-
-         Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra  retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="6426205278746959912">Du kan ikke tvinge Android-apper til å bruke proxy-tjenere. En undergruppe av proxy-innstillinger er gjort tilgjengelige for Android-apper, og utviklerne av slike apper kan selv velge om appene skal følge dem eller ikke:
 
           Hvis du velger aldri å bruke proxy-tjenere, blir Android-apper informert om at ingen proxy-tjenere er konfigurert.
@@ -1846,12 +1824,6 @@
 For å kontrollere hvilke nettsteder som tillates å kjøre Flash, kan du lese mer om reglene «DefaultPluginsSetting», «PluginsAllowedForUrls» og «PluginsBlockedForUrls».
 
 Hvis denne regelen er deaktivert eller ikke angitt, kan Flash-innhold av annen opprinnelse eller med lite innhold bli blokkert.</translation>
-<translation id="6535639183431116351">Denne regelen er avviklet i M68. Bruk DeveloperToolsAvailability i stedet.
-
-      Deaktiverer utviklerverktøyene og JavaScript-konsollen.
-
-      Hvis du aktiverer denne innstillingen, kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres. Alle tastatursnarveier og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir deaktivert.
-      Hvis dette alternativet slås av eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="653608967792832033">Angir hvor lenge skjermen kan stå ubrukt før den låses når enheten bruker batteriet.
 
           Når denne innstillingen er satt til en verdi som er høyere enn null, angir den tiden brukeren kan være inaktiv før  <ph name="PRODUCT_OS_NAME" /> låser skjermen.
@@ -1959,16 +1931,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="687046793986382807">Disse retningslinjene ble avviklet fra og med versjon 35 av <ph name="PRODUCT_NAME" />.
 
 Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alternativet, men de rapporterte størrelsene blir kvantisert, og oppdateringsfrekvensen er av sikkerhetsgrunner begrenset. Hvis du vil ha data med sanntidspresisjon, må du bruke verktøy som telemetri (fjernmåling).</translation>
-<translation id="6870914592443697993">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har
-      navn basert på underdomener. Hvis for eksempel https://example.com/
-      angis, isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-     Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
-      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
-      </translation>
 <translation id="6894178810167845842">Nettadresse for Ny fane-siden</translation>
 <translation id="6899705656741990703">Gjenkjenn mellomtjenerinnstillinger automatisk</translation>
 <translation id="6903814433019432303">Denne retningslinjen er aktiv bare i detaljistmodus.
@@ -2107,13 +2069,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tilkoblingstyper som tillates for oppdateringer</translation>
 <translation id="7194407337890404814">Navn for standard søkeleverandør</translation>
-<translation id="7199300565886109054">Lar deg konfigurere lister med nettadressemønstre som spesifiserer nettsteder med tillatelse til å plassere øktspesifikke informasjonskapsler.
-
-          Hvis du ikke spesifiserer denne regelen, brukes den globale standardverdien for alle nettsteder. Denne hentes enten fra «DefaultCookiesSetting»-regelen (hvis den er spesifisert) eller fra brukernes personlige konfigurasjon.
-
-          Vær oppmerksom på at hvis <ph name="PRODUCT_NAME" /> kjører i «bakgrunnsmodus», kan det hende økten ikke avsluttes når det siste nettleservinduet lukkes, og at den fortsetter å være aktiv til nettleseren avsluttes. Du finner mer informasjon om hvordan du konfigurerer denne atferden i «BackgroundModeEnabled»-regelen.
-
-          Hvis «RestoreOnStartup»-regelen er konfigurert til å gjenopprette nettadressene fra forrige økt, overstyrer den denne regelen, og informasjonskapslene for slike nettsteder lagres permanent.</translation>
 <translation id="7202925763179776247">Tillat begrensninger for nedlastinger</translation>
 <translation id="7207095846245296855">Fremtving bruk av Google Sikkert Søk</translation>
 <translation id="7216442368414164495">Tillat at brukere velger utvidet rapportering for sikker surfing</translation>
@@ -2346,13 +2301,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Ny fane-siden</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7801886189430766248">Når denne regelen er satt til true (sann), lastes Android-appdata opp til Android Backup-tjenere og gjenopprettes derfra når kompatible apper installeres på nytt.
-
-      Når denne regelen settes til false (usann), blir Android Backup Service slått av.
-
-      Hvis denne regelen er konfigurert, kan ikke brukerne endre den selv.
-
-      Hvis denne regelen ikke er konfigurert, kan brukerne slå Android Backup Service av og på i appen for Android-innstillinger.</translation>
 <translation id="780603170519840350">Deaktiverer håndheving av krav om sertifikatåpenhet for en liste med subjectPublicKeyInfo hash-koder.
 
       Denne regelen tillater at krav om sertifikatåpenhet deaktiveres for sertifikatkjeder som inneholder sertifikater med en av de angitte subjectPublicKeyInfo-hash-kodene. Dermed kan sertifikater som ellers hadde blitt vurdert som upålitelige (fordi de ikke er tilstrekkelig vist offentlig), fortsatt brukes for bedriftsverter.
@@ -2406,11 +2354,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7961779417826583251">Slå av tvungen sertifikatåpenhet for en liste med eldre sertifiseringsinstanser</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
-<translation id="7977445800390854860">Hvis denne regelen ikke er angitt og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google i henhold til regelen angitt av «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å rydde opp den uønskede programvaren. Disse resultatene inneholder filmetadata og registernøkler, som beskrevet i det tekniske dokumentet om personvern i Google Chrome.
+<translation id="7977445800390854860">Hvis denne regelen ikke er angitt og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google i henhold til regelen angitt av «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å fjerne den uønskede programvaren. Disse resultatene inneholder filmetadata og registernøkler, som beskrevet i det tekniske dokumentet om personvern i Google Chrome.
 
-      Hvis den er angitt som «false» (usann) og opprydningsverktøyet for Chrome oppdager uønsket programvare, rapporteres ingen metadata om gjennomsøkingen til Google. Dette overstyrer regelen som kan være angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om den uønskede programvaren skal ryddes opp. Resultatene av opprydningen rapporteres ikke til Google, og brukeren får ikke noe valg om å gjøre dette.
+      Hvis den er angitt som «false» (usann) og opprydningsverktøyet for Chrome oppdager uønsket programvare, rapporteres ingen metadata om gjennomsøkingen til Google. Dette overstyrer regelen som kan være angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om den uønskede programvaren skal fjernes. Resultatene av opprydningen rapporteres ikke til Google, og brukeren får ikke noe valg om å gjøre dette.
 
-      Hvis den er angitt som «sann» (true) og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google, i henhold til regelen angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å rydde opp den uønskede programvaren. Resultatene av opprydningen rapporteres til Google, og brukeren får ikke noe valg om å forhindre dette.
+      Hvis den er angitt som «sann» (true) og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google, i henhold til regelen angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å fjerne den uønskede programvaren. Resultatene av opprydningen rapporteres til Google, og brukeren får ikke noe valg om å forhindre dette.
 
       Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
@@ -2749,9 +2697,9 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
-<translation id="9085839450090699752">Lar deg angi en tidsperiode i millisekunder hvor brukere blir varslet om at <ph name="PRODUCT_NAME" /> må startes på nytt eller at en <ph name="PRODUCT_OS_NAME" />-enhet må startes på nytt på grunn av en oppdatering som ikke er installert ennå.
+<translation id="9085839450090699752">Lar deg angi en tidsperiode i millisekunder når brukere blir varslet om at <ph name="PRODUCT_NAME" /> må startes på nytt, eller at en <ph name="PRODUCT_OS_NAME" />-enhet må startes på nytt på grunn av en oppdatering som ikke er installert ennå.
 
-      I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. På <ph name="PRODUCT_OS_NAME" />-enheter vises varselet om omstart i systemfeltet når en oppgradering oppdages. Dette varselet skifter farge når halvparten av varselperioden har passert og igjen når hele varselperioden har passert. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å vise at en omstart er påkrevd når en tredjedel av varselperioden har passert. Dette varselet skifter farge når to tredjedeler av varselperioden har passert og igjen når hele varselperioden har passert. Ekstra varsler aktivert av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen for nettlesere følger samme tidsplan.
+      I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. På <ph name="PRODUCT_OS_NAME" />-enheter vises varselet om omstart i systemfeltet når en oppgradering oppdages. Dette varselet skifter farge når halvparten av varselperioden har passert og igjen når hele varselperioden har passert. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å vise at en omstart er påkrevd når en tredjedel av varselperioden har passert. Dette varselet skifter farge når to tredjedeler av varselperioden har passert og igjen når hele varselperioden har passert. Ekstra varsler aktivert av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen for nettlesere følger den samme tidsplanen.
 
       Hvis regelen ikke er angitt, brukes standardperioden på 345600000 millisekunder (fire dager) på <ph name="PRODUCT_OS_NAME" />-enheter og 604800000 millisekunder (én uke) i nettlesere.</translation>
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>

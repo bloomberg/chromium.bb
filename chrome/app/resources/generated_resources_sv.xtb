@@ -1060,7 +1060,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> använder <ph name="USAGE" /> MB diskutrymme.</translation>
 <translation id="2633212996805280240">Vill du ta bort <ph name="EXTENSION_NAME" />?</translation>
 <translation id="263325223718984101">Installationen av <ph name="PRODUCT_NAME" /> kunde inte slutföras, men programmet kommer att fortsätta köras från diskavbildningen.</translation>
-<translation id="2635176084534510129">Få mer anpassade upplevelser, till exempel bättre förslag på innehåll och ett smartare Google Översätt</translation>
 <translation id="2635276683026132559">Signering</translation>
 <translation id="2636625531157955190">Chrome har inte åtkomst till bilden.</translation>
 <translation id="2638087589890736295">Lösenfras krävs för att starta synkroniseringen</translation>
@@ -1350,7 +1349,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="3061707000357573562">Tjänst för programkorrigering</translation>
 <translation id="3064410671692449875">Otillräckligt med data</translation>
 <translation id="3065041951436100775">Feedback vid stängd flik.</translation>
-<translation id="3066642396596108483">Synkronisera bokmärken, lösenord och historik på alla dina enheter</translation>
 <translation id="3067198179881736288">Vill du installera appen?</translation>
 <translation id="3067198360141518313">Kör det här plugin-programmet</translation>
 <translation id="3071624960923923138">Du kan klicka här om du vill öppna en ny flik</translation>
@@ -1616,7 +1614,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="347670947055184738">Hoppsan! Det gick inte att hämta enhetsprincipen.</translation>
 <translation id="347785443197175480">Fortsätt tillåta att <ph name="HOST" /> använder kameran och mikrofonen</translation>
 <translation id="3478685642445675458">Du måste låsa upp din profil innan du kan ta bort en person.</translation>
-<translation id="347919930506963698">Få ut ännu mer av Chrome</translation>
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="3480892288821151001">Docka fönstret till vänster</translation>
 <translation id="3484273680291419129">Den skadliga programvaran tas bort …</translation>
@@ -1759,7 +1756,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> vill dela skärmen</translation>
 <translation id="3693415264595406141">Lösenord:</translation>
 <translation id="3694027410380121301">Välj föregående flik</translation>
-<translation id="3697100740575341996">IT-administratören har inaktiverat godbitar från Chrome för din enhet. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-postadress</translation>
 <translation id="3700888195348409686">Presenteras (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004"><ph name="URL" /> har lagts till i startflikarna.</translation>
@@ -2136,7 +2132,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="4289540628985791613">Översikt</translation>
 <translation id="4296575653627536209">Lägg till kontrollerad användare</translation>
 <translation id="4297322094678649474">Ändra språk</translation>
-<translation id="4299141727003252811">Google kan använda webbaktiviteten, innehållet på en del webbplatser du besöker och andra interaktioner i webbläsaren för att anpassa Chrome och andra tjänster från Google som Översätt, Sök och annonser.</translation>
 <translation id="4300305918532693141"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen</translation>
 <translation id="4305227814872083840">lång (2 s)</translation>
 <translation id="4306119971288449206">Apparna måste visas med content-type <ph name="CONTENT_TYPE" /></translation>
@@ -2459,7 +2454,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="484921817528146567">Senaste hyllobjekt</translation>
 <translation id="4849286518551984791">Koordinerad universell tid (UTC/GMT)</translation>
 <translation id="4849517651082200438">Installera inte</translation>
-<translation id="4850258771229959924">Visa i utvecklarverktygen</translation>
 <translation id="4850669014075537160">Rullning</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4853020600495124913">Öppna i &amp;nytt fönster</translation>
@@ -3546,7 +3540,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="6473842110411557830">Illustration av Powerwash</translation>
 <translation id="6474706907372204693">Föregående inmatningsmetod</translation>
 <translation id="6474884162850599008">Koppla från Google Drive-konto</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> vill kontrollera om du använder en kvalificerad Chrome OS-enhet. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> vill dela det som visas på skärmen. Välj vad du vill dela.</translation>
 <translation id="6478248366783946499">Vill du behålla den farliga filen?</translation>
 <translation id="6483805311199035658">Öppnar <ph name="FILE" />...</translation>
@@ -4210,7 +4203,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="7518150891539970662">WebRTC-loggar (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Skapa</translation>
-<translation id="7526413953848747421">Använd kraftfulla tjänster från Google som stavningskontroll och tryck för att söka i Chrome</translation>
 <translation id="7529411698175791732">Kontrollera internetanslutningen. Om problemet kvarstår testar du att logga ut och logga in igen.</translation>
 <translation id="7530016656428373557">Urladdningstakt i watt</translation>
 <translation id="7531779363494549572">Öppna Inställningar &gt; Appar och aviseringar &gt; Aviseringar.</translation>
@@ -5234,6 +5226,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9094982973264386462">Ta bort</translation>
 <translation id="9095253524804455615">Ta bort</translation>
 <translation id="9099674669267916096">Sidantal</translation>
+<translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9100765901046053179">Avancerade inställningar</translation>
 <translation id="9101691533782776290">Starta appen</translation>
 <translation id="9102610709270966160">Aktivera tillägget</translation>

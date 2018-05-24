@@ -1061,7 +1061,6 @@
 <translation id="2633199387167390344">「<ph name="NAME" />」正在使用 <ph name="USAGE" /> MB 的磁碟空間。</translation>
 <translation id="2633212996805280240">要移除「<ph name="EXTENSION_NAME" />」嗎？</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> 無法完成安裝，但會繼續透過磁碟映像執行。</translation>
-<translation id="2635176084534510129">享有個人化程度更高的體驗，例如更符合需求的內容建議，以及更精準的翻譯</translation>
 <translation id="2635276683026132559">簽署</translation>
 <translation id="2636625531157955190">Chrome 無法存取這張圖片。</translation>
 <translation id="2638087589890736295">必須輸入通關密語，才能開始進行同步處理</translation>
@@ -1351,7 +1350,6 @@
 <translation id="3061707000357573562">修補服務</translation>
 <translation id="3064410671692449875">資料不足</translation>
 <translation id="3065041951436100775">分頁毀損意見回饋。</translation>
-<translation id="3066642396596108483">讓你的書籤、密碼和歷史記錄在所有裝置上保持同步</translation>
 <translation id="3067198179881736288">要安裝應用程式嗎？</translation>
 <translation id="3067198360141518313">執行這個外掛程式</translation>
 <translation id="3071624960923923138">按一下這裡即可開啟新分頁</translation>
@@ -1617,7 +1615,6 @@
 <translation id="347670947055184738">糟糕！系統無法擷取裝置政策。</translation>
 <translation id="347785443197175480">繼續允許 <ph name="HOST" /> 存取你的攝影機和麥克風</translation>
 <translation id="3478685642445675458">移除任何人之前，請先取消鎖定您的個人資料。</translation>
-<translation id="347919930506963698">讓 Chrome 發揮更大的效益</translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="3480892288821151001">靠左固定視窗</translation>
 <translation id="3484273680291419129">正在移除有害軟體...</translation>
@@ -1760,7 +1757,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> 要求分享螢幕畫面</translation>
 <translation id="3693415264595406141">密碼：</translation>
 <translation id="3694027410380121301">選取前一個分頁</translation>
-<translation id="3697100740575341996">IT 管理員已在你的裝置上停用 Chrome Goodies。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">電子郵件地址</translation>
 <translation id="3700888195348409686">展示中 (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">你的起始網頁已變更為包含 <ph name="URL" />。</translation>
@@ -2136,7 +2132,6 @@
 <translation id="4289540628985791613">總覽</translation>
 <translation id="4296575653627536209">新增受監管的使用者</translation>
 <translation id="4297322094678649474">變更語言</translation>
-<translation id="4299141727003252811">Google 可能會根據你的瀏覽活動、你所造訪的部分網站的內容以及其他瀏覽器互動行為，提供個人化的 Chrome 體驗和其他 Google 服務體驗，例如翻譯、搜尋和廣告。</translation>
 <translation id="4300305918532693141">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="4305227814872083840">長 (2 秒)</translation>
 <translation id="4306119971288449206">應用程式的內容類型應設為「<ph name="CONTENT_TYPE" />」</translation>
@@ -2459,7 +2454,6 @@
 <translation id="484921817528146567">最後一個檔案櫃項目</translation>
 <translation id="4849286518551984791">世界標準時間 (UTC/GMT)</translation>
 <translation id="4849517651082200438">不要安裝</translation>
-<translation id="4850258771229959924">查看開發人員工具</translation>
 <translation id="4850669014075537160">捲動</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4853020600495124913">在新視窗中開啟(&amp;N)</translation>
@@ -3544,7 +3538,6 @@
 <translation id="6473842110411557830">Powerwash 插圖</translation>
 <translation id="6474706907372204693">上一個輸入法</translation>
 <translation id="6474884162850599008">取消連結 Google 雲端硬碟帳戶</translation>
-<translation id="6475079491906995455">「<ph name="SERVICE_NAME" />」要求確認你所使用的裝置是否為合格的 Chrome 作業系統裝置。<ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">「<ph name="APP_NAME" />」要求分享畫面內容，請選擇你要分享的內容。</translation>
 <translation id="6478248366783946499">要保留不安全的檔案嗎？</translation>
 <translation id="6483805311199035658">正在開啟「<ph name="FILE" />」...</translation>
@@ -4207,7 +4200,6 @@
 <translation id="7518150891539970662">WebRTC 記錄 (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">建立</translation>
-<translation id="7526413953848747421">將功能強大的 Google 服務 (例如拼字檢查和輕觸搜尋) 導入 Chrome</translation>
 <translation id="7529411698175791732">檢查你的網際網路連線。如果問題持續發生，請嘗試登出，然後再次登入。</translation>
 <translation id="7530016656428373557">放電速率 (瓦特)</translation>
 <translation id="7531779363494549572">依序輕觸 [設定] &gt; [應用程式和通知] &gt; [通知]。</translation>
@@ -5230,6 +5222,7 @@
 <translation id="9094982973264386462">移除</translation>
 <translation id="9095253524804455615">移除</translation>
 <translation id="9099674669267916096">頁數</translation>
+<translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9100765901046053179">進階設定</translation>
 <translation id="9101691533782776290">啟動應用程式</translation>
 <translation id="9102610709270966160">啟用擴充功能</translation>

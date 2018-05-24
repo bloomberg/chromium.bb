@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">محرك البحث</translation>
 <translation id="1513352483775369820">الإشارات المرجعية وسجل بحث الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
+<translation id="1516229014686355813">‏تعمل ميزة "البحث بالنقر" على إرسال الكلمة المُحدَّدة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">‏تم فتح الرابط في Chrome</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
+<translation id="4048707525896921369">‏يمكنك معرفة معلومات عن مواضيع بالمواقع الإلكترونية بدون مغادرة الصفحة. تُرسل ميزة "البحث بالنقر" الكلمة والسياق المحيط بها إلى بحث Google، إلى جانب عرض التعريفات، والصور، ونتائج البحث، وتفاصيل أخرى.
+
+لضبط عبارة البحث، يُرجى الضغط مع الاستمرار للتحديد. لتحسين البحث، يُرجى تمرير اللوحة للأعلى والنقر على مربّع البحث.</translation>
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
 <translation id="4084682180776658562">إشارة</translation>
@@ -689,6 +693,7 @@
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7403691278183511381">‏أول تجربة تشغيل لمتصفح Chrome</translation>
+<translation id="741204030948306876">نعم، موافق</translation>
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7423538860840206698">تم الحظر من قراءة الحافظة</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>

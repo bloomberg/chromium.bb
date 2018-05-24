@@ -1061,7 +1061,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> กำลังใช้พื้นที่ดิสก์ <ph name="USAGE" /> MB</translation>
 <translation id="2633212996805280240">นำ "<ph name="EXTENSION_NAME" />" ออกหรือไม่</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ไม่สามารถติดตั้งให้เสร็จสมบูรณ์ แต่จะเรียกใช้จากดิสก์อิมเมจต่อไป</translation>
-<translation id="2635176084534510129">รับประสบการณ์ที่เป็นคุณมากขึ้น เช่น การแนะนำเนื้อหาที่ดีขึ้นและ "แปลภาษา" ที่ฉลาดขึ้น</translation>
 <translation id="2635276683026132559">การเซ็นชื่อ</translation>
 <translation id="2636625531157955190">Chrome ไม่สามารถเข้าถึงภาพ</translation>
 <translation id="2638087589890736295">ต้องระบุรหัสผ่านเพื่อเริ่มการซิงค์</translation>
@@ -1351,7 +1350,6 @@
 <translation id="3061707000357573562">แพตช์บริการ</translation>
 <translation id="3064410671692449875">ข้อมูลไม่เพียงพอ</translation>
 <translation id="3065041951436100775">แตะความคิดเห็นที่ปิดไป</translation>
-<translation id="3066642396596108483">ซิงค์บุ๊กมาร์ก รหัสผ่าน และประวัติการเข้าชมในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="3067198179881736288">ติดตั้งแอปไหม</translation>
 <translation id="3067198360141518313">เรียกใช้ปลั๊กอินนี้</translation>
 <translation id="3071624960923923138">คุณสามารถคลิกที่นี่เพื่อเปิดแท็บใหม่</translation>
@@ -1617,7 +1615,6 @@
 <translation id="347670947055184738">อ๊ะ! ระบบไม่สามารถดึงข้อมูลนโยบายจากอุปกรณ์</translation>
 <translation id="347785443197175480">อนุญาตให้ <ph name="HOST" /> เข้าถึงกล้องถ่ายรูปและไมโครโฟนของคุณต่อไป</translation>
 <translation id="3478685642445675458">โปรดปลดล็อกโปรไฟล์ของคุณก่อนนำบุคคลออก</translation>
-<translation id="347919930506963698">ใช้ประโยชน์จาก Chrome ให้มากขึ้น</translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="3480892288821151001">จัดวางหน้าต่างไว้ทางซ้าย</translation>
 <translation id="3484273680291419129">กำลังนำซอฟต์แวร์อันตรายออก...</translation>
@@ -1760,7 +1757,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> ต้องการแชร์หน้าจอของคุณ</translation>
 <translation id="3693415264595406141">รหัสผ่าน:</translation>
 <translation id="3694027410380121301">เลือกแท็บก่อนหน้า</translation>
-<translation id="3697100740575341996">ผู้ดูแลระบบไอทีของคุณปิดใช้ Chrome Goodies สำหรับอุปกรณ์ <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ที่อยู่อีเมล</translation>
 <translation id="3700888195348409686">กำลังนำเสนอ (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">มีการเปลี่ยนหน้าเริ่มต้นใช้งานของคุณให้มี <ph name="URL" /></translation>
@@ -2137,7 +2133,6 @@
 <translation id="4289540628985791613">ภาพรวม</translation>
 <translation id="4296575653627536209">เพิ่มผู้ใช้ภายใต้การดูแล</translation>
 <translation id="4297322094678649474">เปลี่ยนภาษา</translation>
-<translation id="4299141727003252811">Google อาจใช้กิจกรรมการท่องเว็บ เนื้อหาในบางเว็บไซต์ที่คุณเข้าชม และการโต้ตอบอื่นๆ กับเบราว์เซอร์เพื่อปรับเปลี่ยน Chrome ตลอดจนบริการอื่นๆ ของ Google เช่น แปลภาษา, Search และโฆษณา ให้เข้ากับคุณมากขึ้น</translation>
 <translation id="4300305918532693141">หากต้องการเปลี่ยนการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="4305227814872083840">นาน (2 วินาที)</translation>
 <translation id="4306119971288449206">แอปต้องได้รับบริการจากประเภทเนื้อหา "<ph name="CONTENT_TYPE" />"</translation>
@@ -2460,7 +2455,6 @@
 <translation id="484921817528146567">รายการชั้นวางสุดท้าย</translation>
 <translation id="4849286518551984791">เวลาสากลเชิงพิกัด (UTC/GMT)</translation>
 <translation id="4849517651082200438">ไม่ต้องติดตั้ง</translation>
-<translation id="4850258771229959924">ดูในเครื่องมือนักพัฒนาซอฟต์แวร์</translation>
 <translation id="4850669014075537160">การเลื่อน</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4853020600495124913">เปิดใน&amp;หน้าต่างใหม่</translation>
@@ -3547,7 +3541,6 @@
 <translation id="6473842110411557830">ภาพประกอบการ Powerwash</translation>
 <translation id="6474706907372204693">วิธีการป้อนข้อมูลก่อนหน้า</translation>
 <translation id="6474884162850599008">ยกเลิกการเชื่อมต่อบัญชี Google ไดรฟ์</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> ต้องการตรวจสอบว่าคุณกำลังใช้อุปกรณ์ Chrome OS ที่มีสิทธิ์ <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> ต้องการแชร์เนื้อหาบนหน้าจอของคุณ เลือกส่วนที่คุณต้องการแชร์</translation>
 <translation id="6478248366783946499">เก็บไฟล์อันตรายไว้ไหม</translation>
 <translation id="6483805311199035658">กำลังเปิด <ph name="FILE" />...</translation>
@@ -4212,7 +4205,6 @@
 <translation id="7518150891539970662">บันทึก WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">สร้าง</translation>
-<translation id="7526413953848747421">นำบริการที่ทรงประสิทธิภาพของ Google อย่าง "ตรวจตัวสะกด" และ "แตะเพื่อค้นหา" มาไว้ใน Chrome</translation>
 <translation id="7529411698175791732">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ หากปัญหายังคงอยู่ ให้ลองออกจากระบบและลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="7530016656428373557">อัตราการใช้ไฟฟ้าเป็นวัตต์</translation>
 <translation id="7531779363494549572">ไปที่การตั้งค่า &gt; แอปและการแจ้งเตือน &gt; การแจ้งเตือน</translation>
@@ -5236,6 +5228,7 @@
 <translation id="9094982973264386462">นำออก</translation>
 <translation id="9095253524804455615">นำออก</translation>
 <translation id="9099674669267916096">จำนวนหน้า</translation>
+<translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9100765901046053179">การตั้งค่าขั้นสูง</translation>
 <translation id="9101691533782776290">เปิดแอป</translation>
 <translation id="9102610709270966160">เปิดใช้ส่วนขยาย</translation>

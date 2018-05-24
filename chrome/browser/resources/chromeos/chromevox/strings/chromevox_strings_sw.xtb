@@ -34,7 +34,7 @@
 <translation id="1213216066620407844">ChromeVox - Inaipa Chrome Sauti</translation>
 <translation id="1225437811932752266">Hongera! Umejifunza mambo muhimu kuhusu kutumia ChromeVox. Kumbuka kwamba unaweza kufungua menyu ya amri za ChromeVox wakati wowote kwa kubonyeza Tafuta+Nukta. Ili upate maelezo zaidi kuhusu ChromeVox na mfumo wa uendeshaji wa Chrome, soma makala yafuatayo. Ikiwa umemaliza mafunzo, tumia ChromeVox kusogeza hadi kwenye kitufe cha Kufunga na ukibofye.</translation>
 <translation id="1229276918471378188">Kuruka kulikotangulia</translation>
-<translation id="1236794971743289975">Maelezo mwishoni mwa kitabu</translation>
+<translation id="1236794971743289975">Maelezo ya mwisho wa kitabu</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Kichwa cha ngazi ya 6 kinachofuata</translation>
 <translation id="1275718070701477396">Imechaguliwa</translation>
@@ -144,7 +144,7 @@
 <translation id="241124561063364910">inafuatwa na</translation>
 <translation id="2416512023405990736">Kisanduku cha kuteua ambacho hakijateuliwa</translation>
 <translation id="2417569100218200841">Maelezo ya maudhui</translation>
-<translation id="2417948780551741035">Ufafanuzi muhimu</translation>
+<translation id="2417948780551741035">Maelezo ya mwisho wa kitabu</translation>
 <translation id="2422937916923936891">Kisanduku cha kuteua cha kipengee cha menyu</translation>
 <translation id="2428534162001909979">Menyu za Amri</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -453,7 +453,7 @@
 <translation id="4755857887974653209">Zima ChromeVox</translation>
 <translation id="4763296182459741068">Imefungwa hadi mwisho</translation>
 <translation id="4763480195061959176">video</translation>
-<translation id="4764692524839457597">chaguo-msingi</translation>
+<translation id="4764692524839457597">chaguo msingi</translation>
 <translation id="479989351350248267">tafuta</translation>
 <translation id="481165870889056555">Tangaza kichwa cha ukurasa wa sasa</translation>
 <translation id="4826415162591436065">Nenda mbele</translation>
@@ -561,7 +561,7 @@
 <translation id="5597170376237141345">Kisanduku cha kuteua kinachofuata</translation>
 <translation id="5597933780944041114">Hakuna kichwa kinachofuata.</translation>
 <translation id="5598905979683743333">Kitufe cha mviringo cha <ph name="NAME" /> hakijachaguliwa</translation>
-<translation id="5601172225407283979">Tekeleza kitendo chaguo-msingi</translation>
+<translation id="5601172225407283979">Tekeleza kitendo chaguo msingi</translation>
 <translation id="5608798115546226984">Inayojijaza kiotomatiki kulingana na maandishi</translation>
 <translation id="561939826962581046">wakati</translation>
 <translation id="5623778242535476823">rbtn</translation>
@@ -693,7 +693,7 @@
 <translation id="6787839852456839824">Mikato ya kibodi</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">Kijachini</translation>
-<translation id="6858047746862060282">Dibaji</translation>
+<translation id="6858047746862060282">Shairi la utangulizi</translation>
 <translation id="6871161210040114857">Inapuuza herufi kubwa au ndogo.</translation>
 <translation id="6877435256196695200">Hakuna mchoro unaofuata.</translation>
 <translation id="6897341342232909480">Sogeza kushoto</translation>
@@ -725,7 +725,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="712735679809149106">mwangwi wa neno</translation>
 <translation id="713824876195128146">Nukuu la msingi linalofuata</translation>
 <translation id="7143034430156387447">Geuza kati ya breli ya nukta nundu 6 na 8</translation>
-<translation id="7157306005867877619">Dhahania</translation>
+<translation id="7157306005867877619">Ikisiri</translation>
 <translation id="7161425887892204659">Mwisho wa maandishi yanayolingana</translation>
 <translation id="7161771961008409533">Kitufe cha dirisha ibukizi</translation>
 <translation id="7165714724802225287">Mtindo wa onyesho wa sasa ni wa mchanganyiko.</translation>
@@ -799,7 +799,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7773125101284285285">Mwisho wa maandishi yaliyopigiwa mstari chini</translation>
 <translation id="7776293189010177726">Fungua menyu za ChromeVox</translation>
 <translation id="7800558923657349506">Hitimisho</translation>
-<translation id="7805247615045262757">kudurusu chaguo-msingi</translation>
+<translation id="7805247615045262757">kudurusu chaguo msingi</translation>
 <translation id="7805768142964895445">Hali</translation>
 <translation id="7810781339813764006">Kikundi Kinachofuata</translation>
 <translation id="7819187121850078213">dirisha la kichupo cha <ph name="TITLE" /></translation>
