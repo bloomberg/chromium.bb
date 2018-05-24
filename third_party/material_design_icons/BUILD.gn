@@ -13,6 +13,7 @@ import("//build/config/ios/asset_catalog.gni")
 _image_sets = [
   "action/ic_account_circle",
   "action/ic_account_circle_48pt",
+  "action/ic_credit_card",
   "action/ic_delete",
   "action/ic_done",
   "action/ic_feedback",
@@ -28,6 +29,7 @@ _image_sets = [
   "communication/ic_comment",
   "communication/ic_email",
   "communication/ic_message",
+  "communication/ic_vpn_key",
   "content/ic_link",
   "content/ic_send",
   "content/ic_undo",
@@ -37,6 +39,7 @@ _image_sets = [
   "hardware/ic_desktop_windows_white",
   "hardware/ic_keyboard_arrow_down",
   "hardware/ic_keyboard_arrow_right",
+  "hardware/ic_keyboard_arrow_up",
   "hardware/ic_mouse",
   "image/ic_photo_camera",
   "image/ic_photo_library",
