@@ -28,28 +28,6 @@
 
 namespace subresource_filter {
 
-namespace {
-
-void LogActivationDecision(content::NavigationHandle* navigation_handle,
-                           ActivationDecision decision,
-                           ActivationLevel level) {
-  ukm::SourceId source_id = ukm::ConvertToSourceId(
-      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  ukm::builders::SubresourceFilter builder(source_id);
-  builder.SetActivationDecision(static_cast<int64_t>(decision));
-  if (level == subresource_filter::ActivationLevel::DRYRUN) {
-    DCHECK_EQ(subresource_filter::ActivationDecision::ACTIVATED, decision);
-    builder.SetDryRun(true);
-  }
-  builder.Record(ukm::UkmRecorder::Get());
-
-  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationDecision",
-                            decision,
-                            ActivationDecision::ACTIVATION_DECISION_MAX);
-}
-
-}  // namespace
-
 SubresourceFilterSafeBrowsingActivationThrottle::
     SubresourceFilterSafeBrowsingActivationThrottle(
         content::NavigationHandle* handle,
@@ -73,49 +51,7 @@ SubresourceFilterSafeBrowsingActivationThrottle::
 }
 
 SubresourceFilterSafeBrowsingActivationThrottle::
-    ~SubresourceFilterSafeBrowsingActivationThrottle() {
-  // The last check could be ongoing when the navigation is cancelled.
-  if (check_results_.empty() || !check_results_.back().finished)
-    return;
-  bool warning = false;
-  ActivationList matched_list = GetListForThreatTypeAndMetadata(
-      check_results_.back().threat_type, check_results_.back().threat_metadata,
-      &warning);
-  // TODO(csharrison): Log more metrics based on check_results_.
-  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationList",
-                            matched_list,
-                            static_cast<int>(ActivationList::LAST) + 1);
-
-  size_t chain_size = check_results_.size();
-  switch (matched_list) {
-    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
-      UMA_HISTOGRAM_COUNTS(
-          "SubresourceFilter.PageLoad.RedirectChainLength."
-          "SocialEngineeringAdsInterstitial",
-          chain_size);
-      break;
-    case ActivationList::PHISHING_INTERSTITIAL:
-      UMA_HISTOGRAM_COUNTS(
-          "SubresourceFilter.PageLoad.RedirectChainLength."
-          "PhishingInterstitial",
-          chain_size);
-      break;
-    case ActivationList::SUBRESOURCE_FILTER:
-      UMA_HISTOGRAM_COUNTS(
-          "SubresourceFilter.PageLoad.RedirectChainLength."
-          "SubresourceFilterOnly",
-          chain_size);
-      break;
-    case ActivationList::BETTER_ADS:
-      UMA_HISTOGRAM_COUNTS(
-          "SubresourceFilter.PageLoad.RedirectChainLength."
-          "BetterAds",
-          chain_size);
-      break;
-    default:
-      break;
-  }
-}
+    ~SubresourceFilterSafeBrowsingActivationThrottle() = default;
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
@@ -222,8 +158,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     matched_configuration = Configuration();
   }
 
-  LogActivationDecision(
-      navigation_handle(), activation_decision,
+  LogMetricsOnChecksComplete(
+      matched_list, activation_decision,
       matched_configuration.activation_options.activation_level);
 
   auto* driver_factory = ContentSubresourceFilterDriverFactory::FromWebContents(
@@ -231,6 +167,13 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   DCHECK(driver_factory);
   driver_factory->NotifyPageActivationComputed(
       navigation_handle(), activation_decision, matched_configuration, warning);
+}
+
+void SubresourceFilterSafeBrowsingActivationThrottle::
+    LogMetricsOnChecksComplete(ActivationList matched_list,
+                               ActivationDecision decision,
+                               ActivationLevel level) const {
+  DCHECK(HasFinishedAllSafeBrowsingChecks());
 
   base::TimeDelta delay = defer_time_.is_null()
                               ? base::TimeDelta::FromMilliseconds(0)
@@ -245,10 +188,27 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   UMA_HISTOGRAM_TIMES(
       "SubresourceFilter.PageLoad.SafeBrowsingDelay.NoRedirectSpeculation",
       no_redirect_speculation_delay);
+
+  ukm::SourceId source_id = ukm::ConvertToSourceId(
+      navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  ukm::builders::SubresourceFilter builder(source_id);
+  builder.SetActivationDecision(static_cast<int64_t>(decision));
+  if (level == subresource_filter::ActivationLevel::DRYRUN) {
+    DCHECK_EQ(subresource_filter::ActivationDecision::ACTIVATED, decision);
+    builder.SetDryRun(true);
+  }
+  builder.Record(ukm::UkmRecorder::Get());
+
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationDecision",
+                            decision,
+                            ActivationDecision::ACTIVATION_DECISION_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationList",
+                            matched_list,
+                            static_cast<int>(ActivationList::LAST) + 1);
 }
 
 bool SubresourceFilterSafeBrowsingActivationThrottle::
-    HasFinishedAllSafeBrowsingChecks() {
+    HasFinishedAllSafeBrowsingChecks() const {
   for (const auto& check_result : check_results_) {
     if (!check_result.finished) {
       return false;

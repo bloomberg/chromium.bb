@@ -53,28 +53,19 @@ namespace {
 const char kUrlA[] = "https://example_a.com";
 const char kUrlB[] = "https://example_b.com";
 const char kUrlC[] = "https://example_c.com";
-const char kUrlD[] = "https://example_d.com";
 
 char kURL[] = "http://example.test/";
 char kURLWithParams[] = "http://example.test/?v=10";
 char kRedirectURL[] = "http://redirect.test/";
 
-// Names of navigation chain patterns histogram.
-const char kMatchesPatternHistogramNameSubresourceFilterSuffix[] =
-    "SubresourceFilter.PageLoad.RedirectChainMatchPattern."
-    "SubresourceFilterOnly";
-const char kNavigationChainSizeSubresourceFilterSuffix[] =
-    "SubresourceFilter.PageLoad.RedirectChainLength.SubresourceFilterOnly";
 const char kSafeBrowsingNavigationDelay[] =
     "SubresourceFilter.PageLoad.SafeBrowsingDelay";
 const char kSafeBrowsingNavigationDelayNoSpeculation[] =
     "SubresourceFilter.PageLoad.SafeBrowsingDelay.NoRedirectSpeculation";
 const char kSafeBrowsingCheckTime[] =
     "SubresourceFilter.SafeBrowsing.CheckTime";
-const char kMatchesPatternHistogramName[] =
+const char kActivationListHistogram[] =
     "SubresourceFilter.PageLoad.ActivationList";
-const char kNavigationChainSize[] =
-    "SubresourceFilter.PageLoad.RedirectChainLength.";
 
 class MockSubresourceFilterClient : public SubresourceFilterClient {
  public:
@@ -714,8 +705,8 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   fake_safe_browsing_database()->set_synchronous_failure();
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
-  tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
-                            0);
+  tester().ExpectUniqueSample(kActivationListHistogram, ActivationList::NONE,
+                              1);
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, LogsUkm) {
@@ -840,21 +831,17 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListNotMatched_NoActivation) {
-  const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(ActivationList::NONE), 1);
 
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 1);
-
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  tester().ExpectTotalCount(kNavigationChainSize + suffix, 0);
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
@@ -866,27 +853,21 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
                               1);
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  tester().ExpectUniqueSample(kNavigationChainSize + suffix, 1, 1);
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListNotMatchedAfterRedirect_NoActivation) {
-  const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(ActivationList::NONE), 1);
-
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  tester().ExpectTotalCount(kNavigationChainSize + suffix, 0);
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
@@ -899,12 +880,9 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
                               1);
-
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
@@ -927,9 +905,6 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
-                            0);
-  tester().ExpectTotalCount(kNavigationChainSizeSubresourceFilterSuffix, 0);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 1);
@@ -949,12 +924,9 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
                               1);
-
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  tester().ExpectUniqueSample(kNavigationChainSize + suffix, 1, 1);
 
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
@@ -978,13 +950,11 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester().ExpectUniqueSample(kActivationListHistogram,
                               static_cast<int>(test_data.activation_list_type),
                               1);
 
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
-
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
@@ -1009,73 +979,9 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             *observer()->GetPageActivationForLastCommittedLoad());
-  tester().ExpectTotalCount(kMatchesPatternHistogramNameSubresourceFilterSuffix,
-                            0);
-  tester().ExpectTotalCount(kNavigationChainSizeSubresourceFilterSuffix, 0);
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
-}
-
-TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
-       RedirectPatternTest) {
-  struct RedirectRedirectChainMatchPatternTestData {
-    std::vector<bool> blacklisted_urls;
-    std::vector<GURL> navigation_chain;
-  } kRedirectRecordedHistogramsTestData[] = {
-      {{false}, {GURL(kUrlA)}},
-      {{true}, {GURL(kUrlA)}},
-      {{false, false}, {GURL(kUrlA), GURL(kUrlB)}},
-      {{false, true}, {GURL(kUrlA), GURL(kUrlB)}},
-      {{true, false}, {GURL(kUrlA), GURL(kUrlB)}},
-      {{true, true}, {GURL(kUrlA), GURL(kUrlB)}},
-      {{false, false, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{false, false, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{false, true, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{false, true, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{true, false, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{true, false, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{true, true, false}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{true, true, true}, {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC)}},
-      {{false, true, false, false},
-       {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), GURL(kUrlD)}},
-  };
-
-  for (const auto& test_data : kRedirectRecordedHistogramsTestData) {
-    base::HistogramTester histogram_tester;
-    ClearAllBlacklistedUrls();
-    auto it = test_data.navigation_chain.begin();
-    for (size_t i = 0u; i < test_data.blacklisted_urls.size(); ++i) {
-      if (test_data.blacklisted_urls[i])
-        ConfigureForMatchParam(test_data.navigation_chain[i]);
-    }
-    SimulateStartAndExpectProceed(*it);
-    for (++it; it != test_data.navigation_chain.end(); ++it)
-      SimulateRedirectAndExpectProceed(*it);
-    SimulateCommitAndExpectProceed();
-
-    // Verify histograms
-    const std::string suffix_param(
-        GetSuffixForList(GetParam().activation_list_type));
-    auto check_histogram = [&](std::string suffix) {
-      bool matches =
-          suffix == suffix_param && test_data.blacklisted_urls.back();
-      if (matches) {
-        histogram_tester.ExpectUniqueSample(
-            kMatchesPatternHistogramName,
-            static_cast<int>(GetParam().activation_list_type), 1);
-        histogram_tester.ExpectBucketCount(kNavigationChainSize + suffix,
-                                           test_data.navigation_chain.size(),
-                                           1);
-      } else {
-        histogram_tester.ExpectTotalCount(kNavigationChainSize + suffix, 0);
-      }
-    };
-
-    check_histogram("SocialEngineeringAdsInterstitial");
-    check_histogram("PhishingInterstitial");
-    check_histogram("SubresourceFilterOnly");
-  }
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
