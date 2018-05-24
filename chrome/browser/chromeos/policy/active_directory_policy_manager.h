@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/policy/component_active_directory_policy_service.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -27,8 +28,10 @@ class CloudExternalDataManager;
 // stored in session manager with completion indicated by OnPolicyFetched().
 // From there policy load from session manager is triggered, completion of which
 // is notified via OnStoreLoaded()/OnStoreError().
-class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
-                                     public CloudPolicyStore::Observer {
+class ActiveDirectoryPolicyManager
+    : public ConfigurationPolicyProvider,
+      public CloudPolicyStore::Observer,
+      public ComponentActiveDirectoryPolicyService::Delegate {
  public:
   ~ActiveDirectoryPolicyManager() override;
 
@@ -42,19 +45,38 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
   void OnStoreError(CloudPolicyStore* cloud_policy_store) override;
 
+  // ComponentActiveDirectoryPolicyService::Delegate
+  void OnComponentActiveDirectoryPolicyUpdated() override;
+
   CloudPolicyStore* store() const { return store_.get(); }
-  CloudExternalDataManager* external_data_manager() const {
+  CloudExternalDataManager* external_data_manager() {
     return external_data_manager_.get();
   }
   PolicyScheduler* scheduler() { return scheduler_.get(); }
+  ComponentActiveDirectoryPolicyService* extension_policy_service() {
+    return extension_policy_service_.get();
+  }
 
  protected:
   ActiveDirectoryPolicyManager(
       std::unique_ptr<CloudPolicyStore> store,
-      std::unique_ptr<CloudExternalDataManager> external_data_manager);
+      std::unique_ptr<CloudExternalDataManager> external_data_manager,
+      PolicyDomain extension_policy_domain);
 
   // Publish the policy that's currently cached in the store.
   void PublishPolicy();
+
+  // Creates the policy service to load extension policy from Session Manager.
+  // |scope| specifies whether the component policy is fetched along with user
+  // or device policy. |account_type| specifies which account Session Manager
+  // should load policy from (device vs user). |account_id| must be empty for
+  // the device account and the user's account id for user accounts.
+  // |schema_registry| is the registry that contains the extension schemas.
+  void CreateExtensionPolicyService(
+      PolicyScope scope,
+      login_manager::PolicyAccountType account_type,
+      const AccountId& account_id,
+      SchemaRegistry* schema_registry);
 
   // Calls into authpolicyd to fetch policy. Reports success or failure via
   // |callback|.
@@ -84,10 +106,18 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   bool fetch_ever_succeeded_ = false;
 
   // Store used to serialize policy, usually sends data to Session Manager.
-  std::unique_ptr<CloudPolicyStore> store_;
+  const std::unique_ptr<CloudPolicyStore> store_;
 
   // Manages external data referenced by policies.
-  std::unique_ptr<CloudExternalDataManager> external_data_manager_;
+  const std::unique_ptr<CloudExternalDataManager> external_data_manager_;
+
+  // Manages policy for Chrome extensions.
+  std::unique_ptr<ComponentActiveDirectoryPolicyService>
+      extension_policy_service_;
+
+  // Type of extension policy to manage. Must be either POLICY_DOMAIN_EXTENSIONS
+  // or POLICY_DOMAIN_SIGNIN_EXTENSIONS.
+  const PolicyDomain extension_policy_domain_;
 
   std::unique_ptr<PolicyScheduler> scheduler_;
 
@@ -118,6 +148,7 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
   ~UserActiveDirectoryPolicyManager() override;
 
   // ConfigurationPolicyProvider:
+  void Init(SchemaRegistry* registry) override;
   bool IsInitializationComplete(PolicyDomain domain) const override;
 
   // Helper function to force a policy fetch timeout.
@@ -166,11 +197,24 @@ class DeviceActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
       std::unique_ptr<CloudPolicyStore> store);
   ~DeviceActiveDirectoryPolicyManager() override;
 
+  // ConfigurationPolicyProvider:
+  void Shutdown() override;
+
+  // Passes the |schema_registry| that corresponds to the signin profile and
+  // uses it (wrapped in a ForwardingSchemaRegistry) to create the extension
+  // policy service.
+  void SetSigninProfileSchemaRegistry(SchemaRegistry* schema_registry);
+
  protected:
   // ActiveDirectoryPolicyManager:
   void DoPolicyFetch(PolicyScheduler::TaskCallback callback) override;
 
  private:
+  // Wrapper schema registry that tracks the signin profile schema registry once
+  // it is passed to this class.
+  std::unique_ptr<ForwardingSchemaRegistry>
+      signin_profile_forwarding_schema_registry_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceActiveDirectoryPolicyManager);
 };
 

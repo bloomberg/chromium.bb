@@ -72,9 +72,9 @@ class ComponentActiveDirectoryPolicyRetriever {
                          const std::string& policy_fetch_response_blob);
 
   // Constructor parameters.
-  login_manager::PolicyAccountType account_type_;
-  std::string account_id_;
-  std::vector<PolicyNamespace> namespaces_;
+  const login_manager::PolicyAccountType account_type_;
+  const std::string account_id_;
+  const std::vector<PolicyNamespace> namespaces_;
   RetrieveCallback callback_;
 
   // Tracks results and failed responses from retrieval queries.

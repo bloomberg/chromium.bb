@@ -18,6 +18,7 @@ namespace policy {
 
 class PolicyBundle;
 
+// Maps component id (e.g. extension id) to schema.
 typedef std::map<std::string, Schema> ComponentMap;
 typedef std::map<PolicyDomain, ComponentMap> DomainMap;
 

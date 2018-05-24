@@ -71,7 +71,7 @@ void ComponentActiveDirectoryPolicyRetriever::RetrievePolicyForNextNamespace() {
   // Request policy for the next namespace. Note that OnPolicyRetrieved()
   // calls back into this method to "peel off" the next namespace.
   DCHECK(results_.size() < namespaces_.size());
-  PolicyNamespace& ns = namespaces_[results_.size()];
+  const PolicyNamespace& ns = namespaces_[results_.size()];
   login_manager::PolicyDescriptor descriptor;
   descriptor.set_account_type(account_type_);
   descriptor.set_account_id(account_id_);

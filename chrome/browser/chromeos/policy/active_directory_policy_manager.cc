@@ -9,12 +9,16 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/tools/variable_expander.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/component_cloud_policy_store.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -44,6 +48,11 @@ chromeos::AuthPolicyClient* GetAuthPolicyClient() {
       thread_manager->GetAuthPolicyClient();
   DCHECK(auth_policy_client);
   return auth_policy_client;
+}
+
+bool IsComponentPolicyDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableComponentCloudPolicy);
 }
 
 }  // namespace
@@ -81,6 +90,7 @@ void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
 void ActiveDirectoryPolicyManager::Shutdown() {
   if (external_data_manager_)
     external_data_manager_->Disconnect();
+  extension_policy_service_.reset();
   store_->RemoveObserver(this);
   ConfigurationPolicyProvider::Shutdown();
 }
@@ -89,6 +99,10 @@ bool ActiveDirectoryPolicyManager::IsInitializationComplete(
     PolicyDomain domain) const {
   if (domain == POLICY_DOMAIN_CHROME)
     return store_->is_initialized();
+  if (domain == extension_policy_domain_ && !IsComponentPolicyDisabled()) {
+    return extension_policy_service_ &&
+           extension_policy_service_->policy() != nullptr;
+  }
   return true;
 }
 
@@ -122,9 +136,18 @@ void ActiveDirectoryPolicyManager::OnStoreError(
 
 ActiveDirectoryPolicyManager::ActiveDirectoryPolicyManager(
     std::unique_ptr<CloudPolicyStore> store,
-    std::unique_ptr<CloudExternalDataManager> external_data_manager)
+    std::unique_ptr<CloudExternalDataManager> external_data_manager,
+    PolicyDomain extension_policy_domain)
     : store_(std::move(store)),
-      external_data_manager_(std::move(external_data_manager)) {}
+      external_data_manager_(std::move(external_data_manager)),
+      extension_policy_domain_(extension_policy_domain) {
+  DCHECK(extension_policy_domain_ == POLICY_DOMAIN_EXTENSIONS ||
+         extension_policy_domain_ == POLICY_DOMAIN_SIGNIN_EXTENSIONS);
+}
+
+void ActiveDirectoryPolicyManager::OnComponentActiveDirectoryPolicyUpdated() {
+  PublishPolicy();
+}
 
 void ActiveDirectoryPolicyManager::PublishPolicy() {
   if (!store_->is_initialized()) {
@@ -134,6 +157,8 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   PolicyMap& policy_map =
       bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   policy_map.CopyFrom(store_->policy_map());
+  if (extension_policy_service_ && extension_policy_service_->policy())
+    bundle->MergeFrom(*extension_policy_service_->policy());
 
   // Overwrite the source which is POLICY_SOURCE_CLOUD by default.
   // TODO(tnagel): Rename CloudPolicyStore to PolicyStore and make the source
@@ -148,6 +173,27 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   UpdatePolicy(std::move(bundle));
 }
 
+void ActiveDirectoryPolicyManager::CreateExtensionPolicyService(
+    PolicyScope scope,
+    login_manager::PolicyAccountType account_type,
+    const AccountId& account_id,
+    SchemaRegistry* schema_registry) {
+  if (IsComponentPolicyDisabled())
+    return;
+
+  std::string cryptohome_id;
+  if (!account_id.empty())
+    cryptohome_id = cryptohome::Identification(account_id).id();
+
+  // Create the service for sign-in extensions (device scope) or user profile
+  // extensions (user scope).
+  DCHECK(!extension_policy_service_);
+  extension_policy_service_ =
+      std::make_unique<ComponentActiveDirectoryPolicyService>(
+          scope, extension_policy_domain_, account_type, cryptohome_id, this,
+          schema_registry);
+}
+
 void ActiveDirectoryPolicyManager::OnPolicyFetched(bool success) {
   fetch_ever_completed_ = true;
   if (success) {
@@ -158,16 +204,18 @@ void ActiveDirectoryPolicyManager::OnPolicyFetched(bool success) {
       CancelWaitForInitialPolicy(false /* success */);
     }
   }
-  // Load independently of success or failure to keep in sync with the state in
-  // session manager. This cancels any potentially running Load() operations
-  // thus it is guaranteed that at the next OnStoreLoaded() invocation the
-  // policy is up-to-date with what was fetched.
+  // Load/retrieve independently of success or failure to keep in sync with the
+  // state in session manager. This cancels any potentially running Load()
+  // operations thus it is guaranteed that at the next OnStoreLoaded()
+  // invocation the policy is up-to-date with what was fetched.
   store_->Load();
+  if (extension_policy_service_)
+    extension_policy_service_->RetrievePolicies();
 }
 
 void ActiveDirectoryPolicyManager::ExpandVariables(PolicyMap* policy_map) {
   const em::PolicyData* policy = store_->policy();
-  if (!policy)
+  if (!policy || policy_map->empty())
     return;
   if (policy->machine_name().empty()) {
     LOG(ERROR) << "Cannot expand machine_name (empty string in policy)";
@@ -193,8 +241,10 @@ UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
     base::OnceClosure exit_session,
     std::unique_ptr<CloudPolicyStore> store,
     std::unique_ptr<CloudExternalDataManager> external_data_manager)
-    : ActiveDirectoryPolicyManager(std::move(store),
-                                   std::move(external_data_manager)),
+    : ActiveDirectoryPolicyManager(
+          std::move(store),
+          std::move(external_data_manager),
+          POLICY_DOMAIN_EXTENSIONS /* extension_policy_domain */),
       account_id_(account_id),
       waiting_for_initial_policy_fetch_(
           !initial_policy_fetch_timeout.is_zero()),
@@ -210,6 +260,17 @@ UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
 }
 
 UserActiveDirectoryPolicyManager::~UserActiveDirectoryPolicyManager() = default;
+
+void UserActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
+  ActiveDirectoryPolicyManager::Init(registry);
+
+  // Create the extension policy handler here. This is different from the device
+  // policy manager, which can't do this in Init() because it needs to wait for
+  // the sign-in profile's schema registry.
+  CreateExtensionPolicyService(POLICY_SCOPE_USER,
+                               login_manager::ACCOUNT_TYPE_USER, account_id_,
+                               registry);
+}
 
 bool UserActiveDirectoryPolicyManager::IsInitializationComplete(
     PolicyDomain domain) const {
@@ -281,8 +342,26 @@ void UserActiveDirectoryPolicyManager::OnBlockingFetchTimeout() {
 
 DeviceActiveDirectoryPolicyManager::DeviceActiveDirectoryPolicyManager(
     std::unique_ptr<CloudPolicyStore> store)
-    : ActiveDirectoryPolicyManager(std::move(store),
-                                   nullptr /* external_data_manager */) {}
+    : ActiveDirectoryPolicyManager(
+          std::move(store),
+          nullptr /* external_data_manager */,
+          POLICY_DOMAIN_SIGNIN_EXTENSIONS /* extension_policy_domain */) {}
+
+void DeviceActiveDirectoryPolicyManager::Shutdown() {
+  ActiveDirectoryPolicyManager::Shutdown();
+  signin_profile_forwarding_schema_registry_.reset();
+}
+
+void DeviceActiveDirectoryPolicyManager::SetSigninProfileSchemaRegistry(
+    SchemaRegistry* schema_registry) {
+  DCHECK(!signin_profile_forwarding_schema_registry_);
+  signin_profile_forwarding_schema_registry_ =
+      std::make_unique<ForwardingSchemaRegistry>(schema_registry);
+
+  CreateExtensionPolicyService(
+      POLICY_SCOPE_MACHINE, login_manager::ACCOUNT_TYPE_DEVICE,
+      EmptyAccountId(), signin_profile_forwarding_schema_registry_.get());
+}
 
 DeviceActiveDirectoryPolicyManager::~DeviceActiveDirectoryPolicyManager() =
     default;

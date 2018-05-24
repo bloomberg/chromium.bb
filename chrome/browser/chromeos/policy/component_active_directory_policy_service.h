@@ -97,13 +97,12 @@ class ComponentActiveDirectoryPolicyService : public SchemaRegistry::Observer {
   void FilterAndInstallPolicy(std::unique_ptr<PolicyBundle> policy);
 
   // Constructor parameters.
-  const PolicyScope scope_ = POLICY_SCOPE_MACHINE;
-  const PolicyDomain domain_ = POLICY_DOMAIN_CHROME;
-  const login_manager::PolicyAccountType account_type_ =
-      login_manager::ACCOUNT_TYPE_DEVICE;
+  const PolicyScope scope_;
+  const PolicyDomain domain_;
+  const login_manager::PolicyAccountType account_type_;
   const std::string account_id_;
-  Delegate* const delegate_ = nullptr;
-  SchemaRegistry* const schema_registry_ = nullptr;
+  Delegate* const delegate_;
+  SchemaRegistry* const schema_registry_;
 
   // Schema map from the |schema_registry_|. Set as soon as the registry is
   // ready.

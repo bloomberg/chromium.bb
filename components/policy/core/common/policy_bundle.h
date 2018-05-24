@@ -26,7 +26,7 @@ class POLICY_EXPORT PolicyBundle {
   PolicyBundle();
   virtual ~PolicyBundle();
 
-  // Returns the PolicyMap for namespace |ns|.
+  // Returns the PolicyMap for namespace |ns|. Creates a new map if necessary.
   PolicyMap& Get(const PolicyNamespace& ns);
   const PolicyMap& Get(const PolicyNamespace& ns) const;
 
