@@ -1389,7 +1389,8 @@ bool ChromeUserManagerImpl::IsGuestAccountId(
 }
 
 bool ChromeUserManagerImpl::IsStubAccountId(const AccountId& account_id) const {
-  return account_id == user_manager::StubAccountId();
+  return account_id == user_manager::StubAccountId() ||
+         account_id == user_manager::StubAdAccountId();
 }
 
 bool ChromeUserManagerImpl::IsSupervisedAccountId(

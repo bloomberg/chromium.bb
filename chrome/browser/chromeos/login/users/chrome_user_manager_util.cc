@@ -52,10 +52,16 @@ bool GetPlatformKnownUserId(const std::string& user_email,
     return true;
   }
 
+  if (user_email == user_manager::kStubAdUserEmail) {
+    *out_account_id = user_manager::StubAdAccountId();
+    return true;
+  }
+
   if (user_email == user_manager::kGuestUserName) {
     *out_account_id = user_manager::GuestAccountId();
     return true;
   }
+
   return false;
 }
 

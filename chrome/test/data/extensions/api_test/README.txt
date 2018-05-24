@@ -86,4 +86,7 @@ Got EXTENSION_TEST_PASSED notification.
 
 Note the RUN/SUCCESS messages in () - these are the subtests that are run in
 the extension itself.  Anything printed with chrome.test.log() will also display
-in stdout of the browser test (and hence in the buildbot output for that test).
+in stdout of the browser test (and hence in the buildbot output for that test)
+if the VLOG level for extensions/browser/api/test/test_api.cc is at least 1,
+which can be done e.g. by adding the command-line switch --vmodule=*test_api*=1,
+see extensions/browser/api/test/test_api.cc.

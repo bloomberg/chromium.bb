@@ -1646,6 +1646,7 @@ test("browser_tests") {
         "../browser/chromeos/policy/affiliation_test_helper.h",
         "../browser/chromeos/policy/blocking_login_browsertest.cc",
         "../browser/chromeos/policy/browser_policy_connector_chromeos_browsertest.cc",
+        "../browser/chromeos/policy/component_active_directory_policy_browsertest.cc",
         "../browser/chromeos/policy/device_cloud_policy_browsertest.cc",
         "../browser/chromeos/policy/device_local_account_browsertest.cc",
         "../browser/chromeos/policy/device_policy_cros_browser_test.cc",

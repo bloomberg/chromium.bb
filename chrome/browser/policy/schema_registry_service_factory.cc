@@ -17,6 +17,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -77,8 +78,8 @@ SchemaRegistryServiceFactory::CreateForContext(
     content::BrowserContext* context,
     const Schema& chrome_schema,
     CombinedSchemaRegistry* global_registry) {
-  return GetInstance()->CreateForContextInternal(
-      context, chrome_schema, global_registry);
+  return GetInstance()->CreateForContextInternal(context, chrome_schema,
+                                                 global_registry);
 }
 
 SchemaRegistryServiceFactory::SchemaRegistryServiceFactory()
@@ -127,16 +128,20 @@ SchemaRegistryServiceFactory::CreateForContextInternal(
 #if defined(OS_CHROMEOS)
   Profile* const profile = Profile::FromBrowserContext(context);
   if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    // Pass the SchemaRegistry of the signin profile to device cloud policy
-    // manager, for being used for fetching the component policies.
-    policy::DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager =
-        g_browser_process->platform_part()
-            ->browser_policy_connector_chromeos()
-            ->GetDeviceCloudPolicyManager();
-    // TODO(tnagel): Do we need to do something for Active Directory management?
-    if (device_cloud_policy_manager) {
-      device_cloud_policy_manager->SetSigninProfileSchemaRegistry(
-          registry.get());
+    // Pass the SchemaRegistry of the signin profile to the device policy
+    // managers, for being used for fetching the component policies.
+    BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+
+    policy::DeviceCloudPolicyManagerChromeOS* cloud_manager =
+        connector->GetDeviceCloudPolicyManager();
+    if (cloud_manager)
+      cloud_manager->SetSigninProfileSchemaRegistry(registry.get());
+
+    policy::DeviceActiveDirectoryPolicyManager* active_directory_manager =
+        connector->GetDeviceActiveDirectoryPolicyManager();
+    if (active_directory_manager) {
+      active_directory_manager->SetSigninProfileSchemaRegistry(registry.get());
     }
   }
 #endif
