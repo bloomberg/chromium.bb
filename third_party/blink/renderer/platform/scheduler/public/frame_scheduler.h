@@ -27,6 +27,7 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   enum class ObserverType { kLoader, kWorkerScheduler };
 
   // Represents throttling state.
+  // TODO(altimin): Move it into standalone LifecycleState.
   enum class ThrottlingState {
     // Frame is active and should not be throttled.
     kNotThrottled,

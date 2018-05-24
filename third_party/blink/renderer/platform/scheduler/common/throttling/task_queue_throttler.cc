@@ -336,7 +336,7 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
     base::Optional<base::TimeTicks> unblock_until =
         GetTimeTasksCanRunUntil(queue, now, is_wake_up);
     DCHECK(unblock_until);
-    if (!unblock_until || unblock_until.value() > now) {
+    if (unblock_until.value() > now) {
       queue->InsertFenceAt(unblock_until.value());
     } else if (unblock_until.value() == now) {
       queue->InsertFence(TaskQueue::InsertFencePosition::kNow);

@@ -94,6 +94,10 @@ class PLATFORM_EXPORT WorkerThreadScheduler
     return throttling_state_;
   }
 
+  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler) override;
+
+  void CreateTaskQueueThrottler();
+
  private:
   void MaybeStartLongIdlePeriod();
 

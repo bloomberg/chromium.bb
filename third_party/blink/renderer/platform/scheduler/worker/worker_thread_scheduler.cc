@@ -15,8 +15,11 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
+#include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {
@@ -83,6 +86,11 @@ WorkerThreadScheduler::WorkerThreadScheduler(
     proxy->OnWorkerSchedulerCreated(GetWeakPtr());
   }
 
+  if (thread_type == WebThreadType::kDedicatedWorkerThread &&
+      base::FeatureList::IsEnabled(kDedicatedWorkerThrottling)) {
+    CreateTaskQueueThrottler();
+  }
+
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 }
@@ -144,6 +152,7 @@ void WorkerThreadScheduler::Shutdown() {
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
+  task_queue_throttler_.reset();
   helper_->Shutdown();
 }
 
@@ -193,7 +202,18 @@ void WorkerThreadScheduler::DidProcessTask(double start_time, double end_time) {
 
 void WorkerThreadScheduler::OnThrottlingStateChanged(
     FrameScheduler::ThrottlingState throttling_state) {
+  if (throttling_state_ == throttling_state)
+    return;
   throttling_state_ = throttling_state;
+
+  for (WorkerScheduler* worker_scheduler : worker_schedulers_)
+    worker_scheduler->OnThrottlingStateChanged(throttling_state);
+}
+
+void WorkerThreadScheduler::RegisterWorkerScheduler(
+    WorkerScheduler* worker_scheduler) {
+  NonMainThreadScheduler::RegisterWorkerScheduler(worker_scheduler);
+  worker_scheduler->OnThrottlingStateChanged(throttling_state_);
 }
 
 scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::ControlTaskQueue() {
@@ -202,6 +222,15 @@ scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::ControlTaskQueue() {
 
 base::WeakPtr<WorkerThreadScheduler> WorkerThreadScheduler::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void WorkerThreadScheduler::CreateTaskQueueThrottler() {
+  if (task_queue_throttler_)
+    return;
+  task_queue_throttler_ = std::make_unique<TaskQueueThrottler>(
+      this, &traceable_variable_controller_);
+  wake_up_budget_pool_ =
+      task_queue_throttler_->CreateWakeUpBudgetPool("worker_wake_up_pool");
 }
 
 }  // namespace scheduler

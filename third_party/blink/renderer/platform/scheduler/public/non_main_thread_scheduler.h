@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {
@@ -23,6 +24,8 @@ namespace scheduler {
 class TaskQueueWithTaskType;
 class WorkerSchedulerProxy;
 class WorkerScheduler;
+class TaskQueueThrottler;
+class WakeUpBudgetPool;
 
 // TODO(yutak): Rename this class to NonMainThreadSchedulerImpl and consider
 // changing all non-impl scheduler classes to have only static methods.
@@ -93,26 +96,41 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
 
   scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
 
+  // TaskQueueThrottler might be null if throttling is not enabled or
+  // not supported.
+  TaskQueueThrottler* task_queue_throttler() const {
+    return task_queue_throttler_.get();
+  }
+  WakeUpBudgetPool* wake_up_budget_pool() const { return wake_up_budget_pool_; }
+
  protected:
   explicit NonMainThreadScheduler(
       std::unique_ptr<NonMainThreadSchedulerHelper> helper);
 
+  friend class WorkerScheduler;
+
+  // Each WorkerScheduler should notify NonMainThreadScheduler when it is
+  // created or destroyed.
+  virtual void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler);
+  virtual void UnregisterWorkerScheduler(WorkerScheduler* worker_scheduler);
+
   // Called during Init() for delayed initialization for subclasses.
   virtual void InitImpl() = 0;
+
+  // This controller should be initialized before any TraceableVariables
+  // because they require one to initialize themselves.
+  TraceableVariableController traceable_variable_controller_;
 
   std::unique_ptr<NonMainThreadSchedulerHelper> helper_;
 
   // Worker schedulers associated with this thread.
   std::unordered_set<WorkerScheduler*> worker_schedulers_;
 
+  std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
+  // Owned by |task_queue_throttler_|.
+  WakeUpBudgetPool* wake_up_budget_pool_ = nullptr;
+
  private:
-  friend class WorkerScheduler;
-
-  // Each WorkerScheduler should notify NonMainThreadScheduler when it is
-  // created or destroyed.
-  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler);
-  void UnregisterWorkerScheduler(WorkerScheduler* worker_scheduler);
-
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
   scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
 

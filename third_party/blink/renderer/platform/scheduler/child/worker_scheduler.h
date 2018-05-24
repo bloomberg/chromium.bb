@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 
@@ -36,12 +37,19 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   // This must be called only from WorkerThread::GetTaskRunner().
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) const;
 
-  // TODO(nhiroki): Add mechanism to throttle/suspend tasks in response to the
-  // state of the parent document (https://crbug.com/670534).
+  void OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState throtting_state);
+
+ protected:
+  scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
 
  private:
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
   scoped_refptr<base::sequence_manager::TaskQueue> throttleable_task_queue_;
+
+  FrameScheduler::ThrottlingState throttling_state_ =
+      FrameScheduler::ThrottlingState::kNotThrottled;
 
   NonMainThreadScheduler* thread_scheduler_;  // NOT OWNED
 
