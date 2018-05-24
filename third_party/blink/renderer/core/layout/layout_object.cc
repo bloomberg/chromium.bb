@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -278,8 +279,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kInlineFlex:
       if (RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled() &&
           ShouldUseNewLayout(style)) {
-        // TODO(dgrogan): Change this to new class LayoutNGFlex.
-        return new LayoutNGBlockFlow(element);
+        return new LayoutNGFlexibleBox(element);
       }
       return new LayoutFlexibleBox(element);
     case EDisplay::kGrid:

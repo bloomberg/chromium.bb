@@ -289,7 +289,9 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   if (!layout_object_)
     return false;
   const LayoutBlock* container = layout_object_->ContainingBlock();
-  return container && container->IsLayoutNGMixin();
+  if (!container)
+    return false;
+  return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();
 }
 
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
