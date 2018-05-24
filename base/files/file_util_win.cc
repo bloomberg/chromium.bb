@@ -103,9 +103,22 @@ void RecordFilesystemError(StringPiece operation, DWORD error) {
   UmaHistogramSparse(histogram_name, error);
 }
 
+// Returns the Win32 last error code or ERROR_SUCCESS if the last error code is
+// ERROR_FILE_NOT_FOUND or ERROR_PATH_NOT_FOUND. This is useful in cases where
+// the absence of a file or path is a success condition (e.g., when attempting
+// to delete an item in the filesystem).
+DWORD ReturnLastErrorOrSuccessOnNotFound() {
+  const DWORD error_code = ::GetLastError();
+  return (error_code == ERROR_FILE_NOT_FOUND ||
+          error_code == ERROR_PATH_NOT_FOUND)
+             ? ERROR_SUCCESS
+             : error_code;
+}
+
 // Deletes all files and directories in a path.
 // Returns ERROR_SUCCESS on success or the Windows error code corresponding to
-// the first error encountered.
+// the first error encountered. ERROR_FILE_NOT_FOUND and ERROR_PATH_NOT_FOUND
+// are considered success conditions, and are therefore never returned.
 DWORD DeleteFileRecursive(const FilePath& path,
                           const FilePath::StringType& pattern,
                           bool recursive) {
@@ -128,13 +141,15 @@ DWORD DeleteFileRecursive(const FilePath& path,
     if (info.IsDirectory()) {
       if (recursive) {
         this_result = DeleteFileRecursive(current, pattern, true);
+        DCHECK_NE(static_cast<LONG>(this_result), ERROR_FILE_NOT_FOUND);
+        DCHECK_NE(static_cast<LONG>(this_result), ERROR_PATH_NOT_FOUND);
         if (this_result == ERROR_SUCCESS &&
             !::RemoveDirectory(current.value().c_str())) {
-          this_result = ::GetLastError();
+          this_result = ReturnLastErrorOrSuccessOnNotFound();
         }
       }
     } else if (!::DeleteFile(current.value().c_str())) {
-      this_result = ::GetLastError();
+      this_result = ReturnLastErrorOrSuccessOnNotFound();
     }
     if (result == ERROR_SUCCESS)
       result = this_result;
@@ -286,40 +301,43 @@ DWORD DoDeleteFile(const FilePath& path, bool recursive) {
   // Handle any path with wildcards.
   if (path.BaseName().value().find_first_of(L"*?") !=
       FilePath::StringType::npos) {
-    return DeleteFileRecursive(path.DirName(), path.BaseName().value(),
-                               recursive);
+    const DWORD error_code =
+        DeleteFileRecursive(path.DirName(), path.BaseName().value(), recursive);
+    DCHECK_NE(static_cast<LONG>(error_code), ERROR_FILE_NOT_FOUND);
+    DCHECK_NE(static_cast<LONG>(error_code), ERROR_PATH_NOT_FOUND);
+    return error_code;
   }
 
   // Report success if the file or path does not exist.
   const DWORD attr = ::GetFileAttributes(path.value().c_str());
-  if (attr == INVALID_FILE_ATTRIBUTES) {
-    const DWORD error_code = ::GetLastError();
-    return (error_code == ERROR_FILE_NOT_FOUND ||
-            error_code == ERROR_PATH_NOT_FOUND)
-               ? ERROR_SUCCESS
-               : error_code;
-  }
+  if (attr == INVALID_FILE_ATTRIBUTES)
+    return ReturnLastErrorOrSuccessOnNotFound();
 
   // Clear the read-only bit if it is set.
   if ((attr & FILE_ATTRIBUTE_READONLY) &&
       !::SetFileAttributes(path.value().c_str(),
                            attr & ~FILE_ATTRIBUTE_READONLY)) {
-    return ::GetLastError();
+    // It's possible for |path| to be gone now under a race with other deleters.
+    return ReturnLastErrorOrSuccessOnNotFound();
   }
 
   // Perform a simple delete on anything that isn't a directory.
   if (!(attr & FILE_ATTRIBUTE_DIRECTORY)) {
-    return ::DeleteFile(path.value().c_str()) ? ERROR_SUCCESS
-                                              : ::GetLastError();
+    return ::DeleteFile(path.value().c_str())
+               ? ERROR_SUCCESS
+               : ReturnLastErrorOrSuccessOnNotFound();
   }
 
   if (recursive) {
     const DWORD error_code = DeleteFileRecursive(path, L"*", true);
+    DCHECK_NE(static_cast<LONG>(error_code), ERROR_FILE_NOT_FOUND);
+    DCHECK_NE(static_cast<LONG>(error_code), ERROR_PATH_NOT_FOUND);
     if (error_code != ERROR_SUCCESS)
       return error_code;
   }
-  return ::RemoveDirectory(path.value().c_str()) ? ERROR_SUCCESS
-                                                 : ::GetLastError();
+  return ::RemoveDirectory(path.value().c_str())
+             ? ERROR_SUCCESS
+             : ReturnLastErrorOrSuccessOnNotFound();
 }
 
 }  // namespace
