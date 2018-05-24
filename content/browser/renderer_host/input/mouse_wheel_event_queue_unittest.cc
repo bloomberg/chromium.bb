@@ -193,11 +193,6 @@ class MouseWheelEventQueueTest
     WebGestureEvent* cloned_event = new WebGestureEvent();
     std::unique_ptr<WebInputEvent> cloned_event_holder(cloned_event);
     *cloned_event = event;
-    if (event.GetType() == WebInputEvent::kGestureScrollBegin) {
-      is_wheel_scroll_in_progress_ = true;
-    } else if (event.GetType() == WebInputEvent::kGestureScrollEnd) {
-      is_wheel_scroll_in_progress_ = false;
-    }
     sent_events_.push_back(std::move(cloned_event_holder));
   }
 
@@ -207,10 +202,6 @@ class MouseWheelEventQueueTest
     ++acked_event_count_;
     last_acked_event_ = event.event;
     last_acked_event_state_ = ack_result;
-  }
-
-  bool IsWheelScrollInProgress() override {
-    return is_wheel_scroll_in_progress_;
   }
 
   bool scroll_latching_enabled() { return scroll_latching_enabled_; }
@@ -544,7 +535,6 @@ class MouseWheelEventQueueTest
   bool scroll_latching_enabled_;
 
  private:
-  bool is_wheel_scroll_in_progress_ = false;
   base::test::ScopedFeatureList feature_list_;
 };
 

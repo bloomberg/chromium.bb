@@ -41,7 +41,6 @@ class MockInputRouterClient : public InputRouterClient,
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override;
-  bool IsWheelScrollInProgress() override;
 
   bool GetAndResetFilterEventCalled();
   ui::DidOverscrollParams GetAndResetOverscroll();
@@ -87,8 +86,6 @@ class MockInputRouterClient : public InputRouterClient,
   ui::DidOverscrollParams overscroll_;
 
   cc::TouchAction white_listed_touch_action_;
-
-  bool is_wheel_scroll_in_progress_ = false;
 };
 
 }  // namespace content
