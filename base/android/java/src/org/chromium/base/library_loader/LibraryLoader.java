@@ -66,7 +66,7 @@ public class LibraryLoader {
     private static boolean sLibraryPreloaderCalled;
 
     // The singleton instance of LibraryLoader.
-    private static volatile LibraryLoader sInstance;
+    private static LibraryLoader sInstance = new LibraryLoader();
 
     private static final EnumeratedHistogramSample sRelinkerCountHistogram =
             new EnumeratedHistogramSample("ChromiumAndroidLinker.RelinkerFallbackCount", 2);
@@ -95,13 +95,11 @@ public class LibraryLoader {
     private boolean mLibraryWasLoadedFromApk;
 
     // The type of process the shared library is loaded in.
-    // This member can be accessed from multiple threads simultaneously, so it have to be
-    // final (like now) or be protected in some way (volatile of synchronized).
-    private final int mLibraryProcessType;
+    private @LibraryProcessType int mLibraryProcessType;
 
     // One-way switch that becomes true once
     // {@link asyncPrefetchLibrariesToMemory} has been called.
-    private final AtomicBoolean mPrefetchLibraryHasBeenCalled;
+    private final AtomicBoolean mPrefetchLibraryHasBeenCalled = new AtomicBoolean();
 
     // The number of milliseconds it took to load all the native libraries, which
     // will be reported via UMA. Set once when the libraries are done loading.
@@ -121,44 +119,30 @@ public class LibraryLoader {
      */
     public static void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
         synchronized (sLock) {
-            assert sLibraryPreloader == null && (sInstance == null || !sInstance.mLoaded);
+            assert sLibraryPreloader == null && !sInstance.mLoaded;
             sLibraryPreloader = loader;
         }
     }
 
-    /**
-     * @param libraryProcessType the process the shared library is loaded in. refer to
-     *                           LibraryProcessType for possible values.
-     * @return LibraryLoader if existing, otherwise create a new one.
-     */
-    public static LibraryLoader get(int libraryProcessType) throws ProcessInitException {
-        synchronized (sLock) {
-            if (sInstance != null) {
-                if (sInstance.mLibraryProcessType == libraryProcessType) return sInstance;
-                throw new ProcessInitException(
-                        LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
-            }
-            sInstance = new LibraryLoader(libraryProcessType);
-            return sInstance;
-        }
+    public static LibraryLoader getInstance() {
+        return sInstance;
     }
 
-    private LibraryLoader(int libraryProcessType) {
-        mLibraryProcessType = libraryProcessType;
-        mPrefetchLibraryHasBeenCalled = new AtomicBoolean();
-    }
+    private LibraryLoader() {}
 
     /**
      *  This method blocks until the library is fully loaded and initialized.
+     *
+     * @param processType the process the shared library is loaded in.
      */
-    public void ensureInitialized() throws ProcessInitException {
+    public void ensureInitialized(@LibraryProcessType int processType) throws ProcessInitException {
         synchronized (sLock) {
             if (mInitialized) {
                 // Already initialized, nothing to do.
                 return;
             }
             loadAlreadyLocked(ContextUtils.getApplicationContext());
-            initializeAlreadyLocked();
+            initializeAlreadyLocked(processType);
         }
     }
 
@@ -232,13 +216,15 @@ public class LibraryLoader {
     }
 
     /**
-     * initializes the library here and now: must be called on the thread that the
+     * Initializes the library here and now: must be called on the thread that the
      * native will call its "main" thread. The library must have previously been
      * loaded with loadNow.
+     *
+     * @param processType the process the shared library is loaded in.
      */
-    public void initialize() throws ProcessInitException {
+    public void initialize(@LibraryProcessType int processType) throws ProcessInitException {
         synchronized (sLock) {
-            initializeAlreadyLocked();
+            initializeAlreadyLocked(processType);
         }
     }
 
@@ -541,10 +527,16 @@ public class LibraryLoader {
     }
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
-    private void initializeAlreadyLocked() throws ProcessInitException {
+    private void initializeAlreadyLocked(@LibraryProcessType int processType)
+            throws ProcessInitException {
         if (mInitialized) {
+            if (mLibraryProcessType != processType) {
+                throw new ProcessInitException(
+                        LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
+            }
             return;
         }
+        mLibraryProcessType = processType;
 
         ensureCommandLineSwitchedAlreadyLocked();
 

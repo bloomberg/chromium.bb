@@ -81,7 +81,7 @@ public class InvalidationClientServiceTest extends
         });
         ContextUtils.initApplicationContextForTests(getContext().getApplicationContext());
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         setupService();
     }
 

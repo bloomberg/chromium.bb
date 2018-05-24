@@ -59,7 +59,7 @@ public class ChildProcessLauncherHelperTest {
 
     @Before
     public void setUp() throws Exception {
-        LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
     }
 
     /**

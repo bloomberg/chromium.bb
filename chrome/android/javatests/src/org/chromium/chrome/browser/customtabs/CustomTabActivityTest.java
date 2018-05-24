@@ -216,7 +216,7 @@ public class CustomTabActivityTest {
         mTestPage = mTestServer.getURL(TEST_PAGE);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mWebServer = TestWebServer.start();
     }
 

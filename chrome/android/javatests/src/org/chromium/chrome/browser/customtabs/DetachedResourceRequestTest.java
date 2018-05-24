@@ -63,7 +63,7 @@ public class DetachedResourceRequestTest {
     public void setUp() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mConnection = CustomTabsTestUtils.setUpConnection();
         mContext = InstrumentationRegistry.getInstrumentation()
                            .getTargetContext()

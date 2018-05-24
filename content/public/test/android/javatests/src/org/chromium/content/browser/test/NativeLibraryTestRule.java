@@ -72,7 +72,7 @@ public class NativeLibraryTestRule implements TestRule {
             }
         } else {
             try {
-                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+                LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
             } catch (ProcessInitException e) {
                 throw new Error(e);
             }

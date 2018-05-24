@@ -11,7 +11,6 @@ import android.os.RemoteException;
 import android.util.SparseArray;
 
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
 import org.chromium.native_test.MainRunner;
@@ -55,17 +54,13 @@ public class MultiprocessTestClientServiceDelegate implements ChildProcessServic
 
     @Override
     public void preloadNativeLibrary(Context hostContext) {
-        try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).preloadNow();
-        } catch (ProcessInitException pie) {
-            Log.w(TAG, "Unable to preload native libraries.", pie);
-        }
+        LibraryLoader.getInstance().preloadNow();
     }
 
     @Override
     public boolean loadNativeLibrary(Context hostContext) {
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).loadNow();
+            LibraryLoader.getInstance().loadNow();
             return true;
         } catch (ProcessInitException pie) {
             Log.e(TAG, "Unable to load native libraries.", pie);

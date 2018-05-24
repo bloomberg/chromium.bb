@@ -63,7 +63,7 @@ public class CustomTabsConnectionTest {
     @Before
     public void setUp() throws Exception {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mCustomTabsConnection = CustomTabsTestUtils.setUpConnection();
     }
 

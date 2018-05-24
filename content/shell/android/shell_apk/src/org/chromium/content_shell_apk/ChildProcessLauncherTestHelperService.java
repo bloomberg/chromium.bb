@@ -59,7 +59,7 @@ public class ChildProcessLauncherTestHelperService extends Service {
     public void onCreate() {
         CommandLine.init(null);
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
         } catch (ProcessInitException ex) {
             throw new RuntimeException(ex);
         }

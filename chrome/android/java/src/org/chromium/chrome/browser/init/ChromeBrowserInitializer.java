@@ -348,11 +348,10 @@ public class ChromeBrowserInitializer {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesSync");
             ThreadUtils.assertOnUiThread();
-            LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            libraryLoader.ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
             StrictMode.setThreadPolicy(oldPolicy);
-            libraryLoader.asyncPrefetchLibrariesToMemory();
+            LibraryLoader.getInstance().asyncPrefetchLibrariesToMemory();
             BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesSync(false);
             GoogleServicesManager.get(mApplication);

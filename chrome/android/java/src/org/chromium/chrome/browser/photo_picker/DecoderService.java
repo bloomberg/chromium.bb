@@ -60,7 +60,7 @@ public class DecoderService extends Service {
                         ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX);
             });
 
-            LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
             nativeInitializePhotoPickerSandbox();
 
             mNativeLibraryAndSandboxInitialized = true;

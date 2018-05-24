@@ -456,7 +456,7 @@ public class NetworkChangeNotifierTest {
 
     @Before
     public void setUp() throws Throwable {
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
         mUiThreadRule.runOnUiThread(new Runnable() {
             @Override

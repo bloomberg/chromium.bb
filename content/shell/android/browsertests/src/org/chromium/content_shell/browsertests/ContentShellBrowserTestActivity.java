@@ -34,7 +34,7 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
     @Override
     protected void initializeBrowserProcess() {
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Cannot load content_browsertests.", e);
             System.exit(-1);
