@@ -74,6 +74,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // tests to change the state of the world during processing.
     base::RepeatingCallback<void(void)> simulate_press_callback;
 
+    // If true, causes the response from the device to be invalid.
+    bool simulate_invalid_response = false;
+
     // Adds a registration for the specified credential ID with the application
     // parameter set to be valid for the given relying party ID (which would
     // typically be a domain, e.g. "example.com").
