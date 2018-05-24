@@ -477,7 +477,7 @@ TEST_F(VideoDecoderSelectorTest,
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptAndDecode, 2);
 
-  // DecryptingAudioDecoder is blacklisted so we'll fallback to use
+  // DecryptingVideoDecoder is blacklisted so we'll fallback to use
   // DecryptingDemuxerStream to do decrypt-only.
   EXPECT_CALL(*this, OnDecoderOneInitialized(EncryptedConfig(), _, _, _, _, _))
       .WillOnce(RunCallback<3>(false));

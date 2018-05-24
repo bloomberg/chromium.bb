@@ -52,8 +52,12 @@ void DefaultDecoderFactory::CreateAudioDecoders(
     MediaLog* media_log,
     std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {
 #if !defined(OS_ANDROID)
-  audio_decoders->push_back(
-      std::make_unique<DecryptingAudioDecoder>(task_runner, media_log));
+  // DecryptingAudioDecoder is only needed in External Clear Key testing to
+  // cover the audio decrypt-and-decode path.
+  if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
+    audio_decoders->push_back(
+        std::make_unique<DecryptingAudioDecoder>(task_runner, media_log));
+  }
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG)
