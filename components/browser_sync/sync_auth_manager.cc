@@ -245,8 +245,9 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
     // CREDENTIALS_REJECTED_BY_CLIENT is only set by the signin component when
     // the refresh token is created.
     ClearAccessTokenAndRequest();
+    // TODO(treib): Should we also set our auth error state?
 
-    sync_service_->OnCredentialsRejectedByClient();
+    sync_service_->OnRefreshTokenRevoked();
     // TODO(treib): We can probably early-out here - no point in also calling
     // OnRefreshTokenAvailable on the ProfileSyncService.
   }
