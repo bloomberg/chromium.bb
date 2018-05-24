@@ -44,11 +44,8 @@ namespace {
 
 class MockServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
-  MockServiceWorkerDispatcherHost(int process_id,
-                                  ResourceContext* resource_context,
-                                  IPC::Sender* sender)
-      : ServiceWorkerDispatcherHost(process_id, resource_context),
-        sender_(sender) {}
+  MockServiceWorkerDispatcherHost(int process_id, IPC::Sender* sender)
+      : ServiceWorkerDispatcherHost(process_id), sender_(sender) {}
 
   bool Send(IPC::Message* message) override { return sender_->Send(message); }
 
@@ -491,8 +488,8 @@ void EmbeddedWorkerTestHelper::RegisterDispatcherHost(
 void EmbeddedWorkerTestHelper::EnsureDispatcherHostForProcess(int process_id) {
   if (context()->GetDispatcherHost(process_id))
     return;
-  auto dispatcher_host = base::MakeRefCounted<MockServiceWorkerDispatcherHost>(
-      process_id, browser_context_->GetResourceContext(), this);
+  auto dispatcher_host =
+      base::MakeRefCounted<MockServiceWorkerDispatcherHost>(process_id, this);
   dispatcher_host->Init(wrapper_.get());
   RegisterDispatcherHost(process_id, std::move(dispatcher_host));
 }

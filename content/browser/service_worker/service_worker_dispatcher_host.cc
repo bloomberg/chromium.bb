@@ -50,15 +50,12 @@ const uint32_t kServiceWorkerFilteredMessageClasses[] = {
 
 }  // namespace
 
-ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
-    int render_process_id,
-    ResourceContext* resource_context)
+ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(int render_process_id)
     : BrowserMessageFilter(kServiceWorkerFilteredMessageClasses,
                            arraysize(kServiceWorkerFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>(this,
                                                                      this),
       render_process_id_(render_process_id),
-      resource_context_(resource_context),
       weak_ptr_factory_(this) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {

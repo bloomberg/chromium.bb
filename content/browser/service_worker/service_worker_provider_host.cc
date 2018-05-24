@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
@@ -501,9 +502,10 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerHandle(int64_t version_id) {
 }
 
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
+  DCHECK(IsContextAlive());
   return GetContentClient()->browser()->AllowServiceWorker(
       scope, IsProviderForClient() ? topmost_frame_url() : document_url(),
-      dispatcher_host_->resource_context(),
+      context_->wrapper()->resource_context(),
       base::Bind(&WebContentsImpl::FromRenderFrameHostID, render_process_id_,
                  frame_id()));
 }

@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -272,8 +271,7 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
       options, kRegistrationId, context()->AsWeakPtr());
   auto dispatcher_host = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
-      helper_->mock_render_process_id(),
-      helper_->browser_context()->GetResourceContext());
+      helper_->mock_render_process_id());
   // Prepare a ServiceWorkerProviderHost.
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =

@@ -19,7 +19,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
@@ -121,8 +120,8 @@ class ServiceWorkerHandleTest : public testing::Test {
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
 
-    dispatcher_host_ = new ServiceWorkerDispatcherHost(
-        helper_->mock_render_process_id(), &resource_context_);
+    dispatcher_host_ = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
+        helper_->mock_render_process_id());
     helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
                                     dispatcher_host_);
     dispatcher_host_->Init(helper_->context_wrapper());
@@ -214,7 +213,6 @@ class ServiceWorkerHandleTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  MockResourceContext resource_context_;
 
   base::SimpleTestTickClock tick_clock_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
