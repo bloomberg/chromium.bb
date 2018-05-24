@@ -12,7 +12,9 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // static
 SMSServiceFactory* SMSServiceFactory::GetInstance() {
@@ -31,7 +33,8 @@ KeyedService* SMSServiceFactory::BuildServiceInstanceFor(
   return new SMSService(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
-      profile->GetRequestContext());
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 SMSServiceFactory::SMSServiceFactory()
