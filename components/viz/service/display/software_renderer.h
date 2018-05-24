@@ -10,13 +10,10 @@
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
 
-namespace cc {
-class OutputSurface;
-class DisplayResourceProvider;
-}  // namespace cc
-
 namespace viz {
 class DebugBorderDrawQuad;
+class DisplayResourceProvider;
+class OutputSurface;
 class PictureDrawQuad;
 class RenderPassDrawQuad;
 class SoftwareOutputDevice;

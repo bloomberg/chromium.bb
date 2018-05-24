@@ -33,12 +33,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace cc {
-class GLRendererShaderTest;
-class OutputSurface;
-class StreamVideoDrawQuad;
-}  // namespace cc
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -48,8 +42,11 @@ class GLES2Interface;
 namespace viz {
 
 class DynamicGeometryBinding;
+class GLRendererShaderTest;
+class OutputSurface;
 class ScopedRenderPassTexture;
 class StaticGeometryBinding;
+class StreamVideoDrawQuad;
 class TextureDrawQuad;
 
 // Class that handles drawing of composited render layers using GL.

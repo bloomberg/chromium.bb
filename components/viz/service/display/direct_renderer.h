@@ -25,7 +25,6 @@
 
 namespace cc {
 class FilterOperations;
-class OutputSurface;
 }  // namespace cc
 
 namespace gfx {
@@ -35,6 +34,7 @@ class ColorSpace;
 namespace viz {
 class BspWalkActionDrawPolygon;
 class DrawPolygon;
+class OutputSurface;
 class RendererSettings;
 class RenderPass;
 

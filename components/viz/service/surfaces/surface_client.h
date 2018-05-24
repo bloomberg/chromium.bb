@@ -10,14 +10,10 @@
 #include "base/macros.h"
 #include "components/viz/service/viz_service_export.h"
 
-namespace cc {
-struct ReturnedResource;
-struct TransferableResource;
-}  // namespace cc
-
 namespace viz {
-
+struct ReturnedResource;
 class Surface;
+struct TransferableResource;
 
 class VIZ_SERVICE_EXPORT SurfaceClient {
  public:
