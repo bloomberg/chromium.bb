@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -51,6 +52,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "storage/common/blob_storage/blob_handle.h"
@@ -185,6 +187,7 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
                                uint64_t request_body_blob_size,
                                blink::mojom::BlobPtrInfo request_body_blob,
                                const std::string& client_id,
+                               std::vector<blink::mojom::BlobPtrInfo> blob_ptrs,
                                blink::WebServiceWorkerRequest* web_request) {
   DCHECK(web_request);
   web_request->SetURL(blink::WebURL(request.url));
@@ -198,7 +201,7 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
 
   // Non-S13nServiceWorker: The body is provided as a blob.
   if (request_body_blob) {
-    DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     mojo::ScopedMessagePipeHandle blob_pipe = request_body_blob.PassHandle();
     web_request->SetBlob(blink::WebString::FromASCII(request_body_blob_uuid),
                          request_body_blob_size, std::move(blob_pipe));
@@ -206,8 +209,11 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
   // S13nServiceWorker: The body is provided in |request|.
   else if (request.request_body) {
     DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-    blink::WebHTTPBody body =
-        GetWebHTTPBodyForRequestBody(*request.request_body);
+    // |blob_ptrs| should be empty when Network Service is enabled.
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+           blob_ptrs.empty());
+    blink::WebHTTPBody body = GetWebHTTPBodyForRequestBodyWithBlobPtrs(
+        *request.request_body, std::move(blob_ptrs));
     body.SetUniqueBoundary();
     web_request->SetBody(body);
   }
@@ -1566,7 +1572,8 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   ToWebServiceWorkerRequest(
       std::move(params->request), params->request_body_blob_uuid,
       params->request_body_blob_size, std::move(params->request_body_blob),
-      params->client_id, &web_request);
+      params->client_id, std::move(params->request_body_blob_ptrs),
+      &web_request);
   proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
 }
 

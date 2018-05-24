@@ -59,6 +59,7 @@ class WebHTTPBody {
     long long file_length;  // -1 means to the end of the file.
     double modification_time;
     WebString blob_uuid;
+    uint64_t blob_length;
     mojo::ScopedMessagePipeHandle optional_blob_handle;
     // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
     // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
@@ -97,6 +98,11 @@ class WebHTTPBody {
                                              long long file_length,
                                              double modification_time);
   BLINK_PLATFORM_EXPORT void AppendBlob(const WebString& uuid);
+  // TODO(shimazu): Remove this once Network Service is enabled.
+  BLINK_PLATFORM_EXPORT void AppendBlob(
+      const WebString& uuid,
+      uint64_t length,
+      mojo::ScopedMessagePipeHandle blob_handle);
   // |data_pipe_getter| is a network::mojom::DataPipeGetterPtr. It's declared
   // as a generic ScopedMessagePipeHandle so it can be "cast" between Blink
   // and non-Blink variant types.

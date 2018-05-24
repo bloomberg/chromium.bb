@@ -56,11 +56,15 @@ void ResourceRequestBody::AppendRawFileRange(
 }
 
 void ResourceRequestBody::AppendBlob(const std::string& uuid) {
+  AppendBlob(uuid, std::numeric_limits<uint64_t>::max());
+}
+
+void ResourceRequestBody::AppendBlob(const std::string& uuid, uint64_t length) {
   DCHECK(elements_.empty() ||
          elements_.front().type() != DataElement::TYPE_CHUNKED_DATA_PIPE);
 
   elements_.push_back(DataElement());
-  elements_.back().SetToBlob(uuid);
+  elements_.back().SetToBlobRange(uuid, 0 /* offset */, length);
 }
 
 void ResourceRequestBody::AppendDataPipe(
