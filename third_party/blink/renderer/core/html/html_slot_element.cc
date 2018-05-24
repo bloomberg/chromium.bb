@@ -364,16 +364,9 @@ HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
-    // With incremental shadow dom, we need to make sure that assignment is
-    // recalcualted here. Unless that, assigned_nodes_ can be updated while in
-    // iterating it because node->LazyReattachIfAttached() might update
-    // assigned_nodes_. See http://crbug.com/843069#c8
     const HeapVector<Member<Node>>& flat_tree_children =
-        RuntimeEnabledFeatures::SlotInFlatTreeEnabled()
-            ? (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()
-                   ? AssignedNodes()
-                   : assigned_nodes_)
-            : distributed_nodes_;
+        RuntimeEnabledFeatures::SlotInFlatTreeEnabled() ? assigned_nodes_
+                                                        : distributed_nodes_;
     for (auto& node : flat_tree_children)
       node->LazyReattachIfAttached();
   }
