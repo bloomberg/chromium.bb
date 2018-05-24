@@ -2438,7 +2438,7 @@ void UiSceneCreator::CreateOverflowMenu() {
 
   auto overflow_menu_scroll = Create<ScrollableElement>(
       kNone, kPhaseNone, ScrollableElement::kVertical);
-  overflow_menu_scroll->SetMaxSpan(kOverflowMenuMaxSpan);
+  overflow_menu_scroll->set_max_span(kOverflowMenuMaxSpan);
   overflow_menu_scroll->SetScrollAnchoring(TOP);
   auto overflow_menu_layout = Create<LinearLayout>(
       kOverflowMenuLayout, kPhaseNone, LinearLayout::kDown);

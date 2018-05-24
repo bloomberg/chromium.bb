@@ -25,13 +25,14 @@ class ScrollableElement : public UiElement {
   // Makes a call to SetSize. If the max span is big enough to contain the
   // entirety of the inner element, the sizes match and scrolling doesn't have
   // any effect.
-  void SetMaxSpan(float span);
+  void set_max_span(float span);
 
   float scroll_offset() const { return scroll_offset_; }
 
   // UiElement overrides.
   gfx::RectF ComputeContributingChildrenBounds() final;
   void LayOutNonContributingChildren() final;
+  void OnSetSize(const gfx::SizeF& size) final;
 
   void AddScrollingChild(std::unique_ptr<UiElement> child);
 

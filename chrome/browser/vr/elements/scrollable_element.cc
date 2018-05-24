@@ -23,7 +23,6 @@ bool SizeEquals(const gfx::SizeF& a, const gfx::SizeF& b) {
 
 ScrollableElement::ScrollableElement(Orientation orientation)
     : orientation_(orientation) {
-  set_scrollable(true);
   set_clip_descendants(true);
   set_bounds_contain_children(true);
 
@@ -35,16 +34,16 @@ ScrollableElement::ScrollableElement(Orientation orientation)
 
 ScrollableElement::~ScrollableElement() = default;
 
-void ScrollableElement::SetMaxSpan(float span) {
+void ScrollableElement::set_max_span(float span) {
   DCHECK(span > 0.0f);
   max_span_ = span;
-  auto size = inner_element_->size();
-  if (orientation_ == kHorizontal) {
-    size.set_width(std::min(size.width(), span));
-  } else {
-    size.set_height(std::min(size.height(), span));
-  }
-  SetSize(size.width(), size.height());
+}
+
+void ScrollableElement::OnSetSize(const gfx::SizeF& size) {
+  // If there is nothing to scroll, the element declares itself as
+  // non-scrollable for targeting purposes.
+  set_scrollable(size.width() < inner_element_->size().width() ||
+                 size.height() < inner_element_->size().height());
 }
 
 void ScrollableElement::SetScrollAnchoring(LayoutAlignment anchoring) {
