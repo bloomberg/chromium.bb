@@ -16,9 +16,16 @@
 // |outer| is the std::string searched for substring |sub|.
 #define CONTAINS_STRING(outer, sub) (std::string::npos != (outer).find(sub))
 
-// "media_log_" is expected to be a MockMediaLog, optionally a NiceMock or
-// StrictMock, in scope of the usage of this macro.
+// Assumes |media_log_| is available which is a MockMediaLog, optionally a
+// NiceMock or StrictMock, in scope of the usage of this macro.
 #define EXPECT_MEDIA_LOG(x) EXPECT_MEDIA_LOG_ON(media_log_, x)
+
+// Same as EXPECT_MEDIA_LOG, but for LIMITED_MEDIA_LOG.
+#define EXPECT_LIMITED_MEDIA_LOG(x, count, max) \
+  if (count < max) {                            \
+    EXPECT_MEDIA_LOG_ON(media_log_, x);         \
+    count++;                                    \
+  }
 
 // |log| is expected to evaluate to a MockMediaLog, optionally a NiceMock or
 // StrictMock, in scope of the usage of this macro.
