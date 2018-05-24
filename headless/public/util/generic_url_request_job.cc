@@ -64,16 +64,11 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
 
   const net::HttpUserAgentSettings* user_agent_settings =
       request()->context()->http_user_agent_settings();
+  // If set the |user_agent_settings| accept language is a fallback.
   if (user_agent_settings) {
-    // If set the |user_agent_settings| accept language is a fallback.
     extra_request_headers_.SetHeaderIfMissing(
         net::HttpRequestHeaders::kAcceptLanguage,
         user_agent_settings->GetAcceptLanguage());
-    // If set the |user_agent_settings| user agent is an override.
-    if (!user_agent_settings->GetUserAgent().empty()) {
-      extra_request_headers_.SetHeader(net::HttpRequestHeaders::kUserAgent,
-                                       user_agent_settings->GetUserAgent());
-    }
   }
 }
 
