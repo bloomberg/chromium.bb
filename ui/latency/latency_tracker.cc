@@ -30,12 +30,17 @@ std::string LatencySourceEventTypeToInputModalityString(
     case ui::SourceEventType::MOUSE:
       return "Mouse";
     case ui::SourceEventType::TOUCH:
+    case ui::SourceEventType::INERTIAL:
       return "Touch";
     case ui::SourceEventType::KEY_PRESS:
       return "KeyPress";
     default:
       return "";
   }
+}
+
+bool IsInertialScroll(const LatencyInfo& latency) {
+  return latency.source_event_type() == ui::SourceEventType::INERTIAL;
 }
 
 // This UMA metric tracks the time from when the original wheel event is created
@@ -95,6 +100,7 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
   if (source_event_type == ui::SourceEventType::WHEEL ||
       source_event_type == ui::SourceEventType::MOUSE ||
       source_event_type == ui::SourceEventType::TOUCH ||
+      source_event_type == ui::SourceEventType::INERTIAL ||
       source_event_type == ui::SourceEventType::KEY_PRESS) {
     ComputeEndToEndLatencyHistograms(gpu_swap_begin_component,
                                      gpu_swap_end_component, latency);
@@ -173,8 +179,11 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   if (latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           &original_component)) {
-    scroll_name = "ScrollBegin";
     DCHECK(input_modality == "Wheel" || input_modality == "Touch");
+
+    // For inertial scrolling we don't separate the first event from the rest of
+    // them.
+    scroll_name = IsInertialScroll(latency) ? "ScrollInertial" : "ScrollBegin";
 
     // This UMA metric tracks the performance of overall scrolling as a high
     // level metric.
@@ -186,7 +195,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch/wheel event.
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-        "Event.Latency.ScrollBegin." + input_modality +
+        "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin2",
         original_component, gpu_swap_begin_component);
 
@@ -198,8 +207,11 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  &original_component)) {
-    scroll_name = "ScrollUpdate";
     DCHECK(input_modality == "Wheel" || input_modality == "Touch");
+
+    // For inertial scrolling we don't separate the first event from the rest of
+    // them.
+    scroll_name = IsInertialScroll(latency) ? "ScrollInertial" : "ScrollUpdate";
 
     // This UMA metric tracks the performance of overall scrolling as a high
     // level metric.
@@ -211,7 +223,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     // is created to when the scroll gesture results in final frame swap.
     // First scroll events are excluded from this metric.
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-        "Event.Latency.ScrollUpdate." + input_modality +
+        "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin2",
         original_component, gpu_swap_begin_component);
 
@@ -238,7 +250,8 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   }
 
   // Record scroll latency metrics.
-  DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate");
+  DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate" ||
+         (IsInertialScroll(latency) && scroll_name == "ScrollInertial"));
   LatencyInfo::LatencyComponent rendering_scheduled_component;
   bool rendering_scheduled_on_main = latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0,
@@ -249,7 +262,10 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
         &rendering_scheduled_component);
     DCHECK_AND_RETURN_ON_FAIL(found_component);
   }
-  if (input_modality == "Touch" || input_modality == "Wheel") {
+
+  // Inertial scrolls are excluded from Ukm metrics.
+  if ((input_modality == "Touch" && !IsInertialScroll(latency)) ||
+      input_modality == "Wheel") {
     InputMetricEvent input_metric_event;
     if (scroll_name == "ScrollBegin") {
       input_metric_event = input_modality == "Touch"

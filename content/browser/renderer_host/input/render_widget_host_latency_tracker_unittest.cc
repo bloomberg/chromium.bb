@@ -422,6 +422,62 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
   }
 }
 
+TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
+  const GURL url(kUrl);
+  contents()->NavigateAndCommit(url);
+  for (bool rendering_on_main : {false, true}) {
+    ResetHistograms();
+    {
+      auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+      base::TimeTicks now = base::TimeTicks::Now();
+      scroll.SetTimeStamp(now);
+      ui::LatencyInfo scroll_latency(ui::SourceEventType::INERTIAL);
+      scroll_latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          tracker()->latency_component_id(), now, 1);
+      AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
+      AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
+      tracker()->OnInputEvent(scroll, &scroll_latency);
+      EXPECT_TRUE(scroll_latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+          tracker()->latency_component_id(), nullptr));
+      EXPECT_TRUE(scroll_latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
+      tracker()->OnInputEventAck(scroll, &scroll_latency,
+                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      viz_tracker()->OnGpuSwapBuffersCompleted(scroll_latency);
+    }
+
+    // UMA histograms.
+    EXPECT_TRUE(
+        HistogramSizeEq("Event.Latency.ScrollInertial.Touch."
+                        "TimeToScrollUpdateSwapBegin2",
+                        1));
+
+    EXPECT_TRUE(HistogramSizeEq(
+        "Event.Latency.ScrollInertial.Touch.TimeToHandled2_Main",
+        rendering_on_main ? 1 : 0));
+    EXPECT_TRUE(HistogramSizeEq(
+        "Event.Latency.ScrollInertial.Touch.TimeToHandled2_Impl",
+        rendering_on_main ? 0 : 1));
+    EXPECT_TRUE(HistogramSizeEq(
+        "Event.Latency.ScrollInertial.Touch.HandledToRendererSwap2_Main",
+        rendering_on_main ? 1 : 0));
+    EXPECT_TRUE(HistogramSizeEq(
+        "Event.Latency.ScrollInertial.Touch.HandledToRendererSwap2_Impl",
+        rendering_on_main ? 0 : 1));
+    EXPECT_TRUE(HistogramSizeEq(
+        "Event.Latency.ScrollInertial.Touch.RendererSwapToBrowserNotified2",
+        1));
+    EXPECT_TRUE(HistogramSizeEq(
+        "Event.Latency.ScrollInertial.Touch.BrowserNotifiedToBeforeGpuSwap2",
+        1));
+    EXPECT_TRUE(
+        HistogramSizeEq("Event.Latency.ScrollInertial.Touch.GpuSwap2", 1));
+  }
+}
+
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);

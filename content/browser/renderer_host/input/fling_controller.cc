@@ -292,7 +292,7 @@ void FlingController::GenerateAndSendGestureScrollEvents(
     const gfx::Vector2dF& delta /* = gfx::Vector2dF() */) {
   GestureEventWithLatencyInfo synthetic_gesture(
       type, current_fling_parameters_.modifiers, base::TimeTicks::Now(),
-      ui::LatencyInfo(ui::SourceEventType::TOUCH));
+      ui::LatencyInfo(ui::SourceEventType::INERTIAL));
   synthetic_gesture.event.SetPositionInWidget(current_fling_parameters_.point);
   synthetic_gesture.event.SetPositionInScreen(
       current_fling_parameters_.global_point);
@@ -395,7 +395,7 @@ void FlingController::CancelCurrentFling() {
         ui::SourceEventType::UNKNOWN;
     if (scroll_begin_event.SourceDevice() ==
         blink::kWebGestureDeviceTouchscreen) {
-      latency_source_event_type = ui::SourceEventType::TOUCH;
+      latency_source_event_type = ui::SourceEventType::INERTIAL;
     } else if (scroll_begin_event.SourceDevice() ==
                blink::kWebGestureDeviceTouchpad) {
       latency_source_event_type = ui::SourceEventType::WHEEL;
