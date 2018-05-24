@@ -138,4 +138,11 @@ Polymer({
   onCancelButtonTap_: function() {
     this.$.dialog.cancel();
   },
+
+  /** @private */
+  getHeightOfBody_: function() {
+    const heightTwoInputs = 136;
+    const heightOneInput = 62;
+    return this.isFolder_ ? heightOneInput : heightTwoInputs;
+  },
 });
