@@ -24,10 +24,8 @@ weston.ini : $(srcdir)/weston.ini.in
 ivi-shell/weston.ini : $(srcdir)/ivi-shell/weston.ini.in
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
 		-e 's|@bindir[@]|$(bindir)|g' \
-		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
-		-e 's|@abs_top_srcdir[@]|$(abs_top_srcdir)|g' \
 		-e 's|@libexecdir[@]|$(libexecdir)|g' \
-		-e 's|@plugin_prefix[@]||g' \
+		-e 's|@westondatadir[@]|$(westondatadir)|g' \
 		$< > $@
 
 all-local : weston.ini ivi-shell/weston.ini
