@@ -59,6 +59,10 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                     int /* delegate_id, distinguishes instances */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_OnPictureInPictureWindowResize,
+                    int /* delegate_id, distinguishes instances */,
+                    gfx::Size /* window_size */)
+
 // ----------------------------------------------------------------------------
 // Messages from the browser to the renderer acknowledging changes happened.
 // ----------------------------------------------------------------------------

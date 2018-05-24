@@ -69,11 +69,14 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       int delegate_id,
       const viz::SurfaceId&,
       const gfx::Size&,
-      blink::WebMediaPlayer::PipWindowSizeCallback) override;
+      blink::WebMediaPlayer::PipWindowOpenedCallback) override;
   void DidPictureInPictureModeEnd(int delegate_id, base::OnceClosure) override;
   void DidPictureInPictureSurfaceChange(int delegate_id,
                                         const viz::SurfaceId&,
                                         const gfx::Size&) override;
+  void RegisterPictureInPictureWindowResizeCallback(
+      int player_id,
+      blink::WebMediaPlayer::PipWindowResizedCallback) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -108,6 +111,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnPictureInPictureModeStartedAck(int player_id,
                                         int request_id,
                                         const gfx::Size&);
+  void OnPictureInPictureWindowResize(int player_id, const gfx::Size&);
 
   // Schedules UpdateTask() to run soon.
   void ScheduleUpdateTask();
@@ -187,12 +191,21 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // and will then ACK with the same id which will be used to run the right
   // callback.
   using EnterPictureInPictureCallbackMap =
-      base::flat_map<int, blink::WebMediaPlayer::PipWindowSizeCallback>;
+      base::flat_map<int, blink::WebMediaPlayer::PipWindowOpenedCallback>;
   EnterPictureInPictureCallbackMap enter_picture_in_picture_callback_map_;
 
   // Counter that is used to use unique request id associated with
   // picture-in-picture callbacks. It is incremented every time it is used.
   int next_picture_in_picture_callback_id_ = 0;
+
+  // Associating a player id and a Picture-in-Picture window resize callback.
+  // It holds the callback alive and guarantees that the notification sent from
+  // the browser proccess matches the player currently in Picture-in-Picture in
+  // the renderer.
+  using PictureInPictureWindowResizeObserver =
+      std::pair<int, blink::WebMediaPlayer::PipWindowResizedCallback>;
+  base::Optional<PictureInPictureWindowResizeObserver>
+      picture_in_picture_window_resize_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

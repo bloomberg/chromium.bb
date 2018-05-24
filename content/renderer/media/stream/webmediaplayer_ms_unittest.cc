@@ -80,7 +80,7 @@ class FakeWebMediaPlayerDelegate
       int delegate_id,
       const viz::SurfaceId&,
       const gfx::Size&,
-      blink::WebMediaPlayer::PipWindowSizeCallback) override {
+      blink::WebMediaPlayer::PipWindowOpenedCallback) override {
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
@@ -93,6 +93,12 @@ class FakeWebMediaPlayerDelegate
   void DidPictureInPictureSurfaceChange(int delegate_id,
                                         const viz::SurfaceId&,
                                         const gfx::Size&) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
+  void RegisterPictureInPictureWindowResizeCallback(
+      int delegate_id,
+      blink::WebMediaPlayer::PipWindowResizedCallback) override {
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 

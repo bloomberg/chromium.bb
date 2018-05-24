@@ -135,9 +135,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
   void EnterPictureInPicture(
-      blink::WebMediaPlayer::PipWindowSizeCallback callback) override;
+      blink::WebMediaPlayer::PipWindowOpenedCallback callback) override;
   void ExitPictureInPicture(
       blink::WebMediaPlayer::PipWindowClosedCallback callback) override;
+  void RegisterPictureInPictureWindowResizeCallback(
+      blink::WebMediaPlayer::PipWindowResizedCallback callback) override;
   void SetSinkId(const blink::WebString& sink_id,
                  blink::WebSetSinkIdCallbacks* web_callback) override;
   void SetPoster(const blink::WebURL& poster) override;

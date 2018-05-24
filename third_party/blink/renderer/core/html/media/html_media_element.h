@@ -217,7 +217,7 @@ class CORE_EXPORT HTMLMediaElement
   bool muted() const;
   void setMuted(bool);
   virtual bool SupportsPictureInPicture() const { return false; }
-  void enterPictureInPicture(WebMediaPlayer::PipWindowSizeCallback callback);
+  void enterPictureInPicture(WebMediaPlayer::PipWindowOpenedCallback callback);
   void exitPictureInPicture(WebMediaPlayer::PipWindowClosedCallback callback);
 
   void TogglePlayState();

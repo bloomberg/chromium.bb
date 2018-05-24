@@ -2628,7 +2628,7 @@ void HTMLMediaElement::setMuted(bool muted) {
 }
 
 void HTMLMediaElement::enterPictureInPicture(
-    WebMediaPlayer::PipWindowSizeCallback callback) {
+    WebMediaPlayer::PipWindowOpenedCallback callback) {
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->EnterPictureInPicture(std::move(callback));
 }

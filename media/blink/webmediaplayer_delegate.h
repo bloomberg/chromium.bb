@@ -117,7 +117,7 @@ class WebMediaPlayerDelegate {
       int delegate_id,
       const viz::SurfaceId&,
       const gfx::Size&,
-      blink::WebMediaPlayer::PipWindowSizeCallback) = 0;
+      blink::WebMediaPlayer::PipWindowOpenedCallback) = 0;
 
   // Notify that the source media player has exited Picture-in-Picture mode.
   virtual void DidPictureInPictureModeEnd(int delegate_id,
@@ -127,6 +127,13 @@ class WebMediaPlayerDelegate {
   virtual void DidPictureInPictureSurfaceChange(int delegate_id,
                                                 const viz::SurfaceId&,
                                                 const gfx::Size&) = 0;
+
+  // Registers a callback associated with a player that will be called when
+  // receiving a notification from the browser process that the
+  // Picture-in-Picture associated to this player has been resized.
+  virtual void RegisterPictureInPictureWindowResizeCallback(
+      int player_id,
+      blink::WebMediaPlayer::PipWindowResizedCallback) = 0;
 
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.

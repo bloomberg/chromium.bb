@@ -4,6 +4,7 @@
 
 // https://wicg.github.io/picture-in-picture/#interface-picture-in-picture-window
 [
+    ActiveScriptWrappable,
     OriginTrialEnabled=PictureInPictureAPI
 ]
 interface PictureInPictureWindow : EventTarget {

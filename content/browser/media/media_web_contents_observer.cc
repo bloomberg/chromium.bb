@@ -172,6 +172,16 @@ bool MediaWebContentsObserver::IsPlayerActive(
   return MediaPlayerEntryExists(player_id, active_audio_players_);
 }
 
+void MediaWebContentsObserver::OnPictureInPictureWindowResize(
+    const gfx::Size& window_size) {
+  DCHECK(pip_player_.has_value());
+
+  RenderFrameHost* frame = pip_player_->first;
+  int delegate_id = pip_player_->second;
+  frame->Send(new MediaPlayerDelegateMsg_OnPictureInPictureWindowResize(
+      frame->GetRoutingID(), delegate_id, window_size));
+}
+
 void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {

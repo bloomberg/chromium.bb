@@ -793,7 +793,7 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 }
 
 void WebMediaPlayerImpl::EnterPictureInPicture(
-    blink::WebMediaPlayer::PipWindowSizeCallback callback) {
+    blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
   DCHECK(pip_surface_id_.is_valid());
 
   // Notifies the browser process that the player should now be in
@@ -816,6 +816,15 @@ void WebMediaPlayerImpl::ExitPictureInPicture(
 
   // Internal cleanups.
   OnPictureInPictureModeEnded();
+}
+
+void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(
+    blink::WebMediaPlayer::PipWindowResizedCallback callback) {
+  DCHECK(pip_surface_id_.is_valid());
+  DCHECK(client_->IsInPictureInPictureMode());
+
+  delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
+                                                          std::move(callback));
 }
 
 void WebMediaPlayerImpl::SetSinkId(
