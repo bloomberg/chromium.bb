@@ -14,7 +14,8 @@ NGBaseFragmentBuilder::NGBaseFragmentBuilder(
     TextDirection direction)
     : style_(std::move(style)),
       writing_mode_(writing_mode),
-      direction_(direction) {
+      direction_(direction),
+      style_variant_(NGStyleVariant::kStandard) {
   DCHECK(style_);
 }
 
