@@ -71,7 +71,7 @@ ukm::SourceId ContextualSuggestionsMetricsReporterTest::GetSourceId() {
 
 TEST_F(ContextualSuggestionsMetricsReporterTest, BaseTest) {
   base::HistogramTester histogram_tester;
-  GetReporter().SetupForPage(GetSourceId());
+  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
   GetReporter().RecordEvent(FETCH_REQUESTED);
   GetReporter().RecordEvent(FETCH_COMPLETED);
   GetReporter().RecordEvent(UI_PEEK_REVERSE_SCROLL);
@@ -121,7 +121,7 @@ void ContextualSuggestionsMetricsReporterTest::ExpectMultipleEventsCountOnce(
     ContextualSuggestionsEvent event) {
   std::unique_ptr<base::HistogramTester> histogram_tester =
       std::make_unique<base::HistogramTester>();
-  GetReporter().SetupForPage(GetSourceId());
+  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
   // Always report a single FETCH_DELAYED event so we ensure there's a
   // histogram (otherwise the ExpectBucketCount may crash).
   GetReporter().RecordEvent(FETCH_DELAYED);
@@ -164,7 +164,7 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, SuggestionClickedTest) {
 TEST_F(ContextualSuggestionsMetricsReporterTest, MultipleEventsTest) {
   std::unique_ptr<base::HistogramTester> histogram_tester =
       std::make_unique<base::HistogramTester>();
-  GetReporter().SetupForPage(GetSourceId());
+  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
   // Test multiple cycles of FETCH_REQUESTED, FETCH_COMPLETED.
   GetReporter().RecordEvent(FETCH_REQUESTED);
   histogram_tester->ExpectBucketCount(kEventsHistogramName, kFetchRequested, 1);
@@ -185,7 +185,7 @@ TEST_F(ContextualSuggestionsMetricsReporterTest, MultipleEventsTest) {
 TEST_F(ContextualSuggestionsMetricsReporterTest, EnumNotReorderedTest) {
   std::unique_ptr<base::HistogramTester> histogram_tester =
       std::make_unique<base::HistogramTester>();
-  GetReporter().SetupForPage(GetSourceId());
+  GetReporter().SetupForPage(kTestNavigationUrl, GetSourceId());
   // Peek the UI, which starts the timer, expected by all the other UI or
   // suggestion events.
   GetReporter().RecordEvent(UI_PEEK_REVERSE_SCROLL);

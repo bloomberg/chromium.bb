@@ -19,7 +19,7 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
-#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_test_utils.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/json_to_categories.h"
@@ -107,13 +107,13 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
     std::unique_ptr<FakeContextualSuggestionsFetcher> fetcher =
         std::make_unique<FakeContextualSuggestionsFetcher>();
     fetcher_ = fetcher.get();
-    auto metrics_reporter_provider = std::make_unique<
-        contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>();
+    auto reporter_provider = std::make_unique<
+        contextual_suggestions::ContextualSuggestionsReporterProvider>();
     source_ = std::make_unique<ContextualContentSuggestionsService>(
         std::move(fetcher),
         std::make_unique<FakeCachedImageFetcher>(&pref_service_),
         std::unique_ptr<RemoteSuggestionsDatabase>(),
-        std::move(metrics_reporter_provider));
+        std::move(reporter_provider));
   }
 
   FakeContextualSuggestionsFetcher* fetcher() { return fetcher_; }

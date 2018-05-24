@@ -145,7 +145,8 @@ void ContextualSuggestionsBridge::ReportEvent(
       static_cast<contextual_suggestions::ContextualSuggestionsEvent>(
           j_event_id);
 
-  service_proxy_->ReportEvent(ukm_source_id, event);
+  service_proxy_->ReportEvent(
+      ukm_source_id, web_contents->GetLastCommittedURL().spec(), event);
 }
 
 void ContextualSuggestionsBridge::OnSuggestionsAvailable(
