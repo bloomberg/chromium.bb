@@ -236,8 +236,8 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   mojom::WebSocketHandshakeResponsePtr response_to_pass(
       mojom::WebSocketHandshakeResponse::New());
   response_to_pass->url.Swap(&response->url);
-  response_to_pass->status_code = response->status_code;
-  response_to_pass->status_text = response->status_text;
+  response_to_pass->status_code = response->headers->response_code();
+  response_to_pass->status_text = response->headers->GetStatusText();
   size_t iter = 0;
   std::string name, value;
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
