@@ -12,6 +12,7 @@
 #include "base/cancelable_callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #include "chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.mojom.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
@@ -40,7 +41,7 @@ class PwgRasterConverterHelper
   PwgRasterConverterHelper(const PdfRenderSettings& settings,
                            const PwgRasterSettings& bitmap_settings);
 
-  void Convert(base::RefCountedMemory* data,
+  void Convert(const base::RefCountedMemory* data,
                PwgRasterConverter::ResultCallback callback);
 
  private:
@@ -48,7 +49,8 @@ class PwgRasterConverterHelper
 
   ~PwgRasterConverterHelper();
 
-  void RunCallback(base::ReadOnlySharedMemoryRegion region);
+  void RunCallback(base::ReadOnlySharedMemoryRegion region,
+                   uint32_t page_count);
 
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
@@ -71,7 +73,7 @@ PwgRasterConverterHelper::~PwgRasterConverterHelper() {
 }
 
 void PwgRasterConverterHelper::Convert(
-    base::RefCountedMemory* data,
+    const base::RefCountedMemory* data,
     PwgRasterConverter::ResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -84,12 +86,12 @@ void PwgRasterConverterHelper::Convert(
 
   pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
       base::BindOnce(&PwgRasterConverterHelper::RunCallback, this,
-                     base::ReadOnlySharedMemoryRegion()));
+                     base::ReadOnlySharedMemoryRegion(), /*page_count=*/0));
 
   base::MappedReadOnlyRegion memory =
       base::ReadOnlySharedMemoryRegion::Create(data->size());
   if (!memory.IsValid()) {
-    RunCallback(base::ReadOnlySharedMemoryRegion());
+    RunCallback(base::ReadOnlySharedMemoryRegion(), /*page_count=*/0);
     return;
   }
 
@@ -102,10 +104,21 @@ void PwgRasterConverterHelper::Convert(
 }
 
 void PwgRasterConverterHelper::RunCallback(
-    base::ReadOnlySharedMemoryRegion region) {
+    base::ReadOnlySharedMemoryRegion region,
+    uint32_t page_count) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (callback_)
-    std::move(callback_).Run(std::move(region));
+  if (callback_) {
+    if (region.IsValid() && page_count > 0) {
+      size_t average_page_size_in_kb = region.GetSize() / 1024;
+      average_page_size_in_kb /= page_count;
+      UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.Pwg",
+                              average_page_size_in_kb);
+      std::move(callback_).Run(std::move(region));
+    } else {
+      // TODO(thestig): Consider adding UMA to track failure rates.
+      std::move(callback_).Run(base::ReadOnlySharedMemoryRegion());
+    }
+  }
   pdf_to_pwg_raster_converter_ptr_.reset();
 }
 
@@ -114,7 +127,7 @@ class PwgRasterConverterImpl : public PwgRasterConverter {
   PwgRasterConverterImpl();
   ~PwgRasterConverterImpl() override;
 
-  void Start(base::RefCountedMemory* data,
+  void Start(const base::RefCountedMemory* data,
              const PdfRenderSettings& conversion_settings,
              const PwgRasterSettings& bitmap_settings,
              ResultCallback callback) override;
@@ -122,9 +135,9 @@ class PwgRasterConverterImpl : public PwgRasterConverter {
  private:
   scoped_refptr<PwgRasterConverterHelper> utility_client_;
 
-  // Cancelable version of ResultCallback.
+  // Cancelable version of PwgRasterConverter::ResultCallback.
   base::CancelableOnceCallback<void(base::ReadOnlySharedMemoryRegion)>
-      callback_;
+      cancelable_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PwgRasterConverterImpl);
 };
@@ -133,14 +146,14 @@ PwgRasterConverterImpl::PwgRasterConverterImpl() = default;
 
 PwgRasterConverterImpl::~PwgRasterConverterImpl() = default;
 
-void PwgRasterConverterImpl::Start(base::RefCountedMemory* data,
+void PwgRasterConverterImpl::Start(const base::RefCountedMemory* data,
                                    const PdfRenderSettings& conversion_settings,
                                    const PwgRasterSettings& bitmap_settings,
                                    ResultCallback callback) {
-  callback_.Reset(std::move(callback));
+  cancelable_callback_.Reset(std::move(callback));
   utility_client_ = base::MakeRefCounted<PwgRasterConverterHelper>(
       conversion_settings, bitmap_settings);
-  utility_client_->Convert(data, callback_.callback());
+  utility_client_->Convert(data, cancelable_callback_.callback());
 }
 
 }  // namespace

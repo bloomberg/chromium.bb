@@ -80,7 +80,7 @@ class PdfToPwgRasterBrowserTest : public InProcessBrowserTest {
       : converter_(PwgRasterConverter::CreateDefault()) {}
   ~PdfToPwgRasterBrowserTest() override {}
 
-  void Convert(base::RefCountedMemory* pdf_data,
+  void Convert(const base::RefCountedMemory* pdf_data,
                const PdfRenderSettings& conversion_settings,
                const PwgRasterSettings& bitmap_settings,
                bool expect_success,

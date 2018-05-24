@@ -32,5 +32,6 @@ interface PdfToPwgRasterConverter {
   Convert(mojo_base.mojom.ReadOnlySharedMemoryRegion pdf_region,
           PdfRenderSettings pdf_settings,
           PwgRasterSettings pwg_raster_settings)
-      => (mojo_base.mojom.ReadOnlySharedMemoryRegion? pwg_raster_region);
+      => (mojo_base.mojom.ReadOnlySharedMemoryRegion? pwg_raster_region,
+          uint32 page_count);
 };
