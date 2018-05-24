@@ -60,7 +60,7 @@
 <translation id="1506061864768559482">Mesin telusur</translation>
 <translation id="1513352483775369820">Bookmark dan histori web</translation>
 <translation id="1513858653616922153">Hapus sandi</translation>
-<translation id="1516229014686355813">Tap untuk Menelusuri mengirimkan kata yang dipilih dan halaman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
+<translation id="1516229014686355813">Fitur Tap untuk Menelusuri mengirimkan kata yang dipilih dan halaman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">Link dibuka di Chrome</translation>
 <translation id="1549000191223877751">Beralih ke jendela lain</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
@@ -315,7 +315,7 @@
 <translation id="4002066346123236978">Judul</translation>
 <translation id="4042870126885713738">Tampilkan saran ketika alamat web tidak muncul atau koneksi yang bermasalah</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
-<translation id="4048707525896921369">Pelajari topik di situs tanpa menutup halaman. Tap untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, menampilkan definisi, gambar, hasil penelusuran, dan detail lainnya.
+<translation id="4048707525896921369">Pelajari topik di situs tanpa menutup halaman. Fitur Tap untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, menampilkan definisi, gambar, hasil penelusuran, dan detail lainnya.
 
 Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk mempersempit penelusuran, geser panel ke atas, lalu tap kotak penelusuran.</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -697,6 +697,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7375125077091615385">Jenis:</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Pengalaman Penggunaan Pertama Chrome</translation>
+<translation id="741204030948306876">Ya, saya ikut</translation>
 <translation id="7423098979219808738">Tanyakan terlebih dahulu</translation>
 <translation id="7423538860840206698">Diblokir agar tidak membaca papan klip</translation>
 <translation id="7437998757836447326">Keluar dari Chrome</translation>

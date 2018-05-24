@@ -60,6 +60,7 @@
 <translation id="1506061864768559482">מנוע חיפוש</translation>
 <translation id="1513352483775369820">סימניות והיסטוריית אתרים</translation>
 <translation id="1513858653616922153">מחק סיסמה</translation>
+<translation id="1516229014686355813">‏התכונה 'הקשה כדי לחפש' שולחת אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. ניתן לכבות תכונה זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="1539064842193522527">‏הקישור נפתח ב-Chrome</translation>
 <translation id="1549000191223877751">העבר לחלון האחר</translation>
 <translation id="1553358976309200471">‏עדכן את Chrome</translation>
@@ -314,6 +315,9 @@
 <translation id="4002066346123236978">כותרת</translation>
 <translation id="4042870126885713738">הצג הצעות כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
+<translation id="4048707525896921369">‏ניתן לקבל מידע על נושאים באתרים מבלי לצאת מהדף. התכונה 'הקשה כדי לחפש' שולחת מילה ואת ההקשר שלה אל חיפוש Google, המחזיר הגדרות, תמונות, תוצאות חיפוש ופרטים אחרים.
+
+כדי לשנות את מונח החיפוש שלך, צריך לגעת נגיעה ממושכת במונח כדי לבחור בו. כדי לצמצם את החיפוש, מסיטים את החלונית עד למעלה ומקישים על תיבת החיפוש.</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4084682180776658562">סימניה</translation>
@@ -693,6 +697,7 @@
 <translation id="7375125077091615385">סוג:</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7403691278183511381">‏חוויית ההפעלה הראשונה של Chrome</translation>
+<translation id="741204030948306876">כן, אני רוצה</translation>
 <translation id="7423098979219808738">בקש אישור</translation>
 <translation id="7423538860840206698">הגישה לקריאה מלוח העריכה נחסמה</translation>
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>

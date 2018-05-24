@@ -1058,7 +1058,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> está utilizando <ph name="USAGE" /> MB de espacio en el disco.</translation>
 <translation id="2633212996805280240">¿Quieres eliminar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> no pudo completar la instalación, pero se continuará ejecutando desde la imagen de disco.</translation>
-<translation id="2635176084534510129">Obtén experiencias más personalizadas, como mejores sugerencias de contenido y traducciones más inteligentes</translation>
 <translation id="2635276683026132559">Firmando</translation>
 <translation id="2636625531157955190">Chrome no puede acceder a la imagen.</translation>
 <translation id="2638087589890736295">Se requiere la frase de contraseña para iniciar la sincronización</translation>
@@ -1348,7 +1347,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3061707000357573562">Aplicar parche al servicio</translation>
 <translation id="3064410671692449875">Datos insuficientes</translation>
 <translation id="3065041951436100775">La pestaña terminó los comentarios.</translation>
-<translation id="3066642396596108483">Sincroniza tus favoritos, historial y contraseñas en todos los dispositivos</translation>
 <translation id="3067198179881736288">¿Deseas instalar la app?</translation>
 <translation id="3067198360141518313">Ejecutar este complemento</translation>
 <translation id="3071624960923923138">Puedes hacer clic aquí para abrir una pestaña nueva</translation>
@@ -1614,7 +1612,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="347670947055184738">El sistema no pudo recuperar la política para tu dispositivo.</translation>
 <translation id="347785443197175480">Continuar permitiendo que <ph name="HOST" /> acceda a la cámara y al micrófono</translation>
 <translation id="3478685642445675458">Desbloquea tu perfil antes de quitar a una persona.</translation>
-<translation id="347919930506963698">Aprovecha Google al máximo</translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="3480892288821151001">Acoplar ventana a la izquierda</translation>
 <translation id="3484273680291419129">Quitando software dañino…</translation>
@@ -1757,7 +1754,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> desea compartir tu pantalla</translation>
 <translation id="3693415264595406141">Contraseña:</translation>
 <translation id="3694027410380121301">Seleccionar la pestaña anterior</translation>
-<translation id="3697100740575341996">El administrador de TI inhabilitó los accesorios de Chrome para tu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Dirección de correo electrónico</translation>
 <translation id="3700888195348409686">En presentación (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Tus páginas de inicio se cambiaron para incluir <ph name="URL" />.</translation>
@@ -2134,7 +2130,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="4289540628985791613">Descripción general</translation>
 <translation id="4296575653627536209">Agregar usuario supervisado</translation>
 <translation id="4297322094678649474">Cambiar idiomas</translation>
-<translation id="4299141727003252811">Es posible que Google use tu actividad de navegación, el contenido de algunos sitios que hayas visitado y otras interacciones con el navegador para personalizar Chrome y otros servicios de Google, como Traductor, Búsqueda y anuncios.</translation>
 <translation id="4300305918532693141">Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">largo (2 s)</translation>
 <translation id="4306119971288449206">Las apps deben incluir el encabezado content-type "<ph name="CONTENT_TYPE" />"</translation>
@@ -2204,7 +2199,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="4425149324548788773">Mi unidad</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4430369329743628066">Se agregó el marcador</translation>
-<translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
+<translation id="4434045419905280838">Ventanas emergentes y redirec.</translation>
 <translation id="443454694385851356">Heredados (inseguro)</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="443475966875174318">Actualizar o quitar las aplicaciones incompatibles</translation>
@@ -2457,7 +2452,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="484921817528146567">Último elemento de la biblioteca</translation>
 <translation id="4849286518551984791">Tiempo universal coordinado (UTC/GMT)</translation>
 <translation id="4849517651082200438">No instalar</translation>
-<translation id="4850258771229959924">Ver en las herramientas del programador</translation>
 <translation id="4850669014075537160">Desplazamiento</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4853020600495124913">Abrir en una ventana &amp;nueva</translation>
@@ -3544,7 +3538,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="6473842110411557830">Ilustración de Powerwash</translation>
 <translation id="6474706907372204693">Método de entrada anterior</translation>
 <translation id="6474884162850599008">Desconectar la cuenta de Google Drive</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> quiere comprobar si estás usando un dispositivo apto para el Sistema operativo Chrome. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> desea compartir el contenido de tu pantalla. Elige lo que deseas compartir.</translation>
 <translation id="6478248366783946499">¿Deseas conservar el archivo peligroso?</translation>
 <translation id="6483805311199035658">Abriendo <ph name="FILE" />...</translation>
@@ -4209,7 +4202,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="7518150891539970662">Registros de WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Crear</translation>
-<translation id="7526413953848747421">Aprovecha los excelentes servicios de Google, como el corrector ortográfico y la función "Presionar para buscar" en Chrome</translation>
 <translation id="7529411698175791732">Comprueba tu conexión a Internet. Si el problema persiste, intenta salir de tu cuenta y acceder de nuevo.</translation>
 <translation id="7530016656428373557">Tasa de descarga en vatios</translation>
 <translation id="7531779363494549572">Ve a Configuración &gt; Apps y notificaciones &gt; Notificaciones.</translation>
@@ -5234,6 +5226,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9094982973264386462">Quitar</translation>
 <translation id="9095253524804455615">Quitar</translation>
 <translation id="9099674669267916096">Cantidad de páginas</translation>
+<translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9100765901046053179">Configuración avanzada</translation>
 <translation id="9101691533782776290">Iniciar aplicación</translation>
 <translation id="9102610709270966160">Habilitar extensión</translation>

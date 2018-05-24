@@ -1062,7 +1062,6 @@
 <translation id="2633199387167390344"><ph name="NAME" />에서 <ph name="USAGE" />MB의 디스크 공간을 사용하고 있습니다.</translation>
 <translation id="2633212996805280240">'<ph name="EXTENSION_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" />에서 설치를 완료하지 못했지만 디스크 이미지에서 계속 실행됩니다.</translation>
-<translation id="2635176084534510129">더 나은 콘텐츠 추천 및 더 스마트한 번역과 같은 맞춤설정 환경을 더 많이 받아보세요</translation>
 <translation id="2635276683026132559">서명</translation>
 <translation id="2636625531157955190">Chrome에서 이미지에 액세스할 수 없습니다.</translation>
 <translation id="2638087589890736295">동기화를 시작하려면 암호가 필요합니다.</translation>
@@ -1352,7 +1351,6 @@
 <translation id="3061707000357573562">서비스 패치</translation>
 <translation id="3064410671692449875">데이터 부족</translation>
 <translation id="3065041951436100775">탭 사용 중지 관련 피드백</translation>
-<translation id="3066642396596108483">모든 기기에서 북마크, 비밀번호, 방문 기록 동기화</translation>
 <translation id="3067198179881736288">앱을 설치하시겠습니까?</translation>
 <translation id="3067198360141518313">이 플러그인 실행</translation>
 <translation id="3071624960923923138">여기를 클릭하여 새 탭을 열 수 있습니다</translation>
@@ -1618,7 +1616,6 @@
 <translation id="347670947055184738">시스템에서 기기 정책을 가져오지 못했습니다.</translation>
 <translation id="347785443197175480"><ph name="HOST" />에서 카메라와 마이크에 액세스하도록 계속 허용</translation>
 <translation id="3478685642445675458">프로필을 잠금 해제한 다음 사용자를 삭제하세요.</translation>
-<translation id="347919930506963698">Chrome 최대한 활용하기</translation>
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3480892288821151001">창을 왼쪽에 고정</translation>
 <translation id="3484273680291419129">유해한 소프트웨어 삭제 중...</translation>
@@ -1761,7 +1758,6 @@
 <translation id="3691267899302886494"><ph name="HOST" />에서 화면을 공유하려고 합니다</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
 <translation id="3694027410380121301">이전 탭 선택</translation>
-<translation id="3697100740575341996">IT 관리자가 내 기기에 Chrome Goodies를 이용할 수 없도록 설정했습니다. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">이메일 주소</translation>
 <translation id="3700888195348409686">표시 중(<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">시작 페이지가 <ph name="URL" />을(를) 포함하도록 변경되었습니다.</translation>
@@ -2137,7 +2133,6 @@
 <translation id="4289540628985791613">개요</translation>
 <translation id="4296575653627536209">관리 대상 사용자 추가</translation>
 <translation id="4297322094678649474">언어 변경</translation>
-<translation id="4299141727003252811">Google은 인터넷 사용 기록, 방문한 일부 사이트의 콘텐츠, 기타 브라우저 상호작용을 사용하여 Chrome, 번역 및 검색과 같은 기타 Google 서비스, 광고를 맞춤설정할 수 있습니다.</translation>
 <translation id="4300305918532693141">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="4305227814872083840">길게(2초)</translation>
 <translation id="4306119971288449206">앱은 '<ph name="CONTENT_TYPE" />' 콘텐츠 유형으로 제공되어야 합니다</translation>
@@ -2460,7 +2455,6 @@
 <translation id="484921817528146567">마지막 서가 항목</translation>
 <translation id="4849286518551984791">협정세계시(UTC/GMT)</translation>
 <translation id="4849517651082200438">설치 안함</translation>
-<translation id="4850258771229959924">개발자 도구에서 보기</translation>
 <translation id="4850669014075537160">스크롤</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="4853020600495124913">새 창에서 열기(&amp;N)</translation>
@@ -3547,7 +3541,6 @@
 <translation id="6473842110411557830">파워워시 일러스트레이션</translation>
 <translation id="6474706907372204693">이전 입력 방법</translation>
 <translation id="6474884162850599008">Google 드라이브 계정을 연결 해제합니다.</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" />에서 내가 사용 중인 Chrome OS 기기가 적합한지 확인하려고 합니다. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" />에서 내 화면의 콘텐츠를 공유하려고 합니다. 공유할 항목을 선택하세요.</translation>
 <translation id="6478248366783946499">위험한 파일을 보관하시겠습니까?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> 파일 여는 중...</translation>
@@ -4212,7 +4205,6 @@
 <translation id="7518150891539970662">WebRTC 로그(<ph name="WEBRTC_LOG_COUNT" />개)</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
 <translation id="7525067979554623046">만들기</translation>
-<translation id="7526413953848747421">맞춤법 검사 및 탭하여 검색과 같은 강력한 Google 서비스를 Chrome에도 이용하세요</translation>
 <translation id="7529411698175791732">인터넷 연결 상태를 확인하세요. 문제가 계속되면 로그아웃한 뒤 다시 로그인해보세요.</translation>
 <translation id="7530016656428373557">방전율(와트)</translation>
 <translation id="7531779363494549572">설정 &gt; 앱 및 알림 &gt; 알림으로 이동합니다.</translation>
@@ -5236,6 +5228,7 @@
 <translation id="9094982973264386462">제거</translation>
 <translation id="9095253524804455615">제거</translation>
 <translation id="9099674669267916096">페이지 수</translation>
+<translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9100765901046053179">고급 설정</translation>
 <translation id="9101691533782776290">앱 실행</translation>
 <translation id="9102610709270966160">확장 프로그램 사용</translation>

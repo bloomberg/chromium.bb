@@ -1062,7 +1062,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> está a utilizar <ph name="USAGE" /> MB de espaço em disco.</translation>
 <translation id="2633212996805280240">Remover "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101">O <ph name="PRODUCT_NAME" /> não conseguiu terminar a instalação, mas continuará a executar a partir da respectiva imagem de disco.</translation>
-<translation id="2635176084534510129">Obtenha experiências mais personalizadas, tais como melhores sugestões de conteúdos e um Tradutor mais inteligente.</translation>
 <translation id="2635276683026132559">Assinatura</translation>
 <translation id="2636625531157955190">O Chrome não consegue aceder à imagem.</translation>
 <translation id="2638087589890736295">A frase de acesso é necessária para iniciar a sincronização</translation>
@@ -1353,7 +1352,6 @@ Pretende pará-lo?</translation>
 <translation id="3061707000357573562">Serviço de patch</translation>
 <translation id="3064410671692449875">Dados insuficientes</translation>
 <translation id="3065041951436100775">Comentários acerca de separador desativado.</translation>
-<translation id="3066642396596108483">Sincronize os marcadores, as palavras-passe e o histórico em todos os seus dispositivos.</translation>
 <translation id="3067198179881736288">Pretende instalar a aplicação?</translation>
 <translation id="3067198360141518313">Executar este plug-in</translation>
 <translation id="3071624960923923138">Pode clicar aqui para abrir um novo separador</translation>
@@ -1619,7 +1617,6 @@ Pretende pará-lo?</translation>
 <translation id="347670947055184738">Ups! O sistema não conseguiu obter a política para o seu dispositivo.</translation>
 <translation id="347785443197175480">Continuar a permitir que <ph name="HOST" /> aceda à sua câmara e microfone</translation>
 <translation id="3478685642445675458">Desbloqueie o seu perfil antes de remover uma pessoa.</translation>
-<translation id="347919930506963698">Usufruir ainda mais do Chrome</translation>
 <translation id="3479552764303398839">Agora não</translation>
 <translation id="3480892288821151001">Colocar janela à esquerda</translation>
 <translation id="3484273680291419129">A remover software prejudicial…</translation>
@@ -1762,7 +1759,6 @@ Pretende pará-lo?</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> pretende partilhar o seu ecrã.</translation>
 <translation id="3693415264595406141">Palavra-passe:</translation>
 <translation id="3694027410380121301">Selecionar o separador anterior</translation>
-<translation id="3697100740575341996">O gestor de TI desativou os Diversos do Chrome para o seu dispositivo. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Endereço de email</translation>
 <translation id="3700888195348409686">A apresentar (<ph name="PAGE_ORIGIN" />)…</translation>
 <translation id="3702500414347826004">As suas páginas iniciais foram alteradas para incluir <ph name="URL" />.</translation>
@@ -2139,7 +2135,6 @@ Pretende pará-lo?</translation>
 <translation id="4289540628985791613">Vista geral</translation>
 <translation id="4296575653627536209">Adicionar utilizador supervisionado</translation>
 <translation id="4297322094678649474">Alterar idiomas</translation>
-<translation id="4299141727003252811">A Google pode utilizar a atividade de navegação, o conteúdo de alguns sites que visita e outras interações com o navegador para personalizar o Chrome e outros serviços Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="4300305918532693141">Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">longo (2 seg)</translation>
 <translation id="4306119971288449206">As aplicações têm de ser publicadas com o tipo de conteúdo "<ph name="CONTENT_TYPE" />".</translation>
@@ -2462,7 +2457,6 @@ Pretende pará-lo?</translation>
 <translation id="484921817528146567">Último artigo da prateleira</translation>
 <translation id="4849286518551984791">Tempo universal coordenado (UTC/GMT)</translation>
 <translation id="4849517651082200438">Não instalar</translation>
-<translation id="4850258771229959924">Ver nas Ferramentas do programador</translation>
 <translation id="4850669014075537160">Deslocamento</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4853020600495124913">Abrir numa &amp;nova janela</translation>
@@ -3550,7 +3544,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6473842110411557830">Ilustração do Powerwash</translation>
 <translation id="6474706907372204693">Método de introdução anterior</translation>
 <translation id="6474884162850599008">Desligar a conta do Google Drive</translation>
-<translation id="6475079491906995455">O serviço <ph name="SERVICE_NAME" /> pretende verificar se está a utilizar um dispositivo com Chrome OS elegível. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">O <ph name="APP_NAME" /> pretende partilhar o conteúdo do seu ecrã. Escolha o que pretende partilhar.</translation>
 <translation id="6478248366783946499">Pretende manter este ficheiro perigoso?</translation>
 <translation id="6483805311199035658">A abrir <ph name="FILE" />...</translation>
@@ -4215,7 +4208,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7518150891539970662">Registos de WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Criar</translation>
-<translation id="7526413953848747421">Adicione serviços Google eficazes ao Chrome, como a verificação ortográfica e a pesquisa por toque.</translation>
 <translation id="7529411698175791732">Verifique a sua ligação à Internet. Se o problema continuar, experimente terminar e iniciar sessão novamente.</translation>
 <translation id="7530016656428373557">Taxa de descarga em Watts</translation>
 <translation id="7531779363494549572">Aceda a Definições &gt; Aplicações e notificações &gt; Notificações.</translation>
@@ -5239,6 +5231,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9094982973264386462">Remover</translation>
 <translation id="9095253524804455615">Remover</translation>
 <translation id="9099674669267916096">Contagem de páginas</translation>
+<translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9100765901046053179">Definições avançadas</translation>
 <translation id="9101691533782776290">Iniciar aplicação</translation>
 <translation id="9102610709270966160">Ativar extensão</translation>

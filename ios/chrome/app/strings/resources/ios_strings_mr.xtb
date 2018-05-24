@@ -12,7 +12,7 @@
 <translation id="1145536944570833626">विद्यमान डेटा हटवा.</translation>
 <translation id="1165039591588034296">एरर</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
-<translation id="1176932207622159128">प्रतिमा जतन करू शकत नाही</translation>
+<translation id="1176932207622159128">इमेज सेव्ह करू शकत नाही</translation>
 <translation id="1181037720776840403">काढा</translation>
 <translation id="1201530049782216880">नवीन गुप्त टॅब</translation>
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
@@ -33,7 +33,7 @@
 <translation id="1430915738399379752">प्रिंट</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> आयटम</translation>
 <translation id="1491277525950327607">सेटिंग टॉगल करण्यासाठी दोनदा टॅप करा</translation>
-<translation id="152234381334907219">कधीही जतन न केलेले</translation>
+<translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
 <translation id="1532451416480227577">Google Pay वरील पत्ते आणि क्रेडिट कार्ड दाखवा</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
@@ -97,7 +97,7 @@
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="2712127207578915686">फाईल उघडण्यात अक्षम</translation>
-<translation id="2718352093833049315">केवळ Wi-Fi वर</translation>
+<translation id="2718352093833049315">केवळ वाय-फाय वर</translation>
 <translation id="2747003861858887689">मागील फील्ड</translation>
 <translation id="2780046210906776326">ईमेल खाती नाहीत</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -148,17 +148,17 @@
 <translation id="3519193562722059437">वेब ब्राउझ करण्‍यासाठी एक टॅब उघडा.</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3551320343578183772">टॅब बंद करा</translation>
-<translation id="3567664240939803299">या साइटसाठी Google Smart Lock ने आपला पासवर्ड जतन करावा असे आपण इच्छिता?</translation>
-<translation id="3588820906588687999">नवीन टॅबमध्ये प्रतिमा उघडा</translation>
+<translation id="3567664240939803299">या साइटसाठी Google Smart Lock ने आपला पासवर्ड सेव्ह करावा असे आपण इच्छिता?</translation>
+<translation id="3588820906588687999">नवीन टॅबमध्ये इमेज उघडा</translation>
 <translation id="3603009562372709545">दुवा URL कॉपी करा</translation>
 <translation id="3607167657931203000">स्वयं-भरण डेटा</translation>
 <translation id="3609785682760573515">संकालन करत आहे...</translation>
-<translation id="3628119975092896051">आपली वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
+<translation id="3628119975092896051">तुमची वाचन सूची ऑफलाइन उपलब्ध आहे. आपल्या वाचन सूचीमध्‍ये एक पृष्‍ठ जोडण्‍यासाठी, <ph name="SHARE_OPENING_ICON" /> टॅप करा.</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3779810277399252432">कोणतेही इंटरनेट कनेक्शन नाही.</translation>
-<translation id="3783017676699494206">प्रतिमा सेव्ह करा</translation>
+<translation id="3783017676699494206">इमेज सेव्ह करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3897092660631435901">मेनू</translation>
@@ -233,7 +233,7 @@
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5327248766486351172">नाव</translation>
-<translation id="5388358297987318779">प्रतिमा उघडा</translation>
+<translation id="5388358297987318779">इमेज उघडा</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अॅप्लिकेशन इंस्टॉल केलेले नाहीत.</translation>
 <translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
@@ -249,7 +249,7 @@
 <translation id="567881659373499783">आवृत्ती <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5728700505257787410">क्षमस्व, आपल्या खात्यामध्ये साइन इन करताना काहीतरी समस्या आली.</translation>
 <translation id="5737974891429562743">खाते साइन-इन तपशील कालबाह्य झाले आहेत. संकालन प्रारंभ करण्यासाठी अपडेट करा.</translation>
-<translation id="5738887413654608789">हे आपल्याला आपल्या सभोवतालच्या गोष्टींवर आधारित संबंधित वेब पृष्ठे शोधू देते.</translation>
+<translation id="5738887413654608789">हे आपल्याला आपल्या सभोवतालच्या गोष्टींवर आधारित संबंधित वेब पेज शोधू देते.</translation>
 <translation id="5771816112378578655">सेटअप प्रक्रियेत आहे...</translation>
 <translation id="5816228676161003208">हे आपल्याला आपला व्‍हॉइस वापरून अधिक जलद शोधू देते.</translation>
 <translation id="5846482154967366008">शोध इंजिन</translation>
@@ -356,7 +356,7 @@
 <translation id="744343212394640790"><ph name="EMAIL" /> नाही</translation>
 <translation id="7454057999980797137">राज्य / विभाग</translation>
 <translation id="7456847797759667638">स्थान उघडा...</translation>
-<translation id="7464701184726199289">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल. जतन केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="7464701184726199289">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल. सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">कंपनीचे नाव</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="750493650310597496">0 निवडले</translation>
@@ -382,17 +382,17 @@
 <translation id="7961015016161918242">कधीही नाही</translation>
 <translation id="7971521879845308059">पॉप-अप अवरोधित करा</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
-<translation id="8019783059653722575">हे आपल्याला फोटो जतन आणि अपलोड करू देते.</translation>
+<translation id="8019783059653722575">हे आपल्याला फोटो सेव्ह आणि अपलोड करू देते.</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8023878949384262191">विभाग विस्तृत करते.</translation>
 <translation id="8059533439631660104">विभाग संकुचित करा.</translation>
 <translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
 <translation id="8073670137947914548">डाउनलोड पूर्ण झाले</translation>
-<translation id="8076014560081431679">जतन केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="8076014560081431679">सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">सर्व टॅब बंद करा</translation>
 <translation id="8114753159095730575">फाइल डाउनलोड उपलब्ध आहे. स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत.</translation>
 <translation id="8205564605687841303">रद्द करा</translation>
-<translation id="8225985093977202398">कॅश   प्रतिमा आणि फायली</translation>
+<translation id="8225985093977202398">कॅश   इमेज आणि फायली</translation>
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8272426682713568063">क्रेडिट कार्ड</translation>
 <translation id="8281781826761538115">डीफॉल्ट - <ph name="DEFAULT_LOCALE" /></translation>

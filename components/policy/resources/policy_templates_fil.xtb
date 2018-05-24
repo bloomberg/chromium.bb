@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
 <translation id="1397855852561539316">Default ng iminumungkahing URL ng provider ng paghahanap</translation>
-<translation id="1424081297104898791">Binibigyang-daan kang kontrolin kung saan maaaring gamitin ang Mga Tool ng Developer.
-
-      Kung itatakda ang patakarang ito sa 'DeveloperToolsDisallowedForForceInstalledExtensions' (value na 0, ang default para sa mga user ng enterprise), karaniwang maa-access ang Mga Tool ng Developer at ang JavaScript console, ngunit hindi maa-access ang mga ito sa konteksto ng mga extension na na-install sa pamamagitan ng patakaran sa enterprise.
-      Kung itatakda ang patakarang ito sa 'DeveloperToolsAllowed' (value na 1, ang default para sa mga hindi pinamamahalaang user), maa-access at magagamit ang Mga Tool ng Developer at ang JavaScript console sa lahat ng konteksto, pati sa konteksto ng mga extension na na-install sa pamamagitan ng patakaran sa enterprise.
-      Kung itatakda ang patakarang ito sa 'DeveloperToolsDisallowed' (value na 2), hindi maa-access ang Mga Tool ng Developer at hindi na masisiyasat pa ang mga elemento ng web-site. Madi-disable ang anumang keyboard shortcut at anumang entry sa menu o menu ng konteksto para buksan ang Mga Tool ng Developer o ang JavaScript Console.
-      Kung itatakda sa true ang legacy na patakaran na DeveloperToolsDisabled, babalewalain ang value ng patakarang ito at madi-disable ang Mga Tool ng Developer.</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
@@ -700,7 +694,6 @@
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
-<translation id="2884728160143956392">Payagan ang mga cookies sa session lamang sa mga site na ito</translation>
 <translation id="2893546967669465276">Magpadala ng mga log ng system sa server sa pamamahala</translation>
 <translation id="2899002520262095963">Maaaring gamitin ng mga Android app ang mga configuration ng network at mga CA certificate na itinakda sa pamamagitan ng patakarang ito, ngunit walang access ang mga ito sa ilang opsyon sa configuration.</translation>
 <translation id="2906874737073861391">Listahan ng mga extension ng AppPack</translation>
@@ -744,16 +737,6 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, hindi magpapalit ng termino para sa paghahanap.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled.'</translation>
-<translation id="3056439054015239107">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa iisang value. Kung hindi magkatugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na natukoy ng patakaran ng user.
-      Maaari mong tingnan ang pagtatakda sa patakarang IsolateOrigins para masulit
-      ang parehong benepisyo, ang pag-isolate at kaunting epekto sa mga user, sa pamamagitan ng
-      IsolateOrigins na may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na ito,
-      ang SitePerProcess, ang lahat ng site.
-      Kung naka-enable ang patakaran, tatakbo ang bawat site sa sarili nitong proseso.
-      Kung naka-disable ang patakaran, walang magaganap na hayagang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang SitePerProcess.
-      Kung hindi na-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="306887062252197004">Pinapayagan ng patakarang ito ang mga user ng feature na WebDriver na mag-override
       ng mga patakarang makakaapekto sa mga pagpapatakbo nito.
 
@@ -1215,13 +1198,6 @@
 <translation id="4483649828988077221">I-disable ang Awtomatikong Pag-update</translation>
 <translation id="4485425108474077672">I-configure ang URL ng page ng Bagong Tab</translation>
 <translation id="4492287494009043413">Huwag paganahin ang pagkuha ng mga screenshot</translation>
-<translation id="4497968613298501984">Nagko-configure sa listahan ng mga login URL ng enterprise (mga HTTP at HTTPS scheme lang). Ika-capture ang fingerprint ng password sa mga URL na ito at gagamitin ito para sa pag-detect ng muling paggamit ng password.
-      Dapat lang gamitin ang setting na ito ng mga user ng G Suite na gumagamit ng SSO/SAML system.
-      Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang mga fingerprint ng password, pakitiyak na sumusunod ang iyong mga page sa pag-log in sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Kung ie-enable ang setting na ito, ika-capture ng serbisyo sa pagprotekta ng password ang fingerprint ng password sa mga URL na ito para sa layunin ng pag-detect ng muling paggamit ng password.
-      Kung idi-disable o hindi itatakda ang setting na ito, ang fingerprint ng password sa https://accounts.google.com lang ang ika-capture ng serbisyo sa pagprotekta ng password.
-      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="450537894712826981">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME" /> sa pag-iimbak ng mga na-cache na media file sa disk.
 
       Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na laki ng cache tinukoy man ng user ang '--media-cache-size' flag o hindi. Ang value na tinutukoy sa patakarang ito ay hindi isang ganap na hangganan ngunit sa halip ay isang suhestiyon sa sistema sa pagka-cache, masyadong maliit ang anumang value na mas mababa sa ilang megabyte at ira-round up sa isang maayos na minimum.
@@ -1349,13 +1325,6 @@
 
       Kung iniwang hindi nakatakda o blangko ang patakarang ito, makakapag-sign in ang sinumang user sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Pinapayagan ang mode na fullscreen</translation>
-<translation id="4868249328547841081">Nagko-configure sa URL sa pagpapalit ng password (mga HTTP at HTTPS scheme lang). Ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para palitan ang kanilang mga password kung na-phish sila.
-      Dapat lang gamitin ang setting na ito ng mga user ng G Suite na gumagamit ng SSO/SAML system.
-      Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang bagong fingerprint ng password sa page ng pagpapalit ng password na ito, pakitiyak na sumusunod ang iyong page ng pagpapalit ng password sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Kung ie-enable ang setting na ito, ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para palitan ang kanilang mga password kung na-phish sila.
-      Kung idi-disable o hindi itatakda ang setting na ito, ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa https://myaccounts.google.com para palitan ang kanilang password.
-      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4869787217450099946">Tinutukoy kung pinapayagan ang mga lock ng pagpapagana ng screen. Mahihiling ng mga extension ang mga lock ng pagpapagana ng screen sa pamamagitan ng power management extension API.
 
           Kung nakatakda sa true o iniwang hindi nakatakda ang patakarang ito, tatanggapin ang mga lock ng pagpapagana ng screen para sa pamamahala sa power.
@@ -1553,9 +1522,6 @@
       Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> na ipakita sa isa sa mga lokal na tinutukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o kung itatakda ito sa isang listahang walang laman, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng isang user ang <ph name="PRODUCT_OS_NAME" /> na ipakita sa isang wikang hindi pinapayagan ng patakarang ito, malilipat sa isang pinapayagang lokal ang lokal na pinagpapakitaan sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at pinapayagan ng patakarang ito ang isa sa mga piniling lokal, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi naman, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinutukoy sa patakarang ito, o sa isang alternatibong lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="5464816904705580310">I-configure ang mga setting para sa mga pinapamahalaang user.</translation>
 <translation id="546726650689747237">Delay ng pag-dim ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
-<translation id="5469484020713359236">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magtakda ng cookies.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultCookiesSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
 <translation id="5475361623548884387">Paganahin ang pag-print</translation>
 <translation id="547601067149622666">Huwag payagan ang mga ad sa mga site na may mga nakakasagabal na ad</translation>
@@ -1863,9 +1829,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung itatakda sa true o hindi itatakda, pana-panahong isa-scan ng Chrome Cleanup ang system para sa hindi gustong software at kung may anumang mahanap, tatanungin nito ang user kung gusto niya itong alisin. Mae-enable ang manual na pag-trigger sa Chrome Cleanup mula sa chrome://settings.
 
       Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na hindi pinapayagang magtakda ng cookies.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng apat na site mula sa patakarang 'DefaultCookiesSetting' kung ito ay nakatakda, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="6426205278746959912">Hindi mo maaaring pwersahin ang mga Android app na gumamit ng proxy. Available para sa mga Android app ang isang subset ng mga setting ng proxy, na maaari nilang kusang-loob na piliing tanggapin:
 
           Kung pipiliin mong hindi kahit kailan gumamit ng isang proxy server, ipapaalam sa mga Android app na walang naka-configure na proxy.
@@ -1885,13 +1848,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Upang makontrol kung aling mga website ang pinapayagang magpatakbo ng Flash, tingnan ang mga patakarang "DefaultPluginsSetting," "PluginsAllowedForUrls," at "PluginsBlockedForUrls."
 
       Kung naka-disable o hindi nakatakda ang setting na ito, maaaring ma-block ang Flash content mula sa iba pang pinagmulan o maliit na content.</translation>
-<translation id="6535639183431116351">Hindi na ginagamit ang patakarang ito sa M68, pakigamit na lang ang DeveloperToolsAvailability.
-
-      Dini-disable ang Mga Tool ng Developer at ang JavaScript console.
-
-      Kung ie-enable mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na masisiyasat pa ang mga elemento ng web-site. Madi-disable ang anumang keyboard shortcut at anumang entry sa menu o menu ng konteksto para buksan ang Mga Tool ng Developer o ang JavaScript Console.
-
-      Kapag itinakda ang opsyong ito sa naka-disable o hinayaan itong hindi nakatakda, magagamit ng user ang Mga Tool ng Developer at ang JavaScript console.</translation>
 <translation id="653608967792832033">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay mala-lock ang screen kapag tumatakbo gamit ang power ng baterya.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-lock ng <ph name="PRODUCT_OS_NAME" /> ang screen.
@@ -2000,16 +1956,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Iniuulat pa rin sa pahina ang impormasyon ng memory, ano pa man ang value ng opsyon, ngunit ang mga iniuulat na laki ay
       tinataya at ang rate ng mga update ay nililimitahan sa mga dahilang panseguridad. Upang makakuha ng real-time na tumpak na data,
       mangyaring gumamit ng mga tool tulad ng Telemetry.</translation>
-<translation id="6870914592443697993">
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang parehong patakaran sa iisang value. Kung hindi magkatugma ang mga value, maaaring magkaroon ng pagkaantala kapag pumapasok sa session ng user habang inilalapat ang value na natukoy ng patakaran ng user
-      Kung naka-enable ang patakaran, ang bawat isa sa mga pinangalanang pinagmulan sa
-      isang listahang pinaghihiwalay ng kuwit ay tatakbo sa sarili nitong proseso. Ia-isolate din nito
-      mga pinagmulang pinangalanan ng mga subdomain; hal. kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung naka-disable ang patakaran, walang magaganap na hayagang Pag-isolate ng Site at madi-disable ang mga field trial ng IsolateOrigins at SitePerProcess. Mae-enable pa rin nang manual ng mga user ang IsolateOrigins.
-      Kung hindi na-configure ang patakaran, gagamitin ang mga setting ng platform na default na pag-isolate ng site para sa screen ng pag-sign in.
-      </translation>
 <translation id="6894178810167845842">URL ng page ng Bagong Tab</translation>
 <translation id="6899705656741990703">I-auto detect ang mga setting ng proxy</translation>
 <translation id="6903814433019432303">Sa mode ng retail lamang aktibo ang patakarang ito.
@@ -2152,13 +2098,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Mga uri ng koneksyon na pinapayagan para sa mga update</translation>
 <translation id="7194407337890404814">Pangalan ng default na provider ng paghahanap</translation>
-<translation id="7199300565886109054">Pinapayagan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na pinapayagang magtakda ng cookies na para sa session lang.
-
-          Kung hindi itinakda ang patakarang ito, ang global na default na value ang gagamitin para sa lahat ng site, na mula sa patakaran na 'DefaultCookiesSetting' kung nakatakda ito o sa sariling configuration ng user kung hindi.
-
-          Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> sa 'background mode,' maaaring hindi masara ang session kapag isinara ang huling window ng browser, ngunit mananatiling aktibo hanggang sa lumabas ang browser. Pakitingnan ang patakaran na 'BackgroundModeEnabled' para sa higit pang impormasyon tungkol sa pagko-configure sa gawing ito.
-
-          Kung nakatakda ang patakaran na "RestoreOnStartup" na magpanumbalik ng mga URL mula sa mga dating session, hindi susundin ang patakarang ito at permanenteng iiimbak ang cookies para sa mga site na ito.</translation>
 <translation id="7202925763179776247">Payagan ang mga paghihigpit sa pag-download</translation>
 <translation id="7207095846245296855">Puwersahin ang Google SafeSearch</translation>
 <translation id="7216442368414164495">Binibigyang-daan ang mga user na mag-opt in sa pinalawak na pag-uulat sa Ligtas na Pagba-browse</translation>
@@ -2392,13 +2331,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Page ng Bagong Tab</translation>
 <translation id="7788511847830146438">Bawat Profile</translation>
-<translation id="7801886189430766248">Kapag nakatakda ang patakarang ito sa true, ia-upload ang data ng Android app sa mga server ng Android Backup at ire-restore mula sa mga ito kapag nagsagawa ng mga muling pag-install ng app para sa mga compatible na app.
-
-      Kapag nakatakda ang patakarang ito sa false, mag-o-off ang Android Backup Service.
-
-      Kung na-configure ang setting na ito, hindi magagawa ng mga user na baguhin ang mga ito nang sila lang.
-
-      Kung hindi na-configure ang setting na ito, magagawang i-on at i-off ng mga user ang Android Backup Service sa app na Mga Setting ng Android.</translation>
 <translation id="780603170519840350">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate para sa isang listahan ng mga hash ng subjectPublicKeyInfo.
 
       Pinapayagan ng patakarang ito ang pag-disable ng mga kinakailangan sa paghahayag ng Transparency ng Certificate para sa mga chain ng certificate na naglalaman ng mga certificate na may isa sa mga natukoy na hash ng subjectPublicKeyInfo. Pinapayagan nito ang mga certificate na maaaring hindi pagkatiwalaan, dahil hindi wastong inihayag ang mga ito sa publiko, para patuloy na magamit para sa mga host ng Enterprise.

@@ -89,12 +89,6 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
 <translation id="1387596372902085462">Consente di stabilire se considerare attendibile o meno l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
-<translation id="1424081297104898791">Ti consente di stabilire dove è possibile usare gli Strumenti per sviluppatori.
-
-      Se questa norma viene impostata su "DeveloperToolsDisallowedForForceInstalledExtensions" (valore 0, ossia il valore predefinito per gli utenti aziendali), in genere è possibile accedere agli Strumenti per sviluppatori e alla console JavaScript, ma non è possibile accedervi nel contesto delle estensioni installate in base a norme aziendali.
-      Se questa norma viene impostata su "DeveloperToolsAllowed" (valore 1, ossia il valore predefinito per gli utenti non gestiti), gli Strumenti per sviluppatori e la console JavaScript saranno accessibili e utilizzabili in tutti i contesti, incluso il contesto delle estensioni installate in base a norme aziendali.
-      Se questa norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.
-      Se la norma precedente DeveloperToolsDisabled viene impostata su true, il valore di questa norma viene ignorato e gli Strumenti per sviluppatori verranno disattivati.</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
@@ -661,7 +655,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2877225735001246144">Disabilita ricerca CNAME durante la negoziazione con Kerberos</translation>
-<translation id="2884728160143956392">Consenti solo i cookie per la sessione su questi siti</translation>
 <translation id="2893546967669465276">Consente di inviare log di sistema al server di gestione</translation>
 <translation id="2899002520262095963">Le app Android possono utilizzare le configurazioni di rete e i certificati CA impostati tramite questa norma ma non hanno accesso ad alcune opzioni di configurazione.</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
@@ -703,16 +696,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
-<translation id="3056439054015239107">
-      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere
-      sia l'isolamento sia un impatto limitato per gli utenti. Usa
-      IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione,
-      SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      </translation>
 <translation id="306887062252197004">Questa norma consente agli utenti della funzione WebDriver di eseguire l'override delle norme che possono interferire con il relativo funzionamento.
 
       Al momento questa norma disattiva le norme SitePerProcess e IsolateOrigins.
@@ -867,7 +850,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3646859102161347133">Impostazione tipo di ingrandimento dello schermo</translation>
 <translation id="3653237928288822292">Icona del provider di ricerca predefinito</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
-<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto.)</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto).</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="3711895659073496551">Sospensione</translation>
 <translation id="3715569262675717862">Autenticazione basata su certificati client</translation>
@@ -1147,13 +1130,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4483649828988077221">Disattiva l'aggiornamento automatico</translation>
 <translation id="4485425108474077672">Configura l'URL per la pagina Nuova scheda</translation>
 <translation id="4492287494009043413">Disabilita l'acquisizione di screenshot</translation>
-<translation id="4497968613298501984">Configura l'elenco di URL di accesso aziendale (solo schemi HTTP e HTTPS). L'impronta digitale della password sarà acquisita su questi URL e utilizzata successivamente per il rilevamento del riutilizzo della password.
-      Questa impostazione deve essere usata solo da utenti G Suite che adoperano un sistema SSO/SMAL.
-      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente le impronte digitali delle password, assicurati che le pagine di accesso rispettino le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
-      Se questa impostazione è disattiva o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo sulla pagina https://accounts.google.com.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file multimediali memorizzati nella cache.
 
 Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimensioni della cache indicate a prescindere dalla specifica o meno da parte dell'utente del flag "--media-cache-size". Il valore specificato in questa norma non è un limite rigido ma un suggerimento per il sistema di memorizzazione nella cache. I valori inferiori ad alcuni megabyte sono troppo piccoli e verranno arrotondati a un valore minimo ragionevole.
@@ -1277,13 +1253,6 @@ Viene visualizzato un errore appropriato se un utente tenta di accedere con un n
 
 Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente potrà accedere a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
-<translation id="4868249328547841081">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password invia gli utenti a questo URL per modificare le password se queste sono state oggetto di phishing.
-      Questa impostazione deve essere usata solo da utenti G Suite che adoperano un sistema SSO/SMAL.
-      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password invia gli utenti a questo URL per modificare le password se queste sono state oggetto di phishing.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password invia gli utenti alla pagina https://myaccounts.google.com per modificare la password.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Specifica se sono consentiti i Wakelock dello schermo. I Wakelock dello schermo possono essere richiesti dalle estensioni tramite l'API dell'estensione di gestione dell'alimentazione.
 
           Se questa norma è impostata su True o non è impostata, verranno rispettati i Wakelock dello schermo nella gestione dell'alimentazione.
@@ -1458,7 +1427,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questa norma viene impostata, l'utente potrà configurare soltanto una delle lingue di visualizzazione di <ph name="PRODUCT_OS_NAME" /> specificate da questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, <ph name="PRODUCT_OS_NAME" /> potrà essere visualizzato in tutte le lingue supportate. Se per questa norma viene impostato un elenco contenente valori non validi, tutti i valori non validi verranno ignorati. Se un utente aveva precedentemente configurato una lingua di visualizzazione di <ph name="PRODUCT_OS_NAME" /> non consentita da questa norma, all'accesso successivo la lingua di visualizzazione verrà sostituita con una lingua consentita. Se l'utente aveva configurato delle lingue preferite e una di queste è consentita da questa norma, in <ph name="PRODUCT_OS_NAME" /> verrà usata tale lingua. In caso contrario, in <ph name="PRODUCT_OS_NAME" /> verrà usato il primo valore valido specificato in questo norma oppure, se la norma contiene soltanto voci non valide, verrà usata una lingua di fallback (attualmente en-US).</translation>
 <translation id="5464816904705580310">Configurazione delle impostazioni per gli utenti gestiti.</translation>
 <translation id="546726650689747237">Ritardo oscuramento schermo in caso di utilizzo di CA</translation>
-<translation id="5469484020713359236">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a impostare cookie. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultCookiesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
 <translation id="5475361623548884387">Attiva la stampa</translation>
 <translation id="547601067149622666">Non consentire gli annunci su siti con annunci invasivi</translation>
@@ -1744,7 +1712,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma viene impostata su true o non viene impostata, Chrome Software Cleaner eseguirà periodicamente la scansione del sistema per individuare eventuale software indesiderato e, qualora fosse presente, chiederà all'utente se vuole rimuoverlo. L'attivazione manuale di Chrome Software Cleaner da chrome://settings viene abilitata.
 
       Questa norma non è disponibile sulle istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Consente di impostare un elenco di pattern URL che specificano i siti non autorizzati a impostare cookie. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultCookiesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="6426205278746959912">Non è possibile imporre l'utilizzo di un proxy alle app Android. Viene messo a disposizione un sottoinsieme di impostazioni proxy che le app Android possono decidere se rispettare o meno.
 
           Se si decide di non usare mai un server proxy, alle app Android viene comunicato che non è configurato alcun proxy.
@@ -1764,13 +1731,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Per stabilire quali siti web possono eseguire i contenuti Flash, fai riferimento alle norme "DefaultPluginsSetting", "PluginsAllowedForUrls" e "PluginsBlockedForUrls".
 
       Se questa impostazione viene disattivata o non viene impostata, i contenuti Flash di altre origini o i contenuti ridotti potrebbero essere bloccati.</translation>
-<translation id="6535639183431116351">Questa norma è stata ritirata in M68; usa la norma DeveloperToolsAvailability.
-
-      Consente di disattivare gli Strumenti per sviluppatori e la console JavaScript.
-
-      Se questa impostazione viene attivata, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.
-
-      Se questa opzione viene disattivata o non viene impostata sarà possibile utilizzare gli Strumenti per sviluppatori e la console JavaScript.</translation>
 <translation id="653608967792832033">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato quando viene utilizzata la batteria.
 
 Se questa norma viene impostata su un valore maggiore di zero, consente di specificare il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> blocchi lo schermo.
@@ -1879,16 +1839,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Le informazioni sulla memoria sono comunque riportate sulla pagina, indipendentemente dal valore opzione, ma le dimensioni segnalate presentano
       restrizioni e la frequenza di aggiornamento è stata limitata per motivi di sicurezza. Per acquisire dati precisi in tempo reale,
       utilizza strumenti come Telemetry.</translation>
-<translation id="6870914592443697993">
-      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Se la norma viene attivata, ogni origine indicata in un
-      elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
-      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene
-      isolato anche https://foo.example.com/, perché fa parte
-      del sito https://example.com/.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non è configurata, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
-      </translation>
 <translation id="6894178810167845842">URL della pagina Nuova scheda</translation>
 <translation id="6899705656741990703">Rileva automaticamente impostazioni proxy</translation>
 <translation id="6903814433019432303">Questa norma è attiva soltanto in modalità retail.
@@ -2009,13 +1959,6 @@ Se questa norma non viene impostata gli utenti possono modificare l'elenco di ap
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipi di connessioni consentiti per gli aggiornamenti</translation>
 <translation id="7194407337890404814">Nome del provider di ricerca predefinito</translation>
-<translation id="7199300565886109054">Consente di impostare un elenco di pattern URL che specificano i siti a cui è consentito impostare cookie per la sessione.
-
-          Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma 'DefaultCookiesSetting', se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
-
-          Se <ph name="PRODUCT_NAME" /> è in esecuzione in "modalità background", è possibile che la sessione non si chiuda quando viene chiusa l'ultima finestra del browser, ma che rimanga attiva fino alla chiusura del browser. Leggere la norma 'BackgroundModeEnabled' per ulteriori informazioni sulla configurazione di questo comportamento.
-
-          Se la norma "RestoreOnStartup" viene impostata in modo da ripristinare gli URL delle sessioni precedenti, questa norma non verrà rispettata e i cookie verranno memorizzati in modo permanente per i siti.</translation>
 <translation id="7202925763179776247">Consenti limitazioni dei download</translation>
 <translation id="7207095846245296855">Forza il filtro SafeSearch di Google</translation>
 <translation id="7216442368414164495">Consenti agli utenti di attivare i rapporti estesi di Navigazione sicura</translation>
@@ -2237,13 +2180,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Pagina Nuova scheda</translation>
 <translation id="7788511847830146438">Per profilo</translation>
-<translation id="7801886189430766248">Se questa norma viene impostata su true, i dati delle app Android vengono caricati sui server di Android Backup e ripristinati dai server in fase di reinstallazione delle app compatibili.
-
-      Se questa norma viene impostata su false, Android Backup Service verrà disattivato.
-
-      Se questa impostazione viene configurata, gli utenti non potranno modificarla.
-
-      Se questa impostazione non viene configurata, gli utenti potranno attivare e disattivare Android Backup Service nell'app Impostazioni di Android.</translation>
 <translation id="780603170519840350">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di hash subjectPublicKeyInfo.
 
       Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Fa sì che i certificati che altrimenti sarebbero considerati non attendibili, in quanto non adeguatamente resi pubblici, continuino a essere utilizzati per gli host aziendali.

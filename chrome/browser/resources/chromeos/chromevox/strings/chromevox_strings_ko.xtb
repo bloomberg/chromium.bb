@@ -328,7 +328,7 @@
 <translation id="3514822174137761109">{COUNT,plural, =1{탈자 기호}other{탈자 기호 #개}}</translation>
 <translation id="352577523970648069">수정할 수 있는 텍스트 입력란</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, 체크박스 선택 안 됨</translation>
-<translation id="3589661172894441357">용어집</translation>
+<translation id="3589661172894441357">용어설명</translation>
 <translation id="3599054940393788245">수학 영역에 있지 않음</translation>
 <translation id="360241989769010433">감사의 말</translation>
 <translation id="3616113530831147358">오디오</translation>
@@ -704,7 +704,7 @@
 <translation id="6911965441508464308">위에 셀이 없습니다.</translation>
 <translation id="6919104639734799681">표 목록 표시</translation>
 <translation id="6964088412282673743">이전 컨트롤이 없습니다.</translation>
-<translation id="6994042831499278539">용어집 참조</translation>
+<translation id="6994042831499278539">용어 참조</translation>
 <translation id="6996566555547746822">다음 콤보 상자</translation>
 <translation id="700202842116345659">참고문헌 항목</translation>
 <translation id="7005146664810010831">URL을 찾을 수 없음</translation>
@@ -781,7 +781,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">현재 페이지의 URL 알림</translation>
 <translation id="7609363189280667021">점자 캡션 전환</translation>
-<translation id="761303759119251275">참여자 표시</translation>
+<translation id="761303759119251275">크레딧</translation>
 <translation id="762020119231868829">현재 재생 중인 미디어 위젯 모두 일시중지</translation>
 <translation id="7625690649919402823">다음 표</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" />(<ph name="VARIANT" />), <ph name="GRADE" />등급</translation>

@@ -88,12 +88,6 @@
 <translation id="1387596372902085462">Se a confiança deve ou não ser ativada na Infraestrutura PKI de legado da Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
 <translation id="1397855852561539316">URL sugerido do provedor de pesquisa padrão</translation>
-<translation id="1424081297104898791">Permite controlar onde as Ferramentas para Desenvolvedores podem ser usadas.
-
-      Se esta política for definida como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que é o padrão para usuários corporativos), as Ferramentas para Desenvolvedores e o Console JavaScript poderão ser acessados de um modo geral, mas não poderão ser acessados por extensões instaladas por uma política corporativa.
-      Se esta política for definida como "DeveloperToolsAllowed" (valor 1, que é o padrão para usuários não gerenciados), as Ferramentas para Desenvolvedores e o Console JavaScript poderão ser acessados e usados em todos os contextos, incluindo extensões instaladas por uma política corporativa.
-      Se esta política for definida como "DeveloperToolsDisallowed" (valor 2), as Ferramentas para Desenvolvedores não poderão ser acessadas, e os elementos do site não poderão mais ser inspecionados. Todos os atalhos do teclado e quaisquer entradas de menus e de menus de contexto para abrir as Ferramentas para Desenvolvedores ou o Console JavaScript serão desativados.
-      Se a política de legado DeveloperToolsDisabled estiver definida como verdadeira, o valor dessa política será ignorado, e as Ferramentas para Desenvolvedores serão desativadas.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
@@ -671,7 +665,6 @@
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
-<translation id="2884728160143956392">Permitir cookies somente de sessão nestes sites</translation>
 <translation id="2893546967669465276">Enviar registros do sistema ao servidor de gerenciamento</translation>
 <translation id="2899002520262095963">Os apps Android podem usar as configurações de rede e os certificados de CA definidos por esta política, mas não têm acesso a algumas opções de configuração.</translation>
 <translation id="2906874737073861391">Lista de extensões AppPack</translation>
@@ -713,16 +706,6 @@
           Esta política é opcional. Se não for definida, não ocorrerá substituição do termo de pesquisa.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="3056439054015239107">
-      Esta política se aplica à tela de login. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao iniciar uma sessão do usuário enquanto o valor especificado pela política do usuário está sendo aplicado.
-      Recomendamos que você consulte a configuração de política IsolateOrigins para
-      ter os melhores resultados do isolamento e impacto limitado para os usuários, usando
-      IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração,
-      SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site será executado com seu próprio processo.
-      Se a política estiver desativada, nenhum isolamento de sites ocorrerá, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda poderão ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o usuário conseguirá alterar essa configuração.
-      </translation>
 <translation id="306887062252197004">Esta política permite que os usuários do recurso WebDriver modifiquem
       políticas que possam interferir na operação.
 
@@ -1167,13 +1150,6 @@
 <translation id="4483649828988077221">Desativar a atualização automática</translation>
 <translation id="4485425108474077672">Configurar o URL da página "Nova guia"</translation>
 <translation id="4492287494009043413">Desativar captura de tela</translation>
-<translation id="4497968613298501984">Configurar a lista de URLs de login de empresas (somente para esquemas HTTP e HTTPS). Impressões digitais de senha serão capturadas nesses URLs e usadas para detecção de reutilização de senhas.
-      Esta configuração deve ser aplicada apenas para usuários do GSuite que usam um sistema SSO/SAML.
-      Para que o <ph name="PRODUCT_NAME" /> capture corretamente as impressões digitais, certifique-se de que suas páginas de login sigam as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se esta configuração estiver ativada, o serviço de proteção de senhas capturará a impressão digital de senha nesses URLs para fins de detecção de reutilização de senha.
-      Se esta configuração estiver desativada ou não for configurada, o serviço de proteção de senhas capturará impressões digitais de senha apenas em https://accounts.google.com.
-      Esta política não está disponível em instâncias do Windows que não sejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Configura o tamanho do cache que o <ph name="PRODUCT_NAME" /> usará para armazenar os arquivos de mídia em cache no disco.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o tamanho de cache indicado independente de o usuário especificar ou não a sinalização '--media-cache-size' O valor especificado nesta política não é um limite rígido, mas sim uma sugestão para para o sistema de armazenamento em cache, por isso qualquer valor abaixo de alguns megabytes será considerado muito pequeno e será arredondado para um mínimo razoável.
@@ -1299,13 +1275,6 @@
 
       Se esta política for deixada sem configuração ou em branco, qualquer usuário poderá fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de tela cheia</translation>
-<translation id="4868249328547841081">Configurar o URL de alteração de senha (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas encaminhará os usuários para este URL para alterar senhas, caso eles tenham sofrido phishing.
-      Esta configuração deve ser aplicada apenas para usuários do GSuite que usam um sistema SSO/SAML.
-      Para que o <ph name="PRODUCT_NAME" /> capture corretamente a nova impressão digital de senha, certifique-se de que sua página de alteração de senha siga as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se esta configuração estiver ativada, o serviço de proteção de senhas encaminhará os usuários a este URL para alterar suas senhas caso tenham sofrido phishing.
-      Se esta configuração estiver desativada ou não for configurada, o serviço de proteção de senhas encaminhará os usuários para https://myaccounts.google.com para a alteração das senhas.
-      Esta política não está disponível em instâncias do Windows que não sejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Especifica se são permitidos bloqueios de ativação da tela. Esses bloqueios podem ser solicitados por extensões por meio da API da extensão de gerenciamento de energia.
 
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios de ativação da tela são respeitados para o gerenciamento de energia.
@@ -1478,7 +1447,6 @@
       Se esta política for definida, o usuário só poderá configurar o <ph name="PRODUCT_OS_NAME" /> para ser exibido em uma das localidades especificadas pela política. Se não for definida ou se for definida como uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> poderá ser exibido em todas as localidades compatíveis. Se esta política for definida como uma lista com valores inválidos, todos os valores inválidos serão ignorados. Se um usuário tiver configurado o <ph name="PRODUCT_OS_NAME" /> anteriormente para ser exibido em um idioma que não seja permitido por esta política, a localidade de exibição será alternada para uma permitida, na próxima vez que o usuário fizer login. Se o usuário tiver configurado localidades preferidas, e uma delas for permitida por esta política, o <ph name="PRODUCT_OS_NAME" /> será alternado para essa localidade. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> passará para o primeiro valor válido especificado por esta política ou para uma localidade substituta (atualmente inglês dos Estados Unidos) se a política incluir apenas entradas inválidas.</translation>
 <translation id="5464816904705580310">Definir configurações para usuários gerenciados.</translation>
 <translation id="546726650689747237">Intervalo de escurecimento da tela no funcionamento com alimentação CA</translation>
-<translation id="5469484020713359236">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para definir cookies. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultCookiesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="5469825884154817306">Bloquear imagens nestes sites</translation>
 <translation id="5475361623548884387">Ativar impressão</translation>
 <translation id="547601067149622666">Não permitir anúncios em sites com anúncios invasivos</translation>
@@ -1769,7 +1737,6 @@
       Se definida como verdadeira ou se não for definida, a Ferramenta de limpeza do Chrome verificará o sistema periodicamente para ver se há software indesejado. Se encontrar algum, consultará o usuário sobre a remoção. O acionamento manual da Ferramenta de limpeza do Chrome em chrome://settings fica ativado.
 
       Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Permite que você defina uma lista de padrões URL que especificam os sites não autorizados a definir cookies. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultCookiesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="6426205278746959912">Não é possível forçar apps Android a usar um proxy. Um subconjunto de configurações de proxy é disponibilizado para apps Android, o qual eles podem optar por respeitar voluntariamente:
 
           Se você optar por nunca usar um servidor proxy, os apps Android serão informados de que não há nenhum proxy configurado.
@@ -1789,13 +1756,6 @@
       Para controlar quais sites têm permissão para executar Flash, veja as políticas "DefaultPluginsSetting", "PluginsAllowedForUrls" e "PluginsBlockedForUrls".
 
       Se esta configuração for desativada ou não for definida, o conteúdo em Flash de outras origens ou conteúdos pequenos poderão ser bloqueados.</translation>
-<translation id="6535639183431116351">O uso desta política no M68 está suspenso. Use DeveloperToolsAvailability como alternativa.
-
-      Desativa as Ferramentas para Desenvolvedores e o Console JavaScript.
-
-       Se você ativar esta configuração, as Ferramentas para Desenvolvedores não poderão ser acessadas, e elementos de sites não poderão mais ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou menu de contexto para abrir as Ferramentas para Desenvolvedores ou o Console de JavaScript serão desativados.
-
-      Definir esta opção como desativada ou deixá-la sem definição permitirá que o usuário utilize as Ferramentas para Desenvolvedores e o Console JavaScript.</translation>
 <translation id="653608967792832033">Especifica após quanto tempo de inatividade do usuário a tela é bloqueada no funcionamento com a energia da bateria.
 
           Quando esta política está definida para um valor superior a zero, ela especifica por quanto tempo o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> bloqueie a tela.
@@ -1904,16 +1864,6 @@
       De alguma forma, as informações da memória são reportadas à página, independentemente do valor da opção. No entanto, os tamanhos reportados são
       quantificados, e a taxa de atualizações é limitada por motivos de segurança. Para obter dados precisos em tempo real,
       utilize ferramentas como o Telemetry.</translation>
-<translation id="6870914592443697993">
-      Esta política se aplica à tela de login. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao iniciar uma sessão do usuário enquanto o valor especificado pela política do usuário está sendo aplicado.
-      Se a política estiver ativada, cada origem indicada em uma
-      lista separada por vírgulas será executada em seu próprio processo. Isso também isolará as
-      origens indicadas por subdomínios. Por exemplo, a especificação de https://example.com/ também
-      isolará https://foo.example.com/ como parte do site
-      https://example.com/.
-      Se a política estiver desativada, nenhum isolamento de sites explícito ocorrerá, e as versões de teste de IsolateOrigins e SitePerProcess serão desativadas. Os usuários ainda poderão ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, as configurações de isolamento de sites padrão da plataforma serão usadas para a tela de login.
-      </translation>
 <translation id="6894178810167845842">URL da página "Nova guia"</translation>
 <translation id="6899705656741990703">Detectar automaticamente configurações de proxy</translation>
 <translation id="6903814433019432303">Esta política é ativa somente no modo de varejo. Determina o conjunto de URLs a serem carregados quando a sessão de demonstração for iniciada. Esta política substitui quaisquer outros mecanismos de definição do URL inicial e, portanto, somente pode ser aplicada a uma sessão não associada a determinado usuário.</translation>
@@ -2041,13 +1991,6 @@
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Tipos de conexão permitidos para atualizações</translation>
 <translation id="7194407337890404814">Nome do provedor de pesquisa padrão</translation>
-<translation id="7199300565886109054">Permite que você defina uma lista de padrões do URL para especificar sites que tenham permissão de definir apenas cookies de sessões.
-
-          Se esta política não é definida, o valor do padrão global é usado para todos os sites a partir da política "DefaultCookiesSetting", se ela está definida, ou da configuração pessoal do usuário.
-
-          Observe que, se o <ph name="PRODUCT_NAME" /> está em execução no "modo de segundo plano", a sessão pode continuar aberta mesmo quando a última janela do navegador é fechada, permanecendo ativa até a saída do navegador. Consulte a política "BackgroundModeEnabled" para ver outras informações sobre como configurar este comportamento.
-
-          Se a política "RestoreOnStartup" é definida para recuperar URLs de sessões anteriores, ela não é respeitada, e os cookies desses sites são armazenados permanentemente.</translation>
 <translation id="7202925763179776247">Permitir restrições de downloads</translation>
 <translation id="7207095846245296855">Forçar o Google SafeSearch</translation>
 <translation id="7216442368414164495">Permitir que os usuários ativem os relatórios estendidos do Navegação segura</translation>
@@ -2270,13 +2213,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Página "Nova guia"</translation>
 <translation id="7788511847830146438">Por perfil</translation>
-<translation id="7801886189430766248">Quando essa política é definida como true, é feito upload dos dados de apps do Android para os servidores do Android Backup. Esses dados são restaurados a partir desses servidores após reinstalações de apps compatíveis.
-
-      Quando essa política é definida como false, o Android Backup Service é desativado.
-
-      Se essa definição for configurada, os usuários não conseguirão alterá-la.
-
-      Se essa definição não for configurada, os usuários poderão ativar e desativar o Android Backup Service no app Config. do Android.</translation>
 <translation id="780603170519840350">Desativa a aplicação dos requisitos de Transparência dos certificados para uma lista de hashes subjectPublicKeyInfo.
 
       Esta política permite a desativação dos requisitos de divulgação da Transparência dos certificados para cadeias que contenham certificados com um dos hashes subjectPublicKeyInfo especificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados para hosts da empresa.

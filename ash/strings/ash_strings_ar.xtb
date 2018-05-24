@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
 <translation id="1864454756846565995">‏جهاز USB-C (المنفذ الخلفي)</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">إلغاء القفل باستخدام بصمة الإصبع</translation>
 <translation id="1919743966458266018">لقد تغيّر اختصار فتح إدارة المهام. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">النقرات التلقائية</translation>
 <translation id="1928739107511554905">‏للحصول على التحديث، استخدم الشاشة التي تعمل باللمس لإعادة تشغيل جهاز Chromebook، مع توصيل لوحة المفاتيح المرفقة.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">مفاتيح الثبات</translation>
 <translation id="2509468283778169019">‏مفتاح CAPS LOCK قيد التشغيل</translation>
 <translation id="2532589005999780174">وضع التباين العالي</translation>
+<translation id="2575685495496069081">تمّ إيقاف الدخول المتعدّد</translation>
 <translation id="2597972630681408282">إضاءة ليلية: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">‏تم قفل شريحة SIM</translation>
 <translation id="2653659639078652383">إرسال</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">التقاط منطقة</translation>
 <translation id="371370241367527062">الميكروفون الأمامي</translation>
 <translation id="3771549900096082774">وضع التباين العالي</translation>
+<translation id="3773700760453577392">منع أحد المشرفين الدخول المتعدد لـ <ph name="USER_EMAIL" />. لذا يجب على جميع المستخدمين تسجيل الخروج للمتابعة.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">قفل</translation>
 <translation id="3798670284305777884">سماعة (داخلية)</translation>
@@ -256,6 +259,7 @@
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="6715542151869432661">لم يتم العثور على أي أجهزة جوّال.</translation>
 <translation id="671928215901716392">قفل الشاشة</translation>
+<translation id="6723839937902243910">الطاقة</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="683971173229319003">Search+L</translation>

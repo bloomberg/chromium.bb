@@ -1061,7 +1061,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2633199387167390344"><ph name="NAME" />, <ph name="USAGE" /> MB disk alanı kullanıyor.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" kaldırılsın mı?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> yükleme işlemini tamamlayamadı, ancak disk görüntüsünden çalışmaya devam edecek.</translation>
-<translation id="2635176084534510129">Daha akıllı Çeviri ve daha iyi içerik önerileri gibi daha kişiselleştirilmiş deneyimler edinin</translation>
 <translation id="2635276683026132559">İmzalama</translation>
 <translation id="2636625531157955190">Chrome resme erişemiyor.</translation>
 <translation id="2638087589890736295">Senkronizasyonu başlatmak için parola gerekiyor</translation>
@@ -1351,7 +1350,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3061707000357573562">Yama Hizmeti</translation>
 <translation id="3064410671692449875">Yetersiz veri</translation>
 <translation id="3065041951436100775">Sekme sonlandırıldı geri bildirimi.</translation>
-<translation id="3066642396596108483">Yer işaretlerinizi, şifrelerinizi ve geçmişinizi tüm cihazlarınızda senkronize edin</translation>
 <translation id="3067198179881736288">Uygulama yüklensin mi?</translation>
 <translation id="3067198360141518313">Bu eklentiyi çalıştır</translation>
 <translation id="3071624960923923138">Yeni sekme açmak için burayı tıklayabilirsiniz</translation>
@@ -1617,7 +1615,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="347670947055184738">Hay aksi! Sistem, cihazınıza ait politikayı getiremedi.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> sitesinin kamerama ve mikrofonuma erişmesine izin vermeye devam et</translation>
 <translation id="3478685642445675458">Lütfen bir kişiyi kaldırmadan önce profilinizin kilidini açın.</translation>
-<translation id="347919930506963698">Chrome'dan daha da fazla yararlanın</translation>
 <translation id="3479552764303398839">Şimdi değil</translation>
 <translation id="3480892288821151001">Pencereyi sola yerleştir</translation>
 <translation id="3484273680291419129">Zararlı yazılım kaldırılıyor...</translation>
@@ -1760,7 +1757,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3691267899302886494"><ph name="HOST" />, ekranınızı paylaşmak istiyor</translation>
 <translation id="3693415264595406141">Şifre:</translation>
 <translation id="3694027410380121301">Önceki Sekmeyi Seç</translation>
-<translation id="3697100740575341996">BT yöneticiniz cihazınızda Chrome Ekstralarını devre dışı bıraktı. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-posta adresi</translation>
 <translation id="3700888195348409686">(<ph name="PAGE_ORIGIN" />) gösteriliyor</translation>
 <translation id="3702500414347826004">Başlangıç sayfalarınız <ph name="URL" /> adresini de içerecek şekilde değiştirildi.</translation>
@@ -2137,7 +2133,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4289540628985791613">Genel bakış</translation>
 <translation id="4296575653627536209">Denetlenen Kullanıcı Ekle</translation>
 <translation id="4297322094678649474">Dilleri Değiştir</translation>
-<translation id="4299141727003252811">Google; Chrome'u ve Çeviri, Arama, reklamlar gibi diğer Google hizmetlerini kişiselleştirmek için göz atma etkinliğinizi, ziyaret ettiğiniz bazı sitelerdeki içeriği ve diğer tarayıcı etkileşimlerini kullanabilir.</translation>
 <translation id="4300305918532693141">Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4305227814872083840">uzun (2 sn.)</translation>
 <translation id="4306119971288449206">Uygulamalar "<ph name="CONTENT_TYPE" />" içerik türüyle yayınlanmalıdır</translation>
@@ -2460,7 +2455,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="484921817528146567">Son raf öğesi</translation>
 <translation id="4849286518551984791">Eşgüdümlü Evrensel Zaman (UTC/GMT)</translation>
 <translation id="4849517651082200438">Yükleme</translation>
-<translation id="4850258771229959924">Geliştirici Araçları'nda görüntüle</translation>
 <translation id="4850669014075537160">Kaydırma</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
 <translation id="4853020600495124913">&amp;Yeni pencerede aç</translation>
@@ -3548,7 +3542,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6473842110411557830">Powerwash resmi</translation>
 <translation id="6474706907372204693">Önceki giriş yöntemi</translation>
 <translation id="6474884162850599008">Google Drive hesabının bağlantısını kes</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> uygun bir Chrome OS cihazı kullanıp kullanmadığınızı kontrol etmek istiyor. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" />, ekranınızın içeriğini paylaşmak istiyor. Neleri paylaşmak istediğinizi seçin.</translation>
 <translation id="6478248366783946499">Tehlikeli dosya tutulsun mu?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> açılıyor...</translation>
@@ -4213,7 +4206,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7518150891539970662">WebRTC günlükleri (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Oluştur</translation>
-<translation id="7526413953848747421">Yazım denetimi ve aramak için dokunma gibi güçlü Google hizmetlerini Chrome'da da kullanın</translation>
 <translation id="7529411698175791732">İnternet bağlantınızı kontrol edin. Sorun devam ederse oturumu kapatıp tekrar açmayı deneyin.</translation>
 <translation id="7530016656428373557">Vat Olarak Boşalma Oranı</translation>
 <translation id="7531779363494549572">Ayarlar &gt; Uygulamalar ve bildirimler &gt; Bildirimler'e gidin.</translation>
@@ -5236,6 +5228,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9094982973264386462">Kaldır</translation>
 <translation id="9095253524804455615">Kaldır</translation>
 <translation id="9099674669267916096">Sayfa sayısı</translation>
+<translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9100765901046053179">Gelişmiş ayarlar</translation>
 <translation id="9101691533782776290">Uygulamayı başlat</translation>
 <translation id="9102610709270966160">Uzantıyı Etkinleştir</translation>

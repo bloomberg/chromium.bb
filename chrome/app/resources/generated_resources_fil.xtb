@@ -1061,7 +1061,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2633199387167390344">Gumagamit ang <ph name="NAME" /> ng <ph name="USAGE" /> MB ng disk space.</translation>
 <translation id="2633212996805280240">Alisin ang "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101">Hindi makumpleto ng <ph name="PRODUCT_NAME" /> ang pag-install, ngunit patuloy na gagana mula sa larawan ng disk nito.</translation>
-<translation id="2635176084534510129">Magkaroon ng mga mas naka-personalize na karanasan, gaya ng mas maiinam na suhestyon sa content at mas mahusay na Translate</translation>
 <translation id="2635276683026132559">Paglagda</translation>
 <translation id="2636625531157955190">Hindi ma-access ng Chrome ang larawan.</translation>
 <translation id="2638087589890736295">Kinakailangan ang passphrase upang masimulan ang pag-sync</translation>
@@ -1351,7 +1350,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3061707000357573562">Serbisyo sa Pag-patch</translation>
 <translation id="3064410671692449875">Hindi sapat ang data</translation>
 <translation id="3065041951436100775">Feedback na isinara ang tab</translation>
-<translation id="3066642396596108483">I-sync ang iyong mga bookmark, password, at history sa lahat ng device mo</translation>
 <translation id="3067198179881736288">I-install ang app?</translation>
 <translation id="3067198360141518313">Patakbuhin ang plugin na ito</translation>
 <translation id="3071624960923923138">Maaari kang mag-click dito upang magbukas ng bagong tab</translation>
@@ -1617,7 +1615,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="347670947055184738">Oops!  Hindi nakuha ng system ang patakaran para sa iyong device.</translation>
 <translation id="347785443197175480">Magpatuloy sa pagpayag sa <ph name="HOST" /> na i-access ang iyong camera at mikropono</translation>
 <translation id="3478685642445675458">Paki-unlock ang iyong profile bago mag-alis ng tao.</translation>
-<translation id="347919930506963698">Dagdagan pa ang nakukuha sa Chrome</translation>
 <translation id="3479552764303398839">Hindi ngayon</translation>
 <translation id="3480892288821151001">I-dock ang window sa kaliwa</translation>
 <translation id="3484273680291419129">Inaalis ang mapaminsalang software...</translation>
@@ -1760,7 +1757,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3691267899302886494">Gustong ibahagi ng <ph name="HOST" /> ang iyong screen</translation>
 <translation id="3693415264595406141">Password:</translation>
 <translation id="3694027410380121301">Select Previous Tab</translation>
-<translation id="3697100740575341996">Hindi pinagana ng iyong IT administrator ang Chrome Goodies para sa iyong device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Email address</translation>
 <translation id="3700888195348409686">Ipinapakita (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Binago ang iyong mga page sa pagsisimula upang isama ang <ph name="URL" />.</translation>
@@ -2137,7 +2133,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="4289540628985791613">Pangkalahatang-ideya</translation>
 <translation id="4296575653627536209">Magdagdag ng Pinapangasiwaang User</translation>
 <translation id="4297322094678649474">Palitan ang Mga Wika</translation>
-<translation id="4299141727003252811">Maaaring gamitin ng Google ang iyong aktibidad sa pag-browse, content sa ilang site na binibisita mo, at iba pang pakikipag-ugnayan sa browser upang i-personalize ang Chrome at iba pang serbisyo ng Google tulad ng Translate, Search, at mga ad.</translation>
 <translation id="4300305918532693141">Upang baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">mahaba (2s)</translation>
 <translation id="4306119971288449206">Dapat maihatid ang mga app gamit ang uri ng content na "<ph name="CONTENT_TYPE" />"</translation>
@@ -2460,7 +2455,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="484921817528146567">Huling item sa shelf</translation>
 <translation id="4849286518551984791">Coordinated Universal Time (UTC/GMT)</translation>
 <translation id="4849517651082200438">Huwag I-install</translation>
-<translation id="4850258771229959924">Tingnan sa Developer Tools</translation>
 <translation id="4850669014075537160">Pag-ii-scroll</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4853020600495124913">Buksan sa &amp;bagong window</translation>
@@ -3547,7 +3541,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="6473842110411557830">Paglalarawan ng powerwash</translation>
 <translation id="6474706907372204693">Nakaraang paraan ng pag-input</translation>
 <translation id="6474884162850599008">Alisin sa pagkakakonekta ang Google Drive account</translation>
-<translation id="6475079491906995455">Gustong suriin ng <ph name="SERVICE_NAME" /> kung gumagamit ka ng kwalipikadong Chrome OS device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">Gustong ibahagi ng <ph name="APP_NAME" /> ang mga content ng iyong screen. Piliin ang gusto mong ibahagi.</translation>
 <translation id="6478248366783946499">Gusto mo bang panatilihin ang mapanganib na file?</translation>
 <translation id="6483805311199035658">Binubuksan ang <ph name="FILE" />...</translation>
@@ -4212,7 +4205,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="7518150891539970662">Mga log ng WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Gumawa</translation>
-<translation id="7526413953848747421">Dalhin sa Chrome ang mahuhusay na serbisyo ng Google tulad ng spell check at mag-tap upang maghanap</translation>
 <translation id="7529411698175791732">Suriin ang iyong koneksyon sa internet. Kung magpapatuloy ang problema, subukang mag-sign out at muling mag-sign in.</translation>
 <translation id="7530016656428373557">Rate ng Pagdiskarga sa Watts</translation>
 <translation id="7531779363494549572">Pumunta sa Mga Setting &gt; Mga app at notification &gt; Mga Notification.</translation>
@@ -5238,6 +5230,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9094982973264386462">Alisin</translation>
 <translation id="9095253524804455615">Alisin</translation>
 <translation id="9099674669267916096">Bilang ng page</translation>
+<translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9100765901046053179">Advanced na mga setting</translation>
 <translation id="9101691533782776290">Ilunsad ang app</translation>
 <translation id="9102610709270966160">I-enable ang Extension</translation>

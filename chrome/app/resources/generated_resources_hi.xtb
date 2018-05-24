@@ -827,7 +827,7 @@
 <translation id="2263189956353037928">साइन आउट करें और वापस प्रवेश करें</translation>
 <translation id="2263497240924215535">(अक्षम)</translation>
 <translation id="2266168284394154563">स्क्रीन ज़ूम रीसेट करें</translation>
-<translation id="2266957463645820432">USB पर IPP (IPPUSB)</translation>
+<translation id="2266957463645820432">यूएसबी पर IPP (IPPUSB)</translation>
 <translation id="2270450558902169558"><ph name="DOMAIN" /> डोमेन के किसी भी डिवाइस से डेटा का आदान-प्रदान करें</translation>
 <translation id="2270627217422354837">इन डोमेन के किसी भी डिवाइस से डेटा का आदान-प्रदान करें: <ph name="DOMAINS" /></translation>
 <translation id="2271088077909873520">अपना सिंक किया हुआ डेटा <ph name="BEGIN_LINK" />Google डैशबोर्ड<ph name="END_LINK" /> पर प्रबंधित करें.</translation>
@@ -1061,7 +1061,6 @@
 <translation id="2633199387167390344"><ph name="NAME" /> डिस्क स्थान के <ph name="USAGE" /> MB का उपयोग कर रहा है.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" निकालें?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> स्थापना पूर्ण नहीं कर सका, लेकिन इसकी डिस्क चित्र से चलना जारी रहेगा.</translation>
-<translation id="2635176084534510129">अधिक मनमुताबिक बनाए गए अनुभव पाएं, जैसे कि बेहतर सामग्री सुझाव और अधिक स्मार्ट अनुवाद</translation>
 <translation id="2635276683026132559">हस्ताक्षर</translation>
 <translation id="2636625531157955190">Chrome, चित्र तक नहीं पहुंच पा रहा.</translation>
 <translation id="2638087589890736295">सिंक शुरू करने के लिए पासफ़्रेज़ की आवश्यकता होती है</translation>
@@ -1351,7 +1350,6 @@
 <translation id="3061707000357573562">पैच सेवा</translation>
 <translation id="3064410671692449875">अपर्याप्त डेटा</translation>
 <translation id="3065041951436100775">टैब किल्ड फ़ीडबैक.</translation>
-<translation id="3066642396596108483">अपने सभी डिवाइस पर अपने बुकमार्क, पासवर्ड और इतिहास सिंक करें</translation>
 <translation id="3067198179881736288">ऐप्लिकेशन इंस्टॉल करें?</translation>
 <translation id="3067198360141518313">यह प्लग इन चलाएं</translation>
 <translation id="3071624960923923138">नया टैब खोलने के लिए आप यहां क्लिक कर सकते हैं</translation>
@@ -1617,7 +1615,6 @@
 <translation id="347670947055184738">ओह!  सिस्टम आपके डिवाइस की नीति फ़ेच नहीं कर सका.</translation>
 <translation id="347785443197175480"><ph name="HOST" /> को अपने कैमरे और माइक्रोफ़ोन को एक्सेस करते रहन दें</translation>
 <translation id="3478685642445675458">कृपया किसी व्यक्ति को निकालने से पहले अपनी प्रोफ़ाइल अनलॉक करें.</translation>
-<translation id="347919930506963698">Chrome से और भी लाभ लें</translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3480892288821151001">विंडो को बाईं ओर डॉक करें</translation>
 <translation id="3484273680291419129">नुकसान पहुंचाने वाला सॉफ़्टवेयर निकाला जा रहा है...</translation>
@@ -1689,7 +1686,7 @@
 <translation id="3592260987370335752">&amp;अधिक जानें</translation>
 <translation id="359283478042092570">प्रवेश</translation>
 <translation id="3593965109698325041">प्रमाणपत्र नाम बाध्यताएं</translation>
-<translation id="3594089623005973443">पेज प्रति शीट</translation>
+<translation id="3594089623005973443">हर शीट पर दिखने वाले पेज</translation>
 <translation id="3596235046596950091">क्लाउड सेवाएं सक्षम करें</translation>
 <translation id="3599863153486145794">प्रवेश किए हुए सभी डिवाइसों से इतिहास साफ़ कर देता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
 <translation id="3600792891314830896">आवाज़ चलाने वाली साइटों की आवाज़ बंद करें</translation>
@@ -1760,7 +1757,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> आपकी स्क्रीन शेयर करना चाहता है</translation>
 <translation id="3693415264595406141">पासवर्ड:</translation>
 <translation id="3694027410380121301">पिछला टैब को चुनें</translation>
-<translation id="3697100740575341996">आपके IT व्यवस्थापक ने आपके डिवाइस के लिए Chrome Goodies को अक्षम कर दिया है. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ईमेल पता</translation>
 <translation id="3700888195348409686">पेश है (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">आपके स्टार्टअप पेज <ph name="URL" /> को शामिल करने के लिए बदल दिए गए थे.</translation>
@@ -2136,7 +2132,6 @@
 <translation id="4289540628985791613">संक्षिप्त विवरण</translation>
 <translation id="4296575653627536209">निगरानी में रखा गया उपयोगकर्ता जोड़ें</translation>
 <translation id="4297322094678649474">भाषाएं बदलें</translation>
-<translation id="4299141727003252811">Chrome को, अनुवाद, खोज जैसी Google सेवाओं को और विज्ञापनों को मनमुताबिक बनाने के लिए, Google आपकी ब्राउज़िंग गतिविधि, कुछ ऐसी साइटों की सामग्री जिन पर आप आए हैं और अन्य ब्राउज़र इंटरैक्शन का इस्तेमाल कर सकता है.</translation>
 <translation id="4300305918532693141">यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />सिंक रीसेट करें<ph name="END_LINK" /></translation>
 <translation id="4305227814872083840">लंबा (2 सेकंड)</translation>
 <translation id="4306119971288449206">एप्लिकेशन को सामग्री-प्रकार "<ph name="CONTENT_TYPE" />" के साथ दिया जाना चाहिए</translation>
@@ -2459,7 +2454,6 @@
 <translation id="484921817528146567">पिछला अलमारी आइटम</translation>
 <translation id="4849286518551984791">समन्वयित यूनिवर्सल समय (UTC/GMT)</translation>
 <translation id="4849517651082200438">इंस्‍टॉल न करें</translation>
-<translation id="4850258771229959924">डेवलपर टूल में देखें</translation>
 <translation id="4850669014075537160">स्क्रॉल करना</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4853020600495124913">&amp;नई विंडो में खोलें</translation>
@@ -3038,7 +3032,7 @@
 <translation id="5691596662111998220">ओह, <ph name="FILE_NAME" /> अब मौजूद नहीं है.</translation>
 <translation id="5694501201003948907">$1 आइटम ज़िप कर रहा है.</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" से दुर्व्यवहार की रिपोर्ट करें</translation>
-<translation id="5696679855467848181">मौजूदा PPD फ़ाइल का इस्तेमाल किया जा रहा है: <ph name="PPD_NAME" /></translation>
+<translation id="5696679855467848181">मौजूदा पीपीडी फ़ाइल का इस्तेमाल किया जा रहा है: <ph name="PPD_NAME" /></translation>
 <translation id="5699533844376998780">एक्‍सटेंशन "<ph name="EXTENSION_NAME" />" जोड़ा गया.</translation>
 <translation id="5700087501958648444">ऑडियो की जानकारी</translation>
 <translation id="570043786759263127">Google Play ऐप्लिकेशन और सेवाएं</translation>
@@ -3113,7 +3107,7 @@
 <translation id="5809725759695043233">आपके पास Chromebook के लिए ऑप्टिमाइज़ किए गए ऐप्लिकेशन हैं</translation>
 <translation id="5814126672212206791">कनेक्शन का प्रकार</translation>
 <translation id="5815645614496570556">X.400 पता</translation>
-<translation id="5816434091619127343">अनुरोध किए गए प्रिंटर बदलावों से प्रिंटर का इस्तेमाल नहीं किया जा सकेगा.</translation>
+<translation id="5816434091619127343">प्रिंटर में जिन बदलावों का अनुरोध किया गया है, उनकी वजह से प्रिंटर का इस्तेमाल नहीं किया जा सकेगा.</translation>
 <translation id="5817918615728894473">युग्‍मित करें</translation>
 <translation id="5821565227679781414">शॉर्टकट बनाएं</translation>
 <translation id="5826507051599432481">सामान्य नाम (CN)</translation>
@@ -3546,7 +3540,6 @@
 <translation id="6473842110411557830">पावरवॉश का चित्रण</translation>
 <translation id="6474706907372204693">पिछली इनपुट विधि</translation>
 <translation id="6474884162850599008">Google डिस्‍क खाता डिस्‍कनेक्‍ट करें</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> यह पुष्टि करना चाहती है कि आप मंज़ूरी दिए गए Chrome OS डिवाइस का उपयोग कर रहे हैं. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> आपकी स्क्रीन पर मौजूद सामग्री को साझा करना चाहता है. चुनें कि आप क्या साझा करना चाहते हैं.</translation>
 <translation id="6478248366783946499">खतरनाक फ़ाइल रखें?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> खोला जा रहा है...</translation>
@@ -4211,7 +4204,6 @@
 <translation id="7518150891539970662">WebRTC लॉग (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">बनाएं</translation>
-<translation id="7526413953848747421">Chrome में वर्तनी जांच और खोजने के लिए टैप करने जैसी बेहतरीन Google सेवाएं शामिल करें</translation>
 <translation id="7529411698175791732">अपना इंटरनेट कनेक्शन जाँचें. अगर समस्या बनी रहती है, तो साइन आउट करके और दोबारा प्रवेश करके देखें.</translation>
 <translation id="7530016656428373557">डिस्चार्ज दर वॉट में</translation>
 <translation id="7531779363494549572">सेटिंग &gt; ऐप्लिकेशन और सूचनाएं &gt; सूचनाएं पर जाएं.</translation>
@@ -5213,7 +5205,7 @@
 <translation id="9056810968620647706">कोई मिलान नहीं मिले.</translation>
 <translation id="9057119625587205566">आस-पास कोई प्रिंटर नहीं</translation>
 <translation id="9059868303873565140">स्‍थिति मेनू</translation>
-<translation id="9062065967472365419">मुझे अचरज में डालें</translation>
+<translation id="9062065967472365419">कोई भी चुनें</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">लाइन <ph name="ERROR_LINE_START" /> से <ph name="ERROR_LINE_END" /> तक में गड़बड़ी</translation>
 <translation id="9064142312330104323">Google प्रोफ़ाइल फ़ोटो (लोड हो रहा है)</translation>
@@ -5235,6 +5227,7 @@
 <translation id="9094982973264386462">निकालें</translation>
 <translation id="9095253524804455615">निकालें</translation>
 <translation id="9099674669267916096">पेज संख्या</translation>
+<translation id="9100610230175265781">पासफ़्रेज़ आवश्यक</translation>
 <translation id="9100765901046053179">अतिरिक्त सेटिंग</translation>
 <translation id="9101691533782776290">ऐप्स लॉन्च करें</translation>
 <translation id="9102610709270966160">एक्‍सटेंशन सक्षम करें</translation>

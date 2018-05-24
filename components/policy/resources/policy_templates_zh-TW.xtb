@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
-<translation id="1424081297104898791">讓你控制是否能使用開發人員工具。
-
-      如果將這項政策設為「DeveloperToolsDisallowedForForceInstalledExtensions」(值 0，企業使用者的預設值)，使用者可在一般情況下存取開發人員工具和 JavaScript 控制台，但無法在由企業政策安裝的擴充功能中存取開發人員工具和 JavaScript 控制台。
-      如果將這項政策設為「DeveloperToolsAllowed」(值 1，未受管理使用者的預設值)，使用者可在所有情況下存取開發人員工具和 JavaScript 控制台，包括在由企業政策安裝的擴充功能中。
-      如果將這項政策設為「DeveloperToolsDisallowed」(值 2)，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。
-      如果舊政策 DeveloperToolsDisabled 設為 true，系統會忽略這項政策的值，並停用開發人員工具。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
@@ -678,7 +672,6 @@
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
-<translation id="2884728160143956392">只有本次工作階段允許這些網站的 Cookie</translation>
 <translation id="2893546967669465276">將系統記錄傳送到管理伺服器</translation>
 <translation id="2899002520262095963">Android 應用程式可以使用透過這項政策指定的網路設定和 CA 憑證，但無法存取部分設定選項。</translation>
 <translation id="2906874737073861391">AppPack 擴充功能清單</translation>
@@ -720,16 +713,6 @@
           這個政策為選擇性，如果你並未設定這項政策，系統就不會取代任何搜尋字詞。
 
           只有當你啟用「DefaultSearchProviderEnabled」政策時，這項政策才會生效。</translation>
-<translation id="3056439054015239107">
-      這項政策適用於登入畫面；另請參閱適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      為了盡可能減少隔離功能對使用者的影響，
-      建議你先查看 IsolateOrigins 政策設定，
-      使用 IsolateOrigins 設定需要隔離的網站清單。
-      SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 SitePerProcess。
-      如果未設定這項政策，使用者就能變更這項設定。
-      </translation>
 <translation id="306887062252197004">這項政策可讓使用 WebDriver 功能的使用者覆寫
       可能干擾此功能運作的政策。
 
@@ -1174,13 +1157,6 @@
 <translation id="4483649828988077221">停用自動更新</translation>
 <translation id="4485425108474077672">設定新分頁網址</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
-<translation id="4497968613298501984">設定企業登入網址 (僅限 HTTP 和 HTTPS 配置) 清單。系統會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      只有使用 SSO/SAML 系統的 G Suite 使用者可使用這項設定。
-      為了讓「<ph name="PRODUCT_NAME" />」能正確擷取密碼指紋，請確認登入頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
-
-      如果啟用這項設定，密碼保護服務會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      如果停用這項設定或不予設定，密碼保護服務就只會針對 https://accounts.google.com 擷取密碼指紋。
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="450537894712826981">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取媒體檔案時套用。
 
       如果設定這項政策，則不論使用者是否指定「--media-cache-size」參數，<ph name="PRODUCT_NAME" /> 都會使用政策提供的快取大小。在這項政策中指定的值是對快取系統的建議值，而非不可變動的界限。如果是不到幾 MB 的值，由於太小的緣故，系統會進位到合適的最小值。
@@ -1306,13 +1282,6 @@
 
       如果你未設定這項政策或將其留空，則任何使用者皆可登入 <ph name="PRODUCT_NAME" />。</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
-<translation id="4868249328547841081">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。密碼保護服務會將遭到網路詐騙的使用者傳送至這個網址，讓使用者變更密碼。
-      只有使用 SSO/SAML 系統的 G Suite 使用者可使用這項設定。
-      為了讓「<ph name="PRODUCT_NAME" />」能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
-
-      如果啟用這項設定，密碼保護服務會將遭到網路詐騙的使用者傳送至這個網址，讓使用者變更密碼。
-      如果停用這項設定或不予設定，則密碼保護服務會將使用者傳送至 https://myaccounts.google.com，讓使用者變更密碼。
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="4869787217450099946">指定是否允許螢幕喚醒鎖定。擴充功能可透過 Power Management Extension API 要求螢幕喚醒鎖。
 
           如果這項政策設為「True」或未設定，系統將啟用螢幕喚醒鎖，以強化電源管理效能。
@@ -1490,7 +1459,6 @@
       如果設定這項政策，使用者就只能將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為這項政策指定的其中一個語言代碼。如果未設定這項政策，或是設定了空白清單，則可將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為任一支援的語言代碼。如果將這項政策設為有效值清單，所有無效的值都會遭到忽略。如果使用者先前設定的 <ph name="PRODUCT_OS_NAME" />顯示語言不是這項政策所允許的值，當使用者下次登入時，顯示語言代碼將切換成允許的語言代碼。如果使用者已設定偏好的語言代碼，而其中一個偏好的語言代碼是這項政策所允許的值，<ph name="PRODUCT_OS_NAME" />將改用該語言代碼。否則，<ph name="PRODUCT_OS_NAME" />將改用這項政策指定的第一個有效值，或是在這項政策指定的值均無效時改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="5464816904705580310">為管理化環境下的使用者調整設定。</translation>
 <translation id="546726650689747237">在 AC 供電環境下執行時的螢幕調暗延遲時間</translation>
-<translation id="5469484020713359236">允許你設定網址模式清單，指定可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
 <translation id="5475361623548884387">啟用列印功能</translation>
 <translation id="547601067149622666">禁止含侵入式廣告的網站顯示廣告</translation>
@@ -1781,7 +1749,6 @@
       如果設為 true 或不設定，Chrome Cleanup 會定期掃描系統中的垃圾軟體，並且在找到垃圾軟體時詢問使用者是否要予以移除。此外，使用者也可以透過 chrome://settings 手動觸發 Chrome Cleanup。
 
       這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
-<translation id="6417861582779909667">允許你設定網址模式清單，指定不可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6426205278746959912">你無法強制 Android 應用程式使用 Proxy。有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用：
 
           如果選擇一律不使用 Proxy 伺服器，系統會告知 Android 應用程式未設定 Proxy。
@@ -1801,13 +1768,6 @@
       如要控制哪些網站可執行 Flash，請查看「DefaultPluginsSetting」、「PluginsAllowedForUrls」和「PluginsBlockedForUrls」政策。
 
       如果這項設定已停用或尚未設定，系統可能會封鎖來自其他來源的 Flash 內容或檔案較小的內容。</translation>
-<translation id="6535639183431116351">這項政策自 M68 起已淘汰，請改用 DeveloperToolsAvailability。
-
-      停用開發人員工具和 JavaScript 控制台。
-
-      如果啟用這項設定，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。
-
-      如果將這個選項設為停用或不設定這個選項，使用者即可使用開發人員工具和 JavaScript 控制台。</translation>
 <translation id="653608967792832033">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
 
           如果你將這項政策設為大於 0 以上的值，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會鎖定螢幕。
@@ -1914,16 +1874,6 @@
 <translation id="687046793986382807">我們已於 <ph name="PRODUCT_NAME" /> 35 版中移除這項政策。
 
       無論其選項值為何，系統都會在網頁上回報記憶體資訊；但基於安全性考量，系統會限制回報的資料量以及更新頻率。如要取得即時準確資料，請使用 Telemetry 等工具。</translation>
-<translation id="6870914592443697993">
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      如果啟用這項政策，逗號分隔的清單中的已命名來源
-      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
-      例如，指定 https://example.com/
-      也會造成 https://foo.example.com/ 遭到隔離，
-      因為後者同樣屬於 https://example.com/ 網站。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果未設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
-      </translation>
 <translation id="6894178810167845842">新分頁網址</translation>
 <translation id="6899705656741990703">自動偵測 Proxy 設定</translation>
 <translation id="6903814433019432303">僅在零售模式下啟用這項政策。
@@ -2052,13 +2002,6 @@
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">允許進行更新的連線類型</translation>
 <translation id="7194407337890404814">預設搜尋引擎名稱</translation>
-<translation id="7199300565886109054">允許您設定網址模式清單，用於指定哪些網站可以設定僅適用於工作階段的 Cookie。
-
-          如果未設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。
-
-          請注意，如果 <ph name="PRODUCT_NAME" /> 在「背景模式」中執行，關閉最後一個瀏覽器視窗時，工作階段可能不會關閉 (在離開瀏覽器之前會保持運作狀態)。如要進一步瞭解如何設定這項行為，請參閱「BackgroundModeEnabled」政策。   
-
-          如果將「RestoreOnStartup」政策設為還原先前工作階段的網址，系統就不會遵循這項政策，並且會為這些網站永久儲存 Cookie。</translation>
 <translation id="7202925763179776247">允許下載限制</translation>
 <translation id="7207095846245296855">強制啟用 Google 安全搜尋模式</translation>
 <translation id="7216442368414164495">允許使用者採用安全瀏覽模式的進階回報功能</translation>
@@ -2281,13 +2224,6 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="7781069478569868053">新分頁</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
-<translation id="7801886189430766248">將這項政策設為 true 時，系統會將 Android 應用程式資料上傳到 Android 備份伺服器。一旦重新安裝相容的應用程式，系統就會從 Android 備份伺服器還原 Android 應用程式資料。
-
-      將這項政策設為 false 時，Android 備份服務會遭到停用。
-
-      如果設定這項政策，使用者將無法自行變更。
-
-      如果未設定這項政策，使用者則可在 Android 設定應用程式中開啟/關閉 Android 備份服務。</translation>
 <translation id="780603170519840350">不強制要求列出的 subjectPublicKeyInfo 雜湊符合憑證透明化規定。
 
       使用這項政策時，如果憑證鏈結中的憑證包含其中一種指定 subjectPublicKeyInfo 雜湊，系統就不會強制要求這類憑證鏈結符合憑證透明化規定。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續供企業主機使用。

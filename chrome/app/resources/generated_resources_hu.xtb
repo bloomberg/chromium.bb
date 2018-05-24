@@ -1062,7 +1062,6 @@
 <translation id="2633199387167390344">A(z) <ph name="NAME" /> <ph name="USAGE" /> MB lemezterületet használ.</translation>
 <translation id="2633212996805280240">Eltávolítja a következőt: "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="263325223718984101">A(z) <ph name="PRODUCT_NAME" /> nem tudta befejezni a telepítést, de tovább fut a lemezképéről.</translation>
-<translation id="2635176084534510129">Személyre szabottabb élményeket (például jobb tartalomjavaslatokat és okosabb Fordítót) kaphat.</translation>
 <translation id="2635276683026132559">Aláírás</translation>
 <translation id="2636625531157955190">A Chrome nem tudja elérni a képet.</translation>
 <translation id="2638087589890736295">A szinkronizálás megkezdéséhez összetett jelszó megadása szükséges</translation>
@@ -1352,7 +1351,6 @@
 <translation id="3061707000357573562">Javítókészlet szolgáltatás</translation>
 <translation id="3064410671692449875">Nincs elegendő adat</translation>
 <translation id="3065041951436100775">Visszajelzés megszakított lapról.</translation>
-<translation id="3066642396596108483">Könyvjelzői, jelszavai és előzményei szinkronizálása az összes eszközén</translation>
 <translation id="3067198179881736288">Telepíti az alkalmazást?</translation>
 <translation id="3067198360141518313">A plug-in futtatása</translation>
 <translation id="3071624960923923138">Ide kattintva új lapot nyithat meg</translation>
@@ -1618,7 +1616,6 @@
 <translation id="347670947055184738">Hoppá! A rendszer nem tudta lehívni az eszköz házirendjét.</translation>
 <translation id="347785443197175480">A(z) <ph name="HOST" /> továbbra is hozzáférhet az Ön kamerájához és mikrofonjához</translation>
 <translation id="3478685642445675458">Mielőtt eltávolítana valakit, oldja fel profilját.</translation>
-<translation id="347919930506963698">Még többet hozhat ki a Chrome-ból</translation>
 <translation id="3479552764303398839">Ne most</translation>
 <translation id="3480892288821151001">Ablak rögzítése balra</translation>
 <translation id="3484273680291419129">Kártékony szoftver eltávolítása…</translation>
@@ -1761,7 +1758,6 @@
 <translation id="3691267899302886494">A(z) <ph name="HOST" /> szeretné megosztani a képernyőt</translation>
 <translation id="3693415264595406141">Jelszó:</translation>
 <translation id="3694027410380121301">Előző lap kiválasztása</translation>
-<translation id="3697100740575341996">IT-rendszergazdája letiltotta a Chrome Goodies szolgáltatást az Ön eszközén. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-mail cím</translation>
 <translation id="3700888195348409686">Prezentáció folyamatban (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Kezdőoldala módosult, így már a következőt is tartalmazza: <ph name="URL" />.</translation>
@@ -2137,7 +2133,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4289540628985791613">Áttekintés</translation>
 <translation id="4296575653627536209">Felügyelt felhasználók hozzáadása</translation>
 <translation id="4297322094678649474">Nyelvek módosítása</translation>
-<translation id="4299141727003252811">A Google felhasználhatja az Ön böngészési tevékenységeit, az egyes meglátogatott webhelyeken található tartalmakat, valamint a további, böngészővel kapcsolatos interakciókat a Chrome és az egyéb Google-szolgáltatások (például Fordító, Keresés és a megjelenő hirdetések) személyre szabásához.</translation>
 <translation id="4300305918532693141">A beállítás módosításához <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">hosszú (2 mp)</translation>
 <translation id="4306119971288449206">Az alkalmazásokat „<ph name="CONTENT_TYPE" />” tartalomtípussal kell ellátni</translation>
@@ -2460,7 +2455,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="484921817528146567">Utolsó polcelem</translation>
 <translation id="4849286518551984791">Koordinált világidő (UTC/GMT)</translation>
 <translation id="4849517651082200438">Ne telepítse</translation>
-<translation id="4850258771229959924">Megtekintés a Fejlesztői eszközökben</translation>
 <translation id="4850669014075537160">Görgetés</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4853020600495124913">Megnyitás új &amp;ablakban</translation>
@@ -3549,7 +3543,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6473842110411557830">Powerwash művelet illusztrációja</translation>
 <translation id="6474706907372204693">Előző beviteli mód</translation>
 <translation id="6474884162850599008">Google Drive-fiók leválasztása</translation>
-<translation id="6475079491906995455">A(z) <ph name="SERVICE_NAME" /> ellenőrizni akarja, hogy Ön megfelelő Chrome OS-eszközt használ-e. <ph name="MORE_INFO_LINK" />.</translation>
 <translation id="6475697075626596525">A(z) <ph name="APP_NAME" /> szeretné megosztani a képernyő tartalmát. Válassza ki, hogy mit kíván megosztani.</translation>
 <translation id="6478248366783946499">Megtartja a veszélyes fájlt?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> megnyitása...</translation>
@@ -4214,7 +4207,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7518150891539970662">WebRTC-naplók (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Létrehozás</translation>
-<translation id="7526413953848747421">Hasznos Google-szolgáltatásokat (például helyesírás-ellenőrzés és keresés koppintással) használhat a Chrome-ban</translation>
 <translation id="7529411698175791732">Ellenőrizze az internetkapcsolatot. Ha a probléma továbbra is fennáll, próbáljon ki-, majd újra bejelentkezni.</translation>
 <translation id="7530016656428373557">Kisütési teljesítmény wattban</translation>
 <translation id="7531779363494549572">Nyissa meg a Beállítások &gt; Alkalmazások és értesítések &gt; Értesítések menüpontot.</translation>
@@ -5238,6 +5230,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9094982973264386462">Eltávolítás</translation>
 <translation id="9095253524804455615">Eltávolítás</translation>
 <translation id="9099674669267916096">Oldalak száma</translation>
+<translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9100765901046053179">Speciális beállítások</translation>
 <translation id="9101691533782776290">Alkalmazás indítása</translation>
 <translation id="9102610709270966160">Bővítmény engedélyezése</translation>

@@ -90,12 +90,6 @@
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="1397855852561539316">Adres URL usługi propozycji od domyślnego dostawcy wyszukiwania</translation>
-<translation id="1424081297104898791">Określa, gdzie można używać narzędzi dla programistów.
-
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowedForForceInstalledExtensions” (wartość 0, która jest domyślną dla użytkowników korporacyjnych), narzędzia dla programistów i konsola JavaScript są dostępne wszędzie z wyjątkiem kontekstu rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1, która jest domyślna dla użytkowników niezarządzanych), narzędzia dla programistów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
-      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla programistów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla programistów i konsolę JavaScript.
-      Jeśli starsza zasada DeveloperToolsDisabled jest ustawiona na wartość prawda, wartość tej zasady jest ignorowana, a narzędzia dla programistów są wyłączone.</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres IP lub URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
@@ -678,7 +672,6 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
-<translation id="2884728160143956392">Zezwalaj na pliki cookie w tych witrynach tylko na czas sesji</translation>
 <translation id="2893546967669465276">Wysyłaj dzienniki systemowe na serwer zarządzania</translation>
 <translation id="2899002520262095963">Aplikacje na Androida mogą używać konfiguracji sieci i certyfikatów CA ustawianych przez tę zasadę, ale nie mają dostępu do niektórych opcji konfiguracji.</translation>
 <translation id="2906874737073861391">Lista rozszerzeń z pakietu aplikacji</translation>
@@ -720,16 +713,6 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, nie zachodzi zamiana wyszukiwanego hasła.
 
           Ta zasada jest uwzględniania tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="3056439054015239107">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
-      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać
-      optymalne efekty – izolację i ograniczony wpływ na użytkowników.
-      W tym celu dodaj do zasady IsolateOrigins listę witryn,
-      które chcesz izolować. Ustawienie SitePerProcess izoluje wszystkie witryny.
-      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie
-      własnego procesu. Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie SitePerProcess.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      </translation>
 <translation id="306887062252197004">Ta zasada pozwala użytkownikom funkcji WebDriver na zastępowanie zasad, które mogą zakłócać działanie tej funkcji.
 
       Obecnie ta zasada wyłącza zasady SitePerProcess i IsolateOrigins.
@@ -1170,13 +1153,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4483649828988077221">Wyłącz automatyczne aktualizacje</translation>
 <translation id="4485425108474077672">Skonfiguruj URL strony nowej karty</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
-<translation id="4497968613298501984">Konfigurowanie listy adresów URL stron logowania aplikacji firmowych (tylko schematy HTTP i HTTPS). Na tych stronach będzie rejestrowany odcisk cyfrowy hasła służący do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
-      Tego ustawienia powinni używać tylko użytkownicy G Suite korzystający z systemu SSO/SAML.
-      Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe haseł, strony logowania powinny być zgodne z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
-
-      Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł służące do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł rejestruje odciski cyfrowe haseł tylko na stronie https://accounts.google.com
-      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
       Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> będzie używać dostępnego rozmiaru pamięci podręcznej bez względu na to, czy określono flagę „--disk-cache-size”, czy nie. Wartość określona w tej zasadzie nie jest stała i stanowi raczej propozycję dla systemu pamięci podręcznej. Każda wartość niższa niż kilka megabajtów jest za mała i zostanie zaokrąglona do rozsądnego minimum.
@@ -1298,13 +1274,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada pozostanie nieustawiona lub pusta, każdy użytkownik będzie mógł zalogować się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Zezwalaj na tryb pełnoekranowy</translation>
-<translation id="4868249328547841081">Konfigurowanie adresu URL do zmiany hasła (tylko schematy HTTP i HTTPS). Usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło, gdy staną się ofiarami phishingu.
-      Tego ustawienia powinni używać tylko użytkownicy G Suite korzystający z systemu SSO/SAML.
-      Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe nowych haseł na stronie zmiany hasła, powinna ona być zgodna z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
-
-      Jeśli to ustawienie jest włączone, usługa ochrony haseł kieruje użytkowników na stronę pod tym adresem URL, by zmienili hasło, gdy staną się ofiarami phishingu.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł kieruje użytkowników na stronę https://myaccounts.google.com, by zmienili hasło.
-      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Określa, czy jest dozwolona blokada uśpienia ekranu. Blokady takie mogą być żądane przez rozszerzenia poprzez interfejs API zarządzania energią.
 
           Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, blokada uśpienia ekranu będzie respektowana w celu zarządzania energią.
@@ -1481,7 +1450,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
 <translation id="5464816904705580310">Konfiguruj ustawienia dla zarządzanych użytkowników.</translation>
 <translation id="546726650689747237">Opóźnienie przyciemnienia ekranu przy zasilaniu sieciowym</translation>
-<translation id="5469484020713359236">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, którym wolno tworzyć pliki cookie. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultCookiesSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
 <translation id="547601067149622666">Blokuj reklamy na stronach zawierających uciążliwe reklamy</translation>
@@ -1772,7 +1740,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli zasada zostanie ustawiona na wartość prawda lub będzie nieskonfigurowana, Narzędzie do czyszczenia Chrome będzie okresowo skanować system, a gdy wykryje niechciane oprogramowanie, zapyta użytkownika, czy je usunąć. Ręczne uruchamianie czyszczenia Chrome na stronie chrome://settings będzie włączone.
 
       Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, którym nie wolno tworzyć plików cookie. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultCookiesSetting” (jeśli została ustawiona) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6426205278746959912">Nie można wymusić używania serwera proxy przez aplikacje na Androida. Mają one dostęp do niektórych jego ustawień i mogą uwzględniać je dobrowolnie:
 
           Jeśli wybierzesz ustawienie, by nigdy nie używać serwera proxy, aplikacje na Androida uzyskają informację o braku skonfigurowanego serwera proxy.
@@ -1792,13 +1759,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Aby określić strony, na których będzie dozwolone uruchamianie treści Flash, zapoznaj się z zasadami „DefaultPluginsSetting”, „PluginsAllowedForUrls” i „PluginsBlockedForUrls”.
 
       Jeśli to ustawienie jest wyłączone lub nie jest określone, treści Flash z innych źródeł oraz treści drobne mogą być blokowane.</translation>
-<translation id="6535639183431116351">Ta zasada została wycofana w M68. Zamiast niej należy używać zasady DeveloperToolsAvailability.
-
-      Wyłącza narzędzia dla programistów i konsolę JavaScript.
-
-      Gdy to ustawienie jest włączone, narzędzia dla programistów są niedostępne i niemożliwe jest zbadanie elementów na stronie. Wszystkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą wyłączone.
-
-      Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="653608967792832033">Określa, po jakim czasie nieaktywności użytkownika blokowany jest ekran przy zasilaniu z baterii.
 
           Jeśli ta zasada ma wartość większą niż zero, określa czas, przez który użytkownik musi pozostać bezczynny, zanim <ph name="PRODUCT_OS_NAME" /> zablokuje ekran.
@@ -1905,16 +1865,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="687046793986382807">Począwszy od wersji 35 usługi <ph name="PRODUCT_NAME" />, te zasady są wycofane.
 
       Informacje o pamięci są raportowane do strony niezależnie od ustawionej opcji, jednak wysyłane dane są kwantyzowane, a częstotliwość ich aktualizacji jest ograniczona ze względów bezpieczeństwa. Aby uzyskać precyzyjne dane w czasie rzeczywistym, użyj narzędzi telemetrycznych.</translation>
-<translation id="6870914592443697993">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
-      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej
-      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
-      izolację źródeł z nazwami subdomen, np. określenie https://example.com/
-      spowoduje, że także adres https://foo.example.com/ będzie izolowany
-      jako część witryny https://example.com/
-      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
-      Jeśli zasada nie jest skonfigurowana, do ekranu logowania będą stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
-      </translation>
 <translation id="6894178810167845842">URL strony nowej karty</translation>
 <translation id="6899705656741990703">Automatycznie wykrywaj ustawienia serwera proxy</translation>
 <translation id="6903814433019432303">Ta zasada jest aktywna tylko w trybie sklepu.
@@ -2035,13 +1985,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy połączeń dozwolone dla aktualizacji</translation>
 <translation id="7194407337890404814">Nazwa domyślnego dostawcy wyszukiwania</translation>
-<translation id="7199300565886109054">Umożliwia skonfigurowanie listy wzorców adresów URL służącej do określenia witryn, którym wolno tworzyć pliki cookie tylko na czas sesji.
-
-          Jeśli nie skonfigurujesz tej zasady, dla wszystkich witryn będzie stosowana domyślna wartość globalna z zasady DefaultCookiesSetting, o ile taka zasada jest ustawiona, lub z osobistej konfiguracji użytkownika.
-
-          Pamiętaj, że jeśli <ph name="PRODUCT_NAME" /> działa „w tle”, sesja może się nie zamknąć po zamknięciu ostatniego okna przeglądarki, tylko pozostać aktywna do czasu wyjścia z przeglądarki. Więcej informacji o konfigurowaniu tego działania znajdziesz w opisie zasady BackgroundModeEnabled.
-
-          Jeśli zgodnie z ustawieniem zasady RestoreOnStartup adresy URL z poprzednich sesji mają być wznawiane, ta zasada nie będzie przestrzegana, a pliki cookie witryn będą trwale zapisywane.</translation>
 <translation id="7202925763179776247">Zezwól na ograniczenia pobierania</translation>
 <translation id="7207095846245296855">Wymuś stosowanie filtra Google SafeSearch</translation>
 <translation id="7216442368414164495">Umożliwia użytkownikom wyrażenie zgody na generowanie rozszerzonych raportów przez usługę Bezpieczne przeglądanie</translation>
@@ -2264,13 +2207,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Strona Nowa karta</translation>
 <translation id="7788511847830146438">Według profilu</translation>
-<translation id="7801886189430766248">Gdy ta zasada jest włączona, dane aplikacji na Androida są przesyłane na serwery usługi Android Backup i przywracane stamtąd po ponownym zainstalowaniu zgodnych aplikacji.
-
-      Wyłączenie tej zasady powoduje wyłączenie Android Backup Service.
-
-      Jeśli zasada jest skonfigurowana, użytkownicy nie mogą zmienić tego ustawienia.
-
-      Jeśli nie jest skonfigurowana, użytkownicy mogą włączać i wyłączać Android Backup Service w aplikacji Ustawienia na Androidzie.</translation>
 <translation id="780603170519840350">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency dla wymienionych skrótów subjectPublicKeyInfo.
 
       Ta zasada umożliwia wyłączenie wymogów ujawnienia protokołu Certificate Transparency w odniesieniu do łańcuchów certyfikatów zawierających certyfikaty z jednym z określonych skrótów subjectPublicKeyInfo. Umożliwia to dalsze stosowanie certyfikatów, które w przeciwnym razie byłyby niezaufane (ponieważ nie zostały odpowiednio ujawnione publicznie), na potrzeby hostów korporacyjnych.

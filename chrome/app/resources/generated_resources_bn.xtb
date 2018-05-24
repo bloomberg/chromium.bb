@@ -1051,7 +1051,6 @@
 <translation id="2633199387167390344"><ph name="NAME" />, <ph name="USAGE" /> MB ডিস্কের স্থান ব্যবহার করছে৷</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" সরাবেন?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ইনস্টলেশন সম্পূর্ণ করতে পারেনি, তবে এটির ডিস্ক ছবি থেকে চালনা চলতে থাকবে৷</translation>
-<translation id="2635176084534510129">আরও ব্যক্তিগত অভিজ্ঞতা পান, যেমন ভালো কন্টেন্টের পরামর্শ এবং আরও স্মার্ট অনুবাদ</translation>
 <translation id="2635276683026132559">স্বাক্ষর করা</translation>
 <translation id="2636625531157955190">Chrome এই ছবিটি অ্যাক্সেস করতে পারে না৷</translation>
 <translation id="2638087589890736295">সিঙ্ক শুরু করতে পাসফ্রেজ প্রয়োজন</translation>
@@ -1337,7 +1336,6 @@
 <translation id="3061707000357573562">প্যাচ পরিষেবা</translation>
 <translation id="3064410671692449875">অপর্যাপ্ত ডেটা</translation>
 <translation id="3065041951436100775">ট্যাব নষ্ট হওয়ার প্রতিক্রিয়া।</translation>
-<translation id="3066642396596108483">আপনার সব ডিভাইসে নিজের আপনার বুকমার্ক, পাসওয়ার্ড এবং ইতিহাস সিঙ্ক করুন</translation>
 <translation id="3067198179881736288">অ্যাপ ইনস্টল করবেন?</translation>
 <translation id="3067198360141518313">এই প্লাগ ইনটি চালনা করুন</translation>
 <translation id="3071624960923923138">নতুন ট্যাব খুলতে এখানে ক্লিক করুন</translation>
@@ -1599,7 +1597,6 @@
 <translation id="347670947055184738">ওহো!  সিস্টেম আপনার ডিভাইসের জন্য নীতি আনতে পারেনি।</translation>
 <translation id="347785443197175480">আপনার ক্যামেরা এবং মাইক্রোফোন অ্যাক্সেস করতে <ph name="HOST" /> এর মঞ্জুরি অবিরত রাখুন</translation>
 <translation id="3478685642445675458">কোনো ব্যক্তিকে মুছে ফেলার আগে দয়া করে আপনার প্রোফাইলটি আনলক করুন।</translation>
-<translation id="347919930506963698">Chrome থেকে আরও অনেককিছু পান</translation>
 <translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="3480892288821151001">উইন্ডো বাঁ দিকে রাখুন</translation>
 <translation id="3484273680291419129">ক্ষতিকর সফ্টওয়্যার সরানো হচ্ছে...</translation>
@@ -1739,7 +1736,6 @@
 <translation id="3691267899302886494"><ph name="HOST" /> আপনার স্ক্রিন শেয়ার করতে চায়</translation>
 <translation id="3693415264595406141">পাসওয়ার্ড:</translation>
 <translation id="3694027410380121301">পূর্ববর্তী ট্যাব বেছে নিন</translation>
-<translation id="3697100740575341996">আপনার IT প্রশাসক আপনার ডিভাইসের জন্য Chrome গুডিজগুলিকে অক্ষম করেছে৷ <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ইমেল ঠিকানা</translation>
 <translation id="3700888195348409686">(<ph name="PAGE_ORIGIN" />) উপস্থাপনা করা হচ্ছে</translation>
 <translation id="3702500414347826004"><ph name="URL" /> অন্তর্ভুক্ত করতে আপনার শুরুর পৃষ্ঠাগুলি পরিবর্তন করা হয়েছে।</translation>
@@ -2110,7 +2106,6 @@
 <translation id="4289540628985791613">ওভারভিউ</translation>
 <translation id="4296575653627536209">তত্ত্বাবধানে থাকা ব্যবহারকারীকে যোগ করুন</translation>
 <translation id="4297322094678649474">ভাষাগুলি পরিবর্তন করুন</translation>
-<translation id="4299141727003252811">Google আপনার ব্রাউজিং কার্যকলাপ, আপনার দেখা সাইটের কন্টেন্ট ব্যবহার করতে পারে এবং Chrome এ অন্য ব্রাউজারের ইন্টারঅ্যাকশন এবং Google পরিষেবা যেমন অনুবাদ, সার্চ, এবং বিজ্ঞাপন নিজের মত সাজিয়ে নিতে পারে।</translation>
 <translation id="4300305918532693141">এই সেটিং পরিবর্তন করার জন্য, <ph name="BEGIN_LINK" />সিঙ্ক পুনরায় সেট করুন<ph name="END_LINK" />।</translation>
 <translation id="4305227814872083840">দীর্ঘ সময় (২সে.)</translation>
 <translation id="4306119971288449206">অ্যাপ "<ph name="CONTENT_TYPE" />" কন্টেন্ট-প্রকার সহ হওয়া উচিত</translation>
@@ -2428,7 +2423,6 @@
 <translation id="484921817528146567">তাকের সর্বশেষ আইটেম</translation>
 <translation id="4849286518551984791">সমন্বিত সর্বজনীন সময় (UTC / GMT)</translation>
 <translation id="4849517651082200438">ইনস্টল করবেন না</translation>
-<translation id="4850258771229959924">ডেভেলপার সরঞ্জামগুলিতে দেখুন</translation>
 <translation id="4850669014075537160">স্ক্রোলিং</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4853020600495124913">&amp;নতুন উইন্ডোতে খুলুন</translation>
@@ -3499,7 +3493,6 @@
 <translation id="6473842110411557830">পাওয়ারওয়াশের সচিত্র বর্ণনা</translation>
 <translation id="6474706907372204693">পূর্ববর্তী ইনপুট পদ্ধতি</translation>
 <translation id="6474884162850599008">Google ড্রাইভ অ্যাকাউন্টের সংযোগ বিচ্ছিন্ন করুন</translation>
-<translation id="6475079491906995455">আপনি উপযুক্ত Chrome OS ডিভাইস ব্যবহার করছেন কিনা তা <ph name="SERVICE_NAME" /> যাচাই করতে চায়। <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" /> আপনার স্ক্রীনের সামগ্রী শেয়ার করতে চায়। আপনি কী শেয়ার করতে চান তা বেছে নিন।</translation>
 <translation id="6478248366783946499">বিপজ্জনক ফাইল রাখবেন?</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> খোলা হচ্ছে...</translation>
@@ -4155,7 +4148,6 @@
 <translation id="7518150891539970662">WebRTC লগগুলি (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">তৈরি করুন</translation>
-<translation id="7526413953848747421">Chrome এ গুরুত্বপূর্ণ Google পরিষেবা যেমন বানান চেক এবং সার্চ করার জন্য ট্যাপ যোগ করুন</translation>
 <translation id="7529411698175791732">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন। সমস্যাটি থেকে গেলে, সাইন আউট করে আবার প্রবেশ করার চেষ্টা করুন।</translation>
 <translation id="7530016656428373557">ওয়াটে ডিসচার্জের হার</translation>
 <translation id="7531779363494549572">সেটিংস &gt; অ্যাপ এবং বিজ্ঞপ্তি &gt; বিজ্ঞপ্তিতে যান।</translation>
@@ -5166,6 +5158,7 @@
 <translation id="9094982973264386462">সরান</translation>
 <translation id="9095253524804455615">সরান</translation>
 <translation id="9099674669267916096">পৃষ্ঠার সংখ্যা</translation>
+<translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9100765901046053179">উন্নত সেটিংস</translation>
 <translation id="9101691533782776290">অ্যাপ্লিকেশান লঞ্চ করুন</translation>
 <translation id="9102610709270966160">এক্সটেনশান সক্ষম করুন</translation>

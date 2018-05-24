@@ -41,6 +41,7 @@
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
 <translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
+<translation id="1885785240814121742">Deblochează cu amprenta</translation>
 <translation id="1919743966458266018">Comanda rapidă pentru a deschide managerul de activități a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1928739107511554905">Pentru a obține actualizarea, folosește ecranul tactil ca să repornești Chromebookul cu tastatura atașată.</translation>
@@ -79,6 +80,7 @@
 <translation id="2501920221385095727">Taste adezive</translation>
 <translation id="2509468283778169019">Tasta CAPS LOCK este activată</translation>
 <translation id="2532589005999780174">Mod de contrast ridicat</translation>
+<translation id="2575685495496069081">Conectarea multiplă a fost dezactivată</translation>
 <translation id="2597972630681408282">Lumină de noapte: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Cardul SIM este blocat</translation>
 <translation id="2653659639078652383">Trimite</translation>
@@ -136,6 +138,7 @@
 <translation id="3712407551474845318">Capturează zona</translation>
 <translation id="371370241367527062">Microfonul din față</translation>
 <translation id="3771549900096082774">Mod de contrast ridicat</translation>
+<translation id="3773700760453577392">Un administrator a interzis conectarea multiplă pentru <ph name="USER_EMAIL" />. Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Blocați</translation>
 <translation id="3798670284305777884">Difuzor (intern)</translation>
@@ -257,6 +260,7 @@
 <translation id="6713285437468012787">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” a fost conectat și este disponibil acum pentru toți utilizatorii. Puteți elimina această conexiune din Setări.</translation>
 <translation id="6715542151869432661">Nu s-au găsit dispozitive mobile.</translation>
 <translation id="671928215901716392">Blocați ecranul</translation>
+<translation id="6723839937902243910">Alimentare</translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="683971173229319003">Tasta de căutare + L</translation>

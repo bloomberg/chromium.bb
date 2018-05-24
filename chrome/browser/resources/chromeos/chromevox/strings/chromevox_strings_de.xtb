@@ -711,7 +711,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">Vorherige Liste</translation>
 <translation id="7041173719775863268">Auswahl beenden</translation>
-<translation id="7048792632163898198">Bei den nächsten Tastenkombinationen handelt es sich zwar nicht um ChromeVox-Befehle, aber sie sind dennoch sehr hilfreich, um Chrome optimal zu nutzen.
+<translation id="7048792632163898198">Bei den nächsten Tastaturbefehlen handelt es sich zwar nicht um ChromeVox-Befehle, aber sie sind für die optimale Bedienung von Chrome dennoch sehr hilfreich.
 Wenn Sie durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärtsgehen möchten, drücken Sie die Tabulatortaste. Rückwärts gelangen Sie mit Umschalttaste + Tab.
 Wenn Sie auf die Adressleiste des Chrome-Browsers, auch als Omnibox bezeichnet, zugreifen möchten, drücken Sie Strg + L.
 Um einen neuen Tab zu öffnen und automatisch dorthin zu wechseln, drücken Sie Strg + T. Ihr Cursor befindet sich dann in der Omnibox.
@@ -840,7 +840,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="820417203470636242">Leere Zelle</translation>
 <translation id="820469951249669083">Zur nächsten Zeile</translation>
 <translation id="8215202828671303819">Mehrfachauswahl</translation>
-<translation id="826825447994856889">Einführung</translation>
+<translation id="826825447994856889">Einleitung</translation>
 <translation id="826991282343985864">Z$1S$2</translation>
 <translation id="8276439074553447000">Zum vorherigen fokussierbaren Element springen</translation>
 <translation id="8278417001922463147">Kein vorheriger Artikel</translation>

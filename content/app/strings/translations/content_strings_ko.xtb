@@ -12,7 +12,7 @@
 <translation id="1206693055195146388">슬라이더</translation>
 <translation id="1211441953136645838">미주</translation>
 <translation id="1281252709823657822">대화상자</translation>
-<translation id="1335095011850992622">참여자 표시</translation>
+<translation id="1335095011850992622">저작권 표시</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
 <translation id="1589122976691792535">지역</translation>
@@ -91,7 +91,7 @@
 <translation id="4360991593054037559">유효한 값을 입력해 주세요. 가장 근접한 유효 값 2개는 <ph name="VALID_VALUE_LOW" /> 및 <ph name="VALID_VALUE_HIGHER" />입니다.</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4413860115965805769">메뉴 버튼</translation>
-<translation id="4446524499724042288">용어집 참조</translation>
+<translation id="4446524499724042288">용어 참조</translation>
 <translation id="4522570452068850558">세부정보</translation>
 <translation id="4597532268155981612">양식</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -142,7 +142,7 @@
 <translation id="6150588977291308318">참고문헌</translation>
 <translation id="6164829606128959761">미터</translation>
 <translation id="6166809985690652833">후기</translation>
-<translation id="6213469881011901533">용어집</translation>
+<translation id="6213469881011901533">용어설명</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
 <translation id="6453774872122745852">감사의 말</translation>
@@ -171,7 +171,7 @@
 <translation id="7223624360433298498">경과 시간</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="727747134524199931">열 헤더</translation>
-<translation id="7353453495576941748">참여자 표시</translation>
+<translation id="7353453495576941748">크레딧</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>
 <translation id="7405738980073107433">미주</translation>

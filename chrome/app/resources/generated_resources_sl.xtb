@@ -1062,7 +1062,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2633199387167390344">Aplikacija/razširitev <ph name="NAME" /> uporablja <ph name="USAGE" /> MB prostora na disku.</translation>
 <translation id="2633212996805280240">Želite odstraniti »<ph name="EXTENSION_NAME" />«?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ni mogel končati namestitve, a se bo še vedno izvajal s posnetka diska.</translation>
-<translation id="2635176084534510129">Zagotovite si bolj prilagojene izkušnje, kot so boljši predlogi vsebine in pametnejši prevodi</translation>
 <translation id="2635276683026132559">Podpisovanje</translation>
 <translation id="2636625531157955190">Chrome ne more dostopati do slike.</translation>
 <translation id="2638087589890736295">Če želite začeti sinhronizacijo, morate vnesti geslo</translation>
@@ -1352,7 +1351,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="3061707000357573562">Storitev za popravke</translation>
 <translation id="3064410671692449875">Nezadostni podatki</translation>
 <translation id="3065041951436100775">Povratne informacije o zaustavitvi zavihka.</translation>
-<translation id="3066642396596108483">Sinhronizirajte zaznamke, gesla in zgodovino v vseh napravah</translation>
 <translation id="3067198179881736288">Želite namestiti aplikacijo?</translation>
 <translation id="3067198360141518313">Zaženi vtičnik</translation>
 <translation id="3071624960923923138">Če želite odpreti nov zavihek, lahko kliknete tukaj</translation>
@@ -1618,7 +1616,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="347670947055184738">Ojoj. Sistemu ni uspelo prenesti pravilnika za napravo.</translation>
 <translation id="347785443197175480">Še naprej omogočaj gostitelju <ph name="HOST" /> dostop do kamere in mikrofona</translation>
 <translation id="3478685642445675458">Preden odstranite osebo, odklenite profil.</translation>
-<translation id="347919930506963698">Še bolje izkoristite Chrome</translation>
 <translation id="3479552764303398839">Ne zdaj</translation>
 <translation id="3480892288821151001">Zasidraj okno levo</translation>
 <translation id="3484273680291419129">Odstranjevanje škodljive programske opreme ...</translation>
@@ -1761,7 +1758,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> želi dostopati do vašega zaslona</translation>
 <translation id="3693415264595406141">Geslo:</translation>
 <translation id="3694027410380121301">Izberi prejšnji zavihek</translation>
-<translation id="3697100740575341996">Skrbnik za IT je za vašo napravo onemogočil dodatke za Chrome. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-poštni naslov</translation>
 <translation id="3700888195348409686">Predstavljanje (<ph name="PAGE_ORIGIN" />)</translation>
 <translation id="3702500414347826004">Začetne strani so bile spremenjene in vsebujejo <ph name="URL" />.</translation>
@@ -2138,7 +2134,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="4289540628985791613">Pregled</translation>
 <translation id="4296575653627536209">Dodajanje zaščitenega uporabnika</translation>
 <translation id="4297322094678649474">Spreminjanje jezikov</translation>
-<translation id="4299141727003252811">Google lahko vašo dejavnost brskanja, vsebino na nekaterih spletnih mestih, ki jih obiščete, in druge interakcije z brskalnikom uporabi za prilagajanje Chroma in drugih Googlovih storitev, kot so Prevajalnik, Iskanje Google in oglasi.</translation>
 <translation id="4300305918532693141">Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" />.</translation>
 <translation id="4305227814872083840">dolga (2 s)</translation>
 <translation id="4306119971288449206">Aplikacije morajo biti opremljene z vrsto vsebine »<ph name="CONTENT_TYPE" />«</translation>
@@ -2461,7 +2456,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="484921817528146567">Zadnji element na polici</translation>
 <translation id="4849286518551984791">Usklajen univerzalni čas (UTC/GMT)</translation>
 <translation id="4849517651082200438">Ne namesti</translation>
-<translation id="4850258771229959924">Ogled v orodjih za razvijalce</translation>
 <translation id="4850669014075537160">Drsenje</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4853020600495124913">Odpri v &amp;novem oknu</translation>
@@ -3548,7 +3542,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6473842110411557830">Slika funkcije Powerwash</translation>
 <translation id="6474706907372204693">Prejšnji način vnosa</translation>
 <translation id="6474884162850599008">Prekinitev povezave z računom za Google Drive</translation>
-<translation id="6475079491906995455"><ph name="SERVICE_NAME" /> želi preveriti, ali uporabljate primerno napravo s sistemom OS Chrome. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="6475697075626596525">Aplikacija <ph name="APP_NAME" /> želi deliti vsebine vašega zaslona z drugimi. Izberite, kaj želite deliti.</translation>
 <translation id="6478248366783946499">Želite obdržati nevarno datoteko?</translation>
 <translation id="6483805311199035658">Odpiranje datoteke <ph name="FILE" /> ...</translation>
@@ -4213,7 +4206,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7518150891539970662">Preneseni dnevniki za WebRTC (<ph name="WEBRTC_LOG_COUNT" />)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7525067979554623046">Ustvari</translation>
-<translation id="7526413953848747421">V Chromu uporabite zmogljive Googlove storitve, kot sta preverjanje črkovanja in iskanje z dotikom</translation>
 <translation id="7529411698175791732">Preverite internetno povezavo. Če težave ne odpravite, se poskusite odjaviti in znova prijaviti.</translation>
 <translation id="7530016656428373557">Hitrost praznjenja v vatih</translation>
 <translation id="7531779363494549572">Odprite »Nastavitve &gt; Aplikacije in obvestila &gt; Obvestila«.</translation>
@@ -5237,6 +5229,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9094982973264386462">Odstrani</translation>
 <translation id="9095253524804455615">Odstrani</translation>
 <translation id="9099674669267916096">Število strani</translation>
+<translation id="9100610230175265781">Zahtevano je geslo</translation>
 <translation id="9100765901046053179">Dodatne nastavitve</translation>
 <translation id="9101691533782776290">Zažene aplikacijo</translation>
 <translation id="9102610709270966160">Omogoči razširitev</translation>

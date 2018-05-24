@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
-<translation id="1424081297104898791">Gör det möjligt att styra om utvecklarverktyg kan användas.
-
-      Om DeveloperToolsDisallowedForForceInstalledExtensions (värde 0, som är standardinställningen för företagsanvändare) anges för principen beviljas allmän åtkomst till utveckarverktygen och JavaScript-konsolen, men åtkomst för tillägg som har installerats via en företagsprincip beviljas inte.
-      Om DeveloperToolsAllowed (värde 1, som är standardinställningen för ohanterade användare) anges för principen beviljas åtkomst till Utvecklarverktygen och JavaScript-konsolen i alla sammanhang, inklusive tillägg som har installerats via en företagsprincip.
-      Om DeveloperToolsDisallowed (värde 2) anges för principen beviljas inte åtkomst till utvecklarverktygen och webbplatselement kan inte längre kontrolleras. Alla kortkommandon och meny- eller snabbmenyalternativ som försöker öppna utvecklarverktygen eller JavaScript-konsolen inaktiveras.
-      Om den äldre principen DeveloperToolsDisabled är inställd på sant ignoreras principens värde och utvecklarverktygen inaktiveras.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -704,7 +698,6 @@
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
-<translation id="2884728160143956392">Tillåt sessionscookies på dessa webbplatser</translation>
 <translation id="2893546967669465276">Skicka systemloggar till hanteringsservern</translation>
 <translation id="2899002520262095963">Android-appar kan använda nätverkskonfigurationer och CA-certifikat som har angetts via den här principen men saknar tillgång till vissa konfigurationsalternativ.</translation>
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
@@ -748,17 +741,6 @@
           Policyn är valfri. Om den inte ställs in byts inga sökord ut.
 
           Policyn beaktas bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="3056439054015239107">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
-      Ta gärna en titt på principen IsolateOrigins också: du kan få det
-      bästa av två världar, isolering och begränsad inverkan på användarna,
-      genom att ange en lista med webbplatser som ska isoleras med
-      IsolateOrigins. Med den här inställningen, SitePerProcess, isoleras alla
-      webbplatser..
-      Om principen aktiveras körs varje webbplats som en egen process.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera SitePerProcess manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      </translation>
 <translation id="306887062252197004">Med den här principen kan användare av funktionen WebDriver åsidosätta
       principer som påverkar dess funktion.
 
@@ -1227,13 +1209,6 @@
 <translation id="4483649828988077221">Inaktivera automatiska uppdateringar</translation>
 <translation id="4485425108474077672">Konfigurera webbadressen för sidan Ny flik</translation>
 <translation id="4492287494009043413">Inaktivera tagning av skärmdumpar</translation>
-<translation id="4497968613298501984">Konfigurera listan med webbadresser för företagsinloggning (endast via HTTP och HTTPS). På dessa webbadresser registreras lösenordssignaturer, som används för att upptäcka när ett lösenord återanvänds.
-      Inställningen bör endast användas av den som använder G Suite med SSO/SAML.
-      Se till att inloggningssidorna följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.
-
-      Om inställningen är aktiverad registreras lösenordssignaturer på webbadresserna i syfte att upptäcka när ett lösenord återanvänds.
-      Om inställningen är inaktiverad eller har lämnats utan inställning registreras lösenordsignaturer endast på https://accounts.google.com.
-      Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="450537894712826981">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade mediafiler på skivan.
 
       När den här principen har getts ett värde använder <ph name="PRODUCT_NAME" /> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --media-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.
@@ -1361,13 +1336,6 @@
 
       Om denna princip inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
-<translation id="4868249328547841081">Konfigurera webbadressen för att byta lösenord (endast via HTTP och HTTPS). Lösenordsskyddet skickar användarna till den här webbadressen där de kan byta lösenord om de har drabbats av nätfiske.
-      Inställningen bör endast användas av den som använder G Suite med SSO/SAML.
-      Se till att sidan för att byta lösenord följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-form så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.
-
-      Om inställningen är aktiverad skickas användarna till den här webbadressen där de kan byta lösenord om de har drabbats av nätfiske.
-      Om inställningen är inaktiverad eller har lämnats utan inställning skickas användarna till https://myaccounts.google.com där de kan byta lösenord.
-      Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="4869787217450099946">Anger om skärmaktiveringslåset är tillåtet. Skärmaktiveringslåset kan krävas av vissa tillägg via API:et för näthanteringstillägget.
 
           Om denna policy har inställningen sant, eller inte har ställts in, kommer skärmaktiveringslåsen att användas för näthantering.
@@ -1569,9 +1537,6 @@
       Om principen används kan användare endast ställa in <ph name="PRODUCT_OS_NAME" /> på att visas i någon av de språkkoder som anges i denna princip. Om principen inte används eller om en tom lista anges för principen kan <ph name="PRODUCT_OS_NAME" /> visas i alla språkkoder som stöds. Om en lista med ogiltiga värden anges för principen ignoreras alla värden. Om en användare tidigare har ställt in <ph name="PRODUCT_OS_NAME" /> på att visas i en språkkod som inte tillåts i denna princip byts den visade språkkoden ut mot en tillåten språkkoden nästa gång användaren loggar in. Om användaren har konfigurerat föredragna språkkoder och en av de föredragna språkkoderna tillåts i denna princip ändras <ph name="PRODUCT_OS_NAME" /> till denna språkkod. I annat fall ändras <ph name="PRODUCT_OS_NAME" /> till det första giltiga värdet i denna princip eller till en alternativ språkkod (för närvarande en-US) om principen endast innehåller ogiltiga värden.</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
-<translation id="5469484020713359236">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får spara cookies.
-
-          Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="547601067149622666">Tillåt inte annonser på webbplatser med påträngande annonser</translation>
@@ -1879,9 +1844,6 @@
       Om den är inställd på sant eller inte inställd alls genomsöker Chrome Cleanup systemet efter oönskad programvara regelbundet. Om något upptäcks blir användaren tillfrågad om de vill ta bort det. Att starta Chrome Cleanup manuellt via chrome://settings har aktiverats.
 
       Denna princip är inte tillgänglig på Windows-instanser som inte är kopplade till en <ph name="MS_AD_NAME" /> domän.</translation>
-<translation id="6417861582779909667">Policyn gör att du kan ställa in en lista med webbadressmönster som inte får spara cookies.
-
-          Om policyn inte anges används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultCookiesSetting om den används eller användarens personliga konfiguration.</translation>
 <translation id="6426205278746959912">Det går inte att göra det obligatoriskt för Android-appar att ansluta via en proxyserver. Android-appar har tillgång till ett urval av proxyinställningarna enligt nedan och kan, men måste inte, följa dem.
 
           Med alternativet Använd aldrig proxyserver får Android-apparna informationen att ingen proxyserver har konfigurerats.
@@ -1901,13 +1863,6 @@
       Du styr vilka webbplatser som Flash får köras på med principerna DefaultPluginsSetting, PluginsAllowedForUrls och PluginsBlockedForUrls.
 
       Om den här inställningen har inaktiverats eller lämnats orörd kan Flash-innehåll från andra domäner eller småskaligt innehåll blockeras.</translation>
-<translation id="6535639183431116351">Den här principen har fasats ut i M68. Använd DeveloperToolsAvailability i stället.
-
-      Principen inaktiverar utvecklarverktygen och JavaScript-konsolen.
-
-      Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
-
-      Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="653608967792832033">Anger efter hur lång tid utan indata från användaren som skärmen ska låsas när enheten går på batteri.
 
           Om policyns värde är större än noll anger det hur länge användaren kan vara inaktiv innan <ph name="PRODUCT_OS_NAME" /> låser skärmen.
@@ -2016,15 +1971,6 @@
       Minnesinfo rapporteras ändå till sidan, oavsett värdealternativ, men de storlekar som
       rapporterats kvantiseras och uppdateringsintervallet är begränsat av säkerhetsskäl.
       Om du vill få exakta data i realtid kan du använda ett verktyg som Telemetry.</translation>
-<translation id="6870914592443697993">
-      Den här principen gäller inloggningsskärmen. Se även principen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipens inställning tillämpas.
-      Om principen aktiveras körs varje namngivet ursprung i en kommaavgränsad
-      lista som en egen process. Även underdomäner isoleras. Om du exempelvis
-      anger https://example.com/ isoleras även https://foo.example.com/ som en del
-      av webbplatsen https://example.com/.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera IsolateOrigins manuellt.
-      Om principen inte konfigureras används plattformens standardinställningar för webbplatsisolering på inloggningsskärmen.
-      </translation>
 <translation id="6894178810167845842">Webbadress för sidan Ny flik</translation>
 <translation id="6899705656741990703">Identifiera proxyinställningar automatiskt</translation>
 <translation id="6903814433019432303">Den här policyn är bara aktiv i återförsäljarläge.
@@ -2167,13 +2113,6 @@
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Anslutningstyper som tillåts för uppdateringar</translation>
 <translation id="7194407337890404814">Standardsökleverantörens namn</translation>
-<translation id="7199300565886109054">Innebär att du kan ange en lista med webbadressmönster som anger webbplatser som får ange sessionscookies.
-
-          Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den är inställd eller användarens personliga konfiguration om den inte är det.
-
-          Tänk på att om <ph name="PRODUCT_NAME" /> körs i bakgrundsläge kanske sessionen inte stängs när det sista webbläsarfönstret stängs, utan i stället är aktivt tills webbläsaren stängs. Mer information om hur du konfigurerar detta finns i policyn BackgroundModeEnabled.
-
-          Om policyn RestoreOnStartup är inställd på att återställa webbadresser från tidigare sessioner fungerar inte den här policyn och cookies sparas inte permanent för dessa webbplatser.</translation>
 <translation id="7202925763179776247">Tillåt nedladdningsbegränsningar</translation>
 <translation id="7207095846245296855">Tvinga fram användning av Google SafeSearch</translation>
 <translation id="7216442368414164495">Tillåt användare att välja utökad rapportering i Säker webbsökning</translation>
@@ -2405,13 +2344,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">Sidan Ny flik</translation>
 <translation id="7788511847830146438">Per profil</translation>
-<translation id="7801886189430766248">När principen är inställd på sant laddas Android-appdata upp till Android-servrarna för säkerhetskopiering och återställs från dem när kompatibla appar återinstalleras.
-
-      När principen är inställd på falskt stängs säkerhetskopieringstjänsten för Android av.
-
-      Om inställningen konfigureras kan användarna inte ändra den själva.
-
-      Om inställningen inte konfigureras kan användare aktivera och inaktivera säkerhetskopieringstjänsten i appen Inställningar på Android.</translation>
 <translation id="780603170519840350">Inaktiverar kraven för certifikattransparens för subjectPublicKeyInfo-hashvärden.
 
       Den här policyn tillåter att kraven på certifikattransparens inaktiveras för vissa certifikatkedjor som innehåller certifikat med något av de angivna subjectPublicKeyInfo-hashvärdena. Det tillåter att certifikat, som annars inte skulle vara betrodda eftersom de inte är offentligt tillkännagivna, fortfarande används för företagsvärdar.

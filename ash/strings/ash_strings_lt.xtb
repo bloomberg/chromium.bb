@@ -138,7 +138,7 @@
 <translation id="3712407551474845318">Užfiksuoti sritį</translation>
 <translation id="371370241367527062">Priekinis mikrofonas</translation>
 <translation id="3771549900096082774">Didelio kontrasto režimas</translation>
-<translation id="3773700760453577392">Administratorius neleido <ph name="USER_EMAIL" />. prisijungti prie kelių paskyrų. Norint tęsti, visi naudotojai turi atsijungti.</translation>
+<translation id="3773700760453577392">Administratorius neleido <ph name="USER_EMAIL" /> prisijungti prie kelių paskyrų. Norėdami tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Užrakinti</translation>
 <translation id="3798670284305777884">Garsiakalbis (vidinis)</translation>
@@ -261,6 +261,7 @@
 <translation id="6713285437468012787">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ susietas ir dabar pasiekiamas visiems naudotojams. Nustatymuose galite pašalinti šį susiejimą.</translation>
 <translation id="6715542151869432661">Nerasta jokių mobiliųjų įrenginių.</translation>
 <translation id="671928215901716392">Užrakinti ekraną</translation>
+<translation id="6723839937902243910">Maitinimas</translation>
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
 <translation id="683971173229319003">Paieškos klavišas + L</translation>

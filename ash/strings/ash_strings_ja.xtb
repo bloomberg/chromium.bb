@@ -80,7 +80,7 @@
 <translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
-<translation id="2575685495496069081">マルチ ログインは無効にされています</translation>
+<translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2653659639078652383">送信</translation>
@@ -138,7 +138,7 @@
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="371370241367527062">前方のマイク</translation>
 <translation id="3771549900096082774">ハイ コントラスト モード</translation>
-<translation id="3773700760453577392"><ph name="USER_EMAIL" /> のマルチログインは、管理者によって禁止されています。続行するには、すべてのユーザーがログアウトする必要があります。</translation>
+<translation id="3773700760453577392"><ph name="USER_EMAIL" /> へのマルチログインは、管理者によって禁止されています。続行するには、すべてのユーザーがログアウトする必要があります。</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3798670284305777884">スピーカー（内蔵）</translation>
@@ -260,6 +260,7 @@
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="6715542151869432661">モバイル端末が見つかりませんでした。</translation>
 <translation id="671928215901716392">画面をロック</translation>
+<translation id="6723839937902243910">電源</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="683971173229319003">Search+L</translation>

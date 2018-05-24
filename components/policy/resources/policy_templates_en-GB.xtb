@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
-<translation id="1424081297104898791">Allows you to control where Developer Tools can be used.
-
-      If this policy is set to 'DeveloperToolsDisallowedForForceInstalledExtensions' (value 0, which is the default for enterprise users), the Developer Tools and the JavaScript console can be accessed in general, but they can not be accessed in the context of extensions installed by enterprise policy.
-      If this policy is set to 'DeveloperToolsAllowed' (value 1, which is the default for unmanaged users), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
-      If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
-      If the legacy policy DeveloperToolsDisabled is set to true, the value of this policy is ignored and the Developer Tools are disabled.</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
@@ -704,7 +698,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
-<translation id="2884728160143956392">Allow session only cookies on these sites</translation>
 <translation id="2893546967669465276">Send system logs to the management server</translation>
 <translation id="2899002520262095963">Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.</translation>
 <translation id="2906874737073861391">List of AppPack extensions</translation>
@@ -748,16 +741,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="3056439054015239107">
-      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="306887062252197004">This policy allows users of the WebDriver feature to override
       policies which can interfere with its operation.
 
@@ -1226,13 +1209,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4483649828988077221">Disable Auto Update</translation>
 <translation id="4485425108474077672">Configure the New Tab page URL</translation>
 <translation id="4492287494009043413">Disable taking screenshots</translation>
-<translation id="4497968613298501984">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
-      This setting should only be used by GSuite users using a SSO/SAML system.
-      In order for <ph name="PRODUCT_NAME" /> to correctly capture password fingerprints, please make sure that your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      If this setting is enabled, then password protection service will capture password fingerprint on these URLs for password reuse detection purpose.
-      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
-      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="450537894712826981">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached media files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided cache size regardless of whether the user has specified the '--media-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
@@ -1360,13 +1336,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set or blank, then any user can sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Allow fullscreen mode</translation>
-<translation id="4868249328547841081">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their passwords if they've been phished.
-      This setting should only be used by GSuite users using a SSO/SAML system.
-      In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      If this setting is enabled, then password protection service will send users to this URL to change their passwords if they've been phished.
-      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
-      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4869787217450099946">Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
 
           If this policy is set to true or left not set, screen wake locks will be honoured for power management.
@@ -1569,9 +1538,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME" /> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME" /> can be displayed in all supported locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME" /> to be displayed in a language that is not allowed by this policy, the display locale will be switched to an allowed locale the next time that the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME" /> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME" /> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.</translation>
 <translation id="5464816904705580310">Configure settings for managed users.</translation>
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
-<translation id="5469484020713359236">Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
-
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
 <translation id="5475361623548884387">Enable printing</translation>
 <translation id="547601067149622666">Do not allow ads on sites with intrusive ads</translation>
@@ -1874,9 +1840,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If set to true or unset, Chrome Clean–Up periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Clean–Up from chrome://settings is enabled.
 
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
-<translation id="6417861582779909667">Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
-
-          If this policy is left unset, the global default value will be used for all sites, either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="6426205278746959912">You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honour:
 
           If you choose to never use a proxy server, Android apps are informed that no proxy is configured.
@@ -1896,13 +1859,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       To control which websites are allowed to run Flash, see the 'DefaultPluginsSetting', 'PluginsAllowedForURLs' and 'PluginsBlockedForURLs' policies.
 
       If this setting is disabled or not set, Flash content from other origins or small content might be blocked.</translation>
-<translation id="6535639183431116351">This policy is deprecated in M68, please use DeveloperToolsAvailability instead.
-
-      Disables the Developer Tools and the JavaScript console.
-
-      If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
-
-      Setting this option to disabled or leaving it not set allows the user to use the Developer Tools and the JavaScript console.</translation>
 <translation id="653608967792832033">Specifies the length of time without user input after which the screen is locked when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> locks the screen.
@@ -2011,16 +1967,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Memory info is reported to page anyway, regardless of the option value, but the sizes reported are
       quantised and the rate of updates is limited for security reasons. To obtain real-time precise data,
       please use tools like Telemetry.</translation>
-<translation id="6870914592443697993">
-      This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains, e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
-      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
-      </translation>
 <translation id="6894178810167845842">New Tab page URL</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
 <translation id="6903814433019432303">This policy is active in retail mode only.
@@ -2163,13 +2109,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Connection types allowed for updates</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
-<translation id="7199300565886109054">Allows you to set a list of URL patterns that specify sites which are allowed to set session only cookies.
-
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set or the user's personal configuration otherwise.
-
-          Note that if <ph name="PRODUCT_NAME" /> is running in 'background mode', the session may not be closed when the last browser window is closed, but will instead stay active until the browser exits. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behaviour.
-
-          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.</translation>
 <translation id="7202925763179776247">Allow download restrictions</translation>
 <translation id="7207095846245296855">Force Google SafeSearch</translation>
 <translation id="7216442368414164495">Allow users to opt in to Safe Browsing extended reporting</translation>
@@ -2402,13 +2341,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
-<translation id="7801886189430766248">When this policy is set to true, Android app data is uploaded to Android Backup servers and restored from them upon app re-installations for compatible apps.
-
-      When this policy is set to false, Android Backup Service will be switched off.
-
-      If this setting is configured then users are not able change it themselves.
-
-      If this setting is not configured then users are able to turn Android Backup Service on and off in the Android Settings app.</translation>
 <translation id="780603170519840350">Disables enforcing Certificate Transparency requirements for a list of subjectPublicKeyInfo hashes.
 
       This policy allows disabling Certificate Transparency disclosure requirements for certificate chains that contain certificates with one of the specified subjectPublicKeyInfo hashes. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used for Enterprise hosts.

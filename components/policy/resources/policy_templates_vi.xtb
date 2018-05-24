@@ -92,12 +92,6 @@
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
-<translation id="1424081297104898791">Cho phép bạn kiểm soát vị trí có thể sử dụng Công cụ dành cho nhà phát triển.
-
-      Nếu đặt chính sách này thành 'DeveloperToolsDisallowedForForceInstalledExtensions' (giá trị 0 là giá trị mặc định cho người dùng doanh nghiệp) thì nói chung, bạn có thể truy cập vào Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, trong ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp, thì bạn không thể truy cập vào những mục này.
-      Nếu đặt chính sách này thành 'DeveloperToolsAllowed' (giá trị 1 là giá trị mặc định cho những người dùng không được quản lý) thì bạn có thể truy cập cũng như sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript trong tất cả các ngữ cảnh, bao gồm cả ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp.
-      Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2) thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
-      Nếu chính sách cũ DeveloperToolsDisabled được đặt thành true, giá trị của chính sách này sẽ bị bỏ qua, đồng thời Công cụ dành cho nhà phát triển cũng sẽ bị tắt.</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
@@ -703,7 +697,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
-<translation id="2884728160143956392">Cho phép cookie chỉ trong phiên trên các trang web này</translation>
 <translation id="2893546967669465276">Gửi nhật ký hệ thống đến máy chủ quản lý</translation>
 <translation id="2899002520262095963">Các ứng dụng Android có thể sử dụng cấu hình mạng và chứng chỉ CA được đặt qua chính sách này nhưng không có quyền truy cập vào một số tùy chọn cấu hình.</translation>
 <translation id="2906874737073861391">Danh sách tiện ích trong AppPack</translation>
@@ -746,16 +739,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có thay thế cụm từ tìm kiếm nào được thực hiện.
 
           Chính sách này chỉ được lưu tâm nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
-<translation id="3056439054015239107">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Bạn nên xem tùy chọn cài đặt của chính sách IsolateOrigins để khai thác
-      tối đa cả hai khía cạnh, cách cô lập và cách hạn chế tác động đến người dùng, bằng việc sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Tùy chọn cài đặt này,
-      SitePerProcess, sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      </translation>
 <translation id="306887062252197004">Chính sách này cho phép người dùng tính năng WebDriver ghi đè
       các chính sách có thể can thiệp vào hoạt động của chính sách đó.
 
@@ -1217,13 +1200,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4483649828988077221">Tắt tính năng tự động cập nhật</translation>
 <translation id="4485425108474077672">Định cấu hình URL trang Tab mới</translation>
 <translation id="4492287494009043413">Tắt tính năng chụp ảnh chụp màn hình</translation>
-<translation id="4497968613298501984">Định cấu hình danh sách URL đăng nhập của doanh nghiệp (chỉ dành cho các lược đồ HTTP và HTTPS). Dấu vân tay của mật khẩu sẽ quét trên những URL này và dùng để phát hiện trường hợp sử dụng lại mật khẩu.
-      Người dùng G Suite chỉ nên sử dụng cài đặt này bằng hệ thống SSO/SAML.
-      Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu, hãy đảm bảo các trang đăng nhập của bạn tuân theo những nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Nếu bạn bật cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ quét dấu vân tay của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
-      Nếu bạn tắt hoặc chưa đặt cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ chỉ quét dấu vân tay của mật khẩu trên https://accounts.google.com.
-      Chính sách này không sử dụng được trên các phiên bản Windows chưa tham gia vào miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Định cấu hình kích thước bộ nhớ đệm mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp phương tiện đã lưu vào bộ nhớ đệm trên đĩa.
 
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm được cung cấp cho dù người dùng đã chỉ định cờ '--media-cache-size' hay chưa. Giá trị được chỉ định trong chính sách này không phải là ranh giới cứng nhắc mà là một đề xuất cho hệ thống lưu vào bộ nhớ đệm, mọi giá trị dưới vài megabyte là quá nhỏ và sẽ được làm tròn lên đến mức tối thiểu hợp lý.
@@ -1295,7 +1271,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="467449052039111439">Mở một danh sách URL</translation>
 <translation id="4680936297850947973">Không còn dùng trong M68. Hãy sử dụng tùy chọn DefaultPopupsSetting để thay thế.
 
-      Để biết giải thích đầy đủ, hãy truy cập vào https://www.chromestatus.com/features/5675755719622656.
+      Để biết thông tin giải thích đầy đủ, hãy truy cập vào https://www.chromestatus.com/features/5675755719622656.
       Nếu bạn đã bật chính sách này, thì các trang web sẽ được phép chuyển tới và mở các cửa sổ/tab mới cùng một lúc.
       Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
@@ -1350,13 +1326,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này không được thiết lập hoặc để trống, thì bất kỳ người dùng nào cũng có thể đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Cho phép chế độ toàn màn hình</translation>
-<translation id="4868249328547841081">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho các lược đồ HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để thay đổi mật khẩu nếu họ bị lừa đảo.
-      Người dùng G Suite chỉ nên sử dụng cài đặt này bằng hệ thống SSO/SAML.
-      Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân theo những nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Nếu bạn bật cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để thay đổi mật khẩu trong trường hợp họ bị lừa đảo.
-      Nếu bạn tắt hoặc chưa đặt cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến https://myaccounts.google.com để thay đổi mật khẩu của họ.
-      Chính sách này không sử dụng được trên các phiên bản Windows chưa tham gia vào miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Xác định xem khóa chế độ thức màn hình có được phép hay không. Khóa chế độ thức màn hình có thể được tiện ích yêu cầu qua API tiện ích quản lý công suất.
 
           Nếu chính sách này được đặt thành true hoặc không được đặt, khóa chế độ thức màn hình sẽ được đặt để quản lý công suất.
@@ -1559,9 +1528,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu đặt chính sách này thì người dùng chỉ có thể định cấu hình hiển thị <ph name="PRODUCT_OS_NAME" /> bằng một trong các ngôn ngữ mà chính sách này chỉ định. Nếu không đặt hoặc đặt chính sách này thành một danh sách trống thì có thể hiển thị <ph name="PRODUCT_OS_NAME" /> bằng tất cả các ngôn ngữ được hỗ trợ. Nếu đặt chính sách này thành một danh sách gồm các giá trị không hợp lệ thì tất cả các giá trị không hợp lệ sẽ bị bỏ qua. Nếu trước đây người dùng đã định cấu hình hiển thị <ph name="PRODUCT_OS_NAME" /> bằng một ngôn ngữ không được chính sách này cho phép thì ngôn ngữ hiển thị sẽ được chuyển thành ngôn ngữ được phép trong lần tiếp theo người dùng đăng nhập. Nếu người dùng đã định cấu hình các ngôn ngữ ưu tiên và chính sách này cho phép sử dụng một trong các ngôn ngữ ưu tiên đó thì <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang ngôn ngữ đó. Nếu không, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển về giá trị hợp lệ đầu tiên được chính sách này chỉ định hoặc chuyển về ngôn ngữ dự phòng (hiện đang là en-US), khi chính sách này chỉ chứa các mục không hợp lệ.</translation>
 <translation id="5464816904705580310">Định cấu hình cài đặt cho người dùng được quản lý.</translation>
 <translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
-<translation id="5469484020713359236">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép đặt cookie.
-
-          Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>
 <translation id="5475361623548884387">Bật tính năng in</translation>
 <translation id="547601067149622666">Không cho phép quảng cáo trên các trang web chứa quảng cáo xâm nhập</translation>
@@ -1864,9 +1830,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu đặt thành true hoặc không đặt chính sách này thì tính năng Làm sạch Chrome sẽ định kỳ quét hệ thống để tìm phần mềm không mong muốn và khi tìm được bất kỳ phần mềm không mong muốn nào thì sẽ hỏi người dùng xem họ có muốn xóa chúng không. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome từ chrome://settings được bật.
 
       Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
-<translation id="6417861582779909667">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép đặt cookie.
-
-          Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="6426205278746959912">Bạn không thể buộc ứng dụng Android sử dụng proxy. Tập hợp con của cài đặt proxy được cung cấp cho ứng dụng Android. Cài đặt mà ứng dụng có thể tự nguyện chọn để thực hiện:
 
           Nếu bạn chọn không bao giờ sử dụng máy chủ proxy, ứng dụng Android được thông báo rằng không có proxy nào được định cấu hình.
@@ -1886,13 +1849,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Để kiểm soát những trang web nào được phép chạy Flash, hãy xem chính sách "DefaultPluginsSetting", "PluginsAllowedForUrls" và "PluginsBlockedForUrls".
 
       Nếu bạn tắt hoặc không đặt cài đặt này, nội dung Flash từ các nguồn khác hoặc nội dung nhỏ có thể bị chặn.</translation>
-<translation id="6535639183431116351">Chính sách này không còn được dùng trong M68 nữa, vui lòng sử dụng chính sách DeveloperToolsAvailability để thay thế.
-
-      Tắt Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.
-
-      Nếu bật tùy chọn cài đặt này, bạn sẽ không thể truy cập Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
-
-      Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.</translation>
 <translation id="653608967792832033">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị khóa khi chạy trên nguồn pin.
 
           Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
@@ -2000,16 +1956,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Thông tin bộ nhớ vẫn được báo cáo tới trang bất kể giá trị tùy chọn như thế nào. Tuy nhiên, kích thước được báo cáo
       được lượng tử hóa và tốc độ cập nhật bị giới hạn vì lý do bảo mật. Để có dữ liệu chính xác trong thời gian thực,
       hãy sử dụng các công cụ như Telemetry.</translation>
-<translation id="6870914592443697993">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem thêm chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cô lập
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến cho https://foo.example.com/ bị cô lập vì là một phần của
-      trang web https://example.com/.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, thì tùy chọn cài đặt cô lập trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
-      </translation>
 <translation id="6894178810167845842">URL trang Tab mới</translation>
 <translation id="6899705656741990703">Cài đặt tự động phát hiện proxy</translation>
 <translation id="6903814433019432303">Chính sách này chỉ hoạt động ở chế độ bán lẻ.
@@ -2151,13 +2097,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Các loại kết nối được cho phép để cập nhật</translation>
 <translation id="7194407337890404814">Tên nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
-<translation id="7199300565886109054">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web được phép đặt các cookie chỉ trong phiên.
-
-          Nếu chính sách này không được đặt thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultCookiesSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.
-
-          Lưu ý rằng nếu <ph name="PRODUCT_NAME" /> đang chạy trong 'chế độ nền' thì phiên có thể không đóng khi cửa sổ trình duyệt cuối cùng đóng nhưng thay vào đó sẽ vẫn hoạt động cho đến khi trình duyệt thoát. Vui lòng xem chính sách 'BackgroundModeEnabled' để biết thêm thông tin về cách định cấu hình thao tác này.
-
-          Nếu chính sách "RestoreOnStartup" được đặt để khôi phục URL từ các phiên trước đó, chính sách này sẽ không được áp dụng và cookie sẽ được lưu vĩnh viễn cho các trang web đó.</translation>
 <translation id="7202925763179776247">Cho phép hạn chế tải xuống</translation>
 <translation id="7207095846245296855">Bắt buộc bật Tìm kiếm an toàn của Google</translation>
 <translation id="7216442368414164495">Cho phép người dùng chọn sử dụng báo cáo mở rộng trong Duyệt web an toàn</translation>
@@ -2382,13 +2321,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Trang tab mới</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
-<translation id="7801886189430766248">Khi chính sách này được đặt thành true, dữ liệu ứng dụng Android được tải lên máy chủ Android Backup và được khôi phục từ các máy chủ này khi cài đặt trước ứng dụng cho các ứng dụng tương thích.
-
-      Khi chính sách này được đặt thành false, Android Backup Service sẽ bị tắt.
-
-      Nếu cài đặt này được định cấu hình thì người dùng không thể tự thay đổi cấu hình này.
-
-      Nếu cài đặt này không được định cấu hình thì người dùng có thể bật và tắt Android Backup Service trong ứng dụng Cài đặt Android.</translation>
 <translation id="780603170519840350">Tắt buộc thực thi các yêu cầu về Tính minh bạch của chứng chỉ cho một danh sách các hàm băm subjectPublicKeyInfo.
 
       Chính sách này cho phép tắt các yêu cầu tiết lộ Tính minh bạch của chứng chỉ cho các chuỗi chứng chỉ chứa chứng chỉ có một trong các hàm băm subjectPublicKeyInfo đã được chỉ định. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng cho các máy chủ Doanh nghiệp.

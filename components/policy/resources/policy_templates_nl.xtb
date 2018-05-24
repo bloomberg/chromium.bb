@@ -91,12 +91,6 @@
 <translation id="1387596372902085462">Of je vertrouwen wilt stellen in de Legacy PKI-infrastructuur van Symantec Corporation</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
-<translation id="1424081297104898791">Hiermee stel je in welke hulpprogramma's voor ontwikkelaars kunnen worden gebruikt.
-
-      Als dit beleid is ingesteld op 'DeveloperToolsDisallowedForForceInstalledExtensions' (waarde 0, de standaardinstelling voor zakelijke gebruikers), zijn de hulpprogramma's voor ontwikkelaars en JavaScript-console wel algemeen toegankelijk, maar niet in de context van extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid.
-      Als dit beleid is ingesteld op 'DeveloperToolsAllowed' (waarde 1, de standaardinstelling voor onbeheerde gebruikers), zijn de hulpprogramma's voor ontwikkelaars en de JavaScript-console toegankelijk in elke context, inclusief de context van extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid.
-      Als dit beleid is ingesteld op 'DeveloperToolsDisallowed' (waarde 2), zijn de hulpprogramma's voor ontwikkelaars niet toegankelijk en kunnen de website-elementen niet worden geïnspecteerd. Sneltoetsen en items van menu's of contextmenu's waarmee de hulpprogramma's voor ontwikkelaars of de JavaScript-console worden geopend, zijn uitgeschakeld.
-      Als het verouderde beleid 'DeveloperToolsDisabled' is ingesteld op 'true' (waar), wordt de waarde van dit beleid genegeerd en zijn de hulpprogramma's voor ontwikkelaars uitgeschakeld.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adres of URL van proxyserver</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
@@ -208,7 +202,7 @@
 <translation id="1803646570632580723">Lijst met vastgezette apps om weer te geven in het opstartprogramma</translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
 <translation id="1810261428246410396">Het gebruik van instant-tethering toestaan</translation>
-<translation id="1826282708349731794">Bepaalt hoe de Chrome Cleanup Tool gegevens doorgeeft aan Google</translation>
+<translation id="1826282708349731794">Bepaalt hoe Chrome Cleanup gegevens doorgeeft aan Google</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
 <translation id="1843117931376765605">Vernieuwingsfrequentie voor gebruikersbeleid</translation>
 <translation id="1844620919405873871">Hiermee configureer je het beleid ten aanzien van snel ontgrendelen.</translation>
@@ -607,7 +601,7 @@
       Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten te configureren. Het is bedoeld als aanvulling op de configuratie van printers door individuele gebruikers.
       </translation>
 <translation id="2633084400146331575">Gesproken feedback inschakelen</translation>
-<translation id="2640843331263301324">Schakelt de Chrome Cleanup Tool in voor Windows</translation>
+<translation id="2640843331263301324">Schakelt Chrome Cleanup in voor Windows</translation>
 <translation id="2646290749315461919">Hiermee kun je instellen of websites de fysieke locatie van gebruikers mogen bijhouden. Het bijhouden van de fysieke locatie van gebruikers kan standaard worden toegestaan, standaard worden geweigerd of het kan de gebruiker telkens worden gevraagd wanneer een website zijn fysieke locatie opvraagt.
 
           Als dit beleid niet wordt ingesteld, wordt 'AskGeolocation' gebruikt en kan de gebruiker dit wijzigen.</translation>
@@ -693,7 +687,6 @@
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
-<translation id="2884728160143956392">Sessiecookies toestaan op deze sites</translation>
 <translation id="2893546967669465276">Systeemlogboeken naar de beheerserver verzenden</translation>
 <translation id="2899002520262095963">Android-apps kunnen de netwerkconfiguraties en CA-certificaten gebruiken die via dit beleid zijn ingesteld, maar hebben geen toegang tot bepaalde configuratieopties.</translation>
 <translation id="2906874737073861391">Lijst met app-pakketextensies</translation>
@@ -737,13 +730,6 @@
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen vervanging van zoektermen uitgevoerd.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
-<translation id="3056439054015239107">
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" />, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels op dezelfde waarde in te stellen. Als de waarden niet overeenkomen, kan dit een vertraging veroorzaken bij het openen van een gebruikerssessie terwijl de waarde wordt toegepast die in het gebruikersbeleid is opgegeven.
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      </translation>
 <translation id="306887062252197004">Met dit beleid kunnen gebruikers van de WebDriver-functie beleidsregels
       negeren die problemen met de werking kunnen veroorzaken.
 
@@ -1211,13 +1197,6 @@
 <translation id="4483649828988077221">Automatisch updaten uitschakelen</translation>
 <translation id="4485425108474077672">De URL van de pagina 'Nieuw tabblad' configureren</translation>
 <translation id="4492287494009043413">Het maken van screenshots uitschakelen</translation>
-<translation id="4497968613298501984">Configureer de lijst met zakelijke login-URL's (alleen HTTP- en HTTPS-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
-      Deze instelling moet alleen worden gebruikt door GSuite-gebruikers die een SSO/SAML-systeem gebruiken.
-      Als u er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt, moet u ervoor zorgen dat uw inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Als deze instelling is ingeschakeld, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
-      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="450537894712826981">Configureert de cachegrootte die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gecachte bestanden op de schijf.
 
       Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven cachegrootte, ongeacht of de gebruiker de markering --media-cache-size heeft opgegeven. De waarde die in dit beleid wordt opgegeven, is geen vaste waarde maar een suggestie voor het cachesysteem. Een waarde die lager is dan een paar megabytes, is te klein en wordt afgerond naar een redelijk minimum.
@@ -1341,13 +1320,6 @@
 <translation id="4834526953114077364">De gebruikers die het langst geleden gebruikt zijn en gedurende de laatste drie maanden niet zijn ingelogd, worden verwijderd totdat er voldoende vrije ruimte is</translation>
 <translation id="4838572175671839397">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" />. Er wordt een fout weergegeven als een gebruiker probeert in te loggen met een gebruikersnaam die niet overeenkomt met dit patroon. Als dit beleid niet wordt ingesteld of leeg blijft, kan elke gebruiker inloggen op <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Modus voor volledig scherm toestaan</translation>
-<translation id="4868249328547841081">Configureer de URL voor het wijzigen van het wachtwoord (alleen HTTP- en HTTPS-schema's). De wachtwoordbeveiligingsservice stuurt gebruikers naar deze URL wanneer ze het slachtoffer zijn van phishing en hun wachtwoord willen wijzigen.
-      Deze instelling dient alleen te worden gebruikt door G Suite-gebruikers die een SSO/SMAL-systeem gebruiken.
-      Als u er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> de nieuwe vingerafdruk van het wachtwoord correct vastlegt op deze pagina voor het wijzigen van het wachtwoord, moet u ervoor zorgen dat uw pagina voor het wijzigen van het wachtwoord voldoet aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Als deze instelling is ingeschakeld, stuurt de wachtwoordbeveiligingsservice gebruikers naar deze URL, waar ze hun wachtwoord kunnen wijzigen als ze het slachtoffer zijn van phishing.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, stuurt de wachtwoordbeveiligingsservice gebruikers naar https://myaccounts.google.com, waar ze hun wachtwoord kunnen wijzigen.
-      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="4869787217450099946">Geeft aan of schermactiveringsvergrendeling is toegestaan. Deze kan worden aangevraagd door extensies via de API voor de stroombeheerextensie.
 
           Als dit beleid is ingesteld als 'true' of als het niet is ingesteld, wordt schermactiveringsvergrendeling ingesteld voor stroombeheer.
@@ -1548,9 +1520,6 @@
       Als dit beleid is ingesteld, kan de gebruiker alleen instellen dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een van de talen die is opgenomen in dit beleid. Als dit beleid niet is ingesteld of is ingesteld op een lege lijst, kan <ph name="PRODUCT_OS_NAME" /> worden weergegeven in alle ondersteunde talen. Als dit beleid is ingesteld op een lijst met ongeldige waarden, worden alle ongeldige waarden genegeerd. Als een gebruiker al eerder had ingesteld dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een bepaalde taal die niet is toegestaan door dit beleid, wordt de weergavetaal (op het moment dat de gebruiker inlogt) ingesteld op een taal die wel is toegestaan. Als de gebruiker voorkeurstalen had ingesteld en een van de voorkeurstalen is toegestaan door dit beleid, schakelt <ph name="PRODUCT_OS_NAME" /> over naar deze taal. Als de gebruiker geen voorkeurstalen had ingesteld, schakelt <ph name="PRODUCT_OS_NAME" /> over naar de eerste geldige waarde die door het beleid is bepaald, of anders naar de standaardtaal (momenteel en-US) als het beleid alleen ongeldige talen bevat.</translation>
 <translation id="5464816904705580310">Hiermee configureer je instellingen voor beheerde gebruikers.</translation>
 <translation id="546726650689747237">Vertraging van dimmen van scherm wanneer op netstroom wordt gewerkt</translation>
-<translation id="5469484020713359236">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die cookies mogen instellen.
-
-          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultCookiesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
 <translation id="5475361623548884387">Afdrukken inschakelen</translation>
 <translation id="547601067149622666">Geen advertenties toestaan op sites met opdringerige advertenties</translation>
@@ -1853,14 +1822,11 @@
       Als je de instelling inschakelt of geen waarde instelt, kunnen gebruikers de opties voor Automatisch aanvullen zelf beheren. Zo kunnen ze profielen voor Automatisch aanvullen configureren en de functie naar wens in- of uitschakelen.</translation>
 <translation id="6394350458541421998">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_OS_NAME" /> versie 29. Gebruik het beleid PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">De gebruiker uitloggen</translation>
-<translation id="6412477120967771054">Als deze waarde is ingesteld op 'false' (onwaar), scant de Chrome Cleanup Tool het systeem niet op ongewenste software en kan de tool niets opschonen. Het is ook niet meer mogelijk de Chrome Cleanup Tool handmatig te starten via chrome://settings/cleanup.
+<translation id="6412477120967771054">Als deze waarde is ingesteld op 'false' (onwaar), scant Chrome Cleanup het systeem niet op ongewenste software en kan de tool niets opschonen. Het is ook niet meer mogelijk Chrome Cleanup handmatig te starten via chrome://settings/cleanup.
 
-      Als de waarde is ingesteld op 'true' (waar) of niet is ingesteld, scant de Chrome Cleanup Tool het systeem periodiek op ongewenste software. Als er ongewenste software wordt aangetroffen, wordt de gebruiker gevraagd of deze moet worden verwijderd. Het is mogelijk de Chrome Cleanup Tool te starten via chrome://settings.
+      Als de waarde is ingesteld op 'true' (waar) of niet is ingesteld, scant Chrome Cleanup het systeem periodiek op ongewenste software. Als er ongewenste software wordt aangetroffen, wordt de gebruiker gevraagd of deze moet worden verwijderd. Het is mogelijk Chrome Cleanup te starten via chrome://settings.
 
       Dit beleid is niet beschikbaar voor Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
-<translation id="6417861582779909667">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die geen cookies mogen instellen.
-
-          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultCookiesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="6426205278746959912">Je kunt Android-apps niet dwingen een proxy te gebruiken. Er is een subset met proxyinstellingen beschikbaar voor Android-apps. Deze kunnen ze op vrijwillige basis respecteren:
 
           Als je ervoor kiest nooit een proxyserver te gebruiken, wordt aan de Android-apps gemeld dat er geen proxy is geconfigureerd.
@@ -1880,13 +1846,6 @@
       Als je wilt beheren welke websites Flash mogen uitvoeren, bekijk je de beleidsregels 'DefaultPluginsSetting', 'PluginsAllowedForUrls' en 'PluginsBlockedForUrls'.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, kan Flash-content van andere bronnen of minder belangrijke content worden geblokkeerd.</translation>
-<translation id="6535639183431116351">Dit beleid is beëindigd in M68. Gebruik in plaats hiervan DeveloperToolsAvailability.
-
-      Hiermee worden de hulpprogramma's voor ontwikkelaars en de JavaScript-console uitgeschakeld.
-
-      Als je deze instelling inschakelt, kunnen de hulpprogramma's voor ontwikkelaars niet meer worden geopend en kunnen website-elementen niet meer worden geïnspecteerd. Alle sneltoetsen en menu- en contextmenuopties voor het openen van de hulpprogramma's voor ontwikkelaars of de JavaScript-console worden uitgeschakeld.
-
-      Als je deze optie uitschakelt of niet instelt, kan de gebruiker de hulpprogramma's voor ontwikkelaars en de JavaScript-console gebruiken.</translation>
 <translation id="653608967792832033">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt vergrendeld wanneer op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld op een grotere waarde dan nul, specificeert het de tijd die de gebruiker inactief moet blijven voordat het scherm wordt vergrendeld door <ph name="PRODUCT_OS_NAME" />.
@@ -1993,12 +1952,6 @@
 <translation id="687046793986382807">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 35.
 
 Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien van de optiewaarde, maar de gerapporteerde grootten zijn gekwantiseerd en de snelheid van updates is om veiligheidsredenen beperkt. Om nauwkeurige realtime gegevens te verkrijgen, gebruik je tools zoals Telemetry.</translation>
-<translation id="6870914592443697993">
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels op dezelfde waarde in te stellen. Als de waarden niet overeenkomen, kan dit een vertraging veroorzaken bij het openen van een gebruikerssessie terwijl de waarde wordt toegepast die in het gebruikersbeleid is opgegeven.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen.
-      Als het beleid niet is geconfigureerd, worden de standaardinstellingen voor site-isolatie van het platform gebruikt voor het inlogscherm.
-      </translation>
 <translation id="6894178810167845842">URL van pagina 'Nieuw tabblad'</translation>
 <translation id="6899705656741990703">Proxyinstellingen automatisch detecteren</translation>
 <translation id="6903814433019432303">Dit beleid is alleen ingeschakeld in de winkelmodus.
@@ -2133,13 +2086,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Verbindingstypen die zijn toegestaan voor updates</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
-<translation id="7199300565886109054">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die sessiecookies mogen instellen.
-
-          Als dit beleid niet is ingesteld, wordt voor alle sites de algemene standaardwaarde gebruikt op basis van het beleid 'DefaultCookiesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.
-
-          Let op: Als <ph name="PRODUCT_NAME" /> op de achtergrond wordt uitgevoerd, wordt de sessie wellicht niet afgesloten wanneer het laatste browservenster wordt gesloten. In plaats daarvan blijft de sessie actief tot de browser wordt afgesloten. Zie het beleid 'BackgroundModeEnabled' voor meer informatie over het configureren van dit gedragspatroon.
-
-          Als het beleid 'RestoreOnStartup' zo is ingesteld dat URL's van eerdere sessies worden hersteld, geldt dit beleid niet en worden cookies voor deze sites permanent opgeslagen.</translation>
 <translation id="7202925763179776247">Downloadbeperkingen toestaan</translation>
 <translation id="7207095846245296855">Google SafeSearch afdwingen</translation>
 <translation id="7216442368414164495">Hiermee kunnen gebruikers zich aanmelden voor uitgebreide rapportage van Safe Browsing</translation>
@@ -2372,13 +2318,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7781069478569868053">Pagina 'Nieuw tabblad'</translation>
 <translation id="7788511847830146438">Per profiel</translation>
-<translation id="7801886189430766248">Wanneer dit beleid is ingesteld op 'waar', worden app-gegevens van Android geüpload naar Android Backup-servers en teruggezet vanaf deze servers wanneer compatibele apps opnieuw worden geïnstalleerd.
-
-      Wanneer dit beleid is ingesteld op 'onwaar', is Android Backup Service uitgeschakeld.
-
-      Als deze instelling is geconfigureerd, kunnen gebruikers de instelling niet wijzigen.
-
-      Als deze instelling niet is geconfigureerd, kunnen gebruikers Android Backup Service in- en uitschakelen in de app Android-instellingen.</translation>
 <translation id="780603170519840350">Hiermee schakel je de handhaving van de Certificaattransparantie voor een lijst met subjectPublicKeyInfo-hashes uit.
 
       Met dit beleid kun je de vereisten voor openbaarmaking van certificaattransparantie uitschakelen voor certificaatreeksen die certificaten bevatten met een van de aangegeven subjectPublicKeyInfo-hashes. Zodoende kun je certificaten voor Enterprise-hosts blijven gebruiken die anders niet zouden worden vertrouwd omdat ze niet goed openbaar zijn gemaakt.
@@ -2437,11 +2376,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, kan dit apparaat alleen verbinding maken met hosts binnen het lokale netwerk.</translation>
 <translation id="7976157349247117979">Naam van de bestemming van <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Als deze waarde niet is ingesteld en de Chrome Cleanup Tool ongewenste software detecteert, kan de Chrome Cleanup Tool metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. De Chrome Cleanup Tool vraagt de gebruiker of de ongewenste software moet worden verwijderd. De gebruiker kan ervoor kiezen de resultaten van de opschoning met Google te delen, zodat Google de detectie van ongewenste software kan verbeteren. Deze resultaten bevatten metadata van bestanden en registersleutels, zoals wordt beschreven in de whitepaper over Chrome en privacy.
+<translation id="7977445800390854860">Als deze waarde niet is ingesteld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De gebruiker kan ervoor kiezen de resultaten van de opschoning met Google te delen, zodat Google de detectie van ongewenste software kan verbeteren. Deze resultaten bevatten metadata van bestanden en registersleutels, zoals wordt beschreven in de whitepaper over Chrome en privacy.
 
-      Als de waarde is ingesteld op 'false' (onwaar) en de Chrome Cleanup Tool ongewenste software detecteert, worden er geen metadata van de scan met Google gedeeld. Het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled wordt genegeerd. De Chrome Cleanup Tool vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden niet met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te doen.
+      Als de waarde is ingesteld op 'false' (onwaar) en Chrome Cleanup ongewenste software detecteert, worden er geen metadata van de scan met Google gedeeld. Het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled wordt genegeerd. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden niet met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te doen.
 
-      Als de waarde is ingesteld op 'true' (waar) en de Chrome Cleanup Tool ongewenste software detecteert, kan de Chrome Cleanup Tool metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. De Chrome Cleanup Tool vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te voorkomen.
+      Als de waarde is ingesteld op 'true' (waar) en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te voorkomen.
 
       Dit beleid is niet beschikbaar voor Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7980227303582973781">Geen speciale beperkingen</translation>
