@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
+#import "base/mac/foundation_util.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -114,6 +115,15 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
   return ns_window.autorelease();
+}
+
+void BrowserFrameMac::OnWindowDestroying(NSWindow* window) {
+  // Clear delegates set in CreateNSWindow() to prevent objects with a reference
+  // to |window| attempting to validate commands by looking for a Browser*.
+  NativeWidgetMacNSWindow* ns_window =
+      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(window);
+  [ns_window setCommandHandler:nil];
+  [ns_window setCommandDispatcherDelegate:nil];
 }
 
 int BrowserFrameMac::GetMinimizeButtonOffset() const {

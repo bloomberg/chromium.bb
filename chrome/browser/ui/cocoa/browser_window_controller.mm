@@ -193,11 +193,19 @@ using content::WebContents;
 
 namespace {
 
+// Make |window| able to handle Browser commands.
 void SetUpBrowserWindowCommandHandler(NSWindow* window) {
-  // Make the window handle browser window commands.
   [base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(window)
       setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                             autorelease]];
+}
+
+// Decouples the command dispatcher associated with |window| from Browser
+// command handling. This prevents handlers with a reference to |window|
+// attempting to look up a Browser* for it.
+void ClearCommandHandler(NSWindow* window) {
+  [base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(window)
+      setCommandHandler:nil];
 }
 
 // Returns true if the Tab Detaching in Fullscreen is enabled. It's enabled by
@@ -401,6 +409,9 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)dealloc {
   browser_->tab_strip_model()->CloseAllTabs();
+
+  DCHECK([self window]);
+  ClearCommandHandler([self window]);
 
   // Explicitly release |fullscreenToolbarController_| here, as it may call
   // back to this BWC in |-dealloc|.

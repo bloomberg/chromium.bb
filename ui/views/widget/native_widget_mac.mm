@@ -111,7 +111,12 @@ bool NativeWidgetMac::IsWindowModalSheet() const {
              ui::MODAL_TYPE_WINDOW;
 }
 
-void NativeWidgetMac::OnWindowDestroyed() {
+void NativeWidgetMac::WindowDestroying() {
+  OnWindowDestroying(GetNativeWindow());
+  delegate_->OnNativeWidgetDestroying();
+}
+
+void NativeWidgetMac::WindowDestroyed() {
   DCHECK(bridge_);
   bridge_.reset();
   delegate_->OnNativeWidgetDestroyed();

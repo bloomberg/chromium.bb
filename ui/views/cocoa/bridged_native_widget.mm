@@ -623,7 +623,7 @@ void BridgedNativeWidget::OnWindowWillClose() {
   Widget* widget = native_widget_mac_->GetWidget();
   if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
     dialog->RemoveObserver(this);
-  widget->OnNativeWidgetDestroying();
+  native_widget_mac_->WindowDestroying();
 
   // Ensure BridgedNativeWidget does not have capture, otherwise
   // OnMouseCaptureLost() may reference a deleted |native_widget_mac_| when
@@ -643,7 +643,7 @@ void BridgedNativeWidget::OnWindowWillClose() {
   DCHECK(!show_animation_);
 
   [window_ setDelegate:nil];
-  native_widget_mac_->OnWindowDestroyed();
+  native_widget_mac_->WindowDestroyed();
   // Note: |this| is deleted here.
 }
 

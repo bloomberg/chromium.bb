@@ -37,10 +37,15 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // a native window "sheet", and have a different lifetime to regular windows.
   bool IsWindowModalSheet() const;
 
+  // Informs |delegate_| that the native widget is about to be destroyed.
+  // BridgedNativeWidget::OnWindowWillClose() invokes this early when the
+  // NSWindowDelegate informs the bridge that the window is being closed (later,
+  // invoking OnWindowDestroyed()).
+  void WindowDestroying();
+
   // Deletes |bridge_| and informs |delegate_| that the native widget is
-  // destroyed. BridgedNativeWidget::OnWindowWillClose() calls this when the
-  // NSWindowDelegate informs the bridge that the window is being closed.
-  void OnWindowDestroyed();
+  // destroyed.
+  void WindowDestroyed();
 
   // Returns the vertical position that sheets should be anchored, in pixels
   // from the bottom of the window.
@@ -138,6 +143,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Called by InitNativeWidget. The return value will be autoreleased.
   virtual NativeWidgetMacNSWindow* CreateNSWindow(
       const Widget::InitParams& params);
+
+  // Optional hook for subclasses invoked by WindowDestroying().
+  virtual void OnWindowDestroying(NSWindow* window) {}
 
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
