@@ -594,8 +594,12 @@ void TemplateURLService::UpdateProviderFavicons(
   if (!urls_for_host)
     return;
 
+  // Make a copy of the container of the matching TemplateURLs, as the original
+  // container is invalidated as we update the contained TemplateURLs.
+  TemplateURLSet urls_for_host_copy(*urls_for_host);
+
   Scoper scoper(this);
-  for (TemplateURL* turl : *urls_for_host) {
+  for (TemplateURL* turl : urls_for_host_copy) {
     if (!IsCreatedByExtension(turl) &&
         turl->IsSearchURL(potential_search_url, search_terms_data()) &&
         turl->favicon_url() != favicon_url) {
