@@ -34,6 +34,12 @@ class CompositorFrameSinkClientBinding
       viz::CompositorFrame frame,
       viz::mojom::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override;
+  void SubmitCompositorFrameSync(
+      const viz::LocalSurfaceId& local_surface_id,
+      viz::CompositorFrame frame,
+      viz::mojom::HitTestRegionListPtr hit_test_region_list,
+      uint64_t submit_time,
+      const SubmitCompositorFrameSyncCallback callback) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SetWantsAnimateOnlyBeginFrames() override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;

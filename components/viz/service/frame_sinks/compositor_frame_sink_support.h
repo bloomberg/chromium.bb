@@ -130,7 +130,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   SubmitResult MaybeSubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      mojom::HitTestRegionListPtr hit_test_region_list);
+      mojom::HitTestRegionListPtr hit_test_region_list,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback);
 
   // CapturableFrameSink implementation.
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
@@ -188,6 +189,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                           const gfx::Rect& damage_rect,
                           base::TimeTicks expected_display_time) const;
 
+  // For the sync API calls, if we are blocking a client callback, runs it once
+  // BeginFrame and FrameAck are done.
+  void HandleCallback();
+
   mojom::CompositorFrameSinkClient* const client_;
 
   FrameSinkManagerImpl* const frame_sink_manager_;
@@ -219,7 +224,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   BeginFrameArgs last_begin_frame_args_;
 
   // Whether a request for begin frames has been issued.
-  bool needs_begin_frame_ = false;
+  bool client_needs_begin_frame_ = false;
 
   // Whether or not a frame observer has been added.
   bool added_frame_observer_ = false;
@@ -263,6 +268,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // regardless of its LocalSurfaceId.
   std::vector<std::pair<LocalSurfaceId, std::unique_ptr<CopyOutputRequest>>>
       copy_output_requests_;
+
+  mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback
+      compositor_frame_callback_;
+  bool callback_received_begin_frame_ = true;
+  bool callback_received_receive_ack_ = true;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

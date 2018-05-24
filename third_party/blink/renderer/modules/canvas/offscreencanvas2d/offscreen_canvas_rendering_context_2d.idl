@@ -11,6 +11,8 @@
     // back-reference to the canvas
     [ImplementedAs=offscreenCanvasForBinding] readonly attribute OffscreenCanvas canvas;
 
+    void commit();
+
     // state
     void save(); // push state on state stack
     void restore(); // pop state stack and restore state

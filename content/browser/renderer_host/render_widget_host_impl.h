@@ -639,6 +639,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       viz::CompositorFrame frame,
       viz::mojom::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override;
+  void SubmitCompositorFrameSync(
+      const viz::LocalSurfaceId& local_surface_id,
+      viz::CompositorFrame frame,
+      viz::mojom::HitTestRegionListPtr hit_test_region_list,
+      uint64_t submit_time,
+      const SubmitCompositorFrameSyncCallback callback) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const viz::SharedBitmapId& id) override;

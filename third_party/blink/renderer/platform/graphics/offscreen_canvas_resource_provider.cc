@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
@@ -44,8 +45,8 @@ namespace blink {
 OffscreenCanvasResourceProvider::OffscreenCanvasResourceProvider(
     int width,
     int height,
-    viz::mojom::blink::CompositorFrameSink* sink)
-    : sink_(sink), width_(width), height_(height) {}
+    OffscreenCanvasFrameDispatcher* frame_dispatcher)
+    : frame_dispatcher_(frame_dispatcher), width_(width), height_(height) {}
 
 OffscreenCanvasResourceProvider::~OffscreenCanvasResourceProvider() = default;
 
@@ -81,7 +82,7 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
     frame_resource->shared_memory =
         viz::bitmap_allocation::AllocateMappedBitmap(gfx::Size(width_, height_),
                                                      resource.format);
-    sink_->DidAllocateSharedBitmap(
+    frame_dispatcher_->DidAllocateSharedBitmap(
         viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
             frame_resource->shared_memory.get(), gfx::Size(width_, height_),
             resource.format),
@@ -180,7 +181,7 @@ void OffscreenCanvasResourceProvider::ReclaimResourceInternal(
 }
 
 OffscreenCanvasResourceProvider::FrameResource::~FrameResource() {
-  provider->sink_->DidDeleteSharedBitmap(
+  provider->frame_dispatcher_->DidDeleteSharedBitmap(
       SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id));
 }
 

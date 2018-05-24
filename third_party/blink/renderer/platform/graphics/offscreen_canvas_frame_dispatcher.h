@@ -40,7 +40,6 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
                                  int placeholder_canvas_id,
                                  const IntSize&);
 
-  // OffscreenCanvasFrameDispatcher implementation.
   ~OffscreenCanvasFrameDispatcher() override;
   void SetNeedsBeginFrame(bool);
   void SetSuspendAnimation(bool);
@@ -50,6 +49,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
                      double commit_start_time,
                      const SkIRect& damage_rect);
   void ReclaimResource(viz::ResourceId);
+  void DispatchFrameSync(scoped_refptr<StaticBitmapImage>,
+                         double commit_start_time,
+                         const SkIRect& damage_rect);
+
   void Reshape(const IntSize&);
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
@@ -65,6 +68,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) final;
 
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               ::gpu::mojom::blink::MailboxPtr id);
+  void DidDeleteSharedBitmap(::gpu::mojom::blink::MailboxPtr id);
+
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {
     kCommitGPUCanvasGPUCompositing = 0,
@@ -72,10 +79,16 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
     kCommitSoftwareCanvasGPUCompositing = 2,
     kCommitSoftwareCanvasSoftwareCompositing = 3,
     kOffscreenCanvasCommitTypeCount,
+
   };
 
  private:
   friend class OffscreenCanvasFrameDispatcherTest;
+
+  bool PrepareFrame(scoped_refptr<StaticBitmapImage>,
+                    double commit_start_time,
+                    const SkIRect& damage_rect,
+                    viz::CompositorFrame* frame);
 
   // Surface-related
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
@@ -98,8 +111,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
 
   viz::mojom::blink::CompositorFrameSinkPtr sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
-  std::unique_ptr<OffscreenCanvasResourceProvider>
-      offscreen_canvas_resource_provider_;
+  viz::mojom::blink::CompositorFrameSinkClientPtr client_ptr_;
 
   int placeholder_canvas_id_;
 
@@ -112,6 +124,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   viz::BeginFrameAck current_begin_frame_ack_;
 
   OffscreenCanvasFrameDispatcherClient* client_;
+
+  std::unique_ptr<OffscreenCanvasResourceProvider>
+      offscreen_canvas_resource_provider_;
+
   base::WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
 };
 

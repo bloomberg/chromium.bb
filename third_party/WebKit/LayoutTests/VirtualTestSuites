@@ -697,5 +697,11 @@
     "prefix": "user-activation-v2",
     "base": "user-activation-v2",
     "args": ["--enable-features=UserActivationV2"]
+  },
+  {
+    "prefix": "display-compositor-pixel-dump",
+    "base": "fast/canvas/display-compositor-pixel-dump",
+    "args": ["--enable-display-compositor-pixel-dump",
+             "--enable-accelerated-2d-canvas"]
   }
 ]

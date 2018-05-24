@@ -44,6 +44,8 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
 
   // Unregister |this| as a BeginFrameObserver so that the
   // BeginFrameSource does not call into |this| after it's deleted.
+  callback_received_begin_frame_ = true;
+  callback_received_receive_ack_ = true;
   SetNeedsBeginFrame(false);
 
   // For display root surfaces the surface is no longer going to be visible.
@@ -207,7 +209,7 @@ void CompositorFrameSinkSupport::EvictLastActivatedSurface() {
 }
 
 void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
-  needs_begin_frame_ = needs_begin_frame;
+  client_needs_begin_frame_ = needs_begin_frame;
   UpdateNeedsBeginFramesInternal();
 }
 
@@ -242,7 +244,8 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
   const auto result = MaybeSubmitCompositorFrame(
-      local_surface_id, std::move(frame), std::move(hit_test_region_list));
+      local_surface_id, std::move(frame), std::move(hit_test_region_list),
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
   DCHECK_EQ(result, ACCEPTED);
 }
 
@@ -267,12 +270,23 @@ CompositorFrameSinkSupport::SubmitResult
 CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list) {
+    mojom::HitTestRegionListPtr hit_test_region_list,
+    mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   TRACE_EVENT1("viz", "CompositorFrameSinkSupport::MaybeSubmitCompositorFrame",
                "FrameSinkId", frame_sink_id_.ToString());
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
   DCHECK(!frame.size_in_pixels().IsEmpty());
+
+  CHECK(callback_received_begin_frame_);
+  CHECK(callback_received_receive_ack_);
+
+  compositor_frame_callback_ = std::move(callback);
+  if (compositor_frame_callback_) {
+    callback_received_begin_frame_ = false;
+    callback_received_receive_ack_ = false;
+    UpdateNeedsBeginFramesInternal();
+  }
 
   // Ensure no CopyOutputRequests have been submitted if they are banned.
   if (!allow_copy_output_requests_ && frame.HasCopyOutputRequests()) {
@@ -422,11 +436,30 @@ SurfaceReference CompositorFrameSinkSupport::MakeTopLevelRootReference(
   return SurfaceReference(surface_manager_->GetRootSurfaceId(), surface_id);
 }
 
+void CompositorFrameSinkSupport::HandleCallback() {
+  if (!compositor_frame_callback_ || !callback_received_begin_frame_ ||
+      !callback_received_receive_ack_) {
+    return;
+  }
+
+  std::move(compositor_frame_callback_)
+      .Run(std::move(surface_returned_resources_));
+  surface_returned_resources_.clear();
+}
+
 void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
   DCHECK_GT(ack_pending_count_, 0);
   ack_pending_count_--;
   if (!client_)
     return;
+
+  // If we have a callback, we only return the resource on onBeginFrame.
+  if (compositor_frame_callback_) {
+    callback_received_receive_ack_ = true;
+    UpdateNeedsBeginFramesInternal();
+    HandleCallback();
+    return;
+  }
 
   client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
   surface_returned_resources_.clear();
@@ -449,11 +482,17 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
-  UpdateNeedsBeginFramesInternal();
   if (last_activated_surface_id_.is_valid())
     surface_manager_->SurfaceDamageExpected(last_activated_surface_id_, args);
   last_begin_frame_args_ = args;
-  if (client_)
+
+  if (compositor_frame_callback_) {
+    callback_received_begin_frame_ = true;
+    UpdateNeedsBeginFramesInternal();
+    HandleCallback();
+  }
+
+  if (client_ && client_needs_begin_frame_)
     client_->OnBeginFrame(args);
 }
 
@@ -471,11 +510,17 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
   if (!begin_frame_source_)
     return;
 
-  if (needs_begin_frame_ == added_frame_observer_)
+  // We require a begin frame if there's a callback pending, or if the client
+  // requested it.
+  bool needs_begin_frame =
+      client_needs_begin_frame_ ||
+      (compositor_frame_callback_ && !callback_received_begin_frame_);
+
+  if (needs_begin_frame == added_frame_observer_)
     return;
 
-  added_frame_observer_ = needs_begin_frame_;
-  if (needs_begin_frame_)
+  added_frame_observer_ = needs_begin_frame;
+  if (needs_begin_frame)
     begin_frame_source_->AddObserver(this);
   else
     begin_frame_source_->RemoveObserver(this);

@@ -36,13 +36,17 @@ function initTest() {
 }
 
 function copyImage() {
-    testRunner.copyImageAtAndCapturePixelsAsyncThen(100, 100, completionCallback);
+  testRunner.copyImageAtAndCapturePixelsAsyncThen(100, 100, completionCallback);
 }
 
 function runTest() {
     // We need setTimeout as a frame barrier for the image frame to be
     // propagated to the placeholder canvas.
-    setTimeout(copyImage, 0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(copyImage);
+      });
+    });
 }
 
 function completionCallback(width, height, snapshot) {
