@@ -488,7 +488,6 @@ class ProfileSyncService : public syncer::SyncService,
   // SyncAuthManager.
   void OnRefreshTokenAvailable();
   void OnRefreshTokenRevoked();
-  void OnCredentialsRejectedByClient();
 
   // Called by SyncAuthManager when an access token fetch attempt finishes
   // (successfully or not).

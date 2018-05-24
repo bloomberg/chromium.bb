@@ -629,18 +629,10 @@ void ProfileSyncService::OnRefreshTokenAvailable() {
 void ProfileSyncService::OnRefreshTokenRevoked() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(treib): Should we also propagate this to the engine? It's not strictly
-  // necessary (the server will reject the token anyway), but it shoudln't hurt
-  // either, and it would let us merge this with OnCredentialsRejectedByClient.
-
-  NotifyObservers();
-}
-
-void ProfileSyncService::OnCredentialsRejectedByClient() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   if (HasSyncingEngine())
     engine_->InvalidateCredentials();
+
+  NotifyObservers();
 }
 
 void ProfileSyncService::Shutdown() {
