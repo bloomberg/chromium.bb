@@ -26,16 +26,16 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
     virtual bool IsTabletMode() = 0;
   };
 
-  CustomFrameHeader();
-  ~CustomFrameHeader() override;
-
   // BrowserFrameHeaderAsh does not take ownership of any of the parameters.
+  // |target_widget| is the widget that the caption buttons act on.
   // |view| is the view into which |this| will paint. |back_button| can be
   // nullptr, and the frame will not have a back button.
-  void Init(views::View* view,
-            AppearanceProvider* appearance_provider,
-            bool incognito,
-            FrameCaptionButtonContainerView* caption_button_container);
+  CustomFrameHeader(views::Widget* target_widget,
+                    views::View* view,
+                    AppearanceProvider* appearance_provider,
+                    bool incognito,
+                    FrameCaptionButtonContainerView* caption_button_container);
+  ~CustomFrameHeader() override;
 
  protected:
   // FrameHeader:

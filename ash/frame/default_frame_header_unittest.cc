@@ -31,7 +31,7 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  DefaultFrameHeader frame_header(w->non_client_view()->frame_view(),
+  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
                                   &container);
   frame_header.SetLeftHeaderView(&window_icon);
   frame_header.LayoutHeader();
@@ -46,7 +46,7 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   FrameCaptionButtonContainerView container(w.get());
   FrameBackButton back;
 
-  DefaultFrameHeader frame_header(w->non_client_view()->frame_view(),
+  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
                                   &container);
   frame_header.SetBackButton(&back);
   frame_header.LayoutHeader();
@@ -67,7 +67,7 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  DefaultFrameHeader frame_header(w->non_client_view()->frame_view(),
+  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
                                   &container);
 
   // Check frame color is sensitive to mode.

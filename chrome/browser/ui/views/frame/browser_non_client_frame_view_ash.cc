@@ -696,14 +696,13 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 
   Browser* browser = browser_view()->browser();
   if (!UsePackagedAppHeaderStyle()) {
-    auto browser_frame_header = std::make_unique<ash::CustomFrameHeader>();
-    browser_frame_header->Init(this, this,
-                               !browser_view()->IsRegularOrGuestSession(),
-                               caption_button_container_);
+    auto browser_frame_header = std::make_unique<ash::CustomFrameHeader>(
+        frame(), this, this, !browser_view()->IsRegularOrGuestSession(),
+        caption_button_container_);
     header = std::move(browser_frame_header);
   } else {
     std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =
-        std::make_unique<ash::DefaultFrameHeader>(this,
+        std::make_unique<ash::DefaultFrameHeader>(frame(), this,
                                                   caption_button_container_);
     // TODO(alancutter): Move this branch into a new HostedAppFrameHeader class.
     if (extensions::HostedAppBrowserController::
