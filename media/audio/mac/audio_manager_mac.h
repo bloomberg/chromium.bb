@@ -77,6 +77,9 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
 
   static int HardwareSampleRateForDevice(AudioDeviceID device_id);
   static int HardwareSampleRate();
+  static bool GetDefaultOutputDevice(AudioDeviceID* device);
+  static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
+                                             const std::string& device_id);
 
   // OSX has issues with starting streams as the system goes into suspend and
   // immediately after it wakes up from resume.  See http://crbug.com/160920.

@@ -12,14 +12,18 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "media/audio/mac/core_audio_util_mac.h"
 #include "media/audio/mac/scoped_audio_unit.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -33,6 +37,13 @@ OSStatus AudioDeviceDuck(AudioDeviceID inDevice,
                          Float32 inDuckedLevel,
                          const AudioTimeStamp* __nullable inStartTime,
                          Float32 inRampDuration) __attribute__((weak_import));
+}
+
+void UndoDucking(AudioDeviceID output_device_id) {
+  if (AudioDeviceDuck != nullptr) {
+    // Ramp the volume back up over half a second.
+    AudioDeviceDuck(output_device_id, 1.0, nullptr, 0.5);
+  }
 }
 
 }  // namespace
@@ -155,6 +166,45 @@ static void AddSystemInfoToUMA(bool is_on_battery, int num_resumes) {
   DVLOG(1) << "resume events: " << num_resumes;
 }
 
+// Finds the first subdevice, in an aggregate device, with output streams.
+static AudioDeviceID FindFirstOutputSubdevice(
+    AudioDeviceID aggregate_device_id) {
+  const AudioObjectPropertyAddress property_address = {
+      kAudioAggregateDevicePropertyFullSubDeviceList,
+      kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster};
+  base::ScopedCFTypeRef<CFArrayRef> subdevices;
+  UInt32 size = sizeof(subdevices);
+  OSStatus result = AudioObjectGetPropertyData(
+      aggregate_device_id, &property_address, 0 /* inQualifierDataSize */,
+      nullptr /* inQualifierData */, &size, subdevices.InitializeInto());
+
+  if (result != noErr) {
+    OSSTATUS_LOG(WARNING, result)
+        << "Failed to read property "
+        << kAudioAggregateDevicePropertyFullSubDeviceList << " for device "
+        << aggregate_device_id;
+    return kAudioObjectUnknown;
+  }
+
+  AudioDeviceID output_subdevice_id = kAudioObjectUnknown;
+  DCHECK_EQ(CFGetTypeID(subdevices), CFArrayGetTypeID());
+  const CFIndex count = CFArrayGetCount(subdevices);
+  for (CFIndex i = 0; i != count; ++i) {
+    CFStringRef value =
+        base::mac::CFCast<CFStringRef>(CFArrayGetValueAtIndex(subdevices, i));
+    if (value) {
+      std::string uid = base::SysCFStringRefToUTF8(value);
+      output_subdevice_id = AudioManagerMac::GetAudioDeviceIdByUId(false, uid);
+      if (output_subdevice_id != kAudioObjectUnknown &&
+          core_audio_mac::GetNumStreams(output_subdevice_id, false) > 0) {
+        break;
+      }
+    }
+  }
+
+  return output_subdevice_id;
+}
+
 // See "Technical Note TN2091 - Device input using the HAL Output Audio Unit"
 // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
 // for more details and background regarding this implementation.
@@ -184,6 +234,7 @@ AUAudioInputStream::AUAudioInputStream(
       noise_reduction_suppressed_(false),
       use_voice_processing_(voice_processing_mode ==
                             AudioManagerBase::VoiceProcessingMode::kEnabled),
+      output_device_id_for_aec_(kAudioObjectUnknown),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
       total_lost_frames_(0),
@@ -194,6 +245,9 @@ AUAudioInputStream::AUAudioInputStream(
   CHECK(!log_callback_.Equals(AudioManager::LogCallback()));
   if (use_voice_processing_) {
     DCHECK(input_params.channels() == 1 || input_params.channels() == 2);
+    const bool got_default_device =
+        AudioManagerMac::GetDefaultOutputDevice(&output_device_id_for_aec_);
+    DCHECK(got_default_device);
   }
 
   const SampleFormat kSampleFormat = kSampleFormatS16;
@@ -484,11 +538,22 @@ bool AUAudioInputStream::OpenVoiceProcessingAU() {
     return false;
   }
 
-  // Next, set the audio device to be the Audio Unit's current device.
+  // Next, set the audio device to be the Audio Unit's input device.
   result =
       AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
                            kAudioUnitScope_Global, AUElement::INPUT,
                            &input_device_id_, sizeof(input_device_id_));
+
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
+  // Followed by the audio device to be the Audio Unit's output device.
+  result = AudioUnitSetProperty(
+      audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
+      kAudioUnitScope_Global, AUElement::OUTPUT, &output_device_id_for_aec_,
+      sizeof(output_device_id_for_aec_));
 
   if (result != noErr) {
     HandleError(result);
@@ -604,21 +669,7 @@ bool AUAudioInputStream::OpenVoiceProcessingAU() {
     return false;
   }
 
-  if (AudioDeviceDuck != nullptr) {
-    // Undo the ducking.
-    // Obtain the AudioDeviceID of the default output AudioDevice.
-    const AudioObjectPropertyAddress pa = {
-        kAudioHardwarePropertyDefaultOutputDevice,
-        kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster};
-    AudioDeviceID output_device = 0;
-    UInt32 size = sizeof(output_device);
-    OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &pa,
-                                                 0, 0, &size, &output_device);
-    if (result == noErr) {
-      // Ramp the volume back up over half a second.
-      AudioDeviceDuck(output_device, 1.0, nullptr, 0.5);
-    }
-  }
+  UndoDucking(output_device_id_for_aec_);
 
   return true;
 }
@@ -894,7 +945,76 @@ bool AUAudioInputStream::IsMuted() {
 
 void AUAudioInputStream::SetOutputDeviceForAec(
     const std::string& output_device_id) {
-  // TODO(ossu): Implement.
+  if (!use_voice_processing_)
+    return;
+
+  AudioDeviceID audio_device_id =
+      AudioManagerMac::GetAudioDeviceIdByUId(false, output_device_id);
+  if (audio_device_id == output_device_id_for_aec_)
+    return;
+
+  if (audio_device_id == kAudioObjectUnknown) {
+    log_callback_.Run(
+        base::StringPrintf("AU in: Unable to resolve output device id '%s'",
+                           output_device_id.c_str()));
+    return;
+  }
+
+  // If the selected device is an aggregate device, try to use the first output
+  // device of the aggregate device instead.
+  if (core_audio_mac::GetDeviceTransportType(audio_device_id) ==
+      kAudioDeviceTransportTypeAggregate) {
+    const AudioDeviceID output_subdevice_id =
+        FindFirstOutputSubdevice(audio_device_id);
+
+    if (output_subdevice_id == kAudioObjectUnknown) {
+      log_callback_.Run(base::StringPrintf(
+          "AU in: Unable to find an output subdevice in aggregate devie '%s'",
+          output_device_id.c_str()));
+      return;
+    }
+    audio_device_id = output_subdevice_id;
+  }
+
+  if (audio_device_id != output_device_id_for_aec_) {
+    log_callback_.Run(
+        base::StringPrintf("AU in: Output device for AEC changed to '%s' (%d)",
+                           output_device_id.c_str(), audio_device_id));
+    SwitchVoiceProcessingOutputDevice(audio_device_id);
+  }
+}
+
+void AUAudioInputStream::SwitchVoiceProcessingOutputDevice(
+    AudioDeviceID output_device_id) {
+  DCHECK(use_voice_processing_);
+
+  output_device_id_for_aec_ = output_device_id;
+  if (!audio_unit_)
+    return;
+
+  OSStatus result = noErr;
+  if (IsRunning()) {
+    result = AudioOutputUnitStop(audio_unit_);
+    DCHECK_EQ(result, noErr);
+  }
+
+  CloseAudioUnit();
+  SetInputCallbackIsActive(false);
+  ReportAndResetStats();
+  io_buffer_frame_size_ = 0;
+  got_input_callback_ = false;
+
+  OpenVoiceProcessingAU();
+  result = AudioOutputUnitStart(audio_unit_);
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result) << "Failed to start acquiring data";
+    Stop();
+    return;
+  }
+
+  log_callback_.Run(base::StringPrintf(
+      "AU in: Successfully reinitialized AEC for output device id=%d.",
+      output_device_id));
 }
 
 // static

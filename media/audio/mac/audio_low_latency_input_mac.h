@@ -148,6 +148,9 @@ class MEDIA_EXPORT AUAudioInputStream
   // Uninitializes the audio unit if needed.
   void CloseAudioUnit();
 
+  // Reinitializes the AudioUnit to use a new output device.
+  void SwitchVoiceProcessingOutputDevice(AudioDeviceID output_device_id);
+
   // Adds extra UMA stats when it has been detected that startup failed.
   void AddHistogramsForFailedStartup();
 
@@ -252,6 +255,9 @@ class MEDIA_EXPORT AUAudioInputStream
   // voice processing component that provides echo cancellation, ducking
   // and gain control on Sierra and later.
   const bool use_voice_processing_;
+
+  // The of the output device to cancel echo from.
+  AudioDeviceID output_device_id_for_aec_;
 
   // Stores the timestamp of the previous audio buffer provided by the OS.
   // We use this in combination with |last_number_of_frames_| to detect when
