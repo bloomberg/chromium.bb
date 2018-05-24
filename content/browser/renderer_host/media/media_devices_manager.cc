@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/sequence_checker.h"
@@ -127,38 +128,44 @@ static bool EqualDeviceAndGroupID(const MediaDeviceInfo& lhs,
 
 std::string GuessVideoGroupID(const MediaDeviceInfoArray& audio_infos,
                               const MediaDeviceInfo& video_info) {
-  std::string video_label = VideoLabelWithoutModelID(video_info.label);
+  const std::string video_label = VideoLabelWithoutModelID(video_info.label);
 
   // If |video_label| is very small, do not guess in order to avoid false
   // positives.
   if (video_label.size() <= 3)
     return video_info.device_id;
 
-  std::function<bool(const MediaDeviceInfo&)>
-      video_label_is_included_in_audio_label =
-          [&video_label](const MediaDeviceInfo& audio_info) {
+  base::RepeatingCallback<bool(const MediaDeviceInfo&)>
+      video_label_is_included_in_audio_label = base::BindRepeating(
+          [](const std::string& video_label,
+             const MediaDeviceInfo& audio_info) {
             return audio_info.label.find(video_label) != std::string::npos;
-          };
+          },
+          base::ConstRef(video_label));
 
-  bool video_has_usb_model = LabelHasUSBModel(video_info.label);
+  const bool video_has_usb_model = LabelHasUSBModel(video_info.label);
   std::string video_usb_model = video_has_usb_model
                                     ? GetUSBModelFromLabel(video_info.label)
                                     : std::string();
-  std::function<bool(const MediaDeviceInfo&)> usb_model_matches =
-      [video_has_usb_model,
-       &video_usb_model](const MediaDeviceInfo& audio_info) {
-        return video_has_usb_model && LabelHasUSBModel(audio_info.label)
-                   ? video_usb_model == GetUSBModelFromLabel(audio_info.label)
-                   : false;
-      };
+  base::RepeatingCallback<bool(const MediaDeviceInfo&)> usb_model_matches =
+      base::BindRepeating(
+          [](bool video_has_usb_model, const std::string& video_usb_model,
+             const MediaDeviceInfo& audio_info) {
+            return video_has_usb_model && LabelHasUSBModel(audio_info.label)
+                       ? video_usb_model ==
+                             GetUSBModelFromLabel(audio_info.label)
+                       : false;
+          },
+          video_has_usb_model, base::ConstRef(video_usb_model));
 
-  for (auto* lambda :
+  for (auto* callback :
        {&video_label_is_included_in_audio_label, &usb_model_matches}) {
     // The label for the default and communication audio devices may contain the
     // same label as the real devices, so they should be ignored when trying to
     // find unique matches.
-    auto real_device_matches = [lambda](const MediaDeviceInfo& audio_info) {
-      return IsRealAudioDeviceID(audio_info.device_id) && (*lambda)(audio_info);
+    auto real_device_matches = [callback](const MediaDeviceInfo& audio_info) {
+      return IsRealAudioDeviceID(audio_info.device_id) &&
+             (*callback).Run(audio_info);
     };
     auto it_first = std::find_if(audio_infos.begin(), audio_infos.end(),
                                  real_device_matches);
