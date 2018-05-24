@@ -39,7 +39,9 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
                     CrtcController* crtc) override;
 
  private:
-  std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
+  std::unique_ptr<HardwareDisplayPlane> CreatePlane(
+      uint32_t plane_id,
+      uint32_t possible_crtcs) override;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerAtomic);
 };

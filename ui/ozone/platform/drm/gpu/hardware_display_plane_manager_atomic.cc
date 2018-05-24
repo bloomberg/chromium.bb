@@ -219,8 +219,10 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
 }
 
 std::unique_ptr<HardwareDisplayPlane>
-HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id) {
-  return std::make_unique<HardwareDisplayPlaneAtomic>(plane_id);
+HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id,
+                                               uint32_t possible_crtcs) {
+  return std::unique_ptr<HardwareDisplayPlane>(
+      new HardwareDisplayPlaneAtomic(plane_id, possible_crtcs));
 }
 
 }  // namespace ui

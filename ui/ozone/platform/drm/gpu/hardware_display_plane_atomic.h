@@ -6,7 +6,6 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_HARDWARE_DISPLAY_PLANE_ATOMIC_H_
 
 #include "ui/gfx/overlay_transform.h"
-#include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 
 #include <stdint.h>
@@ -19,13 +18,12 @@ class Rect;
 namespace ui {
 
 class CrtcController;
+class DrmDevice;
 
 class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
  public:
-  HardwareDisplayPlaneAtomic(uint32_t id);
+  HardwareDisplayPlaneAtomic(uint32_t plane_id, uint32_t possible_crtcs);
   ~HardwareDisplayPlaneAtomic() override;
-
-  bool Initialize(DrmDevice* drm) override;
 
   virtual bool SetPlaneData(drmModeAtomicReq* property_set,
                             uint32_t crtc_id,
@@ -39,9 +37,32 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
   CrtcController* crtc() const { return crtc_; }
 
  private:
-  CrtcController* crtc_ = nullptr;
+  bool InitializeProperties(
+      DrmDevice* drm,
+      const ScopedDrmObjectPropertyPtr& plane_props) override;
 
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneAtomic);
+  // TODO(dnicoara): Merge this with DrmDevice::Property.
+  struct Property {
+    Property();
+    bool Initialize(DrmDevice* drm,
+                    const char* name,
+                    const ScopedDrmObjectPropertyPtr& plane_properties);
+    uint32_t id = 0;
+  };
+
+  Property crtc_prop_;
+  Property fb_prop_;
+  Property crtc_x_prop_;
+  Property crtc_y_prop_;
+  Property crtc_w_prop_;
+  Property crtc_h_prop_;
+  Property src_x_prop_;
+  Property src_y_prop_;
+  Property src_w_prop_;
+  Property src_h_prop_;
+  Property rotation_prop_;
+  Property in_fence_fd_prop_;
+  CrtcController* crtc_ = nullptr;
 };
 
 }  // namespace ui

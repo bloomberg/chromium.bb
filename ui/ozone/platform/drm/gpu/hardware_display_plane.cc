@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 
 #ifndef DRM_PLANE_TYPE_OVERLAY
 #define DRM_PLANE_TYPE_OVERLAY 0
@@ -27,6 +26,7 @@ namespace ui {
 
 namespace {
 
+const char* kTypePropName = "type";
 HardwareDisplayPlane::Type GetPlaneType(int value) {
   switch (value) {
     case DRM_PLANE_TYPE_CURSOR:
@@ -41,63 +41,57 @@ HardwareDisplayPlane::Type GetPlaneType(int value) {
   }
 }
 
-void ParseSupportedFormatsAndModifiers(
-    drmModePropertyBlobPtr blob,
-    std::vector<uint32_t>* supported_formats,
-    std::vector<drm_format_modifier>* supported_format_modifiers) {
-  auto* data = static_cast<const uint8_t*>(blob->data);
-  auto* header = reinterpret_cast<const drm_format_modifier_blob*>(data);
-  auto* formats =
-      reinterpret_cast<const uint32_t*>(data + header->formats_offset);
-  auto* modifiers = reinterpret_cast<const drm_format_modifier*>(
-      data + header->modifiers_offset);
-
-  for (uint32_t k = 0; k < header->count_formats; k++)
-    supported_formats->push_back(formats[k]);
-
-  for (uint32_t k = 0; k < header->count_modifiers; k++)
-    supported_format_modifiers->push_back(modifiers[k]);
-}
-
 }  // namespace
 
-HardwareDisplayPlane::HardwareDisplayPlane(uint32_t id) : id_(id) {}
-
-HardwareDisplayPlane::~HardwareDisplayPlane() {}
-
-bool HardwareDisplayPlane::CanUseForCrtc(uint32_t crtc_index) {
-  return crtc_mask_ & (1 << crtc_index);
+HardwareDisplayPlane::HardwareDisplayPlane(uint32_t plane_id,
+                                           uint32_t possible_crtcs)
+    : plane_id_(plane_id), possible_crtcs_(possible_crtcs) {
 }
 
-bool HardwareDisplayPlane::Initialize(DrmDevice* drm) {
-  InitializeProperties(drm);
+HardwareDisplayPlane::~HardwareDisplayPlane() {
+}
 
-  ScopedDrmPlanePtr drm_plane(drm->GetPlane(id_));
-  DCHECK(drm_plane);
+bool HardwareDisplayPlane::CanUseForCrtc(uint32_t crtc_index) {
+  return possible_crtcs_ & (1 << crtc_index);
+}
 
-  crtc_mask_ = drm_plane->possible_crtcs;
-  if (properties_.in_formats.id) {
-    ScopedDrmPropertyBlobPtr blob(
-        drm->GetPropertyBlob(properties_.in_formats.value));
-    DCHECK(blob);
-    ParseSupportedFormatsAndModifiers(blob.get(), &supported_formats_,
-                                      &supported_format_modifiers_);
+bool HardwareDisplayPlane::Initialize(
+    DrmDevice* drm,
+    const std::vector<uint32_t>& formats,
+    const std::vector<drm_format_modifier>& format_modifiers,
+    bool is_dummy,
+    bool test_only) {
+  supported_formats_ = formats;
+  supported_format_modifiers_ = format_modifiers;
+
+  if (test_only)
+    return true;
+
+  if (is_dummy) {
+    type_ = kDummy;
+    supported_formats_.push_back(DRM_FORMAT_XRGB8888);
+    supported_formats_.push_back(DRM_FORMAT_XBGR8888);
+    return true;
   }
 
-  if (supported_formats_.empty()) {
-    for (uint32_t i = 0; i < drm_plane->count_formats; ++i)
-      supported_formats_.push_back(drm_plane->formats[i]);
+  ScopedDrmObjectPropertyPtr plane_props(drmModeObjectGetProperties(
+      drm->get_fd(), plane_id_, DRM_MODE_OBJECT_PLANE));
+  if (!plane_props) {
+    PLOG(ERROR) << "Unable to get plane properties.";
+    return false;
   }
 
-  if (properties_.type.id)
-    type_ = GetPlaneType(properties_.type.value);
+  uint32_t count_props = plane_props->count_props;
+  for (uint32_t i = 0; i < count_props; i++) {
+    ScopedDrmPropertyPtr property(
+        drmModeGetProperty(drm->get_fd(), plane_props->props[i]));
+    if (property && !strcmp(property->name, kTypePropName)) {
+      type_ = GetPlaneType(plane_props->prop_values[i]);
+      break;
+    }
+  }
 
-  VLOG(3) << "Initialized plane=" << id_ << " crtc_mask=" << std::hex << "0x"
-          << crtc_mask_ << std::dec
-          << " supported_formats_count=" << supported_formats_.size()
-          << " supported_modifiers_count="
-          << supported_format_modifiers_.size();
-  return true;
+  return InitializeProperties(drm, plane_props);
 }
 
 bool HardwareDisplayPlane::IsSupportedFormat(uint32_t format) {
@@ -147,25 +141,10 @@ std::vector<uint64_t> HardwareDisplayPlane::ModifiersForFormat(
   return modifiers;
 }
 
-void HardwareDisplayPlane::InitializeProperties(DrmDevice* drm) {
-  ScopedDrmObjectPropertyPtr props =
-      drm->GetObjectProperties(id_, DRM_MODE_OBJECT_PLANE);
-  GetDrmPropertyForName(drm, props.get(), "CRTC_ID", &properties_.crtc_id);
-  GetDrmPropertyForName(drm, props.get(), "CRTC_X", &properties_.crtc_x);
-  GetDrmPropertyForName(drm, props.get(), "CRTC_Y", &properties_.crtc_y);
-  GetDrmPropertyForName(drm, props.get(), "CRTC_W", &properties_.crtc_w);
-  GetDrmPropertyForName(drm, props.get(), "CRTC_H", &properties_.crtc_h);
-  GetDrmPropertyForName(drm, props.get(), "FB_ID", &properties_.fb_id);
-  GetDrmPropertyForName(drm, props.get(), "SRC_X", &properties_.src_x);
-  GetDrmPropertyForName(drm, props.get(), "SRC_Y", &properties_.src_y);
-  GetDrmPropertyForName(drm, props.get(), "SRC_W", &properties_.src_w);
-  GetDrmPropertyForName(drm, props.get(), "SRC_H", &properties_.src_h);
-  GetDrmPropertyForName(drm, props.get(), "type", &properties_.type);
-  GetDrmPropertyForName(drm, props.get(), "rotation", &properties_.rotation);
-  GetDrmPropertyForName(drm, props.get(), "IN_FORMATS",
-                        &properties_.in_formats);
-  GetDrmPropertyForName(drm, props.get(), "IN_FENCE_FD",
-                        &properties_.in_fence_fd);
+bool HardwareDisplayPlane::InitializeProperties(
+    DrmDevice* drm,
+    const ScopedDrmObjectPropertyPtr& plane_props) {
+  return true;
 }
 
 }  // namespace ui

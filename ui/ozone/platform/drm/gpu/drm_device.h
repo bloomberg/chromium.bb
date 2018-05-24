@@ -131,12 +131,6 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                                const gfx::Rect& source,
                                int overlay_plane);
 
-  // Returns the list of all planes available on this DRM device.
-  virtual ScopedDrmPlaneResPtr GetPlaneResources();
-
-  // Returns the properties associated with plane with id |plane_id|.
-  virtual ScopedDrmPlanePtr GetPlane(uint32_t plane_id);
-
   // Returns the property with name |name| associated with |connector|. Returns
   // NULL if property not found. If the returned value is valid, it must be
   // released using FreeProperty().
@@ -151,20 +145,16 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                            uint32_t property_id,
                            uint64_t value);
 
-  // Returns a binary blob associated with |property_id|. May be nullptr if the
-  // property couldn't be found.
-  virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id);
+  // Can be used to query device/driver |capability|. Sets the value of
+  // |capability to |value|. Returns true in case of a succesful query.
+  virtual bool GetCapability(uint64_t capability, uint64_t* value);
 
-  // Returns a binary blob associated with |connector|. The binary blob is
+  // Return a binary blob associated with |connector|. The binary blob is
   // associated with the property with name |name|. Return NULL if the property
   // could not be found or if the property does not have a binary blob. If valid
   // the returned object must be freed using FreePropertyBlob().
   virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
                                                    const char* name);
-
-  // Can be used to query device/driver |capability|. Sets the value of
-  // |capability| to |value|. Returns true in case of a succesful query.
-  virtual bool GetCapability(uint64_t capability, uint64_t* value);
 
   // Set the cursor to be displayed in CRTC |crtc_id|. (width, height) is the
   // cursor size pointed by |handle|.
