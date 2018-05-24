@@ -195,6 +195,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // If we've already performed layout on the unpositioned float, just return
   // the cached value.
   if (unpositioned_float->layout_result) {
+    // TODO(layout-ng): Should this use IsParallelWritingMode()?
     DCHECK(!is_same_writing_mode);
     DCHECK(unpositioned_float->layout_result->PhysicalFragment());
     return NGFragment(parent_space.GetWritingMode(),
@@ -216,7 +217,8 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
     base::Optional<MinMaxSize> min_max_size;
     if (NeedMinMaxSize(*space.get(), style)) {
       MinMaxSizeInput zero_input;  // Floats do not intrude into floats.
-      min_max_size = unpositioned_float->node.ComputeMinMaxSize(zero_input);
+      min_max_size = unpositioned_float->node.ComputeMinMaxSize(
+          style.GetWritingMode(), zero_input);
     }
     return ComputeInlineSizeForFragment(*space.get(), style, min_max_size);
   }

@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 
@@ -71,7 +72,8 @@ class CORE_EXPORT NGLayoutInputNode {
   // Performs layout on this input node, will return the layout result.
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&, NGBreakToken*);
 
-  MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&,
+  MinMaxSize ComputeMinMaxSize(WritingMode,
+                               const MinMaxSizeInput&,
                                const NGConstraintSpace* = nullptr);
 
   // Returns intrinsic sizing information for replaced elements.

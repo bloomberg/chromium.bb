@@ -47,7 +47,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // min/max calculation (e.g. the node that will undergo shrink-to-fit). This
   // constraint space will not be passed on to children. If no constraint space
   // is specified, a zero-sized one will be used.
-  MinMaxSize ComputeMinMaxSize(const MinMaxSizeInput&,
+  MinMaxSize ComputeMinMaxSize(WritingMode container_writing_mode,
+                               const MinMaxSizeInput&,
                                const NGConstraintSpace* = nullptr);
 
   NGBoxStrut GetScrollbarSizes() const;

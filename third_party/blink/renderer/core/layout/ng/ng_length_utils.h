@@ -94,6 +94,9 @@ ComputeMinAndMaxContentContribution(WritingMode writing_mode,
 // writing_mode is the desired output writing mode (ie. often the writing mode
 // of the parent); node is the node of which to compute the min/max content
 // contribution.
+// If a constraint space is provided, this function will convert it to the
+// correct writing mode and otherwise make sure it is suitable for computing
+// the desired value.
 MinMaxSize ComputeMinAndMaxContentContribution(
     WritingMode writing_mode,
     NGLayoutInputNode node,

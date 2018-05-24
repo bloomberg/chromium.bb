@@ -339,8 +339,22 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     const NGConstraintSpace* constraint_space) {
   base::Optional<MinMaxSize> minmax;
   if (NeedMinMaxSizeForContentContribution(writing_mode, node.Style())) {
-    // TODO(layoutng): This is wrong for orthogonal writing modes.
-    minmax = node.ComputeMinMaxSize(input, constraint_space);
+    scoped_refptr<NGConstraintSpace> adjusted_constraint_space;
+    if (constraint_space) {
+      // TODO(layout-ng): Check if our constraint space produces spec-compliant
+      // outputs.
+      // It is important to set a floats bfc offset so that we don't get a
+      // partial layout. It is also important that we shrink to fit, by
+      // definition.
+      NGConstraintSpaceBuilder builder(*constraint_space);
+      builder.SetAvailableSize(constraint_space->AvailableSize())
+          .SetFloatsBfcOffset(NGBfcOffset())
+          .SetIsShrinkToFit(true);
+      adjusted_constraint_space =
+          builder.ToConstraintSpace(node.Style().GetWritingMode());
+      constraint_space = adjusted_constraint_space.get();
+    }
+    minmax = node.ComputeMinMaxSize(writing_mode, input, constraint_space);
   }
 
   return ComputeMinAndMaxContentContribution(writing_mode, node.Style(),

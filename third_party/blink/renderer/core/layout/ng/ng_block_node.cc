@@ -238,6 +238,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
 }
 
 MinMaxSize NGBlockNode::ComputeMinMaxSize(
+    WritingMode container_writing_mode,
     const MinMaxSizeInput& input,
     const NGConstraintSpace* constraint_space) {
   MinMaxSize sizes;
@@ -259,12 +260,24 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
                                InitialContainingBlockSize())
           .SetTextDirection(Style().Direction())
           .SetIsIntermediateLayout(true)
+          .SetFloatsBfcOffset(NGBfcOffset())
           .ToConstraintSpace(Style().GetWritingMode());
 
   if (!constraint_space)
     constraint_space = zero_constraint_space.get();
 
-  // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
+  if (!IsParallelWritingMode(container_writing_mode,
+                             Style().GetWritingMode())) {
+    scoped_refptr<NGLayoutResult> layout_result = Layout(*constraint_space);
+    DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
+    NGBoxFragment fragment(
+        container_writing_mode,
+        ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
+    sizes.min_size = sizes.max_size = fragment.Size().inline_size;
+    return sizes;
+  }
+
+  // TODO(layout-ng): We need to make sure to use the right algorithm
   NGBlockLayoutAlgorithm minmax_algorithm(*this, *constraint_space);
   base::Optional<MinMaxSize> maybe_sizes =
       minmax_algorithm.ComputeMinMaxSize(input);
@@ -274,7 +287,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   // Have to synthesize this value.
   scoped_refptr<NGLayoutResult> layout_result = Layout(*zero_constraint_space);
   NGBoxFragment min_fragment(
-      Style().GetWritingMode(),
+      container_writing_mode,
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.min_size = min_fragment.Size().inline_size;
 
@@ -290,7 +303,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 
   layout_result = Layout(*infinite_constraint_space);
   NGBoxFragment max_fragment(
-      Style().GetWritingMode(),
+      container_writing_mode,
       ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
   sizes.max_size = max_fragment.Size().inline_size;
   return sizes;
