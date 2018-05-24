@@ -126,6 +126,29 @@ void PersistentRegion::TracePersistentNodes(Visitor* visitor,
 #endif
 }
 
+void PersistentRegion::PrepareForThreadStateTermination() {
+  DCHECK(!IsMainThread());
+  PersistentNodeSlots* slots = slots_;
+  while (slots) {
+    for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
+      PersistentNode* node = &slots->slot_[i];
+      if (node->IsUnused())
+        continue;
+      // It is safe to cast to Persistent<DummyGCBase> because persistent heap
+      // collections are banned in non-main threads.
+      Persistent<DummyGCBase>* persistent =
+          reinterpret_cast<Persistent<DummyGCBase>*>(node->Self());
+      DCHECK(persistent);
+      persistent->Clear();
+      DCHECK(node->IsUnused());
+    }
+    slots = slots->next_;
+  }
+#if DCHECK_IS_ON()
+  DCHECK_EQ(persistent_count_, 0);
+#endif
+}
+
 bool CrossThreadPersistentRegion::ShouldTracePersistentNode(
     Visitor* visitor,
     PersistentNode* node) {
@@ -146,9 +169,6 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
   // out the underlying heap reference.
   RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
 
-  // TODO(sof): consider ways of reducing overhead. (e.g., tracking number of
-  // active CrossThreadPersistent<>s pointing into the heaps of each ThreadState
-  // and use that count to bail out early.)
   PersistentNodeSlots* slots = persistent_region_->slots_;
   while (slots) {
     for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
