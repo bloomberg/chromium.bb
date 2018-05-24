@@ -480,6 +480,7 @@ source_set("browser_tests") {
   }
   if (is_chromeos) {
     sources += [
+      "api/cec_private/cec_private_apitest.cc",
       "api/media_perception_private/media_perception_private_apitest.cc",
       "api/virtual_keyboard/virtual_keyboard_apitest.cc",
     ]

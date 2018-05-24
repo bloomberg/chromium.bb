@@ -17,8 +17,6 @@ class CHROMEOS_EXPORT FakeCecServiceClient : public CecServiceClient {
   FakeCecServiceClient();
   ~FakeCecServiceClient() override;
 
-  enum CurrentState { kUndefined, kStandBy, kAwake };
-
   // CecServiceClient
   void SendStandBy() override;
   void SendWakeUp() override;
@@ -27,8 +25,6 @@ class CHROMEOS_EXPORT FakeCecServiceClient : public CecServiceClient {
 
   int stand_by_call_count() const { return stand_by_call_count_; }
   int wake_up_call_count() const { return wake_up_call_count_; }
-
-  CurrentState last_set_state() const { return last_set_state_; }
 
   void set_tv_power_states(const std::vector<PowerState>& power_states) {
     tv_power_states_ = power_states;
@@ -41,9 +37,10 @@ class CHROMEOS_EXPORT FakeCecServiceClient : public CecServiceClient {
   void Init(dbus::Bus* bus) override;
 
  private:
+  void SetDisplayPowerState(PowerState new_state);
+
   int stand_by_call_count_ = 0;
   int wake_up_call_count_ = 0;
-  CurrentState last_set_state_ = kUndefined;
 
   std::vector<PowerState> tv_power_states_;
 
