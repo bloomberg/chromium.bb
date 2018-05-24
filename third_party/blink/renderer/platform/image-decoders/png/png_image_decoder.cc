@@ -586,13 +586,30 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     // where R, G, and/or B are greater than A.  The legacy drawing
     // pipeline does not know how to handle this.
     if (ColorProfileTransform* xform = ColorTransform()) {
+      ImageFrame::PixelData* xform_dst = dst_row;
+      // If we're blending over the previous frame, we can't overwrite that
+      // when we do the color transform. So we allocate another row of pixels
+      // to hold the temporary result before blending. In all other cases,
+      // we can safely transform directly to the destination buffer, then do
+      // any operations in-place (premul, swizzle).
+      if (frame_buffer_cache_[current_frame_].GetAlphaBlendSource() ==
+          ImageFrame::kBlendAtopPreviousFrame) {
+        if (!color_transform_scanline_) {
+          // This buffer may be wider than necessary for this frame, but by
+          // allocating the full width of the PNG, we know it will be able to
+          // hold temporary data for any subsequent frame.
+          color_transform_scanline_.reset(
+              new ImageFrame::PixelData[Size().Width()]);
+        }
+        xform_dst = color_transform_scanline_.get();
+      }
       skcms_PixelFormat color_format = skcms_PixelFormat_RGBA_8888;
       skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
       bool color_conversion_successful = skcms_Transform(
-          src_ptr, color_format, alpha_format, xform->SrcProfile(), dst_row,
+          src_ptr, color_format, alpha_format, xform->SrcProfile(), xform_dst,
           color_format, alpha_format, xform->DstProfile(), width);
       DCHECK(color_conversion_successful);
-      src_ptr = png_bytep(dst_row);
+      src_ptr = png_bytep(xform_dst);
     }
 
     unsigned alpha_mask = 255;
