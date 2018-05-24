@@ -2227,11 +2227,6 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
   if (!GetLayoutObject())
     return;
 
-  Vector<String> ids;
-  TokenVectorFromAttribute(ids, aria_activedescendantAttr);
-  if (!ids.IsEmpty())
-    AXObjectCache().UpdateReverseRelations(this, ids);
-
   AXObject* focused_object = AXObjectCache().FocusedObject();
   if (focused_object == this && SupportsARIAActiveDescendant()) {
     AXObject* active_descendant = ActiveDescendant();
