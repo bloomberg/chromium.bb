@@ -4,7 +4,6 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/resource_coordinator/leveldb_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
-#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "components/history/core/browser/history_service.h"
 
 namespace resource_coordinator {
@@ -25,8 +23,6 @@ constexpr char kSiteCharacteristicsDirectoryName[] =
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
     : history_observer_(this) {
-  DCHECK(base::FeatureList::IsEnabled(features::kProactiveTabDiscarding));
-
   database_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
       profile->GetPath().AppendASCII(kSiteCharacteristicsDirectoryName));
 
@@ -59,10 +55,6 @@ LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
   LocalSiteCharacteristicsDataWriter* data_writer =
       new LocalSiteCharacteristicsDataWriter(impl);
   return base::WrapUnique(data_writer);
-}
-
-bool LocalSiteCharacteristicsDataStore::IsRecordingForTesting() {
-  return true;
 }
 
 internal::LocalSiteCharacteristicsDataImpl*
@@ -119,11 +111,6 @@ void LocalSiteCharacteristicsDataStore::OnURLsDeleted(
     }
     database_->RemoveSiteCharacteristicsFromDB(entries_to_remove);
   }
-}
-
-void LocalSiteCharacteristicsDataStore::HistoryServiceBeingDeleted(
-    history::HistoryService* history_service) {
-  history_observer_.Remove(history_service);
 }
 
 }  // namespace resource_coordinator

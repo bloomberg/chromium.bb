@@ -93,7 +93,6 @@
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
@@ -339,9 +338,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   ProtocolHandlerRegistryFactory::GetInstance();
   PolicyBlacklistFactory::GetInstance()->SetBlacklistOverride(
       base::BindRepeating(policy::OverrideBlacklistForURL));
-#if !defined(OS_ANDROID)
-  resource_coordinator::LocalSiteCharacteristicsDataStoreFactory::GetInstance();
-#endif
 #if defined(OS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
 #endif
