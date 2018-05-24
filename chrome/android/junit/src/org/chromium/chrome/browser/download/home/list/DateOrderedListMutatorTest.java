@@ -200,7 +200,7 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1));
         list.onItemsAdded(CollectionUtil.newArrayList(item1));
 
-        verify(mObserver, times(2)).onItemRangeInserted(mModel, 0, 1);
+        verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 2);
         Assert.assertEquals(2, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
         assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 4), item1);
@@ -238,7 +238,7 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2, item3));
         list.onItemsAdded(CollectionUtil.newArrayList(item3));
 
-        verify(mObserver, times(2)).onItemRangeInserted(mModel, 0, 1);
+        verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 2);
         Assert.assertEquals(5, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
         assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 2), item3);
@@ -285,7 +285,7 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2, item3));
         list.onItemsAdded(CollectionUtil.newArrayList(item3));
 
-        verify(mObserver, times(2)).onItemRangeInserted(mModel, 3, 1);
+        verify(mObserver, times(1)).onItemRangeInserted(mModel, 3, 2);
         Assert.assertEquals(5, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
         assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 2), item1);
@@ -311,8 +311,7 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(Collections.emptySet());
         list.onItemsRemoved(CollectionUtil.newArrayList(item1));
 
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 1, 1);
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 1);
+        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 2);
         Assert.assertEquals(0, mModel.getItemCount());
     }
 
@@ -389,8 +388,7 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1));
         list.onItemsRemoved(CollectionUtil.newArrayList(item2));
 
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 3, 1);
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 2, 1);
+        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 2, 2);
         Assert.assertEquals(2, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
         assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 2), item1);
@@ -422,10 +420,7 @@ public class DateOrderedListMutatorTest {
                 .thenReturn(CollectionUtil.newArrayList(item1, item2, item3, item4));
         list.onItemsAdded(CollectionUtil.newArrayList(item1, item2, item3, item4));
 
-        verify(mObserver, times(2)).onItemRangeInserted(mModel, 0, 1);
-        verify(mObserver, times(1)).onItemRangeInserted(mModel, 2, 1);
-        verify(mObserver, times(2)).onItemRangeInserted(mModel, 3, 1);
-        verify(mObserver, times(1)).onItemRangeInserted(mModel, 4, 1);
+        verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 6);
         Assert.assertEquals(6, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
         assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 1, 4), item1);
@@ -463,9 +458,7 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item2));
         list.onItemsRemoved(CollectionUtil.newArrayList(item1, item3, item4));
 
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 5, 1);
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 4, 1);
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 3, 1);
+        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 3, 3);
         verify(mObserver, times(1)).onItemRangeRemoved(mModel, 1, 1);
         Assert.assertEquals(2, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 1, 0), null);
@@ -554,9 +547,8 @@ public class DateOrderedListMutatorTest {
         when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(newItem1));
         list.onItemUpdated(item1, newItem1);
 
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 1, 1);
-        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 1);
-        verify(mObserver, times(2)).onItemRangeInserted(mModel, 0, 1);
+        verify(mObserver, times(1)).onItemRangeRemoved(mModel, 0, 2);
+        verify(mObserver, times(1)).onItemRangeInserted(mModel, 0, 2);
         Assert.assertEquals(2, mModel.getItemCount());
         assertListItemEquals(mModel.getItemAt(0), buildCalendar(2018, 1, 2, 0), null);
         assertListItemEquals(mModel.getItemAt(1), buildCalendar(2018, 1, 2, 6), newItem1);
