@@ -649,7 +649,6 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/trace_event/memory_peak_detector.cc',
       'base/trace_event/memory_usage_estimator.cc',
       'base/trace_event/process_memory_dump.cc',
-      'base/trace_event/sharded_allocation_register.cc',
       'base/trace_event/trace_buffer.cc',
       'base/trace_event/trace_config.cc',
       'base/trace_event/trace_config_category_filter.cc',
