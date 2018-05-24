@@ -101,6 +101,31 @@ LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
   return box->OverflowClipRect(location, overlay_scrollbar_clip_behavior);
 }
 
+NGPhysicalOffsetRect NGPhysicalBoxFragment::ScrollableOverflow() const {
+  DCHECK(GetLayoutObject());
+  LayoutObject* layout_object = GetLayoutObject();
+  if (layout_object->IsBox()) {
+    if (HasOverflowClip())
+      return NGPhysicalOffsetRect({}, Size());
+    // Legacy is the source of truth for overflow
+    return NGPhysicalOffsetRect(
+        ToLayoutBox(layout_object)->LayoutOverflowRect());
+  } else if (layout_object->IsLayoutInline()) {
+    // Inline overflow is a union of child overflows.
+    NGPhysicalOffsetRect overflow({}, Size());
+    for (const auto& child_fragment : Children()) {
+      NGPhysicalOffsetRect child_overflow =
+          child_fragment->ScrollableOverflow();
+      child_overflow.offset += child_fragment->Offset();
+      overflow.Unite(child_overflow);
+    }
+    return overflow;
+  } else {
+    NOTREACHED();
+  }
+  return NGPhysicalOffsetRect({}, Size());
+}
+
 IntSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
   const LayoutBox* box = ToLayoutBox(GetLayoutObject());

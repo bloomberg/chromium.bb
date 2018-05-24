@@ -42,6 +42,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
 
+  NGPhysicalOffsetRect ScrollableOverflow() const;
+
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment
   // and change them to use NG geometry types once LayoutNG supports overflow.

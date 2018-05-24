@@ -331,7 +331,7 @@ NGPhysicalOffsetRect NGPhysicalFragment::VisualRectWithContents() const {
 NGPhysicalOffsetRect NGPhysicalFragment::ScrollableOverflow() const {
   switch (Type()) {
     case NGPhysicalFragment::kFragmentBox:
-      return {{}, Size()};
+      return ToNGPhysicalBoxFragment(*this).ScrollableOverflow();
     case NGPhysicalFragment::kFragmentText:
       return {{}, Size()};
     case NGPhysicalFragment::kFragmentLineBox:
