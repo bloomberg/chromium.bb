@@ -13,7 +13,7 @@ source_set("gcm") {
     "//components/resources",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/services/gcm",
+    "//ios/chrome/browser/gcm",
     "//ios/web",
   ]
 }

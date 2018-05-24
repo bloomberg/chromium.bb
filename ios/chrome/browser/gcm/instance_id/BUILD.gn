@@ -12,7 +12,7 @@ source_set("instance_id") {
     "//components/gcm_driver",
     "//components/keyed_service/ios",
     "//ios/chrome/browser/browser_state:browser_state",
-    "//ios/chrome/browser/services/gcm",
+    "//ios/chrome/browser/gcm",
     "//ios/web",
   ]
 }

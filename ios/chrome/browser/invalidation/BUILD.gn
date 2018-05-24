@@ -17,7 +17,7 @@ source_set("invalidation") {
     "//components/prefs",
     "//components/signin/core/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/services/gcm",
+    "//ios/chrome/browser/gcm",
     "//ios/chrome/browser/signin",
     "//ios/web",
     "//net",
