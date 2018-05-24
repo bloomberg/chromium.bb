@@ -14,15 +14,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 
-// Slow tests are disabled on debug build. http://crbug.com/327719
-// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
-// TODO(noel): maybe move this into the browser test files that need it
-// now that the FileManagerBrowserTest flake issues have been removed.
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || \
-    defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define DISABLE_SLOW_FILESAPP_TESTS
-#endif
-
 class NotificationDisplayServiceTester;
 
 namespace file_manager {
