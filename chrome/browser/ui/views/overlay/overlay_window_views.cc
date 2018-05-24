@@ -62,18 +62,19 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
     if (!bounds().Contains(point))
       return HTNOWHERE;
 
-    // Allow dragging the border of the window to resize when interacting with
-    // the window outside the control icons.
-    OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
-    if (!window->GetCloseControlsBounds().Contains(point) &&
-        !window->GetPlayPauseControlsBounds().Contains(point))
-      return HTCAPTION;
+    int window_component = GetHTComponentForFrame(
+        point, kBorderThickness, kBorderThickness, kResizeAreaCornerSize,
+        kResizeAreaCornerSize, GetWidget()->widget_delegate()->CanResize());
 
-    // The areas left to interact with are media controls. These should take
-    // and handle user interaction.
-    return GetHTComponentForFrame(point, kBorderThickness, kBorderThickness,
-                                  kResizeAreaCornerSize, kResizeAreaCornerSize,
-                                  GetWidget()->widget_delegate()->CanResize());
+    // The media controls should take and handle user interaction.
+    OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
+    if (window->GetCloseControlsBounds().Contains(point) ||
+        window->GetPlayPauseControlsBounds().Contains(point)) {
+      return window_component;
+    }
+
+    // Allows for dragging and resizing the window.
+    return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
   }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
   void ResetWindowControls() override {}
