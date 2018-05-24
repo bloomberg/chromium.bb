@@ -17,6 +17,7 @@ public final class FeatureConstants {
     public static final String CONTEXTUAL_SUGGESTIONS_FEATURE = "IPH_ContextualSuggestions";
     public static final String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     public static final String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
+    public static final String NTP_BUTTON_FEATURE = "IPH_NewTabPageButton";
 
     public static final String MEDIA_DOWNLOAD_FEATURE = "IPH_MediaDownload";
 
