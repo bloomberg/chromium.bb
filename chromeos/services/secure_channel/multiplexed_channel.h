@@ -30,8 +30,8 @@ class MultiplexedChannel {
 
   virtual ~MultiplexedChannel();
 
-  virtual bool IsDisconnecting() = 0;
-  virtual bool IsDisconnected() = 0;
+  virtual bool IsDisconnecting() const = 0;
+  virtual bool IsDisconnected() const = 0;
 
   // Shares this channel with an additional client. Returns whether this action
   // was successful; all calls are expected to succeed unless the channel is

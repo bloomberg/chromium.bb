@@ -58,8 +58,8 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
       ConnectionDetails connection_details);
 
   // MultiplexedChannel:
-  bool IsDisconnecting() override;
-  bool IsDisconnected() override;
+  bool IsDisconnecting() const override;
+  bool IsDisconnected() const override;
   void PerformAddClientToChannel(
       ClientConnectionParameters client_connection_parameters) override;
 
