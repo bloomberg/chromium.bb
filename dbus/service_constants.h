@@ -391,6 +391,7 @@ const char kDisconnectProfile[] = "DisconnectProfile";
 const char kPair[] = "Pair";
 const char kCancelPairing[] = "CancelPairing";
 const char kGetServiceRecords[] = "GetServiceRecords";
+const char kExecuteWrite[] = "ExecuteWrite";
 
 // Bluetooth Device properties.
 const char kAddressProperty[] = "Address";
@@ -451,6 +452,7 @@ const char kReadValue[] = "ReadValue";
 const char kWriteValue[] = "WriteValue";
 const char kStartNotify[] = "StartNotify";
 const char kStopNotify[] = "StopNotify";
+const char kPrepareWriteValue[] = "PrepareWriteValue";
 
 // Bluetooth GATT Characteristic signals.
 const char kValueUpdatedSignal[] = "ValueUpdated";
@@ -482,6 +484,15 @@ const char kFlagEncryptRead[] = "encrypt-read";
 const char kFlagEncryptWrite[] = "encrypt-write";
 const char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
 const char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
+const char kFlagPermissionRead[] = "permission-read";
+const char kFlagPermissionWrite[] = "permission-write";
+const char kFlagPermissionEncryptRead[] = "permission-encrypt-read";
+const char kFlagPermissionEncryptWrite[] = "permission-encrypt-write";
+const char kFlagPermissionAuthenticatedRead[] = "permission-authenticated-read";
+const char kFlagPermissionAuthenticatedWrite[] =
+    "permission-authenticated-write";
+const char kFlagPermissionSecureRead[] = "permission-secure-read";
+const char kFlagPermissionSecureWrite[] = "permission-secure-write";
 }  // namespace bluetooth_gatt_characteristic
 
 namespace bluetooth_gatt_descriptor {
