@@ -3887,6 +3887,13 @@ const FeatureEntry kFeatureEntries[] = {
      ORIGIN_LIST_VALUE_TYPE(switches::kUnsafelyTreatInsecureOriginAsSecure,
                             "")},
 
+#if defined(OS_CHROMEOS)
+    {"enable-app-shortcut-search",
+     flag_descriptions::kEnableAppShortcutSearchName,
+     flag_descriptions::kEnableAppShortcutSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list::features::kEnableAppShortcutSearch)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

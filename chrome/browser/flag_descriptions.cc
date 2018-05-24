@@ -2794,6 +2794,11 @@ const char kDisableTabletSplitViewName[] = "Disable split view in Tablet mode";
 const char kDisableTabletSplitViewDescription[] =
     "Disable split view for Chrome OS tablet mode.";
 
+const char kEnableAppShortcutSearchName[] =
+    "Enable app shortcut search in launcher";
+const char kEnableAppShortcutSearchDescription[] =
+    "Enables app shortcut search in launcher";
+
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
@@ -2871,10 +2876,6 @@ const char kEnableUnifiedMultiDeviceSetupDescription[] =
 const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
     "Enable the ability to archive files on Drive in the Files app";
-
-const char kZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
-const char kZipArchiverUnpackerDescription[] =
-    "Enable or disable the ability to unpack archives in incognito mode";
 
 const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =
@@ -3105,6 +3106,10 @@ const char kVoiceInputDescription[] =
 const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
+
+const char kZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
+const char kZipArchiverUnpackerDescription[] =
+    "Enable or disable the ability to unpack archives in incognito mode";
 
 #endif  // defined(OS_CHROMEOS)
 

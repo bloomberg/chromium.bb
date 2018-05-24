@@ -1718,6 +1718,9 @@ extern const char kDisableTabletAutohideTitlebarsDescription[];
 extern const char kDisableTabletSplitViewName[];
 extern const char kDisableTabletSplitViewDescription[];
 
+extern const char kEnableAppShortcutSearchName[];
+extern const char kEnableAppShortcutSearchDescription[];
+
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 

@@ -27956,6 +27956,7 @@ from previous Chrome versions.
   <int value="986796748" label="AccountConsistency:enabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
   <int value="989062160" label="ModuleScriptsImportMetaUrl:enabled"/>
+  <int value="996643125" label="EnableAppShortcutSearch:disabled"/>
   <int value="996701528" label="SystemKeyboardLock:enabled"/>
   <int value="996797157" label="V8ContextSnapshot:enabled"/>
   <int value="1000587036" label="OfflinePagesDescriptiveFailStatus:disabled"/>
@@ -28469,6 +28470,7 @@ from previous Chrome versions.
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
+  <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
   <int value="2121550859" label="PreferHtmlOverPlugins:enabled"/>
