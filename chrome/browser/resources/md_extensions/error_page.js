@@ -104,6 +104,10 @@ cr.define('extensions', function() {
       'observeDataChanges_(data.*)',
     ],
 
+    listeners: {
+      'view-enter-start': 'onViewEnterStart_',
+    },
+
     /** @override */
     ready: function() {
       cr.ui.FocusOutlineManager.forDocument(document);
@@ -112,6 +116,15 @@ cr.define('extensions', function() {
     /** @return {!ManifestError|!RuntimeError} */
     getSelectedError: function() {
       return this.entries_[this.selectedEntry_];
+    },
+
+    /**
+     * Focuses the back button when page is loaded.
+     * @private
+     */
+    onViewEnterStart_: function() {
+      Polymer.RenderStatus.afterNextRender(
+          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
     },
 
     /**

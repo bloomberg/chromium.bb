@@ -61,8 +61,14 @@ Polymer({
 
     // Don't attempt to focus any anchor element, unless last navigation was a
     // 'pop' (backwards) navigation.
-    if (!settings.lastRouteChangeWasPopstate())
+    if (!settings.lastRouteChangeWasPopstate()) {
+      // Exception for a11y: set initial focus when navigating to a subpage.
+      let subPage = /** @type {SettingsSubpageElement} */ (
+          this.querySelector('settings-subpage.iron-selected'));
+      if (subPage)
+        subPage.initialFocus();
       return;
+    }
 
     // Only handle iron-select events from neon-animatable elements and the
     // given whitelist of settings-subpage instances.
