@@ -440,7 +440,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
 
   suggestions_service()->FetchSuggestionsData();
 
-  identity_test_env()->WaitForAccessTokenRequestAndRespondWithError(
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
 

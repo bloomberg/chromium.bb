@@ -488,7 +488,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest, ShouldFetchSuccessfullyWhenSignedIn) {
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
 
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
 
   // Wait for the fake response.
@@ -521,7 +521,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   fetcher().FetchSnippets(params,
                           ToSnippetsAvailableCallback(&mock_callback()));
 
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
 
   // Wait for the fake response.
@@ -549,7 +549,7 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
   fetcher().FetchSnippets(params,
                           ToSnippetsAvailableCallback(&mock_callback()));
 
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
 
   // Wait for the fake response.
@@ -593,12 +593,12 @@ TEST_F(RemoteSuggestionsFetcherImplTest,
                           ToSnippetsAvailableCallback(&mock_callback()));
 
   // Cancel the first access token request that's made.
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithError(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::State::REQUEST_CANCELED));
 
   // RemoteSuggestionsFetcher should retry fetching an access token if the first
   // attempt is cancelled. Respond with a valid access token on the retry.
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token", base::Time::Max());
 
   // Wait for the fake response.

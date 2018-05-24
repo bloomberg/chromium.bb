@@ -168,7 +168,7 @@ class PaymentsClientTest : public testing::Test,
   }
 
   void IssueOAuthToken() {
-    identity_test_env_.WaitForAccessTokenRequestAndRespondWithToken(
+    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         "totally_real_token",
         base::Time::Now() + base::TimeDelta::FromDays(10));
 
@@ -239,7 +239,7 @@ class PaymentsClientTest : public testing::Test,
 
 TEST_F(PaymentsClientTest, OAuthError) {
   StartUnmasking();
-  identity_test_env_.WaitForAccessTokenRequestAndRespondWithError(
+  identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
   EXPECT_TRUE(real_pan_.empty());

@@ -39,19 +39,31 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // an access token value of "access_token".
   void SetAutomaticIssueOfAccessTokens(bool grant);
 
-  // Waits for an access token request to occur and issues |token| in response.
+  // Issues |token| in response to an access token request that either has (a)
+  // just occurred in the current iteration of the run loop, or (b) will occur
+  // in the future via a task that was posted in the current iteration of the
+  // run loop. In the latter case, waits until the access token request occurs.
+  // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
+  // agnostic with respect to whether access token requests are handled
+  // synchronously or asynchronously in the production code.
   // NOTE: The implementation currently issues tokens in response to *all*
   // pending access token requests. If you need finer granularity, contact
   // blundell@chromium.org
-  void WaitForAccessTokenRequestAndRespondWithToken(
+  void WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       const std::string& token,
       const base::Time& expiration);
 
-  // Waits for an access token request to occur and issues |error| in response.
+  // Issues |error| in response to an access token request that either has (a)
+  // just occurred in the current iteration of the run loop, or (b) will occur
+  // in the future via a task that was posted in the current iteration of the
+  // run loop. In the latter case, waits until the access token request occurs.
+  // NOTE: This method behaves this way to allow IdentityTestEnvironment to be
+  // agnostic with respect to whether access token requests are handled
+  // synchronously or asynchronously in the production code.
   // NOTE: The implementation currently issues errors in response to *all*
   // pending access token requests. If you need finer granularity, contact
   // blundell@chromium.org
-  void WaitForAccessTokenRequestAndRespondWithError(
+  void WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       const GoogleServiceAuthError& error);
 
  private:
@@ -61,8 +73,12 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
 
+  // Handles the notification that an access token request was received by
+  // invoking |on_access_token_request_callback_| if the latter is non-null.
+  void HandleOnAccessTokenRequested();
+
   // Runs a nested runloop until an access token request is observed.
-  void WaitForAccessTokenRequest();
+  void WaitForAccessTokenRequestIfNecessary();
 
   std::unique_ptr<IdentityTestEnvironmentInternal> internals_;
   base::OnceClosure on_access_token_requested_callback_;
