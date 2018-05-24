@@ -333,7 +333,9 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
         [layoutId isEqualToString:@"com.apple.keylayout.ABC-AZERTY"] ||
         [layoutId hasPrefix:@"com.apple.keylayout.French"]) {
       keyCode = 0x29;
-    } else if ([layoutId isEqualToString:@"com.apple.keylayout.Turkish"]) {
+    } else if ([layoutId isEqualToString:@"com.apple.keylayout.Turkish"] ||
+               [layoutId
+                   isEqualToString:@"com.apple.keylayout.Turkish-Standard"]) {
       keyCode = 0x28;
     } else if ([layoutId isEqualToString:@"com.apple.keylayout.Dvorak-Left"]) {
       keyCode = 0x16;
