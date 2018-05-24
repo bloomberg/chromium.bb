@@ -25,6 +25,10 @@ namespace aura {
 class Window;
 }  // namespace aura
 
+namespace gfx {
+class Transform;
+}
+
 namespace ui {
 class GestureProviderAura;
 }  // namespace ui
@@ -109,6 +113,10 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   //  - Switch the target window from current window to |new_root_window|.
   void SwitchTargetRootWindow(aura::Window* new_root_window,
                               bool redraw_original_root);
+
+  // Returns the magnification transformation for the root window. If
+  // magnification is disabled, return an empty Transform.
+  gfx::Transform GetMagnifierTransform() const;
 
   // ui::InputMethodObserver:
   void OnFocus() override {}
@@ -215,15 +223,18 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   bool ProcessGestures();
 
   // Moves the view port when |point| is located within
-  // |x_panning_margin| and |y_pannin_margin| to the edge of the visible
+  // |x_panning_margin| and |y_panning_margin| to the edge of the visible
   // window region. The view port will be moved so that the |point| will be
   // moved to the point where it has |x_target_margin| and |y_target_margin|
-  // to the edge of the visible region.
+  // to the edge of the visible region. If |reduce_bottom_margin| is true,
+  // then a reduced value will be used as the |y_panning_margin| and
+  // |y_target_margin| for the bottom edge.
   void MoveMagnifierWindowFollowPoint(const gfx::Point& point,
                                       int x_panning_margin,
                                       int y_panning_margin,
                                       int x_target_margin,
-                                      int y_target_margin);
+                                      int y_target_margin,
+                                      bool reduce_bottom_margin);
 
   // Moves the view port to center |point| in magnifier screen.
   void MoveMagnifierWindowCenterPoint(const gfx::Point& point);

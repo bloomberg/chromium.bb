@@ -15,6 +15,7 @@
 #include "ash/host/root_window_transformer.h"
 #include "ash/magnifier/magnifier_scale_utils.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -35,6 +36,7 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -64,9 +66,15 @@ constexpr gfx::Tween::Type kCenterCaretAnimationTweenType = gfx::Tween::LINEAR;
 // input focus.
 constexpr int kMoveMagnifierDelayInMs = 10;
 
-// Threadshold of panning. If the cursor moves to within pixels (in DIP) of
+// Threshold of panning. If the cursor moves to within pixels (in DIP) of
 // |kCursorPanningMargin| from the edge, the view-port moves.
 constexpr int kCursorPanningMargin = 100;
+
+// Threshold of panning at the bottom when the virtual keyboard is up. If the
+// cursor moves to within pixels (in DIP) of |kKeyboardBottomPanningMargin| from
+// the bottom edge, the view-port moves. This is only used by
+// MoveMagnifierWindowFollowPoint() when |reduce_bottom_margin| is true.
+constexpr int kKeyboardBottomPanningMargin = 10;
 
 // Threadshold of panning. If the caret moves to within pixels (in DIP) of
 // |kCaretPanningMargin| from the edge, the view-port moves.
@@ -168,6 +176,13 @@ void MagnificationController::SetEnabled(bool enabled) {
     RedrawKeepingMousePosition(kNonMagnifiedScale, true, false);
     is_enabled_ = enabled;
   }
+
+  // Keyboard overscroll creates layout issues with fullscreen magnification
+  // so it needs to be disabled when magnification is enabled.
+  // TODO(spqchan): Fix the keyboard overscroll issues.
+  keyboard::SetKeyboardOverscrollOverride(
+      is_enabled_ ? keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED
+                  : keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 }
 
 bool MagnificationController::IsEnabled() const {
@@ -278,6 +293,17 @@ void MagnificationController::SwitchTargetRootWindow(
   root_window_->AddObserver(this);
 }
 
+gfx::Transform MagnificationController::GetMagnifierTransform() const {
+  gfx::Transform transform;
+  if (IsEnabled()) {
+    transform.Scale(scale_, scale_);
+    gfx::Point offset = GetWindowPosition();
+    transform.Translate(-offset.x(), -offset.y());
+  }
+
+  return transform;
+}
+
 void MagnificationController::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   // caret bounds in screen coordinates.
@@ -310,7 +336,8 @@ void MagnificationController::OnCaretBoundsChanged(
     const int panning_margin = kCaretPanningMargin / scale_;
     MoveMagnifierWindowFollowPoint(caret_point_, panning_margin, panning_margin,
                                    visible_window_rect.width() / 2,
-                                   visible_window_rect.height() / 2);
+                                   visible_window_rect.height() / 2,
+                                   false /* reduce_bottom_margin */);
     return;
   }
 
@@ -594,26 +621,42 @@ bool MagnificationController::RedrawDIP(const gfx::PointF& position_in_dip,
   origin_.set_y(y);
   scale_ = scale;
 
-  // Creates transform matrix.
-  gfx::Transform transform;
-  // Flips the signs intentionally to convert them from the position of the
-  // magnification window.
-  transform.Scale(scale_, scale_);
-  transform.Translate(-origin_.x(), -origin_.y());
+  const ui::LayerAnimator::PreemptionStrategy strategy =
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;
+  const base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(duration_in_ms);
 
-  ui::ScopedLayerAnimationSettings settings(
+  ui::ScopedLayerAnimationSettings root_layer_settings(
       root_window_->layer()->GetAnimator());
-  settings.AddObserver(this);
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.SetTweenType(tween_type);
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(duration_in_ms));
+  root_layer_settings.AddObserver(this);
+  root_layer_settings.SetPreemptionStrategy(strategy);
+  root_layer_settings.SetTweenType(tween_type);
+  root_layer_settings.SetTransitionDuration(duration);
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
   std::unique_ptr<RootWindowTransformer> transformer(
       CreateRootWindowTransformerForDisplay(root_window_, display));
+
+  // Inverse the transformation on the keyboard container so the keyboard will
+  // remain zoomed out. Apply the same animation settings to it.
+  // Note: if |scale_| is 1.0f, the transform matrix will be an identity matrix.
+  // Applying the inverse of an identity matrix will not change the
+  // transformation.
+  // TODO(spqchan): Find a way to sync the layer animations together.
+  aura::Window* virtual_keyboard_container =
+      root_window_->GetChildById(kShellWindowId_ImeWindowParentContainer);
+
+  gfx::Transform vk_transform;
+  if (GetMagnifierTransform().GetInverse(&vk_transform)) {
+    ui::ScopedLayerAnimationSettings vk_layer_settings(
+        virtual_keyboard_container->layer()->GetAnimator());
+    vk_layer_settings.SetPreemptionStrategy(strategy);
+    vk_layer_settings.SetTweenType(tween_type);
+    vk_layer_settings.SetTransitionDuration(duration);
+    virtual_keyboard_container->SetTransform(vk_transform);
+  }
+
   RootWindowController::ForWindow(root_window_)
       ->ash_host()
       ->SetRootWindowTransformer(std::move(transformer));
@@ -679,7 +722,16 @@ void MagnificationController::OnMouseMove(const gfx::Point& location) {
 
   gfx::Point mouse(location);
   int margin = kCursorPanningMargin / scale_;  // No need to consider DPI.
-  MoveMagnifierWindowFollowPoint(mouse, margin, margin, margin, margin);
+
+  // Reduce the bottom margin if the keyboard is visible.
+  bool reduce_bottom_margin = false;
+  if (keyboard::KeyboardController::GetInstance()) {
+    reduce_bottom_margin =
+        keyboard::KeyboardController::GetInstance()->keyboard_visible();
+  }
+
+  MoveMagnifierWindowFollowPoint(mouse, margin, margin, margin, margin,
+                                 reduce_bottom_margin);
 }
 
 void MagnificationController::AfterAnimationMoveCursorTo(
@@ -809,7 +861,8 @@ void MagnificationController::MoveMagnifierWindowFollowPoint(
     int x_panning_margin,
     int y_panning_margin,
     int x_target_margin,
-    int y_target_margin) {
+    int y_target_margin,
+    bool reduce_bottom_margin) {
   DCHECK(root_window_);
   bool start_zoom = false;
 
@@ -832,14 +885,24 @@ void MagnificationController::MoveMagnifierWindowFollowPoint(
   const int top = window_rect.y();
   const int bottom = window_rect.bottom();
 
+  // If |reduce_bottom_margin| is true, use kKeyboardBottomPanningMargin instead
+  // of |y_panning_margin|. This is to prevent the magnifier from panning when
+  // the user is trying to interact with the bottom of the keyboard.
+  const int bottom_panning_margin = reduce_bottom_margin
+                                        ? kKeyboardBottomPanningMargin / scale_
+                                        : y_panning_margin;
+
   int y_diff = 0;
   if (point.y() < top + y_panning_margin) {
     // Panning up.
     y_diff = point.y() - (top + y_target_margin);
     start_zoom = true;
-  } else if (bottom - y_panning_margin < point.y()) {
+  } else if (bottom - bottom_panning_margin < point.y()) {
     // Panning down.
-    y_diff = point.y() - (bottom - y_target_margin);
+    const int bottom_target_margin =
+        reduce_bottom_margin ? std::min(bottom_panning_margin, y_target_margin)
+                             : y_target_margin;
+    y_diff = point.y() - (bottom - bottom_target_margin);
     start_zoom = true;
   }
   int y = top + y_diff;
@@ -860,7 +923,17 @@ void MagnificationController::MoveMagnifierWindowCenterPoint(
     const gfx::Point& point) {
   DCHECK(root_window_);
 
-  const gfx::Rect window_rect = GetViewportRect();
+  gfx::Rect window_rect = GetViewportRect();
+
+  // Reduce the viewport bounds if the keyboard is up.
+  if (keyboard::KeyboardController::GetInstance()) {
+    gfx::Rect keyboard_rect = keyboard::KeyboardController::GetInstance()
+                                  ->GetContainerWindow()
+                                  ->bounds();
+    window_rect.set_height(window_rect.height() -
+                           keyboard_rect.height() / scale_);
+  }
+
   if (point == window_rect.CenterPoint())
     return;
 
