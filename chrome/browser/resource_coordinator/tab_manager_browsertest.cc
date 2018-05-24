@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
@@ -182,23 +184,30 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 
   EXPECT_EQ(3, tsm->count());
 
-  // Discard a tab.  It should kill the first tab, since it was the oldest
-  // and was not selected.
+  // Discard a tab.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
   EXPECT_EQ(3, tsm->count());
-  EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
-  EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  if (base::FeatureList::IsEnabled(features::kTabRanker)) {
+    // In testing configs with TabRanker enabled, we don't always know which tab
+    // it will kill. But exactly one of the first two tabs should be killed.
+    EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)) ^
+                IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  } else {
+    // With TabRanker disabled, it should kill the first tab, since it was the
+    // oldest and was not selected.
+    EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
+    EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
+  }
   EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
-  // Run discard again, make sure it kills the second tab.
+  // Run discard again. Both unselected tabs should now be killed.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
   EXPECT_EQ(3, tsm->count());
   EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
   EXPECT_FALSE(IsTabDiscarded(tsm->GetWebContentsAt(2)));
 
-  // Kill the third tab. It should not kill the last tab, since it is active
-  // tab.
+  // Run discard again. It should not kill the last tab, since it is active.
   EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kUrgent));
   EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_TRUE(IsTabDiscarded(tsm->GetWebContentsAt(1)));
