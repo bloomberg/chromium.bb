@@ -26,10 +26,11 @@ _effective rootScroller_, and the _global rootScroller_.
 scrolling root in a given frame. Each iframe will have an effective
 rootScroller and this must always be a valid `Node`. If the _document
 rootScroller_ is valid (i.e. is a scrolling box, fills viewport, etc.), then it
-will be promoted to the _effective rootScroller_ after layout. If there is no
-_document rootScroller_, or there is and it's invalid, we reset to a default
-_effective rootScroller_. The default is to use the document `Node` (hence, why
-the _effective rootScroller_ is a `Node` rather than an `Element`).
+will be promoted to the _effective rootScroller_ after layout in a lifecycle
+update. If there is no _document rootScroller_, or there is and it's invalid,
+we reset to a default _effective rootScroller_. The default is to use the
+document `Node` (hence, why the _effective rootScroller_ is a `Node` rather
+than an `Element`).
 * The _global rootScroller_ is the one `Node` on a page that's responsible for
 root scroller actions such as hiding/showing the URL bar, producing overscroll
 glow, etc. It is determined by starting from the root frame and following the
@@ -42,10 +43,13 @@ rootScroller_ and promotion to _effective rootScroller_. The Page owns a
 TopDocumentRootScrollerController that manages the lifecycle of the _global
 rootScroller_.
 
-Promotion to an _effective rootScroller_ happens at the end of layout. Each
-time an _effective rootScroller_ is changed, the _global rootScroller_ is
-recalculated. Because the _global rootScroller_ can affect compositing, all of
-this must happen before the compositing stage of the lifecycle.
+Promotion to an _effective rootScroller_ happens as a step in the main document
+lifecycle. After all frames have finished layout, we perform a frame tree walk
+(in post-order), performing selection of an _effective rootScroller_ in each
+frame. Each time an _effective rootScroller_ is changed, the _global
+rootScroller_ is recalculated. Because the _global rootScroller_ can affect
+compositing, all of this must happen before the compositing stage of the
+lifecycle.
 
 Once a Node has been set as the _global rootScroller_, it will scroll as though
 it is the viewport. This is done by setting the ViewportScrollCallback as its

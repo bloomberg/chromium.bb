@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/rootscroller-util.js"></script>
 <style>
   ::-webkit-scrollbar {
     width: 0px;
@@ -80,28 +81,32 @@
     });
   }
 
-  // Do a rAF before actually starting the test to ensure we leave enough time
-  // to commit layers to the compositor before we start scrolling.
-  window.onload = function() { requestAnimationFrame(() => {
+  window.onload = async () => {
     var rootscroller = document.querySelector('#rootscroller');
     document.rootScroller = rootscroller;
 
+    // Root Scroller selection happens in a lifecycle update. However, rAF is
+    // executed before the lifecycle in a BeginMainFrame so we need to wait for
+    // a second rAF before the we can check the effective root scrollers.
+    await nFrames(2);
+
     promise_test( t => {
+      if (window.internals) {
+        assert_equals(window.internals.effectiveRootScroller(document),
+                      rootscroller,
+                      "#rootscroller must be the effective root scroller");
+      }
       const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
       return scrollDown(500, 100, 100, GESTURE_SOURCE_TYPE, 1000)
         .then(waitForScroll)
         .then(() => {
-          if (window.internals) {
-            assert_equals(internals.effectiveRootScroller(document),
-                          rootscroller,
-                          "Failed to set root scroller");
-          }
-
-          assert_greater_than(
-              document.scrollingElement.scrollTop, 0, "Document must be scrolled");
-          assert_equals(
-              rootscroller.scrollTop, 0, "RootScroller must not be scrolled");
+          assert_greater_than(document.scrollingElement.scrollTop,
+                              0,
+                              "Document must be scrolled");
+          assert_equals(rootscroller.scrollTop,
+                        0,
+                        "RootScroller must not be scrolled");
         });
     }, "Gesture scrolling should scroll document.");
-  });}
+  }
 </script>

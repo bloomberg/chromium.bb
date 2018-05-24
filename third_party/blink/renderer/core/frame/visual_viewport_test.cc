@@ -1195,6 +1195,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
+  WebView()->UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1245,6 +1246,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
+  WebView()->UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1329,6 +1331,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
+  WebView()->UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1400,6 +1403,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
+  WebView()->UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
@@ -1467,6 +1471,7 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
 
   RegisterMockedHttpURLLoad("content-width-1000.html");
   NavigateTo(base_url_ + "content-width-1000.html");
+  WebView()->UpdateAllLifecyclePhases();
 
   // Scroll the LocalFrameView to the bottom of the page but "hide" the browser
   // controls on the compositor side so the max scroll position should account

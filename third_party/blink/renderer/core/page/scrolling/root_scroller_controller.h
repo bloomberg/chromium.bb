@@ -34,7 +34,7 @@ class PaintLayer;
 // valid, the effective root scroller will fall back to the document Node. The
 // rules for what makes an element a valid root scroller are set in
 // isValidRootScroller(). The validity of the current root scroller is
-// re-checked after each layout.
+// re-checked after layout as part of the document lifecycle.
 class CORE_EXPORT RootScrollerController
     : public GarbageCollected<RootScrollerController> {
  public:
@@ -63,14 +63,6 @@ class CORE_EXPORT RootScrollerController
   // effective rootScroller, and the global RootScroller in
   // TopDocumentRootScrollerController.
   Node& EffectiveRootScroller() const;
-
-  // This class needs to be informed of changes in layout so that it can
-  // determine if the current root scroller is still valid or if it must be
-  // replaced by the default root scroller.
-  void DidUpdateLayout();
-
-  // We need to track style changes to reevaluate the implicit root scroller.
-  void DidUpdateStyle();
 
   // This class needs to be informed when the FrameView of its Document changes
   // size. This may occur without a layout (e.g. URL bar hiding) so we can't
@@ -103,6 +95,10 @@ class CORE_EXPORT RootScrollerController
   // through that set and select the best candidate.
   void ConsiderForImplicit(Node&);
 
+  // Called as part of the main document lifecycle. This will iterate the frame
+  // tree in post order and select the effective root scroller in each frame.
+  void PerformRootScrollerSelection();
+
  private:
   RootScrollerController(Document&);
 
@@ -127,7 +123,9 @@ class CORE_EXPORT RootScrollerController
   bool IsValidImplicitCandidate(const Element&) const;
 
   // Set certain properties to the effective root scroller. Called when a Node
-  // becomes or unbecomes the effective root scroller.
+  // becomes or unbecomes the effective root scroller. Calling this method can
+  // leave the node's frame with a dirty layout due to the fact that layout size
+  // depends on whether the element is the effective root scroller or not.
   void ApplyRootScrollerProperties(Node&);
 
   void UpdateIFrameGeometryAndLayoutSize(HTMLFrameOwnerElement&) const;
@@ -136,6 +134,11 @@ class CORE_EXPORT RootScrollerController
   // are no longer meet the root scroller restrictions. Of the remaining ones,
   // will choose the best and set it as the implicit_root_scroller_.
   void ProcessImplicitCandidates();
+
+  // Calls function for each non-throttled frame's RootScrollerController in
+  // post tree order.
+  template <typename Function>
+  void ForAllNonThrottledLocalControllers(const Function&);
 
   // The owning Document whose root scroller this object manages.
   WeakMember<Document> document_;
@@ -161,10 +164,6 @@ class CORE_EXPORT RootScrollerController
   WeakMember<Element> implicit_root_scroller_;
 
   bool document_has_document_element_;
-
-  // This flag is used to force applicationn of rootScroller properties even if
-  // the effective rootScroller doesn't change.
-  bool needs_apply_properties_;
 };
 
 }  // namespace blink
