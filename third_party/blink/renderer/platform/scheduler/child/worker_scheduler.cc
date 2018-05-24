@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
 
 namespace blink {
@@ -16,6 +18,11 @@ WorkerScheduler::WorkerScheduler(
       throttleable_task_queue_(non_main_thread_scheduler->CreateTaskRunner()),
       thread_scheduler_(non_main_thread_scheduler) {
   thread_scheduler_->RegisterWorkerScheduler(this);
+  if (WakeUpBudgetPool* wake_up_budget_pool =
+          thread_scheduler_->wake_up_budget_pool()) {
+    wake_up_budget_pool->AddQueue(thread_scheduler_->GetTickClock()->NowTicks(),
+                                  throttleable_task_queue_.get());
+  }
 }
 
 WorkerScheduler::~WorkerScheduler() {
@@ -30,9 +37,16 @@ WorkerScheduler::OnActiveConnectionCreated() {
 }
 
 void WorkerScheduler::Dispose() {
+  if (TaskQueueThrottler* throttler =
+          thread_scheduler_->task_queue_throttler()) {
+    throttler->ShutdownTaskQueue(throttleable_task_queue_.get());
+  }
+
   thread_scheduler_->UnregisterWorkerScheduler(this);
+
   default_task_queue_->ShutdownTaskQueue();
   throttleable_task_queue_->ShutdownTaskQueue();
+
 #if DCHECK_IS_ON()
   is_disposed_ = true;
 #endif
@@ -98,6 +112,32 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
   }
   NOTREACHED();
   return nullptr;
+}
+
+void WorkerScheduler::OnThrottlingStateChanged(
+    FrameScheduler::ThrottlingState throttling_state) {
+  if (throttling_state_ == throttling_state)
+    return;
+  throttling_state_ = throttling_state;
+
+  if (TaskQueueThrottler* throttler =
+          thread_scheduler_->task_queue_throttler()) {
+    if (throttling_state_ == FrameScheduler::ThrottlingState::kThrottled) {
+      throttler->IncreaseThrottleRefCount(throttleable_task_queue_.get());
+    } else {
+      throttler->DecreaseThrottleRefCount(throttleable_task_queue_.get());
+    }
+  }
+}
+
+scoped_refptr<base::sequence_manager::TaskQueue>
+WorkerScheduler::DefaultTaskQueue() {
+  return default_task_queue_.get();
+}
+
+scoped_refptr<base::sequence_manager::TaskQueue>
+WorkerScheduler::ThrottleableTaskQueue() {
+  return throttleable_task_queue_.get();
 }
 
 }  // namespace scheduler
