@@ -46,6 +46,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   // Overridden from views::NativeWidgetMac:
   NativeWidgetMacNSWindow* CreateNSWindow(
       const views::Widget::InitParams& params) override;
+  void OnWindowDestroying(NSWindow* window) override;
 
   // Overridden from NativeBrowserFrame:
   int GetMinimizeButtonOffset() const override;
