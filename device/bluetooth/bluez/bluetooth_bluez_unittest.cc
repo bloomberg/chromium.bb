@@ -452,9 +452,12 @@ TEST_F(BluetoothBlueZTest, BecomeNotPresent) {
               address.compare(
                   bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
 
+  // DiscoveringChanged() should be triggered regardless of the current value
+  // of Discovering property.
+  EXPECT_EQ(1, observer.discovering_changed_count());
+
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
-  EXPECT_EQ(0, observer.discovering_changed_count());
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_FALSE(adapter_->IsDiscovering());
 }
@@ -494,9 +497,12 @@ TEST_F(BluetoothBlueZTest, SecondAdapter) {
               address.compare(
                   bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress) == 0);
 
+  // DiscoveringChanged() should be triggered regardless of the current value
+  // of Discovering property.
+  EXPECT_EQ(1, observer.discovering_changed_count());
+
   // Other callbacks shouldn't be called since the values are false.
   EXPECT_EQ(0, observer.powered_changed_count());
-  EXPECT_EQ(0, observer.discovering_changed_count());
   EXPECT_FALSE(adapter_->IsPowered());
   EXPECT_FALSE(adapter_->IsDiscovering());
 
