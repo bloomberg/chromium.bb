@@ -26,10 +26,10 @@ std::vector<uint8_t> KeychainItemIdentifier(std::string rp_id,
                                             std::vector<uint8_t> user_id);
 
 // MakeAuthenticatorData returns an AuthenticatorData instance for the Touch ID
-// authenticator with the given client data, credential id and public key. It
-// returns |base::nullopt| on failure.
+// authenticator with the given Relying Party ID, credential ID and public key.
+// It returns |base::nullopt| on failure.
 base::Optional<AuthenticatorData> MakeAuthenticatorData(
-    std::vector<uint8_t> client_data_hash,
+    const std::string& rp_id,
     std::vector<uint8_t> credential_id,
     SecKeyRef public_key) API_AVAILABLE(macosx(10.12.2));
 
