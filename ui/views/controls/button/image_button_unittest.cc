@@ -39,6 +39,13 @@ class Parent : public views::View {
 
 namespace views {
 
+namespace {
+const ImageButton::HorizontalAlignment kDefaultHorizontalAlignment =
+    ImageButton::ALIGN_LEFT;
+const ImageButton::VerticalAlignment kDefaultVerticalAlignment =
+    ImageButton::ALIGN_TOP;
+}  // namespace
+
 typedef ViewsTestBase ImageButtonTest;
 
 TEST_F(ImageButtonTest, Basics) {
@@ -122,24 +129,39 @@ TEST_F(ImageButtonTest, ImagePositionWithBorder) {
 
   // The image should be painted at the top-left corner.
   EXPECT_EQ(gfx::Point().ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, kDefaultHorizontalAlignment,
+                                           kDefaultVerticalAlignment)
+                .ToString());
 
   button.SetBorder(views::CreateEmptyBorder(10, 5, 0, 0));
   EXPECT_EQ(gfx::Point(5, 10).ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, kDefaultHorizontalAlignment,
+                                           kDefaultVerticalAlignment)
+                .ToString());
 
   button.SetBorder(NullBorder());
   button.SetBounds(0, 0, 50, 50);
   EXPECT_EQ(gfx::Point().ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, kDefaultHorizontalAlignment,
+                                           kDefaultVerticalAlignment)
+                .ToString());
 
   button.SetImageAlignment(ImageButton::ALIGN_CENTER,
                            ImageButton::ALIGN_MIDDLE);
   EXPECT_EQ(gfx::Point(15, 10).ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, ImageButton::ALIGN_CENTER,
+                                           ImageButton::ALIGN_MIDDLE)
+                .ToString());
   button.SetBorder(views::CreateEmptyBorder(10, 10, 0, 0));
   EXPECT_EQ(gfx::Point(20, 15).ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, ImageButton::ALIGN_CENTER,
+                                           ImageButton::ALIGN_MIDDLE)
+                .ToString());
 
   // The entire button's size should take the border into account.
   EXPECT_EQ(gfx::Size(30, 40).ToString(), button.GetPreferredSize().ToString());
@@ -161,7 +183,10 @@ TEST_F(ImageButtonTest, LeftAlignedMirrored) {
   // Because the coordinates are flipped, we should expect this to draw as if
   // it were ALIGN_RIGHT.
   EXPECT_EQ(gfx::Point(30, 0).ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, ImageButton::ALIGN_LEFT,
+                                           ImageButton::ALIGN_BOTTOM)
+                .ToString());
 }
 
 TEST_F(ImageButtonTest, RightAlignedMirrored) {
@@ -176,7 +201,10 @@ TEST_F(ImageButtonTest, RightAlignedMirrored) {
   // Because the coordinates are flipped, we should expect this to draw as if
   // it were ALIGN_LEFT.
   EXPECT_EQ(gfx::Point(0, 0).ToString(),
-            button.ComputeImagePaintPosition(image).ToString());
+            button
+                .ComputeImagePaintPosition(image, ImageButton::ALIGN_RIGHT,
+                                           ImageButton::ALIGN_BOTTOM)
+                .ToString());
 }
 
 TEST_F(ImageButtonTest, PreferredSizeInvalidation) {
