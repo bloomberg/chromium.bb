@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -519,6 +520,12 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest,
 // web pages.
 IN_PROC_BROWSER_TEST_F(CommandsApiTest,
                        OverwriteBookmarkShortcutByUserOverridesWebKeybinding) {
+#if defined(OS_MACOSX)
+  // This doesn't work in MacViews mode: https://crbug.com/845503 is the likely
+  // root cause.
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return;
+#endif
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
