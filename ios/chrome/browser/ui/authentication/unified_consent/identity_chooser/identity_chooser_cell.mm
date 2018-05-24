@@ -52,11 +52,7 @@ CGFloat kAccessoryImageWidth = 19.;
                       subtitle:(NSString*)subtitle
                          image:(UIImage*)image
                        checked:(BOOL)checked {
-  if (subtitle.length > 0) {
-    [self.identityView setName:title email:subtitle];
-  } else {
-    [self.identityView setName:nil email:title];
-  }
+  [self.identityView setTitle:title subtitle:subtitle];
   [self.identityView setAvatar:image];
   if (!checked) {
     self.accessoryView = nil;

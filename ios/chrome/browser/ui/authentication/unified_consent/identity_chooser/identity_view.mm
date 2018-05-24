@@ -135,19 +135,18 @@ const CGFloat kSubtitleTextColorAlpha = .54;
   }
 }
 
-- (void)setName:(NSString*)name email:(NSString*)email {
-  DCHECK(email);
-  if (!name || name.length == 0) {
+- (void)setTitle:(NSString*)title subtitle:(NSString*)subtitle {
+  DCHECK(title);
+  self.title.text = title;
+  if (!subtitle.length) {
     self.titleConstraintForNameAndEmail.active = NO;
     self.titleConstraintForEmailOnly.active = YES;
     self.subtitle.hidden = YES;
-    self.title.text = email;
   } else {
     self.titleConstraintForEmailOnly.active = NO;
     self.titleConstraintForNameAndEmail.active = YES;
     self.subtitle.hidden = NO;
-    self.title.text = name;
-    self.subtitle.text = email;
+    self.subtitle.text = subtitle;
   }
 }
 
