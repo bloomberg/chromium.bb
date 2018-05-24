@@ -15,8 +15,8 @@
 #include <cstdlib>
 #include <new>
 #include <string>
-#include "../tools_common.h"
-#include "../webmdec.h"
+#include "common/tools_common.h"
+#include "common/webmdec.h"
 #include "test/video_source.h"
 
 namespace libaom_test {
