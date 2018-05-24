@@ -39,6 +39,7 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/rd.h"
+#include "av1/encoder/dwt.h"
 
 #define OUTPUT_FPF 0
 #define ARF_STATS_OUTPUT 0
@@ -141,6 +142,7 @@ static void zero_stats(FIRSTPASS_STATS *section) {
   section->frame = 0.0;
   section->weight = 0.0;
   section->intra_error = 0.0;
+  section->frame_avg_wavelet_energy = 0.0;
   section->coded_error = 0.0;
   section->sr_coded_error = 0.0;
   section->pcnt_inter = 0.0;
@@ -167,6 +169,7 @@ static void accumulate_stats(FIRSTPASS_STATS *section,
   section->frame += frame->frame;
   section->weight += frame->weight;
   section->intra_error += frame->intra_error;
+  section->frame_avg_wavelet_energy += frame->frame_avg_wavelet_energy;
   section->coded_error += frame->coded_error;
   section->sr_coded_error += frame->sr_coded_error;
   section->pcnt_inter += frame->pcnt_inter;
@@ -193,6 +196,7 @@ static void subtract_stats(FIRSTPASS_STATS *section,
   section->frame -= frame->frame;
   section->weight -= frame->weight;
   section->intra_error -= frame->intra_error;
+  section->frame_avg_wavelet_energy -= frame->frame_avg_wavelet_energy;
   section->coded_error -= frame->coded_error;
   section->sr_coded_error -= frame->sr_coded_error;
   section->pcnt_inter -= frame->pcnt_inter;
@@ -493,6 +497,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   int recon_yoffset, recon_uvoffset;
   int64_t intra_error = 0;
+  int64_t frame_avg_wavelet_energy = 0;
   int64_t coded_error = 0;
   int64_t sr_coded_error = 0;
 
@@ -689,6 +694,15 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
       // Accumulate the intra error.
       intra_error += (int64_t)this_error;
+
+      int stride = x->plane[0].src.stride;
+      uint8_t *buf = x->plane[0].src.buf;
+      for (int r8 = 0; r8 < 2; ++r8)
+        for (int c8 = 0; c8 < 2; ++c8) {
+          int hbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+          frame_avg_wavelet_energy += av1_haar_ac_sad_8x8_uint8_input(
+              buf + c8 * 8 + r8 * 8 * stride, stride, hbd);
+        }
 
 #if CONFIG_FP_MB_STATS
       if (cpi->use_fp_mb_stats) {
@@ -981,6 +995,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
     fps.coded_error = (double)(coded_error >> 8) + min_err;
     fps.sr_coded_error = (double)(sr_coded_error >> 8) + min_err;
     fps.intra_error = (double)(intra_error >> 8) + min_err;
+    fps.frame_avg_wavelet_energy = (double)frame_avg_wavelet_energy;
     fps.count = 1.0;
     fps.pcnt_inter = (double)intercount / num_mbs;
     fps.pcnt_second_ref = (double)second_ref_count / num_mbs;
@@ -3537,6 +3552,8 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
     // applied when combining MB error values for the frame.
     twopass->mb_av_energy =
         log(((this_frame.intra_error * 256.0) / num_mbs) + 1.0);
+    twopass->frame_avg_haar_energy =
+        log((this_frame.frame_avg_wavelet_energy / num_mbs) + 1.0);
   }
 
   // Update the total stats remaining structure.
