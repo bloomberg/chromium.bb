@@ -47,10 +47,12 @@ file(APPEND "${pkgconfig_file}"
 file(APPEND "${pkgconfig_file}" "Version: ${package_version}\n")
 file(APPEND "${pkgconfig_file}" "Requires:\n")
 file(APPEND "${pkgconfig_file}" "Conflicts:\n")
-file(APPEND "${pkgconfig_file}" "Libs: -L\${prefix}/lib -l${pkg_name} -lm\n")
 if(CONFIG_MULTITHREAD AND HAVE_PTHREAD_H)
+  file(APPEND "${pkgconfig_file}"
+              "Libs: -L\${prefix}/lib -l${pkg_name} -lm -lpthread\n")
   file(APPEND "${pkgconfig_file}" "Libs.private: -lm -lpthread\n")
 else()
+  file(APPEND "${pkgconfig_file}" "Libs: -L\${prefix}/lib -l${pkg_name} -lm\n")
   file(APPEND "${pkgconfig_file}" "Libs.private: -lm\n")
 endif()
 file(APPEND "${pkgconfig_file}" "Cflags: -I\${prefix}/include\n")
