@@ -21,19 +21,14 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
-#include "ui/ozone/platform/drm/gpu/mock_hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
 
 namespace {
 
-const ui::FakePlaneInfo kOnePlanePerCrtc[] = {{10, 1}, {20, 2}};
-const ui::FakePlaneInfo kTwoPlanesPerCrtc[] = {{10, 1},
-                                               {11, 1},
-                                               {20, 2},
-                                               {21, 2}};
-const ui::FakePlaneInfo kOnePlanePerCrtcWithShared[] = {{10, 1},
-                                                        {20, 2},
-                                                        {50, 3}};
+constexpr uint32_t kTypePropId = 200;
+constexpr uint32_t kInFormatsPropId = 201;
+constexpr uint32_t kInFormatsBlobPropId = 300;
+
 const uint32_t kDummyFormat = 0;
 const gfx::Size kDefaultBufferSize(2, 2);
 
@@ -41,14 +36,18 @@ class HardwareDisplayPlaneManagerTest : public testing::Test {
  public:
   HardwareDisplayPlaneManagerTest() {}
 
+  void InitializeDrmState(size_t crtc_count, size_t planes_per_crtc);
+
   void SetUp() override;
 
  protected:
-  std::unique_ptr<ui::MockHardwareDisplayPlaneManager> plane_manager_;
   ui::HardwareDisplayPlaneList state_;
-  std::vector<uint32_t> default_crtcs_;
   scoped_refptr<ui::ScanoutBuffer> fake_buffer_;
   scoped_refptr<ui::MockDrmDevice> fake_drm_;
+
+  std::vector<ui::MockDrmDevice::CrtcProperties> crtc_properties_;
+  std::vector<ui::MockDrmDevice::PlaneProperties> plane_properties_;
+  std::map<uint32_t, std::string> property_names_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerTest);
@@ -56,114 +55,159 @@ class HardwareDisplayPlaneManagerTest : public testing::Test {
 
 void HardwareDisplayPlaneManagerTest::SetUp() {
   fake_buffer_ = new ui::MockScanoutBuffer(kDefaultBufferSize);
-  default_crtcs_.push_back(100);
-  default_crtcs_.push_back(200);
 
-  fake_drm_ = new ui::MockDrmDevice(false, default_crtcs_, 2);
-  plane_manager_.reset(
-      new ui::MockHardwareDisplayPlaneManager(fake_drm_.get()));
+  fake_drm_ = new ui::MockDrmDevice(false);
+  fake_drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
+      kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888}, {}));
+}
+
+void HardwareDisplayPlaneManagerTest::InitializeDrmState(
+    size_t crtc_count,
+    size_t planes_per_crtc) {
+  property_names_.insert({kTypePropId, "type"});
+  property_names_.insert({kInFormatsPropId, "IN_FORMATS"});
+
+  for (size_t i = 0; i < crtc_count; ++i) {
+    ui::MockDrmDevice::CrtcProperties crtc_prop;
+    crtc_prop.id = i + 1;
+    // Start ID at 1 cause 0 is an invalid ID.
+    crtc_properties_.emplace_back(std::move(crtc_prop));
+
+    for (size_t j = 0; j < planes_per_crtc; ++j) {
+      ui::MockDrmDevice::PlaneProperties plane_prop;
+      plane_prop.id = 100 + i * planes_per_crtc + j;
+      plane_prop.crtc_mask = 1 << i;
+      plane_prop.properties = {
+          {.id = kTypePropId,
+           .value = j == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY},
+          {.id = kInFormatsPropId, .value = kInFormatsBlobPropId},
+      };
+
+      plane_properties_.emplace_back(std::move(plane_prop));
+    }
+  }
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, SinglePlaneAssignment) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
-                              default_crtcs_);
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_EQ(1, plane_manager_->plane_count());
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_EQ(1u, state_.plane_list.size());
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, BadCrtc) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
-                              default_crtcs_);
-  EXPECT_FALSE(
-      plane_manager_->AssignOverlayPlanes(&state_, assigns, 1, nullptr));
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(&state_, assigns,
+                                                               0, nullptr));
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultiplePlaneAssignment) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
-                              default_crtcs_);
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_EQ(2, plane_manager_->plane_count());
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/2);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_EQ(2u, state_.plane_list.size());
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, NotEnoughPlanes) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
-                              default_crtcs_);
 
-  EXPECT_FALSE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                   default_crtcs_[0], nullptr));
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleCrtcs) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
-                              default_crtcs_);
 
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[1], nullptr));
-  EXPECT_EQ(2, plane_manager_->plane_count());
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[1].id, nullptr));
+  EXPECT_EQ(2u, state_.plane_list.size());
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultiplePlanesAndCrtcs) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
-                              default_crtcs_);
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[1], nullptr));
-  EXPECT_EQ(4, plane_manager_->plane_count());
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/2);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[1].id, nullptr));
+  EXPECT_EQ(4u, state_.plane_list.size());
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleFrames) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
-                              default_crtcs_);
 
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_EQ(1, plane_manager_->plane_count());
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/2);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_EQ(1u, state_.plane_list.size());
   // Pretend we committed the frame.
   state_.plane_list.swap(state_.old_plane_list);
-  plane_manager_->BeginFrame(&state_);
+  fake_drm_->plane_manager()->BeginFrame(&state_);
   ui::HardwareDisplayPlane* old_plane = state_.old_plane_list[0];
   // The same plane should be used.
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_EQ(2, plane_manager_->plane_count());
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_EQ(1u, state_.plane_list.size());
   EXPECT_EQ(state_.plane_list[0], old_plane);
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, MultipleFramesDifferentPlanes) {
   ui::OverlayPlaneList assigns;
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
-  plane_manager_->InitForTest(kTwoPlanesPerCrtc, arraysize(kTwoPlanesPerCrtc),
-                              default_crtcs_);
 
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_EQ(1, plane_manager_->plane_count());
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/2);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_EQ(1u, state_.plane_list.size());
   // The other plane should be used.
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  EXPECT_EQ(2, plane_manager_->plane_count());
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  EXPECT_EQ(2u, state_.plane_list.size());
   EXPECT_NE(state_.plane_list[0], state_.plane_list[1]);
 }
 
@@ -174,16 +218,25 @@ TEST_F(HardwareDisplayPlaneManagerTest, SharedPlanes) {
 
   assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
   assigns.push_back(ui::OverlayPlane(buffer, nullptr));
-  plane_manager_->InitForTest(kOnePlanePerCrtcWithShared,
-                              arraysize(kOnePlanePerCrtcWithShared),
-                              default_crtcs_);
 
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[1], nullptr));
-  EXPECT_EQ(2, plane_manager_->plane_count());
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  ui::MockDrmDevice::PlaneProperties plane_prop;
+  plane_prop.id = 102;
+  plane_prop.crtc_mask = (1 << 0) | (1 << 1);
+  plane_prop.properties = {
+      {.id = kTypePropId, .value = DRM_PLANE_TYPE_OVERLAY},
+      {.id = kInFormatsPropId, .value = kInFormatsBlobPropId},
+  };
+  plane_properties_.emplace_back(std::move(plane_prop));
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[1].id, nullptr));
+  EXPECT_EQ(2u, state_.plane_list.size());
   // The shared plane is now unavailable for use by the other CRTC.
-  EXPECT_FALSE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                   default_crtcs_[0], nullptr));
+  EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, CheckFramebufferFormatMatch) {
@@ -191,30 +244,33 @@ TEST_F(HardwareDisplayPlaneManagerTest, CheckFramebufferFormatMatch) {
   scoped_refptr<ui::MockScanoutBuffer> buffer =
       new ui::MockScanoutBuffer(kDefaultBufferSize, kDummyFormat);
   assigns.push_back(ui::OverlayPlane(buffer, nullptr));
-  plane_manager_->InitForTest(kOnePlanePerCrtc, arraysize(kOnePlanePerCrtc),
-                              default_crtcs_);
-  plane_manager_->BeginFrame(&state_);
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  fake_drm_->plane_manager()->BeginFrame(&state_);
   // This should return false as plane manager creates planes which support
   // DRM_FORMAT_XRGB8888 while buffer returns kDummyFormat as its pixelFormat.
-  EXPECT_FALSE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                   default_crtcs_[0], nullptr));
+  EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
   assigns.clear();
   scoped_refptr<ui::MockScanoutBuffer> xrgb_buffer =
       new ui::MockScanoutBuffer(kDefaultBufferSize);
   assigns.push_back(ui::OverlayPlane(xrgb_buffer, nullptr));
-  plane_manager_->BeginFrame(&state_);
-  EXPECT_TRUE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                  default_crtcs_[0], nullptr));
-  plane_manager_->BeginFrame(&state_);
-  EXPECT_FALSE(plane_manager_->AssignOverlayPlanes(&state_, assigns,
-                                                   default_crtcs_[0], nullptr));
+  fake_drm_->plane_manager()->BeginFrame(&state_);
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
+  fake_drm_->plane_manager()->BeginFrame(&state_);
+  EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &state_, assigns, crtc_properties_[0].id, nullptr));
 }
 
-TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
-  std::vector<uint32_t> crtcs;
-  crtcs.push_back(100);
+TEST_F(HardwareDisplayPlaneManagerTest, UnusedPlanesAreReleased) {
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/2);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
 
-  scoped_refptr<ui::MockDrmDevice> drm = new ui::MockDrmDevice(false, crtcs, 2);
   ui::OverlayPlaneList assigns;
   scoped_refptr<ui::MockScanoutBuffer> primary_buffer =
       new ui::MockScanoutBuffer(kDefaultBufferSize);
@@ -223,19 +279,19 @@ TEST(HardwareDisplayPlaneManagerLegacyTest, UnusedPlanesAreReleased) {
   assigns.push_back(ui::OverlayPlane(primary_buffer, nullptr));
   assigns.push_back(ui::OverlayPlane(overlay_buffer, nullptr));
   ui::HardwareDisplayPlaneList hdpl;
-  ui::CrtcController crtc(drm, crtcs[0], 0);
-  drm->plane_manager()->BeginFrame(&hdpl);
-  EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
-                                                        crtcs[0], &crtc));
-  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false));
+  ui::CrtcController crtc(fake_drm_, crtc_properties_[0].id, 0);
+  fake_drm_->plane_manager()->BeginFrame(&hdpl);
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &hdpl, assigns, crtc_properties_[0].id, &crtc));
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, false));
   assigns.clear();
   assigns.push_back(ui::OverlayPlane(primary_buffer, nullptr));
-  drm->plane_manager()->BeginFrame(&hdpl);
-  EXPECT_TRUE(drm->plane_manager()->AssignOverlayPlanes(&hdpl, assigns,
-                                                        crtcs[0], &crtc));
-  EXPECT_EQ(0, drm->get_overlay_clear_call_count());
-  EXPECT_TRUE(drm->plane_manager()->Commit(&hdpl, false));
-  EXPECT_EQ(1, drm->get_overlay_clear_call_count());
+  fake_drm_->plane_manager()->BeginFrame(&hdpl);
+  EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
+      &hdpl, assigns, crtc_properties_[0].id, &crtc));
+  EXPECT_EQ(0, fake_drm_->get_overlay_clear_call_count());
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, false));
+  EXPECT_EQ(1, fake_drm_->get_overlay_clear_call_count());
 }
 
 class FakeFenceFD {
@@ -371,7 +427,7 @@ TEST_F(HardwareDisplayPlaneManagerPlanesReadyTest,
 
 class HardwareDisplayPlaneAtomicMock : public ui::HardwareDisplayPlaneAtomic {
  public:
-  HardwareDisplayPlaneAtomicMock() : ui::HardwareDisplayPlaneAtomic(0, ~0) {}
+  HardwareDisplayPlaneAtomicMock() : ui::HardwareDisplayPlaneAtomic(1) {}
   ~HardwareDisplayPlaneAtomicMock() override {}
 
   bool SetPlaneData(drmModeAtomicReq* property_set,
