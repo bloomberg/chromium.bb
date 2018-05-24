@@ -938,6 +938,12 @@ void LocalizedError::GetStrings(
         l10n_util::GetStringUTF16(IDS_ERRORPAGE_FUN_DISABLED));
   }
 
+  if (command_line->HasSwitch(error_page::switches::kEnableEasterEggBdayMode) ||
+      base::FieldTrialList::FindFullName("EnableEasterEggBdayMode") ==
+          "enabled") {
+    error_strings->SetBoolean("bdayMode", true);
+  }
+
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", host_name);
 

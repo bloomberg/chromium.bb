@@ -9,6 +9,7 @@ namespace switches {
 
 // Disables the dinosaur easter egg on the offline interstitial.
 const char kDisableDinosaurEasterEgg[] = "disable-dinosaur-easter-egg";
+const char kEnableEasterEggBdayMode[] = "enable-dino-easter-egg-bday-mode";
 
 // Values for the kShowSavedCopy flag.
 const char kDisableShowSavedCopy[] = "disable";
