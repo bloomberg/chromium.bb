@@ -279,6 +279,7 @@ gfx::Path GetInteriorPath(float scale,
 // Returns the border path under material refresh mode for a given tab |bounds|,
 // |scale| and |endcap_width|.
 gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
+                               bool extend_to_top,
                                float scale,
                                float endcap_width,
                                float stroke_thickness) {
@@ -300,16 +301,28 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
   // bottom left
   path.arcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
              SkPath::kCCW_Direction, left + bottom_radius, bottom - radius);
-  // left vertical
-  path.lineTo(left + bottom_radius, top + top_radius);
-  // top left
-  path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCW_Direction, left + radius * 2, top);
-  // top line
-  path.lineTo(right - radius * 2, top);
-  // top right
-  path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCW_Direction, right - bottom_radius, top + radius);
+
+  if (extend_to_top) {
+    // If |extend_to_top| is true, the top of the tab is simply squared off.
+    // This is used for the mouse hit test mask in full screen mode in order to
+    // eliminate the little divot between the tabs at the top.
+
+    // left vertical
+    path.lineTo(left + bottom_radius, top);
+    // top line
+    path.lineTo(right - bottom_radius, top);
+  } else {
+    // left vertical
+    path.lineTo(left + bottom_radius, top + top_radius);
+    // top left
+    path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
+               SkPath::kCW_Direction, left + radius * 2, top);
+    // top line
+    path.lineTo(right - radius * 2, top);
+    // top right
+    path.arcTo(top_radius, top_radius, 0, SkPath::kSmall_ArcSize,
+               SkPath::kCW_Direction, right - bottom_radius, top + radius);
+  }
   // right vertical
   path.lineTo(right - bottom_radius, bottom - radius);
   // bottom right
@@ -343,7 +356,8 @@ gfx::Path GetBorderPath(float scale,
   gfx::Path path;
 
   if (MD::IsRefreshUi()) {
-    path = GetRefreshBorderPath(bounds, scale, endcap_width, stroke_thickness);
+    path = GetRefreshBorderPath(bounds, extend_to_top, scale, endcap_width,
+                                stroke_thickness);
   } else {
     const float top = scale - stroke_thickness;
     const float right = bounds.width() * scale;
