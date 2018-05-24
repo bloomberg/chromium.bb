@@ -44,7 +44,7 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      viz::mojom::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
       uint64_t submit_time) override {
     ++frames_submitted_;
     last_frame_ = std::move(frame);
@@ -54,7 +54,7 @@ class TestClientBinding : public viz::mojom::CompositorFrameSink,
   void SubmitCompositorFrameSync(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      viz::mojom::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
       SubmitCompositorFrameSyncCallback callback) override {}
 

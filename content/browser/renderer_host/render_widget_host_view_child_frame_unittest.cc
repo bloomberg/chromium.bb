@@ -217,7 +217,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
 
   view_->SubmitCompositorFrame(
       local_surface_id,
-      CreateDelegatedFrame(scale_factor, view_size, view_rect), nullptr);
+      CreateDelegatedFrame(scale_factor, view_size, view_rect), base::nullopt);
 
   viz::SurfaceId id = GetSurfaceId();
   if (id.is_valid()) {

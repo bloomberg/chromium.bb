@@ -30,14 +30,15 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SetWantsAnimateOnlyBeginFrames() override;
-  void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
-                             CompositorFrame frame,
-                             mojom::HitTestRegionListPtr hit_test_region_list,
-                             uint64_t submit_time) override;
+  void SubmitCompositorFrame(
+      const LocalSurfaceId& local_surface_id,
+      CompositorFrame frame,
+      base::Optional<HitTestRegionList> hit_test_region_list,
+      uint64_t submit_time) override;
   void SubmitCompositorFrameSync(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      mojom::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
       SubmitCompositorFrameSyncCallback callback) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
@@ -49,7 +50,7 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
   void SubmitCompositorFrameInternal(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
-      mojom::HitTestRegionListPtr hit_test_region_list,
+      base::Optional<HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback);
 

@@ -116,7 +116,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
-      viz::mojom::HitTestRegionListPtr hit_test_region_list);
+      base::Optional<viz::HitTestRegionList> hit_test_region_list);
   void ClearDelegatedFrame();
   void WasHidden();
   // TODO(ccameron): Include device scale factor here.

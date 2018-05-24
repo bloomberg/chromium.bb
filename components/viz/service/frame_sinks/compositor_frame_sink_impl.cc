@@ -41,7 +41,7 @@ void CompositorFrameSinkImpl::SetWantsAnimateOnlyBeginFrames() {
 void CompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list,
+    base::Optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time) {
   SubmitCompositorFrameInternal(local_surface_id, std::move(frame),
                                 std::move(hit_test_region_list), submit_time,
@@ -51,7 +51,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
 void CompositorFrameSinkImpl::SubmitCompositorFrameSync(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list,
+    base::Optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     SubmitCompositorFrameSyncCallback callback) {
   SubmitCompositorFrameInternal(local_surface_id, std::move(frame),
@@ -62,7 +62,7 @@ void CompositorFrameSinkImpl::SubmitCompositorFrameSync(
 void CompositorFrameSinkImpl::SubmitCompositorFrameInternal(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list,
+    base::Optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
   const auto result = support_->MaybeSubmitCompositorFrame(

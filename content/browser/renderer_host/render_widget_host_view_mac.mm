@@ -969,7 +969,7 @@ void RenderWidgetHostViewMac::DidCreateNewRendererCompositorFrameSink(
 void RenderWidgetHostViewMac::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
-    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
+    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   page_at_minimum_scale_ =

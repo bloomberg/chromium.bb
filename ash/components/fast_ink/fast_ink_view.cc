@@ -15,6 +15,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -197,6 +198,9 @@ class FastInkView::LayerTreeFrameSinkHolder
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
+  base::Optional<viz::HitTestRegionList> BuildHitTestData() override {
+    return {};
+  }
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override {
     for (auto& entry : resources) {

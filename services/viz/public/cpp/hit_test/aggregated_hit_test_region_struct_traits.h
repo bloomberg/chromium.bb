@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIZ_PUBLIC_CPP_HIT_TEST_AGGREGATED_HIT_TEST_REGION_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PUBLIC_CPP_HIT_TEST_AGGREGATED_HIT_TEST_REGION_STRUCT_TRAITS_H_
 
+#include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "services/viz/public/cpp/compositing/frame_sink_id_struct_traits.h"
 #include "services/viz/public/interfaces/hit_test/aggregated_hit_test_region.mojom-shared.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
@@ -37,15 +38,7 @@ struct StructTraits<viz::mojom::AggregatedHitTestRegionDataView,
   }
 
   static bool Read(viz::mojom::AggregatedHitTestRegionDataView data,
-                   viz::AggregatedHitTestRegion* out) {
-    if (!data.ReadFrameSinkId(&out->frame_sink_id) ||
-        !data.ReadRect(&out->rect) || !data.ReadTransform(&out->transform_)) {
-      return false;
-    }
-    out->flags = data.flags();
-    out->child_count = data.child_count();
-    return true;
-  }
+                   viz::AggregatedHitTestRegion* out);
 };
 
 }  // namespace mojo

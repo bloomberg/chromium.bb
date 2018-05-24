@@ -16,6 +16,7 @@ class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
   FakeLayerTreeFrameSinkClient() : memory_policy_(0) {}
 
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
+  base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
   void DidReceiveCompositorFrameAck() override;
   void DidPresentCompositorFrame(uint32_t presentation_token,
                                  base::TimeTicks time,

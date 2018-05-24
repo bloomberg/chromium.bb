@@ -46,9 +46,8 @@ struct AggregatedHitTestRegion {
   // are routed to this surface.
   FrameSinkId frame_sink_id;
 
-  // Flags to indicate the type of region as defined for
-  // mojom::HitTestRegion
-  uint32_t flags;
+  // HitTestRegionFlags to indicate the type of region.
+  uint32_t flags = 0;
 
   // The rectangle that defines the region in parent region's coordinate space.
   gfx::Rect rect;
@@ -56,7 +55,7 @@ struct AggregatedHitTestRegion {
   // The number of children including their children below this entry.
   // If this element is not matched then child_count elements can be skipped
   // to move to the next entry.
-  int32_t child_count;
+  int32_t child_count = 0;
 
   // gfx::Transform is backed by SkMatrix44. SkMatrix44 has a mutable attribute
   // which can be changed even during a const function call (e.g.
