@@ -16,11 +16,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/window_open_disposition.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#endif
-
 class Browser;
 class CommandObserver;
 class GURL;
@@ -151,13 +146,6 @@ void ClearCache(Browser* browser);
 bool IsDebuggerAttachedToCurrentTab(Browser* browser);
 void CopyURL(Browser* browser);
 void OpenInChrome(Browser* browser);
-#if defined(OS_CHROMEOS)
-void ShowIntentPickerBubble(const Browser* browser,
-                            std::vector<chromeos::IntentPickerAppInfo> app_info,
-                            IntentPickerResponse callback);
-void SetIntentPickerViewVisibility(Browser* browser, bool visible);
-#endif  // defined(OS_CHROMEOS)
-
 bool CanViewSource(const Browser* browser);
 
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser);

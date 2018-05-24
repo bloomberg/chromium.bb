@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_
 #define CHROME_TEST_BASE_TEST_BROWSER_WINDOW_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -102,6 +104,7 @@ class TestBrowserWindow : public BrowserWindow {
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
       std::vector<chromeos::IntentPickerAppInfo> app_info,
+      bool disable_stay_in_chrome,
       IntentPickerResponse callback) override {}
   void SetIntentPickerViewVisibility(bool visible) override {}
 #endif  // defined(OS_CHROMEOS)

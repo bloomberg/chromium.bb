@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/arc/intent_helper/intent_picker_controller.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 namespace arc {
@@ -26,7 +26,7 @@ void IntentPickerController::TabSelectionChanged(
 }
 
 void IntentPickerController::ResetVisibility() {
-  chrome::SetIntentPickerViewVisibility(browser_, false);
+  browser_->window()->SetIntentPickerViewVisibility(/*visible=*/false);
 }
 
 }  // namespace arc

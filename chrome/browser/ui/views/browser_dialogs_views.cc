@@ -15,10 +15,6 @@
 #include "chrome/browser/ui/views/task_manager_view.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/intent_picker_bubble_view.h"
-#endif  // OS_CHROMEOS
-
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms other than Mac. It also provides the definitions
 // on Mac when mac_views_browser=1 is specified in GYP_DEFINES. The file is
@@ -65,11 +61,3 @@ void HideTaskManager() {
 #endif
 
 }  // namespace chrome
-
-#if defined(OS_CHROMEOS)
-
-BubbleShowPtr ShowIntentPickerBubble() {
-  return IntentPickerBubbleView::ShowBubble;
-}
-
-#endif  // OS_CHROMEOS

@@ -19,8 +19,8 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -267,7 +267,7 @@ AppsNavigationThrottle::WillStartRequest() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(navigation_handle()->GetWebContents());
   if (browser)
-    chrome::SetIntentPickerViewVisibility(browser, /*visible=*/false);
+    browser->window()->SetIntentPickerViewVisibility(/*visible=*/false);
   return HandleRequest();
 }
 
@@ -394,8 +394,13 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   // It should be safe to bind |web_contents| since closing the current tab will
   // close the intent picker and run the callback prior to the WebContents being
   // deallocated.
-  chrome::ShowIntentPickerBubble(
-      chrome::FindBrowserWithWebContents(web_contents), std::move(apps),
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+
+  browser->window()->ShowIntentPickerBubble(
+      std::move(apps),
+      /*disable_stay_in_chrome=*/false,
       base::BindOnce(&AppsNavigationThrottle::OnIntentPickerClosed,
                      web_contents, url));
 }
@@ -453,8 +458,9 @@ void AppsNavigationThrottle::OnDeferredNavigationProcessed(
                     return app_info.type == AppType::PWA;
                   })) {
     ui_displayed_ = false;
-    chrome::SetIntentPickerViewVisibility(
-        chrome::FindBrowserWithWebContents(web_contents), /*visible=*/true);
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    if (browser)
+      browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
   } else {
     ShowIntentPickerBubbleForApps(web_contents, url,
                                   std::move(apps_for_picker));

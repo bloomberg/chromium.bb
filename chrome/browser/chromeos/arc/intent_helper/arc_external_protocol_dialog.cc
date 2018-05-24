@@ -14,7 +14,9 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/page_transition_util.h"
@@ -333,6 +335,19 @@ void OnIntentPickerClosed(int render_process_host_id,
                           bool should_persist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // Even if ArcExternalProtocolDialog shares the same icon on the omnibox as an
+  // http(s) request (via AppsNavigationThrottle), the UI here shouldn't stay in
+  // the omnibox since the decision should be taken right away in a kind of
+  // blocking fashion.
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, routing_id);
+
+  Browser* browser =
+      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
+
+  if (browser)
+    browser->window()->SetIntentPickerViewVisibility(/*visible=*/false);
+
   // If the user selected an app to continue the navigation, confirm that the
   // |package_name| matches a valid option and return the index.
   const size_t selected_app_index =
@@ -423,12 +438,18 @@ void OnAppIconsReceived(
                           handler->package_name, handler->name);
   }
 
-  auto show_bubble_cb = base::Bind(ShowIntentPickerBubble());
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
-  show_bubble_cb.Run(
-      /*anchor_view=*/nullptr, web_contents, std::move(app_info),
-      !IsChromeAnAppCandidate(handlers),
+
+  Browser* browser =
+      web_contents ? chrome::FindBrowserWithWebContents(web_contents) : nullptr;
+
+  if (!browser)
+    return;
+
+  browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
+  browser->window()->ShowIntentPickerBubble(
+      std::move(app_info), !IsChromeAnAppCandidate(handlers),
       base::Bind(OnIntentPickerClosed, render_process_host_id, routing_id, url,
                  safe_to_bypass_ui, base::Passed(&handlers)));
 }

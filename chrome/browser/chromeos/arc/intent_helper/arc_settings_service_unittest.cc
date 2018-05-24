@@ -19,6 +19,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/arc/test/fake_backup_settings_instance.h"
