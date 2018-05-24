@@ -62,7 +62,7 @@ inline void {{probe.name}}({{params_list(probe)}}) {
   if (!{{sink_class}}::HasAgentsGlobal(
     {%- for agent in probe.agents %}
     {% if not loop.first %} | {% endif -%}
-    {{sink_class}}::k{{agent | agent_name_to_class}}
+    {{sink_class}}::k{{agent}}
     {%- endfor %}))
     return;
 

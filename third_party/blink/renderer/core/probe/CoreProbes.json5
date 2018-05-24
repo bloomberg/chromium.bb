@@ -10,7 +10,6 @@
   },
   observers: {
     AdTracker: {
-      class: "AdTracker",
       include_path: "third_party/blink/renderer/core/frame",
       probes: [
         "CallFunction",
@@ -18,20 +17,20 @@
         "willSendRequest",
       ]
     },
-    Animation: {
+    InspectorAnimationAgent: {
       probes: [
         "animationPlayStateChanged",
         "didClearDocumentOfWindowObject",
         "didCreateAnimation",
       ]
     },
-    ApplicationCache: {
+    InspectorApplicationCacheAgent: {
       probes: [
         "networkStateChanged",
         "updateApplicationCacheStatus",
       ]
     },
-    CSS: {
+    InspectorCSSAgent: {
       probes: [
         "activeStyleSheetsUpdated",
         "documentDetached",
@@ -41,7 +40,7 @@
         "willChangeStyleElement",
       ]
     },
-    DOM: {
+    InspectorDOMAgent: {
       probes: [
         "characterDataModified",
         "didCommitLoad",
@@ -62,7 +61,7 @@
         "willRemoveDOMNode",
       ]
     },
-    DOMDebugger: {
+    InspectorDOMDebuggerAgent: {
       probes: [
         "breakableLocation",
         "didCreateCanvasContext",
@@ -80,30 +79,29 @@
         "willSendXMLHttpOrFetchNetworkRequest",
       ]
     },
-    DOMSnapshot: {
+    InspectorDOMSnapshotAgent: {
       probes: [
         "characterDataModified",
         "didInsertDOMNode",
      ]
     },
-    Emulation: {
+    InspectorEmulationAgent: {
       probes: [
         "frameStartedLoading",
       ]
     },
-    LayerTree: {
+    InspectorLayerTreeAgent: {
       probes: [
         "didPaint",
         "layerTreeDidChange",
       ]
     },
-    Log: {
+    InspectorLogAgent: {
       probes: [
         "consoleMessageAdded",
       ]
     },
-    Network: {
-      class: "InspectorNetworkAgent",
+    InspectorNetworkAgent: {
       probes: [
         "applyUserAgentOverride",
         "detachClientRequest",
@@ -148,7 +146,7 @@
         "willStartFetch",
       ]
     },
-    Page: {
+    InspectorPageAgent: {
       probes: [
         "didChangeViewport",
         "didClearDocumentOfWindowObject",
@@ -172,8 +170,7 @@
         "windowOpen",
       ]
     },
-    Performance: {
-      class: "PerformanceMonitor",
+    PerformanceMonitor: {
       include_path: "third_party/blink/renderer/core/frame",
       probes: [
         "CallFunction",
@@ -185,8 +182,7 @@
         "documentWriteFetchScript",
       ]
     },
-    PerformanceMetrics: {
-      class: "InspectorPerformanceAgent",
+    InspectorPerformanceAgent: {
       probes: [
         "consoleTimeStamp",
         "CallFunction",
@@ -195,8 +191,7 @@
         "UpdateLayout",
       ]
     },
-    TraceEvents: {
-      class: "InspectorTraceEvents",
+    InspectorTraceEvents: {
       probes: [
         "CallFunction",
         "ParseHTML",
@@ -209,7 +204,7 @@
         "willSendRequest",
       ]
     },
-    Worker: {
+    InspectorWorkerAgent: {
       probes: [
         "didStartWorker",
         "shouldWaitForDebuggerOnWorkerStart",

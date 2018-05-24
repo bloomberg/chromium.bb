@@ -34,46 +34,45 @@ std::atomic<unsigned> {{sink_class}}::s_existingAgents;
 {{sink_class}}::~{{sink_class}}() {
   MutexLocker lock(AgentCountMutex());
 {% for agent in agents %}
-{% set class_name = agent | agent_name_to_class %}
-  if (has{{class_name}}s() && --s_numSinksWith{{class_name}} == 0)
-    s_existingAgents &= ~k{{class_name}};
+  if (has{{agent}}s() && --s_numSinksWith{{agent}} == 0)
+    s_existingAgents &= ~k{{agent}};
 {% endfor %}
 }
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
-{% set getter_name = class_name | to_lower_case %}
+{% set getter_name = agent | to_lower_case %}
 
 // static
-unsigned {{sink_class}}::s_numSinksWith{{class_name}} = 0;
+unsigned {{sink_class}}::s_numSinksWith{{agent}} = 0;
 
-void {{sink_class}}::add{{class_name}}({{class_name}}* agent) {
-  bool already_had_agent = has{{class_name}}s();
+void {{sink_class}}::add{{agent}}({{class_name}}* agent) {
+  bool already_had_agent = has{{agent}}s();
   m_{{getter_name}}s.insert(agent);
 
   if (!already_had_agent) {
     MutexLocker lock(AgentCountMutex());
-    if (++s_numSinksWith{{class_name}} == 1)
-      s_existingAgents |= k{{class_name}};
+    if (++s_numSinksWith{{agent}} == 1)
+      s_existingAgents |= k{{agent}};
   }
 
-  DCHECK(HasAgentsGlobal(k{{class_name}}));
+  DCHECK(HasAgentsGlobal(k{{agent}}));
 }
 
-void {{sink_class}}::remove{{class_name}}({{class_name}}* agent) {
-  if (!has{{class_name}}s())
+void {{sink_class}}::remove{{agent}}({{class_name}}* agent) {
+  if (!has{{agent}}s())
     return;
 
   m_{{getter_name}}s.erase(agent);
 
-  if (!has{{class_name}}s()) {
+  if (!has{{agent}}s()) {
     MutexLocker lock(AgentCountMutex());
-    if (--s_numSinksWith{{class_name}} == 0)
-      s_existingAgents &= ~k{{class_name}};
+    if (--s_numSinksWith{{agent}} == 0)
+      s_existingAgents &= ~k{{agent}};
   }
 
-  if (has{{class_name}}s())
-    DCHECK(HasAgentsGlobal(k{{class_name}}));
+  if (has{{agent}}s())
+    DCHECK(HasAgentsGlobal(k{{agent}}));
 }
 
 {% endfor -%}
@@ -81,7 +80,7 @@ void {{sink_class}}::remove{{class_name}}({{class_name}}* agent) {
 void {{sink_class}}::Trace(Visitor* visitor)
 {
 {% for agent in agents %}
-{% set getter_name = agent | agent_name_to_class | to_lower_case %}
+{% set getter_name = agent | to_lower_case %}
   visitor->Trace(m_{{getter_name}}s);
 {% endfor %}
 }
@@ -100,8 +99,8 @@ namespace probe {
     return;
 {% for agent in probe.agents %}
 {% set class_name = agent | agent_name_to_class %}
-  if (probe_sink->has{{class_name}}s()) {
-    for ({{class_name}}* agent : probe_sink->{{ class_name | to_lower_case }}s())
+  if (probe_sink->has{{agent}}s()) {
+    for ({{class_name}}* agent : probe_sink->{{ agent | to_lower_case }}s())
       agent->{{agent_probe_name}}({{caller()}});
   }
 {% endfor %}
