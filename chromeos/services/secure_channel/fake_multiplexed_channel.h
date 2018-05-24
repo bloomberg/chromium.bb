@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/multiplexed_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
@@ -19,7 +20,8 @@ namespace secure_channel {
 // Test MultiplexedChannel implementation.
 class FakeMultiplexedChannel : public MultiplexedChannel {
  public:
-  FakeMultiplexedChannel(Delegate* delegate);
+  FakeMultiplexedChannel(Delegate* delegate,
+                         ConnectionDetails connection_details);
   ~FakeMultiplexedChannel() override;
 
   std::vector<std::pair<std::string, mojom::ConnectionDelegatePtr>>&
@@ -56,15 +58,14 @@ class FakeMultiplexedChannelDelegate : public MultiplexedChannel::Delegate {
   FakeMultiplexedChannelDelegate();
   ~FakeMultiplexedChannelDelegate() override;
 
-  // Returns an empty token if no channel has yet been disconnected.
-  const base::UnguessableToken& disconnected_channel_id() {
-    return disconnected_channel_id_;
+  const base::Optional<ConnectionDetails>& disconnected_connection_details() {
+    return disconnected_connection_details_;
   }
 
  private:
-  void OnDisconnected(const base::UnguessableToken& channel_id) override;
+  void OnDisconnected(const ConnectionDetails& connection_details) override;
 
-  base::UnguessableToken disconnected_channel_id_;
+  base::Optional<ConnectionDetails> disconnected_connection_details_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiplexedChannelDelegate);
 };

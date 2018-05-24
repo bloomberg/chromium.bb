@@ -12,6 +12,8 @@
 
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/services/secure_channel/connection_details.h"
+#include "chromeos/services/secure_channel/connection_medium.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_multiplexed_channel.h"
@@ -25,6 +27,7 @@ namespace secure_channel {
 
 namespace {
 
+const char kTestDeviceId[] = "testDeviceId";
 const char kTestFeature[] = "testFeature";
 
 class FakeSingleClientMessageProxyImplFactory
@@ -122,6 +125,8 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     multiplexed_channel_ =
         MultiplexedChannelImpl::Factory::Get()->BuildInstance(
             std::move(fake_authenticated_channel), fake_delegate_.get(),
+            ConnectionDetails(kTestDeviceId,
+                              ConnectionMedium::kBluetoothLowEnergy),
             &initial_client_list_);
 
     // Once BuildInstance() has finished, |fake_proxy_factory_| is expected to
@@ -199,7 +204,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
         fake_authenticated_channel_->has_disconnection_been_requested());
     EXPECT_FALSE(multiplexed_channel_->IsDisconnecting());
     EXPECT_FALSE(multiplexed_channel_->IsDisconnected());
-    EXPECT_TRUE(fake_delegate_->disconnected_channel_id().is_empty());
+    EXPECT_FALSE(fake_delegate_->disconnected_connection_details());
 
     // Disconnecting the client should result in the proxy being deleted.
     sending_proxy->NotifyClientDisconnected();
@@ -215,14 +220,14 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     EXPECT_FALSE(multiplexed_channel_->IsDisconnected());
     EXPECT_TRUE(
         fake_authenticated_channel_->has_disconnection_been_requested());
-    EXPECT_TRUE(fake_delegate_->disconnected_channel_id().is_empty());
+    EXPECT_FALSE(fake_delegate_->disconnected_connection_details());
 
     // Complete asynchronous disconnection.
     fake_authenticated_channel_->NotifyDisconnected();
 
     // Verify that all relevant parties have been notified of the disconnection.
-    EXPECT_EQ(multiplexed_channel_->channel_id(),
-              fake_delegate_->disconnected_channel_id());
+    EXPECT_EQ(multiplexed_channel_->connection_details(),
+              fake_delegate_->disconnected_connection_details());
     EXPECT_FALSE(multiplexed_channel_->IsDisconnecting());
     EXPECT_TRUE(multiplexed_channel_->IsDisconnected());
   }
@@ -232,7 +237,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     // the connection is valid.
     EXPECT_FALSE(multiplexed_channel_->IsDisconnecting());
     EXPECT_FALSE(multiplexed_channel_->IsDisconnected());
-    EXPECT_TRUE(fake_delegate_->disconnected_channel_id().is_empty());
+    EXPECT_FALSE(fake_delegate_->disconnected_connection_details());
     for (auto& map_entry : id_to_active_proxy_map())
       EXPECT_FALSE(map_entry.second->was_remote_device_disconnection_handled());
 
@@ -241,8 +246,8 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     // Verify that the above preconditions have now been changed.
     EXPECT_FALSE(multiplexed_channel_->IsDisconnecting());
     EXPECT_TRUE(multiplexed_channel_->IsDisconnected());
-    EXPECT_EQ(multiplexed_channel_->channel_id(),
-              fake_delegate_->disconnected_channel_id());
+    EXPECT_EQ(multiplexed_channel_->connection_details(),
+              fake_delegate_->disconnected_connection_details());
     for (auto& map_entry : id_to_active_proxy_map())
       EXPECT_TRUE(map_entry.second->was_remote_device_disconnection_handled());
   }

@@ -8,8 +8,10 @@ namespace chromeos {
 
 namespace secure_channel {
 
-FakeMultiplexedChannel::FakeMultiplexedChannel(Delegate* delegate)
-    : MultiplexedChannel(delegate) {}
+FakeMultiplexedChannel::FakeMultiplexedChannel(
+    Delegate* delegate,
+    ConnectionDetails connection_details)
+    : MultiplexedChannel(delegate, connection_details) {}
 
 FakeMultiplexedChannel::~FakeMultiplexedChannel() = default;
 
@@ -45,8 +47,8 @@ FakeMultiplexedChannelDelegate::FakeMultiplexedChannelDelegate() = default;
 FakeMultiplexedChannelDelegate::~FakeMultiplexedChannelDelegate() = default;
 
 void FakeMultiplexedChannelDelegate::OnDisconnected(
-    const base::UnguessableToken& channel_id) {
-  disconnected_channel_id_ = channel_id;
+    const ConnectionDetails& connection_details) {
+  disconnected_connection_details_ = connection_details;
 }
 
 }  // namespace secure_channel
