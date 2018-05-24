@@ -59,9 +59,17 @@ bool WindowServiceClientTestHelper::ReleaseCapture(aura::Window* window) {
       ClientWindowIdForWindow(window));
 }
 
-void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
-                                                    const gfx::Rect& bounds,
-                                                    uint32_t change_id) {
+bool WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
+                                                    const gfx::Rect& bounds) {
+  base::Optional<viz::LocalSurfaceId> local_surface_id;
+  return window_service_client_->SetWindowBoundsImpl(
+      ClientWindowIdForWindow(window), bounds, local_surface_id);
+}
+
+void WindowServiceClientTestHelper::SetWindowBoundsWithAck(
+    aura::Window* window,
+    const gfx::Rect& bounds,
+    uint32_t change_id) {
   base::Optional<viz::LocalSurfaceId> local_surface_id;
   window_service_client_->SetWindowBounds(
       change_id, TransportIdForWindow(window), bounds, local_surface_id);
