@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
@@ -57,7 +58,8 @@
     </style>
     <div class="settings-box first" id="headerLine">
       <paper-icon-button-light class="icon-arrow-back">
-        <button on-click="onTapBack_" aria-label="$i18n{back}"></button>
+        <button id="closeButton" on-click="onTapBack_"
+            aria-label="$i18n{back}"></button>
       </paper-icon-button-light>
       <h1>[[pageTitle]]</h1>
       <slot name="subpage-title-extra"></slot>

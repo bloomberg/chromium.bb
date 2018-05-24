@@ -26,6 +26,7 @@ js_library("main_page_behavior") {
 
 js_library("settings_animated_pages") {
   deps = [
+    ":settings_subpage",
     "..:route",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -48,6 +49,7 @@ js_library("settings_subpage") {
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
     "//third_party/polymer/v1_0/components-chromium/neon-animation:neon-animatable-behavior-extracted",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
 

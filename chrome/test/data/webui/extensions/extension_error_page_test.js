@@ -88,7 +88,7 @@ cr.define('extension_error_page_tests', function() {
       extension_test_util.testIcons(errorPage);
 
       var testIsVisible = extension_test_util.isVisible.bind(null, errorPage);
-      expectTrue(testIsVisible('#close-button'));
+      expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#heading'));
       expectTrue(testIsVisible('#errorsList'));
 

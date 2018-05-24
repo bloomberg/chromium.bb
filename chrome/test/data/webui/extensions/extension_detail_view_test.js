@@ -55,7 +55,7 @@ cr.define('extension_detail_view_tests', function() {
       extension_test_util.testIcons(item);
 
       var testIsVisible = extension_test_util.isVisible.bind(null, item);
-      expectTrue(testIsVisible('#close-button'));
+      expectTrue(testIsVisible('#closeButton'));
       expectTrue(testIsVisible('#icon'));
       expectTrue(testIsVisible('#enable-toggle'));
       expectFalse(testIsVisible('#extensions-options'));

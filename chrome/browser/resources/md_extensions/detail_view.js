@@ -37,6 +37,19 @@ cr.define('extensions', function() {
       'onItemIdChanged_(data.id, delegate)',
     ],
 
+    listeners: {
+      'view-enter-start': 'onViewEnterStart_',
+    },
+
+    /**
+     * Focuses the back button when page is loaded.
+     * @private
+     */
+    onViewEnterStart_: function() {
+      Polymer.RenderStatus.afterNextRender(
+          this, () => cr.ui.focusWithoutInk(this.$.closeButton));
+    },
+
     /** @private */
     onItemIdChanged_: function() {
       // Clear the size, since this view is reused, such that no obsolete size

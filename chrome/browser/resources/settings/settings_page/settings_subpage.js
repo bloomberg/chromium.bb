@@ -65,6 +65,12 @@ Polymer({
     }
   },
 
+  /** Focuses the back button when page is loaded. */
+  initialFocus: function() {
+    Polymer.RenderStatus.afterNextRender(
+        this, () => cr.ui.focusWithoutInk(this.$.closeButton));
+  },
+
   /**
    * Clear the value of the search field.
    * @param {!Event} e
