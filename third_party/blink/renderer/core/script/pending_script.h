@@ -134,7 +134,9 @@ class CORE_EXPORT PendingScript
   // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
   // The single entry point of script execution.
   // PendingScript::Dispose() is called in ExecuteScriptBlock().
-  void ExecuteScriptBlock(const KURL&);
+  //
+  // This is virtual only for testing.
+  virtual void ExecuteScriptBlock(const KURL&);
 
  protected:
   PendingScript(ScriptElementBase*, const TextPosition& starting_position);

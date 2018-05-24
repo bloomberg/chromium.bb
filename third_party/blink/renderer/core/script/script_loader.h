@@ -89,9 +89,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // This should be called only once.
   PendingScript* TakePendingScript(ScriptSchedulingType);
 
-  // The entry point only for ScriptRunner that wraps ExecuteScriptBlock().
-  virtual void Execute();
-
   bool WillBeParserExecuted() const { return will_be_parser_executed_; }
   bool ReadyToBeParserExecuted() const { return ready_to_be_parser_executed_; }
   bool WillExecuteWhenDocumentFinishedParsing() const {

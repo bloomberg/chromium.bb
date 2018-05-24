@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
-using testing::Invoke;
+using testing::InvokeWithoutArgs;
 using testing::ElementsAre;
 using testing::Return;
 using testing::WhenSorted;
@@ -38,6 +38,7 @@ class MockPendingScript : public PendingScript {
   MOCK_CONST_METHOD0(WasCanceled, bool());
   MOCK_CONST_METHOD0(UrlForTracing, KURL());
   MOCK_METHOD0(RemoveFromMemoryCache, void());
+  MOCK_METHOD1(ExecuteScriptBlock, void(const KURL&));
 
   enum class State {
     kStreamingNotReady,
@@ -103,8 +104,6 @@ class MockScriptLoader final : public ScriptLoader {
   }
 
   ~MockScriptLoader() override {}
-
-  MOCK_METHOD0(Execute, void());
 
   void Trace(blink::Visitor*) override;
 
@@ -182,7 +181,8 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
   QueueScriptForExecution(script_loader);
   NotifyScriptReady(script_loader);
 
-  EXPECT_CALL(*script_loader, Execute());
+  EXPECT_CALL(*script_loader->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_));
   platform_->RunUntilIdle();
 }
 
@@ -190,7 +190,8 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
   auto* script_loader = MockScriptLoader::CreateInOrder(document_);
   QueueScriptForExecution(script_loader);
 
-  EXPECT_CALL(*script_loader, Execute());
+  EXPECT_CALL(*script_loader->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_));
 
   NotifyScriptReady(script_loader);
 
@@ -212,9 +213,10 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
   }
 
   for (size_t i = 0; i < script_loaders.size(); ++i) {
-    EXPECT_CALL(*script_loaders[i], Execute()).WillOnce(Invoke([this, i] {
-      order_.push_back(i + 1);
-    }));
+    EXPECT_CALL(
+        *script_loaders[i]->GetPendingScriptIfControlledByScriptRunner(),
+        ExecuteScriptBlock(_))
+        .WillOnce(InvokeWithoutArgs([this, i] { order_.push_back(i + 1); }));
   }
 
   for (int i = 2; i >= 0; i--) {
@@ -245,21 +247,21 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts) {
   NotifyScriptReady(script_loader4);
   NotifyScriptReady(script_loader5);
 
-  EXPECT_CALL(*script_loader1, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(1);
-  }));
-  EXPECT_CALL(*script_loader2, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(2);
-  }));
-  EXPECT_CALL(*script_loader3, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(3);
-  }));
-  EXPECT_CALL(*script_loader4, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(4);
-  }));
-  EXPECT_CALL(*script_loader5, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(5);
-  }));
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
+  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
+  EXPECT_CALL(*script_loader4->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(4); }));
+  EXPECT_CALL(*script_loader5->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(5); }));
 
   platform_->RunUntilIdle();
 
@@ -278,22 +280,24 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
   NotifyScriptReady(script_loader1);
 
   auto* script_loader = script_loader2;
-  EXPECT_CALL(*script_loader1, Execute())
-      .WillOnce(Invoke([script_loader, this] {
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([script_loader, this] {
         order_.push_back(1);
         NotifyScriptReady(script_loader);
       }));
 
   script_loader = script_loader3;
-  EXPECT_CALL(*script_loader2, Execute())
-      .WillOnce(Invoke([script_loader, this] {
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([script_loader, this] {
         order_.push_back(2);
         NotifyScriptReady(script_loader);
       }));
 
-  EXPECT_CALL(*script_loader3, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(3);
-  }));
+  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   // Make sure that re-entrant calls to notifyScriptReady don't cause
   // ScriptRunner::execute to do more work than expected.
@@ -316,24 +320,26 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
   NotifyScriptReady(script_loader1);
 
   MockScriptLoader* script_loader = script_loader2;
-  EXPECT_CALL(*script_loader1, Execute())
-      .WillOnce(Invoke([script_loader, &script_loader2, this] {
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([script_loader, &script_loader2, this] {
         order_.push_back(1);
         QueueScriptForExecution(script_loader);
         NotifyScriptReady(script_loader2);
       }));
 
   script_loader = script_loader3;
-  EXPECT_CALL(*script_loader2, Execute())
-      .WillOnce(Invoke([script_loader, &script_loader3, this] {
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([script_loader, &script_loader3, this] {
         order_.push_back(2);
         QueueScriptForExecution(script_loader);
         NotifyScriptReady(script_loader3);
       }));
 
-  EXPECT_CALL(*script_loader3, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(3);
-  }));
+  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   // Make sure that re-entrant calls to queueScriptForExecution don't cause
   // ScriptRunner::execute to do more work than expected.
@@ -358,17 +364,19 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
     QueueScriptForExecution(script_loaders[i]);
 
     if (i > 0) {
-      EXPECT_CALL(*script_loaders[i], Execute()).WillOnce(Invoke([this, i] {
-        order_.push_back(i);
-      }));
+      EXPECT_CALL(
+          *script_loaders[i]->GetPendingScriptIfControlledByScriptRunner(),
+          ExecuteScriptBlock(_))
+          .WillOnce(InvokeWithoutArgs([this, i] { order_.push_back(i); }));
     }
   }
 
   NotifyScriptReady(script_loaders[0]);
   NotifyScriptReady(script_loaders[1]);
 
-  EXPECT_CALL(*script_loaders[0], Execute())
-      .WillOnce(Invoke([&script_loaders, this] {
+  EXPECT_CALL(*script_loaders[0]->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([&script_loaders, this] {
         for (int i = 2; i < 20; i++) {
           NotifyScriptReady(script_loaders[i]);
         }
@@ -392,15 +400,15 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
   QueueScriptForExecution(script_loader2);
   QueueScriptForExecution(script_loader3);
 
-  EXPECT_CALL(*script_loader1, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(1);
-  }));
-  EXPECT_CALL(*script_loader2, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(2);
-  }));
-  EXPECT_CALL(*script_loader3, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(3);
-  }));
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
+  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   NotifyScriptReady(script_loader1);
   NotifyScriptReady(script_loader2);
@@ -428,15 +436,15 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
   NotifyScriptReady(script_loader2);
   NotifyScriptReady(script_loader3);
 
-  EXPECT_CALL(*script_loader1, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(1);
-  }));
-  EXPECT_CALL(*script_loader2, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(2);
-  }));
-  EXPECT_CALL(*script_loader3, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(3);
-  }));
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
+  EXPECT_CALL(*script_loader3->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(3); }));
 
   platform_->RunSingleTask();
   script_runner_->Suspend();
@@ -454,12 +462,12 @@ TEST_F(ScriptRunnerTest, LateNotifications) {
   QueueScriptForExecution(script_loader1);
   QueueScriptForExecution(script_loader2);
 
-  EXPECT_CALL(*script_loader1, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(1);
-  }));
-  EXPECT_CALL(*script_loader2, Execute()).WillOnce(Invoke([this] {
-    order_.push_back(2);
-  }));
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(1); }));
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .WillOnce(InvokeWithoutArgs([this] { order_.push_back(2); }));
 
   NotifyScriptReady(script_loader1);
   platform_->RunUntilIdle();
@@ -490,8 +498,12 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
 
   // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not
   // access dead object.
-  EXPECT_CALL(*script_loader1, Execute()).Times(0);
-  EXPECT_CALL(*script_loader2, Execute()).Times(0);
+  EXPECT_CALL(*script_loader1->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .Times(0);
+  EXPECT_CALL(*script_loader2->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .Times(0);
 
   platform_->RunUntilIdle();
 }
@@ -529,7 +541,9 @@ TEST_F(ScriptRunnerTest, DontExecuteWhileStreaming) {
       ->SimulateStreamingEnd();
 
   // Now that streaming is finished, expect Execute() to be called.
-  EXPECT_CALL(*script_loader, Execute()).Times(1);
+  EXPECT_CALL(*script_loader->GetPendingScriptIfControlledByScriptRunner(),
+              ExecuteScriptBlock(_))
+      .Times(1);
   platform_->RunUntilIdle();
 }
 
