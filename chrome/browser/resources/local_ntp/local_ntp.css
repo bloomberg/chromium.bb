@@ -530,9 +530,18 @@ html[dir=rtl] #mv-notice-x {
 }
 
 .md-icons #mv-notice-container {
-  bottom: 0;
+  bottom: -50px;
   margin-bottom: 16px;
   position: fixed;
+  transition: bottom 400ms;
+}
+
+.md-icons #mv-notice-container.float-up {
+  bottom: 0;
+}
+
+.md-icons #mv-notice-container.mv-notice-hide {
+  display: none;
 }
 
 /* The notification shown when a tile is blacklisted. */
@@ -594,7 +603,7 @@ html[dir=rtl] #mv-notice-x {
 }
 
 .md-icons #mv-notice-links span:hover,
-.md-icons #mv-notice-links span:focus {
+.md-icons #mv-notice-links span:active {
   background-color: rgba(26,115,232, 0.1);
   text-decoration: none;
   transition: background-color 200ms;
@@ -662,4 +671,26 @@ html[dir=rtl] #attribution,
 
 #one-google.hidden {
   opacity: 0;
+}
+
+.ripple-container {
+  height: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 0;
+  z-index: 100;
+}
+
+.ripple-effect {
+  background-color: rgba(26, 115, 232, 0.1);
+  border-radius: 50%;
+  height: 1px;
+  pointer-events: none;
+  transition: width, height, margin, background-color 400ms 250ms;
+  transition-duration: 400ms;
+  transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+  width: 1px;
 }

@@ -78,6 +78,12 @@ var CLASSES = {
   MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
   MATERIAL_DESIGN_ICONS:
       'md-icons',  // Applies Material Design styles to Most Visited.
+  // Applies float animations to the Most Visited notification
+  FLOAT_UP: 'float-up',
+  // Applies ripple animation to the element on click
+  RIPPLE: 'ripple',
+  RIPPLE_CONTAINER: 'ripple-container',
+  RIPPLE_EFFECT: 'ripple-effect',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
@@ -113,6 +119,7 @@ var IDS = {
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
+  NOTIFICATION_CONTAINER: 'mv-notice-container',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
@@ -183,11 +190,40 @@ var KEYCODE = {ENTER: 13, SPACE: 32};
 
 
 /**
+ * The period of time (ms) before the Most Visited notification is hidden.
+ * @type {number}
+ */
+const NOTIFICATION_TIMEOUT = 10000;
+
+
+/**
+ * The duration of the ripple animation.
+ * @type {number}
+ */
+const RIPPLE_DURATION_MS = 800;
+
+
+/**
+ * The max size of the ripple animation.
+ * @type {number}
+ */
+const RIPPLE_MAX_RADIUS_PX = 300;
+
+
+/**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
  */
 var lastBlacklistedTile = null;
+
+
+/**
+ * The timeout id for automatically hiding the Most Visited notification.
+ * Invalid ids will silently do nothing.
+ * @type {number}
+ */
+let delayedHideNotification = -1;
 
 
 /**
@@ -444,11 +480,25 @@ function reloadTiles() {
  * Shows the blacklist notification and triggers a delay to hide it.
  */
 function showNotification() {
-  var notification = $(IDS.NOTIFICATION);
-  notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
-  notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
-  notification.scrollTop;
-  notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
+  if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
+    $(IDS.NOTIFICATION).classList.remove(CLASSES.HIDE_NOTIFICATION);
+    // Timeout is required for the "float up" transition to work. Modifying the
+    // "display" property prevents transitions from activating.
+    window.setTimeout(() => {
+      $(IDS.NOTIFICATION_CONTAINER).classList.add(CLASSES.FLOAT_UP);
+    }, 20);
+
+    // Automatically hide the notification after a period of time.
+    delayedHideNotification = window.setTimeout(() => {
+      hideNotification();
+    }, NOTIFICATION_TIMEOUT);
+  } else {
+    var notification = $(IDS.NOTIFICATION);
+    notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
+    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
+    notification.scrollTop;
+    notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
+  }
 }
 
 
@@ -456,9 +506,26 @@ function showNotification() {
  * Hides the blacklist notification.
  */
 function hideNotification() {
-  var notification = $(IDS.NOTIFICATION);
-  notification.classList.add(CLASSES.HIDE_NOTIFICATION);
-  notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
+  if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
+    let notification = $(IDS.NOTIFICATION_CONTAINER);
+    if (!notification.classList.contains(CLASSES.FLOAT_UP)) {
+      return;
+    }
+    window.clearTimeout(delayedHideNotification);
+    notification.classList.remove(CLASSES.FLOAT_UP);
+
+    let afterHide = (event) => {
+      if (event.propertyName == 'bottom') {
+        $(IDS.NOTIFICATION).classList.add(CLASSES.HIDE_NOTIFICATION);
+        notification.removeEventListener('transitionend', afterHide);
+      }
+    };
+    notification.addEventListener('transitionend', afterHide);
+  } else {
+    var notification = $(IDS.NOTIFICATION);
+    notification.classList.add(CLASSES.HIDE_NOTIFICATION);
+    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
+  }
 }
 
 
@@ -614,6 +681,72 @@ function enableMD() {
 function enableMDIcons() {
   $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
   $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+  addRippleAnimations();
+}
+
+
+/**
+ * Enables ripple animations for elements with CLASSES.RIPPLE.
+ * TODO(kristipark): Remove after migrating to WebUI.
+ */
+function addRippleAnimations() {
+  let ripple = (event) => {
+    let target = event.target;
+    const rect = target.getBoundingClientRect();
+    const x = Math.round(event.clientX - rect.left);
+    const y = Math.round(event.clientY - rect.top);
+
+    // Calculate radius
+    const corners = [
+      {x: 0, y: 0},
+      {x: rect.width, y: 0},
+      {x: 0, y: rect.height},
+      {x: rect.width, y: rect.height},
+    ];
+    let distance = (x1, y1, x2, y2) => {
+      var xDelta = x1 - x2;
+      var yDelta = y1 - y2;
+      return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
+    };
+    let cornerDistances = corners.map(function(corner) {
+      return Math.round(distance(x, y, corner.x, corner.y));
+    });
+    const radius =
+        Math.min(RIPPLE_MAX_RADIUS_PX, Math.max.apply(Math, cornerDistances));
+
+    let ripple = document.createElement('div');
+    let rippleContainer = document.createElement('div');
+    ripple.classList.add(CLASSES.RIPPLE_EFFECT);
+    rippleContainer.classList.add(CLASSES.RIPPLE_CONTAINER);
+    rippleContainer.appendChild(ripple);
+    target.appendChild(rippleContainer);
+    // Ripple start location
+    ripple.style.marginLeft = x + 'px';
+    ripple.style.marginTop = y + 'px';
+
+    rippleContainer.style.left = rect.left + 'px';
+    rippleContainer.style.width = target.offsetWidth + 'px';
+    rippleContainer.style.height = target.offsetHeight + 'px';
+    rippleContainer.style.borderRadius =
+        window.getComputedStyle(target).borderRadius;
+
+    // Start transition/ripple
+    ripple.style.width = radius * 2 + 'px';
+    ripple.style.height = radius * 2 + 'px';
+    ripple.style.marginLeft = x - radius + 'px';
+    ripple.style.marginTop = y - radius + 'px';
+    ripple.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+
+    window.setTimeout(function() {
+      ripple.remove();
+      rippleContainer.remove();
+    }, RIPPLE_DURATION_MS);
+  };
+
+  let rippleElements = document.querySelectorAll('.' + CLASSES.RIPPLE);
+  for (let i = 0; i < rippleElements.length; i++) {
+    rippleElements[i].addEventListener('mousedown', ripple);
+  }
 }
 
 
