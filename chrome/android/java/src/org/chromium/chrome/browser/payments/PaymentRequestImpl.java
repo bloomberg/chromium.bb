@@ -1078,11 +1078,10 @@ public class PaymentRequestImpl
      * @amount The given payment amount.
      */
     private CurrencyFormatter getOrCreateCurrencyFormatter(PaymentCurrencyAmount amount) {
-        String key = amount.currency + amount.currencySystem;
+        String key = amount.currency;
         CurrencyFormatter formatter = mCurrencyFormatterMap.get(key);
         if (formatter == null) {
-            formatter = new CurrencyFormatter(
-                    amount.currency, amount.currencySystem, Locale.getDefault());
+            formatter = new CurrencyFormatter(amount.currency, Locale.getDefault());
             mCurrencyFormatterMap.put(key, formatter);
         }
         return formatter;

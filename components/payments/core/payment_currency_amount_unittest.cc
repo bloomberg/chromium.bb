@@ -25,8 +25,6 @@ TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueSuccess) {
 
   EXPECT_TRUE(expected.Equals(actual));
 
-  expected.currency_system = "urn:iso:std:iso:123456789";
-  amount_dict.SetString("currencySystem", "urn:iso:std:iso:123456789");
   EXPECT_TRUE(PaymentCurrencyAmountFromDictionaryValue(amount_dict, &actual));
   EXPECT_TRUE(expected.Equals(actual));
 }
@@ -78,7 +76,6 @@ TEST(PaymentRequestTest, EmptyPaymentCurrencyAmountDictionary) {
 
   expected_value.SetString("currency", "");
   expected_value.SetString("value", "");
-  expected_value.SetString("currencySystem", "urn:iso:std:iso:4217");
 
   mojom::PaymentCurrencyAmount payment_currency_amount;
   EXPECT_TRUE(expected_value.Equals(
@@ -92,12 +89,10 @@ TEST(PaymentRequestTest, PopulatedCurrencyAmountDictionary) {
 
   expected_value.SetString("currency", "AUD");
   expected_value.SetString("value", "-438.23");
-  expected_value.SetString("currencySystem", "urn:iso:std:iso:123456789");
 
   mojom::PaymentCurrencyAmount payment_currency_amount;
   payment_currency_amount.currency = "AUD";
   payment_currency_amount.value = "-438.23";
-  payment_currency_amount.currency_system = "urn:iso:std:iso:123456789";
 
   EXPECT_TRUE(expected_value.Equals(
       PaymentCurrencyAmountToDictionaryValue(payment_currency_amount).get()));

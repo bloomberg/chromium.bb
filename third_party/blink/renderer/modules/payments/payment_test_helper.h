@@ -42,7 +42,6 @@ enum PaymentTestDataToChange {
   kPaymentTestDataLabel,
   kPaymentTestDataAmount,
   kPaymentTestDataCurrencyCode,
-  kPaymentTestDataCurrencySystem,
   kPaymentTestDataValue,
 };
 

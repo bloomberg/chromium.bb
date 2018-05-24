@@ -84,7 +84,6 @@ struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
     PaymentCurrencyAmountPtr output = PaymentCurrencyAmount::New();
     output->currency = input.currency().UpperASCII();
     output->value = input.value();
-    output->currency_system = input.currencySystem();
     return output;
   }
 };
@@ -167,13 +166,6 @@ void ValidateShippingOptionOrPaymentItem(const T& item,
     return;
   }
 
-  if (item.amount().currencySystem().length() >
-      PaymentRequest::kMaxStringLength) {
-    exception_state.ThrowTypeError("The currency system for " + item_name +
-                                   " cannot be longer than 1024 characters");
-    return;
-  }
-
   if (item.amount().value().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError("The amount value for " + item_name +
                                    " cannot be longer than 1024 characters");
@@ -194,20 +186,10 @@ void ValidateShippingOptionOrPaymentItem(const T& item,
     return;
   }
 
-  if (!PaymentsValidators::IsValidCurrencyCodeFormat(
-          item.amount().currency(), item.amount().currencySystem(),
-          &error_message)) {
+  if (!PaymentsValidators::IsValidCurrencyCodeFormat(item.amount().currency(),
+                                                     &error_message)) {
     exception_state.ThrowRangeError(error_message);
     return;
-  }
-
-  // TODO(zino): The `currencySystem` member is deprecated in spec side.
-  // We want to count when the currency code is not well-formed.
-  // Please see http://crbug.com/839402
-  if (ScriptRegexp("^[A-Z]{3}$", kTextCaseUnicodeInsensitive)
-          .Match(item.amount().currency()) != 0) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPaymentRequestInvalidCurrencyCode);
   }
 }
 

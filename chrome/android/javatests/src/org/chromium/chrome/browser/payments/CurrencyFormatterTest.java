@@ -108,7 +108,7 @@ public class CurrencyFormatterTest {
             String expectedAmountFormatting = (String) testCase[4];
 
             CurrencyFormatter formatter =
-                    new CurrencyFormatter(currency, "", LocaleUtils.forLanguageTag(locale));
+                    new CurrencyFormatter(currency, LocaleUtils.forLanguageTag(locale));
 
             String formattedAmount = formatter.format(amount).replace(SPACE, " ");
             Assert.assertEquals("\"" + currency + "\" \"" + amount + "\" (\"" + locale

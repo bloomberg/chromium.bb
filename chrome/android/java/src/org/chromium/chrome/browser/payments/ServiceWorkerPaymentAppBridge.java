@@ -318,11 +318,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
-    private static String getCurrencySystemFromPaymentItem(PaymentItem item) {
-        return item.amount.currencySystem;
-    }
-
-    @CalledByNative
     private static Object[] createCapabilities(int count) {
         return new ServiceWorkerPaymentApp.Capabilities[count];
     }

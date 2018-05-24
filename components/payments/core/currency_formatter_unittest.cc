@@ -16,14 +16,12 @@ struct TestCase {
            const char* currency_code,
            const char* locale_name,
            const std::string& expected_amount,
-           const char* expected_currency_code,
-           const char* currency_system = kIso4217CurrencySystem)
+           const char* expected_currency_code)
       : amount(amount),
         currency_code(currency_code),
         locale_name(locale_name),
         expected_amount(expected_amount),
-        expected_currency_code(expected_currency_code),
-        currency_system(currency_system) {}
+        expected_currency_code(expected_currency_code) {}
   ~TestCase() {}
 
   const char* const amount;
@@ -31,7 +29,6 @@ struct TestCase {
   const char* const locale_name;
   const std::string expected_amount;
   const char* const expected_currency_code;
-  const char* const currency_system;
 };
 
 class PaymentsCurrencyFormatterTest : public testing::TestWithParam<TestCase> {
@@ -39,7 +36,6 @@ class PaymentsCurrencyFormatterTest : public testing::TestWithParam<TestCase> {
 
 TEST_P(PaymentsCurrencyFormatterTest, IsValidCurrencyFormat) {
   CurrencyFormatter formatter(GetParam().currency_code,
-                              GetParam().currency_system,
                               GetParam().locale_name);
   base::string16 output_amount = formatter.Format(GetParam().amount);
 
@@ -134,62 +130,6 @@ INSTANTIATE_TEST_CASE_P(
             "fr_FR",
             "123 456 789 012 345 678 901 234 567 890,123456789 $",
             "USD")));
-
-INSTANTIATE_TEST_CASE_P(
-    CurrencySystems,
-    PaymentsCurrencyFormatterTest,
-    testing::Values(
-        // When the currency system is not ISO4217, only the amount is formatted
-        // using the locale (there is no other indication of currency).
-        TestCase("55.00",
-                 "USD",
-                 "en_CA",
-                 "55.00",
-                 "USD",
-                 "http://currsystem.com"),
-        TestCase("55.00",
-                 "USD",
-                 "fr_CA",
-                 "55,00",
-                 "USD",
-                 "http://currsystem.com"),
-        TestCase("55.00",
-                 "USD",
-                 "fr_FR",
-                 "55,00",
-                 "USD",
-                 "http://currsystem.com"),
-        TestCase("1234",
-                 "USD",
-                 "fr_FR",
-                 "1 234,00",
-                 "USD",
-                 "http://currsystem.com"),
-        TestCase("55.5",
-                 "USD",
-                 "en_US",
-                 "55.50",
-                 "USD",
-                 "http://currsystem.com"),
-        TestCase("55", "CAD", "en_US", "55.00", "CAD", "http://currsystem.com"),
-        TestCase("123",
-                 "BTC",
-                 "en_US",
-                 "123.00",
-                 "BTC",
-                 "http://currsystem.com"),
-        TestCase("1234",
-                 "JPY",
-                 "en_US",
-                 "1,234.00",
-                 "JPY",
-                 "http://currsystem.com"),
-        TestCase("0.1234",
-                 "USD",
-                 "en_US",
-                 "0.1234",
-                 "USD",
-                 "http://currsystem.com")));
 
 }  // namespace
 }  // namespace payments

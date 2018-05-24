@@ -16,20 +16,14 @@
 
 namespace payments {
 
-// URI specifying the ISO4217 currency code specification. See for details:
-// https://w3c.github.io/browser-payment-api/#paymentcurrencyamount-dictionary
-extern const char kIso4217CurrencySystem[];
-
 // Currency formatter for amounts, according to a currency code, which typically
 // adheres to [ISO4217] (for example, "USD" for US Dollars).
 class CurrencyFormatter {
  public:
   // Initializes the CurrencyFormatter for a given |currency_code|,
-  // |currency_system| and |locale_name|. Note that |currency_code| and
-  // |currency_system| should have been validated (as part of
-  // payment_details_validation.h) before this is created.
+  // |locale_name|. Note that |currency_code| should have been validated
+  // (as part of payment_details_validation.h) before this is created.
   CurrencyFormatter(const std::string& currency_code,
-                    const std::string& currency_system,
                     const std::string& locale_name);
   ~CurrencyFormatter();
 

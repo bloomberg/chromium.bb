@@ -18,33 +18,16 @@ static const size_t maximumStringLength = 2048;
 // static
 bool PaymentsValidators::IsValidCurrencyCodeFormat(
     const std::string& code,
-    const std::string& system,
     std::string* optional_error_message) {
-  if (system == "urn:iso:std:iso:4217") {
-    if (RE2::FullMatch(code, "[A-Z]{3}"))
-      return true;
+  if (RE2::FullMatch(code, "[A-Z]{3}"))
+    return true;
 
-    if (optional_error_message)
-      *optional_error_message =
-          "'" + code +
-          "' is not a valid ISO 4217 currency code, should "
-          "be well-formed 3-letter alphabetic code.";
+  if (optional_error_message)
+    *optional_error_message = "'" + code +
+                              "' is not a valid ISO 4217 currency code, should "
+                              "be well-formed 3-letter alphabetic code.";
 
-    return false;
-  }
-
-  if (code.size() > maximumStringLength) {
-    if (optional_error_message)
-      *optional_error_message =
-          "The currency code should be at most 2048 characters long";
-    return false;
-  }
-  if (!GURL(system).is_valid()) {
-    if (optional_error_message)
-      *optional_error_message = "The system should be a valid URL";
-    return false;
-  }
-  return true;
+  return false;
 }
 
 // static

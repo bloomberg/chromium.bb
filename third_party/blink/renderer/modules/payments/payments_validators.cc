@@ -15,36 +15,15 @@ static const int kMaxiumStringLength = 2048;
 
 bool PaymentsValidators::IsValidCurrencyCodeFormat(
     const String& code,
-    const String& system,
     String* optional_error_message) {
-  if (system == "urn:iso:std:iso:4217") {
-    if (ScriptRegexp("^[A-Z]{3}$", kTextCaseUnicodeInsensitive).Match(code) ==
-        0)
-      return true;
-
-    if (optional_error_message) {
-      *optional_error_message =
-          "'" + code +
-          "' is not a valid ISO 4217 currency code, should "
-          "be well-formed 3-letter alphabetic code.";
-    }
-
-    return false;
-  }
-
-  if (!KURL(NullURL(), system).IsValid()) {
-    if (optional_error_message)
-      *optional_error_message = "The currency system is not a valid URL";
-
-    return false;
-  }
-
-  if (code.length() <= kMaxiumStringLength)
+  if (ScriptRegexp("^[A-Z]{3}$", kTextCaseUnicodeInsensitive).Match(code) == 0)
     return true;
 
-  if (optional_error_message)
-    *optional_error_message =
-        "The currency code should be at most 2048 characters long";
+  if (optional_error_message) {
+    *optional_error_message = "'" + code +
+                              "' is not a valid ISO 4217 currency code, should "
+                              "be well-formed 3-letter alphabetic code.";
+  }
 
   return false;
 }

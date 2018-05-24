@@ -14,8 +14,6 @@
 
 namespace payments {
 
-const char kIso4217CurrencySystem[] = "urn:iso:std:iso:4217";
-
 namespace {
 
 // Support a maximum of 10 fractional digits, similar to the ISO20022 standard.
@@ -33,11 +31,8 @@ const static size_t kMaxCurrencyCodeDisplayedChars = 6;
 const char kEllipsis[] = "\xE2\x80\xA6";
 
 // Returns whether the |currency_code| is valid to be used in ICU.
-bool ShouldUseCurrencyCode(const std::string& currency_code,
-                           const std::string& currency_system) {
-  return (currency_system.empty() ||
-          currency_system == kIso4217CurrencySystem) &&
-         !currency_code.empty() &&
+bool ShouldUseCurrencyCode(const std::string& currency_code) {
+  return !currency_code.empty() &&
          currency_code.size() <= kMaxCurrencyCodeLength;
 }
 
@@ -51,7 +46,6 @@ std::string FormatCurrencyCode(const std::string& currency_code) {
 }  // namespace
 
 CurrencyFormatter::CurrencyFormatter(const std::string& currency_code,
-                                     const std::string& currency_system,
                                      const std::string& locale_name)
     : locale_(locale_name.c_str()),
       formatted_currency_code_(FormatCurrencyCode(currency_code)) {
@@ -64,7 +58,7 @@ CurrencyFormatter::CurrencyFormatter(const std::string& currency_code,
     return;
   }
 
-  if (ShouldUseCurrencyCode(currency_code, currency_system)) {
+  if (ShouldUseCurrencyCode(currency_code)) {
     currency_code_.reset(new icu::UnicodeString(
         currency_code.c_str(),
         base::checked_cast<int32_t>(currency_code.size())));

@@ -29,14 +29,6 @@ void SetValues(PaymentItemOrPaymentShippingOption& original,
     item_amount.setCurrency("USD");
   }
 
-  // Currency system is "urn:iso:std:iso:4217" by default.
-  if (data == kPaymentTestDataCurrencySystem) {
-    if (modification_type == kPaymentTestOverwriteValue)
-      item_amount.setCurrencySystem(value_to_use);
-    else
-      item_amount.setCurrencySystem(String());  // null string.
-  }
-
   if (data == kPaymentTestDataValue) {
     if (modification_type == kPaymentTestOverwriteValue)
       item_amount.setValue(value_to_use);

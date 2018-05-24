@@ -22,7 +22,6 @@ class CurrencyFormatterAndroid {
       JNIEnv* env,
       jobject jcaller,
       const base::android::JavaParamRef<jstring>& currency_code,
-      const base::android::JavaParamRef<jstring>& currency_system,
       const base::android::JavaParamRef<jstring>& locale_name);
   ~CurrencyFormatterAndroid();
 

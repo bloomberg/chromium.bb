@@ -256,9 +256,6 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
   event_data->total->value = ConvertJavaStringToUTF8(
       env,
       Java_ServiceWorkerPaymentAppBridge_getValueFromPaymentItem(env, jtotal));
-  event_data->total->currency_system = ConvertJavaStringToUTF8(
-      env, Java_ServiceWorkerPaymentAppBridge_getCurrencySystemFromPaymentItem(
-               env, jtotal));
 
   for (jsize i = 0; i < env->GetArrayLength(jmodifiers); i++) {
     ScopedJavaLocalRef<jobject> jmodifier(
@@ -278,10 +275,6 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
     modifier->total->amount->value = ConvertJavaStringToUTF8(
         env, Java_ServiceWorkerPaymentAppBridge_getValueFromPaymentItem(
                  env, jmodifier_total));
-    modifier->total->amount->currency_system = ConvertJavaStringToUTF8(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getCurrencySystemFromPaymentItem(
-            env, jmodifier_total));
 
     ScopedJavaLocalRef<jobject> jmodifier_method_data =
         Java_ServiceWorkerPaymentAppBridge_getMethodDataFromModifier(env,
@@ -395,10 +388,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_CanMakePayment(
     modifier->total->amount->value = ConvertJavaStringToUTF8(
         env, Java_ServiceWorkerPaymentAppBridge_getValueFromPaymentItem(
                  env, jmodifier_total));
-    modifier->total->amount->currency_system = ConvertJavaStringToUTF8(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getCurrencySystemFromPaymentItem(
-            env, jmodifier_total));
 
     ScopedJavaLocalRef<jobject> jmodifier_method_data =
         Java_ServiceWorkerPaymentAppBridge_getMethodDataFromModifier(env,

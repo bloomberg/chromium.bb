@@ -104,7 +104,6 @@ TypeConverter<blink::WebPaymentCurrencyAmount,
   blink::WebPaymentCurrencyAmount output;
   output.currency = blink::WebString::FromUTF8(input->currency);
   output.value = blink::WebString::FromUTF8(input->value);
-  output.currency_system = blink::WebString::FromUTF8(input->currency_system);
   return output;
 }
 

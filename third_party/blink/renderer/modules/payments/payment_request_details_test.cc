@@ -99,9 +99,6 @@ std::ostream& operator<<(std::ostream& out, DetailsTestCase test_case) {
     case kPaymentTestDataCurrencyCode:
       out << "currency ";
       break;
-    case kPaymentTestDataCurrencySystem:
-      out << "currencySystem ";
-      break;
     case kPaymentTestDataValue:
       out << "value ";
       break;
@@ -231,24 +228,6 @@ INSTANTIATE_TEST_CASE_P(
                                     kPaymentTestDataCurrencyCode,
                                     kPaymentTestOverwriteValue,
                                     "USD")));
-
-INSTANTIATE_TEST_CASE_P(
-    ValidCurrencySystem,
-    PaymentRequestDetailsTest,
-    testing::Values(DetailsTestCase(kPaymentTestDetailTotal,
-                                    kPaymentTestDataCurrencySystem,
-                                    kPaymentTestOverwriteValue,
-                                    "https://bitcoin.org")));
-
-INSTANTIATE_TEST_CASE_P(
-    InvalidCurrencySystem,
-    PaymentRequestDetailsTest,
-    testing::Values(DetailsTestCase(kPaymentTestDetailTotal,
-                                    kPaymentTestDataCurrencySystem,
-                                    kPaymentTestOverwriteValue,
-                                    "\\^%\\",
-                                    true,
-                                    kV8RangeError)));
 
 INSTANTIATE_TEST_CASE_P(
     ValidValueFormat,
