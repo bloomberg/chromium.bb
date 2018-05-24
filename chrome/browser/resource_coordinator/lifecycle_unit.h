@@ -79,6 +79,13 @@ class LifecycleUnit {
   // base::TimeTicks::Max() if the LifecycleUnit is currently focused.
   virtual base::TimeTicks GetLastFocusedTime() const = 0;
 
+  // Returns the current visibility of this LifecycleUnit.
+  virtual content::Visibility GetVisibility() const = 0;
+
+  // Returns the last time at which the LifecycleUnit was visible, or
+  // base::TimeTicks::Max() if the LifecycleUnit is currently visible.
+  virtual base::TimeTicks GetLastVisibleTime() const = 0;
+
   // Returns the process hosting this LifecycleUnit. Used to distribute OOM
   // scores.
   //
@@ -99,12 +106,6 @@ class LifecycleUnit {
 
   // Returns the current state of this LifecycleUnit.
   virtual LifecycleState GetState() const = 0;
-
-  // Returns the current visibility of this LifecycleUnit.
-  virtual content::Visibility GetVisibility() const = 0;
-
-  // Returns the last time that the visibility of the LifecycleUnit changed.
-  virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;
 
   // Request that the LifecycleUnit be frozen, return true if the request is
   // successfully sent.

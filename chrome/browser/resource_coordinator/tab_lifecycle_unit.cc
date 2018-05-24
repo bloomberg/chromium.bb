@@ -32,7 +32,8 @@ TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model)
-    : content::WebContentsObserver(web_contents),
+    : LifecycleUnitBase(web_contents->GetVisibility()),
+      content::WebContentsObserver(web_contents),
       observers_(observers),
       tab_strip_model_(tab_strip_model) {
   DCHECK(observers_);

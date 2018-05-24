@@ -35,7 +35,8 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
       base::TimeTicks last_focused_time,
       base::ProcessHandle process_handle = base::ProcessHandle(),
       bool can_discard = true)
-      : last_focused_time_(last_focused_time),
+      : LifecycleUnitBase(content::Visibility::VISIBLE),
+        last_focused_time_(last_focused_time),
         process_handle_(process_handle),
         can_discard_(can_discard) {}
 
