@@ -139,9 +139,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                              Modulator*,
                              const ScriptFetchOptions&);
 
-  void DispatchLoadEvent();
-  void DispatchErrorEvent();
-
   // Clears the connection to the PendingScript.
   void DetachPendingScript();
 
