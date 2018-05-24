@@ -79,9 +79,9 @@ class MockFetcher : public URLFetcher {
       on_request_callback_->Run(request);
 
     // Record the request.
-    std::string url = request->GetURLRequest()->url().spec();
+    std::string url = request->GetURL().spec();
     fetch_request_->SetString("url", url);
-    fetch_request_->SetString("method", request->GetURLRequest()->method());
+    fetch_request_->SetString("method", request->GetMethod());
     std::unique_ptr<base::DictionaryValue> headers(new base::DictionaryValue);
     for (net::HttpRequestHeaders::Iterator it(request->GetHttpRequestHeaders());
          it.GetNext();) {
