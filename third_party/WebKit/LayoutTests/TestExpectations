@@ -3844,7 +3844,6 @@ crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.g
 crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.get.tiny.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.put.nonfinite.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/2d.getcontext.extraargs.worker.html [ Failure ]
-crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.idl.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.em.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.empty.worker.html [ Failure ]
