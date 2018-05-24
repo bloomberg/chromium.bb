@@ -46,11 +46,6 @@ class TraceWrapperV8Reference;
 // wrapper references in traceable.
 class PLATFORM_EXPORT ScriptWrappableVisitor : public Visitor {
  public:
-  template <typename T>
-  static NOINLINE void MissedWriteBarrier() {
-    NOTREACHED();
-  }
-
   ScriptWrappableVisitor() : Visitor(ThreadState::Current()) {}
 
   // Trace all wrappers of |tracable|.
