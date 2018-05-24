@@ -309,15 +309,19 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         //                    downloads rather than passing them to Java.
         if (sDeletedFileTracker.contains(wrapper)) return true;
 
-        if (wrapper.hasBeenExternallyRemoved()) {
+        if (!wrapper.hasBeenExternallyRemoved()) return false;
+
+        if (DownloadUtils.isInPrimaryStorageDownloadDirectory(wrapper.getFilePath())) {
             sDeletedFileTracker.add(wrapper);
             wrapper.removePermanently();
             mFilePathsToItemsMap.removeItem(wrapper);
             RecordUserAction.record("Android.DownloadManager.Item.ExternallyDeleted");
             return true;
+        } else {
+            // Keeps the download record when the file is on external SD card.
+            RecordUserAction.record("Android.DownloadManager.Item.ExternallyDeletedKeepRecord");
+            return false;
         }
-
-        return false;
     }
 
     private boolean addDownloadHistoryItemWrapper(DownloadHistoryItemWrapper wrapper) {
