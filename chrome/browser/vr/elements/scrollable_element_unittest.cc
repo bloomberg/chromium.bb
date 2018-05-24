@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/elements/scrollable_element.h"
 
 #include "base/stl_util.h"
+#include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 
@@ -26,7 +27,7 @@ std::unique_ptr<blink::WebGestureEvent> CreateScrollUpdate(float delta_x,
 TEST(ScrollableElement, VerticalOnScrollUpdate) {
   auto element =
       std::make_unique<ScrollableElement>(ScrollableElement::kVertical);
-  element->SetMaxSpan(1.0f);
+  element->set_max_span(1.0f);
   auto child = std::make_unique<UiElement>();
   child->SetSize(1.0f, 2.0f);
   element->AddScrollingChild(std::move(child));
@@ -53,7 +54,7 @@ TEST(ScrollableElement, VerticalOnScrollUpdate) {
 TEST(ScrollableElement, VerticalTopOnScrollUpdate) {
   auto element =
       std::make_unique<ScrollableElement>(ScrollableElement::kVertical);
-  element->SetMaxSpan(1.0f);
+  element->set_max_span(1.0f);
   element->SetScrollAnchoring(TOP);
   auto child = std::make_unique<UiElement>();
   child->SetSize(1.0f, 2.0f);
@@ -79,7 +80,7 @@ TEST(ScrollableElement, VerticalTopOnScrollUpdate) {
 TEST(ScrollableElement, HorizontalScrollUpdate) {
   auto element =
       std::make_unique<ScrollableElement>(ScrollableElement::kHorizontal);
-  element->SetMaxSpan(1.0f);
+  element->set_max_span(1.0f);
   auto child = std::make_unique<UiElement>();
   child->SetSize(2.0f, 1.0f);
   element->AddScrollingChild(std::move(child));
@@ -101,6 +102,27 @@ TEST(ScrollableElement, HorizontalScrollUpdate) {
         CreateScrollUpdate(test_cases[i].delta_x, test_cases[i].delta_y), {});
     EXPECT_FLOAT_EQ(test_cases[i].expected, element->scroll_offset());
   }
+}
+
+TEST(ScrollableElement, MaxSpan) {
+  auto element =
+      std::make_unique<ScrollableElement>(ScrollableElement::kVertical);
+  element->set_max_span(1.0f);
+  EXPECT_FALSE(element->scrollable());
+
+  // Add a child bigger than the maximum span.
+  auto child = std::make_unique<UiElement>();
+  child->SetSize(1.0f, 2.0f);
+  element->AddScrollingChild(std::move(child));
+  element->SizeAndLayOut();
+  EXPECT_SIZE_EQ(gfx::SizeF(1.0f, 1.0f), element->size());
+  EXPECT_TRUE(element->scrollable());
+
+  // Make the max span bigger so that it can fit the entire child.
+  element->set_max_span(3.0f);
+  element->SizeAndLayOut();
+  EXPECT_SIZE_EQ(gfx::SizeF(1.0f, 2.0f), element->size());
+  EXPECT_FALSE(element->scrollable());
 }
 
 }  // namespace vr
