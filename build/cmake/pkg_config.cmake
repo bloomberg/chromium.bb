@@ -21,7 +21,7 @@ endforeach()
 
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
-extract_version_string("${AOM_CONFIG_DIR}/aom_version.h" aom_version)
+extract_version_string("${AOM_CONFIG_DIR}/config/aom_version.h" aom_version)
 
 # Create a version string suitable for comparison using the RPM version compare
 # algorithm: strip out everything after the number.

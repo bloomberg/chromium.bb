@@ -40,17 +40,18 @@ if("${aom_version}" STREQUAL "")
 endif()
 
 unset(last_aom_version)
-if(EXISTS "${AOM_CONFIG_DIR}/aom_version.h")
-  extract_version_string("${AOM_CONFIG_DIR}/aom_version.h" last_aom_version)
+if(EXISTS "${AOM_CONFIG_DIR}/config/aom_version.h")
+  extract_version_string("${AOM_CONFIG_DIR}/config/aom_version.h"
+                         last_aom_version)
 endif()
 
 if(NOT "${aom_version}" STREQUAL "${last_aom_version}")
 
   # TODO(tomfinegan): Perl dependency is unnecessary. CMake can do everything
   # that is done by version.pl on its own (if a bit more verbose...).
-  execute_process(COMMAND ${PERL_EXECUTABLE}
-                          "${AOM_ROOT}/build/cmake/version.pl"
-                          --version_data=${aom_version}
-                          --version_filename=${AOM_CONFIG_DIR}/aom_version.h
-                          VERBATIM)
+  execute_process(COMMAND
+                    ${PERL_EXECUTABLE} "${AOM_ROOT}/build/cmake/version.pl"
+                    --version_data=${aom_version}
+                    --version_filename=${AOM_CONFIG_DIR}/config/aom_version.h
+                    VERBATIM)
 endif()

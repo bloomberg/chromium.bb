@@ -85,9 +85,9 @@ cleanup() {
 }
 
 # Echoes the version string assigned to the VERSION_STRING_NOSP variable defined
-# in $LIBAOM_CONFIG_PATH/aom_version.h to stdout.
+# in $LIBAOM_CONFIG_PATH/config/aom_version.h to stdout.
 cmake_version() {
-  aom_version_h="${LIBAOM_CONFIG_PATH}/aom_version.h"
+  aom_version_h="${LIBAOM_CONFIG_PATH}/config/aom_version.h"
 
   # Find VERSION_STRING_NOSP line, split it with '"' and print the next to last
   # field to output the version string to stdout.

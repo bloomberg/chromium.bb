@@ -13,8 +13,7 @@
 #include <string.h>
 
 #include "config/aom_config.h"
-
-#include "./aom_version.h"
+#include "config/aom_version.h"
 
 #include "aom/internal/aom_codec_internal.h"
 #include "aom/aomdx.h"

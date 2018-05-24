@@ -189,7 +189,7 @@ list(APPEND AOM_ENCODER_STATS_SOURCES "${AOM_ROOT}/stats/aomstats.c"
 
 list(APPEND AOM_PKG_CONFIG_SOURCES "${AOM_CONFIG_DIR}/aom.pc")
 
-list(APPEND AOM_VERSION_SOURCES "${AOM_CONFIG_DIR}/aom_version.h")
+list(APPEND AOM_VERSION_SOURCES "${AOM_CONFIG_DIR}/config/aom_version.h")
 
 list(APPEND AOM_WEBM_DECODER_SOURCES "${AOM_ROOT}/common/webmdec.cc"
             "${AOM_ROOT}/common/webmdec.h")
@@ -203,7 +203,7 @@ include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR} ${AOM_ROOT}/apps
 # Targets
 add_library(aom_version ${AOM_VERSION_SOURCES})
 add_dummy_source_file_to_target(aom_version c)
-add_custom_command(OUTPUT "${AOM_CONFIG_DIR}/aom_version.h"
+add_custom_command(OUTPUT "${AOM_CONFIG_DIR}/config/aom_version.h"
                    COMMAND ${CMAKE_COMMAND} ARGS
                            -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
                            -DAOM_ROOT=${AOM_ROOT}

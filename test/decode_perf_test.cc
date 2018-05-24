@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "./aom_version.h"
+#include "config/aom_version.h"
 
 #include "aom_ports/aom_timer.h"
 #include "common/ivfenc.h"
