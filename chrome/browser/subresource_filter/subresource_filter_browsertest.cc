@@ -124,11 +124,8 @@ constexpr const char kActivationDecision[] =
     "SubresourceFilter.PageLoad.ActivationDecision";
 
 // Names of navigation chain patterns histogram.
-const char kMatchesPatternHistogramName[] =
+const char kActivationListHistogram[] =
     "SubresourceFilter.PageLoad.ActivationList";
-const char kNavigationChainSize[] =
-    "SubresourceFilter.PageLoad.RedirectChainLength";
-const char kSubresourceFilterOnlySuffix[] = ".SubresourceFilterOnly";
 
 // Other histograms.
 const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
@@ -246,26 +243,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(
     SubresourceFilterListInsertingBrowserTest,
-    ExpectRedirectPatternHistogramsAreRecordedForSubresourceFilterOnlyMatch) {
-  ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
-      "suffix-that-does-not-match-anything"));
-
-  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
-  ConfigureAsSubresourceFilterOnlyURL(url);
-
-  base::HistogramTester tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  tester.ExpectUniqueSample(
-      kMatchesPatternHistogramName,
-      static_cast<int>(ActivationList::SUBRESOURCE_FILTER), 1);
-  EXPECT_THAT(tester.GetAllSamples(std::string(kNavigationChainSize) +
-                                   std::string(kSubresourceFilterOnlySuffix)),
-              ::testing::ElementsAre(base::Bucket(1, 1)));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    SubresourceFilterListInsertingBrowserTest,
     ExpectRedirectPatternHistogramsAreRecordedForSubresourceFilterOnlyRedirectMatch) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
@@ -280,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(
   ConfigureAsSubresourceFilterOnlyURL(url.GetOrigin());
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
-  tester.ExpectUniqueSample(kMatchesPatternHistogramName,
+  tester.ExpectUniqueSample(kActivationListHistogram,
                             static_cast<int>(ActivationList::NONE), 1);
 }
 
