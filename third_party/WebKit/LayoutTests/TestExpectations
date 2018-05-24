@@ -4536,7 +4536,8 @@ skbug.com/7641 fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
 skbug.com/7641 virtual/disable-spv175/fast/multicol/border-radius-clipped-layer.html [ Failure Pass ]
 
 # Sheriff failures 2018-01-02
-crbug.com/798592 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
+crbug.com/798592 [ Win7 Mac ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
+crbug.com/798592 [ Win7 Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
@@ -4562,10 +4563,6 @@ crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
 # Sheriff failures 2018-02-07
 crbug.com/810009 [ Linux ] paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
 crbug.com/810009 [ Linux ] virtual/disable-spv175/paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
-
-# Sheriff failures 2018-02-15
-crbug.com/812417 [ Win7 ] http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
-
 
 # Sheriff failures 2018-02-20
 crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]
@@ -4797,3 +4794,5 @@ crbug.com/843691 fast/css/opacity-float.html [ Failure ]
 
 # Sheriff 2018-05-22
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]
+crbug.com/823837 virtual/threaded/http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
+crbug.com/823837 http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
