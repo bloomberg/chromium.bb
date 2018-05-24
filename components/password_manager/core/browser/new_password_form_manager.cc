@@ -101,6 +101,73 @@ bool NewPasswordFormManager::DoesManage(
   return observed_form_.unique_renderer_id == form.unique_renderer_id;
 }
 
+FormFetcher* NewPasswordFormManager::GetFormFetcher() {
+  return form_fetcher_;
+}
+
+const GURL& NewPasswordFormManager::GetOrigin() const {
+  return observed_form_.origin;
+}
+
+const std::map<base::string16, const autofill::PasswordForm*>&
+NewPasswordFormManager::GetBestMatches() const {
+  // TODO(https://crbug.com/831123): Implement.
+  DCHECK(false);
+  static std::map<base::string16, const autofill::PasswordForm*> dummy_map;
+  return dummy_map;
+}
+const autofill::PasswordForm& NewPasswordFormManager::GetPendingCredentials()
+    const {
+  // TODO(https://crbug.com/831123): Implement.
+  DCHECK(false);
+  static autofill::PasswordForm dummy_form;
+  return dummy_form;
+}
+metrics_util::CredentialSourceType
+NewPasswordFormManager::GetCredentialSource() {
+  // TODO(https://crbug.com/831123): Implement.
+  return metrics_util::CredentialSourceType::kPasswordManager;
+}
+PasswordFormMetricsRecorder* NewPasswordFormManager::GetMetricsRecorder() {
+  return metrics_recorder_.get();
+}
+const std::vector<const autofill::PasswordForm*>&
+NewPasswordFormManager::GetBlacklistedMatches() const {
+  // TODO(https://crbug.com/831123): Implement.
+  DCHECK(false);
+  static std::vector<const autofill::PasswordForm*> dummy_vector;
+  return dummy_vector;
+}
+bool NewPasswordFormManager::IsBlacklisted() const {
+  // TODO(https://crbug.com/831123): Implement.
+  return false;
+}
+bool NewPasswordFormManager::IsPasswordOverridden() const {
+  // TODO(https://crbug.com/831123): Implement.
+  return false;
+}
+const autofill::PasswordForm* NewPasswordFormManager::GetPreferredMatch()
+    const {
+  // TODO(https://crbug.com/831123): Implement or remove from
+  // PasswordFormManagerForUI.
+  return nullptr;
+}
+
+// TODO(https://crbug.com/831123): Implement all methods from
+// PasswordFormManagerForUI.
+void NewPasswordFormManager::Save() {}
+void NewPasswordFormManager::Update(
+    const autofill::PasswordForm& credentials_to_update) {}
+void NewPasswordFormManager::UpdateUsername(
+    const base::string16& new_username) {}
+void NewPasswordFormManager::UpdatePasswordValue(
+    const base::string16& new_password) {}
+void NewPasswordFormManager::OnNopeUpdateClicked() {}
+void NewPasswordFormManager::OnNeverClicked() {}
+void NewPasswordFormManager::OnNoInteraction(bool is_update) {}
+void NewPasswordFormManager::PermanentlyBlacklist() {}
+void NewPasswordFormManager::OnPasswordsRevealed() {}
+
 void NewPasswordFormManager::ProcessMatches(
     const std::vector<const autofill::PasswordForm*>& non_federated,
     size_t filtered_count) {
