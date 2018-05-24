@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -275,6 +276,22 @@ void RenderFrameProxyHost::OnOpenURL(
   GURL validated_url(params.url);
   GetProcess()->FilterURL(false, &validated_url);
 
+  mojo::ScopedMessagePipeHandle blob_url_token_handle(params.blob_url_token);
+  blink::mojom::BlobURLTokenPtr blob_url_token(
+      blink::mojom::BlobURLTokenPtrInfo(std::move(blob_url_token_handle),
+                                        blink::mojom::BlobURLToken::Version_));
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  if (blob_url_token) {
+    if (!params.url.SchemeIsBlob()) {
+      bad_message::ReceivedBadMessage(
+          GetProcess(), bad_message::RFPH_BLOB_URL_TOKEN_FOR_NON_BLOB_URL);
+      return;
+    }
+    blob_url_loader_factory =
+        ChromeBlobStorageContext::URLLoaderFactoryForToken(
+            GetSiteInstance()->GetBrowserContext(), std::move(blob_url_token));
+  }
+
   // Verify that we are in the same BrowsingInstance as the current
   // RenderFrameHost.
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
@@ -306,7 +323,7 @@ void RenderFrameProxyHost::OnOpenURL(
       current_rfh, validated_url, site_instance_.get(), params.referrer,
       ui::PAGE_TRANSITION_LINK, params.should_replace_current_entry,
       params.uses_post ? "POST" : "GET", params.resource_request_body,
-      params.extra_headers);
+      params.extra_headers, std::move(blob_url_loader_factory));
 }
 
 void RenderFrameProxyHost::OnCheckCompleted() {

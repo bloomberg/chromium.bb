@@ -9947,7 +9947,8 @@ class RemoteNavigationClient
 
   // FrameTestHelpers::TestWebRemoteFrameClient:
   void Navigate(const WebURLRequest& request,
-                bool should_replace_current_entry) override {
+                bool should_replace_current_entry,
+                mojo::ScopedMessagePipeHandle) override {
     last_request_ = request;
   }
 

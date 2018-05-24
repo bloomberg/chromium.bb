@@ -141,7 +141,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info) {}
+      blink::WebTriggeringEventInfo triggering_event_info,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {}
 
   // Called when a document requests a navigation in another document through a
   // RenderFrameProxy. If |method| is "POST", then |post_body| needs to specify
@@ -155,7 +156,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
-      const std::string& extra_headers) {}
+      const std::string& extra_headers,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {}
 
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If
   // |frame_tree_node| has a NavigationRequest waiting for the renderer

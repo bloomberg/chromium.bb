@@ -4125,7 +4125,8 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   auto navigation_entry = std::make_unique<NavigationEntryImpl>(
       site_instance_for_view_source, frame_entry->url(),
       referrer_for_view_source, title_for_view_source, ui::PAGE_TRANSITION_LINK,
-      /* is_renderer_initiated = */ false);
+      /* is_renderer_initiated = */ false,
+      /* blob_url_loader_factory = */ nullptr);
   navigation_entry->SetVirtualURL(GURL(content::kViewSourceScheme +
                                        std::string(":") +
                                        frame_entry->url().spec()));

@@ -800,6 +800,19 @@ void RecordReadyToCommitUntilCommitHistogram(base::TimeDelta delay,
   }
 }
 
+blink::mojom::BlobURLTokenPtrInfo CloneBlobURLToken(
+    mojo::MessagePipeHandle handle) {
+  if (!handle.is_valid())
+    return nullptr;
+  blink::mojom::BlobURLTokenPtrInfo result;
+  blink::mojom::BlobURLTokenPtr token(
+      blink::mojom::BlobURLTokenPtrInfo(mojo::ScopedMessagePipeHandle(handle),
+                                        blink::mojom::BlobURLToken::Version_));
+  token->Clone(MakeRequest(&result));
+  ignore_result(token.PassInterface().PassHandle().release());
+  return result;
+}
+
 }  // namespace
 
 class RenderFrameImpl::FrameURLLoaderFactory
@@ -5951,15 +5964,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   }
 
   if (info.default_policy == blink::kWebNavigationPolicyDownload) {
-    blink::mojom::BlobURLTokenPtrInfo blob_url_token;
-    if (info.blob_url_token.is_valid()) {
-      blink::mojom::BlobURLTokenPtr token(blink::mojom::BlobURLTokenPtrInfo(
-          mojo::ScopedMessagePipeHandle(info.blob_url_token.get()),
-          blink::mojom::BlobURLToken::Version_));
-      token->Clone(MakeRequest(&blob_url_token));
-      ignore_result(token.PassInterface().PassHandle().release());
-    }
-
+    blink::mojom::BlobURLTokenPtrInfo blob_url_token =
+        CloneBlobURLToken(info.blob_url_token.get());
     DownloadURL(info.url_request, blob_url_token.PassHandle());
   } else {
     OpenURL(info, /*send_referrer=*/true,
@@ -6275,6 +6281,8 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
                                   : content::Referrer();
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info.triggering_event_info;
+  params.blob_url_token =
+      CloneBlobURLToken(info.blob_url_token.get()).PassHandle().release();
 
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     // This is necessary to preserve the should_replace_current_entry value on
@@ -6619,14 +6627,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   if (info.is_client_redirect)
     client_side_redirect_url = frame_->GetDocument().Url();
 
-  blink::mojom::BlobURLTokenPtr blob_url_token;
-  if (info.blob_url_token.is_valid()) {
-    blink::mojom::BlobURLTokenPtr token(blink::mojom::BlobURLTokenPtrInfo(
-        mojo::ScopedMessagePipeHandle(info.blob_url_token.get()),
-        blink::mojom::BlobURLToken::Version_));
-    token->Clone(MakeRequest(&blob_url_token));
-    ignore_result(token.PassInterface().PassHandle().release());
-  }
+  blink::mojom::BlobURLTokenPtr blob_url_token(
+      CloneBlobURLToken(info.blob_url_token.get()));
 
   int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
   std::unique_ptr<base::DictionaryValue> initiator =
@@ -7169,15 +7171,8 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       triggering_event_info(info.triggering_event_info),
       form(info.form),
       source_location(info.source_location),
-      devtools_initiator_info(info.devtools_initiator_info) {
-  if (info.blob_url_token.is_valid()) {
-    blink::mojom::BlobURLTokenPtr token(blink::mojom::BlobURLTokenPtrInfo(
-        mojo::ScopedMessagePipeHandle(info.blob_url_token.get()),
-        blink::mojom::BlobURLToken::Version_));
-    token->Clone(MakeRequest(&blob_url_token));
-    ignore_result(token.PassInterface().PassHandle().release());
-  }
-}
+      devtools_initiator_info(info.devtools_initiator_info),
+      blob_url_token(CloneBlobURLToken(info.blob_url_token.get())) {}
 
 RenderFrameImpl::PendingNavigationInfo::~PendingNavigationInfo() = default;
 

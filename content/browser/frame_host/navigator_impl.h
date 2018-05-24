@@ -76,17 +76,18 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
       const GURL& default_url) override;
-  void RequestOpenURL(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      bool uses_post,
-      const scoped_refptr<network::ResourceRequestBody>& body,
-      const std::string& extra_headers,
-      const Referrer& referrer,
-      WindowOpenDisposition disposition,
-      bool should_replace_current_entry,
-      bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info) override;
+  void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
+                      const GURL& url,
+                      bool uses_post,
+                      const scoped_refptr<network::ResourceRequestBody>& body,
+                      const std::string& extra_headers,
+                      const Referrer& referrer,
+                      WindowOpenDisposition disposition,
+                      bool should_replace_current_entry,
+                      bool user_gesture,
+                      blink::WebTriggeringEventInfo triggering_event_info,
+                      scoped_refptr<network::SharedURLLoaderFactory>
+                          blob_url_loader_factory) override;
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -96,7 +97,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       bool should_replace_current_entry,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
-      const std::string& extra_headers) override;
+      const std::string& extra_headers,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
+      override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                          bool proceed,
                          const base::TimeTicks& proceed_time) override;

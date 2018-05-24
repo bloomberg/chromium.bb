@@ -24,3 +24,8 @@ crbug.com/792546 external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.h
 crbug.com/792546 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/792546 external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
 crbug.com/792546 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
+
+
+# Only passes with Network Servce enabled (unfortunately this expectation still
+# allows Timeout from the top-level exctations though).
+crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass ]

@@ -5722,7 +5722,8 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, RestoreHasSSLState) {
   std::unique_ptr<NavigationEntry> restored_entry =
       content::NavigationController::CreateNavigationEntry(
           url, content::Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-          std::string(), tab->GetBrowserContext());
+          std::string(), tab->GetBrowserContext(),
+          nullptr /* blob_url_loader_factory */);
   restored_entry->SetPageState(entry->GetPageState());
 
   WebContents::CreateParams params(tab->GetBrowserContext());
