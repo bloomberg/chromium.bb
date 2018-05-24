@@ -323,23 +323,6 @@ TEST(PermissionsDataTest, GetPermissionMessages_ManyHosts) {
       "Read and change your data on encrypted.google.com and www.google.com"));
 }
 
-TEST(PermissionsDataTest, ExternalFiles) {
-  GURL external_file("externalfile:abc");
-  scoped_refptr<const Extension> extension;
-
-  // A regular extension shouldn't get access to externalfile: scheme URLs
-  // even with <all_urls> specified.
-  extension = GetExtensionWithHostPermission(
-      "regular_extension", "<all_urls>", Manifest::UNPACKED);
-  ASSERT_FALSE(extension->permissions_data()->HasHostPermission(external_file));
-
-  // Component extensions should get access to externalfile: scheme URLs when
-  // <all_urls> is specified.
-  extension = GetExtensionWithHostPermission(
-      "component_extension", "<all_urls>", Manifest::COMPONENT);
-  ASSERT_TRUE(extension->permissions_data()->HasHostPermission(external_file));
-}
-
 TEST(PermissionsDataTest, ExtensionScheme) {
   GURL external_file(
       "chrome-extension://abcdefghijklmnopabcdefghijklmnop/index.html");
@@ -551,7 +534,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), favicon_url));
 
-  // Component extensions with <all_urls> should get everything.
+  // Component extensions with <all_urls> should get everything except for
+  // "chrome" scheme URLs.
   extension = LoadManifest("script_and_capture", "extension_component_all.json",
       Manifest::COMPONENT, Extension::NO_FLAGS);
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
@@ -559,12 +543,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, Permissions) {
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), https_url));
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
-            GetExtensionAccess(extension.get(), settings_url));
-  EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
-            GetExtensionAccess(extension.get(), about_flags_url));
-  EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), favicon_url));
   EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
+  EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
 
   // Component extensions should only get access to what they ask for.
   extension = LoadManifest("script_and_capture",
@@ -660,7 +641,8 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PermissionsWithChromeURLsEnabled) {
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), favicon_url));
 
-  // Component extensions with <all_urls> should get everything.
+  // Component extensions with <all_urls> should get everything except for
+  // "chrome" scheme URLs.
   extension = LoadManifest("script_and_capture", "extension_component_all.json",
                            Manifest::COMPONENT, Extension::NO_FLAGS);
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
@@ -668,12 +650,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PermissionsWithChromeURLsEnabled) {
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), https_url));
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
-            GetExtensionAccess(extension.get(), settings_url));
-  EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
-            GetExtensionAccess(extension.get(), about_flags_url));
-  EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), favicon_url));
   EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
+  EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
 
   // Component extensions should only get access to what they ask for.
   extension =
@@ -1059,7 +1038,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
 
   // Component extensions with <all_urls> should get everything regardless of
-  // policy.
+  // policy, except for chrome scheme URLs.
   extension = LoadManifest("script_and_capture", "extension_component_all.json",
                            Manifest::COMPONENT, Extension::NO_FLAGS);
   extension->permissions_data()->SetDefaultPolicyHostRestrictions(
@@ -1075,12 +1054,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), sample_example_com));
   EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
-            GetExtensionAccess(extension.get(), settings_url));
-  EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
-            GetExtensionAccess(extension.get(), about_flags_url));
-  EXPECT_EQ(ALLOWED_SCRIPT_AND_CAPTURE,
             GetExtensionAccess(extension.get(), favicon_url));
   EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
+  EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
 }
 
 }  // namespace extensions

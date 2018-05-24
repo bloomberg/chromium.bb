@@ -168,6 +168,9 @@ bool ParseHelper(Extension* extension,
                                   ? URLPattern::SCHEME_ALL
                                   : Extension::kValidHostPermissionSchemes;
 
+  const bool all_urls_includes_chrome_urls =
+      PermissionsData::AllUrlsIncludesChromeUrls(extension->id());
+
   for (std::vector<std::string>::const_iterator iter = host_data.begin();
        iter != host_data.end();
        ++iter) {
@@ -189,11 +192,11 @@ bool ParseHelper(Extension* extension,
       }
 
       if (pattern.scheme() != content::kChromeUIScheme &&
-          !can_execute_script_everywhere) {
+          !all_urls_includes_chrome_urls) {
         // Keep chrome:// in allowed schemes only if it's explicitly requested
-        // or can_execute_script_everywhere is true. If the
-        // extensions_on_chrome_urls flag is not set, CanSpecifyHostPermission
-        // will fail, so don't check the flag here.
+        // or been granted by extension ID. If the extensions_on_chrome_urls
+        // flag is not set, CanSpecifyHostPermission will fail, so don't check
+        // the flag here.
         valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;
       }
       pattern.SetValidSchemes(valid_schemes);

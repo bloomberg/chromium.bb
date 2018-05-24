@@ -86,6 +86,11 @@ class PermissionsData {
   // NOTE: You probably want to use CanAccessPage().
   bool IsRestrictedUrl(const GURL& document_url, std::string* error) const;
 
+  // Returns true if the "all_urls" meta-pattern should include access to
+  // URLs with the "chrome" scheme. Access to these URLs is limited as they
+  // are sensitive.
+  static bool AllUrlsIncludesChromeUrls(const std::string& extension_id);
+
   // Is this extension using the default scope for policy_blocked_hosts and
   // policy_allowed_hosts of the ExtensionSettings policy.
   bool UsesDefaultPolicyHostRestrictions() const;

@@ -87,13 +87,9 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Now verify that we run content scripts on different URLs, including
-  // internal pages, data URLs, regular HTTP pages, and resource URLs from
-  // extensions.
+  // data URLs, regular HTTP pages, and resource URLs from extensions.
   const std::string test_urls[] = {
-    "chrome://newtab/",
     "data:text/html;charset=utf-8,<html>asdf</html>",
-    "chrome://version/",
-    "about:blank",
     embedded_test_server()->GetURL(kAllUrlsTarget).spec(),
     bystander->GetResourceURL("page.html").spec()
   };
