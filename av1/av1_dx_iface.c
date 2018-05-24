@@ -156,15 +156,19 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
+// Parses the operating points (including operating_point_idc, seq_level_idx,
+// and seq_tier) and then sets si->number_spatial_layers and
+// si->number_temporal_layers based on operating_point_idc[0].
 static aom_codec_err_t parse_operating_points(struct aom_read_bit_buffer *rb,
                                               int is_reduced_header,
                                               aom_codec_stream_info_t *si) {
+  int operating_point_idc0 = 0;
+
   if (is_reduced_header) {
     aom_rb_read_literal(rb, LEVEL_BITS);  // level
   } else {
     const uint8_t operating_points_cnt_minus_1 =
         aom_rb_read_literal(rb, OP_POINTS_CNT_MINUS_1_BITS);
-    int operating_point_idc0 = 0;
     for (int i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
       int operating_point_idc;
       operating_point_idc = aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
@@ -172,12 +176,12 @@ static aom_codec_err_t parse_operating_points(struct aom_read_bit_buffer *rb,
       int seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);  // level
       if (seq_level_idx > 7) aom_rb_read_bit(rb);               // tier
     }
+  }
 
-    if (aom_get_num_layers_from_operating_point_idc(
-            operating_point_idc0, &si->number_spatial_layers,
-            &si->number_temporal_layers) != AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
-    }
+  if (aom_get_num_layers_from_operating_point_idc(
+          operating_point_idc0, &si->number_spatial_layers,
+          &si->number_temporal_layers) != AOM_CODEC_OK) {
+    return AOM_CODEC_ERROR;
   }
 
   return AOM_CODEC_OK;
