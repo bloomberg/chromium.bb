@@ -337,13 +337,14 @@ public class DownloadNotificationService2 {
      * @param icon                A {@link Bitmap} to be used as the large icon for display.
      * @param originalUrl         The original url of the downloaded file.
      * @param referrer            Referrer of the downloaded file.
+     * @param totalBytes          The total number of bytes downloaded (size of file).
      * @return                    ID of the successful download notification. Used for removing the
      *                            notification when user click on the snackbar.
      */
     @VisibleForTesting
     public int notifyDownloadSuccessful(ContentId id, String filePath, String fileName,
             long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType,
-            boolean isOpenable, Bitmap icon, String originalUrl, String referrer) {
+            boolean isOpenable, Bitmap icon, String originalUrl, String referrer, long totalBytes) {
         Context context = ContextUtils.getApplicationContext();
         int notificationId = getNotificationId(id);
         if (icon == null && mDownloadSuccessLargeIcon == null) {
@@ -365,6 +366,7 @@ public class DownloadNotificationService2 {
                                                 .setNotificationId(notificationId)
                                                 .setOriginalUrl(originalUrl)
                                                 .setReferrer(referrer)
+                                                .setTotalBytes(totalBytes)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
                 context, DownloadStatus.COMPLETED, downloadUpdate);

@@ -541,14 +541,8 @@ public final class DownloadInfo {
         String remappedMimeType = ChromeDownloadDelegate.remapGenericMimeType(
                 mimeType, url, fileName);
 
-        Progress progress = null;
-        if (percentCompleted == -1) {
-            // Indeterminate.  Use byte counter.
-            progress = new Progress(bytesReceived, null, OfflineItemProgressUnit.BYTES);
-        } else {
-            // Determinate.  Use percent.
-            progress = new Progress(percentCompleted, 100L, OfflineItemProgressUnit.PERCENTAGE);
-        }
+        Progress progress = new Progress(bytesReceived,
+                percentCompleted == -1 ? null : bytesTotalSize, OfflineItemProgressUnit.BYTES);
 
         return new DownloadInfo.Builder()
                 .setBytesReceived(bytesReceived)
