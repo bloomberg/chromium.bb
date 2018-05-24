@@ -19,9 +19,11 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.media.MediaDrmSessionManager.SessionId;
 import org.chromium.media.MediaDrmSessionManager.SessionInfo;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 // Implementation Notes of MediaDrmBridge:
@@ -50,8 +52,8 @@ import java.util.UUID;
 // should check mMediaBridge to make sure release() hasn't been called.
 
 /**
- * A wrapper of the android MediaDrm class. Each MediaDrmBridge manages multiple
- * sessions for AndroidVideoDecodeAccelerators and MediaCodecAudioDecoders.
+ * A wrapper of the android MediaDrm class. Each MediaDrmBridge manages multiple sessions for
+ * MediaCodecAudioDecoders, and AndroidVideoDecodeAccelerators or MediaCodecVideoDecoders.
  */
 @JNINamespace("media")
 @MainDex
@@ -99,14 +101,68 @@ public class MediaDrmBridge {
 
     private boolean mResetDeviceCredentialsPending;
 
-    // MediaDrmBridge is waiting for provisioning response from the server.
+    // Whether the current MediaDrmBridge instance is waiting for provisioning response.
     private boolean mProvisioningPending;
 
     // Boolean to track if 'ORIGIN' is set in MediaDrm.
     private boolean mOriginSet = false;
 
-    // Delay the MediaDrm event handle if present.
     private SessionEventDeferrer mSessionEventDeferrer = null;
+
+    // Defer the creation of MediaCryptor creation. Only used when mRequiresMediaCrypto is true.
+    private static final MediaCryptoDeferrer sMediaCryptoDeferrer = new MediaCryptoDeferrer();
+
+    private static class MediaCryptoDeferrer {
+        // Whether any MediaDrmBridge instance is waiting for provisioning response.
+        private boolean mIsProvisioning;
+
+        // Pending events to fire after provisioning is finished.
+        private final Queue<Runnable> mEventHandlers;
+
+        MediaCryptoDeferrer() {
+            mIsProvisioning = false;
+            mEventHandlers = new ArrayDeque<Runnable>();
+        }
+
+        boolean isProvisioning() {
+            return mIsProvisioning;
+        }
+
+        void onProvisionStarted() {
+            assert !mIsProvisioning;
+            mIsProvisioning = true;
+        }
+
+        void defer(Runnable handler) {
+            assert mIsProvisioning;
+            mEventHandlers.add(handler);
+        }
+
+        void onProvisionDone() {
+            assert mIsProvisioning;
+            mIsProvisioning = false;
+
+            // This will cause createMediaCrypto() on another MediaDrmBridge object and could cause
+            // reentrance into the shared static sMediaCryptoDeferrer. For example, during
+            // createMediaCrypto(), we could hit NotProvisionedException again, and call
+            // isProvisioning() to check whether it can start provisioning or not. If so, it'll
+            // call onProvisionStarted(). To avoid the case where we call createMediaCrypto() and
+            // then immediately call defer(), we'll return early whenever mIsProvisioning becomes
+            // true.
+            while (!mEventHandlers.isEmpty()) {
+                Log.d(TAG, "run deferred CreateMediaCrypto() calls");
+                Runnable r = mEventHandlers.element();
+                mEventHandlers.remove();
+
+                r.run();
+
+                if (mIsProvisioning) {
+                    Log.d(TAG, "provision triggerred while running deferred CreateMediaCrypto()");
+                    return;
+                }
+            }
+        }
+    }
 
     // Block MediaDrm event for |mSessionId|. MediaDrm may fire event before the
     // functions return. This may break Chromium CDM API's assumption. For
@@ -247,8 +303,22 @@ public class MediaDrmBridge {
         try {
             mediaCryptoSessionDrmId = openSession();
         } catch (android.media.NotProvisionedException e) {
-            Log.d(TAG, "Device not provisioned", e);
-            startProvisioning();
+            Log.d(TAG, "Not provisioned during openSession()");
+
+            if (!sMediaCryptoDeferrer.isProvisioning()) {
+                startProvisioning();
+                return true;
+            }
+
+            // Cannot provision. Defer MediaCrypto creation and try again later.
+            Log.d(TAG, "defer CreateMediaCrypto() calls");
+            sMediaCryptoDeferrer.defer(new Runnable() {
+                @Override
+                public void run() {
+                    createMediaCrypto();
+                }
+            });
+
             return true;
         }
 
@@ -348,7 +418,6 @@ public class MediaDrmBridge {
         try {
             mediaDrmBridge = new MediaDrmBridge(cryptoScheme, requiresMediaCrypto,
                     nativeMediaDrmBridge, nativeMediaDrmStorageBridge);
-            Log.d(TAG, "MediaDrmBridge successfully created.");
         } catch (android.media.UnsupportedSchemeException e) {
             Log.e(TAG, "Unsupported DRM scheme", e);
             return null;
@@ -982,12 +1051,18 @@ public class MediaDrmBridge {
         assert !mProvisioningPending;
         mProvisioningPending = true;
         assert mMediaDrm != null;
-        MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
 
-        if (isNativeMediaDrmBridgeValid()) {
-            nativeOnStartProvisioning(
-                    mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
+        if (!isNativeMediaDrmBridgeValid()) {
+            return;
         }
+
+        if (mRequiresMediaCrypto) {
+            sMediaCryptoDeferrer.onProvisionStarted();
+        }
+
+        MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
+        nativeOnStartProvisioning(
+                mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
     }
 
     /**
@@ -1002,15 +1077,15 @@ public class MediaDrmBridge {
         Log.d(TAG, "processProvisionResponse()");
         assert mMediaCryptoSession == null;
 
-        // If |mMediaDrm| is released, there is no need to callback native.
-        if (mMediaDrm == null) {
-            return;
-        }
-
         assert mProvisioningPending;
         mProvisioningPending = false;
 
-        boolean success = isResponseReceived ? provideProvisionResponse(response) : false;
+        boolean success = false;
+
+        // If |mMediaDrm| is released, there is no need to callback native.
+        if (mMediaDrm != null) {
+            success = isResponseReceived ? provideProvisionResponse(response) : false;
+        }
 
         if (mResetDeviceCredentialsPending) {
             assert !mRequiresMediaCrypto;
@@ -1019,34 +1094,14 @@ public class MediaDrmBridge {
             return;
         }
 
-        assert mRequiresMediaCrypto;
+        // This may call release() internally. However, sMediaCryptoDeferrer.onProvisionDone() will
+        // still be called below to ensure provisioning failure here doesn't block other
+        // MediaDrmBridge instances from proceeding.
+        onProvisioned(success);
 
-        if (!success) {
-            release();
-            return;
+        if (mRequiresMediaCrypto) {
+            sMediaCryptoDeferrer.onProvisionDone();
         }
-
-        if (!mOriginSet) {
-            createMediaCrypto();
-            return;
-        }
-
-        // When |mOriginSet|, notify the storage onProvisioned, and continue
-        // creating MediaCrypto after that.
-        mStorage.onProvisioned(new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean initSuccess) {
-                assert mMediaCryptoSession == null;
-
-                if (!initSuccess) {
-                    Log.e(TAG, "Failed to initialize storage for origin");
-                    release();
-                    return;
-                }
-
-                createMediaCrypto();
-            }
-        });
     }
 
     /**
@@ -1069,6 +1124,42 @@ public class MediaDrmBridge {
             Log.e(TAG, "failed to provide provision response", e);
         }
         return false;
+    }
+
+    /*
+     *  Continue to createMediaCrypto() after provisioning.
+     *
+     * @param success Whether provisioning has succeeded or not.
+     */
+    void onProvisioned(boolean success) {
+        if (!success) {
+            release();
+            return;
+        }
+
+        assert mRequiresMediaCrypto;
+
+        if (!mOriginSet) {
+            createMediaCrypto();
+            return;
+        }
+
+        // When |mOriginSet|, notify the storage onProvisioned, and continue
+        // creating MediaCrypto after that.
+        mStorage.onProvisioned(new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean initSuccess) {
+                assert mMediaCryptoSession == null;
+
+                if (!initSuccess) {
+                    Log.e(TAG, "Failed to initialize storage for origin");
+                    release();
+                    return;
+                }
+
+                createMediaCrypto();
+            }
+        });
     }
 
     /**
