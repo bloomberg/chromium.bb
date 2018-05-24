@@ -54,6 +54,9 @@ class TargetPool {
   // this class.
   offset_t OffsetForKey(key_t key) const { return targets_[key]; }
 
+  // Returns whether a particular key is valid.
+  bool KeyIsValid(key_t key) const { return key < targets_.size(); }
+
   // Uses |offset_mapper| to transform "old" |targets_| to "new" |targets_|,
   // resulting in sorted and unique targets.
   void FilterAndProject(const OffsetMapper& offset_mapper);

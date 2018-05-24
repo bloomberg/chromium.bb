@@ -351,7 +351,7 @@ class ZtfReferenceWriter : public ReferenceWriter {
   // Returns true on success.
   bool ConvertToTargetLineCol(Reference reference, ztf::LineCol* out_lc) {
     auto temp_lc = translator_.OffsetToLineCol(reference.target);
-    if (!temp_lc.has_value() && translator_.IsValid(temp_lc.value()))
+    if (!temp_lc.has_value() || !translator_.IsValid(temp_lc.value()))
       return false;
 
     *out_lc = temp_lc.value();
