@@ -520,6 +520,7 @@ void LoginPasswordView::Backspace() {
 void LoginPasswordView::SetPlaceholderText(
     const base::string16& placeholder_text) {
   textfield_->set_placeholder_text(placeholder_text);
+  SchedulePaint();
 }
 
 void LoginPasswordView::SetReadOnly(bool read_only) {
