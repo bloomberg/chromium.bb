@@ -35,6 +35,7 @@ enum class EventTargetingPolicy;
 namespace ws2 {
 
 class WindowServiceClient;
+class WindowServiceClientBinding;
 
 // Used for accessing private members of WindowServiceClient in tests.
 class WindowServiceClientTestHelper {
@@ -72,19 +73,21 @@ class WindowServiceClientTestHelper {
                          const std::vector<uint8_t>& value,
                          uint32_t change_id = 1);
 
-  // Creates a new embedding. On success the new WindowServiceClient is
-  // returned. The returned WindowServiceClient is owned by the
+  // Creates a new embedding. On success the new WindowServiceClientBinding is
+  // returned. The returned WindowServiceClientBinding is owned by the
   // WindowServiceClient this was created with (|window_service_client_|).
-  WindowServiceClient* Embed(aura::Window* window,
-                             mojom::WindowTreeClientPtr client_ptr,
-                             mojom::WindowTreeClient* client,
-                             uint32_t embed_flags = 0);
+  WindowServiceClientBinding* Embed(aura::Window* window,
+                                    mojom::WindowTreeClientPtr client_ptr,
+                                    mojom::WindowTreeClient* client,
+                                    uint32_t embed_flags = 0);
   void SetEventTargetingPolicy(aura::Window* window,
                                mojom::EventTargetingPolicy policy);
   bool SetFocus(aura::Window* window);
   void SetCanFocus(aura::Window* window, bool can_focus);
 
   Id TransportIdForWindow(aura::Window* window);
+
+  void DestroyBinding(WindowServiceClientBinding* binding);
 
  private:
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);

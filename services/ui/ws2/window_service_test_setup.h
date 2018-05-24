@@ -25,6 +25,7 @@ namespace ws2 {
 
 class WindowService;
 class WindowServiceClient;
+class WindowServiceClientBinding;
 class WindowServiceClientTestHelper;
 
 struct Embedding;
@@ -32,7 +33,9 @@ struct Embedding;
 // Helper to setup state needed for WindowService tests.
 class WindowServiceTestSetup {
  public:
-  WindowServiceTestSetup();
+  // See |WindowServiceClient::intercepts_events| for details on
+  // |intercepts_events|.
+  explicit WindowServiceTestSetup(bool intercepts_events = false);
   ~WindowServiceTestSetup();
 
   // |flags| mirrors that from mojom::WindowTree::Embed(), see it for details.
@@ -68,8 +71,6 @@ class WindowServiceTestSetup {
 
 // Embedding contains the object necessary for an embedding. This is created
 // by way of WindowServiceTestSetup::CreateEmbededing().
-//
-// NOTE: destroying this object does not destroy the embedding.
 struct Embedding {
   Embedding();
   ~Embedding();
@@ -78,9 +79,16 @@ struct Embedding {
     return window_tree_client.tracker()->changes();
   }
 
+  // This is created by WindowServiceClient::Embed(). It owns
+  // |window_service_client_|.
+  WindowServiceClientBinding* binding = nullptr;
+
   TestWindowTreeClient window_tree_client;
 
-  // NOTE: this is owned by the WindowServiceClient that Embed() was called on.
+  // The client Embed() was called on.
+  WindowServiceClient* parent_window_service_client = nullptr;
+
+  // NOTE: this is owned by |parent_window_service_client|.
   WindowServiceClient* window_service_client = nullptr;
 
   std::unique_ptr<WindowServiceClientTestHelper> client_test_helper;

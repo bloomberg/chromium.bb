@@ -9,6 +9,7 @@
 #include <memory>
 #include <queue>
 
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/event_test_utils.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client_test_helper.h"
@@ -145,6 +146,46 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(embedding->changes()->empty());
+}
+
+TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
+  aura::test::TestWindowDelegate test_window_delegate;
+  const bool intercepts_events = true;
+  WindowServiceTestSetup setup(intercepts_events);
+  test_window_delegate.set_can_focus(true);
+  setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  aura::Window* embed_window = setup.client_test_helper()->NewWindow(3);
+  ASSERT_TRUE(embed_window);
+  top_level->AddChild(embed_window);
+  embed_window->Show();
+
+  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(
+      embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
+  ASSERT_TRUE(embedding);
+  aura::Window* embed_child_window =
+      embedding->client_test_helper->NewWindow(4);
+  ASSERT_TRUE(embed_child_window);
+  embed_child_window->Show();
+  embed_window->AddChild(embed_child_window);
+  setup.changes()->clear();
+  embedding->changes()->clear();
+
+  // Set focus from the embedded client.
+  EXPECT_TRUE(embedding->client_test_helper->SetFocus(embed_child_window));
+  EXPECT_TRUE(embed_child_window->HasFocus());
+
+  // Generate a key-press. Even though focus is on a window in the embedded
+  // client, the event goes to the embedder because it intercepts events.
+  test::EventGenerator event_generator(setup.root());
+  event_generator.PressKey(VKEY_A, EF_NONE);
+  EXPECT_TRUE(embedding->changes()->empty());
+  EXPECT_TRUE(embedding->window_tree_client.input_events().empty());
+  EXPECT_EQ("KEY_PRESSED",
+            EventToEventType(
+                setup.window_tree_client()->PopInputEvent().event.get()));
 }
 
 }  // namespace
