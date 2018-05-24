@@ -47,7 +47,7 @@ const unsigned kNumFDsToSend = 7;  // per message
 const unsigned kNumMessages = 20;
 const char* kDevZeroPath = "/dev/zero";
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 static_assert(kNumFDsToSend ==
                   IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage,
               "The number of FDs to send must be kMaxDescriptorsPerMessage.");

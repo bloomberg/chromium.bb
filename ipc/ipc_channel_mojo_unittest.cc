@@ -47,7 +47,7 @@
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/file_descriptor_posix.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
@@ -283,7 +283,7 @@ class HandleSendingHelper {
               GetSendingFileContent());
   }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   static base::FilePath GetSendingFilePath(const base::FilePath& dir_path) {
     return dir_path.Append("ListenerThatExpectsFile.txt");
   }
@@ -1500,7 +1500,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
 }
 #endif  // !defined(OS_MACOSX)
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 class ListenerThatExpectsFile : public TestListenerBase {
  public:
@@ -1599,7 +1599,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
   Close();
 }
 
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
 

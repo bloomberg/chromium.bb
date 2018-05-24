@@ -9,7 +9,7 @@
 #include "ipc/ipc_mojo_handle_attachment.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
@@ -30,13 +30,13 @@ namespace IPC {
 
 namespace {
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 base::ScopedFD TakeOrDupFile(internal::PlatformFileAttachment* attachment) {
   return attachment->Owns()
              ? base::ScopedFD(attachment->TakePlatformFile())
              : base::ScopedFD(HANDLE_EINTR(dup(attachment->file())));
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 }  // namespace
 
@@ -49,7 +49,7 @@ mojo::ScopedHandle MessageAttachment::TakeMojoHandle() {
     case Type::MOJO_HANDLE:
       return static_cast<internal::MojoHandleAttachment*>(this)->TakeHandle();
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
     case Type::PLATFORM_FILE: {
       // We dup() the handles in IPC::Message to transmit.
       // IPC::MessageAttachmentSet has intricate lifetime semantics for FDs, so
@@ -62,7 +62,7 @@ mojo::ScopedHandle MessageAttachment::TakeMojoHandle() {
       }
       return mojo::WrapPlatformFile(file.release());
     }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     case Type::MACH_PORT: {
@@ -116,14 +116,14 @@ scoped_refptr<MessageAttachment> MessageAttachment::CreateFromMojoHandle(
   if (unwrap_result != MOJO_RESULT_OK)
     return nullptr;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (type == Type::PLATFORM_FILE) {
     base::PlatformFile file = base::kInvalidPlatformFile;
     if (platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR)
       file = static_cast<base::PlatformFile>(platform_handle.value);
     return new internal::PlatformFileAttachment(file);
   }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (type == Type::MACH_PORT) {
