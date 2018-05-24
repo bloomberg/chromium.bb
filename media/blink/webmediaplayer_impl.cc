@@ -1770,7 +1770,7 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
 
     // Let the DataSource know we have enough data. It may use this information
     // to release unused network connections.
-    if (data_source_)
+    if (data_source_ && !client_->CouldPlayIfEnoughData())
       data_source_->OnBufferingHaveEnough(false);
 
     // Blink expects a timeChanged() in response to a seek().
