@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
+#include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/events/event.h"
@@ -61,7 +62,7 @@ class IMEAppTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
     // test_ime_driver will register itself as the current IMEDriver.
-    connector()->StartService("test_ime_driver");
+    connector()->StartService(test_ime_driver::mojom::kServiceName);
     connector()->BindInterface(ui::mojom::kServiceName, &ime_driver_);
   }
 

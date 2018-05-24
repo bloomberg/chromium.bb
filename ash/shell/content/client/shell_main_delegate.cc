@@ -19,6 +19,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
+#include "services/ui/ime/test_ime_driver/test_ime_application.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -41,6 +43,10 @@ std::unique_ptr<service_manager::Service> CreateShortcutViewer() {
 
 std::unique_ptr<service_manager::Service> CreateTapVisualizer() {
   return std::make_unique<tap_visualizer::TapVisualizerApp>();
+}
+
+std::unique_ptr<service_manager::Service> CreateTestImeDriver() {
+  return std::make_unique<ui::test::TestIMEApplication>();
 }
 
 class ShellContentUtilityClient : public content::ContentUtilityClient {
@@ -69,6 +75,11 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
       service_manager::EmbeddedServiceInfo info;
       info.factory = base::BindRepeating(&CreateTapVisualizer);
       (*services)[tap_visualizer::mojom::kServiceName] = info;
+    }
+    {
+      service_manager::EmbeddedServiceInfo info;
+      info.factory = base::BindRepeating(&CreateTestImeDriver);
+      (*services)[test_ime_driver::mojom::kServiceName] = info;
     }
   }
 

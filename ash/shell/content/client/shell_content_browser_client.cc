@@ -28,6 +28,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/content_utility_client.h"
+#include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/ws2/window_service.h"
 #include "storage/browser/quota/quota_settings.h"
@@ -77,6 +78,8 @@ ShellContentBrowserClient::GetExtraServiceManifests() {
        IDR_ASH_SHELL_SHORTCUT_VIEWER_MANIFEST},
       {tap_visualizer::mojom::kServiceName,
        IDR_ASH_SHELL_TAP_VISUALIZER_MANIFEST},
+      {test_ime_driver::mojom::kServiceName,
+       IDR_ASH_SHELL_TEST_IME_DRIVER_MANIFEST},
   };
 }
 
@@ -90,6 +93,8 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
       base::ASCIIToUTF16(shortcut_viewer::mojom::kServiceName));
   (*services)[tap_visualizer::mojom::kServiceName] = OutOfProcessServiceInfo(
       base::ASCIIToUTF16(tap_visualizer::mojom::kServiceName));
+  (*services)[test_ime_driver::mojom::kServiceName] = OutOfProcessServiceInfo(
+      base::ASCIIToUTF16(test_ime_driver::mojom::kServiceName));
 }
 
 void ShellContentBrowserClient::RegisterInProcessServices(

@@ -16,7 +16,7 @@ class TestInputMethod : public mojom::InputMethod {
  public:
   explicit TestInputMethod(mojom::TextInputClientPtr client)
       : client_(std::move(client)) {}
-  ~TestInputMethod() override {}
+  ~TestInputMethod() override = default;
 
  private:
   // mojom::InputMethod:
@@ -26,14 +26,29 @@ class TestInputMethod : public mojom::InputMethod {
                        ProcessKeyEventCallback callback) override {
     DCHECK(key_event->IsKeyEvent());
 
-    if (key_event->AsKeyEvent()->is_char()) {
+    std::unique_ptr<Event> cloned_event = ui::Event::Clone(*key_event);
+
+    // Using base::Unretained is safe because |client_| is owned by this class.
+    client_->DispatchKeyEventPostIME(
+        std::move(key_event),
+        base::BindOnce(&TestInputMethod::PostProcssKeyEvent,
+                       base::Unretained(this), std::move(cloned_event),
+                       std::move(callback)));
+  }
+  void CancelComposition() override {}
+
+  void PostProcssKeyEvent(std::unique_ptr<Event> key_event,
+                          ProcessKeyEventCallback callback,
+                          bool stopped_propagation) {
+    if (!stopped_propagation && key_event->type() == ET_KEY_PRESSED &&
+        (key_event->AsKeyEvent()->is_char() ||
+         key_event->AsKeyEvent()->GetDomKey().IsCharacter())) {
       client_->InsertChar(std::move(key_event));
       std::move(callback).Run(true);
     } else {
       std::move(callback).Run(false);
     }
   }
-  void CancelComposition() override {}
 
   mojom::TextInputClientPtr client_;
 

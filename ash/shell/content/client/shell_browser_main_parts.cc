@@ -42,6 +42,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/net_module.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -114,6 +115,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->StartService(test_ime_driver::mojom::kServiceName);
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->StartService(quick_launch::mojom::kServiceName);
