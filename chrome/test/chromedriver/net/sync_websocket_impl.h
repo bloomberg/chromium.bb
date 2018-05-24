@@ -76,6 +76,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
     void SendOnIO(const std::string& message,
                   bool* result,
                   base::WaitableEvent* event);
+    void CloseOnIO(base::WaitableEvent* event);
 
     // OnDestruct is meant to ensure deletion on the IO thread.
     void OnDestruct() const;

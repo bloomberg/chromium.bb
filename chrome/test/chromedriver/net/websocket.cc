@@ -155,6 +155,12 @@ void WebSocket::OnSocketConnect(int code) {
       sec_key_.c_str());
   VLOG(4) << "WebSocket::OnSocketConnect handshake\n" << handshake;
   Write(handshake);
+  if (state_ == CLOSED) {
+    // The call to Write() above would call Close() if it encounters an error,
+    // in which case it's no longer safe to do anything else. Close() has
+    // already called the callback function, if any.
+    return;
+  }
   Read();
 }
 

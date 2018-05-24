@@ -69,6 +69,16 @@ bool SyncWebSocketImpl::Core::Connect(const GURL& url) {
     LOG(WARNING) << "Timed out connecting to Chrome, "
                  << (timeout < kMaxTimeout ? "retrying..." : "giving up.");
   }
+  if (!success) {
+    // Make sure the underlying connection is closed before we return, otherwise
+    // it might try to set event or success flag after they have already gone
+    // out of scope.
+    context_getter_->GetNetworkTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SyncWebSocketImpl::Core::CloseOnIO, this, &event));
+    event.Wait();
+    return false;
+  }
   return success;
 }
 
@@ -168,4 +178,9 @@ void SyncWebSocketImpl::Core::OnDestruct() const {
     delete this;
   else
     network_task_runner->DeleteSoon(FROM_HERE, this);
+}
+
+void SyncWebSocketImpl::Core::CloseOnIO(base::WaitableEvent* event) {
+  socket_.reset();
+  event->Signal();
 }
