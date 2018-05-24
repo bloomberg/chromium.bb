@@ -22,9 +22,11 @@
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/ip_address.h"
+#include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
+#include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -206,37 +208,39 @@ net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
     const WriteList& write_list) {
   mock_reads_ = read_list;
   mock_writes_ = write_list;
-  data_provider_.reset(
-      new net::StaticSocketDataProvider(mock_reads_, mock_writes_));
+  data_provider_ = std::make_unique<net::StaticSocketDataProvider>(
+      mock_reads_, mock_writes_);
   socket_factory_.AddSocketDataProvider(data_provider_.get());
+  run_loop_ = std::make_unique<base::RunLoop>();
 
   socket_ = socket_factory_.CreateTransportClientSocket(
       address_list_, NULL, NULL, net::NetLogSource());
-  socket_->Connect(net::CompletionCallback());
+  net::TestCompletionCallback callback;
+  int rv = socket_->Connect(callback.callback());
+  EXPECT_THAT(rv, net::test::IsError(net::ERR_IO_PENDING));
 
-  run_loop_.reset(new base::RunLoop());
-  PumpLoop();
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, net::test::IsOk());
 
-  DCHECK(socket_->IsConnected());
+  EXPECT_TRUE(socket_->IsConnected());
   return socket_.get();
 }
 
 void GCMConnectionHandlerImplTest::PumpLoop() {
   run_loop_->RunUntilIdle();
-  run_loop_.reset(new base::RunLoop());
+  run_loop_ = std::make_unique<base::RunLoop>();
 }
 
 void GCMConnectionHandlerImplTest::Connect(
     ScopedMessage* dst_proto) {
-  connection_handler_.reset(new ConnectionHandlerImpl(
+  connection_handler_ = std::make_unique<ConnectionHandlerImpl>(
       TestTimeouts::tiny_timeout(),
-          base::Bind(&GCMConnectionHandlerImplTest::ReadContinuation,
-                     base::Unretained(this),
-                     dst_proto),
-          base::Bind(&GCMConnectionHandlerImplTest::WriteContinuation,
-                     base::Unretained(this)),
-          base::Bind(&GCMConnectionHandlerImplTest::ConnectionContinuation,
-                     base::Unretained(this))));
+      base::Bind(&GCMConnectionHandlerImplTest::ReadContinuation,
+                 base::Unretained(this), dst_proto),
+      base::Bind(&GCMConnectionHandlerImplTest::WriteContinuation,
+                 base::Unretained(this)),
+      base::Bind(&GCMConnectionHandlerImplTest::ConnectionContinuation,
+                 base::Unretained(this)));
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   connection_handler_->Init(*BuildLoginRequest(kAuthId, kAuthToken, ""),
                             TRAFFIC_ANNOTATION_FOR_TESTS, socket_.get());
@@ -251,7 +255,7 @@ void GCMConnectionHandlerImplTest::ReadContinuation(
 
 void GCMConnectionHandlerImplTest::WaitForMessage() {
   run_loop_->Run();
-  run_loop_.reset(new base::RunLoop());
+  run_loop_ = std::make_unique<base::RunLoop>();
 }
 
 void GCMConnectionHandlerImplTest::WriteContinuation() {
