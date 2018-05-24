@@ -105,10 +105,6 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
           ui::NativeTheme::kColorId_ProminentButtonColor));
       label->SetAutoColorReadabilityEnabled(false);
       break;
-    case FontStyle::BUTTON:
-      label->SetFontList(base_font_list.Derive(0, gfx::Font::NORMAL,
-                                               gfx::Font::Weight::MEDIUM));
-      break;
     case FontStyle::CAPTION:
       label->SetFontList(base_font_list.Derive(0, gfx::Font::NORMAL,
                                                gfx::Font::Weight::NORMAL));

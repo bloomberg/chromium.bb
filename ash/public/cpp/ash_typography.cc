@@ -17,6 +17,9 @@ void ApplyAshFontStyles(int context,
     case CONTEXT_TOAST_OVERLAY:
       *size_delta = 3;
       break;
+    case CONTEXT_TRAY_POPUP_BUTTON:
+      *font_weight = gfx::Font::Weight::MEDIUM;
+      break;
   }
 }
 

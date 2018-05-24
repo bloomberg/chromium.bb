@@ -10,6 +10,7 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
+#include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -29,10 +30,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -49,6 +54,59 @@ namespace {
 
 // Vertical mergin for the top/bottom edges of the view.
 constexpr size_t kVerticalMargin = 2;
+
+// Button that appears in the top-right of the system tray popup. Usually says
+// "Sign out".
+class LogoutButton : public views::LabelButton {
+ public:
+  // Creates a button with CONTEXT_TRAY_POPUP_BUTTON to get the right font.
+  LogoutButton(views::ButtonListener* listener, const base::string16& text)
+      : LabelButton(listener, text, CONTEXT_TRAY_POPUP_BUTTON) {
+    const int kHorizontalPadding = 20;
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
+    SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+    TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+    // By a series of consequences (see https://crbug.com/779732#c21 ), this
+    // button was using gfx::kChromeIconGrey, but unrelated flags would change
+    // that. Ideally, the LabelButton constructor would take an appropriate
+    // views::style constant, but this is currently the only LabelButton wanting
+    // this behavior, and https://crbug.com/842079 removes this entire button.
+    SetEnabledTextColors(gfx::kChromeIconGrey);
+  }
+
+  ~LogoutButton() override = default;
+
+  // views::LabelButton:
+  int GetHeightForWidth(int width) const override { return kMenuButtonSize; }
+
+ private:
+  // TODO(estade,bruthig): there's a lot in common here with ActionableView.
+  // Find a way to share. See related TODO on InkDropHostView::SetInkDropMode().
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    return TrayPopupUtils::CreateInkDrop(this);
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    return TrayPopupUtils::CreateInkDropRipple(
+        TrayPopupInkDropStyle::INSET_BOUNDS, this,
+        GetInkDropCenterBasedOnLastEvent());
+  }
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return TrayPopupUtils::CreateInkDropHighlight(
+        TrayPopupInkDropStyle::INSET_BOUNDS, this);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return TrayPopupUtils::CreateInkDropMask(
+        TrayPopupInkDropStyle::INSET_BOUNDS, this);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(LogoutButton);
+};
 
 // Switch to a user with the given |user_index|.
 void SwitchUser(UserIndex user_index) {
@@ -343,7 +401,7 @@ void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
 
 void UserView::AddLogoutButton(LoginStatus login) {
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
-  logout_button_ = TrayPopupUtils::CreateTrayPopupBorderlessButton(
+  logout_button_ = new LogoutButton(
       this, user::GetLocalizedSignOutStringForStatus(login, true));
   AddChildView(logout_button_);
 }

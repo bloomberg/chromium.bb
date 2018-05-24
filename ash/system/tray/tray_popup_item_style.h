@@ -46,9 +46,6 @@ class TrayPopupItemStyle {
     SYSTEM_INFO,
     // System information text within a clickable row.
     CLICKABLE_SYSTEM_INFO,
-    // Child buttons within rows that have a visible border (e.g. Cast's
-    // "Stop", etc).
-    BUTTON,
     // Sub text within a row (e.g. user name in user row).
     CAPTION,
   };
@@ -59,8 +56,6 @@ class TrayPopupItemStyle {
 
   explicit TrayPopupItemStyle(FontStyle font_style);
   ~TrayPopupItemStyle();
-
-  ColorStyle color_style() const { return color_style_; }
 
   void set_color_style(ColorStyle color_style) { color_style_ = color_style; }
 
