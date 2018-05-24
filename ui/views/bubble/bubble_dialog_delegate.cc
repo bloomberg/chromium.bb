@@ -27,6 +27,10 @@
 #include "ui/base/win/shell.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/views/widget/widget_utils_mac.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -346,7 +350,16 @@ void BubbleDialogDelegateView::SetAnchorRect(const gfx::Rect& rect) {
 }
 
 void BubbleDialogDelegateView::SizeToContents() {
-  GetWidget()->SetBounds(GetBubbleBounds());
+  gfx::Rect bubble_bounds = GetBubbleBounds();
+#if defined(OS_MACOSX)
+  // GetBubbleBounds() doesn't take the Mac NativeWindow's style mask into
+  // account, so we need to adjust the size.
+  gfx::Size actual_size =
+      GetWindowSizeForClientSize(GetWidget(), bubble_bounds.size());
+  bubble_bounds.set_size(actual_size);
+#endif
+
+  GetWidget()->SetBounds(bubble_bounds);
 }
 
 BubbleFrameView* BubbleDialogDelegateView::GetBubbleFrameView() const {
