@@ -52,21 +52,6 @@ const char kProcessPhaseDataKey[] = "process-phase";
 // in the same memory space.
 AtomicSequenceNumber g_next_id;
 
-union ThreadRef {
-  int64_t as_id;
-#if defined(OS_WIN)
-  // On Windows, the handle itself is often a pseudo-handle with a common
-  // value meaning "this thread" and so the thread-id is used. The former
-  // can be converted to a thread-id with a system call.
-  PlatformThreadId as_tid;
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  // On Posix and Fuchsia, the handle is always a unique identifier so no
-  // conversion needs to be done. However, its value is officially opaque so
-  // there is no one correct way to convert it to a numerical identifier.
-  PlatformThreadHandle::Handle as_handle;
-#endif
-};
-
 // Gets the next non-zero identifier. It is only unique within a process.
 uint32_t GetNextDataId() {
   uint32_t id;
@@ -120,6 +105,21 @@ Time WallTimeFromTickTime(int64_t ticks_start, int64_t ticks, Time time_start) {
 }
 
 }  // namespace
+
+union ThreadRef {
+  int64_t as_id;
+#if defined(OS_WIN)
+  // On Windows, the handle itself is often a pseudo-handle with a common
+  // value meaning "this thread" and so the thread-id is used. The former
+  // can be converted to a thread-id with a system call.
+  PlatformThreadId as_tid;
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  // On Posix and Fuchsia, the handle is always a unique identifier so no
+  // conversion needs to be done. However, its value is officially opaque so
+  // there is no one correct way to convert it to a numerical identifier.
+  PlatformThreadHandle::Handle as_handle;
+#endif
+};
 
 OwningProcess::OwningProcess() = default;
 OwningProcess::~OwningProcess() = default;
