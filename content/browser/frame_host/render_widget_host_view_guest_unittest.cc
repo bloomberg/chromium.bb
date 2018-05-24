@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -235,9 +236,12 @@ viz::CompositorFrame CreateDelegatedFrame(float scale_factor,
 }  // anonymous namespace
 
 TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);

@@ -9,7 +9,6 @@
 -RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
 -RenderWidgetHostViewAuraTest.HitTestRegionListSubmitted
 -RenderWidgetHostViewAuraTest.OutputSurfaceIdChange
--RenderWidgetHostViewGuestSurfaceTest.TestGuestSurface
 
 # Legacy using TestImageTransportFactory::GetFrameSinkManager
 -RenderWidgetHostViewAuraTest.ForwardsBeginFrameAcks
