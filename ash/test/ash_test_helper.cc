@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/display/display_configuration_controller_test_api.h"
+#include "ash/display/screen_ash.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -69,7 +70,11 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
   aura::test::InitializeAuraEventGeneratorDelegate();
 }
 
-AshTestHelper::~AshTestHelper() = default;
+AshTestHelper::~AshTestHelper() {
+  // Ensure the next test starts with a null display::Screen. Done here because
+  // some tests use Screen after TearDown().
+  ScreenAsh::DeleteScreenForShutdown();
+}
 
 void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // TODO(jamescook): Can we do this without changing command line?
