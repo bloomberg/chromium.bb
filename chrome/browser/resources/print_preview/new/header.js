@@ -49,7 +49,8 @@ Polymer({
 
   observers:
       ['update_(settings.copies.value, settings.duplex.value, ' +
-       'settings.pages.value, settings.pagesPerSheet.value, state)'],
+       'settings.pages.value, settings.pagesPerSheet.value, state, ' +
+       'destination.id)'],
 
   /** @private */
   onPrintClick_: function() {

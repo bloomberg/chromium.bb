@@ -671,3 +671,43 @@ GEN('#endif');  // defined(OS_CHROMEOS)
 TEST_F('PrintPreviewNewDestinationSearchTest', 'CloudKioskPrinter', function() {
   this.runMochaTest(destination_search_test.TestNames.CloudKioskPrinter);
 });
+
+PrintPreviewHeaderTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/header.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'header_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return header_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewHeaderTest', 'HeaderPrinterTypes', function() {
+  this.runMochaTest(header_test.TestNames.HeaderPrinterTypes);
+});
+
+TEST_F('PrintPreviewHeaderTest', 'HeaderWithDuplex', function() {
+  this.runMochaTest(header_test.TestNames.HeaderWithDuplex);
+});
+
+TEST_F('PrintPreviewHeaderTest', 'HeaderWithCopies', function() {
+  this.runMochaTest(header_test.TestNames.HeaderWithCopies);
+});
+
+TEST_F('PrintPreviewHeaderTest', 'HeaderWithNup', function() {
+  loadTimeData.overrideValues({pagesPerSheetEnabled: true});
+  this.runMochaTest(header_test.TestNames.HeaderWithNup);
+});
+
+TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {
+  this.runMochaTest(header_test.TestNames.HeaderChangesForState);
+});
