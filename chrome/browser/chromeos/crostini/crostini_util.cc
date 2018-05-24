@@ -51,7 +51,7 @@ void MaybeLaunchTerminal(Profile* profile,
   }
 }
 
-void MaybeLaunchContainerAppplication(
+void MaybeLaunchContainerApplication(
     Profile* profile,
     std::unique_ptr<crostini::CrostiniRegistryService::Registration>
         registration,
@@ -117,7 +117,7 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
   crostini_manager->RestartCrostini(
       profile, registration->vm_name, registration->container_name,
-      base::BindOnce(&MaybeLaunchContainerAppplication, profile,
+      base::BindOnce(&MaybeLaunchContainerApplication, profile,
                      std::move(registration)));
   registry_service->AppLaunched(app_id);
 }
