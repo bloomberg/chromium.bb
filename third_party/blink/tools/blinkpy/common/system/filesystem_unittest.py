@@ -347,3 +347,17 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
         self.assertEqual(fs.sep, os.sep)
         self.assertEqual(fs.join('foo', 'bar'),
                          os.path.join('foo', 'bar'))
+
+    def test_long_paths(self):
+        # This mostly tests UNC paths on Windows for path names > 260 chars.
+        # Currently, only makedirs, copyfile, and various open methods are
+        # verified to support UNC paths.
+        long_path = self.fs.join(self.generic_test_dir, 'x' * 100, 'y' * 100, 'z' * 100)
+        self.fs.maybe_make_directory(long_path)
+        file1 = self.fs.join(long_path, 'foo')
+        file2 = self.fs.join(long_path, 'bar')
+        self.fs.write_text_file(file1, 'hello')
+        self.fs.copyfile(file1, file2)
+        content = self.fs.read_text_file(file2)
+        self.fs.remove(file2)  # No exception should be raised.
+        self.assertEqual(content, 'hello')

@@ -57,6 +57,26 @@ class FileSystem(object):
     sep = os.sep
     pardir = os.pardir
 
+    WINDOWS_MAX_PATH = 260
+
+    def _path_for_access(self, path):
+        """Ensures a path can be used to access the file.
+
+        Pass a path through this method when and only when the path is about to
+        be accessed via a syscall (e.g. open()); DO NOT use this method if the
+        path is to be manipulated by (most of) the functions in os.path, etc.
+
+        This method currently only works around one issue: the maximum path
+        length on Windows. If the current platform is Windows and the given path
+        is longer than MAX_PATH (260), the path will be converted to a UNC path
+        by first making the path absolute and then prepending the UNC magic
+        prefix '\\?\'. Otherwise, the method is a no-op.
+        (https://msdn.microsoft.com/en-us/library/aa365247.aspx#maxpath)
+        """
+        if sys.platform == 'win32' and len(path) >= self.WINDOWS_MAX_PATH:
+            return ur'\\?\%s' % (self.abspath(path),)
+        return path
+
     def abspath(self, path):
         return os.path.abspath(path)
 
@@ -81,7 +101,8 @@ class FileSystem(object):
         return os.chdir(path)
 
     def copyfile(self, source, destination):
-        shutil.copyfile(source, destination)
+        # shutil.copyfile() uses open() underneath, which supports UNC paths.
+        shutil.copyfile(self._path_for_access(source), self._path_for_access(destination))
 
     def dirname(self, path):
         return os.path.dirname(path)
@@ -144,6 +165,8 @@ class FileSystem(object):
         return os.path.isdir(path)
 
     def join(self, *comps):
+        # TODO(robertma): UNC paths are not currently supported, but can be done
+        # with os.path.splitunc().
         return os.path.join(*comps)
 
     def listdir(self, path):
@@ -189,7 +212,9 @@ class FileSystem(object):
     def maybe_make_directory(self, *path):
         """Creates the specified directory if it doesn't already exist."""
         try:
-            os.makedirs(self.join(*path))
+            # os.makedirs() supports UNC paths:
+            # https://docs.python.org/2/library/os.html#os.makedirs
+            os.makedirs(self._path_for_access(self.join(*path)))
         except OSError as error:
             if error.errno != errno.EEXIST:
                 raise
@@ -213,18 +238,18 @@ class FileSystem(object):
         return f, temp_name
 
     def open_binary_file_for_reading(self, path):
-        return codecs.open(path, 'rb')
+        return file(self._path_for_access(path), 'rb')
 
     def open_binary_file_for_writing(self, path):
-        return file(path, 'wb')
+        return file(self._path_for_access(path), 'wb')
 
     def read_binary_file(self, path):
         """Returns the contents of the file as a byte string."""
-        with file(path, 'rb') as f:
+        with self.open_binary_file_for_reading(path) as f:
             return f.read()
 
     def write_binary_file(self, path, contents):
-        with file(path, 'wb') as f:
+        with self.open_binary_file_for_writing(path) as f:
             f.write(contents)
 
     def open_text_tempfile(self, suffix=''):
@@ -240,17 +265,17 @@ class FileSystem(object):
         # Note: There appears to be an issue with the returned file objects not
         # being seekable. See:
         # http://stackoverflow.com/questions/1510188/can-seek-and-tell-work-with-utf-8-encoded-documents-in-python
-        return codecs.open(path, 'r', 'utf8')
+        return codecs.open(self._path_for_access(path), 'r', 'utf8')
 
     def open_text_file_for_writing(self, path):
-        return codecs.open(path, 'w', 'utf8')
+        return codecs.open(self._path_for_access(path), 'w', 'utf8')
 
     def read_text_file(self, path):
         """Returns the contents of the file as a Unicode string.
 
         The file is read assuming it is a UTF-8 encoded file with no BOM.
         """
-        with codecs.open(path, 'r', 'utf8') as f:
+        with self.open_text_file_for_reading(path) as f:
             return f.read()
 
     def write_text_file(self, path, contents):
@@ -258,7 +283,7 @@ class FileSystem(object):
 
         The file is written encoded as UTF-8 with no BOM.
         """
-        with codecs.open(path, 'w', 'utf8') as f:
+        with self.open_text_file_for_writing(path) as f:
             f.write(contents)
 
     def sha1(self, path):
@@ -288,7 +313,8 @@ class FileSystem(object):
         sleep_interval = 0.1
         while True:
             try:
-                osremove(path)
+                # The default os.remove() supports UNC paths on Windows.
+                osremove(self._path_for_access(path))
                 return True
             except exceptions.WindowsError:
                 time.sleep(sleep_interval)
@@ -298,6 +324,7 @@ class FileSystem(object):
 
     def rmtree(self, path, ignore_errors=True, onerror=None):
         """Deletes the directory rooted at path, whether empty or not."""
+        # shutil.rmtree() uses os.path.join() which doesn't support UNC paths.
         shutil.rmtree(path, ignore_errors=ignore_errors, onerror=onerror)
 
     def remove_contents(self, dirname):
@@ -312,6 +339,7 @@ class FileSystem(object):
         return _remove_contents(self, dirname)
 
     def copytree(self, source, destination):
+        # shutil.copytree() uses os.path.join() which doesn't support UNC paths.
         shutil.copytree(source, destination)
 
     def split(self, path):
