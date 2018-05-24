@@ -446,6 +446,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/filter/chips/ChipView.java",
   "java/src/org/chromium/chrome/browser/download/home/list/CalendarFactory.java",
   "java/src/org/chromium/chrome/browser/download/home/list/CalendarUtils.java",
+  "java/src/org/chromium/chrome/browser/download/home/list/BatchListObservable.java",
   "java/src/org/chromium/chrome/browser/download/home/list/DateOrderedListModel.java",
   "java/src/org/chromium/chrome/browser/download/home/list/DateOrderedListMutator.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",

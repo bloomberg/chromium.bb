@@ -10,8 +10,11 @@ import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A class responsible for turning a {@link Collection} of {@link OfflineItem}s into a list meant
@@ -22,9 +25,9 @@ import java.util.Collection;
  *
  * TODO(dtrainor): This should be optimized in the near future.  There are a few key things that can
  * be changed:
- * - Batch observer calls if large adds/removes make a bunch of adjacent changes.
- * - Perform O(N) add/remove calls by effectively merging and unmerging the lists instead of looped
- *   inserts.
+ * - Do a single iterating across each list to merge/unmerge them.  This requires sorting and
+ *   tracking the current position across both as iterating (see {@link #onItemsRemoved(Collection)}
+ *   for an example since that is close to doing what we want - minus the contains() call).
  */
 public class DateOrderedListMutator implements OfflineItemFilterObserver {
     private static final int INVALID_INDEX = -1;
@@ -45,7 +48,15 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
     // OfflineItemFilterObserver implementation.
     @Override
     public void onItemsAdded(Collection<OfflineItem> items) {
-        for (OfflineItem item : items) {
+        List<OfflineItem> sorted = new ArrayList<>(items);
+        Collections.sort(sorted, (lhs, rhs) -> {
+            long delta = rhs.creationTimeMs - lhs.creationTimeMs;
+            if (delta > 0) return 1;
+            if (delta < 0) return -1;
+            return 0;
+        });
+
+        for (OfflineItem item : sorted) {
             int index = getBestIndexFor(item);
             mModel.addItem(index, new DateOrderedListModel.ListItem(item));
 
@@ -59,6 +70,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
                 mModel.addItem(index, new DateOrderedListModel.ListItem(startOfDay));
             }
         }
+
+        mModel.dispatchLastEvent();
     }
 
     @Override
@@ -74,6 +87,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
 
             if (removeHeader || removeItem) mModel.removeItem(i);
         }
+
+        mModel.dispatchLastEvent();
     }
 
     @Override
@@ -90,6 +105,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
         } else {
             mModel.setItem(i, new DateOrderedListModel.ListItem(item));
         }
+
+        mModel.dispatchLastEvent();
     }
 
     private int indexOfItem(ContentId id) {

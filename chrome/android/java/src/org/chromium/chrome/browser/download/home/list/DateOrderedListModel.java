@@ -18,7 +18,7 @@ import java.util.List;
  * {@link DateOrderedList}.  This will be updated in the near future to support large batch updates
  * to minimize the hit on {@link ListObserver}s.
  */
-public class DateOrderedListModel extends ListObservable {
+public class DateOrderedListModel extends BatchListObservable {
     /**
      * Represents an item meant to be shown in the UI.  If {@code ListItem#item} is {@code null},
      * this item represents a date separate for a new day's worth of items.  Otherwise it represents
