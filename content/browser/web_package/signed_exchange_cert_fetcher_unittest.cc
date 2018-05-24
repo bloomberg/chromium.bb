@@ -318,7 +318,7 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
             mock_loader_factory_.url_request()->load_flags);
 
   mock_loader_factory_.client_ptr()->OnComplete(
-      network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
@@ -535,7 +535,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRequest) {
       CreateFetcherAndStart(false /* force_fetch */);
   RunUntilIdle();
 
-  throttle->delegate()->CancelWithError(net::ERR_FAILED);
+  throttle->delegate()->CancelWithError(net::ERR_INVALID_SIGNED_EXCHANGE);
 
   RunUntilIdle();
 
@@ -562,7 +562,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRedirect) {
 
   EXPECT_TRUE(throttle->will_redirect_request_called());
 
-  throttle->delegate()->CancelWithError(net::ERR_FAILED);
+  throttle->delegate()->CancelWithError(net::ERR_INVALID_SIGNED_EXCHANGE);
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
@@ -594,7 +594,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnResponse) {
 
   EXPECT_FALSE(callback_called_);
 
-  throttle->delegate()->CancelWithError(net::ERR_FAILED);
+  throttle->delegate()->CancelWithError(net::ERR_INVALID_SIGNED_EXCHANGE);
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);

@@ -95,7 +95,8 @@ SignedExchangeHandler::SignedExchangeHandler(
       version_ != SignedExchangeVersion::kB0) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
-                                  weak_factory_.GetWeakPtr(), net::ERR_FAILED));
+                                  weak_factory_.GetWeakPtr(),
+                                  net::ERR_INVALID_SIGNED_EXCHANGE));
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::SignedExchangeHandler",
         base::StringPrintf("Unsupported version of the content type. Currentry "
@@ -151,7 +152,7 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::DidReadHeader",
         "Stream ended while reading signed exchange header.");
-    RunErrorCallback(net::ERR_FAILED);
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 
@@ -160,11 +161,11 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
     switch (state_) {
       case State::kReadingHeadersLength:
         if (!ParseHeadersLength())
-          RunErrorCallback(net::ERR_FAILED);
+          RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
         break;
       case State::kReadingHeaders:
         if (!ParseHeadersAndFetchCertificate())
-          RunErrorCallback(net::ERR_FAILED);
+          RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
         break;
       default:
         NOTREACHED();
@@ -272,7 +273,7 @@ void SignedExchangeHandler::OnCertReceived(
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertReceived",
         "Failed to fetch the certificate.");
-    RunErrorCallback(net::ERR_FAILED);
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 
@@ -283,7 +284,7 @@ void SignedExchangeHandler::OnCertReceived(
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertReceived",
         "Failed to verify the signed exchange header.");
-    RunErrorCallback(net::ERR_FAILED);
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
   net::URLRequestContext* request_context =
@@ -334,7 +335,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertVerifyComplete",
         base::StringPrintf("Certificate verification error: %s",
                            net::ErrorToShortString(result).c_str()));
-    RunErrorCallback(static_cast<net::Error>(result));
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 
@@ -358,7 +359,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertVerifyComplete",
         "Signed exchange has no MI: header");
-    RunErrorCallback(net::ERR_FAILED);
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
   auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(

@@ -200,7 +200,7 @@ TEST_P(SignedExchangeHandlerTest, Empty) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
 }
 
 TEST_P(SignedExchangeHandlerTest, Simple) {
@@ -278,7 +278,7 @@ TEST_P(SignedExchangeHandlerTest, ParseError) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
 }
 
 TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
@@ -290,7 +290,7 @@ TEST_P(SignedExchangeHandlerTest, TruncatedInHeader) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
 }
 
 TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
@@ -312,7 +312,7 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
   ReadStream(source_, nullptr);
 }
@@ -343,7 +343,7 @@ TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_CERT_INVALID, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
   ReadStream(source_, nullptr);
 }
