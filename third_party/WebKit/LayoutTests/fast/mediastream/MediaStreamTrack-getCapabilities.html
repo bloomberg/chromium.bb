@@ -6,8 +6,9 @@ promise_test(function() {
   return navigator.mediaDevices.getUserMedia({audio: true})
       .then(function(stream) {
     var capabilities = stream.getAudioTracks()[0].getCapabilities();
-    assert_equals(Object.keys(capabilities).length, 4);
+    assert_equals(Object.keys(capabilities).length, 5);
     assert_true(capabilities.hasOwnProperty('deviceId'));
+    assert_true(capabilities.hasOwnProperty('groupId'));
     verifyAudioProcessingProperties(capabilities, true);
   });
 }, 'getCapabilities() support for getUserMedia() audio track.');
