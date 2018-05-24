@@ -741,6 +741,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           !(data.enterpriseManagedDevice || data.hasDeviceOwner);
       params.isFirstUser =
           !(data.enterpriseManagedDevice || data.hasDeviceOwner);
+      params.obfuscatedOwnerId = data.obfuscatedOwnerId;
 
       this.gaiaAuthParams_ = params;
 

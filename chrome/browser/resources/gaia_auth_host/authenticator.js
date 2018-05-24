@@ -96,6 +96,7 @@ cr.define('cr.login', function() {
     'lsbReleaseBoard',           // Chrome OS Release board name
     'isFirstUser',               // True if this is non-enterprise device,
                                  // and there are no users yet.
+    'obfuscatedOwnerId',         // Obfuscated device owner ID, if neeed.
 
     // The email fields allow for the following possibilities:
     //
@@ -385,6 +386,8 @@ cr.define('cr.login', function() {
           url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
         if (data.isFirstUser)
           url = appendParam(url, 'is_first_user', true);
+        if (data.obfuscatedOwnerId)
+          url = appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
       }
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
