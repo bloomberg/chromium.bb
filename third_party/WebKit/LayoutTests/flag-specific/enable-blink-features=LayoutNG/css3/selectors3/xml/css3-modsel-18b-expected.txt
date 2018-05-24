@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x307
-  LayoutNGBlockFlow {test} at (0,0) size 800x306.66
-    LayoutNGBlockFlow {div} at (0,16) size 800x274.66
+  LayoutNGBlockFlow {test} at (0,0) size 800x307.19
+    LayoutNGBlockFlow {div} at (0,16) size 800x275.19
       LayoutNGBlockFlow {p} at (0,0) size 800x40
         LayoutText {#text} at (0,0) size 749x19
           text run at (0,0) width 749: "The background color of this paragraph should turn to green when the mouse pointer hovers over any of the following:"
@@ -32,10 +32,10 @@ layer at (0,0) size 800x307
             LayoutNGTableCell {td} at (2,84) size 107x22 [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 59x19
                 text run at (1,1) width 59: "This text."
-      LayoutNGBlockFlow {p} at (0,216) size 800x22.66
+      LayoutNGBlockFlow {p} at (0,216) size 800x23.19
         LayoutInline {sub} at (0,0) size 51x16
-          LayoutText {#text} at (0,6) size 51x16
-            text run at (0,6) width 51: "This text."
-      LayoutNGBlockFlow {p} at (0,254.66) size 800x20
+          LayoutText {#text} at (0,7) size 51x16
+            text run at (0,7) width 51: "This text."
+      LayoutNGBlockFlow {p} at (0,255.19) size 800x20
         LayoutText {#text} at (0,0) size 573x19
           text run at (0,0) width 573: "...and anything else between the top of the first paragraph and the bottom of this paragraph."
