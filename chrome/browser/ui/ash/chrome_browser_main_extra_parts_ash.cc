@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
+#include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chromeos/network/network_connect.h"
@@ -148,6 +149,9 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
+  // IME driver must be available at login screen, so initialize before profile.
+  IMEDriver::Register();
+
   // NetworkConnect handles the network connection state machine for the UI.
   network_connect_delegate_ =
       std::make_unique<NetworkConnectDelegateChromeOS>();
