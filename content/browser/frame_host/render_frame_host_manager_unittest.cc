@@ -461,7 +461,6 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
         manager->GetFrameHostForNavigation(*navigation_request));
     CHECK(frame_host);
-    frame_host->set_pending_commit(true);
     return frame_host;
   }
 
