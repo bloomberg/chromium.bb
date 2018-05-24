@@ -28,6 +28,8 @@ source_set("location_bar") {
   ]
   deps = [
     ":constants",
+    "resources:location_bar_share",
+    "resources:location_bar_voice",
     "//base",
     "//components/google/core/browser",
     "//components/google/core/browser",

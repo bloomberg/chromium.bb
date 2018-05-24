@@ -48,3 +48,21 @@ imageset("omnibox_voice") {
     "omnibox_voice.imageset/omnibox_voice@3x.png",
   ]
 }
+
+imageset("location_bar_share") {
+  sources = [
+    "location_bar_share.imageset/Contents.json",
+    "location_bar_share.imageset/location_bar_share.png",
+    "location_bar_share.imageset/location_bar_share@2x.png",
+    "location_bar_share.imageset/location_bar_share@3x.png",
+  ]
+}
+
+imageset("location_bar_voice") {
+  sources = [
+    "location_bar_voice.imageset/Contents.json",
+    "location_bar_voice.imageset/location_bar_voice.png",
+    "location_bar_voice.imageset/location_bar_voice@2x.png",
+    "location_bar_voice.imageset/location_bar_voice@3x.png",
+  ]
+}
