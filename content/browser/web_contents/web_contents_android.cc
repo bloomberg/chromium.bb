@@ -82,11 +82,14 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
 
 void SmartClipCallback(const ScopedJavaGlobalRef<jobject>& callback,
                        const base::string16& text,
-                       const base::string16& html) {
+                       const base::string16& html,
+                       const gfx::Rect& clip_rect) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jtext = ConvertUTF16ToJavaString(env, text);
-  ScopedJavaLocalRef<jstring> jhtml = ConvertUTF16ToJavaString(env, html);
-  Java_WebContentsImpl_onSmartClipDataExtracted(env, jtext, jhtml, callback);
+  ScopedJavaLocalRef<jstring> j_text = ConvertUTF16ToJavaString(env, text);
+  ScopedJavaLocalRef<jstring> j_html = ConvertUTF16ToJavaString(env, html);
+  Java_WebContentsImpl_onSmartClipDataExtracted(
+      env, j_text, j_html, clip_rect.x(), clip_rect.y(), clip_rect.right(),
+      clip_rect.bottom(), callback);
 }
 
 ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(

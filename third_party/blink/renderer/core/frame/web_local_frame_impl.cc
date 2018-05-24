@@ -2444,9 +2444,12 @@ static String CreateMarkupInRect(LocalFrame*, const IntPoint&, const IntPoint&);
 
 void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
                                              WebString& clip_text,
-                                             WebString& clip_html) {
+                                             WebString& clip_html,
+                                             WebRect& clip_rect) {
+  // TODO(mahesh.ma): Check clip_data even after use-zoom-for-dsf is enabled.
   SmartClipData clip_data = SmartClip(GetFrame()).DataForRect(rect_in_viewport);
   clip_text = clip_data.ClipData();
+  clip_rect = clip_data.RectInViewport();
 
   WebPoint start_point(rect_in_viewport.x, rect_in_viewport.y);
   WebPoint end_point(rect_in_viewport.x + rect_in_viewport.width,

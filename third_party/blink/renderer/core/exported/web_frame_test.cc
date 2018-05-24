@@ -6005,6 +6005,119 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtentScollsInputField) {
   EXPECT_EQ("Lengthy text goes here.", SelectionAsString(frame));
 }
 
+TEST_F(WebFrameTest, SmartClipData) {
+  static const char kExpectedClipText[] = "\nPrice 10,000,000won";
+  static const char kExpectedClipHtml[] =
+      "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px "
+      "solid skyblue; float: left; width: 190px; height: 30px; "
+      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
+      "font-weight: 400; letter-spacing: "
+      "normal; orphans: 2; text-align: start; "
+      "text-indent: 0px; text-transform: none; white-space: normal; widows: "
+      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Air "
+      "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: 10px; "
+      "border: 2px solid skyblue; float: left; width: 190px; height: 30px; "
+      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
+      "font-weight: 400; letter-spacing: normal; orphans: 2; text-align: "
+      "start; text-indent: 0px; text-transform: none; white-space: normal; "
+      "widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Price "
+      "10,000,000won</div>";
+  WebString clip_text;
+  WebString clip_html;
+  WebRect clip_rect;
+  RegisterMockedHttpURLLoad("Ahem.ttf");
+  RegisterMockedHttpURLLoad("smartclip.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "smartclip.html");
+  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  web_view_helper.Resize(WebSize(500, 500));
+  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  WebRect crop_rect(300, 125, 152, 50);
+  frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
+  EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
+  EXPECT_STREQ(kExpectedClipHtml, clip_html.Utf8().c_str());
+}
+
+TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
+  static const char kExpectedClipText[] = "\nPrice 10,000,000won";
+  static const char kExpectedClipHtml[] =
+      "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px "
+      "solid skyblue; float: left; width: 190px; height: 30px; "
+      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
+      "font-weight: 400; letter-spacing: "
+      "normal; orphans: 2; text-align: start; "
+      "text-indent: 0px; text-transform: none; white-space: normal; widows: "
+      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Air "
+      "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: 10px; "
+      "border: 2px solid skyblue; float: left; width: 190px; height: 30px; "
+      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
+      "font-weight: 400; letter-spacing: normal; orphans: 2; text-align: "
+      "start; text-indent: 0px; text-transform: none; white-space: normal; "
+      "widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-style: initial; text-decoration-color: initial;\">Price "
+      "10,000,000won</div>";
+  WebString clip_text;
+  WebString clip_html;
+  WebRect clip_rect;
+  RegisterMockedHttpURLLoad("Ahem.ttf");
+  RegisterMockedHttpURLLoad("smartclip.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "smartclip.html");
+  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  web_view_helper.Resize(WebSize(500, 500));
+  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  web_view_helper.GetWebView()->SetPageScaleFactor(1.5);
+  web_view_helper.GetWebView()->SetVisualViewportOffset(
+      WebFloatPoint(167, 100));
+  WebRect crop_rect(200, 38, 228, 75);
+  frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
+  EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
+  EXPECT_STREQ(kExpectedClipHtml, clip_html.Utf8().c_str());
+}
+
+TEST_F(WebFrameTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
+  WebString clip_text;
+  WebString clip_html;
+  WebRect clip_rect;
+  RegisterMockedHttpURLLoad("Ahem.ttf");
+  RegisterMockedHttpURLLoad("smartclip_user_select_none.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ +
+                                    "smartclip_user_select_none.html");
+  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  web_view_helper.Resize(WebSize(500, 500));
+  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  WebRect crop_rect(0, 0, 100, 100);
+  frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
+  EXPECT_STREQ("", clip_text.Utf8().c_str());
+  EXPECT_STREQ("", clip_html.Utf8().c_str());
+}
+
+TEST_F(WebFrameTest, SmartClipDoesNotCrashPositionReversed) {
+  WebString clip_text;
+  WebString clip_html;
+  WebRect clip_rect;
+  RegisterMockedHttpURLLoad("Ahem.ttf");
+  RegisterMockedHttpURLLoad("smartclip_reversed_positions.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ +
+                                    "smartclip_reversed_positions.html");
+  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  web_view_helper.Resize(WebSize(500, 500));
+  web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
+  // Left upper corner of the rect will be end position in the DOM hierarchy.
+  WebRect crop_rect(30, 110, 400, 250);
+  // This should not still crash. See crbug.com/589082 for more details.
+  frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
+}
+
 static int ComputeOffset(LayoutObject* layout_object, int x, int y) {
   return layout_object->PositionForPoint(LayoutPoint(x, y))
       .GetPosition()
