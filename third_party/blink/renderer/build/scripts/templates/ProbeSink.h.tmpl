@@ -28,7 +28,7 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
  public:
   enum AgentType : unsigned {
 {% for agent in agents %}
-    k{{agent | agent_name_to_class }} = 1u << {{loop.index0}},
+    k{{agent}} = 1u << {{loop.index0}},
 {% endfor %}
   };
 
@@ -41,11 +41,11 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
-{% set getter_name = class_name | to_lower_case %}
-  bool has{{class_name}}s() const { return !m_{{getter_name}}s.IsEmpty(); }
+{% set getter_name = agent | to_lower_case %}
+  bool has{{agent}}s() const { return !m_{{getter_name}}s.IsEmpty(); }
   const HeapListHashSet<Member<{{class_name}}>>& {{getter_name}}s() const { return m_{{getter_name}}s; }
-  void add{{class_name}}({{class_name}}* agent);
-  void remove{{class_name}}({{class_name}}* agent);
+  void add{{agent}}({{class_name}}* agent);
+  void remove{{agent}}({{class_name}}* agent);
 
 {% endfor %}
   // Queries process-wide. Intended for fast-return cases only.
@@ -56,7 +56,7 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
  private:
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
-{% set getter_name = class_name | to_lower_case %}
+{% set getter_name = agent | to_lower_case %}
   HeapListHashSet<Member<{{class_name}}>> m_{{getter_name}}s;
 {% endfor %}
 
@@ -64,7 +64,7 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
   // |s_existingAgents| up to date.
   // Access must be guarded by AgentCountMutex in the source file.
 {% for agent in agents %}
-  static unsigned s_numSinksWith{{agent | agent_name_to_class}};
+  static unsigned s_numSinksWith{{agent}};
 {% endfor %}
 
   // Bit-set of types of enabled agent which exist in this process.

@@ -40,8 +40,7 @@ FetchContext& FetchContext::NullInstance() {
 }
 
 FetchContext::FetchContext() : platform_probe_sink_(new PlatformProbeSink) {
-  platform_probe_sink_->addPlatformTraceEventsAgent(
-      new PlatformTraceEventsAgent);
+  platform_probe_sink_->addPlatformTraceEvents(new PlatformTraceEventsAgent);
 }
 
 void FetchContext::Trace(blink::Visitor* visitor) {

@@ -56,8 +56,7 @@ def agent_config(config, agent_name, field):
 
 
 def agent_name_to_class(config, agent_name):
-    return agent_config(config, agent_name, "class") or "Inspector%sAgent" % agent_name
-
+    return agent_config(config, agent_name, "class") or agent_name
 
 def agent_name_to_include(config, agent_name):
     include_path = agent_config(config, agent_name, "include_path") or config["settings"]["include_path"]
