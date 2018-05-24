@@ -1602,6 +1602,13 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                  &render_info_);
   ui_->OnProjMatrixChanged(render_info_.left_eye_model.proj_matrix);
 
+  // This may change when the floor height changes so it's computed every frame.
+  gvr::Value floor_height;
+  if (gvr_api_->GetCurrentProperties().Get(GVR_PROPERTY_TRACKING_FLOOR_HEIGHT,
+                                           &floor_height)) {
+    ui_->SetFloorHeight(floor_height.f);
+  }
+
   // Content quad can't have transparency when using the quad layer because we
   // can't blend with the quad layer.
   bool use_quad_layer = ui_->IsContentVisibleAndOpaque();

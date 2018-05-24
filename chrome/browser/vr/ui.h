@@ -159,6 +159,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnContentBoundsChanged(int width, int height);
   void OnPlatformControllerInitialized(PlatformController* controller);
   void OnUiRequestedNavigation();
+  void SetFloorHeight(float floor_height);
 
   Model* model_for_test() { return model_.get(); }
 

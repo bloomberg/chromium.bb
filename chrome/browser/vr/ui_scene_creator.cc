@@ -900,6 +900,9 @@ std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {
   grid->set_gridline_count(kFloorGridlineCount);
   grid->SetGridColor(model->color_scheme().floor_grid);
   grid->set_focusable(false);
+  grid->AddBinding(VR_BIND(
+      float, Model, model, model->floor_height, Grid, grid.get(),
+      view->SetTranslate(0, value ? value : -kSceneHeight / 2.0f, 0.0)));
   return grid;
 }
 
