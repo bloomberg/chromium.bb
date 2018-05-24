@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 
 // This is a helper utility for Bind()ing callbacks to a given TaskRunner.
 // The typical use is when |a| (of class |A|) wants to hand a callback such as
@@ -22,7 +21,7 @@
 // the callback, it does so on a specific TaskRunner (for example, |a|'s current
 // MessageLoop).
 //
-// Typical usage: request to be called back on the current thread:
+// Typical usage: request to be called back on the current sequence:
 // other->StartAsyncProcessAndCallMeBack(
 //    BindToTaskRunner(my_task_runner_, base::Bind(&MyClass::MyMethod, this)));
 //
@@ -31,9 +30,9 @@
 // of its arguments, and thus can't be used with arrays. Note that the callback
 // is always posted to the target TaskRunner.
 //
-// As a convenience, you can use BindToCurrentSequence()/BindToCurrentThread()
-// to bind to the TaskRunner for the current sequence/thread (i.e.
-// base::SequencedTaskRunnerHandle::Get()/base::ThreadTaskRunnerHandle::Get()).
+// As a convenience, you can use BindToCurrentSequence() to bind to the
+// TaskRunner for the current sequence (i.e.
+// base::SequencedTaskRunnerHandle::Get()).
 
 namespace syncer {
 namespace bind_helpers {
@@ -79,17 +78,6 @@ template <typename T>
 base::RepeatingCallback<T> BindToCurrentSequence(
     const base::RepeatingCallback<T>& cb) {
   return BindToTaskRunner(base::SequencedTaskRunnerHandle::Get(), cb);
-}
-
-template <typename T>
-base::OnceCallback<T> BindToCurrentThread(base::OnceCallback<T> cb) {
-  return BindToTaskRunner(base::ThreadTaskRunnerHandle::Get(), std::move(cb));
-}
-
-template <typename T>
-base::RepeatingCallback<T> BindToCurrentThread(
-    const base::RepeatingCallback<T>& cb) {
-  return BindToTaskRunner(base::ThreadTaskRunnerHandle::Get(), cb);
 }
 
 }  // namespace syncer
