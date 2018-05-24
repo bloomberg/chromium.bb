@@ -815,6 +815,9 @@ NET_ERROR(NO_PRIVATE_KEY_FOR_CERT, -502)
 // An error adding a certificate to the OS certificate database.
 NET_ERROR(ADD_USER_CERT_FAILED, -503)
 
+// An error occurred while handling a signed exchange.
+NET_ERROR(INVALID_SIGNED_EXCHANGE, -504)
+
 // *** Code -600 is reserved (was FTP_PASV_COMMAND_FAILED). ***
 
 // A generic error for failed FTP control connection command.
