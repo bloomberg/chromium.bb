@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -27,19 +28,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace chromeos {
 namespace attestation {
-
-namespace {
-
-const int kDialogMaxWidthInPixel = 400;
-
-}  // namespace
 
 // static
 views::Widget* PlatformVerificationDialog::ShowDialog(
@@ -63,7 +59,7 @@ views::Widget* PlatformVerificationDialog::ShowDialog(
           ->enabled_extensions()
           .GetExtensionOrAppByURL(web_contents->GetLastCommittedURL());
 
-  // TODO(xhwang): We should only show the name if the request if from the
+  // TODO(xhwang): We should only show the name if the request is from the
   // extension's true frame. See http://crbug.com/455821
   std::string origin = extension ? extension->name() : requesting_origin.spec();
 
@@ -84,23 +80,30 @@ PlatformVerificationDialog::PlatformVerificationDialog(
     const ConsentCallback& callback)
     : content::WebContentsObserver(web_contents),
       domain_(domain),
-      callback_(callback) {
+      callback_(callback),
+      learn_more_button_(nullptr) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetBorder(views::CreateEmptyBorder(
+      views::LayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::TEXT, views::TEXT)));
 
-  gfx::Insets dialog_insets =
-      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG);
-  SetBorder(views::CreateEmptyBorder(0, dialog_insets.left(), 0,
-                                     dialog_insets.right()));
-  const base::string16 learn_more = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  std::vector<size_t> offsets;
-  base::string16 headline = l10n_util::GetStringFUTF16(
-      IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE, domain_, learn_more, &offsets);
-  views::StyledLabel* headline_label = new views::StyledLabel(headline, this);
-  headline_label->AddStyleRange(
-      gfx::Range(offsets[1], offsets[1] + learn_more.size()),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
-  AddChildView(headline_label);
+  // Explanation string.
+  views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE, domain_));
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(label);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PLATFORM_VERIFICATION);
+}
+
+views::View* PlatformVerificationDialog::CreateExtraView() {
+  learn_more_button_ = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(learn_more_button_,
+                                vector_icons::kHelpOutlineIcon);
+  learn_more_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_CHROMEOS_ACC_LEARN_MORE));
+  learn_more_button_->SetFocusForPlatform();
+  return learn_more_button_;
 }
 
 bool PlatformVerificationDialog::Cancel() {
@@ -141,14 +144,18 @@ ui::ModalType PlatformVerificationDialog::GetModalType() const {
 }
 
 gfx::Size PlatformVerificationDialog::CalculatePreferredSize() const {
-  return gfx::Size(kDialogMaxWidthInPixel,
-                   GetHeightForWidth(kDialogMaxWidthInPixel));
+  const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+  return gfx::Size(
+      default_width,
+      GetLayoutManager()->GetPreferredHeightForWidth(this, default_width));
 }
 
-void PlatformVerificationDialog::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
+void PlatformVerificationDialog::ButtonPressed(views::Button* sender,
+                                               const ui::Event& event) {
+  if (sender != learn_more_button_)
+    return;
+
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   const GURL learn_more_url(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
 
