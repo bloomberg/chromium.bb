@@ -16,6 +16,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/version_info/channel.h"
+#include "content/public/common/content_features.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -59,6 +60,18 @@ constexpr base::TimeDelta kPopupTimeout = base::TimeDelta::FromSeconds(3);
 // Time to wait before showing the popup when the escape key is held.
 constexpr base::TimeDelta kKeyPressPopupDelay = base::TimeDelta::FromSeconds(1);
 
+bool IsExitUiEnabled() {
+#if defined(OS_MACOSX)
+  // Exit UI is unnecessary, since Mac uses the OS fullscreen such that window
+  // menu and controls reveal when the cursor is moved to the top.
+  return false;
+#else
+  return chrome::GetChannel() == version_info::Channel::CANARY ||
+         chrome::GetChannel() == version_info::Channel::DEV ||
+         base::FeatureList::IsEnabled(features::kFullscreenExitUI);
+#endif
+}
+
 }  // namespace
 
 FullscreenControlHost::FullscreenControlHost(
@@ -71,17 +84,13 @@ FullscreenControlHost::~FullscreenControlHost() = default;
 
 // static
 bool FullscreenControlHost::IsFullscreenExitUIEnabled() {
-#if defined(OS_MACOSX)
-  // On Mac we only use FullscreenControlHost as a visual feedback for
-  // press-and-hold ESC to exit fullscreen.
-  // IsExitUiNeeded() will guard that mouse and touch inputs won't trigger the
-  // UI.
-  return true;
-#else
-  return chrome::GetChannel() == version_info::Channel::CANARY ||
-         chrome::GetChannel() == version_info::Channel::DEV ||
-         base::FeatureList::IsEnabled(features::kFullscreenExitUI);
-#endif
+  // FullscreenControlHost provides visual feedback for press-and-hold escape
+  // gesture to exit fullscreen.  If keyboard lock API is enabled, then we want
+  // ensure the control is created and listening to keyboard input.  Otherwise
+  // we will only create the control if we need it for touch/mouse events on
+  // non-MacOS platforms.
+  return base::FeatureList::IsEnabled(features::kKeyboardLockAPI) ||
+         IsExitUiEnabled();
 }
 
 void FullscreenControlHost::OnKeyEvent(ui::KeyEvent* event) {
@@ -135,6 +144,9 @@ void FullscreenControlHost::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
+  if (!IsExitUiEnabled())
+    return;
+
   if (event->type() != ui::ET_MOUSE_MOVED || IsAnimating() ||
       (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
        input_entry_method_ != InputEntryMethod::MOUSE)) {
@@ -175,6 +187,9 @@ void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
+  if (!IsExitUiEnabled())
+    return;
+
   if (event->type() == ui::ET_GESTURE_LONG_PRESS && IsExitUiNeeded() &&
       !IsVisible()) {
     ShowForInputEntryMethod(InputEntryMethod::TOUCH);
@@ -254,14 +269,8 @@ void FullscreenControlHost::OnPopupTimeout(
 }
 
 bool FullscreenControlHost::IsExitUiNeeded() {
-#if defined(OS_MACOSX)
-  // Exit UI is unnecessary, since Mac uses the OS fullscreen such that window
-  // menu and controls reveal when the cursor is moved to the top.
-  return false;
-#else
   return exclusive_access_context_->IsFullscreen() &&
          exclusive_access_context_->ShouldHideUIForFullscreen();
-#endif
 }
 
 float FullscreenControlHost::CalculateCursorBufferHeight() const {
