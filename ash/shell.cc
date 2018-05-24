@@ -729,8 +729,6 @@ Shell::~Shell() {
 
   user_metrics_recorder_->OnShellShuttingDown();
 
-  shell_delegate_->PreShutdown();
-
   cros_display_config_.reset();
   display_configuration_observer_.reset();
   display_prefs_.reset();
@@ -1461,13 +1459,23 @@ void Shell::OnWindowActivated(
     root_window_for_new_windows_ = gained_active->GetRootWindow();
 }
 
+void Shell::OnFirstSessionStarted() {
+  // Enable magnifier scroll keys as there may be no mouse cursor in kiosk mode.
+  MagnifierKeyScroller::SetEnabled(session_controller_->IsRunningInAppMode());
+
+  // Enable long press action to toggle spoken feedback with hotrod remote
+  // which can't handle shortcuts.
+  SpokenFeedbackToggler::SetEnabled(session_controller_->IsRunningInAppMode());
+}
+
 void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   // Initialize the |shelf_window_watcher_| when a session becomes active.
   // Shelf itself is initialized in RootWindowController.
   if (state == session_manager::SessionState::ACTIVE) {
-    if (!shelf_window_watcher_)
+    if (!shelf_window_watcher_) {
       shelf_window_watcher_ =
           std::make_unique<ShelfWindowWatcher>(shelf_model());
+    }
   }
 
   // NOTE: keyboard::IsKeyboardEnabled() is false in mash, but may not be in

@@ -9,12 +9,9 @@
 #include <limits>
 #include <vector>
 
-#include "ash/accelerators/magnifier_key_scroller.h"
-#include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -80,13 +77,6 @@ void InitAfterFirstSessionStart() {
       ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   if (!mru_list.empty())
     mru_list.front()->Focus();
-
-  // Enable magnifier scroll keys as there may be no mouse cursor in kiosk mode.
-  ash::MagnifierKeyScroller::SetEnabled(chrome::IsRunningInForcedAppMode());
-
-  // Enable long press action to toggle spoken feedback with hotrod
-  // remote which can't handle shortcut.
-  ash::SpokenFeedbackToggler::SetEnabled(chrome::IsRunningInForcedAppMode());
 }
 
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
@@ -140,10 +130,6 @@ service_manager::Connector* ChromeShellDelegate::GetShellConnector() const {
   return content::ServiceManagerConnection::GetForProcess()->GetConnector();
 }
 
-bool ChromeShellDelegate::IsRunningInForcedAppMode() const {
-  return chrome::IsRunningInForcedAppMode();
-}
-
 bool ChromeShellDelegate::CanShowWindowForUser(aura::Window* window) const {
   return ::CanShowWindowForUser(window, base::Bind(&GetActiveBrowserContext));
 }
@@ -158,9 +144,6 @@ void ChromeShellDelegate::PreInit() {
   // Shell is constructed but before OnShellInitialized() is called. Depends on
   // CroSettings. TODO(stevenjb): Move to src/ash.
   new policy::DisplayRotationDefaultHandler();
-}
-
-void ChromeShellDelegate::PreShutdown() {
 }
 
 void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
@@ -179,7 +162,8 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
   if (url_to_open.GetContent() == "settings" &&
       (url_to_open.SchemeIs(url::kAboutScheme) ||
        url_to_open.SchemeIs(content::kChromeUIScheme))) {
-    ash::Shell::Get()->system_tray_controller()->ShowSettings();
+    chrome::ShowSettingsSubPageForProfile(
+        ProfileManager::GetActiveUserProfile(), "");
     return;
   }
 

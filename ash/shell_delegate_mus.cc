@@ -51,21 +51,12 @@ service_manager::Connector* ShellDelegateMus::GetShellConnector() const {
   return connector_;
 }
 
-bool ShellDelegateMus::IsRunningInForcedAppMode() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
-}
-
 bool ShellDelegateMus::CanShowWindowForUser(aura::Window* window) const {
   NOTIMPLEMENTED_LOG_ONCE();
   return true;
 }
 
 void ShellDelegateMus::PreInit() {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
-void ShellDelegateMus::PreShutdown() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
