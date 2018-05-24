@@ -9,12 +9,14 @@
 
 namespace blink {
 
-ScriptElementBase* ScriptElementBase::FromElementIfPossible(Element* element) {
+ScriptLoader* ScriptLoaderFromElement(Element* element) {
+  ScriptLoader* script_loader = nullptr;
   if (auto* html_script = ToHTMLScriptElementOrNull(*element))
-    return html_script;
-  if (auto* svg_script = ToSVGScriptElementOrNull(*element))
-    return svg_script;
-  return nullptr;
+    script_loader = html_script->Loader();
+  else if (auto* svg_script = ToSVGScriptElementOrNull(*element))
+    script_loader = svg_script->Loader();
+  DCHECK(script_loader);
+  return script_loader;
 }
 
 ScriptLoader* ScriptElementBase::InitializeScriptLoader(bool parser_inserted,

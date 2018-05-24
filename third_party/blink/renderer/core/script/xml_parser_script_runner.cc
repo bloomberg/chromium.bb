@@ -67,12 +67,7 @@ void XMLParserScriptRunner::ProcessScriptElement(
   DCHECK(element);
   DCHECK(!parser_blocking_script_);
 
-  ScriptElementBase* script_element_base =
-      ScriptElementBase::FromElementIfPossible(element);
-  CHECK(script_element_base);
-
-  ScriptLoader* script_loader = script_element_base->Loader();
-  DCHECK(script_loader);
+  ScriptLoader* script_loader = ScriptLoaderFromElement(element);
 
   // [Parsing] When the element's end tag is subsequently parsed, the user agent
   // must perform a microtask checkpoint, and then prepare the script element.
