@@ -22,8 +22,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
-#include "url/gurl.h"
 #endif  // OS_CHROMEOS
 
 class Browser;
@@ -70,11 +68,6 @@ namespace ui {
 class WebDialogDelegate;
 struct SelectedFileInfo;
 }
-
-namespace views {
-class View;
-class Widget;
-}  // namespace views
 
 namespace chrome {
 
@@ -315,6 +308,7 @@ void ShowChromeCleanerRebootPrompt(
 
 #if defined(OS_CHROMEOS)
 
+// TODO(djacobo): Find a better place for IntentPickerResponse.
 // This callback informs the launch name and type of the app selected by the
 // user, along with the reason why the Bubble was closed and whether the
 // decision should be persisted. When the reason is ERROR or DIALOG_DEACTIVATED,
@@ -325,21 +319,6 @@ using IntentPickerResponse =
                             chromeos::AppType,
                             chromeos::IntentPickerCloseReason,
                             bool should_persist)>;
-
-// TODO(djacobo): Decide whether or not refactor as base::RepeatableCallback.
-// Return a pointer to the IntentPickerBubbleView::ShowBubble method, which in
-// turn receives a View to be used as an anchor, the WebContents associated
-// with the current tab, a list of app candidates to be displayed to the user
-// and a callback to report back the user's response respectively. The newly
-// created widget is returned.
-using BubbleShowPtr =
-    views::Widget* (*)(views::View*,
-                       content::WebContents*,
-                       std::vector<chromeos::IntentPickerAppInfo>,
-                       bool disable_display_in_chrome,
-                       IntentPickerResponse);
-
-BubbleShowPtr ShowIntentPickerBubble();
 
 #endif  // OS_CHROMEOS
 

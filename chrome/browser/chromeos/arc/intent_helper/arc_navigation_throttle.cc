@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -300,8 +300,9 @@ chromeos::PreferredPlatform ArcNavigationThrottle::DidLaunchPreferredArcApp(
     if (!instance) {
       close_reason = chromeos::IntentPickerCloseReason::ERROR;
     } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
-      chrome::SetIntentPickerViewVisibility(
-          chrome::FindBrowserWithWebContents(web_contents()), true);
+      Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+      if (browser)
+        browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
       preferred_platform = chromeos::PreferredPlatform::NATIVE_CHROME;
     } else {
       instance->HandleUrl(url.spec(), package_name);

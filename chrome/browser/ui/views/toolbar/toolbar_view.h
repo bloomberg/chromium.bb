@@ -89,6 +89,7 @@ class ToolbarView : public views::AccessiblePaneView,
 #if defined(OS_CHROMEOS)
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
+      bool disable_stay_in_chrome,
       IntentPickerResponse callback);
 #endif  // defined(OS_CHROMEOS)
 

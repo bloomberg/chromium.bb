@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/browser_commands.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -1230,18 +1232,5 @@ bool CanCreateBookmarkApp(const Browser* browser) {
       ->CanCreateBookmarkApp();
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if defined(OS_CHROMEOS)
-void ShowIntentPickerBubble(const Browser* browser,
-                            std::vector<chromeos::IntentPickerAppInfo> app_info,
-                            IntentPickerResponse callback) {
-  browser->window()->ShowIntentPickerBubble(std::move(app_info),
-                                            std::move(callback));
-}
-
-void SetIntentPickerViewVisibility(Browser* browser, bool visible) {
-  browser->window()->SetIntentPickerViewVisibility(visible);
-}
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace chrome
