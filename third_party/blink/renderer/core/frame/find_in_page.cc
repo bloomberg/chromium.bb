@@ -33,6 +33,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -134,12 +135,19 @@ bool FindInPage::Find(int identifier,
                                  wrap_within_frame, active_now);
 }
 
-void WebLocalFrameImpl::StopFinding(StopFindAction action) {
+void WebLocalFrameImpl::StopFindingForTesting(mojom::StopFindAction action) {
   find_in_page_->StopFinding(action);
 }
 
-void FindInPage::StopFinding(WebLocalFrame::StopFindAction action) {
-  bool clear_selection = action == WebLocalFrame::kStopFindActionClearSelection;
+void FindInPage::StopFinding(mojom::StopFindAction action) {
+  WebPlugin* const plugin = GetWebPluginForFind();
+  if (plugin) {
+    plugin->StopFind();
+    return;
+  }
+
+  const bool clear_selection =
+      action == mojom::StopFindAction::kStopFindActionClearSelection;
   if (clear_selection)
     frame_->ExecuteCommand(WebString::FromUTF8("Unselect"));
 
@@ -149,7 +157,7 @@ void FindInPage::StopFinding(WebLocalFrame::StopFindAction action) {
     GetTextFinder()->StopFindingAndClearSelection();
   }
 
-  if (action == WebLocalFrame::kStopFindActionActivateSelection &&
+  if (action == mojom::StopFindAction::kStopFindActionActivateSelection &&
       frame_->IsFocused()) {
     WebDocument doc = frame_->GetDocument();
     if (!doc.IsNull()) {

@@ -43,8 +43,6 @@ class CORE_EXPORT FindInPage final
             bool wrap_within_frame,
             bool* active_now = nullptr);
 
-  void StopFinding(WebLocalFrame::StopFindAction);
-
   void SetTickmarks(const WebVector<WebRect>&);
 
   int FindMatchMarkersVersion() const;
@@ -58,6 +56,9 @@ class CORE_EXPORT FindInPage final
 
   void ActivateNearestFindResult(const WebFloatPoint&,
                                  ActivateNearestFindResultCallback) final;
+
+  // Stops the current find-in-page, following the given |action|
+  void StopFinding(mojom::StopFindAction action) final;
 
   // Returns the distance (squared) to the closest find-in-page match from the
   // provided point, in find-in-page coordinates.

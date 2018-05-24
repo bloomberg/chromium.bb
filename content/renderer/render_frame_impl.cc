@@ -1751,7 +1751,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
     IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
-    IPC_MESSAGE_HANDLER(FrameMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
@@ -6116,27 +6115,7 @@ void RenderFrameImpl::OnFind(int request_id,
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
-
-// Ensure that content::StopFindAction and blink::WebLocalFrame::StopFindAction
-// are kept in sync.
-STATIC_ASSERT_ENUM(STOP_FIND_ACTION_CLEAR_SELECTION,
-                   WebLocalFrame::kStopFindActionClearSelection);
-STATIC_ASSERT_ENUM(STOP_FIND_ACTION_KEEP_SELECTION,
-                   WebLocalFrame::kStopFindActionKeepSelection);
-STATIC_ASSERT_ENUM(STOP_FIND_ACTION_ACTIVATE_SELECTION,
-                   WebLocalFrame::kStopFindActionActivateSelection);
-
 #undef STATIC_ASSERT_ENUM
-
-void RenderFrameImpl::OnStopFinding(StopFindAction action) {
-  blink::WebPlugin* plugin = GetWebPluginForFind();
-  if (plugin) {
-    plugin->StopFind();
-    return;
-  }
-
-  frame_->StopFinding(static_cast<WebLocalFrame::StopFindAction>(action));
-}
 
 void RenderFrameImpl::OnEnableViewSourceMode() {
   DCHECK(frame_);

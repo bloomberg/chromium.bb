@@ -309,7 +309,8 @@ class CORE_EXPORT WebLocalFrameImpl final
             const WebFindOptions&,
             bool wrap_within_frame,
             bool* active_now = nullptr) override;
-  void StopFinding(StopFindAction) override;
+  void StopFindingForTesting(mojom::StopFindAction) override;
+
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebPlugin* GetWebPluginForFind() override;
   WebNode ContextMenuNode() const override;
