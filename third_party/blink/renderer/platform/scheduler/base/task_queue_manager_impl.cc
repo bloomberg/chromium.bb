@@ -251,12 +251,15 @@ void TaskQueueManagerImpl::MaybeScheduleDelayedWork(
     TimeDomain* requesting_time_domain,
     TimeTicks now,
     TimeTicks run_time) {
-  controller_->ScheduleDelayedWork(now, run_time);
+  // TODO(kraynov): Convert time domains to use LazyNow.
+  LazyNow lazy_now(now);
+  controller_->SetNextDelayedDoWork(&lazy_now, run_time);
 }
 
+// TODO(kraynov): Remove after simplifying TimeDomain.
 void TaskQueueManagerImpl::CancelDelayedWork(TimeDomain* requesting_time_domain,
                                              TimeTicks run_time) {
-  controller_->CancelDelayedWork(run_time);
+  controller_->SetNextDelayedDoWork(nullptr, TimeTicks::Max());
 }
 
 Optional<PendingTask> TaskQueueManagerImpl::TakeTask() {

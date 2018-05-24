@@ -39,8 +39,7 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController,
   void SetWorkBatchSize(int work_batch_size) override;
   void DidQueueTask(const PendingTask& pending_task) override;
   void ScheduleWork() override;
-  void ScheduleDelayedWork(TimeTicks now, TimeTicks run_timy) override;
-  void CancelDelayedWork(TimeTicks run_time) override;
+  void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
   void SetSequencedTaskSource(SequencedTaskSource* sequence) override;
   bool RunsTasksInCurrentSequence() override;
   const TickClock* GetClock() override;

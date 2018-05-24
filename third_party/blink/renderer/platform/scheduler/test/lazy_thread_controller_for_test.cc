@@ -98,16 +98,11 @@ void LazyThreadControllerForTest::ScheduleWork() {
   ThreadControllerImpl::ScheduleWork();
 }
 
-void LazyThreadControllerForTest::ScheduleDelayedWork(
-    base::TimeTicks now,
+void LazyThreadControllerForTest::SetNextDelayedDoWork(
+    base::sequence_manager::LazyNow* lazy_now,
     base::TimeTicks run_time) {
   EnsureMessageLoop();
-  ThreadControllerImpl::ScheduleDelayedWork(now, run_time);
-}
-
-void LazyThreadControllerForTest::CancelDelayedWork(base::TimeTicks run_time) {
-  EnsureMessageLoop();
-  ThreadControllerImpl::CancelDelayedWork(run_time);
+  ThreadControllerImpl::SetNextDelayedDoWork(lazy_now, run_time);
 }
 
 void LazyThreadControllerForTest::SetDefaultTaskRunner(

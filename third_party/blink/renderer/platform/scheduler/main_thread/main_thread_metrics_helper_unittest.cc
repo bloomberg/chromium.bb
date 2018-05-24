@@ -49,6 +49,7 @@ class MainThreadMetricsHelperTest : public testing::Test {
 
   void SetUp() override {
     histogram_tester_.reset(new base::HistogramTester());
+    clock_.Advance(base::TimeDelta::FromMilliseconds(1));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_ = std::make_unique<MainThreadSchedulerImplForTest>(

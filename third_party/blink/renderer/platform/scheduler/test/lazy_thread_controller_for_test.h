@@ -31,9 +31,8 @@ class LazyThreadControllerForTest
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
   bool RunsTasksInCurrentSequence() override;
   void ScheduleWork() override;
-  void ScheduleDelayedWork(base::TimeTicks now,
-                           base::TimeTicks run_time) override;
-  void CancelDelayedWork(base::TimeTicks run_time) override;
+  void SetNextDelayedDoWork(base::sequence_manager::LazyNow* lazy_now,
+                            base::TimeTicks run_time) override;
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;

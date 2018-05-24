@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace base {
 class TickClock;
@@ -46,21 +47,12 @@ class PLATFORM_EXPORT ThreadController {
   // code is changed to work that way.
   virtual void ScheduleWork() = 0;
 
-  // Notify the controller that its associated sequence will have
-  // delayed work to run at |run_time|. The thread associated with this
-  // controller will run a task returned by sequence->TakeTask() at that time.
-  // This call cancels any previously scheduled delayed work. Will be called
-  // from the main sequence.
-  //
-  // TODO(altimin): Change this to "the thread associated with this
-  // controller will run tasks returned by sequence->TakeTask() until
-  // it returns null or sequence->DidRunTask() returns false" once the
-  // code is changed to work that way.
-  virtual void ScheduleDelayedWork(TimeTicks now, TimeTicks run_time) = 0;
-
-  // Notify thread controller that sequence no longer has delayed work at
-  // |run_time| and previously scheduled callbacks should be cancelled.
-  virtual void CancelDelayedWork(TimeTicks run_time) = 0;
+  // Notify the controller that SequencedTaskSource will have a delayed work
+  // ready to be run at |run_time|. This call cancels any previously
+  // scheduled delayed work. Can only be called from the main sequence.
+  // NOTE: DelayTillNextTask might return a different value as it also takes
+  // immediate work into account.
+  virtual void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) = 0;
 
   // Sets the sequenced task source from which to take tasks after
   // a Schedule*Work() call is made.
