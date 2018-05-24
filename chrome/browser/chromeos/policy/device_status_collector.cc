@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -54,6 +55,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -1487,6 +1489,16 @@ bool DeviceStatusCollector::GetSessionStatusForUser(
     anything_reported_user |= GetAndroidStatus(status, state);
   if (anything_reported_user && !user->IsDeviceLocalAccount())
     status->set_user_dm_token(GetDMTokenForProfile(profile));
+
+  // Time zone is not reported in enterprise reports.
+  if (!is_enterprise_reporting_) {
+    const std::string current_timezone =
+        base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
+                              ->GetCurrentTimezoneID());
+    status->set_time_zone(current_timezone);
+    anything_reported_user = true;
+  }
+
   return anything_reported_user;
 }
 
