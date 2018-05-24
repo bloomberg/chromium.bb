@@ -32,6 +32,13 @@ PYTHON_EXTENSIONS = frozenset(['.py'])
 CPP_EXTENSIONS = frozenset(['.cc', '.cpp', '.h'])
 
 
+# These are split into two groups so that we can apply the general shell
+# linter to all shell-like files while still keeping slightly separate rules for
+# ebuild files.
+GENTOO_SHELL_EXTENSIONS = frozenset(['.ebuild', '.eclass', '.bashrc'])
+SHELL_EXTENSIONS = frozenset({'.sh'} | GENTOO_SHELL_EXTENSIONS)
+
+
 def _GetProjectPath(path):
   """Find the absolute path of the git checkout that contains |path|."""
   if git.FindRepoCheckoutRoot(path):
@@ -177,6 +184,9 @@ def _BreakoutFilesByLinter(files):
     elif extension in CPP_EXTENSIONS:
       cpplint_list = map_to_return.setdefault(_CpplintFile, [])
       cpplint_list.append(f)
+    elif extension in SHELL_EXTENSIONS:
+      shlint_list = map_to_return.setdefault(_ShellFile, [])
+      shlint_list.append(f)
     elif os.path.isfile(f):
       _BreakoutDataByLinter(map_to_return, f)
 
