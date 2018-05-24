@@ -13,6 +13,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/mac/keychain.h"
 #include "device/fido/mac/util.h"
 
@@ -59,7 +60,7 @@ void MakeCredentialOperation::Run() {
 
   // Prompt the user for consent.
   // TODO(martinkr): Localize reason strings.
-  PromptTouchId("register with " + request().rp().rp_id());
+  PromptTouchId("register with " + RpId());
 }
 
 void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
@@ -101,8 +102,8 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
   }
 
   // Delete the key pair for this RP + user handle if one already exists.
-  const std::vector<uint8_t> keychain_item_id = KeychainItemIdentifier(
-      request().rp().rp_id(), request().user().user_id());
+  const std::vector<uint8_t> keychain_item_id =
+      KeychainItemIdentifier(RpId(), request().user().user_id());
   {
     ScopedCFTypeRef<CFMutableDictionaryRef> query = DefaultKeychainQuery();
     CFDictionarySetValue(query, kSecAttrApplicationLabel,
@@ -160,8 +161,8 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
 
   // Create attestation object. There is no separate attestation key pair, so
   // we perform self-attestation.
-  base::Optional<AuthenticatorData> authenticator_data = MakeAuthenticatorData(
-      request().client_data_hash(), keychain_item_id, public_key);
+  base::Optional<AuthenticatorData> authenticator_data =
+      MakeAuthenticatorData(RpId(), keychain_item_id, public_key);
   if (!authenticator_data) {
     DLOG(ERROR) << "MakeAuthenticatorData failed";
     std::move(callback())

@@ -41,7 +41,7 @@ const std::string& GetAssertionOperation::RpId() const {
 void GetAssertionOperation::Run() {
   // Prompt the user for consent.
   // TODO(martinkr): Localize reason strings.
-  PromptTouchId("sign in to " + request().rp_id());
+  PromptTouchId("sign in to " + RpId());
 }
 
 void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
@@ -130,8 +130,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
     return;
   }
 
-  base::Optional<AuthenticatorData> authenticator_data = MakeAuthenticatorData(
-      request().client_data_hash(), std::move(credential_id), public_key);
+  base::Optional<AuthenticatorData> authenticator_data =
+      MakeAuthenticatorData(RpId(), std::move(credential_id), public_key);
   if (!authenticator_data) {
     DLOG(ERROR) << "MakeAuthenticatorData failed";
     std::move(callback())

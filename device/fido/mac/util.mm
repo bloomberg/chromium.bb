@@ -83,7 +83,7 @@ std::vector<uint8_t> KeychainItemIdentifier(std::string rp_id,
 }
 
 base::Optional<AuthenticatorData> MakeAuthenticatorData(
-    std::vector<uint8_t> client_data_hash,
+    const std::string& rp_id,
     std::vector<uint8_t> credential_id,
     SecKeyRef public_key) API_AVAILABLE(macosx(10.12.2)) {
   if (credential_id.size() > 255) {
@@ -103,7 +103,7 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
     return base::nullopt;
   }
   return AuthenticatorData(
-      std::move(client_data_hash), flags, counter,
+      fido_parsing_utils::CreateSHA256Hash(rp_id), flags, counter,
       AttestedCredentialData(kAaguid, encoded_credential_id_length,
                              std::move(credential_id),
                              std::move(ec_public_key)));
