@@ -400,14 +400,13 @@ std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
   client_data.SetKey(kChallengeKey, base::Value(Base64UrlEncode(challenge)));
   client_data.SetKey(kOriginKey, base::Value(origin.Serialize()));
 
-  base::DictionaryValue token_binding_dict;
-  static constexpr char kTokenBindingStatusKey[] = "status";
-  static constexpr char kTokenBindingIdKey[] = "id";
-  static constexpr char kTokenBindingSupportedStatus[] = "supported";
-  static constexpr char kTokenBindingNotSupportedStatus[] = "not-supported";
-  static constexpr char kTokenBindingPresentStatus[] = "present";
-
   if (token_binding) {
+    base::DictionaryValue token_binding_dict;
+    static constexpr char kTokenBindingStatusKey[] = "status";
+    static constexpr char kTokenBindingIdKey[] = "id";
+    static constexpr char kTokenBindingSupportedStatus[] = "supported";
+    static constexpr char kTokenBindingPresentStatus[] = "present";
+
     if (token_binding->empty()) {
       token_binding_dict.SetKey(kTokenBindingStatusKey,
                                 base::Value(kTokenBindingSupportedStatus));
@@ -417,12 +416,9 @@ std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
       token_binding_dict.SetKey(kTokenBindingIdKey,
                                 base::Value(Base64UrlEncode(*token_binding)));
     }
-  } else {
-    token_binding_dict.SetKey(kTokenBindingStatusKey,
-                              base::Value(kTokenBindingNotSupportedStatus));
-  }
 
-  client_data.SetKey(kTokenBindingKey, std::move(token_binding_dict));
+    client_data.SetKey(kTokenBindingKey, std::move(token_binding_dict));
+  }
 
   if (base::RandDouble() < 0.2) {
     // An extra key is sometimes added to ensure that RPs do not make
