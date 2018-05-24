@@ -10,7 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
 #include "pdf/pdf.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"

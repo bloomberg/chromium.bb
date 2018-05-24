@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PRINTING_SERVICE_PDF_COMPOSITOR_SERVICE_H_
-#define COMPONENTS_PRINTING_SERVICE_PDF_COMPOSITOR_SERVICE_H_
+#ifndef COMPONENTS_SERVICES_PDF_COMPOSITOR_PDF_COMPOSITOR_SERVICE_H_
+#define COMPONENTS_SERVICES_PDF_COMPOSITOR_PDF_COMPOSITOR_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
-#include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -52,4 +52,4 @@ class PdfCompositorService : public service_manager::Service {
 
 }  // namespace printing
 
-#endif  // COMPONENTS_PRINTING_SERVICE_PDF_COMPOSITOR_SERVICE_H_
+#endif  // COMPONENTS_SERVICES_PDF_COMPOSITOR_PDF_COMPOSITOR_SERVICE_H_

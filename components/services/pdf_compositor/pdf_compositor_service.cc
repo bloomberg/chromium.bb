@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/printing/service/pdf_compositor_service.h"
+#include "components/services/pdf_compositor/pdf_compositor_service.h"
 
 #include <utility>
 
@@ -11,8 +11,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/discardable_memory.h"
 #include "build/build_config.h"
-#include "components/printing/service/pdf_compositor_impl.h"
-#include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/pdf_compositor_impl.h"
+#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

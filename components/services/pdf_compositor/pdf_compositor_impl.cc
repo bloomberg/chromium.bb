@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/printing/service/pdf_compositor_impl.h"
+#include "components/services/pdf_compositor/pdf_compositor_impl.h"
 
 #include <algorithm>
 #include <tuple>
@@ -12,8 +12,8 @@
 #include "base/memory/shared_memory_handle.h"
 #include "base/stl_util.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
-#include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/pdf_metafile_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"

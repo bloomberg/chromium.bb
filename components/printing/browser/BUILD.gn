@@ -21,7 +21,7 @@ static_library("browser") {
   deps = [
     "//base",
     "//components/printing/common",
-    "//components/printing/service/public/interfaces",
+    "//components/services/pdf_compositor/public/interfaces",
     "//printing",
     "//printing/common:common",
     "//services/service_manager/public/cpp",

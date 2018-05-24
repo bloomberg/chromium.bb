@@ -10,8 +10,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
-#include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
-#include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
+#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "printing/common/pdf_metafile_utils.h"

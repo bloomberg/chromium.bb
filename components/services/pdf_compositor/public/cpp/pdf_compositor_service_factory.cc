@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_compositor_service_factory.h"
 
 #include "build/build_config.h"
-#include "components/printing/service/pdf_compositor_service.h"
+#include "components/services/pdf_compositor/pdf_compositor_service.h"
 #include "content/public/utility/utility_thread.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"

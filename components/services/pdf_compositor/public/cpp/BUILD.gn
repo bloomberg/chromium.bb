@@ -11,13 +11,13 @@ source_set("factory") {
   ]
 
   deps = [
-    "//components/printing/service/",
+    "//components/services/pdf_compositor/",
     "//content/public/common",
     "//content/public/utility",
   ]
 
   public_deps = [
-    "//components/printing/service/public/interfaces",
+    "//components/services/pdf_compositor/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
 }

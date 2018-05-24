@@ -1,4 +1,4 @@
 include_rules = [
-  "+components/printing/service/",
+  "+components/services/pdf_compositor/",
   "+content/public/utility",
 ]
