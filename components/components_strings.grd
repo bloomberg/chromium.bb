@@ -204,7 +204,7 @@
       <part file="payments_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />
-      <part file="printing_strings.grdp" />
+      <part file="printing_component_strings.grdp" />
       <part file="reset_password_strings.grdp" />
       <part file="safe_browsing_strings.grdp" />
       <part file="security_interstitials_strings.grdp" />
