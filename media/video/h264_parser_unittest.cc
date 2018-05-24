@@ -10,7 +10,9 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "media/base/subsample_entry.h"
 #include "media/base/test_data_util.h"
 #include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -165,6 +167,111 @@ TEST(H264ParserTest, ParseNALUsFromStreamFile) {
   std::vector<H264NALU> nalus;
   ASSERT_TRUE(H264Parser::ParseNALUs(stream.data(), stream.length(), &nalus));
   ASSERT_EQ(num_nalus, nalus.size());
+}
+
+// Verify that GetCurrentSubsamples works.
+TEST(H264ParserTest, GetCurrentSubsamplesNormal) {
+  const uint8_t kStream[] = {
+      // First NALU.
+      // Clear bytes = 4.
+      0x00, 0x00, 0x01,  // start code.
+      0x65,              // Nalu type = 5, IDR slice.
+      // Below is bogus data.
+      // Encrypted bytes = 15.
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03,
+      0x04, 0x05, 0x06,
+      // Clear bytes = 5.
+      0x07, 0x00, 0x01, 0x02, 0x03,
+      // Encrypted until next NALU. Encrypted bytes = 20.
+      0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+      // Note that this is still in the encrypted region but looks like a start
+      // code.
+      0x00, 0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07,
+      // Second NALU. Completely clear.
+      // Clear bytes = 10.
+      0x00, 0x00, 0x01,  // start code.
+      0x06,              // nalu type = 6, SEI.
+      // Bogus data.
+      0xff, 0xfe, 0xfd, 0xee, 0x12, 0x33,
+  };
+  std::vector<SubsampleEntry> subsamples;
+  subsamples.emplace_back(4u, 15u);
+  subsamples.emplace_back(5u, 20u);
+  subsamples.emplace_back(10u, 0u);
+  H264Parser parser;
+  parser.SetEncryptedStream(kStream, base::size(kStream), subsamples);
+
+  H264NALU nalu;
+  ASSERT_EQ(H264Parser::kOk, parser.AdvanceToNextNALU(&nalu));
+  auto nalu_subsamples = parser.GetCurrentSubsamples();
+  ASSERT_EQ(2u, nalu_subsamples.size());
+
+  // Note that nalu->data starts from the NALU header, i.e. does not include
+  // the start code.
+  EXPECT_EQ(1u, nalu_subsamples[0].clear_bytes);
+  EXPECT_EQ(15u, nalu_subsamples[0].cypher_bytes);
+  EXPECT_EQ(5u, nalu_subsamples[1].clear_bytes);
+  EXPECT_EQ(20u, nalu_subsamples[1].cypher_bytes);
+
+  // Make sure that it reached the next NALU.
+  EXPECT_EQ(H264Parser::kOk, parser.AdvanceToNextNALU(&nalu));
+  nalu_subsamples = parser.GetCurrentSubsamples();
+  ASSERT_EQ(1u, nalu_subsamples.size());
+
+  EXPECT_EQ(7u, nalu_subsamples[0].clear_bytes);
+  EXPECT_EQ(0u, nalu_subsamples[0].cypher_bytes);
+}
+
+// Verify that subsamples starting at non-NALU boundary also works.
+TEST(H264ParserTest, GetCurrentSubsamplesSubsampleNotStartingAtNaluBoundary) {
+  const uint8_t kStream[] = {
+      // First NALU.
+      // Clear bytes = 4.
+      0x00, 0x00, 0x01,  // start code.
+      0x65,              // Nalu type = 5, IDR slice.
+      // Below is bogus data.
+      // Encrypted bytes = 24.
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03,
+      0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+      // Clear bytes = 18. The rest is in the clear. Note that this is not at
+      // a NALU boundary and a NALU starts below.
+      0xaa, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+      // Second NALU. Completely clear.
+      0x00, 0x00, 0x01,  // start code.
+      0x06,              // nalu type = 6, SEI.
+      // Bogus data.
+      0xff, 0xfe, 0xfd, 0xee, 0x12, 0x33,
+  };
+
+  std::vector<SubsampleEntry> subsamples;
+  subsamples.emplace_back(4u, 24u);
+  subsamples.emplace_back(18, 0);
+  H264Parser parser;
+  parser.SetEncryptedStream(kStream, base::size(kStream), subsamples);
+
+  H264NALU nalu;
+  ASSERT_EQ(H264Parser::kOk, parser.AdvanceToNextNALU(&nalu));
+  auto nalu_subsamples = parser.GetCurrentSubsamples();
+  ASSERT_EQ(2u, nalu_subsamples.size());
+
+  // Note that nalu->data starts from the NALU header, i.e. does not include
+  // the start code.
+  EXPECT_EQ(1u, nalu_subsamples[0].clear_bytes);
+  EXPECT_EQ(24u, nalu_subsamples[0].cypher_bytes);
+
+  // The nalu ends with 8 more clear bytes. The last 10 bytes should be
+  // associated with the next nalu.
+  EXPECT_EQ(8u, nalu_subsamples[1].clear_bytes);
+  EXPECT_EQ(0u, nalu_subsamples[1].cypher_bytes);
+
+  ASSERT_EQ(H264Parser::kOk, parser.AdvanceToNextNALU(&nalu));
+  nalu_subsamples = parser.GetCurrentSubsamples();
+  ASSERT_EQ(1u, nalu_subsamples.size());
+
+  // Although the input had 10 more bytes, since nalu->data starts from the nalu
+  // header, there's only 7 more bytes left.
+  EXPECT_EQ(7u, nalu_subsamples[0].clear_bytes);
+  EXPECT_EQ(0u, nalu_subsamples[0].cypher_bytes);
 }
 
 }  // namespace media
