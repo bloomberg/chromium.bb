@@ -75,11 +75,11 @@ MultiplexedChannelImpl::~MultiplexedChannelImpl() {
   authenticated_channel_->RemoveObserver(this);
 }
 
-bool MultiplexedChannelImpl::IsDisconnecting() {
+bool MultiplexedChannelImpl::IsDisconnecting() const {
   return is_disconnecting_;
 }
 
-bool MultiplexedChannelImpl::IsDisconnected() {
+bool MultiplexedChannelImpl::IsDisconnected() const {
   return is_disconnected_;
 }
 

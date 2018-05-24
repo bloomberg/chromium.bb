@@ -10,10 +10,15 @@ namespace secure_channel {
 
 FakeMultiplexedChannel::FakeMultiplexedChannel(
     Delegate* delegate,
-    ConnectionDetails connection_details)
-    : MultiplexedChannel(delegate, connection_details) {}
+    ConnectionDetails connection_details,
+    base::OnceCallback<void(const ConnectionDetails&)> destructor_callback)
+    : MultiplexedChannel(delegate, connection_details),
+      destructor_callback_(std::move(destructor_callback)) {}
 
-FakeMultiplexedChannel::~FakeMultiplexedChannel() = default;
+FakeMultiplexedChannel::~FakeMultiplexedChannel() {
+  if (destructor_callback_)
+    std::move(destructor_callback_).Run(connection_details());
+}
 
 void FakeMultiplexedChannel::SetDisconnecting() {
   DCHECK(!is_disconnected_);
@@ -27,11 +32,11 @@ void FakeMultiplexedChannel::SetDisconnected() {
   is_disconnected_ = true;
 }
 
-bool FakeMultiplexedChannel::IsDisconnecting() {
+bool FakeMultiplexedChannel::IsDisconnecting() const {
   return is_disconnecting_;
 }
 
-bool FakeMultiplexedChannel::IsDisconnected() {
+bool FakeMultiplexedChannel::IsDisconnected() const {
   return is_disconnected_;
 }
 

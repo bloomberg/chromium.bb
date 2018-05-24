@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
@@ -21,8 +22,11 @@ namespace secure_channel {
 // Test MultiplexedChannel implementation.
 class FakeMultiplexedChannel : public MultiplexedChannel {
  public:
-  FakeMultiplexedChannel(Delegate* delegate,
-                         ConnectionDetails connection_details);
+  FakeMultiplexedChannel(
+      Delegate* delegate,
+      ConnectionDetails connection_details,
+      base::OnceCallback<void(const ConnectionDetails&)> destructor_callback =
+          base::OnceCallback<void(const ConnectionDetails&)>());
   ~FakeMultiplexedChannel() override;
 
   std::vector<ClientConnectionParameters>& added_clients() {
@@ -37,8 +41,8 @@ class FakeMultiplexedChannel : public MultiplexedChannel {
 
  private:
   // MultiplexedChannel:
-  bool IsDisconnecting() override;
-  bool IsDisconnected() override;
+  bool IsDisconnecting() const override;
+  bool IsDisconnected() const override;
   void PerformAddClientToChannel(
       ClientConnectionParameters client_connection_parameters) override;
 
@@ -46,6 +50,8 @@ class FakeMultiplexedChannel : public MultiplexedChannel {
   bool is_disconnected_ = false;
 
   std::vector<ClientConnectionParameters> added_clients_;
+
+  base::OnceCallback<void(const ConnectionDetails&)> destructor_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiplexedChannel);
 };
