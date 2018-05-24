@@ -482,6 +482,14 @@ TEST_F(BitmapImageTest, APNGDecoder18) {
   VerifyBitmap(actual_bitmap, expected_bitmap);
 }
 
+TEST_F(BitmapImageTest, APNGDecoder19) {
+  LoadImage("/images/resources/apng19.png");
+  auto actual_bitmap = GenerateBitmap(12u);
+  auto expected_bitmap =
+      GenerateBitmapForImage("/images/resources/apng19-ref.png");
+  VerifyBitmap(actual_bitmap, expected_bitmap);
+}
+
 TEST_F(BitmapImageTest, APNGDecoderDisposePrevious) {
   LoadImage("/images/resources/crbug722072.png");
   auto actual_bitmap = GenerateBitmap(3u);

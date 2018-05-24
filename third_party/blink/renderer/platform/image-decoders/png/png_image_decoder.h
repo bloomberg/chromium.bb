@@ -77,6 +77,7 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
   int repetition_count_;
   bool has_alpha_channel_;
   bool current_buffer_saw_alpha_;
+  std::unique_ptr<ImageFrame::PixelData[]> color_transform_scanline_;
 };
 
 }  // namespace blink
