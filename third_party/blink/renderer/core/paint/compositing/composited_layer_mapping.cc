@@ -554,24 +554,12 @@ GraphicsLayer* CompositedLayerMapping::FrameContentsGraphicsLayer() const {
 
 void CompositedLayerMapping::UpdateAfterPartResize() {
   if (GetLayoutObject().IsLayoutEmbeddedContent()) {
-    FloatPoint parent_posn = child_containment_layer_
-                                 ? child_containment_layer_->GetPosition()
-                                 : FloatPoint();
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      if (GraphicsLayer* document_layer = FrameContentsGraphicsLayer()) {
-        document_layer->SetPosition(FlooredIntPoint(
-            FloatPoint(ContentsBox().Location()) - parent_posn));
-      }
-    } else if (PaintLayerCompositor* inner_compositor =
-                   PaintLayerCompositor::FrameContentsCompositor(
-                       ToLayoutEmbeddedContent(GetLayoutObject()))) {
-      inner_compositor->FrameViewDidChangeSize();
-      FloatSize offset = FloatPoint(ContentsBox().Location()) - parent_posn;
-      // Assert our frameviews are always aligned to pixel boundaries.
-      DCHECK(offset.Width() == floor(offset.Width()) &&
-             offset.Height() == floor(offset.Height()));
-      inner_compositor->FrameViewDidChangeLocation(
-          IntPoint(floor(offset.Width()), floor(offset.Height())));
+    if (GraphicsLayer* document_layer = FrameContentsGraphicsLayer()) {
+      FloatPoint parent_position = child_containment_layer_
+                                       ? child_containment_layer_->GetPosition()
+                                       : FloatPoint();
+      document_layer->SetPosition(FlooredIntPoint(
+          FloatPoint(ContentsBox().Location()) - parent_position));
     }
   }
 }
@@ -1281,7 +1269,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   // the <iframe> element in the parent frame's DOM.
   bool is_iframe_doc = GetLayoutObject().IsLayoutView() &&
                        !GetLayoutObject().GetFrame()->IsLocalRoot();
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() || !is_iframe_doc) {
+  if (!is_iframe_doc) {
     graphics_layer_->SetPosition(
         FloatPoint(relative_compositing_bounds.Location() -
                    graphics_layer_parent_location));
@@ -1313,12 +1301,8 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
         IntPoint(compositing_container->GetCompositedLayerMapping()
                      ->ParentForSublayers()
                      ->OffsetFromLayoutObject());
-  } else if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    graphics_layer_parent_location =
-        GetLayoutObject().View()->DocumentRect().Location();
   } else if (!GetLayoutObject().GetFrame()->IsLocalRoot()) {  // TODO(oopif)
-    DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-           !compositing_container);
+    DCHECK(!compositing_container);
     graphics_layer_parent_location = IntPoint();
   }
 
@@ -2569,19 +2553,12 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
 
   scrolling_coordinator->UpdateLayerPositionConstraint(&owning_layer_);
 
-  // In non-RLS mode, the fixed container will actually be the special viewport
-  // scrolling layers, higher up in the hierarchy, above the LayoutView "root
-  // layer". So avoid marking the LayoutView's layer a container in that case.
-  // The layout viewport scrolling layer will be correctly marked as such by
-  // PaintLayerCompositor.
-  bool is_container =
-      owning_layer_.GetLayoutObject().CanContainFixedPositionObjects() &&
-      (!owning_layer_.IsRootLayer() ||
-       RuntimeEnabledFeatures::RootLayerScrollingEnabled());
+  bool is_fixed_container =
+      owning_layer_.GetLayoutObject().CanContainFixedPositionObjects();
   bool resized_by_url_bar =
       owning_layer_.GetLayoutObject().IsLayoutView() &&
       owning_layer_.Compositor()->IsRootScrollerAncestor();
-  graphics_layer_->SetIsContainerForFixedPositionLayers(is_container);
+  graphics_layer_->SetIsContainerForFixedPositionLayers(is_fixed_container);
   graphics_layer_->SetIsResizedByBrowserControls(resized_by_url_bar);
   // Fixed-pos descendants inherits the space that has all CSS property applied,
   // including perspective, overflow scroll/clip. Thus we also mark every layers
@@ -2589,8 +2566,8 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
   // skipped.
   ApplyToGraphicsLayers(
       this,
-      [is_container, resized_by_url_bar](GraphicsLayer* layer) {
-        layer->SetIsContainerForFixedPositionLayers(is_container);
+      [is_fixed_container, resized_by_url_bar](GraphicsLayer* layer) {
+        layer->SetIsContainerForFixedPositionLayers(is_fixed_container);
         layer->SetIsResizedByBrowserControls(resized_by_url_bar);
         if (resized_by_url_bar)
           layer->SetMasksToBounds(false);
@@ -3259,9 +3236,7 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     anchor_layout_object = &owning_layer_.GetLayoutObject();
     IntSize offset = graphics_layer->OffsetFromLayoutObject();
     should_apply_anchor_overflow_clip =
-        AdjustForCompositedScrolling(graphics_layer, offset) &&
-        (RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
-         !owning_layer_.IsRootLayer());
+        AdjustForCompositedScrolling(graphics_layer, offset);
     offset_from_anchor_layout_object = FloatSize(offset);
   }
 
@@ -3287,16 +3262,14 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   anchor_layout_object->MapToVisualRectInAncestorSpace(
       root_view, graphics_layer_bounds_in_root_view_space, kUseGeometryMapper);
 
-  // In RLS, the root_view is scrolled. However, MapToVisualRectInAncestorSpace
-  // doesn't account for this scroll, since it earlies out as soon as we reach
-  // this ancestor. That is, it only maps to the space of the root_view, not
-  // accounting for the fact that the root_view itself can be scrolled. If the
-  // root_view is our anchor_layout_object, then this extra offset is counted in
-  // offset_from_anchor_layout_object. In other cases, we need to account for it
-  // here. Otherwise, the paint clip below might clip the whole (visible) rect
-  // out.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      root_view != anchor_layout_object) {
+  // MapToVisualRectInAncestorSpace doesn't account for the root scroll because
+  // it earlies out as soon as we reach this ancestor. That is, it only maps to
+  // the space of the root_view, not accounting for the fact that the root_view
+  // itself can be scrolled. If the root_view is our anchor_layout_object, then
+  // this extra offset is counted in offset_from_anchor_layout_object. In other
+  // cases, we need to account for it here. Otherwise, the paint clip below
+  // might clip the whole (visible) rect out.
+  if (root_view != anchor_layout_object) {
     if (auto* scrollable_area = root_view->GetScrollableArea()) {
       graphics_layer_bounds_in_root_view_space.MoveBy(
           -scrollable_area->VisibleContentRect().Location());
