@@ -16,13 +16,13 @@ namespace resource_coordinator {
 // Base class for a LifecycleUnit.
 class LifecycleUnitBase : public LifecycleUnit {
  public:
-  LifecycleUnitBase();
+  explicit LifecycleUnitBase(content::Visibility visibility);
   ~LifecycleUnitBase() override;
 
   // LifecycleUnit:
   int32_t GetID() const override;
+  base::TimeTicks GetLastVisibleTime() const override;
   LifecycleState GetState() const override;
-  base::TimeTicks GetLastVisibilityChangeTime() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
 
@@ -47,7 +47,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   // Current state of this LifecycleUnit.
   LifecycleState state_ = LifecycleState::ACTIVE;
 
-  base::TimeTicks last_visibility_change_time_;
+  base::TimeTicks last_visible_time_;
 
   base::ObserverList<LifecycleUnitObserver> observers_;
 

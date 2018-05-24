@@ -9,8 +9,10 @@
 
 namespace resource_coordinator {
 
-LifecycleUnitBase::LifecycleUnitBase()
-    : last_visibility_change_time_(NowTicks()) {}
+LifecycleUnitBase::LifecycleUnitBase(content::Visibility visibility)
+    : last_visible_time_(visibility == content::Visibility::VISIBLE
+                             ? base::TimeTicks::Max()
+                             : base::TimeTicks()) {}
 
 LifecycleUnitBase::~LifecycleUnitBase() = default;
 
@@ -22,8 +24,8 @@ LifecycleState LifecycleUnitBase::GetState() const {
   return state_;
 }
 
-base::TimeTicks LifecycleUnitBase::GetLastVisibilityChangeTime() const {
-  return last_visibility_change_time_;
+base::TimeTicks LifecycleUnitBase::GetLastVisibleTime() const {
+  return last_visible_time_;
 }
 
 void LifecycleUnitBase::AddObserver(LifecycleUnitObserver* observer) {
@@ -45,7 +47,11 @@ void LifecycleUnitBase::SetState(LifecycleState state) {
 
 void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
     content::Visibility visibility) {
-  last_visibility_change_time_ = NowTicks();
+  if (visibility == content::Visibility::VISIBLE)
+    last_visible_time_ = base::TimeTicks::Max();
+  else if (last_visible_time_.is_max())
+    last_visible_time_ = NowTicks();
+
   for (auto& observer : observers_)
     observer.OnLifecycleUnitVisibilityChanged(this, visibility);
 }

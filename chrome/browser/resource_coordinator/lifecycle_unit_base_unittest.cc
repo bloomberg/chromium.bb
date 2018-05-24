@@ -35,7 +35,7 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
   using LifecycleUnitBase::SetState;
   using LifecycleUnitBase::OnLifecycleUnitVisibilityChanged;
 
-  DummyLifecycleUnit() = default;
+  DummyLifecycleUnit() : LifecycleUnitBase(content::Visibility::VISIBLE) {}
   ~DummyLifecycleUnit() override { OnLifecycleUnitDestroyed(); }
 
   // LifecycleUnit:
@@ -112,8 +112,7 @@ TEST(LifecycleUnitBaseTest, DestroyNotifiesObservers) {
 }
 
 // Verify that observers are notified when the visibility of the LifecyleUnit
-// changes. Verify that when visibility changes |last_visibility_change_time_|
-// is updated with the time of the change.
+// changes. Verify that GetLastVisibleTime() is updated properly.
 TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_(&test_clock_);
@@ -122,37 +121,35 @@ TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
   lifecycle_unit.AddObserver(&observer);
 
   // Observer is notified when the visibility changes.
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
+  base::TimeTicks last_visible_time = NowTicks();
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
                             &lifecycle_unit, content::Visibility::HIDDEN))
-      .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit,
-                                    content::Visibility visibility) {
-        EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
-      }));
-
-  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
+      .WillOnce(testing::Invoke(
+          [&](LifecycleUnit* lifecycle_unit, content::Visibility visibility) {
+            EXPECT_EQ(last_visible_time, lifecycle_unit->GetLastVisibleTime());
+          }));
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::HIDDEN);
   testing::Mock::VerifyAndClear(&observer);
 
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
                             &lifecycle_unit, content::Visibility::OCCLUDED))
-      .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit,
-                                    content::Visibility visibility) {
-        EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
-      }));
-
-  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
+      .WillOnce(testing::Invoke(
+          [&](LifecycleUnit* lifecycle_unit, content::Visibility visibility) {
+            EXPECT_EQ(last_visible_time, lifecycle_unit->GetLastVisibleTime());
+          }));
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(
       content::Visibility::OCCLUDED);
   testing::Mock::VerifyAndClear(&observer);
 
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
                             &lifecycle_unit, content::Visibility::VISIBLE))
-      .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit,
-                                    content::Visibility visibility) {
-        EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
-      }));
-
-  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
+      .WillOnce(testing::Invoke(
+          [&](LifecycleUnit* lifecycle_unit, content::Visibility visibility) {
+            EXPECT_TRUE(lifecycle_unit->GetLastVisibleTime().is_max());
+          }));
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::VISIBLE);
   testing::Mock::VerifyAndClear(&observer);
 

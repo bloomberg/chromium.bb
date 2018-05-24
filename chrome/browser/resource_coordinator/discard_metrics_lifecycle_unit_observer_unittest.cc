@@ -33,7 +33,7 @@ class DummyLifecycleUnit : public LifecycleUnitBase {
  public:
   using LifecycleUnitBase::SetState;
 
-  DummyLifecycleUnit() = default;
+  DummyLifecycleUnit() : LifecycleUnitBase(content::Visibility::VISIBLE) {}
   ~DummyLifecycleUnit() override { OnLifecycleUnitDestroyed(); }
 
   void SetLastFocusedTime(base::TimeTicks last_focused_time) {

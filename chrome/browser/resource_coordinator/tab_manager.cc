@@ -915,7 +915,7 @@ base::TimeDelta TabManager::GetTimeInBackgroundBeforeProactiveDiscard() const {
 
 LifecycleUnit* TabManager::GetNextDiscardableLifecycleUnit() const {
   LifecycleUnit* next_to_discard = nullptr;
-  base::TimeTicks earliest_backgrounded_time = base::TimeTicks::Max();
+  base::TimeTicks earliest_last_visible_time = base::TimeTicks::Max();
 
   // TODO(fdoray), TODO(varunmohan) : switch this to use
   // GetSortedLifecycleUnits(). Eventually, there will be some more advanced
@@ -924,21 +924,16 @@ LifecycleUnit* TabManager::GetNextDiscardableLifecycleUnit() const {
   // choosing which LifecycleUnit to discard based on the longest duration a
   // LifecycleUnit was backgrounded.
   for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    // LifecycleUnits that aren't hidden cannot be discarded at this time.
-    if (lifecycle_unit->GetVisibility() != content::Visibility::HIDDEN)
-      continue;
-
     // Ignore LifecycleUnits that cannot be discarded.
     if (!lifecycle_unit->CanDiscard(DiscardReason::kProactive))
       continue;
 
-    base::TimeTicks time_backgrounded =
-        lifecycle_unit->GetLastVisibilityChangeTime();
+    base::TimeTicks last_visible_time = lifecycle_unit->GetLastVisibleTime();
 
-    // This LifecycleUnit was backgrounded earlier than the current earliest
+    // This LifecycleUnit was last visible earlier than the current earliest
     // LifecycleUnit, so it will be discarded earlier.
-    if (time_backgrounded < earliest_backgrounded_time) {
-      earliest_backgrounded_time = time_backgrounded;
+    if (last_visible_time < earliest_last_visible_time) {
+      earliest_last_visible_time = last_visible_time;
       next_to_discard = lifecycle_unit;
     }
   }
@@ -963,21 +958,19 @@ void TabManager::UpdateProactiveDiscardTimerIfNecessary() {
   if (num_loaded_lifecycle_units_ == 0)
     return;
 
-  base::TimeDelta time_until_discard =
-      GetTimeInBackgroundBeforeProactiveDiscard();
-
   LifecycleUnit* next_to_discard = GetNextDiscardableLifecycleUnit();
 
   // There were no discardable LifecycleUnits. No timer is necessary.
   if (!next_to_discard)
     return;
 
-  // Get the time |next_to_discard| was backgrounded and subtract it from
-  // |time_until_discard| to get the exact time until the next LifecycleUnit
-  // should be discarded.
+  // Get the time |next_to_discard| was last visible and subtract it from the
+  // time that a LifecycleUnit can be in the background before being discarded
+  // to get the exact time until the next LifecycleUnit should be discarded.
   base::TimeDelta time_backgrounded =
-      NowTicks() - next_to_discard->GetLastVisibilityChangeTime();
-  time_until_discard -= time_backgrounded;
+      NowTicks() - next_to_discard->GetLastVisibleTime();
+  base::TimeDelta time_until_discard =
+      GetTimeInBackgroundBeforeProactiveDiscard() - time_backgrounded;
 
   // Ensure |time_until_discard| is a non-negative base::TimeDelta.
   time_until_discard = std::max(base::TimeDelta(), time_until_discard);
