@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [483, 8, 85, 41],
+          "rect": [483, 8, 85, 40],
           "reason": "chunk appeared"
         }
       ]

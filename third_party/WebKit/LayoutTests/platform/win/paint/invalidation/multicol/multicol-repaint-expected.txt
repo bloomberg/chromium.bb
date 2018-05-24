@@ -19,22 +19,22 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'XXXXXX'",
-          "rect": [209, 15, 325, 150],
+          "rect": [234, 15, 300, 50],
           "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [9, 0, 200, 68],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox '\u00A0'",
-          "rect": [9, 0, 200, 68],
-          "reason": "disappeared"
         },
         {
           "object": "InlineTextBox 'x'",
-          "rect": [209, 15, 75, 150],
+          "rect": [234, 15, 50, 50],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [9, 10, 13, 58],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [9, 10, 13, 58],
           "reason": "disappeared"
         }
       ]
@@ -66,22 +66,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox '\u00A0'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBR BR",
       "reason": "geometry"
     },
@@ -96,22 +80,6 @@
     {
       "object": "InlineFlowBox",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN id='a'",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
-    },
-    {
-      "object": "InlineTextBox 'XXXXXX'",
-      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",

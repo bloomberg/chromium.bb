@@ -18,34 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnSet (anonymous)",
-          "rect": [8, 8, 630, 20],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [488, 8, 150, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [328, 8, 150, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [168, 8, 150, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [8, 8, 150, 20],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [488, 8, 80, 20],
-          "reason": "appeared"
+          "rect": [483, 8, 85, 40],
+          "reason": "chunk appeared"
         }
       ]
     }
@@ -106,6 +81,22 @@
     {
       "object": "InlineTextBox '\n'",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'PASS'",
+      "reason": "appeared"
     },
     {
       "object": "LayoutText #text",

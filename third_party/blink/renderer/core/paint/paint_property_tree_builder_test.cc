@@ -3674,6 +3674,19 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnWithOutline) {
   EXPECT_FALSE(target2->FirstFragment().NextFragment());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SpanFragmentsLimitedToSize) {
+  SetBodyInnerHTML(R"HTML(
+    <div style='columns: 10; height: 100px; width: 5000px'>
+      <div style='width: 50px; height: 5000px'>
+        <span id=target>Text</span>
+      </div>
+    </div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(1u, NumFragments(target));
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetUnderMulticolumnScrollFixedPos) {
   SetBodyInnerHTML(R"HTML(
