@@ -140,6 +140,7 @@ class MODULES_EXPORT EventSource final
 
   unsigned long long reconnect_delay_;
   String event_stream_origin_;
+  unsigned long resource_identifier_ = 0;
 };
 
 }  // namespace blink
