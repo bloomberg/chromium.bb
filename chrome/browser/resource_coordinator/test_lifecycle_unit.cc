@@ -54,6 +54,10 @@ bool TestLifecycleUnit::CanPurge() const {
   return false;
 }
 
+bool TestLifecycleUnit::CanFreeze() const {
+  return false;
+}
+
 bool TestLifecycleUnit::CanDiscard(DiscardReason reason) const {
   return can_discard_;
 }

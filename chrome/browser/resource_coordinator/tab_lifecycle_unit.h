@@ -86,6 +86,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool Freeze() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanPurge() const override;
+  bool CanFreeze() const override;
   bool CanDiscard(DiscardReason reason) const override;
   bool Discard(DiscardReason discard_reason) override;
 
