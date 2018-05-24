@@ -115,7 +115,6 @@ config("runtime_library") {
   # caution.
   cflags_cc = []
   if (!use_custom_libcxx) {
-    cflags_cc = []
     if (android_ndk_major_version >= 13) {
       libcxx_include_path =
           rebase_path("$android_libcpp_root/include", root_build_dir)
