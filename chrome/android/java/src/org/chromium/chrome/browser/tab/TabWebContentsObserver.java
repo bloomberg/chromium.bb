@@ -16,10 +16,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -202,9 +200,6 @@ public class TabWebContentsObserver extends WebContentsObserver {
             recordErrorInPolicyAuditor(url, errorDescription, errorCode);
         }
 
-        boolean isTrackedPage = hasCommitted && isInMainFrame && !isErrorPage && !isSameDocument
-                && !isFragmentNavigation && UrlUtilities.isHttpOrHttps(url);
-        UmaUtils.registerFinishNavigation(isTrackedPage);
         if (!hasCommitted) return;
 
         if (isInMainFrame) {

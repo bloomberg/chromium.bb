@@ -70,9 +70,6 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
-import org.chromium.chrome.browser.metrics.PageLoadMetrics;
-import org.chromium.chrome.browser.metrics.StartupPageLoadMetricsObserver;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -216,7 +213,6 @@ public class Tab
     // Content layer Observers and Delegates
     private TabWebContentsObserver mWebContentsObserver;
     private TabWebContentsDelegateAndroid mWebContentsDelegate;
-    private StartupPageLoadMetricsObserver mStartupPageLoadMetricsObserver;
 
     /**
      * If this tab was opened from another tab, store the id of the tab that
@@ -1839,10 +1835,6 @@ public class Tab
             updateInteractableState();
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
             mWebContentsObserver = new TabWebContentsObserver(mWebContents, this);
-            if (UmaUtils.isRunningApplicationStart()) {
-                mStartupPageLoadMetricsObserver = new StartupPageLoadMetricsObserver();
-                PageLoadMetrics.addObserver(mStartupPageLoadMetricsObserver);
-            }
 
             mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
 
@@ -2475,11 +2467,6 @@ public class Tab
         if (mWebContentsObserver != null) {
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
-        }
-
-        if (mStartupPageLoadMetricsObserver != null) {
-            PageLoadMetrics.removeObserver(mStartupPageLoadMetricsObserver);
-            mStartupPageLoadMetricsObserver = null;
         }
 
         assert mNativeTabAndroid != 0;

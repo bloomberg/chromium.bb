@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 
+import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -29,6 +31,9 @@ public class WebApkActivity extends WebappActivity {
     private long mStartTime;
 
     private static final String TAG = "cr_WebApkActivity";
+
+    @VisibleForTesting
+    public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";
 
     /**
      * Tries extracting the WebAPK short name from the passed in intent. Returns null if the intent
@@ -121,5 +126,15 @@ public class WebApkActivity extends WebappActivity {
             mUpdateManager.destroy();
         }
         super.onDestroyInternal();
+    }
+
+    @Override
+    public void preInflationStartup() {
+        // Decide whether to record startup UMA histograms. This is a similar check to the one done
+        // in ChromeTabbedActivity.preInflationStartup refer to the comment there for why.
+        if (!LibraryLoader.isInitialized()) {
+            getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
+        }
+        super.preInflationStartup();
     }
 }

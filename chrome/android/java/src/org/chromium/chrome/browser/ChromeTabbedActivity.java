@@ -85,7 +85,6 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MainIntentBehaviorMetrics;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
@@ -218,6 +217,9 @@ public class ChromeTabbedActivity
     public static final String LAST_BACKGROUNDED_TIME_MS_PREF =
             "ChromeTabbedActivity.BackgroundTimeMs";
     private static final String NTP_LAUNCH_DELAY_IN_MINS_PARAM = "delay_in_mins";
+
+    @VisibleForTesting
+    public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".Tabbed";
 
     /** The task id of the activity that tabs were merged into. */
     private static int sMergedInstanceTaskId;
@@ -1371,7 +1373,7 @@ public class ChromeTabbedActivity
         // that uninitialized native library is an indication of an application start that is
         // followed by navigation immediately without user input.
         if (!LibraryLoader.isInitialized()) {
-            UmaUtils.setRunningApplicationStart(true);
+            getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
         }
 
         CommandLine commandLine = CommandLine.getInstance();
@@ -1473,19 +1475,6 @@ public class ChromeTabbedActivity
         });
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
-            private boolean mIsFirstPageLoadStart = true;
-
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                // Discard startup navigation measurements when the user interfered and started the
-                // 2nd navigation (in activity lifetime) in parallel.
-                if (!mIsFirstPageLoadStart) {
-                    UmaUtils.setRunningApplicationStart(false);
-                } else {
-                    mIsFirstPageLoadStart = false;
-                }
-            }
-
             @Override
             public void onPageLoadFinished(final Tab tab) {
                 mAppIndexingUtil.extractCopylessPasteMetadata(tab);
