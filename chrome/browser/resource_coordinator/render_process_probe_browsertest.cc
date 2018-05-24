@@ -24,11 +24,11 @@
 
 namespace resource_coordinator {
 
-class TestingRenderProcessProbe : public RenderProcessProbe {
+class TestingRenderProcessProbe : public RenderProcessProbeImpl {
  public:
   // Make these types public for testing.
-  using RenderProcessProbe::RenderProcessInfo;
-  using RenderProcessProbe::RenderProcessInfoMap;
+  using RenderProcessProbeImpl::RenderProcessInfo;
+  using RenderProcessProbeImpl::RenderProcessInfoMap;
 
   TestingRenderProcessProbe() = default;
   ~TestingRenderProcessProbe() override = default;
@@ -41,7 +41,7 @@ class TestingRenderProcessProbe : public RenderProcessProbe {
   }
 
   void FinishCollectionOnUIThread(bool restart_cycle) override {
-    RenderProcessProbe::FinishCollectionOnUIThread(restart_cycle);
+    RenderProcessProbeImpl::FinishCollectionOnUIThread(restart_cycle);
 
     current_run_loop_->QuitWhenIdle();
   }

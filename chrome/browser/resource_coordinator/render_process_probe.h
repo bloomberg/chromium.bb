@@ -24,6 +24,7 @@ namespace resource_coordinator {
 // Currently this is only supported for Chrome Metrics experiments.
 // The measurements are initiated from the UI thread, while acquiring and
 // dispatching the measurements is done on the IO thread.
+// This interface is broken out for testing.
 class RenderProcessProbe {
  public:
   // Returns the current |RenderProcessProbe| instance
@@ -32,14 +33,23 @@ class RenderProcessProbe {
 
   static bool IsEnabled();
 
+  virtual ~RenderProcessProbe() = default;
+
   // Starts the automatic, timed process metrics collection cycle.
   // Can only be invoked from the UI thread.
-  void StartGatherCycle();
+  virtual void StartGatherCycle() = 0;
 
   // Starts a single immediate collection cycle, if a cycle is not already
   // in progress. If the timed gather cycle is running, this will preempt the
   // next cycle and reset the metronome.
-  void StartSingleGather();
+  virtual void StartSingleGather() = 0;
+};
+
+class RenderProcessProbeImpl : public RenderProcessProbe {
+ public:
+  void StartGatherCycle() override;
+
+  void StartSingleGather() override;
 
  protected:
   static constexpr base::TimeDelta kUninitializedCPUTime =
@@ -56,10 +66,10 @@ class RenderProcessProbe {
   };
   using RenderProcessInfoMap = std::map<int, RenderProcessInfo>;
 
-  friend class base::NoDestructor<RenderProcessProbe>;
+  friend class base::NoDestructor<RenderProcessProbeImpl>;
 
-  RenderProcessProbe();
-  virtual ~RenderProcessProbe();
+  RenderProcessProbeImpl();
+  ~RenderProcessProbeImpl() override;
 
   // (1) Identify all of the render processes that are active to measure.
   // Child render processes can only be discovered in the browser's UI thread.
@@ -110,7 +120,7 @@ class RenderProcessProbe {
   // Used to signal the end of a CPU measurement cycle to the RC.
   std::unique_ptr<SystemResourceCoordinator> system_resource_coordinator_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderProcessProbe);
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessProbeImpl);
 };
 
 }  // namespace resource_coordinator

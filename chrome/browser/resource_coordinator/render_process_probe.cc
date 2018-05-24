@@ -28,22 +28,11 @@ constexpr base::TimeDelta kDefaultMeasurementInterval =
 
 }  // namespace
 
-constexpr base::TimeDelta RenderProcessProbe::kUninitializedCPUTime;
-
-RenderProcessProbe::RenderProcessInfo::RenderProcessInfo() = default;
-
-RenderProcessProbe::RenderProcessInfo::~RenderProcessInfo() = default;
-
-RenderProcessProbe::RenderProcessProbe()
-    : interval_(kDefaultMeasurementInterval) {
-  UpdateWithFieldTrialParams();
-}
-
-RenderProcessProbe::~RenderProcessProbe() = default;
+constexpr base::TimeDelta RenderProcessProbeImpl::kUninitializedCPUTime;
 
 // static
 RenderProcessProbe* RenderProcessProbe::GetInstance() {
-  static base::NoDestructor<RenderProcessProbe> probe;
+  static base::NoDestructor<RenderProcessProbeImpl> probe;
   return probe.get();
 }
 
@@ -56,11 +45,22 @@ bool RenderProcessProbe::IsEnabled() {
          base::FeatureList::IsEnabled(features::kGRCRenderProcessCPUProfiling);
 }
 
-void RenderProcessProbe::StartGatherCycle() {
+RenderProcessProbeImpl::RenderProcessInfo::RenderProcessInfo() = default;
+
+RenderProcessProbeImpl::RenderProcessInfo::~RenderProcessInfo() = default;
+
+RenderProcessProbeImpl::RenderProcessProbeImpl()
+    : interval_(kDefaultMeasurementInterval) {
+  UpdateWithFieldTrialParams();
+}
+
+RenderProcessProbeImpl::~RenderProcessProbeImpl() = default;
+
+void RenderProcessProbeImpl::StartGatherCycle() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(siggi): It irks me to have this bit of policy embedded here.
   //     I feel this should be moved to the caller...
-  if (!RenderProcessProbe::IsEnabled()) {
+  if (!RenderProcessProbeImpl::IsEnabled()) {
     return;
   }
 
@@ -68,12 +68,13 @@ void RenderProcessProbe::StartGatherCycle() {
 
   is_gather_cycle_started_ = true;
   if (!is_gathering_) {
-    timer_.Start(FROM_HERE, base::TimeDelta(), this,
-                 &RenderProcessProbe::RegisterAliveRenderProcessesOnUIThread);
+    timer_.Start(
+        FROM_HERE, base::TimeDelta(), this,
+        &RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread);
   }
 }
 
-void RenderProcessProbe::StartSingleGather() {
+void RenderProcessProbeImpl::StartSingleGather() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (is_gathering_)
@@ -82,10 +83,10 @@ void RenderProcessProbe::StartSingleGather() {
   // If the gather cycle is started this measurement will go through early,
   // and the interval between measurements will be shortened.
   timer_.Start(FROM_HERE, base::TimeDelta(), this,
-               &RenderProcessProbe::RegisterAliveRenderProcessesOnUIThread);
+               &RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread);
 }
 
-void RenderProcessProbe::RegisterAliveRenderProcessesOnUIThread() {
+void RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!is_gathering_);
 
@@ -125,12 +126,12 @@ void RenderProcessProbe::RegisterAliveRenderProcessesOnUIThread() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          &RenderProcessProbe::
+          &RenderProcessProbeImpl::
               CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread,
           base::Unretained(this)));
 }
 
-void RenderProcessProbe::
+void RenderProcessProbeImpl::
     CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(is_gathering_);
@@ -140,7 +141,7 @@ void RenderProcessProbe::
   // Dispatch the memory collection request.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump(base::BindRepeating(
-          &RenderProcessProbe::ProcessGlobalMemoryDumpAndDispatchOnIOThread,
+          &RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread,
           base::Unretained(this), collection_start_time));
 
   RenderProcessInfoMap::iterator iter = render_process_info_map_.begin();
@@ -160,7 +161,7 @@ void RenderProcessProbe::
   }
 }
 
-void RenderProcessProbe::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
+void RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
     base::TimeTicks collection_start_time,
     bool global_success,
     std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
@@ -218,24 +219,25 @@ void RenderProcessProbe::ProcessGlobalMemoryDumpAndDispatchOnIOThread(
   bool should_restart = DispatchMetrics(std::move(batch));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&RenderProcessProbe::FinishCollectionOnUIThread,
+      base::BindOnce(&RenderProcessProbeImpl::FinishCollectionOnUIThread,
                      base::Unretained(this), should_restart));
 }
 
-void RenderProcessProbe::FinishCollectionOnUIThread(bool restart_cycle) {
+void RenderProcessProbeImpl::FinishCollectionOnUIThread(bool restart_cycle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(is_gathering_);
   is_gathering_ = false;
 
   if (restart_cycle && is_gather_cycle_started_) {
-    timer_.Start(FROM_HERE, interval_, this,
-                 &RenderProcessProbe::RegisterAliveRenderProcessesOnUIThread);
+    timer_.Start(
+        FROM_HERE, interval_, this,
+        &RenderProcessProbeImpl::RegisterAliveRenderProcessesOnUIThread);
   } else {
     is_gather_cycle_started_ = false;
   }
 }
 
-void RenderProcessProbe::UpdateWithFieldTrialParams() {
+void RenderProcessProbeImpl::UpdateWithFieldTrialParams() {
   int64_t interval_ms = GetGRCRenderProcessCPUProfilingIntervalInMs();
 
   if (interval_ms > 0) {
@@ -244,7 +246,7 @@ void RenderProcessProbe::UpdateWithFieldTrialParams() {
 }
 
 SystemResourceCoordinator*
-RenderProcessProbe::EnsureSystemResourceCoordinator() {
+RenderProcessProbeImpl::EnsureSystemResourceCoordinator() {
   if (!system_resource_coordinator_) {
     content::ServiceManagerConnection* connection =
         content::ServiceManagerConnection::GetForProcess();
@@ -257,7 +259,7 @@ RenderProcessProbe::EnsureSystemResourceCoordinator() {
   return system_resource_coordinator_.get();
 }
 
-bool RenderProcessProbe::DispatchMetrics(
+bool RenderProcessProbeImpl::DispatchMetrics(
     mojom::ProcessResourceMeasurementBatchPtr batch) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   SystemResourceCoordinator* system_resource_coordinator =
