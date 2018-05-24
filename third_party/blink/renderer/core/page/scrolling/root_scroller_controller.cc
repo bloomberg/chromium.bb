@@ -85,10 +85,6 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
     if (!frame_view)
       return nullptr;
 
-    // Not supported with RLS turned off.
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-      return nullptr;
-
     return ToPaintLayerScrollableArea(
         frame_view->LayoutViewportScrollableArea());
   }
