@@ -428,24 +428,6 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   bubble_status_ = SHOWN_PENDING_ICON_UPDATE;
 }
 
-void ManagePasswordsUIController::UpdatePassword(
-    const autofill::PasswordForm& password_form) {
-  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, GetState());
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.PasswordUpdatedWithManualFallback",
-                        BubbleIsManualFallbackForSaving());
-  if (GetPasswordFormMetricsRecorder() && BubbleIsManualFallbackForSaving()) {
-    GetPasswordFormMetricsRecorder()->RecordDetailedUserAction(
-        password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
-            kTriggeredManualFallbackForUpdating);
-  }
-
-  save_fallback_timer_.Stop();
-  UpdatePasswordInternal(password_form);
-  ClearPopUpFlagForBubble();
-  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
-  UpdateBubbleAndIconVisibility();
-}
-
 void ManagePasswordsUIController::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {
@@ -531,13 +513,6 @@ void ManagePasswordsUIController::SavePasswordInternal() {
   }
 
   form_manager->Save();
-}
-
-void ManagePasswordsUIController::UpdatePasswordInternal(
-    const autofill::PasswordForm& password_form) {
-  password_manager::PasswordFormManagerForUI* form_manager =
-      passwords_data_.form_manager();
-  form_manager->Update(password_form);
 }
 
 void ManagePasswordsUIController::NeverSavePasswordInternal() {

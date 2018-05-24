@@ -2424,6 +2424,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="User.Action.TriggeredManualFallbackForUpdating">
+    <obsolete>
+      Deprecated. Use TriggeredManualFallbackForSaving instead.
+    </obsolete>
     <summary>
       Counts how many times the user triggered the manual fallback for password
       updating. This is only populated if events happened.

@@ -358,7 +358,9 @@ void BubbleObserver::AcceptSavePrompt() const {
 void BubbleObserver::AcceptUpdatePrompt(
     const autofill::PasswordForm& form) const {
   ASSERT_TRUE(IsUpdatePromptAvailable());
-  passwords_ui_controller_->UpdatePassword(form);
+  passwords_ui_controller_->SavePassword(
+      passwords_ui_controller_->GetPendingPassword().username_value,
+      passwords_ui_controller_->GetPendingPassword().password_value);
   EXPECT_FALSE(IsUpdatePromptAvailable());
 }
 
