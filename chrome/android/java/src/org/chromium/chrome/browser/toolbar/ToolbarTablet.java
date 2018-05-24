@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarTablet;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -432,6 +433,9 @@ public class ToolbarTablet
 
     @Override
     public void updateButtonVisibility() {
+        if (FeatureUtilities.isNewTabPageButtonEnabled()) {
+            mHomeButton.setVisibility(mVisibleNtp != null ? GONE : VISIBLE);
+        }
         mLocationBar.updateButtonVisibility();
     }
 

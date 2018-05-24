@@ -996,7 +996,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab == null) return;
         String homePageUrl = HomepageManager.getHomepageUri();
-        if (TextUtils.isEmpty(homePageUrl)) {
+        if (TextUtils.isEmpty(homePageUrl) || FeatureUtilities.isNewTabPageButtonEnabled()) {
             homePageUrl = UrlConstants.NTP_URL;
         }
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
