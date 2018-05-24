@@ -390,7 +390,7 @@ void IDBTransaction::OnResultReady() {
 }
 
 void IDBTransaction::OnAbort(DOMException* error) {
-  IDB_TRACE("IDBTransaction::onAbort");
+  IDB_TRACE1("IDBTransaction::onAbort", "txn.id", id_);
   if (!GetExecutionContext()) {
     Finished();
     return;
@@ -418,7 +418,7 @@ void IDBTransaction::OnAbort(DOMException* error) {
 }
 
 void IDBTransaction::OnComplete() {
-  IDB_TRACE("IDBTransaction::onComplete");
+  IDB_TRACE1("IDBTransaction::onComplete", "txn.id", id_);
   if (!GetExecutionContext()) {
     Finished();
     return;
@@ -508,7 +508,7 @@ const char* IDBTransaction::InactiveErrorMessage() const {
 }
 
 DispatchEventResult IDBTransaction::DispatchEventInternal(Event* event) {
-  IDB_TRACE("IDBTransaction::dispatchEvent");
+  IDB_TRACE1("IDBTransaction::dispatchEvent", "txn.id", id_);
   if (!GetExecutionContext()) {
     state_ = kFinished;
     return DispatchEventResult::kCanceledBeforeDispatch;
