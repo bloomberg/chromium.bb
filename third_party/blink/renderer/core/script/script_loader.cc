@@ -792,12 +792,6 @@ bool ScriptLoader::IsScriptForEventSupported() const {
          DeprecatedEqualIgnoringCase(event_attribute, "onload()");
 }
 
-PendingScript* ScriptLoader::GetPendingScriptIfControlledByScriptRunner() {
-  DCHECK(pending_script_);
-  DCHECK(pending_script_->IsControlledByScriptRunner());
-  return pending_script_;
-}
-
 PendingScript*
 ScriptLoader::GetPendingScriptIfControlledByScriptRunnerForCrossDocMove() {
   DCHECK(!pending_script_ || pending_script_->IsControlledByScriptRunner());
