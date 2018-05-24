@@ -16,8 +16,8 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -735,9 +735,9 @@ class ProfileSyncService : public syncer::SyncService,
   // other threads.
   std::unique_ptr<syncer::SyncEngine> engine_;
 
-  // Used to ensure that certain operations are performed on the thread that
+  // Used to ensure that certain operations are performed on the sequence that
   // this object was created on.
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
   // Cache of the last SyncCycleSnapshot received from the sync engine.
