@@ -345,6 +345,13 @@ EOF
 
 sub ppc() {
   determine_indirection("c", @ALL_ARCHS);
+
+  # Assign the helper variable for each enabled extension
+  foreach my $opt (@ALL_ARCHS) {
+    my $opt_uc = uc $opt;
+    eval "\$have_${opt}=\"flags & HAS_${opt_uc}\"";
+  }
+
   common_top;
 
   print <<EOF;
