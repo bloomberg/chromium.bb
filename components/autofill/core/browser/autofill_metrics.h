@@ -496,6 +496,16 @@ class AutofillMetrics {
     FORM_EVENT_SUBMIT_WITHOUT_SELECTING_SUGGESTIONS_WRONG_SIZE_CARD,
     FORM_EVENT_SUBMIT_WITHOUT_SELECTING_SUGGESTIONS_FAIL_LUHN_CHECK_CARD,
 
+    // The form was changed dynamically.
+    FORM_EVENT_DID_SEE_DYNAMIC_FORM,
+    // The form was changed dynamically and was fillable.
+    FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM,
+    // There was a dynamic change of the form and it got re-filled
+    // automatically.
+    FORM_EVENT_DID_DYNAMIC_REFILL,
+    // The form dynamically changed another time after the refill.
+    FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL,
+
     NUM_FORM_EVENTS,
   };
 
@@ -1037,6 +1047,14 @@ class AutofillMetrics {
                          const CardNumberStatus card_number_status);
 
     void SetBankNameAvailable();
+
+    void OnDidSeeDynamicForm();
+
+    void OnDidSeeFillableDynamicForm();
+
+    void OnDidRefill();
+
+    void OnSubsequentRefillAttempt();
 
    private:
     void Log(FormEvent event) const;
