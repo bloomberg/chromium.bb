@@ -256,6 +256,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->use_fast_coef_updates = ONE_LOOP_REDUCED;
     sf->use_fast_coef_costing = 1;
     sf->partition_search_breakout_rate_thr = 300;
+    sf->use_transform_domain_distortion = 2;
   }
 
   if (speed >= 6) {
@@ -581,6 +582,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
 
 #if CONFIG_DIST_8X8
-  if (sf->use_transform_domain_distortion) cpi->oxcf.using_dist_8x8 = 0;
+  if (sf->use_transform_domain_distortion > 0) cpi->oxcf.using_dist_8x8 = 0;
 #endif  // CONFIG_DIST_8X8
 }

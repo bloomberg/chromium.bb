@@ -558,6 +558,10 @@ typedef struct SPEED_FEATURES {
 
   // Whether to compute distortion in the image domain (slower but
   // more accurate), or in the transform domain (faster but less acurate).
+  // 0: use image domain
+  // 1: use transform domain in tx_type search, and use image domain for
+  // RD_STATS
+  // 2: use transform domain
   int use_transform_domain_distortion;
 
   GM_SEARCH_TYPE gm_search_type;
