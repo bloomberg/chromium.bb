@@ -47,9 +47,10 @@ class ScriptResource;
 
 class Modulator;
 
-class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
-                                 public PendingScriptClient,
-                                 public TraceWrapperBase {
+class CORE_EXPORT ScriptLoader final
+    : public GarbageCollectedFinalized<ScriptLoader>,
+      public PendingScriptClient,
+      public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
  public:
@@ -106,12 +107,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   void HandleAsyncAttribute();
 
   void SetFetchDocWrittenScriptDeferIdle();
-
-  // Only makes sense for scripts controlled by ScriptRunner.
-  // To support script streaming, the ScriptRunner
-  // may need to access the PendingScript. This breaks the intended layering, so
-  // please use with care. (Method is virtual to support testing.)
-  virtual PendingScript* GetPendingScriptIfControlledByScriptRunner();
 
   // Return non-null if controlled by ScriptRunner, or null otherwise.
   // Only for ScriptRunner::MovePendingScript() and should be removed once
