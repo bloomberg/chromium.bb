@@ -19,11 +19,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
-  },
 
-  listeners: {
-    // This is necessary since the settingsLink element is inserted by i18nRaw.
-    'settingsLink.tap': 'onGoToSettings_'
+    /** @private */
+    accountImageSrc_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('accountPictureUrl');
+      },
+    },
   },
 
   /** @private {?sync.confirmation.SyncConfirmationBrowserProxy} */
