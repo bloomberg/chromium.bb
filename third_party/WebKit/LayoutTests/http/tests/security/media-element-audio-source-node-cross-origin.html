@@ -17,7 +17,7 @@
       var data;
 
       function checkResult (e) {
-        data = e.renderedBuffer.getChannelData(0);
+        data = e.getChannelData(0);
         var count = 0;
 
         // Count the number of non-zero values. Since this is a cross-origin source, all the values

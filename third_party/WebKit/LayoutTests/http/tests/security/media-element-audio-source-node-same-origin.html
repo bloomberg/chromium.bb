@@ -17,7 +17,7 @@
       var data;
 
       function checkResult (e) {
-        data = e.renderedBuffer.getChannelData(0);
+        data = e.getChannelData(0);
         var count = 0;
         for (var k = 0; k < data.length; ++k) {
             if (data[k] != 0) {
