@@ -54,3 +54,7 @@
 
 # Flaky, https://crbug.com/811881
 -AddressSpaceRandomizationTest.RandomBitCorrelations*
+
+# Frequently times out, https://crbug.com/836785
+-PipelineIntegrationTest.TrackStatusChangesWhileSuspended
+
