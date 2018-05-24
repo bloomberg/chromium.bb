@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,6 +53,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -1323,6 +1325,16 @@ TEST_F(DeviceStatusCollectorTest,
   EXPECT_FALSE(got_session_status_);
 }
 
+TEST_F(DeviceStatusCollectorTest, NoTimeZoneReporting) {
+  // Time zone is not reported in enterprise reports.
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+
+  GetStatus();
+
+  EXPECT_FALSE(session_status_.has_time_zone());
+}
+
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNoSession) {
   // Should not report session status if we don't have an active kiosk app or an
   // active user session.
@@ -2071,6 +2083,17 @@ TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingDeviceHardwareStatus) {
   EXPECT_EQ(0, device_status_.cpu_temp_info_size());
   EXPECT_EQ(0, device_status_.system_ram_free().size());
   EXPECT_FALSE(device_status_.has_system_ram_total());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, TimeZoneReporting) {
+  const std::string timezone =
+      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
+                            ->GetCurrentTimezoneID());
+
+  GetStatus();
+
+  EXPECT_TRUE(session_status_.has_time_zone());
+  EXPECT_EQ(timezone, session_status_.time_zone());
 }
 
 }  // namespace policy

@@ -1124,6 +1124,11 @@ message SessionStatusReportRequest {
 
   // If this is a regular user session, this is the user's DMToken.
   optional string user_dm_token = 8;
+
+  // Time zone id of the active user. Not set for enterprise users.
+  // Format of the id is as specified in tz database e.g. Pacific/Honolulu. For
+  // more details check third_party/icu/source/i18n/unicode/timezone.h.
+  optional string time_zone = 9;
 }
 
 // Response from DMServer to update devices' status.
