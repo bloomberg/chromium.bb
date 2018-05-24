@@ -18,12 +18,14 @@ import collections
 BUILDBUCKET_HOST_KEY = '/buildbucket/host'
 DATASTORE_WRITER_CREDS_KEY = '/datastore/creds_file'
 SWARMING_PROXY_HOST_KEY = '/swarming_proxy/host'
+CHROME_SWARMING_PROXY_HOST_KEY = '/chrome_swarming_proxy/host'
 LUCI_LOGDOG_HOST_KEY = '/luci-logdog/host'
 LUCI_MILO_HOST_KEY = '/luci-milo/host'
 SHERIFFOMATIC_HOST_KEY = '/sheriffomatic/host'
 
 TOPOLOGY_DEFAULTS = {
     SWARMING_PROXY_HOST_KEY: 'fake_swarming_server',
+    CHROME_SWARMING_PROXY_HOST_KEY: 'fake_chrome_swarming_server',
     LUCI_LOGDOG_HOST_KEY: 'luci-logdog.appspot.com',
     LUCI_MILO_HOST_KEY: 'luci-milo.appspot.com',
     SHERIFFOMATIC_HOST_KEY: 'sheriff-o-matic-staging.appspot.com',

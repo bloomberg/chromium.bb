@@ -200,6 +200,162 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains([expected_target])
 
 
+# pylint: disable=protected-access
+class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase,
+                              cros_test_lib.OutputTestCase,
+                              cros_test_lib.MockTempDirTestCase):
+  """Test commands related to HWLab tests with Skylab via swarming proxy."""
+  SWARMING_TIMEOUT_DEFAULT = str(
+      commands._DEFAULT_HWTEST_TIMEOUT_MINS * 60 +
+      commands._SWARMING_ADDITIONAL_TIMEOUT)
+  SWARMING_EXPIRATION = str(commands._SWARMING_EXPIRATION)
+
+  WAIT_RETRY_OUTPUT = '''
+ERROR: Encountered swarming internal error
+'''
+
+  CREATE_OUTPUT = '''
+FAKE OUTPUT. Will be filled in later.
+'''
+
+  def setUp(self):
+    self._build = 'test-build'
+    self._board = 'test-board'
+    self._suite = 'test-suite'
+    self.temp_json_path = os.path.join(self.tempdir, 'temp_summary.json')
+
+    self.create_cmd = None
+
+  def SetCmdResults(self, swarming_cli_cmd='run',
+                    create_return_code=0,
+                    args=(),
+                    swarming_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
+                    swarming_io_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
+                    swarming_hard_timeout_secs=SWARMING_TIMEOUT_DEFAULT,
+                    swarming_expiration_secs=SWARMING_EXPIRATION):
+    """Set the expected results from the specified commands.
+
+    Args:
+      swarming_cli_cmd: The swarming client command to kick off.
+      create_return_code: Return code from create command.
+      args: Additional args to pass to create and wait commands.
+      swarming_timeout_secs: swarming client timeout.
+      swarming_io_timeout_secs: swarming client io timeout.
+      swarming_hard_timeout_secs: swarming client hard timeout.
+      swarming_expiration_secs: swarming task expiration.
+    """
+    # Pull out the test priority for the swarming tag.
+    priority = None
+    priority_flag = '--priority'
+    if priority_flag in args:
+      priority = args[args.index(priority_flag) + 1]
+
+    base_cmd = [swarming_lib._SWARMING_PROXY_CLIENT, swarming_cli_cmd,
+                '--swarming', topology.topology.get(
+                    topology.CHROME_SWARMING_PROXY_HOST_KEY)]
+    if swarming_cli_cmd == 'run':
+      base_cmd += ['--task-summary-json', self.temp_json_path,
+                   '--print-status-updates',
+                   '--timeout', swarming_timeout_secs]
+    elif swarming_cli_cmd == 'trigger':
+      base_cmd += ['--dump-json', self.temp_json_path]
+
+    base_cmd += ['--raw-cmd',
+                 '--task-name', 'test-build-test-suite',
+                 '--dimension', 'os', 'Ubuntu-14.04',
+                 '--dimension', 'pool', commands.SKYLAB_SUITE_BOT_POOL,
+                 '--io-timeout', swarming_io_timeout_secs,
+                 '--hard-timeout', swarming_hard_timeout_secs,
+                 '--expiration', swarming_expiration_secs,
+                 '--tags=priority:%s' % priority,
+                 '--tags=suite:test-suite',
+                 '--tags=build:test-build',
+                 '--tags=task_name:test-build-test-suite',
+                 '--tags=board:test-board',
+                 '--', commands.SKYLAB_RUN_SUITE_PATH,
+                 '--build', self._build, '--board', self._board]
+    args = list(args)
+    base_cmd = base_cmd + ['--suite_name', self._suite] + args
+
+    self.create_cmd = base_cmd
+    create_results = iter([
+        self.rc.CmdResult(returncode=create_return_code,
+                          output=self.CREATE_OUTPUT,
+                          error=''),
+    ])
+    self.rc.AddCmdResult(
+        self.create_cmd,
+        side_effect=lambda *args, **kwargs: create_results.next(),
+    )
+
+  def PatchJson(self, task_outputs):
+    """Mock out the code that loads from json.
+
+    Args:
+      task_outputs: See explaination in PatchJson of HWLabCommandsTest.
+    """
+    orig_func = commands._CreateSwarmingArgs
+
+    def replacement(*args, **kargs):
+      swarming_args = orig_func(*args, **kargs)
+      swarming_args['temp_json_path'] = self.temp_json_path
+      return swarming_args
+
+    self.PatchObject(commands, '_CreateSwarmingArgs', side_effect=replacement)
+
+    if task_outputs:
+      return_values = []
+      for s in task_outputs:
+        j = {'shards':[{'name': 'fake_name', 'bot_id': 'chromeos-server990',
+                        'created_ts': '2015-06-12 12:00:00',
+                        'internal_failure': s[1],
+                        'state': s[2],
+                        'outputs': [s[0]]}]}
+        return_values.append(j)
+      return_values_iter = iter(return_values)
+      self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
+                       side_effect=lambda json_file: return_values_iter.next())
+    else:
+      self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
+                       return_value=None)
+
+  def RunSkylabHWTestSuite(self, *args, **kwargs):
+    """Run the hardware test suite, printing logs to stdout."""
+    with cros_test_lib.LoggingCapturer() as logs:
+      try:
+        cmd_result = commands.RunSkylabHWTestSuite(self._build, self._suite,
+                                                   self._board, *args, **kwargs)
+        return cmd_result
+      finally:
+        print(logs.messages)
+
+  def testRunSkylabHWTestSuiteMinimal(self):
+    """Test RunSkylabHWTestSuite without optional arguments."""
+    self.SetCmdResults(swarming_cli_cmd='trigger')
+    # When run without optional arguments, wait and dump_json cmd will not run.
+    self.PatchJson([(self.CREATE_OUTPUT, False, None)])
+
+    with self.OutputCapturer() as output:
+      cmd_result = self.RunSkylabHWTestSuite()
+    self.assertEqual(cmd_result, (None, None))
+    self.assertCommandCalled(self.create_cmd, capture_output=True,
+                             combine_stdout_stderr=True, env=mock.ANY)
+    self.assertIn(self.CREATE_OUTPUT, '\n'.join(output.GetStdoutLines()))
+
+  def testRunSkylabHWTestSuiteWait(self):
+    """Test RunSkylabHWTestSuite with waiting for results."""
+    self.SetCmdResults(swarming_cli_cmd='run')
+    # When run without optional arguments, wait and dump_json cmd will not run.
+    self.PatchJson([(self.CREATE_OUTPUT, False, None)])
+
+    with self.OutputCapturer() as output:
+      cmd_result = self.RunSkylabHWTestSuite(wait_for_results=True)
+    self.assertEqual(cmd_result, (None, None))
+    self.assertCommandCalled(self.create_cmd, capture_output=True,
+                             combine_stdout_stderr=True, env=mock.ANY)
+    self.assertIn(self.CREATE_OUTPUT, '\n'.join(output.GetStdoutLines()))
+
+
 class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
                         cros_test_lib.OutputTestCase,
                         cros_test_lib.MockTempDirTestCase):
@@ -305,12 +461,12 @@ The suite job has another 2:39:39.789250 till timeout.
                 '--swarming', topology.topology.get(
                     topology.SWARMING_PROXY_HOST_KEY),
                 '--task-summary-json', self.temp_json_path,
+                '--print-status-updates',
+                '--timeout', swarming_timeout_secs,
                 '--raw-cmd',
                 '--task-name', 'test-build-test-suite',
                 '--dimension', 'os', 'Ubuntu-14.04',
-                '--dimension', 'pool', 'default',
-                '--print-status-updates',
-                '--timeout', swarming_timeout_secs,
+                '--dimension', 'pool', commands.SUITE_BOT_POOL,
                 '--io-timeout', swarming_io_timeout_secs,
                 '--hard-timeout', swarming_hard_timeout_secs,
                 '--expiration', swarming_expiration_secs,

@@ -338,6 +338,37 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     return subsystems
 
 
+class SkylabHWTestStage(HWTestStage):
+  """Stage that runs tests in the Autotest lab with Skylab."""
+
+  def WaitUntilReady(self):
+    # Don't wait for anything in testing.
+    return True
+
+  def PerformStage(self):
+    # TODO (xixuan): Remove this hardcoded build info after testing.
+    build = 'lumpy-release/R65-10323.58.0'
+    board = 'lumpy'
+
+    # Skip all non-provision suites first.
+    if not self.suite_config.suite == constants.HWTEST_PROVISION_SUITE:
+      return
+
+    cmd_result = commands.RunSkylabHWTestSuite(
+        build, self.suite_config.suite, board,
+        model=self._model,
+        pool=self.suite_config.pool,
+        wait_for_results=self.wait_for_results,
+        priority=self.suite_config.priority,
+        timeout_mins=self.suite_config.timeout_mins,
+        retry=self.suite_config.retry,
+        max_retries=self.suite_config.max_retries,
+        suite_args=self.suite_config.suite_args)
+
+    if cmd_result.to_raise:
+      raise cmd_result.to_raise
+
+
 class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 

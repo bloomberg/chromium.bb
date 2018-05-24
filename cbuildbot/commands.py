@@ -59,8 +59,11 @@ _SWARMING_ADDITIONAL_TIMEOUT = 60 * 60
 _DEFAULT_HWTEST_TIMEOUT_MINS = 1440
 _SWARMING_EXPIRATION = 20 * 60
 RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
+SKYLAB_RUN_SUITE_PATH = '/usr/local/autotest/bin/run_suite_skylab'
 _ABORT_SUITE_PATH = '/usr/local/autotest/site_utils/abort_suite.py'
 _MAX_HWTEST_CMD_RETRY = 10
+SKYLAB_SUITE_BOT_POOL = 'ChromeOSSkylab-suite'
+SUITE_BOT_POOL = 'default'
 # Be very careful about retrying suite creation command as
 # it may create multiple suites.
 _MAX_HWTEST_START_CMD_RETRY = 1
@@ -819,6 +822,7 @@ def BuildAndArchiveTestResultsTarball(src_dir, buildroot):
 HWTestSuiteResult = collections.namedtuple('HWTestSuiteResult',
                                            ['to_raise', 'json_dump_result'])
 
+
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
                              timeout_util.TimeoutError)
 def RunHWTestSuite(
@@ -1007,6 +1011,141 @@ def RunHWTestSuite(
 
 
 # pylint: disable=docstring-missing-args
+def _GetRunSkylabSuiteArgs(
+    build, suite, board,
+    model=None,
+    pool=None,
+    priority=None,
+    timeout_mins=None,
+    retry=None,
+    max_retries=None,
+    suite_args=None):
+  """Get a list of args for run_suite.
+
+  TODO (xixuan): Add other features as required, e.g.
+    subsystems
+    test_args
+    skip_duts_check
+    job_keyvals
+    suite_min_duts
+    minimum_duts
+
+  Args:
+    See args of |RunHWTestSuite|.
+
+  Returns:
+    A list of args for SKYLAB_RUN_SUITE_PATH.
+  """
+  # HACK(pwang): Delete this once better solution is out.
+  board = board.replace('-arcnext', '')
+  args = ['--build', build, '--board', board]
+
+  if model:
+    args += ['--model', model]
+
+  args += ['--suite_name', suite]
+
+  # Add optional arguments to command, if present.
+  if pool is not None:
+    args += ['--pool', pool]
+
+  if priority is not None:
+    args += ['--priority', str(priority)]
+
+  if timeout_mins is not None:
+    args += ['--timeout_mins', str(timeout_mins)]
+
+  if retry is not None:
+    args += ['--test_retry']
+
+  if max_retries is not None:
+    args += ['--max_retries', str(max_retries)]
+
+  if suite_args is not None:
+    args += ['--suite_args', repr(suite_args)]
+
+  return args
+
+
+def _SkylabHWTestTriggerOrRun(swarming_cli_cmd, cmd, **kwargs):
+  """Trigger or Run a suite in the HWTest lab with Skylab.
+
+  This method runs a command to create the suite.
+
+  Args:
+    swarming_cli_cmd: Either 'run' if waiting for the results,
+      otherwise, its value should be 'trigger'.
+    cmd: Proxied run_suite command.
+    kwargs: args to be passed to RunSwarmingCommand.
+  """
+  start_cmd = list(cmd)
+  logging.info('RunSkylabHWTestSuite will run: %s',
+               cros_build_lib.CmdToStr(start_cmd))
+  result = swarming_lib.RunSwarmingCommandWithRetries(
+      max_retry=_MAX_HWTEST_START_CMD_RETRY,
+      error_check=swarming_lib.SwarmingRetriableErrorCheck,
+      cmd=start_cmd, swarming_cli_cmd=swarming_cli_cmd,
+      capture_output=True, combine_stdout_stderr=True,
+      **kwargs)
+  # If the command succeeds, result.task_summary_json
+  # should have the right content.
+  # 'Outputs' only exist when swarming_cli_cmd='run'.
+  for output in result.GetValue('outputs', []):
+    sys.stdout.write(output)
+  sys.stdout.flush()
+
+
+@failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
+                             timeout_util.TimeoutError)
+def RunSkylabHWTestSuite(
+    build, suite, board,
+    model=None,
+    pool=None,
+    wait_for_results=None,
+    priority=None,
+    timeout_mins=None,
+    retry=None,
+    max_retries=None,
+    suite_args=None):
+  """Run the test suite in the Autotest lab using Skylab.
+
+  Args:
+    See args of RunHWTestSuite.
+
+  Returns:
+    See returns of RunHWTestSuite.
+  """
+  priority_str = priority
+  if priority:
+    priority = constants.HWTEST_PRIORITIES_MAP[str(priority)]
+
+  cmd = [SKYLAB_RUN_SUITE_PATH]
+  cmd += _GetRunSkylabSuiteArgs(
+      build, suite, board,
+      model=model,
+      pool=pool,
+      priority=priority,
+      timeout_mins=timeout_mins,
+      retry=retry,
+      max_retries=max_retries,
+      suite_args=suite_args)
+  swarming_args = _CreateSwarmingArgs(build, suite, board, priority_str,
+                                      timeout_mins, run_skylab=True)
+  try:
+    if wait_for_results:
+      _SkylabHWTestTriggerOrRun('run', cmd, **swarming_args)
+    else:
+      _SkylabHWTestTriggerOrRun('trigger', cmd, **swarming_args)
+
+    return HWTestSuiteResult(None, None)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    to_raise = failures_lib.TestFailure(
+        '** HWTest failed (code %d) **' % result.returncode)
+    return HWTestSuiteResult(to_raise, None)
+
+
+# pylint: disable=docstring-missing-args
 def _GetRunSuiteArgs(
     build, suite, board,
     model=None,
@@ -1110,7 +1249,8 @@ def _GetRunSuiteArgs(
   return args
 
 
-def _CreateSwarmingArgs(build, suite, board, priority, timeout_mins=None):
+def _CreateSwarmingArgs(build, suite, board, priority,
+                        timeout_mins=None, run_skylab=False):
   """Create args for swarming client.
 
   Args:
@@ -1120,6 +1260,7 @@ def _CreateSwarmingArgs(build, suite, board, priority, timeout_mins=None):
                   timeouts for swarming task.
     board: Name of the board.
     priority: Priority of this call.
+    run_skylab: Indicate whether to create a swarming cmd for Skylab HWTest.
 
   Returns:
     A dictionary of args for swarming client.
@@ -1128,12 +1269,20 @@ def _CreateSwarmingArgs(build, suite, board, priority, timeout_mins=None):
   swarming_timeout = timeout_mins or _DEFAULT_HWTEST_TIMEOUT_MINS
   swarming_timeout = swarming_timeout * 60 + _SWARMING_ADDITIONAL_TIMEOUT
 
+  if run_skylab:
+    swarming_server = topology.topology.get(
+        topology.CHROME_SWARMING_PROXY_HOST_KEY)
+    pool = SKYLAB_SUITE_BOT_POOL
+  else:
+    swarming_server = topology.topology.get(
+        topology.SWARMING_PROXY_HOST_KEY)
+    pool = SUITE_BOT_POOL
+
   return {
-      'swarming_server': topology.topology.get(
-          topology.SWARMING_PROXY_HOST_KEY),
+      'swarming_server': swarming_server,
       'task_name': '-'.join([build, suite]),
       'dimensions': [('os', 'Ubuntu-14.04'),
-                     ('pool', 'default')],
+                     ('pool', pool)],
       'print_status_updates': True,
       'timeout_secs': swarming_timeout,
       'io_timeout_secs': swarming_timeout,
