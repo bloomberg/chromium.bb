@@ -185,6 +185,8 @@ class BASE_EXPORT HistogramBase {
   // Similar to above but divides |count| by the |scale| amount. Probabilistic
   // rounding is used to yield a reasonably accurate total when many samples
   // are added. Methods for common cases of scales 1000 and 1024 are included.
+  // The ScaledLinearHistogram (which can also used be for enumerations) may be
+  // a better (and faster) solution.
   void AddScaled(Sample value, int count, int scale);
   void AddKilo(Sample value, int count);  // scale=1000
   void AddKiB(Sample value, int count);   // scale=1024

@@ -155,6 +155,30 @@ struct EnumSizeTraits<
                                           flag));                          \
   } while (0)
 
+// While this behaves the same as the above macro, the wrapping of a linear
+// histogram with another object to do the scaling means the POINTER_BLOCK
+// macro can't be used as it is tied to HistogramBase
+#define INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                      \
+    name, sample, count, boundary, scale, flag)                                \
+  do {                                                                         \
+    static_assert(!std::is_enum<decltype(sample)>::value,                      \
+                  "|sample| should not be an enum type!");                     \
+    static_assert(!std::is_enum<decltype(boundary)>::value,                    \
+                  "|boundary| should not be an enum type!");                   \
+    class ScaledLinearHistogramInstance : public base::ScaledLinearHistogram { \
+     public:                                                                   \
+      ScaledLinearHistogramInstance()                                          \
+          : ScaledLinearHistogram(name,                                        \
+                                  1,                                           \
+                                  boundary,                                    \
+                                  boundary + 1,                                \
+                                  scale,                                       \
+                                  flag) {}                                     \
+    };                                                                         \
+    static base::LazyInstance<ScaledLinearHistogramInstance>::Leaky scaled;    \
+    scaled.Get().AddScaledCount(sample, count);                                \
+  } while (0)
+
 // Helper for 'overloading' UMA_HISTOGRAM_ENUMERATION with a variable number of
 // arguments.
 #define INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(_1, _2, NAME, ...) NAME
@@ -199,6 +223,24 @@ struct EnumSizeTraits<
     INTERNAL_HISTOGRAM_EXACT_LINEAR_WITH_FLAG(                                 \
         name, static_cast<base::HistogramBase::Sample>(sample),                \
         static_cast<base::HistogramBase::Sample>(boundary), flag);             \
+  } while (0)
+
+#define INTERNAL_HISTOGRAM_SCALED_ENUMERATION_WITH_FLAG(name, sample, count, \
+                                                        scale, flag)         \
+  do {                                                                       \
+    using decayed_sample = std::decay<decltype(sample)>::type;               \
+    static_assert(std::is_enum<decayed_sample>::value,                       \
+                  "Unexpected: |sample| is not at enum.");                   \
+    constexpr auto boundary =                                                \
+        base::internal::EnumSizeTraits<decltype(sample)>::Count();           \
+    static_assert(                                                           \
+        static_cast<uintmax_t>(boundary) <                                   \
+            static_cast<uintmax_t>(                                          \
+                std::numeric_limits<base::HistogramBase::Sample>::max()),    \
+        "|boundary| is out of range of HistogramBase::Sample");              \
+    INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                        \
+        name, static_cast<base::HistogramBase::Sample>(sample), count,       \
+        static_cast<base::HistogramBase::Sample>(boundary), scale, flag);    \
   } while (0)
 
 // This is a helper macro used by other macros and shouldn't be used directly.

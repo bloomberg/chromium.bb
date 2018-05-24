@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/dummy_histogram.h"
@@ -92,6 +93,10 @@ class HistogramTest : public testing::TestWithParam<bool> {
   void DestroyPersistentHistogramAllocator() {
     allocator_ = nullptr;
     GlobalHistogramAllocator::ReleaseForTesting();
+  }
+
+  std::unique_ptr<SampleVector> SnapshotAllSamples(Histogram* h) {
+    return h->SnapshotAllSamples();
   }
 
   const bool use_persistent_histogram_allocator_;
@@ -734,6 +739,41 @@ TEST_P(HistogramTest, FactoryTime) {
           << "ms or about "
           << (add_ms * 1000000) / kTestAddCount
           << "ns each.";
+}
+
+TEST_P(HistogramTest, ScaledLinearHistogram) {
+  ScaledLinearHistogram scaled("SLH", 1, 5, 6, 100, HistogramBase::kNoFlags);
+
+  scaled.AddScaledCount(0, 1);
+  scaled.AddScaledCount(1, 49);
+  scaled.AddScaledCount(2, 50);
+  scaled.AddScaledCount(3, 101);
+  scaled.AddScaledCount(4, 160);
+  scaled.AddScaledCount(5, 130);
+  scaled.AddScaledCount(6, 140);
+
+  std::unique_ptr<SampleVector> samples =
+      SnapshotAllSamples(scaled.histogram());
+  EXPECT_EQ(0, samples->GetCountAtIndex(0));
+  EXPECT_EQ(0, samples->GetCountAtIndex(1));
+  EXPECT_EQ(1, samples->GetCountAtIndex(2));
+  EXPECT_EQ(1, samples->GetCountAtIndex(3));
+  EXPECT_EQ(2, samples->GetCountAtIndex(4));
+  EXPECT_EQ(3, samples->GetCountAtIndex(5));
+
+  // Make sure the macros compile properly. This can only be run when
+  // there is no persistent allocator which can be discarded and leave
+  // dangling pointers.
+  if (!use_persistent_histogram_allocator_) {
+    enum EnumWithMax {
+      kA = 0,
+      kB = 1,
+      kC = 2,
+      kMaxValue = kC,
+    };
+    UMA_HISTOGRAM_SCALED_EXACT_LINEAR("h1", 1, 5000, 5, 100);
+    UMA_HISTOGRAM_SCALED_ENUMERATION("h2", kB, 5000, 100);
+  }
 }
 
 // For Histogram, LinearHistogram and CustomHistogram, the minimum for a

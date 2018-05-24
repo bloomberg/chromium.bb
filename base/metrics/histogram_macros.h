@@ -82,6 +82,15 @@
       INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY)(              \
       name, __VA_ARGS__, base::HistogramBase::kUmaTargetedHistogramFlag))
 
+// As above but "scaled" count to avoid overflows caused by increments of
+// large amounts. See UMA_HISTOGRAM_SCALED_EXACT_LINEAR for more information.
+// Only the new format utilizing an internal kMaxValue is supported.
+// It'll be necessary to #include "base/lazy_instance.h" to use this macro.
+#define UMA_HISTOGRAM_SCALED_ENUMERATION(name, sample, count, scale) \
+  INTERNAL_HISTOGRAM_SCALED_ENUMERATION_WITH_FLAG(                   \
+      name, sample, count, scale,                                    \
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+
 // Histogram for boolean values.
 
 // Sample usage:
@@ -113,6 +122,20 @@
 //   UMA_HISTOGRAM_PERCENTAGE("Histogram.Percent", percent_as_int);
 #define UMA_HISTOGRAM_PERCENTAGE(name, percent_as_int) \
   UMA_HISTOGRAM_EXACT_LINEAR(name, percent_as_int, 101)
+
+//------------------------------------------------------------------------------
+// Scaled Linear histograms.
+
+// These take |count| and |scale| parameters to allow cumulative reporting of
+// large numbers. Only the scaled count is reported but the reminder is kept so
+// multiple calls will accumulate correctly.  Only "exact linear" is supported.
+// It'll be necessary to #include "base/lazy_instance.h" to use this macro.
+
+#define UMA_HISTOGRAM_SCALED_EXACT_LINEAR(name, sample, count, value_max, \
+                                          scale)                          \
+  INTERNAL_HISTOGRAM_SCALED_EXACT_LINEAR_WITH_FLAG(                       \
+      name, sample, count, value_max, scale,                              \
+      base::HistogramBase::kUmaTargetedHistogramFlag)
 
 //------------------------------------------------------------------------------
 // Count histograms. These are used for collecting numeric data. Note that we
