@@ -1347,6 +1347,8 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "checkedState";
     case ax::mojom::IntAttribute::kTextDirection:
       return "textDirection";
+    case ax::mojom::IntAttribute::kTextPosition:
+      return "textPosition";
     case ax::mojom::IntAttribute::kTextStyle:
       return "textStyle";
     case ax::mojom::IntAttribute::kPreviousFocusId:
@@ -1455,6 +1457,8 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kCheckedState;
   if (0 == strcmp(int_attribute, "textDirection"))
     return ax::mojom::IntAttribute::kTextDirection;
+  if (0 == strcmp(int_attribute, "textPosition"))
+    return ax::mojom::IntAttribute::kTextPosition;
   if (0 == strcmp(int_attribute, "textStyle"))
     return ax::mojom::IntAttribute::kTextStyle;
   if (0 == strcmp(int_attribute, "previousFocusId"))
@@ -1829,6 +1833,29 @@ ax::mojom::TextDirection ParseTextDirection(const char* text_direction) {
   if (0 == strcmp(text_direction, "btt"))
     return ax::mojom::TextDirection::kBtt;
   return ax::mojom::TextDirection::kNone;
+}
+
+const char* ToString(ax::mojom::TextPosition text_position) {
+  switch (text_position) {
+    case ax::mojom::TextPosition::kNone:
+      return "none";
+    case ax::mojom::TextPosition::kSubscript:
+      return "subscript";
+    case ax::mojom::TextPosition::kSuperscript:
+      return "superscript";
+  }
+
+  return "";
+}
+
+ax::mojom::TextPosition ParseTextPosition(const char* text_position) {
+  if (0 == strcmp(text_position, "none"))
+    return ax::mojom::TextPosition::kNone;
+  if (0 == strcmp(text_position, "subscript"))
+    return ax::mojom::TextPosition::kSubscript;
+  if (0 == strcmp(text_position, "superscript"))
+    return ax::mojom::TextPosition::kSuperscript;
+  return ax::mojom::TextPosition::kNone;
 }
 
 const char* ToString(ax::mojom::TextStyle text_style) {

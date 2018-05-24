@@ -103,6 +103,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   String ImageDataUrl(const IntSize& max_size) const final;
   String GetText() const override;
   AccessibilityTextDirection GetTextDirection() const final;
+  AXTextPosition GetTextPosition() const final;
   int TextLength() const override;
   TextStyle GetTextStyle() const final;
   KURL Url() const override;

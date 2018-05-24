@@ -852,6 +852,12 @@
     // The RGBA color of an input element whose value is a color.
     long? colorValue;
 
+    // Indicates node text is subscript.
+    boolean subscript;
+
+    // Indicates node text is superscript.
+    boolean superscript;
+
     // Indicates node text is bold.
     boolean bold;
 

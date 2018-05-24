@@ -1117,6 +1117,31 @@ AccessibilityTextDirection AXLayoutObject::GetTextDirection() const {
   return AXNodeObject::GetTextDirection();
 }
 
+AXTextPosition AXLayoutObject::GetTextPosition() const {
+  if (!GetLayoutObject())
+    return AXNodeObject::GetTextPosition();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return AXNodeObject::GetTextPosition();
+
+  switch (style->VerticalAlign()) {
+    case EVerticalAlign::kBaseline:
+    case EVerticalAlign::kMiddle:
+    case EVerticalAlign::kTextTop:
+    case EVerticalAlign::kTextBottom:
+    case EVerticalAlign::kTop:
+    case EVerticalAlign::kBottom:
+    case EVerticalAlign::kBaselineMiddle:
+    case EVerticalAlign::kLength:
+      return AXNodeObject::GetTextPosition();
+    case EVerticalAlign::kSub:
+      return kAXTextPositionSubscript;
+    case EVerticalAlign::kSuper:
+      return kAXTextPositionSuperscript;
+  }
+}
+
 int AXLayoutObject::TextLength() const {
   if (!IsTextControl())
     return -1;

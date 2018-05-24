@@ -578,6 +578,12 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->SetTextDirection(AXTextDirectionFromBlink(src.GetTextDirection()));
     }
 
+    if (src.GetTextPosition()) {
+      dst->AddIntAttribute(
+          ax::mojom::IntAttribute::kTextPosition,
+          static_cast<int32_t>(AXTextPositionFromBlink(src.GetTextPosition())));
+    }
+
     if (src.TextStyle()) {
       dst->AddIntAttribute(
           ax::mojom::IntAttribute::kTextStyle,

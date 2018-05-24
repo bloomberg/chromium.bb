@@ -144,6 +144,7 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kCheckedState:
     case ax::mojom::IntAttribute::kRestriction:
     case ax::mojom::IntAttribute::kTextDirection:
+    case ax::mojom::IntAttribute::kTextPosition:
     case ax::mojom::IntAttribute::kTextStyle:
     case ax::mojom::IntAttribute::kAriaColumnCount:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
@@ -771,6 +772,21 @@ std::string AXNodeData::ToString() const {
             break;
           case ax::mojom::TextDirection::kBtt:
             result += " text_direction=btt";
+            break;
+          default:
+            break;
+        }
+        break;
+      case ax::mojom::IntAttribute::kTextPosition:
+        switch (static_cast<ax::mojom::TextPosition>(int_attribute.second)) {
+          case ax::mojom::TextPosition::kNone:
+            result += " text_position=none";
+            break;
+          case ax::mojom::TextPosition::kSubscript:
+            result += " text_position=subscript";
+            break;
+          case ax::mojom::TextPosition::kSuperscript:
+            result += " text_position=superscript";
             break;
           default:
             break;

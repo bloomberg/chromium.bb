@@ -889,6 +889,13 @@ WebAXTextDirection WebAXObject::GetTextDirection() const {
   return static_cast<WebAXTextDirection>(private_->GetTextDirection());
 }
 
+WebAXTextPosition WebAXObject::GetTextPosition() const {
+  if (IsDetached())
+    return kWebAXTextPositionNone;
+
+  return static_cast<WebAXTextPosition>(private_->GetTextPosition());
+}
+
 WebAXTextStyle WebAXObject::TextStyle() const {
   if (IsDetached())
     return kWebAXTextStyleNone;

@@ -2885,6 +2885,18 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of a text match from a find in page." name="IDS_CHROMEVOX_TEXT_MATCH_END">
         Text match end
       </message>
+      <message desc="Spoken when a user navigates to the beginning of subscript text." name="IDS_CHROMEVOX_SUBSCRIPT_START">
+        Subscript start
+      </message>
+      <message desc="Spoken when a user navigates to the end of subscript text." name="IDS_CHROMEVOX_SUBSCRIPT_END">
+        Subscript end
+      </message>
+      <message desc="Spoken when a user navigates to the beginning of superscript text." name="IDS_CHROMEVOX_SUPERSCRIPT_START">
+        Superscript start
+      </message>
+      <message desc="Spoken when a user navigates to the end of superscript text." name="IDS_CHROMEVOX_SUPERSCRIPT_END">
+        Superscript end
+      </message>
       <message desc="Spoken when a user navigates to the beginning of bolded text." name="IDS_CHROMEVOX_BOLD_START">
         Bold start
       </message>

@@ -545,6 +545,9 @@ enum IntAttribute {
    // Specifies the direction of the text, e.g., right-to-left.
   kTextDirection,
 
+   // Specifies the position of the text, e.g., subscript.
+  kTextPosition,
+
    // Bold, italic, underline, etc.
   kTextStyle,
 
@@ -718,6 +721,12 @@ enum TextDirection {
   kRtl,
   kTtb,
   kBtt,
+};
+
+enum TextPosition {
+  kNone,
+  kSubscript,
+  kSuperscript,
 };
 
  // A Java counterpart will be generated for this enum.
