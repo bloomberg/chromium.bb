@@ -24,7 +24,7 @@ public final class AwCookieManager {
 
     public AwCookieManager() {
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
         } catch (ProcessInitException e) {
             throw new RuntimeException("Error initializing WebView library", e);
         }

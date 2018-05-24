@@ -72,12 +72,11 @@ public final class AwBrowserProcess {
         }
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
-            libraryLoader.loadNow();
+            LibraryLoader.getInstance().loadNow();
             // Switch the command line implementation from Java to native.
             // It's okay for the WebView to do this before initialization because we have
             // setup the JNI bindings by this point.
-            libraryLoader.switchCommandLineForWebView();
+            LibraryLoader.getInstance().switchCommandLineForWebView();
         } catch (ProcessInitException e) {
             throw new RuntimeException("Cannot load WebView", e);
         } finally {

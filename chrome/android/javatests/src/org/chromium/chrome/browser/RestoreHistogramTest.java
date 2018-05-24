@@ -57,7 +57,7 @@ public class RestoreHistogramTest {
     @Test
     @SmallTest
     public void testHistogramWriter() throws ProcessInitException {
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         MetricsUtils.HistogramDelta noRestoreDelta = new MetricsUtils.HistogramDelta(
                 ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
         MetricsUtils.HistogramDelta restoreCompletedDelta =
@@ -98,7 +98,7 @@ public class RestoreHistogramTest {
     @Test
     @SmallTest
     public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         MetricsUtils.HistogramDelta noRestoreDelta = new MetricsUtils.HistogramDelta(
                 ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
 

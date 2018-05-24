@@ -128,8 +128,7 @@ public abstract class AsyncInitTaskRunner {
      */
     private static boolean loadNativeLibrary() {
         try {
-            LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
-            libraryLoader.ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
             // The prefetch is done after the library load for two reasons:
             // - It is easier to know the library location after it has
             // been loaded.
@@ -140,7 +139,7 @@ public abstract class AsyncInitTaskRunner {
             // generally startup on some devices, most likely by
             // competing for IO.
             // For experimental results, see http://crbug.com/460438.
-            libraryLoader.asyncPrefetchLibrariesToMemory();
+            LibraryLoader.getInstance().asyncPrefetchLibrariesToMemory();
         } catch (ProcessInitException e) {
             return false;
         }

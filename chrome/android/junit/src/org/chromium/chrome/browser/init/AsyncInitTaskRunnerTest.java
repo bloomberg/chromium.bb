@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.init;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -47,8 +48,8 @@ public class AsyncInitTaskRunnerTest {
     private VariationsSeedFetcher mVariationsSeedFetcher;
 
     public AsyncInitTaskRunnerTest() throws ProcessInitException {
-        mLoader = spy(LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER));
-        doNothing().when(mLoader).ensureInitialized();
+        mLoader = spy(LibraryLoader.getInstance());
+        doNothing().when(mLoader).ensureInitialized(anyInt());
         doNothing().when(mLoader).asyncPrefetchLibrariesToMemory();
         LibraryLoader.setLibraryLoaderForTesting(mLoader);
         mVariationsSeedFetcher = mock(VariationsSeedFetcher.class);
@@ -85,7 +86,7 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushBackgroundThreadScheduler();
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
-        verify(mLoader).ensureInitialized();
+        verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher, never()).fetchSeed(anyString(), anyString(), anyString());
@@ -95,7 +96,7 @@ public class AsyncInitTaskRunnerTest {
     public void libraryLoaderFailTest() throws InterruptedException, ProcessInitException {
         doThrow(new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED))
                 .when(mLoader)
-                .ensureInitialized();
+                .ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mRunner.startBackgroundTasks(false, false);
 
         Robolectric.flushBackgroundThreadScheduler();
@@ -112,7 +113,7 @@ public class AsyncInitTaskRunnerTest {
         Robolectric.flushBackgroundThreadScheduler();
         Robolectric.flushForegroundThreadScheduler();
         assertTrue(mLatch.await(0, TimeUnit.SECONDS));
-        verify(mLoader).ensureInitialized();
+        verify(mLoader).ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         verify(mLoader).asyncPrefetchLibrariesToMemory();
         verify(mRunner).onSuccess();
         verify(mVariationsSeedFetcher).fetchSeed(anyString(), anyString(), anyString());

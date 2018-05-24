@@ -70,7 +70,7 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
         // using it, so it needs to initialize its own application context.
         ContextUtils.initApplicationContext(mContext.getApplicationContext());
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to load native libraries.", e);
             return false;

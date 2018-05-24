@@ -84,11 +84,7 @@ public class TestChildProcessService extends ChildProcessService {
 
         @Override
         public void preloadNativeLibrary(Context hostContext) {
-            try {
-                LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).preloadNow();
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Failed to preload native library.", e);
-            }
+            LibraryLoader.getInstance().preloadNow();
         }
 
         @Override
@@ -99,12 +95,10 @@ public class TestChildProcessService extends ChildProcessService {
             // Non-main processes are launched for testing. Mark them as such so that the JNI
             // in the seconary dex won't be registered. See https://crbug.com/810720.
             JNIUtils.enableSelectiveJniRegistration();
-            LibraryLoader libraryLoader = null;
             boolean isLoaded = false;
             try {
-                libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_CHILD);
-                libraryLoader.loadNow();
-                libraryLoader.ensureInitialized();
+                LibraryLoader.getInstance().loadNow();
+                LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
                 isLoaded = true;
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to load native library.", e);

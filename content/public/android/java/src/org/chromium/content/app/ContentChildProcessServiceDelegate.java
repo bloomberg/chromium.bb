@@ -94,12 +94,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         // This function can be called before command line is set. That is fine because
         // preloading explicitly doesn't run any Chromium code, see NativeLibraryPreloader
         // for more info.
-        try {
-            LibraryLoader libraryLoader = LibraryLoader.get(mLibraryProcessType);
-            libraryLoader.preloadNowOverrideApplicationContext(hostContext);
-        } catch (ProcessInitException e) {
-            Log.w(TAG, "Failed to preload native library", e);
-        }
+        LibraryLoader.getInstance().preloadNowOverrideApplicationContext(hostContext);
     }
 
     @Override
@@ -123,12 +118,10 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
                 linker.disableSharedRelros();
             }
         }
-        LibraryLoader libraryLoader = null;
         boolean isLoaded = false;
         boolean loadAtFixedAddressFailed = false;
         try {
-            libraryLoader = LibraryLoader.get(mLibraryProcessType);
-            libraryLoader.loadNowOverrideApplicationContext(hostContext);
+            LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
             isLoaded = true;
         } catch (ProcessInitException e) {
             if (requestedSharedRelro) {
@@ -140,10 +133,10 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
                 Log.e(TAG, "Failed to load native library", e);
             }
         }
-        if (!isLoaded && libraryLoader != null && requestedSharedRelro) {
+        if (!isLoaded && requestedSharedRelro) {
             linker.disableSharedRelros();
             try {
-                libraryLoader.loadNowOverrideApplicationContext(hostContext);
+                LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
                 isLoaded = true;
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to load native library on retry", e);
@@ -152,10 +145,10 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         if (!isLoaded) {
             return false;
         }
-        libraryLoader.registerRendererProcessHistogram(
+        LibraryLoader.getInstance().registerRendererProcessHistogram(
                 requestedSharedRelro, loadAtFixedAddressFailed);
         try {
-            libraryLoader.initialize();
+            LibraryLoader.getInstance().initialize(mLibraryProcessType);
         } catch (ProcessInitException e) {
             Log.w(TAG, "startup failed: %s", e);
             return false;

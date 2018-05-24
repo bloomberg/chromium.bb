@@ -21,7 +21,7 @@ public class MojoTestRule implements TestRule {
     private long mTestEnvironmentPointer;
 
     public void ruleSetUp() throws Exception {
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         nativeInit();
         mTestEnvironmentPointer = nativeSetupTestEnvironment();
     }
