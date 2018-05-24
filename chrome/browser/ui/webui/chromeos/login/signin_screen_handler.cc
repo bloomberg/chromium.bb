@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -862,7 +863,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
   }
 
   const bool guest_signin_allowed =
-      IsGuestSigninAllowed() &&
+      chrome_user_manager_util::IsGuestSessionAllowed(CrosSettings::Get()) &&
       IsSigninScreenError(error_screen_->GetErrorState());
   error_screen_->AllowGuestSignin(guest_signin_allowed);
 
@@ -1709,15 +1710,6 @@ bool SigninScreenHandler::IsGaiaHiddenByError() const {
 bool SigninScreenHandler::IsSigninScreenHiddenByError() const {
   return (GetCurrentScreen() == OobeScreen::SCREEN_ERROR_MESSAGE) &&
          (IsSigninScreen(error_screen_->GetParentScreen()));
-}
-
-bool SigninScreenHandler::IsGuestSigninAllowed() const {
-  CrosSettings* cros_settings = CrosSettings::Get();
-  if (!cros_settings)
-    return false;
-  bool allow_guest;
-  cros_settings->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
-  return allow_guest;
 }
 
 net::Error SigninScreenHandler::FrameError() const {

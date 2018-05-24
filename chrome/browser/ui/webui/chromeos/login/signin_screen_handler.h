@@ -461,9 +461,6 @@ class SigninScreenHandler
   // screen.
   bool IsSigninScreenHiddenByError() const;
 
-  // Returns true if guest signin is allowed.
-  bool IsGuestSigninAllowed() const;
-
   bool ShouldLoadGaia() const;
 
   net::Error FrameError() const;

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
@@ -173,9 +174,9 @@ void UpdateAuthParams(base::DictionaryValue* params,
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  bool allow_guest = true;
-  cros_settings->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
-  params->SetBoolean("guestSignin", allow_guest);
+  params->SetBoolean(
+      "guestSignin",
+      chrome_user_manager_util::IsGuestSessionAllowed(cros_settings));
 
   // nosignup flow if new users are not allowed.
   if (!allow_new_user || is_restrictive_proxy)
