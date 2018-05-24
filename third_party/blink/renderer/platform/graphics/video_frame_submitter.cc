@@ -90,6 +90,11 @@ void VideoFrameSubmitter::StopRendering() {
 }
 
 void VideoFrameSubmitter::SubmitSingleFrame() {
+  // If we haven't gotten a valid result yet from |context_provider_callback_|
+  // |resource_provider_| will remain uninitalized.
+  if (!resource_provider_->IsInitialized())
+    return;
+
   viz::BeginFrameAck current_begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();

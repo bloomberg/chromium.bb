@@ -37,7 +37,11 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
                            media::VideoRotation);
   virtual void ReleaseFrameResources();
 
+  // Once the context is lost, we must call Initialize again before we can
+  // continue doing work.
   void OnContextLost();
+
+  bool IsInitialized() { return resource_updater_.get(); }
 
   virtual void PrepareSendToParent(
       const std::vector<viz::ResourceId>& resource_ids,
