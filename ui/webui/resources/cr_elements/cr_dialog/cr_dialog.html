@@ -50,7 +50,7 @@
       }
 
       :host ::slotted([slot=body]) {
-        padding: 16px 20px;
+        padding: 0 20px;
         @apply --cr-dialog-body;
       }
 
@@ -58,14 +58,14 @@
         flex: 1;
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
-        padding: 16px 20px 0 20px;
+        padding: 16px 20px;
         @apply --cr-dialog-title;
       }
 
       :host ::slotted([slot=button-container]) {
         display: flex;
         justify-content: flex-end;
-        padding: 0 16px 16px 16px;
+        padding: 16px;
         @apply --cr-dialog-button-container;
       }
 
@@ -82,6 +82,7 @@
         border-bottom: 1px solid transparent;
         border-top: 1px solid transparent;
 
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         min-height: 60px; /* Minimum reasonably usable height. */
