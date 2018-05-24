@@ -89,6 +89,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   void set_focus_owner(WindowServiceClient* owner) { focus_owner_ = owner; }
   WindowServiceClient* focus_owner() const { return focus_owner_; }
 
+  // Returns true if the window has an embedding, and the owning client
+  // intercepts events that would normally target descendants.
+  bool DoesOwnerInterceptEvents() const;
+
+  // Returns true if this window has a client embedded in it.
+  bool HasEmbedding() const {
+    return embedded_window_service_client_ != nullptr;
+  }
+
   // Returns true if the window is a top-level window and there is at least some
   // non-client area.
   bool HasNonClientArea() const;

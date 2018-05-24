@@ -92,7 +92,7 @@ void WindowServiceClientTestHelper::SetWindowProperty(
       change_id, TransportIdForWindow(window), name, value);
 }
 
-WindowServiceClient* WindowServiceClientTestHelper::Embed(
+WindowServiceClientBinding* WindowServiceClientTestHelper::Embed(
     aura::Window* window,
     mojom::WindowTreeClientPtr client_ptr,
     mojom::WindowTreeClient* client,
@@ -103,8 +103,7 @@ WindowServiceClient* WindowServiceClientTestHelper::Embed(
           std::move(client_ptr), client, embed_flags)) {
     return nullptr;
   }
-  return window_service_client_->embedded_client_bindings_.back()
-      ->window_service_client();
+  return window_service_client_->embedded_client_bindings_.back().get();
 }
 
 void WindowServiceClientTestHelper::SetEventTargetingPolicy(
@@ -128,6 +127,12 @@ void WindowServiceClientTestHelper::SetCanFocus(aura::Window* window,
                                                 bool can_focus) {
   window_service_client_->SetCanFocus(
       window_service_client_->TransportIdForWindow(window), can_focus);
+}
+
+void WindowServiceClientTestHelper::DestroyBinding(
+    WindowServiceClientBinding* binding) {
+  // Triggers WindowServiceClient to delete WindowServiceClientBinding.
+  window_service_client_->OnChildBindingConnectionLost(binding);
 }
 
 ClientWindowId WindowServiceClientTestHelper::ClientWindowIdForWindow(

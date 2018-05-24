@@ -7,6 +7,7 @@
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_service_client_binding.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
@@ -31,7 +32,7 @@ class TestFocusRules : public wm::BaseFocusRules {
 
 }  // namespace
 
-WindowServiceTestSetup::WindowServiceTestSetup()
+WindowServiceTestSetup::WindowServiceTestSetup(bool intercepts_events)
     // FocusController takes ownership of TestFocusRules.
     : focus_controller_(new TestFocusRules()) {
   if (gl::GetGLImplementation() == gl::kGLImplementationNone)
@@ -50,7 +51,6 @@ WindowServiceTestSetup::WindowServiceTestSetup()
   aura::client::SetFocusClient(root(), focus_controller());
   delegate_.set_top_level_parent(aura_test_helper_.root_window());
 
-  const bool intercepts_events = false;
   window_service_client_ = service_->CreateWindowServiceClient(
       &window_tree_client_, intercepts_events);
   window_service_client_->InitFromFactory();
@@ -72,19 +72,28 @@ std::unique_ptr<Embedding> WindowServiceTestSetup::CreateEmbedding(
     aura::Window* embed_root,
     uint32_t flags) {
   std::unique_ptr<Embedding> embedding = std::make_unique<Embedding>();
-  embedding->window_service_client = client_test_helper_->Embed(
+  embedding->binding = client_test_helper_->Embed(
       embed_root, nullptr, &embedding->window_tree_client, flags);
-  if (!embedding->window_service_client)
+  if (!embedding->binding)
     return nullptr;
+  embedding->window_service_client =
+      embedding->binding->window_service_client();
   embedding->client_test_helper =
       std::make_unique<WindowServiceClientTestHelper>(
           embedding->window_service_client);
+  embedding->parent_window_service_client = window_service_client_.get();
   return embedding;
 }
 
 Embedding::Embedding() = default;
 
-Embedding::~Embedding() = default;
+Embedding::~Embedding() {
+  if (!binding)
+    return;
+
+  WindowServiceClientTestHelper(parent_window_service_client)
+      .DestroyBinding(binding);
+}
 
 }  // namespace ws2
 }  // namespace ui

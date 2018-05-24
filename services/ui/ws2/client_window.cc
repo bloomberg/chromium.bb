@@ -66,9 +66,9 @@ class ClientWindowTargeter : public aura::WindowTargeter {
                                       ui::Event* event) override {
     aura::Window* window = static_cast<aura::Window*>(event_target);
     DCHECK_EQ(window, client_window_->window());
-    if (client_window_->embedded_window_service_client() &&
-        client_window_->owning_window_service_client() &&
-        client_window_->owning_window_service_client()->intercepts_events()) {
+    if (client_window_->DoesOwnerInterceptEvents()) {
+      // If the owner intercepts events, then don't recurse (otherwise events
+      // would go to a descendant).
       return event_target->CanAcceptEvent(*event) ? window : nullptr;
     }
     return aura::WindowTargeter::FindTargetForEvent(event_target, event);
@@ -104,6 +104,9 @@ class ClientWindowEventHandler : public ui::EventHandler {
       // continue. Early out to avoid sending the event to the client again.
       return;
     }
+
+    if (HandleInterceptedKeyEvent(event))
+      return;
 
     if (ShouldIgnoreEvent(*event))
       return;
@@ -156,6 +159,24 @@ class ClientWindowEventHandler : public ui::EventHandler {
   }
 
  private:
+  // If |event| is a KeyEvent that needs to be handled because a client
+  // intercepts events, then true is returned and the event is handled.
+  // Otherwise returns false.
+  bool HandleInterceptedKeyEvent(Event* event) {
+    if (!event->IsKeyEvent())
+      return false;
+
+    // KeyEvents do not go through through ClientWindowTargeter. As a result
+    // ClientWindowEventHandler has to check for a client intercepting events.
+    if (client_window_->DoesOwnerInterceptEvents()) {
+      client_window_->owning_window_service_client()->SendEventToClient(
+          window(), *event);
+      event->StopPropagation();
+      return true;
+    }
+    return false;
+  }
+
   ClientWindow* const client_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientWindowEventHandler);
@@ -343,6 +364,11 @@ bool ClientWindow::HasNonClientArea() const {
   return owning_window_service_client_ &&
          owning_window_service_client_->IsTopLevel(window_) &&
          (!client_area_.IsEmpty() || !additional_client_areas_.empty());
+}
+
+bool ClientWindow::DoesOwnerInterceptEvents() const {
+  return HasEmbedding() && owning_window_service_client_ &&
+         owning_window_service_client_->intercepts_events();
 }
 
 bool ClientWindow::IsTopLevel() const {
