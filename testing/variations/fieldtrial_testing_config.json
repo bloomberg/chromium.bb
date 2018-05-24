@@ -488,7 +488,9 @@
     "AutofillUpstreamUpdatePromptExplanation": [
         {
             "platforms": [
+                "android",
                 "chromeos",
+                "ios",
                 "linux",
                 "mac",
                 "win"
