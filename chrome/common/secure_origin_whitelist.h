@@ -9,17 +9,27 @@
 #include <string>
 #include <vector>
 
-#include "url/origin.h"
-
 class PrefRegistrySimple;
 
 namespace secure_origin_whitelist {
 
-// Return a whitelist of origins that need to be considered trustworthy.
-// The whitelist is given by kUnsafelyTreatInsecureOriginAsSecure
-// command-line option. See
+// Return a whitelist of origins and hostname patterns that need to be
+// considered trustworthy.  The whitelist is given by
+// kUnsafelyTreatInsecureOriginAsSecure command-line option. See
 // https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
-std::vector<url::Origin> GetWhitelist();
+//
+// The whitelist can contain origins and wildcard hostname patterns up to
+// eTLD+1. For example, the list may contain "http://foo.com",
+// "http://foo.com:8000", "*.foo.com", "*.foo.*.bar.com", and
+// "http://*.foo.bar.com", but not "*.co.uk", "*.com", or "test.*.com". Hostname
+// patterns must contain a wildcard somewhere (so "test.com" is not a valid
+// pattern) and wildcards can only replace full components ("test*.foo.com" is
+// not valid).
+//
+// Plain origins ("http://foo.com") are canonicalized when they are inserted
+// into this list by converting to url::Origin and serializing. For hostname
+// patterns, each component is individually canonicalized.
+std::vector<std::string> GetWhitelist();
 
 // Returns a whitelist of schemes that should bypass the Is Privileged Context
 // check. See http://www.w3.org/TR/powerful-features/#settings-privileged.

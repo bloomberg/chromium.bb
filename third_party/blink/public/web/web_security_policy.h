@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class WebSecurityOrigin;
 class WebString;
 class WebURL;
 
@@ -94,9 +93,10 @@ class WebSecurityPolicy {
       bool allow_destination_subdomains);
   BLINK_EXPORT static void ResetOriginAccessBlacklists();
 
-  // Support for whitelisting origins to treat them as trustworthy.
-  BLINK_EXPORT static void AddOriginTrustworthyWhiteList(
-      const WebSecurityOrigin&);
+  // Support for whitelisting origins or hostname patterns to treat them as
+  // trustworthy. This method does not do any canonicalization; the caller is
+  // responsible for canonicalizing them before calling this.
+  BLINK_EXPORT static void AddOriginTrustworthyWhiteList(const WebString&);
 
   // Support for whitelisting schemes as bypassing secure context checks.
   BLINK_EXPORT static void AddSchemeToBypassSecureContextWhitelist(
