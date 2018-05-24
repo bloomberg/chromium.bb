@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 
 namespace blink {
 namespace scheduler {
@@ -28,11 +29,13 @@ SchedulerHelper::SchedulerHelper(
 
 void SchedulerHelper::InitDefaultQueues(
     scoped_refptr<TaskQueue> default_task_queue,
-    scoped_refptr<TaskQueue> control_task_queue) {
+    scoped_refptr<TaskQueue> control_task_queue,
+    TaskType default_task_type) {
   control_task_queue->SetQueuePriority(TaskQueue::kControlPriority);
 
   DCHECK(task_queue_manager_);
-  task_queue_manager_->SetDefaultTaskRunner(default_task_queue);
+  task_queue_manager_->SetDefaultTaskRunner(
+      TaskQueueWithTaskType::Create(default_task_queue, default_task_type));
 }
 
 SchedulerHelper::~SchedulerHelper() {

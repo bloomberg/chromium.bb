@@ -36,7 +36,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
         base::sequence_manager::TaskQueueManagerForTest::Create(
             nullptr, base::ThreadTaskRunnerHandle::Get(),
             test_task_runner_->GetMockTickClock()),
-        nullptr));
+        nullptr, TaskType::kInternalTest));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ = scheduler_helper_->DefaultWorkerTaskQueue();

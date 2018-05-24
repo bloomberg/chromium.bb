@@ -202,6 +202,10 @@ const char* TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueControl";
     case TaskType::kInternalIntersectionObserver:
       return "InternalIntersectionObserver";
+    case TaskType::kCompositorThreadTaskQueueDefault:
+      return "CompositorThreadTaskQueueDefault";
+    case TaskType::kWorkerThreadTaskQueueDefault:
+      return "WorkerThreadTaskQueueDefault";
     case TaskType::kCount:
       return "Count";
   }

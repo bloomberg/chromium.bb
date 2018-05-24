@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 
 namespace blink {
@@ -18,7 +19,8 @@ class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
  public:
   NonMainThreadSchedulerHelper(
       std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
-      NonMainThreadScheduler* non_main_thread_scheduler);
+      NonMainThreadScheduler* non_main_thread_scheduler,
+      TaskType default_task_type);
   ~NonMainThreadSchedulerHelper() override;
 
   scoped_refptr<WorkerTaskQueue> NewTaskQueue(

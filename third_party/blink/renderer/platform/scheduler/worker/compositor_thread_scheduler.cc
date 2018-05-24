@@ -11,7 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
@@ -23,8 +25,12 @@ CompositorThreadScheduler::CompositorThreadScheduler(
         task_queue_manager)
     : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),
-          this)),
-      thread_(thread) {}
+          this,
+          TaskType::kCompositorThreadTaskQueueDefault)),
+      thread_(thread),
+      default_task_runner_(TaskQueueWithTaskType::Create(
+          DefaultTaskQueue(),
+          TaskType::kCompositorThreadTaskQueueDefault)) {}
 
 CompositorThreadScheduler::~CompositorThreadScheduler() = default;
 
@@ -46,7 +52,7 @@ void CompositorThreadScheduler::OnTaskCompleted(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CompositorThreadScheduler::DefaultTaskRunner() {
-  return DefaultTaskQueue();
+  return default_task_runner_;
 }
 
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
