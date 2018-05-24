@@ -15,12 +15,12 @@ FakeCecServiceClient::~FakeCecServiceClient() = default;
 
 void FakeCecServiceClient::SendStandBy() {
   stand_by_call_count_++;
-  last_set_state_ = kStandBy;
+  SetDisplayPowerState(PowerState::kStandBy);
 }
 
 void FakeCecServiceClient::SendWakeUp() {
   wake_up_call_count_++;
-  last_set_state_ = kAwake;
+  SetDisplayPowerState(PowerState::kOn);
 }
 
 void FakeCecServiceClient::QueryDisplayCecPowerState(
@@ -30,5 +30,11 @@ void FakeCecServiceClient::QueryDisplayCecPowerState(
 }
 
 void FakeCecServiceClient::Init(dbus::Bus* bus) {}
+
+void FakeCecServiceClient::SetDisplayPowerState(PowerState new_state) {
+  for (size_t i = 0; i < tv_power_states_.size(); i++) {
+    tv_power_states_[i] = new_state;
+  }
+}
 
 }  // namespace chromeos
