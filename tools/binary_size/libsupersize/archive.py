@@ -140,7 +140,10 @@ def _NormalizeNames(raw_symbols):
 
     # See comment in _CalculatePadding() about when this can happen. Don't
     # process names for non-native sections.
-    if full_name.startswith('*') or symbol.IsOverhead() or symbol.IsOther():
+    if (full_name.startswith('*') or
+        symbol.IsOverhead() or
+        symbol.IsOther() or
+        symbol.IsPak()):
       symbol.template_name = full_name
       symbol.name = full_name
     elif symbol.IsDex():
