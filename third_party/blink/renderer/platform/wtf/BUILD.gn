@@ -66,8 +66,6 @@ jumbo_component("wtf") {
     "conditional_destructor.h",
     "container_annotations.h",
     "cpu.h",
-    "cryptographically_random_number.cc",
-    "cryptographically_random_number.h",
     "date_math.cc",
     "date_math.h",
     "deque.h",

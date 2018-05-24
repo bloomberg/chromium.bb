@@ -28,10 +28,10 @@
 
 #include "third_party/blink/renderer/modules/crypto/crypto.h"
 
+#include "crypto/random.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
-#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 namespace blink {
 
@@ -71,8 +71,7 @@ NotShared<DOMArrayBufferView> Crypto::getRandomValues(
                        array.View()->byteLength()));
     return NotShared<DOMArrayBufferView>(nullptr);
   }
-  CryptographicallyRandomValues(array.View()->BaseAddress(),
-                                array.View()->byteLength());
+  crypto::RandBytes(array.View()->BaseAddress(), array.View()->byteLength());
   return array;
 }
 

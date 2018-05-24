@@ -5,16 +5,14 @@
 #include "third_party/blink/renderer/platform/time_clamper.h"
 
 #include "base/bit_cast.h"
+#include "base/rand_util.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 #include <cmath>
 
 namespace blink {
 
-TimeClamper::TimeClamper() {
-  CryptographicallyRandomValues(&secret_, sizeof(secret_));
-}
+TimeClamper::TimeClamper() : secret_(base::RandUint64()) {}
 
 double TimeClamper::ClampTimeResolution(double time_seconds) const {
   DCHECK_GE(time_seconds, 0);
