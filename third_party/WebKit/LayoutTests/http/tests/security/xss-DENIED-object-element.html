@@ -13,12 +13,16 @@ window.onload = function()
     document.body.appendChild(object);
     object.onload = function() {
         object.onload = null;
-        object.data = "javascript:alert(document.body.innerHTML)";
+        object.data = "javascript:window.parent.foo = true; alert(document.body.innerHTML);";
         object.innerHTML = "foo";
 
-        if (window.testRunner)
-            setTimeout("testRunner.notifyDone()", 50);
-    }
+        if (window.testRunner) {
+            setTimeout(() => {
+                if (window.foo) alert("ERROR");
+                testRunner.notifyDone();
+            }, 50);
+        }
+    };
 }
 </script>
 </head>

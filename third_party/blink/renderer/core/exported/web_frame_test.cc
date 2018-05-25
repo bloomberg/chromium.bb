@@ -13084,4 +13084,125 @@ TEST_F(WebFrameTest, GetCanonicalUrlForSharingMultiple) {
             frame->GetDocument().CanonicalUrlForSharing());
 }
 
+class WebFramePluginElementTest : public WebFrameTest {
+ public:
+  WebFramePluginElementTest() {
+    webview_helper_.InitializeAndLoad("about:blank", &main_frame_client_);
+  }
+  ~WebFramePluginElementTest() override { webview_helper_.Reset(); }
+
+ protected:
+  // Tester for verifying <embed>/<object> with a content frame is properly
+  // cleaned up when 'src'/'data' attributes are changed.
+  void RunTestLogicForPluginType(const char* plugin_tag,
+                                 const char* url_attribute_name) {
+    constexpr char kPageWithBeforeUnloadHTMLString[] = R"(
+      data: text/html,
+      <body>
+        <script>
+          window.addEventListener('beforeunload', (e) => {
+          e.returnValue = 'message';
+          return e.returnValue;
+          });
+        </script>
+      <body>;)";
+    constexpr char kSimplePageHTMLString[] = "data: text/html,<body></body>";
+    AppendElement(plugin_tag);
+    SetAttribute(plugin_tag, "type", "text/html");
+    SetAttribute(plugin_tag, url_attribute_name,
+                 kPageWithBeforeUnloadHTMLString);
+    EXPECT_FALSE(GetMainFrame()->FirstChild());
+    // After the attribute update the plugin needs update. This will ensure that
+    // happens and HTMLPlugInElement::RequestObject is invoked. After this step
+    // the plugin must have a content frame.
+    GetMainFrame()->View()->UpdateAllLifecyclePhases();
+    RunPendingTasks();
+    auto* child_frame = GetMainFrame()->FirstChild();
+    EXPECT_TRUE(child_frame);
+    SetAttribute(plugin_tag, url_attribute_name, kSimplePageHTMLString);
+    GetMainFrame()->View()->UpdateAllLifecyclePhases();
+    RunPendingTasks();
+    EXPECT_EQ(1U, main_frame_client_.removed_child_frame_count());
+    EXPECT_EQ(2U, main_frame_client_.created_child_frames_count());
+    EXPECT_NE(child_frame, GetMainFrame()->FirstChild());
+  }
+
+ private:
+  // Used for main frame to keep track of the children which get removed.
+  class MainFrameClient : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    WebLocalFrame* CreateChildFrame(
+        WebLocalFrame* parent,
+        WebTreeScopeType scope,
+        const WebString& name,
+        const WebString& fallback_name,
+        WebSandboxFlags sandbox_flags,
+        const ParsedFeaturePolicy& container_policy,
+        const WebFrameOwnerProperties& frame_owner_properties) override {
+      created_child_frames_count_++;
+      auto child_frame_client =
+          std::make_unique<ChildFrameClient>(&removed_child_frame_count_);
+      return FrameTestHelpers::CreateLocalChild(*parent, scope,
+                                                std::move(child_frame_client));
+    }
+
+    size_t removed_child_frame_count() const {
+      return removed_child_frame_count_;
+    }
+    size_t created_child_frames_count() const {
+      return created_child_frames_count_;
+    }
+
+   private:
+    size_t removed_child_frame_count_ = 0;
+    size_t created_child_frames_count_ = 0;
+  };
+
+  // Notifies the top frame's client about the removal of its frame.
+  class ChildFrameClient : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    ChildFrameClient(size_t* removed_frame_count)
+        : removed_frame_count_(removed_frame_count) {}
+    void FrameDetached(DetachType type) override {
+      if (type == DetachType::kRemove)
+        ++(*removed_frame_count_);
+      FrameTestHelpers::TestWebFrameClient::FrameDetached(type);
+    }
+
+   private:
+    size_t* const removed_frame_count_;
+  };
+
+  WebLocalFrameImpl* GetMainFrame() const {
+    return webview_helper_.LocalMainFrame();
+  }
+
+  void AppendElement(const char* element_type) {
+    String script = String::Format(
+        "document.body.appendChild(document.createElement('%s'));",
+        element_type);
+    GetMainFrame()->ExecuteScript(WebScriptSource(script));
+  }
+
+  void SetAttribute(const char* sel, const char* name, const char* value) {
+    String script =
+        String::Format("document.querySelector('%s').setAttribute('%s', '%s');",
+                       sel, name, value);
+    GetMainFrame()->ExecuteScript(WebScriptSource(script));
+  }
+
+  FrameTestHelpers::WebViewHelper webview_helper_;
+  MainFrameClient main_frame_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebFramePluginElementTest);
+};
+
+TEST_F(WebFramePluginElementTest, ChangingEmbedSourceDetachesContentFrame) {
+  RunTestLogicForPluginType("embed", "src");
+}
+
+TEST_F(WebFramePluginElementTest, ChangingObjectDataDetachesContentFrame) {
+  RunTestLogicForPluginType("object", "data");
+}
+
 }  // namespace blink

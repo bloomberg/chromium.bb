@@ -11694,6 +11694,82 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_LE(compositing_rect.y(), expected_offset + 2);
 }
 
+// This test verifies that if a plugin element contains a remote frame, a change
+// in attributes leading to lazy reattaching the element will detach the OOPIF
+// unconditionally.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DetachRemoteContentFrameUnconditionallyInPlugins) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL embed_url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL embed_url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  GURL pdf_url(
+      embedded_test_server()->GetURL("c.com", "/find_in_pdf_page.pdf"));
+  const char kAttachEmbed[] =
+      "document.body.appendChild(document.createElement('embed'));"
+      "document.querySelector('embed').addEventListener('load', (e) => {"
+      "  window.domAutomationController.send(this.last_src);"
+      "});";
+  const char kUpdateEmbedAttributes[] =
+      "el = document.querySelector('embed');"
+      "el.type = '%s';"
+      "el.src = '%s';"
+      "window.last_src = el.src;";
+  const char kTextHTMLType[] = "text/html";
+  const char kPDFType[] = "application/x-google-chrome-pdf";
+  const char kInjectBeforeUnloadHandler[] =
+      "window.addEventListener('beforeunload', (e) => {"
+      "  e.returnValue = 'message';"
+      "  return e.returnValue;"
+      "});";
+
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_TRUE(ExecuteScript(root, kAttachEmbed));
+
+  // Navigate <embed> to cross-origin.
+  std::string response;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      base::StringPrintf(kUpdateEmbedAttributes, kTextHTMLType,
+                         embed_url_b.spec().c_str()),
+      &response));
+  EXPECT_EQ(embed_url_b.spec(), response);
+  ASSERT_TRUE(root->child_at(0));
+  // Add 'beforeunload' handler.
+  ASSERT_TRUE(ExecuteScript(root->child_at(0), kInjectBeforeUnloadHandler));
+  // For completeness (we do not expect the 'beforeunload' handler to even get
+  // called since detaching the frame is unconditional).
+  PrepContentsForBeforeUnloadTest(shell()->web_contents());
+
+  // Now change the embed |src| and |type| to PDF and verify that the current
+  // frame is destroyed.
+  FrameDeletedObserver delete_observer1(
+      root->child_at(0)->current_frame_host());
+  ASSERT_TRUE(
+      ExecuteScript(root, base::StringPrintf(kUpdateEmbedAttributes, kPDFType,
+                                             pdf_url.spec().c_str())));
+  delete_observer1.Wait();
+
+  // Navigate the <embed> back to |embed_url_b| and then try again with a
+  // cross-origin navigation.
+  response.clear();
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      base::StringPrintf(kUpdateEmbedAttributes, kTextHTMLType,
+                         embed_url_b.spec().c_str()),
+      &response));
+  EXPECT_EQ(embed_url_b.spec(), response);
+  ASSERT_TRUE(root->child_at(0));
+  ASSERT_TRUE(ExecuteScript(root->child_at(0), kInjectBeforeUnloadHandler));
+  PrepContentsForBeforeUnloadTest(shell()->web_contents());
+  FrameDeletedObserver delete_observer2(
+      root->child_at(0)->current_frame_host());
+  ASSERT_TRUE(ExecuteScript(
+      root, base::StringPrintf(kUpdateEmbedAttributes, kTextHTMLType,
+                               embed_url_c.spec().c_str())));
+  delete_observer2.Wait();
+}
+
 // Similar to ScaledIFrameRasterSize but with nested OOPIFs to ensure
 // propagation works correctly.
 #if defined(OS_ANDROID)

@@ -419,6 +419,11 @@ void TestWebFrameClient::FrameDetached(DetachType type) {
 
   owned_widget_client_.reset();
   frame_->Close();
+  // TODO(ekaramad): In test FallbackForNonexistentProvisionalNavigation the
+  // child frame inside <object> get destroyed due to attribute change but the
+  // same client is reused (not self owned). We should clean |frame_| so that
+  // the DCHECK in Bind() would not fire on a non-nullptr |frame_|.
+  frame_ = nullptr;
   self_owned_.reset();
 }
 
