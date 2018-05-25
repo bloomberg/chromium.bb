@@ -205,7 +205,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // before creating the sheet view. This way, it's possible to determine
   // whether there's something to do when the user hits enter.
   std::unique_ptr<views::View> footer = CreateFooterView();
-  std::unique_ptr<SheetView> view = std::make_unique<SheetView>(
+  auto view = std::make_unique<SheetView>(
       primary_button_
           ? base::Bind(
                 &PaymentRequestSheetController::PerformPrimaryButtonAction,
@@ -284,7 +284,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   UpdateContentView();
 
   view->SetFirstFocusableView(GetFirstFocusedView());
-  return std::move(view);
+  return view;
 }
 
 void PaymentRequestSheetController::UpdateContentView() {

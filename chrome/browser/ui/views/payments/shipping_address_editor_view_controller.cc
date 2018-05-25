@@ -168,18 +168,16 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
     const autofill::ServerFieldType& type) {
   switch (type) {
     case autofill::ADDRESS_HOME_COUNTRY: {
-      std::unique_ptr<autofill::CountryComboboxModel> model =
-          std::make_unique<autofill::CountryComboboxModel>();
+      auto model = std::make_unique<autofill::CountryComboboxModel>();
       model->SetCountries(*state()->GetPersonalDataManager(),
                           base::Callback<bool(const std::string&)>(),
                           state()->GetApplicationLocale());
       if (model->countries().size() != countries_.size())
         UpdateCountries(model.get());
-      return std::move(model);
+      return model;
     }
     case autofill::ADDRESS_HOME_STATE: {
-      std::unique_ptr<autofill::RegionComboboxModel> model =
-          std::make_unique<autofill::RegionComboboxModel>();
+      auto model = std::make_unique<autofill::RegionComboboxModel>();
       region_model_ = model.get();
       if (chosen_country_index_ < countries_.size()) {
         model->LoadRegionData(countries_[chosen_country_index_].first,
@@ -197,7 +195,7 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
         // We can't update the view synchronously while building the view.
         OnDataChanged(/*synchronous=*/false);
       }
-      return std::move(model);
+      return model;
     }
     default:
       NOTREACHED();
