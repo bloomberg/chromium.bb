@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/core/model/has_thumbnail_task.h"
 
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -23,7 +23,7 @@ bool ThumbnailExistsSync(int64_t offline_id, sql::Connection* db) {
 
 }  // namespace
 
-HasThumbnailTask::HasThumbnailTask(OfflinePageMetadataStoreSQL* store,
+HasThumbnailTask::HasThumbnailTask(OfflinePageMetadataStore* store,
                                    int64_t offline_id,
                                    ThumbnailExistsCallback exists_callback)
     : store_(store),

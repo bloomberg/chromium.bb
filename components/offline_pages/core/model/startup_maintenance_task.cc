@@ -17,7 +17,7 @@
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -274,7 +274,7 @@ bool StartupMaintenanceSync(
 }  // namespace
 
 StartupMaintenanceTask::StartupMaintenanceTask(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     ArchiveManager* archive_manager,
     ClientPolicyController* policy_controller)
     : store_(store),

@@ -32,7 +32,7 @@
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
 #include "components/previews/core/previews_decider.h"
@@ -879,8 +879,8 @@ OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel(
 
   base::FilePath store_path =
       context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
-  std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
-      new OfflinePageMetadataStoreSQL(task_runner, store_path));
+  std::unique_ptr<OfflinePageMetadataStore> metadata_store(
+      new OfflinePageMetadataStore(task_runner, store_path));
   std::unique_ptr<SystemDownloadManager> download_manager(
       new StubSystemDownloadManager(kDownloadId, true));
 

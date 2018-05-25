@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/core/model/get_thumbnail_task.h"
 
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -39,7 +39,7 @@ std::unique_ptr<OfflinePageThumbnail> GetThumbnailSync(int64_t offline_id,
 
 }  // namespace
 
-GetThumbnailTask::GetThumbnailTask(OfflinePageMetadataStoreSQL* store,
+GetThumbnailTask::GetThumbnailTask(OfflinePageMetadataStore* store,
                                    int64_t offline_id,
                                    CompleteCallback complete_callback)
     : store_(store),

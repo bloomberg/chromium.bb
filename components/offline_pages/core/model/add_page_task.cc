@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -76,7 +76,7 @@ ItemActionStatus AddOfflinePageSync(const OfflinePageItem& item,
 
 }  // namespace
 
-AddPageTask::AddPageTask(OfflinePageMetadataStoreSQL* store,
+AddPageTask::AddPageTask(OfflinePageMetadataStore* store,
                          const OfflinePageItem& offline_page,
                          AddPageTaskCallback callback)
     : store_(store),

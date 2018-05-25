@@ -48,7 +48,7 @@ class ModelTaskTestBase : public TaskTestBase,
   OfflinePageMetadataStoreTestUtil* store_test_util() {
     return &store_test_util_;
   }
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
+  OfflinePageMetadataStore* store() { return store_test_util_.store(); }
   OfflinePageItemGenerator* generator() { return &generator_; }
   ArchiveManager* archive_manager() { return archive_manager_.get(); }
   ClientPolicyController* policy_controller() { return &policy_controller_; }

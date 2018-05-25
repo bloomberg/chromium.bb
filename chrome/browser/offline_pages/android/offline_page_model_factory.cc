@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 
 namespace offline_pages {
 
@@ -50,8 +50,8 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
 
   base::FilePath store_path =
       profile->GetPath().Append(chrome::kOfflinePageMetadataDirname);
-  std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
-      new OfflinePageMetadataStoreSQL(background_task_runner, store_path));
+  std::unique_ptr<OfflinePageMetadataStore> metadata_store(
+      new OfflinePageMetadataStore(background_task_runner, store_path));
 
   base::FilePath persistent_archives_dir =
       profile->GetPath().Append(chrome::kOfflinePageArchivesDirname);

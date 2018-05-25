@@ -5,7 +5,7 @@
 #include "components/offline_pages/core/model/clear_digest_task.h"
 
 #include "base/bind.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 
@@ -28,7 +28,7 @@ bool ClearDigestSync(int64_t offline_id, sql::Connection* db) {
 
 }  // namespace
 
-ClearDigestTask::ClearDigestTask(OfflinePageMetadataStoreSQL* store,
+ClearDigestTask::ClearDigestTask(OfflinePageMetadataStore* store,
                                  int64_t offline_id)
     : store_(store), offline_id_(offline_id), weak_ptr_factory_(this) {
   DCHECK(store_);

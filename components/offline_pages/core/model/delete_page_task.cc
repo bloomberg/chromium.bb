@@ -13,7 +13,7 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -425,7 +425,7 @@ DeletePageTaskResult::~DeletePageTaskResult() = default;
 
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingOfflineIds(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     DeletePageTask::DeletePageTaskCallback callback,
     const std::vector<int64_t>& offline_ids) {
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
@@ -435,7 +435,7 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingOfflineIds(
 
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingClientIds(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     DeletePageTask::DeletePageTaskCallback callback,
     const std::vector<ClientId>& client_ids) {
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
@@ -446,7 +446,7 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskMatchingClientIds(
 // static
 std::unique_ptr<DeletePageTask>
 DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     DeletePageTask::DeletePageTaskCallback callback,
     const std::vector<ClientId>& client_ids,
     const std::string& origin) {
@@ -459,7 +459,7 @@ DeletePageTask::CreateTaskMatchingClientIdsAndOrigin(
 // static
 std::unique_ptr<DeletePageTask>
 DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     DeletePageTask::DeletePageTaskCallback callback,
     ClientPolicyController* policy_controller,
     const UrlPredicate& predicate) {
@@ -474,7 +474,7 @@ DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
 
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskDeletingForPageLimit(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     DeletePageTask::DeletePageTaskCallback callback,
     ClientPolicyController* policy_controller,
     const OfflinePageItem& page) {
@@ -486,7 +486,7 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskDeletingForPageLimit(
       std::move(callback)));
 }
 
-DeletePageTask::DeletePageTask(OfflinePageMetadataStoreSQL* store,
+DeletePageTask::DeletePageTask(OfflinePageMetadataStore* store,
                                DeleteFunction func,
                                DeletePageTaskCallback callback)
     : store_(store),

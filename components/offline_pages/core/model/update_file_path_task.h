@@ -16,13 +16,13 @@ namespace offline_pages {
 
 using ReadResult = GetPagesTask::ReadResult;
 
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // Task that updates the file path in the metadata store. It takes the offline
 // ID of the page accessed, the new file path, and the completion callback.
 class UpdateFilePathTask : public Task {
  public:
-  UpdateFilePathTask(OfflinePageMetadataStoreSQL* store,
+  UpdateFilePathTask(OfflinePageMetadataStore* store,
                      int64_t offline_id,
                      const base::FilePath& file_path,
                      UpdateFilePathDoneCallback callback);
@@ -35,7 +35,7 @@ class UpdateFilePathTask : public Task {
   void OnUpdateFilePathDone(bool result);
 
   // The metadata store used to update the page. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
 
   int64_t offline_id_;
   base::FilePath file_path_;

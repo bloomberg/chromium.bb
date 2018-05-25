@@ -13,7 +13,7 @@
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // GetThumbnailTask reads a thumbnail from the page_thumbnails table.
 class GetThumbnailTask : public Task {
@@ -21,7 +21,7 @@ class GetThumbnailTask : public Task {
   typedef base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>
       CompleteCallback;
 
-  GetThumbnailTask(OfflinePageMetadataStoreSQL* store,
+  GetThumbnailTask(OfflinePageMetadataStore* store,
                    int64_t offline_id,
                    CompleteCallback complete_callback);
   ~GetThumbnailTask() override;
@@ -34,7 +34,7 @@ class GetThumbnailTask : public Task {
 
   void Complete(Result result);
 
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
   int64_t offline_id_;
   base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)>
       complete_callback_;

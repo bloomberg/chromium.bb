@@ -34,7 +34,7 @@
 #include "components/offline_pages/core/model/store_thumbnail_task.h"
 #include "components/offline_pages/core/model/update_file_path_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/system_download_manager.h"
@@ -186,7 +186,7 @@ constexpr base::TimeDelta OfflinePageModelTaskified::kMaintenanceTasksDelay;
 constexpr base::TimeDelta OfflinePageModelTaskified::kClearStorageInterval;
 
 OfflinePageModelTaskified::OfflinePageModelTaskified(
-    std::unique_ptr<OfflinePageMetadataStoreSQL> store,
+    std::unique_ptr<OfflinePageMetadataStore> store,
     std::unique_ptr<ArchiveManager> archive_manager,
     std::unique_ptr<SystemDownloadManager> download_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -201,7 +201,7 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
       skip_maintenance_tasks_for_testing_(false),
       task_runner_(task_runner),
       weak_ptr_factory_(this) {
-  DCHECK_LT(kMaintenanceTasksDelay, OfflinePageMetadataStoreSQL::kClosingDelay);
+  DCHECK_LT(kMaintenanceTasksDelay, OfflinePageMetadataStore::kClosingDelay);
   CreateArchivesDirectoryIfNeeded();
   // TODO(fgorski): Call from here, when upgrade task is available:
   // PostSelectItemsMarkedForUpgrade();

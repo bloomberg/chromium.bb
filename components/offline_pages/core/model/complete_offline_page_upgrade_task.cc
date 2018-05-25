@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/sys_info.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -89,7 +89,7 @@ CompleteUpgradeStatus CompleteOfflinePageUpgradeSync(
 }  // namespace
 
 CompleteOfflinePageUpgradeTask::CompleteOfflinePageUpgradeTask(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     int64_t offline_id,
     const base::FilePath& temporary_file_path,
     const base::FilePath& target_file_path,

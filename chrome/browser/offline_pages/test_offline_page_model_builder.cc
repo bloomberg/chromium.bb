@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -31,8 +31,8 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
 
   base::FilePath store_path =
       context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
-  std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
-      new OfflinePageMetadataStoreSQL(task_runner, store_path));
+  std::unique_ptr<OfflinePageMetadataStore> metadata_store(
+      new OfflinePageMetadataStore(task_runner, store_path));
 
   base::FilePath private_archives_dir =
       context->GetPath().Append(chrome::kOfflinePageArchivesDirname);

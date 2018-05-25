@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/core/model/store_thumbnail_task.h"
 
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -29,7 +29,7 @@ bool StoreThumbnailSync(const OfflinePageThumbnail& thumbnail,
 }  // namespace
 
 StoreThumbnailTask::StoreThumbnailTask(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     OfflinePageThumbnail thumbnail,
     base::OnceCallback<void(bool)> complete_callback)
     : store_(store),

@@ -14,7 +14,7 @@ namespace offline_pages {
 
 enum class AddPageResult;
 enum class ItemActionStatus;
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // Task that adds a new page to the metadata store.
 // The caller needs to provide a callback which consumes an AddPageResult and
@@ -25,7 +25,7 @@ class AddPageTask : public Task {
  public:
   typedef base::OnceCallback<void(AddPageResult)> AddPageTaskCallback;
 
-  AddPageTask(OfflinePageMetadataStoreSQL* store,
+  AddPageTask(OfflinePageMetadataStore* store,
               const OfflinePageItem& offline_page,
               AddPageTaskCallback callback);
   ~AddPageTask() override;
@@ -38,7 +38,7 @@ class AddPageTask : public Task {
   void InformAddPageDone(AddPageResult result);
 
   // The metadata store to insert the page. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
 
   OfflinePageItem offline_page_;
   AddPageTaskCallback callback_;
