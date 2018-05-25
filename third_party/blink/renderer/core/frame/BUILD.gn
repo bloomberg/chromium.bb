@@ -74,7 +74,6 @@ blink_core_sources("frame") {
     "intervention.cc",
     "intervention.h",
     "intervention_report.h",
-    "intrinsic_sizing_info.h",
     "layout_subtree_root_list.cc",
     "layout_subtree_root_list.h",
     "local_dom_window.cc",

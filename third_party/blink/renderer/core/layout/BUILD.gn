@@ -92,6 +92,7 @@ blink_core_sources("layout") {
     "hit_testing_transform_state.h",
     "intersection_geometry.cc",
     "intersection_geometry.h",
+    "intrinsic_sizing_info.h",
     "jank_tracker.cc",
     "jank_tracker.h",
     "layout_analyzer.cc",
