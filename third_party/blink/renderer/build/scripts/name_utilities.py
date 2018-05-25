@@ -32,13 +32,6 @@ import re
 from blinkbuild.name_style_converter import tokenize_name
 
 
-def lower_first_letter(name):
-    """Return name with first letter lowercased."""
-    if not name:
-        return ''
-    return name[0].lower() + name[1:]
-
-
 def upper_first_letter(name):
     """Return name with first letter uppercased."""
     if not name:
@@ -113,11 +106,6 @@ def naming_style(f):
 @naming_style
 def upper_camel_case(words):
     return ''.join(upper_first_letter(word) for word in words)
-
-
-@naming_style
-def lower_camel_case(words):
-    return lower_first_letter(upper_camel_case(words))
 
 
 @naming_style
