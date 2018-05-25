@@ -53,6 +53,11 @@ class DateOrderedListMediator {
         mListMutator = new DateOrderedListMutator(mSearchFilter, mModel);
     }
 
+    /** Tears down this mediator. */
+    public void destroy() {
+        mSource.destroy();
+    }
+
     /**
      * To be called when this mediator should filter its content based on {@code filter}.
      * @see TypeOfflineItemFilter#onFilterSelected(int)

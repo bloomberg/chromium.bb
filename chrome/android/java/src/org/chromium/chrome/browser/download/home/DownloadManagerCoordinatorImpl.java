@@ -24,6 +24,11 @@ public class DownloadManagerCoordinatorImpl {
                 context, OfflineContentAggregatorFactory.forProfile(profile));
     }
 
+    /** Tears down this coordinator. */
+    public void destroy() {
+        mListCoordinator.destroy();
+    }
+
     /**
      * @return The {@link View} representing downloads home.
      */

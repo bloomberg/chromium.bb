@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.text.format.DateUtils;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,7 @@ import android.widget.TextView;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemGroup;
 
 import java.lang.annotation.Retention;
@@ -178,29 +178,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
          * @param date The date that this DateViewHolder should display.
          */
         public void setDate(Date date) {
-            // Calender.getInstance() may take long time to run, so Calendar object should be reused
-            // as much as possible.
-            Pair<Calendar, Calendar> pair = getCachedCalendars();
-            Calendar cal1 = pair.first, cal2 = pair.second;
-            cal1.setTimeInMillis(System.currentTimeMillis());
-            cal2.setTime(date);
-
-            StringBuilder builder = new StringBuilder();
-            if (compareCalendar(cal1, cal2) == 0) {
-                builder.append(mTextView.getContext().getString(R.string.today));
-                builder.append(" - ");
-            } else {
-                // Set cal1 to yesterday.
-                cal1.add(Calendar.DATE, -1);
-                if (compareCalendar(cal1, cal2) == 0) {
-                    builder.append(mTextView.getContext().getString(R.string.yesterday));
-                    builder.append(" - ");
-                }
-            }
-            builder.append(DateUtils.formatDateTime(mTextView.getContext(), date.getTime(),
-                    DateUtils.FORMAT_ABBREV_WEEKDAY | DateUtils.FORMAT_ABBREV_MONTH
-                            | DateUtils.FORMAT_SHOW_YEAR));
-            mTextView.setText(builder);
+            mTextView.setText(UiUtils.dateToHeaderString(date));
         }
     }
 
