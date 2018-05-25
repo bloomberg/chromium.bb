@@ -1816,7 +1816,12 @@ void QuicChromiumClientSession::OnNetworkConnected(
   if (!migration_pending_ && !connection()->IsPathDegrading())
     return;
 
-  current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
+  if (connection()->IsPathDegrading()) {
+    current_connection_migration_cause_ = ON_PATH_DEGRADING;
+  } else {
+    current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
+  }
+
   if (migrate_session_on_network_change_v2_) {
     LogHandshakeStatusOnConnectionMigrationSignal();
 
