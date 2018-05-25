@@ -1056,7 +1056,7 @@ TEST_F(UiTest, CloseButtonColorBindings) {
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background_down, "down");
-    button->hit_plane()->OnMove(gfx::PointF());
+    button->hit_plane()->OnHoverMove(gfx::PointF());
     RunForMs(kAnimationTimeMs);
     VerifyButtonColor(button, scheme.disc_button_colors.foreground,
                       scheme.disc_button_colors.background, "move");

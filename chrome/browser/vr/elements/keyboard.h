@@ -32,7 +32,7 @@ class Keyboard : public UiElement {
 
   void OnHoverEnter(const gfx::PointF& position) override;
   void OnHoverLeave() override;
-  void OnMove(const gfx::PointF& position) override;
+  void OnHoverMove(const gfx::PointF& position) override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
 

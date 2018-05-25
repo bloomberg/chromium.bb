@@ -36,9 +36,9 @@ void PlatformUiElement::OnHoverLeave() {
     delegate_->OnHoverLeave();
 }
 
-void PlatformUiElement::OnMove(const gfx::PointF& position) {
+void PlatformUiElement::OnHoverMove(const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnMove(position);
+    delegate_->OnHoverMove(position);
 }
 
 void PlatformUiElement::OnButtonDown(const gfx::PointF& position) {

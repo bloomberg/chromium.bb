@@ -35,7 +35,7 @@ class KeyboardDelegate {
                                    const gfx::PointF& touch_position) {}
   virtual void OnHoverEnter(const gfx::PointF& position) {}
   virtual void OnHoverLeave() {}
-  virtual void OnMove(const gfx::PointF& position) {}
+  virtual void OnHoverMove(const gfx::PointF& position) {}
   virtual void OnButtonDown(const gfx::PointF& position) {}
   virtual void OnButtonUp(const gfx::PointF& position) {}
 };

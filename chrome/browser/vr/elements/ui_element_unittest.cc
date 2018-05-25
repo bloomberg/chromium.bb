@@ -499,7 +499,7 @@ TEST(UiElement, EventBubbling) {
 
   // Events on grand_child don't bubble up the parent chain.
   grand_child_ptr->OnHoverEnter(gfx::PointF());
-  grand_child_ptr->OnMove(gfx::PointF());
+  grand_child_ptr->OnHoverMove(gfx::PointF());
   grand_child_ptr->OnHoverLeave();
   grand_child_ptr->OnButtonDown(gfx::PointF());
   grand_child_ptr->OnButtonUp(gfx::PointF());
@@ -509,7 +509,7 @@ TEST(UiElement, EventBubbling) {
   // Events on grand_child bubble up the parent chain.
   grand_child_ptr->set_bubble_events(true);
   grand_child_ptr->OnHoverEnter(gfx::PointF());
-  grand_child_ptr->OnMove(gfx::PointF());
+  grand_child_ptr->OnHoverMove(gfx::PointF());
   grand_child_ptr->OnHoverLeave();
   grand_child_ptr->OnButtonDown(gfx::PointF());
   grand_child_ptr->OnButtonUp(gfx::PointF());

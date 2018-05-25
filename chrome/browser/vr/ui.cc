@@ -574,7 +574,7 @@ void Ui::PerformUiActionForTesting(UiTestInput test_input) {
       element->OnHoverLeave();
       break;
     case VrUiTestAction::kMove:
-      element->OnMove(test_input.position);
+      element->OnHoverMove(test_input.position);
       break;
     case VrUiTestAction::kButtonDown:
       element->OnButtonDown(test_input.position);
