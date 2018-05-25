@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/shell_port_mus.h"
+#include "ash/shell_port.h"
 #include "base/macros.h"
 
 namespace views {
@@ -20,13 +20,12 @@ class PointerWatcherEventRouter;
 namespace ash {
 
 class AcceleratorControllerRegistrar;
+class DisplaySynchronizer;
 class ImmersiveHandlerFactoryMash;
 class WindowManager;
 
-// ShellPort implementation for mash. See ash/README.md for more. Subclass of
-// ShellPortMus because both configurations talk to the same UI service for
-// things like display management.
-class ShellPortMash : public ShellPortMus {
+// ShellPort implementation for mash. See ash/README.md for more.
+class ShellPortMash : public ShellPort {
  public:
   ShellPortMash(WindowManager* window_manager,
                 views::PointerWatcherEventRouter* pointer_watcher_event_router);
@@ -38,7 +37,10 @@ class ShellPortMash : public ShellPortMus {
   void OnCursorTouchVisibleChanged(bool enabled);
 
   // ShellPort:
+  void Shutdown() override;
   Config GetAshConfig() const override;
+  std::unique_ptr<display::TouchTransformSetter> CreateTouchTransformDelegate()
+      override;
   void LockCursor() override;
   void UnlockCursor() override;
   void ShowCursor() override;
@@ -63,9 +65,21 @@ class ShellPortMash : public ShellPortMus {
   bool IsTouchDown() override;
   void ToggleIgnoreExternalKeyboard() override;
   void CreatePointerWatcherAdapter() override;
+  std::unique_ptr<AshWindowTreeHost> CreateAshWindowTreeHost(
+      const AshWindowTreeHostInitParams& init_params) override;
+  void OnCreatedRootWindowContainers(
+      RootWindowController* root_window_controller) override;
+  void UpdateSystemModalAndBlockingContainers() override;
+  void OnHostsInitialized() override;
+  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
+      override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
+  void AddVideoDetectorObserver(
+      viz::mojom::VideoDetectorObserverPtr observer) override;
 
  private:
+  WindowManager* window_manager_;
+  std::unique_ptr<DisplaySynchronizer> display_synchronizer_;
   views::PointerWatcherEventRouter* pointer_watcher_event_router_ = nullptr;
   std::unique_ptr<AcceleratorControllerRegistrar>
       accelerator_controller_registrar_;

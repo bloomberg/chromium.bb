@@ -530,8 +530,6 @@ component("ash") {
     "shell_port_classic.h",
     "shell_port_mash.cc",
     "shell_port_mash.h",
-    "shell_port_mus.cc",
-    "shell_port_mus.h",
     "shell_state.cc",
     "shell_state.h",
     "shutdown_controller.cc",

@@ -15,6 +15,7 @@ class AshWindowTreeHostMirroringDelegate;
 
 // A WTH for the displays mirroring the unified desktop in mus without viz.
 // This is a near copy of AshWindowTreeHostMirroringUnified.
+// TODO(crbug.com/841941): Unused. Remove.
 class AshWindowTreeHostMusMirroringUnified : public AshWindowTreeHostMus {
  public:
   AshWindowTreeHostMusMirroringUnified(

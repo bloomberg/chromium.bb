@@ -26,7 +26,6 @@
 #include "ash/shell_delegate_mus.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_port_mash.h"
-#include "ash/shell_port_mus.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/move_event_handler.h"
 #include "ash/wm/non_client_frame_controller.h"

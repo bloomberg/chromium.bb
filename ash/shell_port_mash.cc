@@ -9,19 +9,32 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_controller_registrar.h"
+#include "ash/display/display_synchronizer.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
+#include "ash/host/ash_window_tree_host_mus.h"
 #include "ash/keyboard/keyboard_ui_mash.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/touch/touch_transform_setter_mus.h"
 #include "ash/window_manager.h"
 #include "ash/wm/drag_window_resizer_mash.h"
 #include "ash/wm/immersive_handler_factory_mash.h"
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_mash.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/forwarding_display_delegate.h"
+#include "ui/display/mojo/native_display_delegate.mojom.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 
 namespace ash {
@@ -29,10 +42,11 @@ namespace ash {
 ShellPortMash::ShellPortMash(
     WindowManager* window_manager,
     views::PointerWatcherEventRouter* pointer_watcher_event_router)
-    : ShellPortMus(window_manager),
+    : window_manager_(window_manager),
       pointer_watcher_event_router_(pointer_watcher_event_router),
       immersive_handler_factory_(
           std::make_unique<ImmersiveHandlerFactoryMash>()) {
+  DCHECK(window_manager_);
   DCHECK(pointer_watcher_event_router_);
   DCHECK_EQ(Config::MASH, GetAshConfig());
 }
@@ -46,8 +60,19 @@ ShellPortMash* ShellPortMash::Get() {
   return static_cast<ShellPortMash*>(ShellPort::Get());
 }
 
+void ShellPortMash::Shutdown() {
+  display_synchronizer_.reset();
+  ShellPort::Shutdown();
+}
+
 Config ShellPortMash::GetAshConfig() const {
   return Config::MASH;
+}
+
+std::unique_ptr<display::TouchTransformSetter>
+ShellPortMash::CreateTouchTransformDelegate() {
+  return std::make_unique<TouchTransformSetterMus>(
+      window_manager_->connector());
 }
 
 void ShellPortMash::LockCursor() {
@@ -144,9 +169,79 @@ void ShellPortMash::ToggleIgnoreExternalKeyboard() {
 }
 
 void ShellPortMash::CreatePointerWatcherAdapter() {
-  // In Config::MUS PointerWatcherAdapterClassic must be created when this
+  // In Config::CLASSIC PointerWatcherAdapterClassic must be created when this
   // function is called (it is order dependent), that is not the case with
   // Config::MASH.
+}
+
+std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
+    const AshWindowTreeHostInitParams& init_params) {
+  auto display_params = std::make_unique<aura::DisplayInitParams>();
+  display_params->viewport_metrics.bounds_in_pixels =
+      init_params.initial_bounds;
+  display_params->viewport_metrics.device_scale_factor =
+      init_params.device_scale_factor;
+  display_params->viewport_metrics.ui_scale_factor =
+      init_params.ui_scale_factor;
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::Display mirrored_display =
+      display_manager->GetMirroringDisplayById(init_params.display_id);
+  if (mirrored_display.is_valid()) {
+    display_params->display =
+        std::make_unique<display::Display>(mirrored_display);
+  }
+  display_params->is_primary_display = true;
+  display_params->mirrors = display_manager->software_mirroring_display_list();
+  aura::WindowTreeHostMusInitParams aura_init_params =
+      window_manager_->window_manager_client()->CreateInitParamsForNewDisplay();
+  aura_init_params.display_id = init_params.display_id;
+  aura_init_params.display_init_params = std::move(display_params);
+  aura_init_params.use_classic_ime = !Shell::ShouldUseIMEService();
+  return std::make_unique<AshWindowTreeHostMus>(std::move(aura_init_params));
+}
+
+void ShellPortMash::OnCreatedRootWindowContainers(
+    RootWindowController* root_window_controller) {
+  // TODO: To avoid lots of IPC AddActivationParent() should take an array.
+  // http://crbug.com/682048.
+  aura::Window* root_window = root_window_controller->GetRootWindow();
+  for (size_t i = 0; i < kNumActivatableShellWindowIds; ++i) {
+    window_manager_->window_manager_client()->AddActivationParent(
+        root_window->GetChildById(kActivatableShellWindowIds[i]));
+  }
+
+  UpdateSystemModalAndBlockingContainers();
+}
+
+void ShellPortMash::UpdateSystemModalAndBlockingContainers() {
+  std::vector<aura::BlockingContainers> all_blocking_containers;
+  for (RootWindowController* root_window_controller :
+       Shell::GetAllRootWindowControllers()) {
+    aura::BlockingContainers blocking_containers;
+    wm::GetBlockingContainersForRoot(
+        root_window_controller->GetRootWindow(),
+        &blocking_containers.min_container,
+        &blocking_containers.system_modal_container);
+    all_blocking_containers.push_back(blocking_containers);
+  }
+  window_manager_->window_manager_client()->SetBlockingContainers(
+      all_blocking_containers);
+}
+
+void ShellPortMash::OnHostsInitialized() {
+  display_synchronizer_ = std::make_unique<DisplaySynchronizer>(
+      window_manager_->window_manager_client());
+}
+
+std::unique_ptr<display::NativeDisplayDelegate>
+ShellPortMash::CreateNativeDisplayDelegate() {
+  display::mojom::NativeDisplayDelegatePtr native_display_delegate;
+  if (window_manager_->connector()) {
+    window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
+                                                &native_display_delegate);
+  }
+  return std::make_unique<display::ForwardingDisplayDelegate>(
+      std::move(native_display_delegate));
 }
 
 std::unique_ptr<AcceleratorController>
@@ -163,6 +258,18 @@ ShellPortMash::CreateAcceleratorController() {
           window_manager_, accelerator_namespace_id);
   return std::make_unique<AcceleratorController>(
       accelerator_controller_registrar_.get());
+}
+
+void ShellPortMash::AddVideoDetectorObserver(
+    viz::mojom::VideoDetectorObserverPtr observer) {
+  // We may not have access to the connector in unit tests.
+  if (!window_manager_->connector())
+    return;
+
+  ui::mojom::VideoDetectorPtr video_detector;
+  window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
+                                              &video_detector);
+  video_detector->AddObserver(std::move(observer));
 }
 
 }  // namespace ash
