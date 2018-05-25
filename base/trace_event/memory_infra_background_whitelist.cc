@@ -291,6 +291,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "sync/0x?/model_type/MANAGED_USER_SETTING",
     "sync/0x?/model_type/MANAGED_USER_SHARED_SETTING",
     "sync/0x?/model_type/MANAGED_USER_WHITELIST",
+    "sync/0x?/model_type/MOUNTAIN_SHARE",
     "sync/0x?/model_type/NIGORI",
     "sync/0x?/model_type/PASSWORD",
     "sync/0x?/model_type/PREFERENCE",
