@@ -764,18 +764,14 @@ void aom_highbd_dc_predictor_64x32_c(uint16_t *dst, ptrdiff_t stride,
   intra_pred_highbd_sized(type, 64, 64) \
   intra_pred_rectangular(type)
 #define intra_pred_allsizes(type) \
-  intra_pred_sized(type, 2, 2) \
   intra_pred_sized(type, 4, 4) \
-  intra_pred_highbd_sized(type, 2, 2) \
   intra_pred_above_4x4(type)
 #define intra_pred_square(type) \
-  intra_pred_sized(type, 2, 2) \
   intra_pred_sized(type, 4, 4) \
   intra_pred_sized(type, 8, 8) \
   intra_pred_sized(type, 16, 16) \
   intra_pred_sized(type, 32, 32) \
   intra_pred_sized(type, 64, 64) \
-  intra_pred_highbd_sized(type, 2, 2) \
   intra_pred_highbd_sized(type, 4, 4) \
   intra_pred_highbd_sized(type, 8, 8) \
   intra_pred_highbd_sized(type, 16, 16) \
