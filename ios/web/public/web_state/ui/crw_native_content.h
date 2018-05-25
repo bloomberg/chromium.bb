@@ -61,9 +61,6 @@ struct ContextMenuParams;
 // not exist in the web/ layer.
 - (BOOL)wantsLocationBarHintText;
 
-// Dismisses on-screen keyboard if necessary.
-- (void)dismissKeyboard;
-
 // Dismisses any outstanding modal interaction elements (e.g. modal view
 // controllers, context menus, etc).
 - (void)dismissModals;
