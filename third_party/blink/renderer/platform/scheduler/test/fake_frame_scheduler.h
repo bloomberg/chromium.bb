@@ -104,11 +104,6 @@ class FakeFrameScheduler : public FrameScheduler {
   };
 
   // FrameScheduler implementation:
-  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
-      ObserverType,
-      Observer*) override {
-    return nullptr;
-  }
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return is_frame_visible_; }
   bool IsPageVisible() const override { return is_page_visible_; }

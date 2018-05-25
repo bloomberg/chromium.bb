@@ -23,10 +23,10 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
     const WebThreadCreationParams& params)
     : thread_(new base::Thread(params.name ? params.name : std::string())),
       thread_type_(params.thread_type),
-      worker_scheduler_proxy_(
-          params.frame_scheduler
-              ? std::make_unique<WorkerSchedulerProxy>(params.frame_scheduler)
-              : nullptr) {
+      worker_scheduler_proxy_(params.frame_or_worker_scheduler
+                                  ? std::make_unique<WorkerSchedulerProxy>(
+                                        params.frame_or_worker_scheduler)
+                                  : nullptr) {
   bool started = thread_->StartWithOptions(params.thread_options);
   CHECK(started);
   thread_task_runner_ = thread_->task_runner();

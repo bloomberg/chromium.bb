@@ -151,11 +151,6 @@ class EmptyFrameScheduler final : public FrameScheduler {
     return Platform::Current()->MainThread()->GetTaskRunner();
   }
 
-  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
-      ObserverType,
-      Observer*) override {
-    return nullptr;
-  }
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return false; }
   bool IsPageVisible() const override { return false; }

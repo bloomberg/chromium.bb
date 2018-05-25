@@ -65,7 +65,7 @@ class WorkerSchedulerForTest : public WorkerScheduler {
  public:
   explicit WorkerSchedulerForTest(
       WorkerThreadSchedulerForTest* thread_scheduler)
-      : WorkerScheduler(thread_scheduler) {}
+      : WorkerScheduler(thread_scheduler, nullptr) {}
 
   using WorkerScheduler::DefaultTaskQueue;
   using WorkerScheduler::ThrottleableTaskQueue;

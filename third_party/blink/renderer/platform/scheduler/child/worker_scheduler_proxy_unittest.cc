@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
@@ -52,8 +53,28 @@ class WebThreadImplForWorkerSchedulerForTest
                                          WaitableEvent* throtting_state_changed)
       : WebThreadImplForWorkerScheduler(
             WebThreadCreationParams(WebThreadType::kTestThread)
-                .SetFrameScheduler(frame_scheduler)),
+                .SetFrameOrWorkerScheduler(frame_scheduler)),
         throtting_state_changed_(throtting_state_changed) {}
+
+  ~WebThreadImplForWorkerSchedulerForTest() override {
+    base::WaitableEvent completion(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebThreadImplForWorkerSchedulerForTest::
+                                      DisposeWorkerSchedulerOnThread,
+                                  base::Unretained(this), &completion));
+    completion.Wait();
+  }
+
+  void DisposeWorkerSchedulerOnThread(base::WaitableEvent* completion) {
+    DCHECK(thread_task_runner_->BelongsToCurrentThread());
+    if (worker_scheduler_) {
+      worker_scheduler_->Dispose();
+      worker_scheduler_ = nullptr;
+    }
+    completion->Signal();
+  }
 
   std::unique_ptr<NonMainThreadScheduler> CreateNonMainThreadScheduler()
       override {
@@ -61,6 +82,8 @@ class WebThreadImplForWorkerSchedulerForTest
         base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(),
         worker_scheduler_proxy(), throtting_state_changed_);
     scheduler_ = scheduler.get();
+    worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
+        scheduler_, worker_scheduler_proxy());
     return scheduler;
   }
 
@@ -69,6 +92,7 @@ class WebThreadImplForWorkerSchedulerForTest
  private:
   WaitableEvent* throtting_state_changed_;             // NOT OWNED
   WorkerThreadSchedulerForTest* scheduler_ = nullptr;  // NOT OWNED
+  std::unique_ptr<WorkerScheduler> worker_scheduler_ = nullptr;
 };
 
 std::unique_ptr<WebThreadImplForWorkerSchedulerForTest> CreateWorkerThread(
