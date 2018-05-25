@@ -26,10 +26,8 @@ void WindowTreeFactory::CreateWindowTree(mojom::WindowTreeRequest tree_request,
                                          mojom::WindowTreeClientPtr client) {
   std::unique_ptr<WindowServiceClientBinding> binding =
       std::make_unique<WindowServiceClientBinding>();
-  const bool intercepts_events = false;
   binding->InitFromFactory(
       window_service_, std::move(tree_request), std::move(client),
-      intercepts_events,
       base::BindOnce(&WindowTreeFactory::OnLostConnectionToClient,
                      base::Unretained(this), binding.get()));
   window_service_client_bindings_.push_back(std::move(binding));

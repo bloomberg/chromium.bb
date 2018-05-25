@@ -15,21 +15,23 @@ namespace ui {
 namespace ws2 {
 
 Embedding::Embedding(WindowServiceClient* embedding_client,
-                     aura::Window* window)
-    : embedding_client_(embedding_client), window_(window) {
+                     aura::Window* window,
+                     bool embedding_client_intercepts_events)
+    : embedding_client_(embedding_client),
+      window_(window),
+      embedding_client_intercepts_events_(embedding_client_intercepts_events) {
   DCHECK(embedding_client_);
   DCHECK(window_);
-}
+}  // namespace ws2
 
 Embedding::~Embedding() = default;
 
 void Embedding::Init(WindowService* window_service,
                      mojom::WindowTreeClientPtr window_tree_client_ptr,
                      mojom::WindowTreeClient* window_tree_client,
-                     bool intercepts_events,
                      base::OnceClosure connection_lost_callback) {
   binding_.InitForEmbed(window_service, std::move(window_tree_client_ptr),
-                        window_tree_client, intercepts_events, window_,
+                        window_tree_client, window_,
                         std::move(connection_lost_callback));
 }
 

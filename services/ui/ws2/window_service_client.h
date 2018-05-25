@@ -64,15 +64,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
  public:
   WindowServiceClient(WindowService* window_service,
                       ClientSpecificId client_id,
-                      mojom::WindowTreeClient* client,
-                      bool intercepts_events);
+                      mojom::WindowTreeClient* client);
   ~WindowServiceClient() override;
 
   // See class description for details on Init variants.
   void InitForEmbed(aura::Window* root, mojom::WindowTreePtr window_tree_ptr);
   void InitFromFactory();
-
-  bool intercepts_events() const { return intercepts_events_; }
 
   // Notifies the client than an event has been received.
   void SendEventToClient(aura::Window* window, const ui::Event& event);
@@ -365,15 +362,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   ConnectionType connection_type_ = ConnectionType::kEmbedding;
 
   mojom::WindowTreeClient* window_tree_client_;
-
-  // If true, all events that would normally target another client embedded by
-  // this client are sent to this client. For example, consider the Window
-  // hierarchy A->B->C where client 1 created A and B, client 1 embedded
-  // client 2 in window B, and client 2 created C. If an event occurs that would
-  // normally target C, then the event is instead sent to client 1 with a target
-  // of B. If true, any clients embedded by this client never get normal events
-  // (they can still observer pointer events).
-  const bool intercepts_events_;
 
   // Controls whether the client can change the visibility of the roots.
   bool can_change_root_window_visibility_ = true;

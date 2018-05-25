@@ -152,8 +152,7 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
 
 TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
   aura::test::TestWindowDelegate test_window_delegate;
-  const bool intercepts_events = true;
-  WindowServiceTestSetup setup(intercepts_events);
+  WindowServiceTestSetup setup;
   test_window_delegate.set_can_focus(true);
   setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
   aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);

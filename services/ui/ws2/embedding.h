@@ -29,16 +29,21 @@ class WindowServiceClient;
 // Window associated with the embedding.
 class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
  public:
-  Embedding(WindowServiceClient* embedding_client, aura::Window* window);
+  Embedding(WindowServiceClient* embedding_client,
+            aura::Window* window,
+            bool embedding_client_intercepts_events);
   ~Embedding();
 
   void Init(WindowService* window_service,
             mojom::WindowTreeClientPtr window_tree_client_ptr,
             mojom::WindowTreeClient* window_tree_client,
-            bool intercepts_events,
             base::OnceClosure connection_lost_callback);
 
   WindowServiceClient* embedding_client() { return embedding_client_; }
+
+  bool embedding_client_intercepts_events() const {
+    return embedding_client_intercepts_events_;
+  }
 
   WindowServiceClient* embedded_client() {
     return binding_.window_service_client();
@@ -52,6 +57,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
 
   // The window the embedding is in.
   aura::Window* window_;
+
+  // If true, all events that would normally target the embedded client are
+  // instead sent to the the client that created the embedding. For example,
+  // consider the Window hierarchy A1->B1->C2 where client 1 created A1 and B1,
+  // client 1 embedded client 2 in window B1, and client 2 created C2. If an
+  // event occurs that would normally target C2, then the event is instead sent
+  // to client 1. Embedded clients can always observe pointer events, regardless
+  // of this value.
+  const bool embedding_client_intercepts_events_;
 
   WindowServiceClientBinding binding_;
 

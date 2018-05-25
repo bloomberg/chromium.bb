@@ -35,7 +35,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
   void InitForEmbed(WindowService* window_service,
                     mojom::WindowTreeClientPtr window_tree_client_ptr,
                     mojom::WindowTreeClient* window_tree_client,
-                    bool intercepts_events,
                     aura::Window* initial_root,
                     base::OnceClosure connection_lost_callback);
 
@@ -43,7 +42,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
   void InitFromFactory(WindowService* window_service,
                        mojom::WindowTreeRequest window_tree_request,
                        mojom::WindowTreeClientPtr window_tree_client,
-                       bool intercepts_events,
                        base::OnceClosure connection_lost_callback);
 
   WindowServiceClient* window_service_client() {

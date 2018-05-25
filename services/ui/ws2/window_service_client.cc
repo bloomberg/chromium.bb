@@ -36,12 +36,10 @@ namespace ws2 {
 
 WindowServiceClient::WindowServiceClient(WindowService* window_service,
                                          ClientSpecificId client_id,
-                                         mojom::WindowTreeClient* client,
-                                         bool intercepts_events)
+                                         mojom::WindowTreeClient* client)
     : window_service_(window_service),
       client_id_(client_id),
       window_tree_client_(client),
-      intercepts_events_(intercepts_events),
       property_change_tracker_(std::make_unique<ClientChangeTracker>()) {
   wm::CaptureController::Get()->AddObserver(this);
 }
@@ -731,11 +729,6 @@ bool WindowServiceClient::EmbedImpl(
     uint32_t flags) {
   DVLOG(3) << "Embed window_id=" << window_id;
 
-  // mojom::kEmbedFlagEmbedderInterceptsEvents is inherited, otherwise an
-  // embedder could effectively circumvent it by embedding itself.
-  if (intercepts_events_)
-    flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
-
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window) {
     DVLOG(1) << "Embed failed (no window)";
@@ -746,13 +739,12 @@ bool WindowServiceClient::EmbedImpl(
     return false;
   }
 
-  const bool intercept_events =
+  const bool owner_intercept_events =
       (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
   std::unique_ptr<Embedding> embedding =
-      std::make_unique<Embedding>(this, window);
+      std::make_unique<Embedding>(this, window, owner_intercept_events);
   embedding->Init(
       window_service_, std::move(window_tree_client_ptr), window_tree_client,
-      intercept_events,
       base::BindOnce(&WindowServiceClient::OnEmbeddedClientConnectionLost,
                      base::Unretained(this), embedding.get()));
   if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
