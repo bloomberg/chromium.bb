@@ -554,6 +554,14 @@ bool FrameSelection::Contains(const LayoutPoint& point) {
   if (!GetDocument().GetLayoutView())
     return false;
 
+  // This is a workaround of the issue that we sometimes get null from
+  // ComputeVisibleSelectionInDOMTree(), but non-null from flat tree.
+  // By running this, in case we get null, we also set the cached result in flat
+  // tree into null, so that this function can return false correctly.
+  // See crbug.com/846527 for details.
+  // TODO(editing-dev): Fix the inconsistency and then remove this call.
+  ComputeVisibleSelectionInDOMTree();
+
   // Treat a collapsed selection like no selection.
   const VisibleSelectionInFlatTree& visible_selection =
       ComputeVisibleSelectionInFlatTree();
