@@ -1583,6 +1583,10 @@
       'Win10 Tests x64': {
         'experiment_percentage': 100,
       },
+      # chromium.win; temporary, https://crbug.com/818832
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100,
+      },
     },
   },
   'ipc_tests': {
