@@ -9,6 +9,10 @@
 #include "cc/cc_export.h"
 #include "cc/trees/render_frame_metadata.h"
 
+namespace viz {
+class CompositorFrameMetadata;
+}
+
 namespace cc {
 
 class FrameTokenAllocator;
@@ -29,7 +33,9 @@ class CC_EXPORT RenderFrameMetadataObserver {
 
   // Notification of the RendarFrameMetadata for the frame being submitted to
   // the display compositor.
-  virtual void OnRenderFrameSubmission(RenderFrameMetadata metadata) = 0;
+  virtual void OnRenderFrameSubmission(
+      const RenderFrameMetadata& render_frame_metadata,
+      viz::CompositorFrameMetadata* compositor_frame_metadata) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataObserver);

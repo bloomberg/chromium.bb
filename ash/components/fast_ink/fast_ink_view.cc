@@ -489,7 +489,8 @@ void FastInkView::SubmitCompositorFrame() {
     // If overflow happens, we increase it again.
     if (!++presentation_token_)
       ++presentation_token_;
-    frame.metadata.presentation_token = presentation_token_;
+    frame.metadata.frame_token = presentation_token_;
+    frame.metadata.request_presentation_feedback = true;
   }
 
   viz::TextureDrawQuad* texture_quad =

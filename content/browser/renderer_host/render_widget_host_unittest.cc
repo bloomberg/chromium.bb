@@ -2311,6 +2311,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   auto frame = viz::CompositorFrameBuilder()
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token)
+                   .SetSendFrameTokenToEmbedder(true)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2333,6 +2334,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   auto frame = viz::CompositorFrameBuilder()
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token)
+                   .SetSendFrameTokenToEmbedder(true)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2373,6 +2375,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   auto frame = viz::CompositorFrameBuilder()
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token1)
+                   .SetSendFrameTokenToEmbedder(true)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2382,6 +2385,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   frame = viz::CompositorFrameBuilder()
               .AddDefaultRenderPass()
               .SetFrameToken(frame_token2)
+              .SetSendFrameTokenToEmbedder(true)
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2407,6 +2411,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   auto frame = viz::CompositorFrameBuilder()
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token1)
+                   .SetSendFrameTokenToEmbedder(true)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2416,6 +2421,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   frame = viz::CompositorFrameBuilder()
               .AddDefaultRenderPass()
               .SetFrameToken(frame_token2)
+              .SetSendFrameTokenToEmbedder(true)
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2461,6 +2467,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   auto frame = viz::CompositorFrameBuilder()
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token2)
+                   .SetSendFrameTokenToEmbedder(true)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2506,6 +2513,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   auto frame = viz::CompositorFrameBuilder()
                    .AddDefaultRenderPass()
                    .SetFrameToken(frame_token2)
+                   .SetSendFrameTokenToEmbedder(true)
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);
@@ -2526,6 +2534,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   frame = viz::CompositorFrameBuilder()
               .AddDefaultRenderPass()
               .SetFrameToken(frame_token3)
+              .SetSendFrameTokenToEmbedder(true)
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                base::nullopt, 0);

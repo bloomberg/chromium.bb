@@ -7523,7 +7523,7 @@ class LayerTreeHostTestPresentationTimeRequest : public LayerTreeHostTest {
 
   void DisplayReceivedCompositorFrameOnThread(
       const viz::CompositorFrame& frame) override {
-    EXPECT_NE(0u, frame.metadata.presentation_token);
+    EXPECT_TRUE(frame.metadata.request_presentation_feedback);
     EndTest();
   }
 

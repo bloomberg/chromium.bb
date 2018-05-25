@@ -1743,11 +1743,6 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(uint32_t presentation_token,
   }
   presentation_token_to_frame_.erase(presentation_token_to_frame_.begin(),
                                      iter);
-  if (presentation_token_to_frame_.empty()) {
-    DCHECK_EQ(last_presentation_token_, presentation_token);
-    last_presentation_token_ = 0u;
-  }
-
   client_->DidPresentCompositorFrameOnImplThread(source_frames, time, refresh,
                                                  flags);
 }
@@ -1836,13 +1831,12 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
 
 viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   viz::CompositorFrameMetadata metadata;
-
+  metadata.frame_token = next_frame_token_++;
+  if (!next_frame_token_)
+    next_frame_token_ = 1u;
   if (active_tree_->request_presentation_time()) {
-    metadata.presentation_token = ++last_presentation_token_;
-    // Assume there is never a constant stream of requests that triggers
-    // overflow.
-    CHECK_NE(0u, last_presentation_token_);
-    presentation_token_to_frame_[last_presentation_token_] =
+    metadata.request_presentation_feedback = true;
+    presentation_token_to_frame_[metadata.frame_token] =
         active_tree_->source_frame_number();
   }
 
@@ -2008,11 +2002,13 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
   active_tree()->FinishSwapPromises(&metadata, &frame_token_allocator_);
+  // The swap-promises should not change the frame-token.
+  DCHECK_EQ(metadata.frame_token + 1, next_frame_token_);
 
   if (render_frame_metadata_observer_) {
     last_draw_render_frame_metadata_ = MakeRenderFrameMetadata();
     render_frame_metadata_observer_->OnRenderFrameSubmission(
-        *last_draw_render_frame_metadata_);
+        *last_draw_render_frame_metadata_, &metadata);
   }
 
   metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
@@ -2076,9 +2072,6 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         base::StringPrintf("Compositing.%s.CompositorFrame.Quads", client_name),
         total_quad_count);
   }
-
-  compositor_frame.metadata.frame_token =
-      frame_token_allocator_.GetFrameTokenForSubmission();
 
   layer_tree_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
 

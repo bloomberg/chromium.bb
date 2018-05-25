@@ -3239,7 +3239,8 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetPresentationToken(1)
+            .SetFrameToken(1)
+            .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     // TODO(penghuang): Verify DidDiscardCompositorFrame() is called when
@@ -3292,7 +3293,8 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetPresentationToken(2)
+            .SetFrameToken(2)
+            .SetRequestPresentationFeedback(true)
             .Build();
 
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
@@ -3307,7 +3309,8 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetPresentationToken(3)
+            .SetFrameToken(3)
+            .SetRequestPresentationFeedback(true)
             .Build();
 
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);

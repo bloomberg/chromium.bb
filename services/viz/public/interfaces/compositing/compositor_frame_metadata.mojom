@@ -36,5 +36,6 @@ struct CompositorFrameMetadata {
   uint32 content_source_id;
   BeginFrameAck begin_frame_ack;
   uint32 frame_token;
-  uint32 presentation_token;
+  bool send_frame_token_to_embedder;
+  bool request_presentation_feedback;
 };

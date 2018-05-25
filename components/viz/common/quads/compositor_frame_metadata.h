@@ -114,15 +114,20 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // BeginFrameAck for the BeginFrame that this CompositorFrame answers.
   BeginFrameAck begin_frame_ack;
 
-  // Once the display compositor processes a frame containing a non-zero frame
-  // token, the token is sent to embedder of the frame. This is helpful when
-  // the embedder wants to do something after a particular frame is processed.
+  // An identifier for the frame. This is used to identify the frame for
+  // presentation-feedback, or when the frame-token is sent to the embedder.
   uint32_t frame_token = 0;
 
-  // Once the display compositor presents a frame containing a non-zero
-  // presentation token, a presentation feedback will be provided to
-  // CompositorFrameSinkClient.
-  uint32_t presentation_token = 0;
+  // Once the display compositor processes a frame with
+  // |send_frame_token_to_embedder| flag turned on, the |frame_token| for the
+  // frame is sent to embedder of the frame. This is helpful when the embedder
+  // wants to do something after a particular frame is processed.
+  bool send_frame_token_to_embedder = false;
+
+  // Once the display compositor presents a frame with
+  // |request_presentation_feedback| flag turned on, a presentation feedback
+  // will be provided to CompositorFrameSinkClient.
+  bool request_presentation_feedback = false;
 
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);

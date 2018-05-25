@@ -127,9 +127,17 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetContentSourceId(
   return *this;
 }
 
-CompositorFrameBuilder& CompositorFrameBuilder::SetPresentationToken(
-    uint32_t presentation_token) {
-  frame_->metadata.presentation_token = presentation_token;
+CompositorFrameBuilder& CompositorFrameBuilder::SetSendFrameTokenToEmbedder(
+    bool send) {
+  DCHECK(frame_->metadata.frame_token);
+  frame_->metadata.send_frame_token_to_embedder = send;
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetRequestPresentationFeedback(
+    bool request) {
+  DCHECK(frame_->metadata.frame_token);
+  frame_->metadata.request_presentation_feedback = request;
   return *this;
 }
 
