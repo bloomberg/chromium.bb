@@ -21,14 +21,6 @@
 # both of which use ash::Shell.
 -WizardControllerKioskFlowTest.*
 
-# Uses ash::Shell::GetRootWindowForNewWindows to choose a display for the app list.
-# More generally, app list needs to move into ash.
--AppListControllerGuestModeBrowserTest.*
--AppListControllerSearchResultsBrowserTest.*
--AppListServiceImplBrowserTest.*
--AppListTest.*
--ArcAppUninstallDialogViewBrowserTest.*
-
 # Accesses ash::Shelf to make assertions about the shelf view.
 -ArcAppDeferredLauncherBrowserTest.*
 -ArcAppDeferredLauncherWithParamsBrowserTestInstance/ArcAppDeferredLauncherWithParamsBrowserTest.*
