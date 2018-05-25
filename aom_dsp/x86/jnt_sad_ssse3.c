@@ -213,12 +213,9 @@ unsigned int aom_sad128xh_sse2(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 
 /* clang-format off */
-#if CONFIG_AV1
 jnt_sadMxN_sse2(128, 128)
 jnt_sadMxN_sse2(128, 64)
 jnt_sadMxN_sse2(64, 128)
-#endif  // CONFIG_AV1
-
 jnt_sadMxN_sse2(64, 64)
 jnt_sadMxN_sse2(64, 32)
 jnt_sadMxN_sse2(32, 64)
@@ -232,13 +229,10 @@ jnt_sadMxN_sse2(8, 8)
 jnt_sadMxN_sse2(8, 4)
 jnt_sadMxN_sse2(4, 8)
 jnt_sadMxN_sse2(4, 4)
-
-#if CONFIG_AV1
 jnt_sadMxN_sse2(4, 16)
 jnt_sadMxN_sse2(16, 4)
 jnt_sadMxN_sse2(8, 32)
 jnt_sadMxN_sse2(32, 8)
 jnt_sadMxN_sse2(16, 64)
 jnt_sadMxN_sse2(64, 16)
-#endif
     /* clang-format on */

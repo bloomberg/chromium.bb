@@ -22,11 +22,7 @@ extern "C" {
 #endif
 
 #ifndef MAX_SB_SIZE
-#if CONFIG_AV1
 #define MAX_SB_SIZE 128
-#else
-#define MAX_SB_SIZE 64
-#endif  // CONFIG_AV1
 #endif  // ndef MAX_SB_SIZE
 
 #define AOMMIN(x, y) (((x) < (y)) ? (x) : (y))

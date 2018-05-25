@@ -131,7 +131,6 @@ void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf,
   }
 }
 
-#if CONFIG_AV1
 static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size,
                          const int num_planes) {
   const int ss_x = ybf->uv_width < ybf->y_width;
@@ -198,7 +197,6 @@ void aom_extend_frame_borders_y_c(YV12_BUFFER_CONFIG *ybf) {
                ext_size + ybf->y_height - ybf->y_crop_height,
                ext_size + ybf->y_width - ybf->y_crop_width);
 }
-#endif  // CONFIG_AV1
 
 static void memcpy_short_addr(uint8_t *dst8, const uint8_t *src8, int num) {
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);

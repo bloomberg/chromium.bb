@@ -18,7 +18,6 @@
 #include "aom_ports/mem.h"
 #include "aom_dsp/blend.h"
 
-#if CONFIG_AV1
 static INLINE unsigned int masked_sad(const uint8_t *src, int src_stride,
                                       const uint8_t *a, int a_stride,
                                       const uint8_t *b, int b_stride,
@@ -70,7 +69,6 @@ MASKSADMxN(8, 8)
 MASKSADMxN(8, 4)
 MASKSADMxN(4, 8)
 MASKSADMxN(4, 4)
-
 MASKSADMxN(4, 16)
 MASKSADMxN(16, 4)
 MASKSADMxN(8, 32)
@@ -137,15 +135,12 @@ HIGHBD_MASKSADMXN(8, 8)
 HIGHBD_MASKSADMXN(8, 4)
 HIGHBD_MASKSADMXN(4, 8)
 HIGHBD_MASKSADMXN(4, 4)
-
-#if CONFIG_AV1
 HIGHBD_MASKSADMXN(4, 16)
 HIGHBD_MASKSADMXN(16, 4)
 HIGHBD_MASKSADMXN(8, 32)
 HIGHBD_MASKSADMXN(32, 8)
 HIGHBD_MASKSADMXN(16, 64)
 HIGHBD_MASKSADMXN(64, 16)
-#endif
 
 // pre: predictor being evaluated
 // wsrc: target weighted prediction (has been *4096 to keep precision)
@@ -192,15 +187,12 @@ OBMCSADMxN(8, 8)
 OBMCSADMxN(8, 4)
 OBMCSADMxN(4, 8)
 OBMCSADMxN(4, 4)
-
-#if CONFIG_AV1
 OBMCSADMxN(4, 16)
 OBMCSADMxN(16, 4)
 OBMCSADMxN(8, 32)
 OBMCSADMxN(32, 8)
 OBMCSADMxN(16, 64)
 OBMCSADMxN(64, 16)
-#endif
     /* clang-format on */
 
     static INLINE
@@ -247,14 +239,10 @@ HIGHBD_OBMCSADMXN(8, 8)
 HIGHBD_OBMCSADMXN(8, 4)
 HIGHBD_OBMCSADMXN(4, 8)
 HIGHBD_OBMCSADMXN(4, 4)
-
-#if CONFIG_AV1
 HIGHBD_OBMCSADMXN(4, 16)
 HIGHBD_OBMCSADMXN(16, 4)
 HIGHBD_OBMCSADMXN(8, 32)
 HIGHBD_OBMCSADMXN(32, 8)
 HIGHBD_OBMCSADMXN(16, 64)
 HIGHBD_OBMCSADMXN(64, 16)
-#endif
 /* clang-format on */
-#endif  // CONFIG_AV1

@@ -18,9 +18,7 @@
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
-#if CONFIG_AV1
 #include "av1/common/blockd.h"
-#endif
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 

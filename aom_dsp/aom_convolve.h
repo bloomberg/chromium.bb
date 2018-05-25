@@ -31,16 +31,11 @@ extern "C" {
 // --Must round-up because block may be located at sub-pixel position.
 // --Require an additional SUBPEL_TAPS rows for the 8-tap filter tails.
 // --((64 - 1) * 32 + 15) >> 4 + 8 = 135.
-#if CONFIG_AV1
+// TODO(wtc): Update the above comment to explain the value 263 used in aom.
 #define MAX_EXT_SIZE 263
-#else
-#define MAX_EXT_SIZE 135
-#endif  // CONFIG_AV1
 
-#if CONFIG_AV1
 #define EXTRAPREC_BITS 2
 #define EXTRAPREC_CLAMP_LIMIT(bd) (1 << ((bd) + 1 + EXTRAPREC_BITS))
-#endif
 
 typedef void (*convolve_fn_t)(const uint8_t *src, ptrdiff_t src_stride,
                               uint8_t *dst, ptrdiff_t dst_stride,

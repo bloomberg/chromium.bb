@@ -52,7 +52,6 @@ set(HAVE_UNISTD_H 0 CACHE NUMBER "Internal flag, unistd.h present for target.")
 set(HAVE_WXWIDGETS 0 CACHE NUMBER "WxWidgets present.")
 
 # Build configuration flags.
-set(CONFIG_AV1 1 CACHE NUMBER "Internal flag.")
 set(CONFIG_AV1_DECODER 1 CACHE NUMBER "Enable AV1 decoder.")
 set(CONFIG_AV1_ENCODER 1 CACHE NUMBER "Enable AV1 encoder.")
 set(CONFIG_BIG_ENDIAN 0 CACHE NUMBER "Internal flag.")

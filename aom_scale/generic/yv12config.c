@@ -25,7 +25,6 @@
 #define yv12_align_addr(addr, align) \
   (void *)(((size_t)(addr) + ((align)-1)) & (size_t) - (align))
 
-#if CONFIG_AV1
 // TODO(jkoleszar): Maybe replace this with struct aom_image
 
 int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
@@ -182,4 +181,3 @@ int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
   }
   return -2;
 }
-#endif

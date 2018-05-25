@@ -73,7 +73,6 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 
 /* clang-format off */
-#if CONFIG_AV1
 // 128x128
 sadMxN(128, 128)
 sadMxNx4D(128, 128)
@@ -85,7 +84,6 @@ sadMxNx4D(128, 64)
 // 64x128
 sadMxN(64, 128)
 sadMxNx4D(64, 128)
-#endif  // CONFIG_AV1
 
 // 64x64
 sadMxN(64, 64)
@@ -146,7 +144,6 @@ sadMxh(16);
 sadMxh(8);
 sadMxh(4);
 
-#if CONFIG_AV1
 sadMxN(4, 16)
 sadMxNx4D(4, 16)
 sadMxN(16, 4)
@@ -159,7 +156,7 @@ sadMxN(16, 64)
 sadMxNx4D(16, 64)
 sadMxN(64, 16)
 sadMxNx4D(64, 16)
-#endif
+
     /* clang-format on */
 
     static INLINE
@@ -227,7 +224,6 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
   }
 
 /* clang-format off */
-#if CONFIG_AV1
 // 128x128
 highbd_sadMxN(128, 128)
 highbd_sadMxNx4D(128, 128)
@@ -239,7 +235,6 @@ highbd_sadMxNx4D(128, 64)
 // 64x128
 highbd_sadMxN(64, 128)
 highbd_sadMxNx4D(64, 128)
-#endif  // CONFIG_AV1
 
 // 64x64
 highbd_sadMxN(64, 64)
@@ -293,7 +288,6 @@ highbd_sadMxNx4D(4, 8)
 highbd_sadMxN(4, 4)
 highbd_sadMxNx4D(4, 4)
 
-#if CONFIG_AV1
 highbd_sadMxN(4, 16)
 highbd_sadMxNx4D(4, 16)
 highbd_sadMxN(16, 4)
@@ -306,5 +300,4 @@ highbd_sadMxN(16, 64)
 highbd_sadMxNx4D(16, 64)
 highbd_sadMxN(64, 16)
 highbd_sadMxNx4D(64, 16)
-#endif
     /* clang-format on */

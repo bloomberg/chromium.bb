@@ -74,7 +74,6 @@ class CodecTestWith4Params
 /*
  * AV1 Codec Definitions
  */
-#if CONFIG_AV1
 class AV1Decoder : public Decoder {
  public:
   explicit AV1Decoder(aom_codec_dec_cfg_t cfg) : Decoder(cfg) {}
@@ -161,9 +160,6 @@ const libaom_test::AV1CodecFactory kAV1;
           ::testing::Values(static_cast<const libaom_test::CodecFactory *>( \
               &libaom_test::kAV1)),                                         \
           __VA_ARGS__))
-#else
-#define AV1_INSTANTIATE_TEST_CASE(test, ...)
-#endif  // CONFIG_AV1
 
 }  // namespace libaom_test
 #endif  // TEST_CODEC_FACTORY_H_

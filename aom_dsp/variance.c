@@ -248,11 +248,9 @@ void aom_var_filter_block2d_bil_second_pass_c(const uint16_t *a, uint8_t *b,
   SUBPIX_VAR(W, H)      \
   SUBPIX_AVG_VAR(W, H)
 
-#if CONFIG_AV1
 VARIANCES(128, 128)
 VARIANCES(128, 64)
 VARIANCES(64, 128)
-#endif  // CONFIG_AV1
 VARIANCES(64, 64)
 VARIANCES(64, 32)
 VARIANCES(32, 64)
@@ -269,15 +267,12 @@ VARIANCES(4, 4)
 VARIANCES(4, 2)
 VARIANCES(2, 4)
 VARIANCES(2, 2)
-
-#if CONFIG_AV1
 VARIANCES(4, 16)
 VARIANCES(16, 4)
 VARIANCES(8, 32)
 VARIANCES(32, 8)
 VARIANCES(16, 64)
 VARIANCES(64, 16)
-#endif  // CONFIG_AV1
 
 GET_VAR(16, 16)
 GET_VAR(8, 8)
@@ -838,11 +833,9 @@ void aom_highbd_var_filter_block2d_bil_second_pass(
   HIGHBD_SUBPIX_VAR(W, H)      \
   HIGHBD_SUBPIX_AVG_VAR(W, H)
 
-#if CONFIG_AV1
 HIGHBD_VARIANCES(128, 128)
 HIGHBD_VARIANCES(128, 64)
 HIGHBD_VARIANCES(64, 128)
-#endif  // CONFIG_AV1
 HIGHBD_VARIANCES(64, 64)
 HIGHBD_VARIANCES(64, 32)
 HIGHBD_VARIANCES(32, 64)
@@ -859,15 +852,12 @@ HIGHBD_VARIANCES(4, 4)
 HIGHBD_VARIANCES(4, 2)
 HIGHBD_VARIANCES(2, 4)
 HIGHBD_VARIANCES(2, 2)
-
-#if CONFIG_AV1
 HIGHBD_VARIANCES(4, 16)
 HIGHBD_VARIANCES(16, 4)
 HIGHBD_VARIANCES(8, 32)
 HIGHBD_VARIANCES(32, 8)
 HIGHBD_VARIANCES(16, 64)
 HIGHBD_VARIANCES(64, 16)
-#endif  // CONFIG_AV1
 
 HIGHBD_GET_VAR(8)
 HIGHBD_GET_VAR(16)
@@ -1094,7 +1084,6 @@ void aom_highbd_jnt_comp_avg_upsampled_pred_c(
   }
 }
 
-#if CONFIG_AV1
 void aom_comp_mask_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
                           int height, const uint8_t *ref, int ref_stride,
                           const uint8_t *mask, int mask_stride,
@@ -1310,9 +1299,7 @@ HIGHBD_MASK_SUBPIX_VAR(8, 32)
 HIGHBD_MASK_SUBPIX_VAR(32, 8)
 HIGHBD_MASK_SUBPIX_VAR(16, 64)
 HIGHBD_MASK_SUBPIX_VAR(64, 16)
-#endif  // CONFIG_AV1
 
-#if CONFIG_AV1
 static INLINE void obmc_variance(const uint8_t *pre, int pre_stride,
                                  const int32_t *wsrc, const int32_t *mask,
                                  int w, int h, unsigned int *sse, int *sum) {
@@ -1610,4 +1597,3 @@ HIGHBD_OBMC_VAR(16, 64)
 HIGHBD_OBMC_SUBPIX_VAR(16, 64)
 HIGHBD_OBMC_VAR(64, 16)
 HIGHBD_OBMC_SUBPIX_VAR(64, 16)
-#endif  // CONFIG_AV1

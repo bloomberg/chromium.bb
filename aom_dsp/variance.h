@@ -60,7 +60,6 @@ typedef unsigned int (*aom_jnt_subp_avg_variance_fn_t)(
     int b_stride, unsigned int *sse, const uint8_t *second_pred,
     const JNT_COMP_PARAMS *jcp_param);
 
-#if CONFIG_AV1
 typedef unsigned int (*aom_masked_sad_fn_t)(const uint8_t *src, int src_stride,
                                             const uint8_t *ref, int ref_stride,
                                             const uint8_t *second_pred,
@@ -77,9 +76,6 @@ void aom_comp_mask_upsampled_pred(
     int height, int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
     int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask);
 
-#endif  // CONFIG_AV1
-
-#if CONFIG_AV1
 typedef unsigned int (*aom_obmc_sad_fn_t)(const uint8_t *pred, int pred_stride,
                                           const int32_t *wsrc,
                                           const int32_t *msk);
@@ -91,9 +87,7 @@ typedef unsigned int (*aom_obmc_variance_fn_t)(const uint8_t *pred,
 typedef unsigned int (*aom_obmc_subpixvariance_fn_t)(
     const uint8_t *pred, int pred_stride, int xoffset, int yoffset,
     const int32_t *wsrc, const int32_t *msk, unsigned int *sse);
-#endif  // CONFIG_AV1
 
-#if CONFIG_AV1
 typedef struct aom_variance_vtable {
   aom_sad_fn_t sdf;
   aom_sad_avg_fn_t sdaf;
@@ -109,7 +103,6 @@ typedef struct aom_variance_vtable {
   aom_jnt_sad_avg_fn_t jsdaf;
   aom_jnt_subp_avg_variance_fn_t jsvaf;
 } aom_variance_fn_ptr_t;
-#endif  // CONFIG_AV1
 
 void aom_highbd_var_filter_block2d_bil_first_pass(
     const uint8_t *src_ptr8, uint16_t *output_ptr,
