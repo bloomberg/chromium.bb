@@ -64,9 +64,9 @@ void CSSRule::Trace(blink::Visitor* visitor) {
   // pre-oilpan world, where the parent link is mysteriously zeroed under
   // some circumstances.
   if (parent_is_rule_)
-    visitor->Trace(parent_rule_);
+    visitor->TraceWithWrappers(parent_rule_);
   else
-    visitor->Trace(parent_style_sheet_);
+    visitor->TraceWithWrappers(parent_style_sheet_);
   ScriptWrappable::Trace(visitor);
 }
 

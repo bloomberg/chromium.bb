@@ -2780,8 +2780,8 @@ void Node::Trace(blink::Visitor* visitor) {
   // rareData() and data_.node_layout_data_ share their storage. We have to
   // trace only one of them.
   if (HasRareData())
-    visitor->Trace(RareData());
-  visitor->Trace(GetEventTargetData());
+    visitor->TraceWithWrappers(RareData());
+  visitor->TraceWithWrappers(GetEventTargetData());
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }
