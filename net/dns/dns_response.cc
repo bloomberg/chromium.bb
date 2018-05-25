@@ -299,15 +299,6 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
   DnsRecordParser parser = Parser();
   DnsResourceRecord record;
   unsigned ancount = answer_count();
-  // NXDOMAIN or NODATA cases respectively.
-  if (rcode() == dns_protocol::kRcodeNXDOMAIN ||
-      (ancount == 0 && rcode() == dns_protocol::kRcodeNOERROR)) {
-    unsigned nscount = base::NetToHost16(header()->nscount);
-    for (unsigned i = 0; i < nscount; ++i) {
-      if (parser.ReadRecord(&record) && record.type == dns_protocol::kTypeSOA)
-        ttl_sec = std::min(ttl_sec, record.ttl);
-    }
-  }
 
   for (unsigned i = 0; i < ancount; ++i) {
     if (!parser.ReadRecord(&record))
@@ -337,6 +328,16 @@ DnsResponse::Result DnsResponse::ParseToAddressList(
       ip_addresses.push_back(
           IPAddress(reinterpret_cast<const uint8_t*>(record.rdata.data()),
                     record.rdata.length()));
+    }
+  }
+
+  // NXDOMAIN or NODATA cases respectively.
+  if (rcode() == dns_protocol::kRcodeNXDOMAIN ||
+      (ancount == 0 && rcode() == dns_protocol::kRcodeNOERROR)) {
+    unsigned nscount = base::NetToHost16(header()->nscount);
+    for (unsigned i = 0; i < nscount; ++i) {
+      if (parser.ReadRecord(&record) && record.type == dns_protocol::kTypeSOA)
+        ttl_sec = std::min(ttl_sec, record.ttl);
     }
   }
 
