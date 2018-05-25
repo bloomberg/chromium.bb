@@ -4804,3 +4804,6 @@ crbug.com/843691 fast/css/opacity-float.html [ Failure ]
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]
 crbug.com/823837 virtual/threaded/http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
 crbug.com/823837 http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
+
+# Sheriff 2018-05-25
+crbug.com/846547 fast/webgl/webgl-composite-modes.html [ Pass Failure ]
