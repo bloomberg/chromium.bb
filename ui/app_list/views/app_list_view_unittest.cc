@@ -456,7 +456,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   SearchBoxView* search_box_view() { return main_view()->search_box_view(); }
 
   AppListItemView* folder_item_view() {
-    return apps_grid_view()->view_model_for_test()->view_at(0);
+    return apps_grid_view()->view_model()->view_at(0);
   }
 
   views::View* focused_view() {
@@ -532,7 +532,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
   for (int i = 0; i < suggestions_container_view()->num_results(); ++i)
     forward_view_list.push_back(suggestions_container_view()->tile_views()[i]);
   const views::ViewModelT<AppListItemView>* view_model =
-      apps_grid_view()->view_model_for_test();
+      apps_grid_view()->view_model();
   for (int i = 0; i < view_model->view_size(); ++i)
     forward_view_list.push_back(view_model->view_at(i));
   forward_view_list.push_back(search_box_view()->search_box());
@@ -621,7 +621,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
-      app_list_folder_view()->items_grid_view()->view_model_for_test();
+      app_list_folder_view()->items_grid_view()->view_model();
   for (int i = 0; i < view_model->view_size(); ++i)
     forward_view_list.push_back(view_model->view_at(i));
   forward_view_list.push_back(
@@ -686,7 +686,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
       suggestions_container_view()->num_results();
   forward_view_list.push_back(tile_views.front());
   const views::ViewModelT<AppListItemView>* view_model =
-      apps_grid_view()->view_model_for_test();
+      apps_grid_view()->view_model();
   for (int i = 0; i < view_model->view_size(); i += apps_grid_view()->cols())
     forward_view_list.push_back(view_model->view_at(i));
   forward_view_list.push_back(search_box_view()->search_box());
@@ -768,7 +768,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
-      app_list_folder_view()->items_grid_view()->view_model_for_test();
+      app_list_folder_view()->items_grid_view()->view_model();
   for (size_t i = 0; i < kMaxFolderItemsPerPage;
        i += app_list_folder_view()->items_grid_view()->cols())
     forward_view_list.push_back(view_model->view_at(i));
@@ -810,7 +810,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
   const views::ViewModelT<AppListItemView>* view_model =
-      app_list_folder_view()->items_grid_view()->view_model_for_test();
+      app_list_folder_view()->items_grid_view()->view_model();
   for (int i = kMaxFolderItemsPerPage; i < view_model->view_size();
        i += app_list_folder_view()->items_grid_view()->cols()) {
     forward_view_list.push_back(view_model->view_at(i));
