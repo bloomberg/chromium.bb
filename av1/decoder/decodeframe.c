@@ -2155,8 +2155,6 @@ static void get_ls_tile_buffers(
 
       // Get the whole of the last column, otherwise stop at the required tile.
       for (int r = 0; r < (is_last ? tile_rows : tile_rows_end); ++r) {
-        tile_buffers[r][c].col = c;
-
         get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
                            tile_buffers, tile_size_bytes, c, r, tile_copy_mode);
       }
@@ -2169,8 +2167,6 @@ static void get_ls_tile_buffers(
       data = tile_col_data_end[c - 1];
 
       for (int r = 0; r < tile_rows; ++r) {
-        tile_buffers[r][c].col = c;
-
         get_ls_tile_buffer(tile_col_data_end[c], &pbi->common.error, &data,
                            tile_buffers, tile_size_bytes, c, r, tile_copy_mode);
       }
@@ -2230,7 +2226,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
       if (data + hdr_offset >= data_end)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Data ended before all tiles were read.");
-      buf->col = c;
       first_tile_in_tg += tc == first_tile_in_tg ? pbi->tg_size : 0;
       data += hdr_offset;
       get_tile_buffer(data_end, pbi->tile_size_bytes, is_last,

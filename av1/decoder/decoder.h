@@ -52,7 +52,6 @@ typedef struct TileBufferDec {
   size_t size;
   const uint8_t *raw_data_end;  // The end of the raw tile buffer in the
                                 // bit stream.
-  int col;                      // only used with multi-threaded decoding
 } TileBufferDec;
 
 typedef struct AV1Decoder {
