@@ -28,6 +28,7 @@ function sensorMocks() {
     constructor(sensorRequest, handle, offset, size, reportingMode) {
       this.client_ = null;
       this.startShouldFail_ = false;
+      this.notifyOnReadingChange_ = true;
       this.reportingMode_ = reportingMode;
       this.sensorReadingTimerId_ = null;
       this.updateReadingFunction_ = null;
@@ -113,6 +114,7 @@ function sensorMocks() {
       this.stopReading();
 
       this.startShouldFail_ = false;
+      this.notifyOnReadingChange_ = true;
       this.updateReadingFunction_ = null;
       this.requestedFrequencies_ = [];
       this.suspendCalled_ = null;
@@ -140,6 +142,12 @@ function sensorMocks() {
     // Sets flag that forces sensor to fail when addConfiguration is invoked.
     setStartShouldFail(shouldFail) {
       this.startShouldFail_ = shouldFail;
+    }
+
+    // Configures whether to report a reading change when in ON_CHANGE
+    // reporting mode.
+    configureReadingChangeNotifications(notifyOnReadingChange) {
+      this.notifyOnReadingChange_ = notifyOnReadingChange;
     }
 
     // Returns resolved promise if suspend() was called, rejected otherwise.
@@ -182,7 +190,8 @@ function sensorMocks() {
             // increasing timestamp in seconds.
             this.buffer_[1] = window.performance.now() * 0.001;
           }
-          if (this.reportingMode_ === device.mojom.ReportingMode.ON_CHANGE) {
+          if (this.reportingMode_ === device.mojom.ReportingMode.ON_CHANGE &&
+              this.notifyOnReadingChange_) {
             this.client_.sensorReadingChanged();
           }
         }, timeout);
@@ -379,6 +388,22 @@ function sensor_test(func, name, properties) {
       await new Promise(resolve => { setTimeout(resolve, 0); });
     };
   }, name, properties);
+}
+
+async function setMockSensorDataForType(sensor, sensorType, mockDataArray) {
+  let createdSensor = await sensor.mockSensorProvider.getCreatedSensor(sensorType);
+  return createdSensor.setUpdateSensorReadingFunction(buffer => {
+    buffer.set(mockDataArray, 2);
+  });
+}
+
+// Returns a promise that will be resolved with the next event fired of the
+// given type. The event listener will be removed once the promise resolves.
+function createEventListenerPromise(event, targetWindow = window) {
+  return new Promise((resolve, reject) => {
+    let wrapper = new CallbackWrapper(resolve, reject);
+    targetWindow.addEventListener(event, wrapper.callback, {once: true});
+  });
 }
 
 // TODO(Mikhail): Refactor further to remove code duplication

@@ -64,6 +64,40 @@ function setMockOrientation(orientationData) {
       orientationData.absolute);
 }
 
+// Device[Orientation|Motion]EventPump treat NaN as a missing value.
+let nullToNan = x => (x === null ? NaN : x);
+
+function setMockMotionData(sensor, motionData) {
+  return Promise.all([
+      setMockSensorDataForType(sensor, device.mojom.SensorType.ACCELEROMETER, [
+          nullToNan(motionData.accelerationIncludingGravityX),
+          nullToNan(motionData.accelerationIncludingGravityY),
+          nullToNan(motionData.accelerationIncludingGravityZ),
+      ]),
+      setMockSensorDataForType(sensor, device.mojom.SensorType.LINEAR_ACCELERATION, [
+          nullToNan(motionData.accelerationX),
+          nullToNan(motionData.accelerationY),
+          nullToNan(motionData.accelerationZ),
+      ]),
+      setMockSensorDataForType(sensor, device.mojom.SensorType.GYROSCOPE, [
+          nullToNan(motionData.rotationRateAlpha),
+          nullToNan(motionData.rotationRateBeta),
+          nullToNan(motionData.rotationRateGamma),
+      ]),
+  ]);
+}
+
+function setMockOrientationData(sensor, orientationData) {
+  let sensorType = orientationData.absolute
+      ? device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES
+      : device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES;
+  return setMockSensorDataForType(sensor, sensorType, [
+      nullToNan(orientationData.beta),
+      nullToNan(orientationData.gamma),
+      nullToNan(orientationData.alpha),
+  ]);
+}
+
 function checkMotion(event, expectedMotionData) {
   assert_equals(event.acceleration.x, expectedMotionData.accelerationX, "acceleration.x");
   assert_equals(event.acceleration.y, expectedMotionData.accelerationY, "acceleration.y");
