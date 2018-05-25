@@ -12,8 +12,6 @@
 
 namespace cc {
 
-class FrameTokenAllocator;
-
 // When a change to the compositor's state/invalidation/whatever happens, a
 // Swap Promise can be inserted into LayerTreeHost/LayerTreeImpl, to track
 // whether the compositor's reply to the new state/invaliadtion/whatever is
@@ -63,8 +61,7 @@ class CC_EXPORT SwapPromise {
   virtual ~SwapPromise() {}
 
   virtual void DidActivate() = 0;
-  virtual void WillSwap(viz::CompositorFrameMetadata* metadata,
-                        FrameTokenAllocator* frame_token_allocator) = 0;
+  virtual void WillSwap(viz::CompositorFrameMetadata* metadata) = 0;
   virtual void DidSwap() = 0;
   // Return |KEEP_ACTIVE| if this promise should remain active (should not be
   // broken by the owner).

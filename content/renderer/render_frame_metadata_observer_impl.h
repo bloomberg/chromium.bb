@@ -10,10 +10,6 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace cc {
-class FrameTokenAllocator;
-}  // namespace cc
-
 namespace content {
 
 // Implementation of cc::RenderFrameMetadataObserver which exists in the
@@ -35,8 +31,7 @@ class RenderFrameMetadataObserverImpl
   ~RenderFrameMetadataObserverImpl() override;
 
   // cc::RenderFrameMetadataObserver:
-  void BindToCurrentThread(
-      cc::FrameTokenAllocator* frame_token_allocator) override;
+  void BindToCurrentThread() override;
   void OnRenderFrameSubmission(
       const cc::RenderFrameMetadata& render_frame_metadata,
       viz::CompositorFrameMetadata* compositor_frame_metadata) override;
@@ -51,9 +46,6 @@ class RenderFrameMetadataObserverImpl
 
   uint32_t last_frame_token_ = 0;
   base::Optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
-
-  // Not owned.
-  cc::FrameTokenAllocator* frame_token_allocator_ = nullptr;
 
   // These are destroyed when BindToCurrentThread() is called.
   mojom::RenderFrameMetadataObserverRequest request_;

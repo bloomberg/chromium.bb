@@ -36,7 +36,6 @@
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
-#include "cc/trees/frame_token_allocator.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -1060,7 +1059,6 @@ class CC_EXPORT LayerTreeHostImpl
   // Provides RenderFrameMetadata to the Browser process upon the submission of
   // each CompositorFrame.
   std::unique_ptr<RenderFrameMetadataObserver> render_frame_metadata_observer_;
-  FrameTokenAllocator frame_token_allocator_;
 
   // Maps from presentation_token set on CF to the source frame that requested
   // it. Presentation tokens are requested if the active tree has
