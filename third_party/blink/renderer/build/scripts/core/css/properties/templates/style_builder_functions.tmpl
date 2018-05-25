@@ -202,6 +202,31 @@ state.Style()->{{property.setter}}
     for (auto& listValue : ToCSSValueList(value))
       data.{{vector}}.push_back(CSSToStyleMap::MapAnimation{{attribute}}(*listValue));
   }
+    {% elif property.style_builder_template == 'svg_paint' %}
+    {% set paint_type = property.style_builder_template_args['paint_type'] %}
+    {% set visited_link_setter = 'SetVisitedLink' + paint_type %}
+  {{declare_initial()}} {
+    if (state.ApplyPropertyToRegularStyle())
+      {{set_value(property)}}(SVGComputedStyle::Initial{{paint_type}}());
+    if (state.ApplyPropertyToVisitedLinkStyle())
+      state.Style()->AccessSVGStyle().{{visited_link_setter}}(SVGComputedStyle::Initial{{paint_type}}());
+  }
+
+  {{declare_inherit()}} {
+    const SVGComputedStyle& parent_svg_style = state.ParentStyle()->SvgStyle();
+    if (state.ApplyPropertyToRegularStyle())
+      {{set_value(property)}}(parent_svg_style.{{paint_type}}());
+    if (state.ApplyPropertyToVisitedLinkStyle())
+      state.Style()->AccessSVGStyle().{{visited_link_setter}}(parent_svg_style.{{paint_type}}());
+  }
+
+  {{declare_value()}} {
+    SVGPaint paint = StyleBuilderConverter::{{property.converter}}(state, value);
+    if (state.ApplyPropertyToRegularStyle())
+      {{set_value(property)}}(paint);
+    if (state.ApplyPropertyToVisitedLinkStyle())
+      state.Style()->AccessSVGStyle().{{visited_link_setter}}(paint);
+  }
     {% endif %}
   {%- endif %}
 {%- endmacro %}
