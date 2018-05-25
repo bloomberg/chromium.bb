@@ -9,7 +9,10 @@ Polymer({
 
   properties: {
     /** @private {string} */
-    currentValue_: String,
+    currentValue_: {
+      type: String,
+      observer: 'onInputChanged_',
+    },
 
     /** @private {boolean} */
     inputValid_: Boolean,
@@ -17,10 +20,8 @@ Polymer({
     disabled: Boolean,
   },
 
-  observers: [
-    'onInputChanged_(currentValue_, inputValid_)',
-    'onSettingsChanged_(settings.copies.value, settings.collate.value)'
-  ],
+  observers:
+      ['onSettingsChanged_(settings.copies.value, settings.collate.value)'],
 
   /**
    * Updates the input string when the setting has been initialized.
@@ -28,7 +29,8 @@ Polymer({
    */
   onSettingsChanged_: function() {
     const copies = this.getSetting('copies');
-    this.currentValue_ = /** @type {string} */ (copies.value.toString());
+    if (this.inputValid_)
+      this.currentValue_ = /** @type {string} */ (copies.value.toString());
     const collate = this.getSetting('collate');
     this.$.collate.checked = /** @type {boolean} */ (collate.value);
   },

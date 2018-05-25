@@ -30,7 +30,10 @@ Polymer({
     documentInfo: Object,
 
     /** @private {string} */
-    currentValue_: String,
+    currentValue_: {
+      type: String,
+      observer: 'onInputChanged_',
+    },
 
     /** @private {boolean} */
     inputValid_: Boolean,
@@ -51,7 +54,6 @@ Polymer({
   observers: [
     'onFitToPageSettingChange_(settings.fitToPage.value)',
     'onFitToPageScalingSet_(documentInfo.fitToPageScaling)',
-    'onInputChanged_(currentValue_, inputValid_)',
     'onScalingSettingChanged_(settings.scaling.value)',
     'onScalingValidChanged_(settings.scaling.valid)',
   ],
