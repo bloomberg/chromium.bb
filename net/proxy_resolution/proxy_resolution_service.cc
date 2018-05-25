@@ -21,7 +21,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/url_util.h"
@@ -218,7 +217,7 @@ class ProxyResolverNull : public ProxyResolver {
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
     return ERR_NOT_IMPLEMENTED;
@@ -235,7 +234,7 @@ class ProxyResolverFromPacString : public ProxyResolver {
 
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
     results->UsePacString(pac_string_);
@@ -283,7 +282,7 @@ class ProxyResolverFactoryForNullResolver : public ProxyResolverFactory {
   // ProxyResolverFactory overrides.
   int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                           std::unique_ptr<ProxyResolver>* resolver,
-                          const net::CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override {
     resolver->reset(new ProxyResolverNull());
     return OK;
@@ -301,7 +300,7 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
   // ProxyResolverFactory override.
   int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                           std::unique_ptr<ProxyResolver>* resolver,
-                          const net::CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override {
     resolver->reset(new ProxyResolverFromPacString(pac_string_));
     return OK;
@@ -451,7 +450,7 @@ class ProxyResolutionService::InitProxyResolver {
             NetLog* net_log,
             const ProxyConfigWithAnnotation& config,
             TimeDelta wait_delay,
-            const CompletionCallback& callback) {
+            CompletionOnceCallback callback) {
     DCHECK_EQ(STATE_NONE, next_state_);
     proxy_resolver_ = proxy_resolver;
     proxy_resolver_factory_ = proxy_resolver_factory;
@@ -461,7 +460,7 @@ class ProxyResolutionService::InitProxyResolver {
     decider_->set_quick_check_enabled(quick_check_enabled_);
     config_ = config;
     wait_delay_ = wait_delay;
-    callback_ = callback;
+    callback_ = std::move(callback);
 
     next_state_ = STATE_DECIDE_PAC_FILE;
     return DoLoop(OK);
@@ -477,14 +476,14 @@ class ProxyResolutionService::InitProxyResolver {
                        const ProxyConfigWithAnnotation& effective_config,
                        int decider_result,
                        PacFileData* script_data,
-                       const CompletionCallback& callback) {
+                       CompletionOnceCallback callback) {
     DCHECK_EQ(STATE_NONE, next_state_);
     proxy_resolver_ = proxy_resolver;
     proxy_resolver_factory_ = proxy_resolver_factory;
 
     effective_config_ = effective_config;
     script_data_ = script_data;
-    callback_ = callback;
+    callback_ = std::move(callback);
 
     if (decider_result != OK)
       return decider_result;
@@ -603,12 +602,7 @@ class ProxyResolutionService::InitProxyResolver {
     DCHECK_NE(STATE_NONE, next_state_);
     int rv = DoLoop(result);
     if (rv != ERR_IO_PENDING)
-      DoCallback(rv);
-  }
-
-  void DoCallback(int result) {
-    DCHECK_NE(ERR_IO_PENDING, result);
-    callback_.Run(result);
+      std::move(callback_).Run(result);
   }
 
   ProxyConfigWithAnnotation config_;
@@ -619,7 +613,7 @@ class ProxyResolutionService::InitProxyResolver {
   ProxyResolverFactory* proxy_resolver_factory_;
   std::unique_ptr<ProxyResolverFactory::Request> create_resolver_request_;
   std::unique_ptr<ProxyResolver>* proxy_resolver_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   State next_state_;
   bool quick_check_enabled_;
 
@@ -845,10 +839,10 @@ class ProxyResolutionService::Request
           const std::string& method,
           ProxyDelegate* proxy_delegate,
           ProxyInfo* results,
-          const CompletionCallback& user_callback,
+          CompletionOnceCallback user_callback,
           const NetLogWithSource& net_log)
       : service_(service),
-        user_callback_(user_callback),
+        user_callback_(std::move(user_callback)),
         results_(results),
         url_(url),
         method_(method),
@@ -856,7 +850,7 @@ class ProxyResolutionService::Request
         resolve_job_(nullptr),
         net_log_(net_log),
         creation_time_(TimeTicks::Now()) {
-    DCHECK(!user_callback.is_null());
+    DCHECK(!user_callback_.is_null());
   }
 
   // Starts the resolve proxy request.
@@ -968,9 +962,9 @@ class ProxyResolutionService::Request
     // Remove this completed Request from the service's pending list.
     /// (which will probably cause deletion of |this|).
     if (!user_callback_.is_null()) {
-      CompletionCallback callback = user_callback_;
+      CompletionOnceCallback callback = std::move(user_callback_);
       service_->RemovePendingRequest(this);
-      callback.Run(result_code);
+      std::move(callback).Run(result_code);
     }
   }
 
@@ -980,7 +974,7 @@ class ProxyResolutionService::Request
   // Outstanding requests are cancelled during ~ProxyResolutionService, so this
   // is guaranteed to be valid throughout our lifetime.
   ProxyResolutionService* service_;
-  CompletionCallback user_callback_;
+  CompletionOnceCallback user_callback_;
   ProxyInfo* results_;
   GURL url_;
   std::string method_;
@@ -1090,20 +1084,20 @@ ProxyResolutionService::CreateFixedFromPacResult(
 int ProxyResolutionService::ResolveProxy(const GURL& raw_url,
                                          const std::string& method,
                                          ProxyInfo* result,
-                                         const CompletionCallback& callback,
+                                         CompletionOnceCallback callback,
                                          Request** pac_request,
                                          ProxyDelegate* proxy_delegate,
                                          const NetLogWithSource& net_log) {
   DCHECK(!callback.is_null());
-  return ResolveProxyHelper(raw_url, method, result, callback, pac_request,
-                            proxy_delegate, net_log);
+  return ResolveProxyHelper(raw_url, method, result, std::move(callback),
+                            pac_request, proxy_delegate, net_log);
 }
 
 int ProxyResolutionService::ResolveProxyHelper(
     const GURL& raw_url,
     const std::string& method,
     ProxyInfo* result,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     Request** pac_request,
     ProxyDelegate* proxy_delegate,
     const NetLogWithSource& net_log) {
@@ -1139,7 +1133,7 @@ int ProxyResolutionService::ResolveProxyHelper(
     return ERR_IO_PENDING;
 
   scoped_refptr<Request> req(new Request(this, url, method, proxy_delegate,
-                                         result, callback, net_log));
+                                         result, std::move(callback), net_log));
 
   if (current_state_ == STATE_READY) {
     // Start the resolve request.
@@ -1168,8 +1162,7 @@ bool ProxyResolutionService::TryResolveProxySynchronously(
     ProxyInfo* result,
     ProxyDelegate* proxy_delegate,
     const NetLogWithSource& net_log) {
-  CompletionCallback null_callback;
-  return ResolveProxyHelper(raw_url, method, result, null_callback,
+  return ResolveProxyHelper(raw_url, method, result, CompletionOnceCallback(),
                             nullptr /* pac_request*/, proxy_delegate,
                             net_log) == OK;
 }

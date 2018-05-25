@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   int Start(const ProxyConfigWithAnnotation& config,
             const base::TimeDelta wait_delay,
             bool fetch_pac_bytes,
-            const CompletionCallback& callback);
+            CompletionOnceCallback callback);
 
   // Shuts down any in-progress DNS requests, and cancels any ScriptFetcher
   // requests.  Does not call OnShutdown on the [Dhcp]PacFileFetcher.
@@ -131,7 +131,6 @@ class NET_EXPORT_PRIVATE PacFileDecider {
 
   void OnIOCompletion(int result);
   int DoLoop(int result);
-  void DoCallback(int result);
 
   int DoWait();
   int DoWaitComplete(int result);
@@ -167,7 +166,7 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   PacFileFetcher* pac_file_fetcher_;
   DhcpPacFileFetcher* dhcp_pac_file_fetcher_;
 
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   size_t current_pac_source_index_;
 

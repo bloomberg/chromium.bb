@@ -4,6 +4,7 @@
 
 #include "chromeos/network/dhcp_pac_file_fetcher_chromeos.h"
 
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
 #include "chromeos/network/network_event_log.h"
@@ -44,7 +45,7 @@ DhcpPacFileFetcherChromeos::~DhcpPacFileFetcherChromeos() = default;
 
 int DhcpPacFileFetcherChromeos::Fetch(
     base::string16* utf16_text,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::NetLogWithSource& net_log,
     const net::NetworkTrafficAnnotationTag traffic_annotation) {
   if (!network_handler_task_runner_.get())
@@ -52,10 +53,10 @@ int DhcpPacFileFetcherChromeos::Fetch(
   CHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
       network_handler_task_runner_.get(), FROM_HERE,
-      base::Bind(&GetPacUrlFromDefaultNetwork),
-      base::Bind(&DhcpPacFileFetcherChromeos::ContinueFetch,
-                 weak_ptr_factory_.GetWeakPtr(), utf16_text, callback,
-                 traffic_annotation));
+      base::BindOnce(&GetPacUrlFromDefaultNetwork),
+      base::BindOnce(&DhcpPacFileFetcherChromeos::ContinueFetch,
+                     weak_ptr_factory_.GetWeakPtr(), utf16_text,
+                     std::move(callback), traffic_annotation));
   return net::ERR_IO_PENDING;
 }
 
@@ -79,19 +80,22 @@ std::string DhcpPacFileFetcherChromeos::GetFetcherName() const {
 
 void DhcpPacFileFetcherChromeos::ContinueFetch(
     base::string16* utf16_text,
-    net::CompletionCallback callback,
+    net::CompletionOnceCallback callback,
     const net::NetworkTrafficAnnotationTag traffic_annotation,
     std::string pac_url) {
   NET_LOG_EVENT("DhcpPacFileFetcher", pac_url);
   pac_url_ = GURL(pac_url);
   if (pac_url_.is_empty()) {
-    callback.Run(net::ERR_PAC_NOT_IN_DHCP);
+    std::move(callback).Run(net::ERR_PAC_NOT_IN_DHCP);
     return;
   }
-  int res = pac_file_fetcher_->Fetch(pac_url_, utf16_text, callback,
+
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
+  int res = pac_file_fetcher_->Fetch(pac_url_, utf16_text, repeating_callback,
                                      traffic_annotation);
   if (res != net::ERR_IO_PENDING)
-    callback.Run(res);
+    repeating_callback.Run(res);
 }
 
 }  // namespace chromeos

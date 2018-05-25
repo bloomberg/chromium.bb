@@ -58,7 +58,7 @@ class ProxyResolverWinHttp : public ProxyResolver {
   // ProxyResolver implementation:
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const CompletionCallback& /*callback*/,
+                     CompletionOnceCallback /*callback*/,
                      std::unique_ptr<Request>* /*request*/,
                      const NetLogWithSource& /*net_log*/) override;
 
@@ -87,7 +87,7 @@ ProxyResolverWinHttp::~ProxyResolverWinHttp() {
 
 int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
                                          ProxyInfo* results,
-                                         const CompletionCallback& /*callback*/,
+                                         CompletionOnceCallback /*callback*/,
                                          std::unique_ptr<Request>* /*request*/,
                                          const NetLogWithSource& /*net_log*/) {
   // If we don't have a WinHTTP session, then create a new one.
@@ -204,7 +204,7 @@ ProxyResolverFactoryWinHttp::ProxyResolverFactoryWinHttp()
 int ProxyResolverFactoryWinHttp::CreateProxyResolver(
     const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolver>* resolver,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<Request>* request) {
   resolver->reset(new ProxyResolverWinHttp(pac_script));
   return OK;

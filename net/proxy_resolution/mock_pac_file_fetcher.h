@@ -6,6 +6,7 @@
 #define NET_PROXY_MOCK_PAC_FILE_FETCHER_H_
 
 #include "base/compiler_specific.h"
+#include "net/base/completion_once_callback.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -26,7 +27,7 @@ class MockPacFileFetcher : public PacFileFetcher {
   // PacFileFetcher implementation.
   int Fetch(const GURL& url,
             base::string16* text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   void OnShutdown() override;
@@ -41,7 +42,7 @@ class MockPacFileFetcher : public PacFileFetcher {
 
  private:
   GURL pending_request_url_;
-  CompletionCallback pending_request_callback_;
+  CompletionOnceCallback pending_request_callback_;
   base::string16* pending_request_text_;
   bool waiting_for_fetch_;
   bool is_shutdown_;

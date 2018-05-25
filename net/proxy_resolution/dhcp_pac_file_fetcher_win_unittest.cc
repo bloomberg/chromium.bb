@@ -14,7 +14,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/timer/elapsed_timer.h"
-#include "net/base/completion_callback.h"
 #include "net/proxy_resolution/dhcp_pac_file_adapter_fetcher_win.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -221,9 +220,9 @@ class DummyDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
         fetch_delay_ms_(1) {}
 
   void Fetch(const std::string& adapter_name,
-             const CompletionCallback& callback,
+             CompletionOnceCallback callback,
              const NetworkTrafficAnnotationTag traffic_annotation) override {
-    callback_ = callback;
+    callback_ = std::move(callback);
     timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(fetch_delay_ms_),
                  this, &DummyDhcpPacFileAdapterFetcher::OnTimer);
   }
@@ -244,9 +243,7 @@ class DummyDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
     return pac_script_;
   }
 
-  void OnTimer() {
-    callback_.Run(result_);
-  }
+  void OnTimer() { std::move(callback_).Run(result_); }
 
   void Configure(bool did_finish,
                  int result,
@@ -263,7 +260,7 @@ class DummyDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
   int result_;
   base::string16 pac_script_;
   int fetch_delay_ms_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   base::OneShotTimer timer_;
 };
 

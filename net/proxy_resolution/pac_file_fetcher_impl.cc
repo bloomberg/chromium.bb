@@ -126,7 +126,7 @@ void PacFileFetcherImpl::OnResponseCompleted(URLRequest* request,
 int PacFileFetcherImpl::Fetch(
     const GURL& url,
     base::string16* text,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag traffic_annotation) {
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
@@ -175,7 +175,7 @@ int PacFileFetcherImpl::Fetch(
                              LOAD_IGNORE_LIMITS);
 
   // Save the caller's info for notification on completion.
-  callback_ = callback;
+  callback_ = std::move(callback);
   result_text_ = text;
 
   bytes_read_so_far_.clear();
@@ -392,11 +392,11 @@ void PacFileFetcherImpl::FetchCompleted() {
   }
 
   int result_code = result_code_;
-  CompletionCallback callback = callback_;
+  CompletionOnceCallback callback = std::move(callback_);
 
   ResetCurRequestState();
 
-  callback.Run(result_code);
+  std::move(callback).Run(result_code);
 }
 
 void PacFileFetcherImpl::ResetCurRequestState() {

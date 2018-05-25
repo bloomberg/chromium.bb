@@ -49,14 +49,14 @@ DhcpPacFileAdapterFetcher::~DhcpPacFileAdapterFetcher() {
 
 void DhcpPacFileAdapterFetcher::Fetch(
     const std::string& adapter_name,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(state_, STATE_START);
   result_ = ERR_IO_PENDING;
   pac_script_ = base::string16();
   state_ = STATE_WAIT_DHCP;
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   wait_timer_.Start(FROM_HERE, ImplGetTimeout(), this,
                     &DhcpPacFileAdapterFetcher::OnTimeout);
@@ -182,12 +182,10 @@ void DhcpPacFileAdapterFetcher::OnFetcherDone(int result) {
 void DhcpPacFileAdapterFetcher::TransitionToFinish() {
   DCHECK(state_ == STATE_WAIT_DHCP || state_ == STATE_WAIT_URL);
   state_ = STATE_FINISH;
-  CompletionCallback callback = callback_;
-  callback_.Reset();
 
   // Be careful not to touch any member state after this, as the client
   // may delete us during this callback.
-  callback.Run(result_);
+  std::move(callback_).Run(result_);
 }
 
 DhcpPacFileAdapterFetcher::State DhcpPacFileAdapterFetcher::state() const {

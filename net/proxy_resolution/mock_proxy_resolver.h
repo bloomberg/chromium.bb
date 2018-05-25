@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
@@ -25,11 +26,10 @@ class MockAsyncProxyResolver : public ProxyResolver {
     Job(MockAsyncProxyResolver* resolver,
         const GURL& url,
         ProxyInfo* results,
-        const CompletionCallback& callback);
+        CompletionOnceCallback callback);
 
     const GURL& url() const { return url_; }
     ProxyInfo* results() const { return results_; }
-    const CompletionCallback& callback() const { return callback_; }
     MockAsyncProxyResolver* Resolver() const { return resolver_; };
 
     void CompleteNow(int rv);
@@ -40,7 +40,7 @@ class MockAsyncProxyResolver : public ProxyResolver {
     MockAsyncProxyResolver* resolver_;
     const GURL url_;
     ProxyInfo* results_;
-    CompletionCallback callback_;
+    CompletionOnceCallback callback_;
   };
 
   class RequestImpl : public ProxyResolver::Request {
@@ -61,7 +61,7 @@ class MockAsyncProxyResolver : public ProxyResolver {
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& /*net_log*/) override;
   const std::vector<Job*>& pending_jobs() const { return pending_jobs_; }
@@ -92,7 +92,7 @@ class MockAsyncProxyResolverFactory : public ProxyResolverFactory {
   int CreateProxyResolver(
       const scoped_refptr<PacFileData>& pac_script,
       std::unique_ptr<ProxyResolver>* resolver,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       std::unique_ptr<ProxyResolverFactory::Request>* request) override;
 
   const RequestsList& pending_requests() const { return pending_requests_; }
@@ -113,7 +113,7 @@ class MockAsyncProxyResolverFactory::Request
   Request(MockAsyncProxyResolverFactory* factory,
           const scoped_refptr<PacFileData>& script_data,
           std::unique_ptr<ProxyResolver>* resolver,
-          const CompletionCallback& callback);
+          CompletionOnceCallback callback);
 
   const scoped_refptr<PacFileData>& script_data() const { return script_data_; }
 
@@ -137,7 +137,7 @@ class MockAsyncProxyResolverFactory::Request
   MockAsyncProxyResolverFactory* factory_;
   const scoped_refptr<PacFileData> script_data_;
   std::unique_ptr<ProxyResolver>* resolver_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 };
 
 // ForwardingProxyResolver forwards all requests to |impl|. |impl| must remain
@@ -149,7 +149,7 @@ class ForwardingProxyResolver : public ProxyResolver {
   // ProxyResolver overrides.
   int GetProxyForURL(const GURL& query_url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override;
 

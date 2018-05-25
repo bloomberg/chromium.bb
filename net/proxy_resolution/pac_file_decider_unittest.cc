@@ -119,7 +119,7 @@ class RuleBasedPacFileFetcher : public PacFileFetcher {
   // PacFileFetcher implementation.
   int Fetch(const GURL& url,
             base::string16* text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag traffic_annotation) override {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
@@ -149,7 +149,7 @@ class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
   ~MockDhcpPacFileFetcher() override;
 
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
@@ -161,7 +161,7 @@ class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
   virtual void CompleteRequests(int result, const base::string16& script);
 
  private:
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   base::string16* utf16_text_;
   GURL gurl_;
   DISALLOW_COPY_AND_ASSIGN(MockDhcpPacFileFetcher);
@@ -173,11 +173,11 @@ MockDhcpPacFileFetcher::~MockDhcpPacFileFetcher() = default;
 
 int MockDhcpPacFileFetcher::Fetch(
     base::string16* utf16_text,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag traffic_annotation) {
   utf16_text_ = utf16_text;
-  callback_ = callback;
+  callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 
@@ -196,7 +196,7 @@ void MockDhcpPacFileFetcher::SetPacURL(const GURL& url) {
 void MockDhcpPacFileFetcher::CompleteRequests(int result,
                                               const base::string16& script) {
   *utf16_text_ = script;
-  callback_.Run(result);
+  std::move(callback_).Run(result);
 }
 
 // Succeed using custom PAC script.
@@ -701,7 +701,7 @@ class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {}
 
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override {
     *utf16_text = expected_text_;
@@ -785,10 +785,10 @@ class AsyncFailDhcpFetcher
   ~AsyncFailDhcpFetcher() override = default;
 
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override {
-    callback_ = callback;
+    callback_ = std::move(callback);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&AsyncFailDhcpFetcher::CallbackWithFailure, AsWeakPtr()));
@@ -803,12 +803,12 @@ class AsyncFailDhcpFetcher
 
   void CallbackWithFailure() {
     if (!callback_.is_null())
-      callback_.Run(ERR_PAC_NOT_IN_DHCP);
+      std::move(callback_).Run(ERR_PAC_NOT_IN_DHCP);
   }
 
  private:
   GURL dummy_gurl_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 };
 
 TEST(PacFileDeciderTest, DhcpCancelledByDestructor) {

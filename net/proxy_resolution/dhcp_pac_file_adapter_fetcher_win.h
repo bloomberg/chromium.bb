@@ -16,7 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -50,7 +50,7 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
   // You may only call Fetch() once on a given instance of
   // DhcpPacFileAdapterFetcher.
   virtual void Fetch(const std::string& adapter_name,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      const NetworkTrafficAnnotationTag traffic_annotation);
 
   // Cancels the fetch on this adapter.
@@ -177,7 +177,7 @@ class NET_EXPORT_PRIVATE DhcpPacFileAdapterFetcher
 
   // Callback to let our client know we're done. Invalid in states
   // START, FINISH and CANCEL.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   // Fetcher to retrieve PAC files once URL is known.
   std::unique_ptr<PacFileFetcher> script_fetcher_;

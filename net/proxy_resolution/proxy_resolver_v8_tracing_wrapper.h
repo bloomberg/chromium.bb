@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
@@ -40,14 +41,14 @@ class NET_EXPORT ProxyResolverFactoryV8TracingWrapper
   // ProxyResolverFactory override.
   int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                           std::unique_ptr<ProxyResolver>* resolver,
-                          const CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override;
 
  private:
   void OnProxyResolverCreated(
       std::unique_ptr<std::unique_ptr<ProxyResolverV8Tracing>> v8_resolver,
       std::unique_ptr<ProxyResolver>* resolver,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       std::unique_ptr<ProxyResolverErrorObserver> error_observer,
       int error);
 

@@ -51,7 +51,7 @@ class MockProxyResolver : public ProxyResolver {
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& query_url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
     if (!resolve_latency_.is_zero())
@@ -128,7 +128,7 @@ class BlockableProxyResolver : public MockProxyResolver {
 
   int GetProxyForURL(const GURL& query_url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
     {
@@ -146,7 +146,7 @@ class BlockableProxyResolver : public MockProxyResolver {
     }
 
     return MockProxyResolver::GetProxyForURL(
-        query_url, results, callback, request, net_log);
+        query_url, results, std::move(callback), request, net_log);
   }
 
  private:
@@ -166,7 +166,7 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
 
   int CreateProxyResolver(const scoped_refptr<PacFileData>& script_data,
                           std::unique_ptr<ProxyResolver>* result,
-                          const CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override {
     BlockableProxyResolver* resolver = new BlockableProxyResolver;
     result->reset(resolver);
@@ -703,7 +703,7 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   // ProxyResolverFactory override.
   int CreateProxyResolver(const scoped_refptr<PacFileData>& script_data,
                           std::unique_ptr<ProxyResolver>* result,
-                          const CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override {
     return ERR_PAC_SCRIPT_FAILED;
   }
@@ -751,10 +751,10 @@ TEST_F(MultiThreadedProxyResolverTest, CancelCreate) {
   base::RunLoop().RunUntilIdle();
 }
 
-void DeleteRequest(const CompletionCallback& callback,
+void DeleteRequest(CompletionOnceCallback callback,
                    std::unique_ptr<ProxyResolverFactory::Request>* request,
                    int result) {
-  callback.Run(result);
+  std::move(callback).Run(result);
   request->reset();
 }
 
@@ -769,8 +769,8 @@ TEST_F(MultiThreadedProxyResolverTest, DeleteRequestInFactoryCallback) {
   EXPECT_EQ(ERR_IO_PENDING,
             resolver_factory.CreateProxyResolver(
                 PacFileData::FromUTF8("pac script bytes"), &resolver,
-                base::Bind(&DeleteRequest, callback.callback(),
-                           base::Unretained(&request)),
+                base::BindOnce(&DeleteRequest, callback.callback(),
+                               base::Unretained(&request)),
                 &request));
   EXPECT_TRUE(request);
   EXPECT_THAT(callback.WaitForResult(), IsOk());

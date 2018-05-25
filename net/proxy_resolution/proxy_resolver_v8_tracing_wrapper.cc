@@ -94,7 +94,7 @@ class ProxyResolverV8TracingWrapper : public ProxyResolver {
 
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override;
 
@@ -120,11 +120,11 @@ ProxyResolverV8TracingWrapper::ProxyResolverV8TracingWrapper(
 int ProxyResolverV8TracingWrapper::GetProxyForURL(
     const GURL& url,
     ProxyInfo* results,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<Request>* request,
     const NetLogWithSource& net_log) {
   resolver_impl_->GetProxyForURL(
-      url, results, callback, request,
+      url, results, std::move(callback), request,
       std::make_unique<BindingsImpl>(error_observer_.get(), host_resolver_,
                                      net_log_, net_log));
   return ERR_IO_PENDING;
@@ -149,7 +149,7 @@ ProxyResolverFactoryV8TracingWrapper::~ProxyResolverFactoryV8TracingWrapper() =
 int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
     const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolver>* resolver,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<Request>* request) {
   std::unique_ptr<std::unique_ptr<ProxyResolverV8Tracing>> v8_resolver(
       new std::unique_ptr<ProxyResolverV8Tracing>);
@@ -165,9 +165,10 @@ int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
       std::make_unique<BindingsImpl>(error_observer_local, host_resolver_,
                                      net_log_, NetLogWithSource()),
       v8_resolver_local,
-      base::Bind(&ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated,
-                 base::Unretained(this), base::Passed(&v8_resolver), resolver,
-                 callback, base::Passed(&error_observer)),
+      base::BindOnce(
+          &ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated,
+          base::Unretained(this), base::Passed(&v8_resolver), resolver,
+          std::move(callback), base::Passed(&error_observer)),
       request);
   return ERR_IO_PENDING;
 }
@@ -175,7 +176,7 @@ int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
 void ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated(
     std::unique_ptr<std::unique_ptr<ProxyResolverV8Tracing>> v8_resolver,
     std::unique_ptr<ProxyResolver>* resolver,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<ProxyResolverErrorObserver> error_observer,
     int error) {
   if (error == OK) {
@@ -183,7 +184,7 @@ void ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated(
         std::move(*v8_resolver), net_log_, host_resolver_,
         std::move(error_observer)));
   }
-  callback.Run(error);
+  std::move(callback).Run(error);
 }
 
 }  // namespace net

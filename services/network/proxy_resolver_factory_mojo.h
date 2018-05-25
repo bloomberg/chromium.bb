@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolverFactoryMojo
   // ProxyResolverFactory override.
   int CreateProxyResolver(const scoped_refptr<net::PacFileData>& pac_script,
                           std::unique_ptr<net::ProxyResolver>* resolver,
-                          const net::CompletionCallback& callback,
+                          net::CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override;
 
  private:

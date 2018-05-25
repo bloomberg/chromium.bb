@@ -189,7 +189,7 @@ class ProxyResolverMac : public ProxyResolver {
   // ProxyResolver methods:
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const CompletionCallback& callback,
+                     CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override;
 
@@ -207,7 +207,7 @@ ProxyResolverMac::~ProxyResolverMac() {}
 // inspired by http://developer.apple.com/samplecode/CFProxySupportTool/
 int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
                                      ProxyInfo* results,
-                                     const CompletionCallback& /*callback*/,
+                                     CompletionOnceCallback /*callback*/,
                                      std::unique_ptr<Request>* /*request*/,
                                      const NetLogWithSource& net_log) {
   base::ScopedCFTypeRef<CFStringRef> query_ref(
@@ -345,7 +345,7 @@ ProxyResolverFactoryMac::ProxyResolverFactoryMac()
 int ProxyResolverFactoryMac::CreateProxyResolver(
     const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolver>* resolver,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<Request>* request) {
   resolver->reset(new ProxyResolverMac(pac_script));
   return OK;
