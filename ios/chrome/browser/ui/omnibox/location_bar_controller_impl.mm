@@ -65,18 +65,6 @@ bool DoesCurrentPageHaveCertInfo(web::WebState* webState) {
          SSLStatus.security_style != web::SECURITY_STYLE_UNKNOWN;
 }
 
-// Returns whether the |webState| is presenting an offline page.
-bool IsCurrentPageOffline(web::WebState* webState) {
-  if (!webState)
-    return false;
-  auto* navigationManager = webState->GetNavigationManager();
-  auto* visibleItem = navigationManager->GetVisibleItem();
-  if (!visibleItem)
-    return false;
-  const GURL& url = visibleItem->GetURL();
-  return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
-}
-
 }  // namespace
 
 
@@ -179,14 +167,15 @@ void LocationBarControllerImpl::OnAutocompleteAccept(
 }
 
 void LocationBarControllerImpl::OnChanged() {
-  const bool page_is_offline = IsCurrentPageOffline(GetWebState());
+  ToolbarModel* toolbarModel = [delegate_ toolbarModel];
+  const bool page_is_offline =
+      toolbarModel ? toolbarModel->IsOfflinePage() : false;
   const int resource_id = edit_view_->GetIcon(page_is_offline);
   [location_bar_view_ setPlaceholderImage:resource_id];
 
   // TODO(rohitrao): Can we get focus information from somewhere other than the
   // model?
   if (!IsIPadIdiom() && !edit_view_->model()->has_focus()) {
-    ToolbarModel* toolbarModel = [delegate_ toolbarModel];
     if (toolbarModel) {
       bool show_icon_for_state = security_state::ShouldAlwaysShowIcon(
           toolbarModel->GetSecurityLevel(false));
@@ -230,8 +219,10 @@ void LocationBarControllerImpl::OnKillFocus() {
   [location_bar_view_ setLeadingButtonEnabled:YES];
 
   // Update the placeholder icon.
-  const int resource_id =
-      edit_view_->GetIcon(IsCurrentPageOffline(GetWebState()));
+  ToolbarModel* toolbarModel = [delegate_ toolbarModel];
+  const bool page_is_offline =
+      toolbarModel ? toolbarModel->IsOfflinePage() : false;
+  const int resource_id = edit_view_->GetIcon(page_is_offline);
   [location_bar_view_ setPlaceholderImage:resource_id];
 
   // Show the placeholder text on iPad.
@@ -255,8 +246,10 @@ void LocationBarControllerImpl::OnSetFocus() {
   [location_bar_view_ setLeadingButtonEnabled:NO];
 
   // Update the placeholder icon.
-  const int resource_id =
-      edit_view_->GetIcon(IsCurrentPageOffline(GetWebState()));
+  ToolbarModel* toolbarModel = [delegate_ toolbarModel];
+  const bool page_is_offline =
+      toolbarModel ? toolbarModel->IsOfflinePage() : false;
+  const int resource_id = edit_view_->GetIcon(page_is_offline);
   [location_bar_view_ setPlaceholderImage:resource_id];
 
   // Hide the placeholder text on iPad.

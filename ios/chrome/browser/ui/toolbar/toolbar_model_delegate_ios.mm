@@ -111,5 +111,13 @@ const gfx::VectorIcon* ToolbarModelDelegateIOS::GetVectorIconOverride() const {
 }
 
 bool ToolbarModelDelegateIOS::IsOfflinePage() const {
-  return false;
+  web::WebState* web_state = GetActiveWebState();
+  if (!web_state)
+    return false;
+  auto* navigationManager = web_state->GetNavigationManager();
+  auto* visibleItem = navigationManager->GetVisibleItem();
+  if (!visibleItem)
+    return false;
+  const GURL& url = visibleItem->GetURL();
+  return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
 }
