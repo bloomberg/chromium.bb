@@ -74,9 +74,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Shutdown must be called just prior to shutting down blink.
   void Shutdown();
 
-  void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
-    plugin_refresh_allowed_ = plugin_refresh_allowed;
-  }
   // Platform methods:
   blink::WebSandboxSupport* GetSandboxSupport() override;
   blink::WebCookieJar* CookieJar() override;
@@ -298,9 +295,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // increments by 1, for every enable decrements by 1. When it reaches 0,
   // we tell the browser to enable fast termination.
   int sudden_termination_disables_;
-
-  // If true, then a GetPlugins call is allowed to rescan the disk.
-  bool plugin_refresh_allowed_;
 
   std::unique_ptr<blink::WebIDBFactory> web_idb_factory_;
 

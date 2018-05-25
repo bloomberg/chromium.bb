@@ -267,7 +267,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       compositor_thread_(nullptr),
       main_thread_(main_thread_scheduler->CreateMainThread()),
       sudden_termination_disables_(0),
-      plugin_refresh_allowed_(true),
       default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       main_thread_scheduler_(main_thread_scheduler) {
@@ -780,8 +779,6 @@ void RendererBlinkPlatformImpl::GetPluginList(
     blink::WebPluginListBuilder* builder) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::vector<WebPluginInfo> plugins;
-  if (!plugin_refresh_allowed_)
-    refresh = false;
   RenderThread::Get()->Send(
       new FrameHostMsg_GetPlugins(refresh, mainFrameOrigin, &plugins));
   for (const WebPluginInfo& plugin : plugins) {

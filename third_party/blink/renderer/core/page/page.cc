@@ -75,8 +75,9 @@ namespace blink {
 
 // Wrapper function defined in WebKit.h
 void ResetPluginCache(bool reload_pages) {
+  // At this point we already know that the browser has refreshed its list, so
+  // it is not necessary to force it to be regenerated.
   DCHECK(!reload_pages);
-  Page::RefreshPlugins();
   Page::ResetPluginData();
 }
 
@@ -316,10 +317,6 @@ void Page::InitialStyleChanged() {
       continue;
     ToLocalFrame(frame)->GetDocument()->GetStyleEngine().InitialStyleChanged();
   }
-}
-
-void Page::RefreshPlugins() {
-  PluginData::RefreshBrowserSidePluginCache();
 }
 
 PluginData* Page::GetPluginData(const SecurityOrigin* main_frame_origin) {

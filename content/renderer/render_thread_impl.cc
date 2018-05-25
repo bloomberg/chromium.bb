@@ -2318,13 +2318,7 @@ void RenderThreadImpl::OnSystemColorsChanged(
 
 void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  // The call below will cause a GetPlugins call with refresh=true, but at this
-  // point we already know that the browser has refreshed its list, so disable
-  // refresh temporarily to prevent each renderer process causing the list to be
-  // regenerated.
-  blink_platform_impl_->set_plugin_refresh_allowed(false);
   blink::ResetPluginCache(reload_pages);
-  blink_platform_impl_->set_plugin_refresh_allowed(true);
 
   for (auto& observer : observers_)
     observer.PluginListChanged();
