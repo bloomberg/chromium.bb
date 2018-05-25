@@ -192,7 +192,7 @@
     return nil;
   }
 
-  if ([self isCurrentPageOffline]) {
+  if (self.toolbarModel->IsOfflinePage()) {
     return [self imageForOfflinePage];
   }
 
@@ -208,17 +208,6 @@
 // Returns a location icon for offline pages.
 - (UIImage*)imageForOfflinePage {
   return [UIImage imageNamed:@"location_bar_offline"];
-}
-
-- (BOOL)isCurrentPageOffline {
-  if (!self.webState)
-    return false;
-  auto* navigationManager = self.webState->GetNavigationManager();
-  auto* visibleItem = navigationManager->GetVisibleItem();
-  if (!visibleItem)
-    return false;
-  const GURL& url = visibleItem->GetURL();
-  return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
 }
 
 @end
