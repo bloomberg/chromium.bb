@@ -1,39 +1,40 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../../resources/gesture-util.js'></script>
 <style>
-#f {
-  position: fixed;
-  background-color: #def;
-  width: 600px;
-  height: 400px;
-  right: -20px;
-  bottom: -20px;
-}
-body {
-  width: 1000px;
-  height: 1000px;
-}
+  #f {
+    position: fixed;
+    background-color: #def;
+    width: 600px;
+    height: 400px;
+    right: -20px;
+    bottom: -20px;
+  }
+
+  body {
+    width: 1000px;
+    height: 1000px;
+  }
 </style>
-Tests that the scrollbar can be clicked even when it clips a position:fixed
-element, and that the scrollbars are excluded from the viewport for determining
-the element's position.
-<div id="f"></div>
+
+<div id='f'></div>
+
 <script>
-window.jsTestIsAsync = true;
+  window.onload = async () => {
+    // Give rAFs ensure layer information has gone from Blink to CC's active tree.
+    await waitForCompositorCommit();
 
-function finishTest() {
-  var rect = document.querySelector("#f").getBoundingClientRect();
-  shouldBe(rect.left + "," + rect.top, "205,205");
-  finishJSTest();
-}
+    promise_test(async () => {
+      await mouseClickOn(790, 500);
+      // Will throw exception if window.scrollY not greater than 0.
+      await waitFor(() => { return window.scrollY > 0; });
 
-function runTest() {
-  eventSender.mouseMoveTo(790, 500);
-  eventSender.mouseDown();
-  eventSender.mouseUp();
-  shouldBecomeEqual('scrollY > 0', 'true', finishTest);
-}
-
-onload = runTest;
-
+      let rect = document.querySelector('#f').getBoundingClientRect();
+      assert_equals(rect.left, 205);
+      assert_equals(rect.top, 205);
+    }, 'Tests that the scrollbar can be clicked even when it clips a position:fixed' +
+    'element, and that the scrollbars are excluded from the viewport for determining' +
+    'the element\'s position.');
+  }
 </script>
