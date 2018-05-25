@@ -86,65 +86,6 @@ namespace blink {
 {% endif %}
 {% endfor %}
 
-{% macro apply_grid_template(property_id, type) %}
-{{declare_initial_function(property_id)}} {
-  state.Style()->SetGridTemplate{{type}}s(ComputedStyleInitialValues::InitialGridTemplate{{type}}s());
-  state.Style()->SetNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
-  state.Style()->SetOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
-  state.Style()->SetGridAutoRepeat{{type}}s(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}s());
-  state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sInsertionPoint());
-  state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
-  state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
-  state.Style()->SetGridAutoRepeat{{type}}sType(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sType());
-
-}
-
-{{declare_inherit_function(property_id)}} {
-  state.Style()->SetGridTemplate{{type}}s(state.ParentStyle()->GridTemplate{{type}}s());
-  state.Style()->SetNamedGrid{{type}}Lines(state.ParentStyle()->NamedGrid{{type}}Lines());
-  state.Style()->SetOrderedNamedGrid{{type}}Lines(state.ParentStyle()->OrderedNamedGrid{{type}}Lines());
-  state.Style()->SetGridAutoRepeat{{type}}s(state.ParentStyle()->GridAutoRepeat{{type}}s());
-  state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(state.ParentStyle()->GridAutoRepeat{{type}}sInsertionPoint());
-  state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(state.ParentStyle()->AutoRepeatNamedGrid{{type}}Lines());
-  state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(state.ParentStyle()->AutoRepeatOrderedNamedGrid{{type}}Lines());
-  state.Style()->SetGridAutoRepeat{{type}}sType(state.ParentStyle()->GridAutoRepeat{{type}}sType());
-}
-
-{{declare_value_function(property_id)}} {
-  Vector<GridTrackSize> trackSizes;
-  Vector<GridTrackSize> autoRepeatTrackSizes;
-  NamedGridLinesMap namedGridLines;
-  OrderedNamedGridLines orderedNamedGridLines;
-  NamedGridLinesMap autoRepeatNamedGridLines;
-  OrderedNamedGridLines autoRepeatOrderedNamedGridLines;
-  AutoRepeatType autoRepeatType = ComputedStyleInitialValues::InitialGridAutoRepeatType();
-  size_t autoRepeatInsertionPoint =
-      ComputedStyleInitialValues::InitialGridAutoRepeatInsertionPoint();
-  StyleBuilderConverter::ConvertGridTrackList(
-      value, trackSizes, namedGridLines, orderedNamedGridLines,
-      autoRepeatTrackSizes, autoRepeatNamedGridLines,
-      autoRepeatOrderedNamedGridLines, autoRepeatInsertionPoint,
-      autoRepeatType, state);
-  const NamedGridAreaMap& namedGridAreas = state.Style()->NamedGridArea();
-  if (!namedGridAreas.IsEmpty()) {
-    StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
-        namedGridAreas, namedGridLines, kFor{{type}}s);
-  }
-  state.Style()->SetGridTemplate{{type}}s(trackSizes);
-  state.Style()->SetNamedGrid{{type}}Lines(namedGridLines);
-  state.Style()->SetOrderedNamedGrid{{type}}Lines(orderedNamedGridLines);
-  state.Style()->SetGridAutoRepeat{{type}}s(autoRepeatTrackSizes);
-  state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(
-      autoRepeatInsertionPoint);
-  state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(autoRepeatNamedGridLines);
-  state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(
-      autoRepeatOrderedNamedGridLines);
-  state.Style()->SetGridAutoRepeat{{type}}sType(autoRepeatType);
-}
-{% endmacro %}
-{{apply_grid_template('CSSPropertyGridTemplateColumns', 'Column')}}
-{{apply_grid_template('CSSPropertyGridTemplateRows', 'Row')}}
-
 {% macro apply_svg_paint(property_id, paint_type) %}
 {% set property = properties_by_id[property_id] %}
 {% set visited_link_setter = 'SetVisitedLink' + paint_type %}

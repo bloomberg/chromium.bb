@@ -155,6 +155,61 @@ namespace CSSLonghand {
   }
   DCHECK(!map.IsEmpty());
 }
+{% elif property.style_builder_template == 'grid' %}
+{% set type = property.style_builder_template_args['type'] %}
+  {{declare_initial(property.upper_camel_name)}} {
+    state.Style()->SetGridTemplate{{type}}s(ComputedStyleInitialValues::InitialGridTemplate{{type}}s());
+    state.Style()->SetNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
+    state.Style()->SetOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
+    state.Style()->SetGridAutoRepeat{{type}}s(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}s());
+    state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sInsertionPoint());
+    state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
+    state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
+    state.Style()->SetGridAutoRepeat{{type}}sType(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sType());
+  }
+
+  {{declare_inherit(property.upper_camel_name)}} {
+    state.Style()->SetGridTemplate{{type}}s(state.ParentStyle()->GridTemplate{{type}}s());
+    state.Style()->SetNamedGrid{{type}}Lines(state.ParentStyle()->NamedGrid{{type}}Lines());
+    state.Style()->SetOrderedNamedGrid{{type}}Lines(state.ParentStyle()->OrderedNamedGrid{{type}}Lines());
+    state.Style()->SetGridAutoRepeat{{type}}s(state.ParentStyle()->GridAutoRepeat{{type}}s());
+    state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(state.ParentStyle()->GridAutoRepeat{{type}}sInsertionPoint());
+    state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(state.ParentStyle()->AutoRepeatNamedGrid{{type}}Lines());
+    state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(state.ParentStyle()->AutoRepeatOrderedNamedGrid{{type}}Lines());
+    state.Style()->SetGridAutoRepeat{{type}}sType(state.ParentStyle()->GridAutoRepeat{{type}}sType());
+  }
+
+  {{declare_value(property.upper_camel_name)}} {
+    Vector<GridTrackSize> trackSizes;
+    Vector<GridTrackSize> autoRepeatTrackSizes;
+    NamedGridLinesMap namedGridLines;
+    OrderedNamedGridLines orderedNamedGridLines;
+    NamedGridLinesMap autoRepeatNamedGridLines;
+    OrderedNamedGridLines autoRepeatOrderedNamedGridLines;
+    AutoRepeatType autoRepeatType = ComputedStyleInitialValues::InitialGridAutoRepeatType();
+    size_t autoRepeatInsertionPoint =
+        ComputedStyleInitialValues::InitialGridAutoRepeatInsertionPoint();
+    StyleBuilderConverter::ConvertGridTrackList(
+        value, trackSizes, namedGridLines, orderedNamedGridLines,
+        autoRepeatTrackSizes, autoRepeatNamedGridLines,
+        autoRepeatOrderedNamedGridLines, autoRepeatInsertionPoint,
+        autoRepeatType, state);
+    const NamedGridAreaMap& namedGridAreas = state.Style()->NamedGridArea();
+    if (!namedGridAreas.IsEmpty()) {
+      StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
+          namedGridAreas, namedGridLines, kFor{{type}}s);
+    }
+    state.Style()->SetGridTemplate{{type}}s(trackSizes);
+    state.Style()->SetNamedGrid{{type}}Lines(namedGridLines);
+    state.Style()->SetOrderedNamedGrid{{type}}Lines(orderedNamedGridLines);
+    state.Style()->SetGridAutoRepeat{{type}}s(autoRepeatTrackSizes);
+    state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(
+        autoRepeatInsertionPoint);
+    state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(autoRepeatNamedGridLines);
+    state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(
+        autoRepeatOrderedNamedGridLines);
+    state.Style()->SetGridAutoRepeat{{type}}sType(autoRepeatType);
+  }
 {% endif %}
 
 }  // namespace CSSLonghand

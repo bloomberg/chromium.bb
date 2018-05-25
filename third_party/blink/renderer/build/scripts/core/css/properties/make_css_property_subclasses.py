@@ -97,7 +97,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         return generate_property_cpp
 
     def calculate_apply_functions_to_declare(self, property_):
-        if property_['style_builder_template'] in ['background_layer', 'color', 'counter', 'mask_layer']:
+        if property_['style_builder_template'] in ['background_layer', 'color', 'counter', 'grid', 'mask_layer']:
             property_['should_implement_apply_functions_in_cpp'] = True
 
         property_['should_implement_apply_functions'] = (
@@ -153,7 +153,8 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         if property_.get('style_builder_template') in ['counter']:
             yield "core/css/css_value_pair.h"
             yield "core/css/css_custom_ident_value.h"
-
+        if property_.get('style_builder_template') in ['grid']:
+            yield "core/css/resolver/style_builder_converter.h"
 
 if __name__ == '__main__':
     json5_generator.Maker(CSSPropertiesWriter).main()
