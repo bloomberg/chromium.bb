@@ -39,13 +39,12 @@ namespace payments {
 
 namespace {
 
-constexpr int kFirstTagValue =
-    static_cast<int>(PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
-
 enum class PaymentMethodViewControllerTags : int {
   // The tag for the button that triggers the "add card" flow. Starts at
-  // |kFirstTagValue| not to conflict with tags common to all views.
-  ADD_CREDIT_CARD_BUTTON = kFirstTagValue,
+  // |PAYMENT_REQUEST_COMMON_TAG_MAX| not to conflict with tags common to all
+  // views.
+  ADD_CREDIT_CARD_BUTTON = static_cast<int>(
+      PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
   // This value is passed to inner views so they can use it as a starting tag.
   MAX_TAG,
 };

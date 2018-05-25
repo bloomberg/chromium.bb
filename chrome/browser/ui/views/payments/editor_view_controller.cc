@@ -35,13 +35,12 @@
 namespace payments {
 namespace {
 
-constexpr int kFirstTagValue = static_cast<int>(
-    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
-
 enum class EditorViewControllerTags : int {
-  // The tag for the button that saves the model being edited. Starts at
-  // |kFirstTagValue| not to conflict with tags common to all views.
-  SAVE_BUTTON = kFirstTagValue,
+  // The tag for the button that saves the model being edited. Starts
+  // at PAYMENT_REQUEST_COMMON_TAG_MAX not to conflict with tags
+  // common to all views.
+  SAVE_BUTTON = static_cast<int>(
+      PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),
 };
 
 std::unique_ptr<views::View> CreateErrorLabelView(

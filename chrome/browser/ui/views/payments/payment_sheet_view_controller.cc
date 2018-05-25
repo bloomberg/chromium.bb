@@ -62,12 +62,14 @@
 namespace payments {
 namespace {
 
-constexpr int kFirstTagValue = static_cast<int>(
-    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
-
-// Tags for the buttons in the payment sheet
+// Tags for the buttons in the payment sheet. Starts at
+// |PAYMENT_REQUEST_COMMON_TAG_MAX| not to conflict with tags common
+// to all views.
 enum class PaymentSheetViewControllerTags {
-  SHOW_ORDER_SUMMARY_BUTTON = kFirstTagValue,  // Navigate to order summary
+  SHOW_ORDER_SUMMARY_BUTTON = static_cast<int>(
+      PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX),  // Navigate to
+                                                                  // order
+                                                                  // summary
   SHOW_SHIPPING_BUTTON,         // Navigate to the shipping address screen
   ADD_SHIPPING_BUTTON,          // Navigate to the shipping address editor
   SHOW_PAYMENT_METHOD_BUTTON,   // Navigate to the payment method screen
