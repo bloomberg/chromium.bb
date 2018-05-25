@@ -53,7 +53,7 @@
 
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/rootscroller-util.js"></script>
+<script src="../resources/gesture-util.js"></script>
 
 <script>
   var parentScroller = document.querySelector('#parent');
@@ -65,7 +65,7 @@
     // Root Scroller selection happens in a lifecycle update. However, rAF is
     // executed before the lifecycle in a BeginMainFrame so we need to wait for
     // a second rAF before the we can check the effective root scrollers.
-    await nFrames(2);
+    await waitForCompositorCommit();
     assert_equals(window.internals.effectiveRootScroller(document),
                   expected_effective,
                   "Unexpected effective root scroller");

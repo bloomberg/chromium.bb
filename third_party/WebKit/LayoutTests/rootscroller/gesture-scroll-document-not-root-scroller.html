@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/rootscroller-util.js"></script>
+<script src="../resources/gesture-util.js"></script>
 <style>
   ::-webkit-scrollbar {
     width: 0px;
@@ -88,7 +88,7 @@
     // Root Scroller selection happens in a lifecycle update. However, rAF is
     // executed before the lifecycle in a BeginMainFrame so we need to wait for
     // a second rAF before the we can check the effective root scrollers.
-    await nFrames(2);
+    await waitForCompositorCommit();
 
     promise_test( t => {
       if (window.internals) {

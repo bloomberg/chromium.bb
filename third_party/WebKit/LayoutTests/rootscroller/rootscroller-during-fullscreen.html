@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/rootscroller-util.js"></script>
+<script src="../resources/gesture-util.js"></script>
 <script>
   // This test verifies the rootScroller behavior while the document is in
   // fullscreen. We expect that the effective rootScroller of all documents on
@@ -15,7 +15,7 @@
 
   async function fullscreenChanged() {
     if (document.webkitIsFullScreen) {
-      await nFrames(2);
+      await waitForCompositorCommit();
       test.step(() => {
         assert_equals(
             internals.effectiveRootScroller(document),
@@ -30,7 +30,7 @@
       });
       document.webkitExitFullscreen();
     } else {
-      await nFrames(2);
+      await waitForCompositorCommit();
       test.step(() => {
         assert_equals(
             internals.effectiveRootScroller(document),
@@ -67,7 +67,7 @@
     // Root Scroller selection happens in a lifecycle update. However, rAF is
     // executed before the lifecycle in a BeginMainFrame so we need to wait for
     // a second rAF before the we can check the effective root scrollers.
-    await nFrames(2);
+    await waitForCompositorCommit();
 
     test.step(() => {
       assert_equals(
