@@ -219,6 +219,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_NoActivityAfterContextDestroyed) {
 }
 
 TEST_F(DedicatedWorkerTest, UseCounter) {
+  Page::InsertOrdinaryPageForTesting(&GetPage());
   const String source_code = "// Do nothing";
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 

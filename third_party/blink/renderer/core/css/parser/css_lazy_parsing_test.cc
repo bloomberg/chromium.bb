@@ -112,6 +112,8 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
 TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   std::unique_ptr<DummyPageHolder> dummy_holder =
       DummyPageHolder::Create(IntSize(500, 500));
+  Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
+
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kInsecureContext,
       CSSParserContext::kLiveProfile, &dummy_holder->GetDocument());
@@ -147,6 +149,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
 
   std::unique_ptr<DummyPageHolder> dummy_holder2 =
       DummyPageHolder::Create(IntSize(500, 500));
+  Page::InsertOrdinaryPageForTesting(&dummy_holder2->GetPage());
   CSSStyleSheet* sheet2 =
       CSSStyleSheet::Create(cached_contents_, dummy_holder2->GetDocument());
 

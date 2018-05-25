@@ -20,6 +20,7 @@ class AllowedByNosniffTest : public testing::Test {
     // Create a new dummy page holder for each test, so that we get a fresh
     // set of counters for each.
     dummy_page_holder_ = DummyPageHolder::Create();
+    Page::InsertOrdinaryPageForTesting(&dummy_page_holder_->GetPage());
   }
 
   Document* doc() { return &dummy_page_holder_->GetDocument(); }

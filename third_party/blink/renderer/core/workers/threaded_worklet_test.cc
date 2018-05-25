@@ -269,6 +269,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
 }
 
 TEST_F(ThreadedWorkletTest, UseCounter) {
+  Page::InsertOrdinaryPageForTesting(GetDocument().GetPage());
   MessagingProxy()->Start();
 
   // This feature is randomly selected.

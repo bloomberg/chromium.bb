@@ -93,6 +93,10 @@ Page::PageSet& Page::OrdinaryPages() {
   return pages;
 }
 
+void Page::InsertOrdinaryPageForTesting(Page* page) {
+  OrdinaryPages().insert(page);
+}
+
 HeapVector<Member<Page>> Page::RelatedPages() {
   HeapVector<Member<Page>> result;
   Page* ptr = this->next_related_page_;

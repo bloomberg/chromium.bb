@@ -123,6 +123,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // This set does not include Pages created for other, internal purposes
   // (SVGImages, inspector overlays, page popups etc.)
   static PageSet& OrdinaryPages();
+  static void InsertOrdinaryPageForTesting(Page*);
 
   // Returns pages related to the current browsing context (excluding the
   // current page).  See also

@@ -333,6 +333,7 @@ TEST(CSSPropertyParserTest, ClipPathEllipse) {
   std::unique_ptr<DummyPageHolder> dummy_holder =
       DummyPageHolder::Create(IntSize(500, 500));
   Document* doc = &dummy_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_holder->GetPage());
   CSSParserContext* context = CSSParserContext::Create(
       kHTMLStandardMode, SecureContextMode::kSecureContext,
       CSSParserContext::kLiveProfile, doc);
@@ -406,6 +407,7 @@ TEST(CSSPropertyParserTest, GradientUseCount) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kCSSGradient;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
@@ -417,6 +419,7 @@ TEST(CSSPropertyParserTest, PaintUseCount) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   document.SetSecureContextStateForTesting(SecureContextState::kSecure);
   WebFeature feature = WebFeature::kCSSPaintFunction;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
@@ -429,6 +432,7 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   WebFeature feature = WebFeature::kWebkitCrossFade;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(

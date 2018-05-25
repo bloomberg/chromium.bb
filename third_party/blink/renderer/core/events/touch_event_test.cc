@@ -51,6 +51,7 @@ class TouchEventTest : public PageTestBase {
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
     SetupPageWithClients(&clients);
+    Page::InsertOrdinaryPageForTesting(&GetPage());
   }
 
   const std::vector<String>& Messages() { return chrome_client_->Messages(); }

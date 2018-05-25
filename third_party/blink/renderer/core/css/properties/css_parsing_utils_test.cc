@@ -13,6 +13,7 @@ namespace blink {
 TEST(CSSParsingUtilsTest, BasicShapeUseCount) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
   WebFeature feature = WebFeature::kCSSBasicShape;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
