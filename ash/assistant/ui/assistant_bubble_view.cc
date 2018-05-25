@@ -30,6 +30,7 @@ namespace {
 
 // Appearance.
 constexpr int kIconSizeDip = 32;
+constexpr int kMaxHeightDip = 640;
 constexpr int kPaddingDip = 14;
 constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;
@@ -334,7 +335,7 @@ AssistantBubbleView::~AssistantBubbleView() {
 
 gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
   int preferred_height =
-      GetLayoutManager()->GetPreferredHeightForWidth(this, kPreferredWidthDip);
+      std::min(GetHeightForWidth(kPreferredWidthDip), kMaxHeightDip);
   return gfx::Size(kPreferredWidthDip, preferred_height);
 }
 
@@ -378,6 +379,8 @@ void AssistantBubbleView::InitLayout() {
   // UI element container.
   ui_element_container_->SetVisible(false);
   AddChildView(ui_element_container_);
+
+  layout_manager_->SetFlexForView(ui_element_container_, 1);
 
   // Suggestions container.
   suggestions_container_->SetVisible(false);
