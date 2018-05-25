@@ -188,6 +188,14 @@
 #pragma mark Security status icon helpers
 
 - (UIImage*)currentLocationIcon {
+  if (!self.toolbarModel->ShouldDisplayURL()) {
+    return nil;
+  }
+
+  if ([self isCurrentPageOffline]) {
+    return [self imageForOfflinePage];
+  }
+
   return [self imageForSecurityLevel:self.toolbarModel->GetSecurityLevel(true)];
 }
 
@@ -195,6 +203,22 @@
   int iconID = GetIconForSecurityState(level);
   return [NativeImage(iconID)
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
+
+// Returns a location icon for offline pages.
+- (UIImage*)imageForOfflinePage {
+  return [UIImage imageNamed:@"location_bar_offline"];
+}
+
+- (BOOL)isCurrentPageOffline {
+  if (!self.webState)
+    return false;
+  auto* navigationManager = self.webState->GetNavigationManager();
+  auto* visibleItem = navigationManager->GetVisibleItem();
+  if (!visibleItem)
+    return false;
+  const GURL& url = visibleItem->GetURL();
+  return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
 }
 
 @end
