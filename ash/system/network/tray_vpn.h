@@ -13,6 +13,7 @@
 
 namespace ash {
 class TrayNetworkStateObserver;
+class DetailedViewDelegate;
 
 namespace tray {
 class VPNListView;
@@ -43,6 +44,8 @@ class TrayVPN : public SystemTrayItem,
   tray::VpnDefaultView* default_;
   tray::VPNListView* detailed_;
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayVPN);
 };

@@ -19,6 +19,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
@@ -185,8 +186,8 @@ class BluetoothDefaultView : public TrayItemMore {
 
 class BluetoothDetailedView : public TrayDetailedView {
  public:
-  BluetoothDetailedView(SystemTrayItem* owner, LoginStatus login)
-      : TrayDetailedView(owner),
+  BluetoothDetailedView(DetailedViewDelegate* delegate, LoginStatus login)
+      : TrayDetailedView(delegate),
         login_(login),
         toggle_(nullptr),
         settings_(nullptr),
@@ -430,7 +431,7 @@ class BluetoothDetailedView : public TrayDetailedView {
   void ShowSettings() {
     if (TrayPopupUtils::CanOpenWebUISettings()) {
       Shell::Get()->system_tray_controller()->ShowBluetoothSettings();
-      owner()->system_tray()->CloseBubble();
+      CloseBubble();
     }
   }
 
@@ -550,7 +551,9 @@ class BluetoothDetailedView : public TrayDetailedView {
 TrayBluetooth::TrayBluetooth(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_BLUETOOTH),
       default_(nullptr),
-      detailed_(nullptr) {
+      detailed_(nullptr),
+      detailed_view_delegate_(
+          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   Shell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
 }
 
@@ -584,7 +587,8 @@ views::View* TrayBluetooth::CreateDetailedView(LoginStatus status) {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_BLUETOOTH_VIEW);
   CHECK(detailed_ == nullptr);
-  detailed_ = new tray::BluetoothDetailedView(this, status);
+  detailed_ =
+      new tray::BluetoothDetailedView(detailed_view_delegate_.get(), status);
   detailed_->Update();
   return detailed_;
 }

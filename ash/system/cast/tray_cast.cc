@@ -17,6 +17,7 @@
 #include "ash/system/screen_security/screen_tray_item.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -336,7 +337,7 @@ CastTrayView::~CastTrayView() = default;
 // |CastSelectDefaultView|.
 class CastDetailedView : public TrayDetailedView {
  public:
-  CastDetailedView(SystemTrayItem* owner,
+  CastDetailedView(DetailedViewDelegate* delegate,
                    const std::vector<mojom::SinkAndRoutePtr>& sinks_and_routes);
   ~CastDetailedView() override;
 
@@ -365,9 +366,9 @@ class CastDetailedView : public TrayDetailedView {
 };
 
 CastDetailedView::CastDetailedView(
-    SystemTrayItem* owner,
+    DetailedViewDelegate* delegate,
     const std::vector<mojom::SinkAndRoutePtr>& sinks_routes)
-    : TrayDetailedView(owner) {
+    : TrayDetailedView(delegate) {
   CreateItems();
   UpdateReceiverList(sinks_routes);
 }
@@ -447,7 +448,9 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
 }  // namespace tray
 
 TrayCast::TrayCast(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_CAST) {
+    : SystemTrayItem(system_tray, UMA_CAST),
+      detailed_view_delegate_(
+          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->cast_config()->AddObserver(this);
   Shell::Get()->cast_config()->RequestDeviceRefresh();
@@ -499,7 +502,8 @@ views::View* TrayCast::CreateDetailedView(LoginStatus status) {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);
-  detailed_ = new tray::CastDetailedView(this, sinks_and_routes_);
+  detailed_ = new tray::CastDetailedView(detailed_view_delegate_.get(),
+                                         sinks_and_routes_);
   return detailed_;
 }
 

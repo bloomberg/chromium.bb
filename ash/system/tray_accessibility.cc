@@ -19,6 +19,7 @@
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -130,8 +131,9 @@ class DefaultAccessibilityView : public TrayItemMore {
 ////////////////////////////////////////////////////////////////////////////////
 // ash::tray::AccessibilityDetailedView
 
-AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner)
-    : TrayDetailedView(owner) {
+AccessibilityDetailedView::AccessibilityDetailedView(
+    DetailedViewDelegate* delegate)
+    : TrayDetailedView(delegate) {
   Reset();
   AppendAccessibilityList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE);
@@ -437,14 +439,14 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
 void AccessibilityDetailedView::ShowSettings() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_controller()->ShowAccessibilitySettings();
-    owner()->system_tray()->CloseBubble();
+    CloseBubble();
   }
 }
 
 void AccessibilityDetailedView::ShowHelp() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_controller()->ShowAccessibilityHelp();
-    owner()->system_tray()->CloseBubble();
+    CloseBubble();
   }
 }
 
@@ -461,7 +463,9 @@ TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
       detailed_menu_(nullptr),
       tray_icon_visible_(false),
       login_(GetCurrentLoginStatus()),
-      show_a11y_menu_on_lock_screen_(true) {
+      show_a11y_menu_on_lock_screen_(true),
+      detailed_view_delegate_(
+          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   DCHECK(system_tray);
   Shell::Get()->accessibility_controller()->AddObserver(this);
 }
@@ -477,7 +481,7 @@ void TrayAccessibility::SetTrayIconVisible(bool visible) {
 }
 
 tray::AccessibilityDetailedView* TrayAccessibility::CreateDetailedMenu() {
-  return new tray::AccessibilityDetailedView(this);
+  return new tray::AccessibilityDetailedView(detailed_view_delegate_.get());
 }
 
 bool TrayAccessibility::GetInitialVisibility() {

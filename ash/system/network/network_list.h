@@ -37,7 +37,7 @@ class NetworkListView : public NetworkStateListDetailedView,
  public:
   class SectionHeaderRowView;
 
-  NetworkListView(SystemTrayItem* owner, LoginStatus login);
+  NetworkListView(DetailedViewDelegate* delegate, LoginStatus login);
   ~NetworkListView() override;
 
   // NetworkStateListDetailedView:

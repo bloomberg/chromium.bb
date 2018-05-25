@@ -7,6 +7,7 @@
 #include "ash/ash_view_ids.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
@@ -241,8 +242,8 @@ const int kTitleRowPaddingBottom =
 ////////////////////////////////////////////////////////////////////////////////
 // TrayDetailedView:
 
-TrayDetailedView::TrayDetailedView(SystemTrayItem* owner)
-    : owner_(owner),
+TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
+    : delegate_(delegate),
       box_layout_(nullptr),
       scroller_(nullptr),
       scroll_content_(nullptr),
@@ -266,7 +267,7 @@ void TrayDetailedView::OnViewClicked(views::View* sender) {
 void TrayDetailedView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
-    TransitionToDefaultView();
+    TransitionToMainView();
     return;
   }
 
@@ -444,23 +445,12 @@ void TrayDetailedView::HandleButtonPressed(views::Button* sender,
 
 void TrayDetailedView::CreateExtraTitleRowButtons() {}
 
-void TrayDetailedView::TransitionToDefaultView() {
-  if (back_button_ && back_button_->HasFocus())
-    owner_->set_restore_focus(true);
-
-  transition_delay_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kTrayDetailedViewTransitionDelayMs),
-      this, &TrayDetailedView::DoTransitionToDefaultView);
+void TrayDetailedView::TransitionToMainView() {
+  delegate_->TransitionToMainView(back_button_ && back_button_->HasFocus());
 }
 
-void TrayDetailedView::DoTransitionToDefaultView() {
-  // Cache pointer to owner in this function scope. TrayDetailedView will be
-  // deleted after called ShowDefaultView.
-  SystemTrayItem* owner = owner_;
-  owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING,
-                                        false /* show_by_click */);
-  owner->set_restore_focus(false);
+void TrayDetailedView::CloseBubble() {
+  delegate_->CloseBubble();
 }
 
 views::Button* TrayDetailedView::CreateBackButton() {

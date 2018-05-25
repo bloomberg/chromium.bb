@@ -20,6 +20,8 @@ class NetworkListView;
 class NetworkTrayView;
 }
 
+class DetailedViewDelegate;
+
 class TrayNetwork : public SystemTrayItem,
                     public TrayNetworkStateObserver::Delegate {
  public:
@@ -44,6 +46,8 @@ class TrayNetwork : public SystemTrayItem,
   tray::NetworkDefaultView* default_;
   tray::NetworkListView* detailed_;
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

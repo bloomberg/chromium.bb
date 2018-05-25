@@ -17,6 +17,8 @@ class ScaleView;
 class ScaleDetailedView;
 }  // namespace tray
 
+class DetailedViewDelegate;
+
 // The system tray item for display scale.
 class ASH_EXPORT TrayScale : public SystemTrayItem {
  public:
@@ -34,6 +36,8 @@ class ASH_EXPORT TrayScale : public SystemTrayItem {
   tray::ScaleView* scale_view_;
 
   tray::ScaleDetailedView* scale_detail_view_;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayScale);
 };

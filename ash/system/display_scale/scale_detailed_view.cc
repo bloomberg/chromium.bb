@@ -31,8 +31,8 @@ bool IsSameScaleFactor(double new_value) {
 
 }  // namespace
 
-ScaleDetailedView::ScaleDetailedView(SystemTrayItem* owner)
-    : TrayDetailedView(owner) {
+ScaleDetailedView::ScaleDetailedView(DetailedViewDelegate* delegate)
+    : TrayDetailedView(delegate) {
   CreateScrollableList();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_SCALE);
   UpdateScrollableList();

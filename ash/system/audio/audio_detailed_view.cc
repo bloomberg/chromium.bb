@@ -57,8 +57,8 @@ using chromeos::CrasAudioHandler;
 namespace ash {
 namespace tray {
 
-AudioDetailedView::AudioDetailedView(SystemTrayItem* owner)
-    : TrayDetailedView(owner) {
+AudioDetailedView::AudioDetailedView(DetailedViewDelegate* delegate)
+    : TrayDetailedView(delegate) {
   CreateItems();
   Update();
 }

@@ -45,13 +45,12 @@ const int kMinFontSizeDelta = -10;
 // an IME property. A checkmark icon is shown in the row if selected.
 class ImeListItemView : public ActionableView {
  public:
-  ImeListItemView(SystemTrayItem* owner,
-                  ImeListView* list_view,
+  ImeListItemView(ImeListView* list_view,
                   const base::string16& id,
                   const base::string16& label,
                   bool selected,
                   const SkColor button_color)
-      : ActionableView(owner, TrayPopupInkDropStyle::FILL_BOUNDS),
+      : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
     SetInkDropMode(InkDropHostView::InkDropMode::ON);
@@ -181,8 +180,8 @@ class KeyboardStatusRow : public views::View {
   DISALLOW_COPY_AND_ASSIGN(KeyboardStatusRow);
 };
 
-ImeListView::ImeListView(SystemTrayItem* owner)
-    : TrayDetailedView(owner),
+ImeListView::ImeListView(DetailedViewDelegate* delegate)
+    : TrayDetailedView(delegate),
       last_item_selected_with_keyboard_(false),
       should_focus_ime_after_selection_with_keyboard_(false),
       current_ime_view_(nullptr) {}
@@ -250,9 +249,8 @@ void ImeListView::AppendImeListAndProperties(
   DCHECK(ime_map_.empty());
   for (size_t i = 0; i < list.size(); i++) {
     const bool selected = current_ime_id == list[i].id;
-    views::View* ime_view =
-        new ImeListItemView(owner(), this, list[i].short_name, list[i].name,
-                            selected, gfx::kGoogleGreen700);
+    views::View* ime_view = new ImeListItemView(
+        this, list[i].short_name, list[i].name, selected, gfx::kGoogleGreen700);
     scroll_content()->AddChildView(ime_view);
     ime_map_[ime_view] = list[i].id;
 
@@ -267,9 +265,9 @@ void ImeListView::AppendImeListAndProperties(
 
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
-        ImeListItemView* property_view = new ImeListItemView(
-            owner(), this, base::string16(), property_list[i].label,
-            property_list[i].checked, kMenuIconColor);
+        ImeListItemView* property_view =
+            new ImeListItemView(this, base::string16(), property_list[i].label,
+                                property_list[i].checked, kMenuIconColor);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
       }

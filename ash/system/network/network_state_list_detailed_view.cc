@@ -170,10 +170,10 @@ class InfoThrobberLayout : public views::LayoutManager {
 // NetworkStateListDetailedView
 
 NetworkStateListDetailedView::NetworkStateListDetailedView(
-    SystemTrayItem* owner,
+    DetailedViewDelegate* delegate,
     ListType list_type,
     LoginStatus login)
-    : TrayDetailedView(owner),
+    : TrayDetailedView(delegate),
       list_type_(list_type),
       login_(login),
       info_button_(nullptr),
@@ -218,8 +218,7 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
   if (sender == settings_button_)
     ShowSettings();
 
-  if (owner()->system_tray())
-    owner()->system_tray()->CloseBubble();
+  CloseBubble();
 }
 
 void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {

@@ -17,7 +17,6 @@ class Button;
 }
 
 namespace ash {
-class SystemTrayItem;
 
 namespace tray {
 
@@ -39,7 +38,7 @@ class ASH_EXPORT NetworkStateListDetailedView
  protected:
   enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
 
-  NetworkStateListDetailedView(SystemTrayItem* owner,
+  NetworkStateListDetailedView(DetailedViewDelegate* delegate,
                                ListType list_type,
                                LoginStatus login);
 
