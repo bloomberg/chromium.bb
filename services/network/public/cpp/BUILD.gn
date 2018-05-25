@@ -10,8 +10,6 @@ component("cpp") {
   sources = [
     "cors/cors.cc",
     "cors/cors.h",
-    "cors/cors_legacy.cc",
-    "cors/cors_legacy.h",
     "cors/preflight_cache.cc",
     "cors/preflight_cache.h",
     "cors/preflight_result.cc",

@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "services/network/public/cpp/cors/cors_legacy.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -108,7 +107,6 @@ void RegisterContentSchemes(bool lock_schemes) {
   GetMutableServiceWorkerSchemes() = std::move(schemes.service_worker_schemes);
 
   GetMutableSecureOriginsAndPatterns() = std::move(schemes.secure_origins);
-  network::cors::legacy::RegisterSecureOrigins(GetSecureOriginsAndPatterns());
 }
 
 const std::vector<std::string>& GetSavableSchemes() {

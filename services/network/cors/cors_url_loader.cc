@@ -5,10 +5,8 @@
 #include "services/network/cors/cors_url_loader.h"
 
 #include "base/stl_util.h"
-#include "base/strings/pattern.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
-#include "services/network/public/cpp/cors/cors_legacy.h"
 #include "url/url_util.h"
 
 namespace network {
@@ -17,31 +15,10 @@ namespace cors {
 
 namespace {
 
-bool IsOriginWhiteListedTrustworthy(const url::Origin& origin) {
-  if (origin.unique())
-    return false;
-
-  // Note: NoAccessSchemes are managed by per-process basis. This check is for
-  // use of network service disabled.
-  if (base::ContainsValue(url::GetNoAccessSchemes(), origin.scheme()))
-    return false;
-
-  if (base::ContainsValue(legacy::GetSecureOrigins(), origin.Serialize()))
-    return true;
-
-  for (const auto& origin_or_pattern : legacy::GetSecureOrigins()) {
-    if (base::MatchPattern(origin.host(), origin_or_pattern))
-      return true;
-  }
-  return false;
-}
-
 bool CalculateCORSFlag(const ResourceRequest& request) {
   if (request.fetch_request_mode == mojom::FetchRequestMode::kNavigate)
     return false;
   url::Origin url_origin = url::Origin::Create(request.url);
-  if (IsOriginWhiteListedTrustworthy(url_origin))
-    return false;
   if (!request.request_initiator.has_value())
     return true;
   url::Origin security_origin(request.request_initiator.value());
