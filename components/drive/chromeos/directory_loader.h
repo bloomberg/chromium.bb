@@ -27,10 +27,6 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace google_apis {
-class AboutResource;
-}  // namespace google_apis
-
 namespace drive {
 
 class EventLogger;
@@ -39,7 +35,7 @@ class ResourceEntry;
 
 namespace internal {
 
-class AboutResourceLoader;
+class RootFolderIdLoader;
 class ChangeListLoaderObserver;
 class DirectoryFetchInfo;
 class LoaderController;
@@ -53,7 +49,7 @@ class DirectoryLoader {
                   base::SequencedTaskRunner* blocking_task_runner,
                   ResourceMetadata* resource_metadata,
                   JobScheduler* scheduler,
-                  AboutResourceLoader* about_resource_loader,
+                  RootFolderIdLoader* root_folder_id_loader,
                   StartPageTokenLoader* start_page_token_loader,
                   LoaderController* apply_task_controller);
   ~DirectoryLoader();
@@ -86,10 +82,10 @@ class DirectoryLoader {
       const ReadDirectoryEntriesCallback& entries_callback,
       const FileOperationCallback& completion_callback,
       FileError error);
-  void ReadDirectoryAfterGetAboutResource(
+  void ReadDirectoryAfterGetRootFolderId(
       const std::string& local_id,
-      google_apis::DriveApiErrorCode status,
-      std::unique_ptr<google_apis::AboutResource> about_resource);
+      FileError error,
+      base::Optional<std::string> root_folder_id);
   void ReadDirectoryAfterGetStartPageToken(
       const std::string& local_id,
       const std::string& root_folder_id,
@@ -99,6 +95,7 @@ class DirectoryLoader {
   void ReadDirectoryAfterCheckLocalState(
       const std::string& remote_start_page_token,
       const std::string& local_id,
+      const std::string& root_folder_id,
       const ResourceEntry* entry,
       const std::string* local_start_page_token,
       FileError error);
@@ -118,7 +115,8 @@ class DirectoryLoader {
   // ================= Implementation for directory loading =================
   // Loads the directory contents from server, and updates the local metadata.
   // Runs |callback| when it is finished.
-  void LoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info);
+  void LoadDirectoryFromServer(const DirectoryFetchInfo& directory_fetch_info,
+                               const std::string& root_folder_id);
 
   // Part of LoadDirectoryFromServer() for a normal directory.
   void LoadDirectoryFromServerAfterLoad(
@@ -136,7 +134,7 @@ class DirectoryLoader {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
-  AboutResourceLoader* about_resource_loader_;  // Not owned.
+  RootFolderIdLoader* root_folder_id_loader_;      // Not owned.
   StartPageTokenLoader* start_page_token_loader_;  // Not owned
   LoaderController* loader_controller_;  // Not owned.
   base::ObserverList<ChangeListLoaderObserver> observers_;

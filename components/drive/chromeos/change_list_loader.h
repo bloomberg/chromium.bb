@@ -27,7 +27,6 @@ class Time;
 }  // namespace base
 
 namespace google_apis {
-class AboutResource;
 class StartPageToken;
 }  // namespace google_apis
 
@@ -38,7 +37,7 @@ class JobScheduler;
 
 namespace internal {
 
-class AboutResourceLoader;
+class RootFolderIdLoader;
 class ChangeList;
 class ChangeListLoaderObserver;
 class ChangeListProcessor;
@@ -64,7 +63,7 @@ class ChangeListLoader {
                    base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
-                   AboutResourceLoader* about_resource_loader,
+                   RootFolderIdLoader* root_folder_id_loader,
                    StartPageTokenLoader* start_page_token_loader,
                    LoaderController* apply_task_controller);
   ~ChangeListLoader();
@@ -100,10 +99,9 @@ class ChangeListLoader {
       bool is_initial_load,
       const std::string* local_start_page_token,
       FileError error);
-  void LoadAfterGetAboutResource(
-      const std::string& local_start_page_token,
-      google_apis::DriveApiErrorCode status,
-      std::unique_ptr<google_apis::AboutResource> about_resource);
+  void LoadAfterGetRootFolderId(const std::string& local_start_page_token,
+                                FileError error,
+                                base::Optional<std::string> root_folder_id);
 
   void LoadAfterGetStartPageToken(
       const std::string& local_start_page_token,
@@ -161,7 +159,7 @@ class ChangeListLoader {
   std::unique_ptr<base::CancellationFlag> in_shutdown_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
-  AboutResourceLoader* about_resource_loader_;  // Not owned.
+  RootFolderIdLoader* root_folder_id_loader_;      // Not owned.
   StartPageTokenLoader* start_page_token_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
   base::ObserverList<ChangeListLoaderObserver> observers_;

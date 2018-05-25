@@ -31,6 +31,7 @@ class JobScheduler;
 
 namespace internal {
 class AboutResourceLoader;
+class AboutResourceRootFolderIdLoader;
 class ChangeListLoader;
 class FileCache;
 class LoaderController;
@@ -161,6 +162,8 @@ class OperationTestBase : public testing::Test {
   std::unique_ptr<internal::StartPageTokenLoader> start_page_token_loader_;
   std::unique_ptr<internal::LoaderController> loader_controller_;
   std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
+  std::unique_ptr<internal::AboutResourceRootFolderIdLoader>
+      root_folder_id_loader_;
 };
 
 }  // namespace file_system
