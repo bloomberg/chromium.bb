@@ -25,6 +25,10 @@ namespace media {
 class MEDIA_GPU_EXPORT TextureOwner
     : public base::RefCountedDeleteOnSequence<TextureOwner> {
  public:
+  // Creates a GL texture using the current platform GL context and returns a
+  // new TextureOwner attached to it. Returns null on failure.
+  static scoped_refptr<TextureOwner> Create();
+
   TextureOwner();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
@@ -41,6 +45,7 @@ class MEDIA_GPU_EXPORT TextureOwner
 
   // Update the texture image using the latest available image data.
   virtual void UpdateTexImage() = 0;
+
   // Transformation matrix if any associated with the texture image.
   virtual void GetTransformMatrix(float mtx[16]) = 0;
   virtual void ReleaseBackBuffers() = 0;

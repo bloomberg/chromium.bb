@@ -46,6 +46,8 @@ enum AIMAGE_FORMATS {
 
 using pAImage_delete = void (*)(AImage* image);
 
+using pAImage_deleteAsync = void (*)(AImage* image, int releaseFenceFd);
+
 using pAImage_getHardwareBuffer = media_status_t (*)(const AImage* image,
                                                      AHardwareBuffer** buffer);
 

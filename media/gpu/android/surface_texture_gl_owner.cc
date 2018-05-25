@@ -30,24 +30,6 @@ struct FrameAvailableEvent
   ~FrameAvailableEvent() = default;
 };
 
-scoped_refptr<TextureOwner> SurfaceTextureGLOwner::Create() {
-  GLuint texture_id;
-  glGenTextures(1, &texture_id);
-  if (!texture_id)
-    return nullptr;
-
-  // Set the parameters on the texture.
-  gl::ScopedActiveTexture active_texture(GL_TEXTURE0);
-  gl::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES, texture_id);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-
-  return new SurfaceTextureGLOwner(texture_id);
-}
-
 SurfaceTextureGLOwner::SurfaceTextureGLOwner(GLuint texture_id)
     : surface_texture_(gl::SurfaceTexture::Create(texture_id)),
       texture_id_(texture_id),
@@ -152,7 +134,8 @@ void SurfaceTextureGLOwner::WaitForFrameAvailable() {
   }
 
   DCHECK_LE(remaining, max_wait);
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AvdaCodecImage.WaitTimeForFrame");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Media.CodecImage.SurfaceTextureGLOwner.WaitTimeForFrame");
   if (!frame_available_event_->event.TimedWait(remaining)) {
     DVLOG(1) << "WaitForFrameAvailable() timed out, elapsed: "
              << elapsed.InMillisecondsF()
