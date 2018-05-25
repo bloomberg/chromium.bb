@@ -8,6 +8,7 @@
 
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -694,6 +695,12 @@ gfx::Size ClientControlledShellSurface::GetMaximumSize() const {
   return gfx::Size();
 }
 
+void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
+                                                              float new_dsf) {
+  views::View::OnDeviceScaleFactorChanged(old_dsf, new_dsf);
+  UpdateFrameWidth();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // display::DisplayObserver overrides:
 
@@ -857,6 +864,7 @@ void ClientControlledShellSurface::InitializeWindowState(
   frame_view->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
       frame_visible_button_mask_, frame_enabled_button_mask_));
   UpdateAutoHideFrame();
+  UpdateFrameWidth();
   if (initial_orientation_lock_ != ash::OrientationLockType::kAny)
     SetOrientationLock(initial_orientation_lock_);
 }
@@ -959,6 +967,7 @@ void ClientControlledShellSurface::UpdateFrame() {
           immersive_fullscreen_controller_.get());
       UpdateCaptionButtonModel();
     }
+    UpdateFrameWidth();
   }
   // The autohide should be applied when the window state is in
   // maximzied, fullscreen or pinned. Update the auto hide state
@@ -988,6 +997,18 @@ void ClientControlledShellSurface::UpdateBackdrop() {
 
   if (window->GetProperty(ash::kBackdropWindowMode) != target_backdrop_mode)
     window->SetProperty(ash::kBackdropWindowMode, target_backdrop_mode);
+}
+
+void ClientControlledShellSurface::UpdateFrameWidth() {
+  int width = -1;
+  if (shadow_bounds_) {
+    float device_scale_factor =
+        GetWidget()->GetNativeWindow()->layer()->device_scale_factor();
+    float dsf_to_default_dsf = device_scale_factor / scale_;
+    width = gfx::ToRoundedInt(shadow_bounds_->width() * dsf_to_default_dsf);
+  }
+  static_cast<ash::HeaderView*>(GetFrameView()->GetHeaderView())
+      ->SetWidthInPixels(width);
 }
 
 void ClientControlledShellSurface::

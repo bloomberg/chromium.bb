@@ -199,6 +199,7 @@ class ClientControlledShellSurface
 
   // Overridden from views::View:
   gfx::Size GetMaximumSize() const override;
+  void OnDeviceScaleFactorChanged(float old_dsf, float new_dsf) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
@@ -252,6 +253,8 @@ class ClientControlledShellSurface
   void UpdateCaptionButtonModel();
 
   void UpdateBackdrop();
+
+  void UpdateFrameWidth();
 
   void AttemptToStartDrag(int component, const gfx::Point& location);
 

@@ -96,6 +96,10 @@ void FrameHeader::SetPaintAsActive(bool paint_as_active) {
   UpdateCaptionButtonColors();
 }
 
+void FrameHeader::SetWidthInPixels(int width_in_pixels) {
+  NOTREACHED() << "Frame does not support drawing width in pixels";
+}
+
 void FrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
   if (show_state == ui::SHOW_STATE_MINIMIZED)
     return;

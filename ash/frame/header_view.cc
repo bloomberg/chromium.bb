@@ -64,14 +64,45 @@ class WindowPropertyAppearanceProvider
 
 }  // namespace
 
+// The view used to draw the content (background and title string)
+// of the header. This is a separate view so that it can use
+// differnent scaling strategy than the rest of the frame such
+// as caption buttons.
+class HeaderView::HeaderContentView : public views::View {
+ public:
+  HeaderContentView(HeaderView* header_view) : header_view_(header_view) {}
+  ~HeaderContentView() override = default;
+
+  // views::View:
+  views::PaintInfo::ScaleType GetPaintScaleType() const override {
+    return scale_type_;
+  }
+  void OnPaint(gfx::Canvas* canvas) override {
+    header_view_->PaintHeaderContent(canvas);
+  }
+
+  void SetScaleType(views::PaintInfo::ScaleType scale_type) {
+    scale_type_ = scale_type;
+  }
+
+ private:
+  HeaderView* header_view_;
+  views::PaintInfo::ScaleType scale_type_ =
+      views::PaintInfo::ScaleType::kScaleWithEdgeSnapping;
+  DISALLOW_COPY_AND_ASSIGN(HeaderContentView);
+};
+
 HeaderView::HeaderView(views::Widget* target_widget,
                        mojom::WindowStyle window_style,
                        std::unique_ptr<CaptionButtonModel> model)
     : target_widget_(target_widget),
       avatar_icon_(nullptr),
+      header_content_view_(new HeaderContentView(this)),
       caption_button_container_(nullptr),
       fullscreen_visible_fraction_(0),
       should_paint_(true) {
+  AddChildView(header_content_view_);
+
   caption_button_container_ =
       new FrameCaptionButtonContainerView(target_widget_, std::move(model));
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
@@ -173,6 +204,16 @@ void HeaderView::UpdateCaptionButtons() {
   Layout();
 }
 
+void HeaderView::SetWidthInPixels(int width_in_pixels) {
+  frame_header_->SetWidthInPixels(width_in_pixels);
+  // If the width is given in pixels, use uniform scaling
+  // so that UndoDeviceScaleFactor can correctly undo the scaling.
+  header_content_view_->SetScaleType(
+      width_in_pixels > 0
+          ? views::PaintInfo::ScaleType::kUniformScaling
+          : views::PaintInfo::ScaleType::kScaleWithEdgeSnapping);
+}
+
 void HeaderView::OnShowStateChanged(ui::WindowShowState show_state) {
   frame_header_->OnShowStateChanged(show_state);
 }
@@ -182,20 +223,8 @@ void HeaderView::OnShowStateChanged(ui::WindowShowState show_state) {
 
 void HeaderView::Layout() {
   did_layout_ = true;
+  header_content_view_->SetBoundsRect(GetLocalBounds());
   frame_header_->LayoutHeader();
-}
-
-void HeaderView::OnPaint(gfx::Canvas* canvas) {
-  if (!should_paint_)
-    return;
-
-  bool paint_as_active =
-      target_widget_->non_client_view()->frame_view()->ShouldPaintAsActive();
-  frame_header_->SetPaintAsActive(paint_as_active);
-
-  FrameHeader::Mode header_mode =
-      paint_as_active ? FrameHeader::MODE_ACTIVE : FrameHeader::MODE_INACTIVE;
-  frame_header_->PaintHeader(canvas, header_mode);
 }
 
 void HeaderView::ChildPreferredSizeChanged(views::View* child) {
@@ -310,6 +339,19 @@ std::vector<gfx::Rect> HeaderView::GetVisibleBoundsInScreen() const {
   bounds_in_screen.push_back(
       gfx::Rect(visible_origin_in_screen, visible_bounds.size()));
   return bounds_in_screen;
+}
+
+void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
+  if (!should_paint_)
+    return;
+
+  bool paint_as_active =
+      target_widget_->non_client_view()->frame_view()->ShouldPaintAsActive();
+  frame_header_->SetPaintAsActive(paint_as_active);
+
+  FrameHeader::Mode header_mode =
+      paint_as_active ? FrameHeader::MODE_ACTIVE : FrameHeader::MODE_INACTIVE;
+  frame_header_->PaintHeader(canvas, header_mode);
 }
 
 }  // namespace ash
