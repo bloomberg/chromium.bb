@@ -87,6 +87,8 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   // an error code that has recurred.
   bool HasSeenRecurrentErrors(int error) const;
 
+  void ResetRecurrentErrorCountForTesting();
+
   // SetClockForTesting takes ownership of the passed in clock.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 

@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
@@ -49,6 +51,14 @@
 using content::Referrer;
 
 namespace {
+
+bool HasSeenRecurrentErrorInternal(content::WebContents* web_contents,
+                                   int cert_error) {
+  ChromeSSLHostStateDelegate* state =
+      ChromeSSLHostStateDelegateFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  return state->HasSeenRecurrentErrors(cert_error);
+}
 
 #if !defined(OS_CHROMEOS)
 void LaunchDateAndTimeSettingsImpl() {
@@ -147,7 +157,13 @@ SSLErrorControllerClient::SSLErrorControllerClient(
           GURL(chrome::kChromeUINewTabURL)),
       ssl_info_(ssl_info),
       request_url_(request_url),
-      cert_error_(cert_error) {}
+      cert_error_(cert_error) {
+  if (HasSeenRecurrentErrorInternal(web_contents_, cert_error_)) {
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_recurrent_error.action",
+                              RECURRENT_ERROR_ACTION_SHOW,
+                              RECURRENT_ERROR_ACTION_MAX);
+  }
+}
 
 SSLErrorControllerClient::~SSLErrorControllerClient() {}
 
@@ -161,6 +177,12 @@ void SSLErrorControllerClient::GoBack() {
 }
 
 void SSLErrorControllerClient::Proceed() {
+  if (HasSeenRecurrentErrorInternal(web_contents_, cert_error_)) {
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_recurrent_error.action",
+                              RECURRENT_ERROR_ACTION_PROCEED,
+                              RECURRENT_ERROR_ACTION_MAX);
+  }
+
   MaybeTriggerSecurityInterstitialProceededEvent(web_contents_, request_url_,
                                                  "SSL_ERROR", cert_error_);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -212,8 +234,7 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
 }
 
 bool SSLErrorControllerClient::HasSeenRecurrentError() {
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-  return state->HasSeenRecurrentErrors(cert_error_);
+  return HasSeenRecurrentErrorInternal(web_contents_, cert_error_) &&
+         base::GetFieldTrialParamByFeatureAsBool(kRecurrentInterstitialFeature,
+                                                 "show_error_ui", false);
 }
