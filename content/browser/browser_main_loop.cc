@@ -1520,7 +1520,8 @@ void BrowserMainLoop::InitializeMojo() {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
 
-  service_manager_context_.reset(new ServiceManagerContext);
+  service_manager_context_.reset(
+      new ServiceManagerContext(io_thread_->task_runner()));
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)
