@@ -63,6 +63,13 @@ class TeamDriveListLoader {
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::TeamDriveList> team_drives);
 
+  void OnReadDirectoryByPath(ResourceEntryVector* local_resources,
+                             ResourceEntryVector remote_resources,
+                             FileError error);
+
+  void OnTeamDrivesRemoved(ResourceEntryVector remote_resources,
+                           FileError error);
+
   void OnTeamDriveListLoadComplete(FileError error);
 
   EventLogger* logger_;  // Not owned.
