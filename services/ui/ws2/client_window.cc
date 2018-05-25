@@ -5,6 +5,7 @@
 #include "services/ui/ws2/client_window.h"
 
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/env.h"
@@ -336,13 +337,21 @@ ClientWindow* ClientWindow::Create(aura::Window* window,
   // Owned by |window|.
   ClientWindow* client_window =
       new ClientWindow(window, client, frame_sink_id, is_top_level);
-  window->SetProperty(kClientWindowKey, client_window);
   return client_window;
 }
 
 // static
 const ClientWindow* ClientWindow::GetMayBeNull(const aura::Window* window) {
   return window ? window->GetProperty(kClientWindowKey) : nullptr;
+}
+
+WindowServiceClient* ClientWindow::embedded_window_service_client() {
+  return embedding_ ? embedding_->embedded_client() : nullptr;
+}
+
+const WindowServiceClient* ClientWindow::embedded_window_service_client()
+    const {
+  return embedding_ ? embedding_->embedded_client() : nullptr;
 }
 
 void ClientWindow::SetClientArea(
@@ -358,6 +367,10 @@ void ClientWindow::SetClientArea(
 
   // TODO(sky): update cursor if over this window.
   NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void ClientWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
+  embedding_ = std::move(embedding);
 }
 
 bool ClientWindow::HasNonClientArea() const {
@@ -394,6 +407,7 @@ ClientWindow::ClientWindow(aura::Window* window,
     : window_(window),
       owning_window_service_client_(client),
       frame_sink_id_(frame_sink_id) {
+  window_->SetProperty(kClientWindowKey, this);
   if (is_top_level)
     event_handler_ = std::make_unique<TopLevelEventHandler>(this);
   else

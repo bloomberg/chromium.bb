@@ -31,10 +31,10 @@ namespace ws2 {
 
 class ClientChangeTracker;
 class ClientRoot;
+class Embedding;
 class FocusHandler;
 class PointerWatcher;
 class WindowService;
-class WindowServiceClientBinding;
 
 // WindowServiceClient manages a client connected to the Window Service.
 // WindowServiceClient provides the implementation of mojom::WindowTree that
@@ -232,10 +232,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void GetWindowTreeRecursive(aura::Window* window,
                               std::vector<aura::Window*>* windows);
 
-  // Called when the WindowTreeClient of a WindowServiceClientBinding created
-  // by this object disconnects. This removes |binding| from
-  // |embedded_client_bindings_|, which results in deleting |binding|.
-  void OnChildBindingConnectionLost(WindowServiceClientBinding* binding);
+  // Called when the client associated with an Embedding created by this object
+  // disconnects. This deletes |embedding|, which deletes the embedded client.
+  void OnEmbeddedClientConnectionLost(Embedding* embedding);
 
   // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
@@ -397,10 +396,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   std::map<aura::Window*, ClientWindowId> window_to_client_window_id_map_;
   std::unordered_map<ClientWindowId, aura::Window*, ClientWindowIdHash>
       client_window_id_to_window_map_;
-
-  // WindowServiceClientBindings created by way of Embed().
-  std::vector<std::unique_ptr<WindowServiceClientBinding>>
-      embedded_client_bindings_;
 
   // Used to track the active change from the client.
   std::unique_ptr<ClientChangeTracker> property_change_tracker_;
