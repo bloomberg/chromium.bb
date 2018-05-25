@@ -97,11 +97,12 @@ KeyboardShortcutView::~KeyboardShortcutView() {
 }
 
 // static
-views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
+views::Widget* KeyboardShortcutView::Toggle(gfx::NativeWindow context) {
   if (g_ksv_view) {
-    // If there is a KeyboardShortcutView window open already, just activate
-    // it.
-    g_ksv_view->GetWidget()->Activate();
+    if (g_ksv_view->GetWidget()->IsActive())
+      g_ksv_view->GetWidget()->Close();
+    else
+      g_ksv_view->GetWidget()->Activate();
   } else {
     base::RecordAction(
         base::UserMetricsAction("KeyboardShortcutViewer.CreateWindow"));

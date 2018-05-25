@@ -31,8 +31,11 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
  public:
   ~KeyboardShortcutView() override;
 
-  // Shows the Keyboard Shortcut Viewer window, or re-activates an existing one.
-  static views::Widget* Show(gfx::NativeWindow context);
+  // Toggle the Keyboard Shortcut Viewer window.
+  // 1. Show the window if it is not open.
+  // 2. Activate the window if it is open but not active.
+  // 3. Close the window if it is open and active.
+  static views::Widget* Toggle(gfx::NativeWindow context);
 
   // views::View:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
