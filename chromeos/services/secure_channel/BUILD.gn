@@ -73,6 +73,8 @@ static_library("test_support") {
     "fake_pending_connection_request_delegate.h",
     "fake_single_client_message_proxy.cc",
     "fake_single_client_message_proxy.h",
+    "test_client_connection_parameters_factory.cc",
+    "test_client_connection_parameters_factory.h",
   ]
 
   deps = [
