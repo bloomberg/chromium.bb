@@ -6,7 +6,6 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
 
 namespace mojo {
 
