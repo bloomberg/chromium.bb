@@ -133,16 +133,8 @@ Panel.init = function() {
     Panel.exec(/** @type {PanelCommand} */ (command));
   }, false);
 
-  if (Panel.isUserSessionBlocked_) {
-    $('menus_button').disabled = true;
-    $('triangle').hidden = true;
-
-    $('options').disabled = true;
-  } else {
-    $('menus_button').addEventListener('mousedown', Panel.onOpenMenus, false);
-    $('options').addEventListener('click', Panel.onOptions, false);
-  }
-
+  $('menus_button').addEventListener('mousedown', Panel.onOpenMenus, false);
+  $('options').addEventListener('click', Panel.onOptions, false);
   $('close').addEventListener('click', Panel.onClose, false);
 
   $('tutorial_next').addEventListener('click', Panel.onTutorialNext, false);
@@ -255,9 +247,6 @@ Panel.setMode = function(mode) {
   if (Panel.mode_ == mode)
     return;
 
-  if (Panel.isUserSessionBlocked_ && mode != Panel.Mode.COLLAPSED &&
-      mode != Panel.Mode.FOCUSED)
-    return;
   Panel.mode_ = mode;
 
   document.title = Msgs.getMsg(Panel.ModeInfo[Panel.mode_].title);
@@ -451,7 +440,6 @@ Panel.onSearch = function() {
   Panel.clearMenus();
   Panel.pendingCallback_ = null;
   Panel.updateFromPrefs();
-
   ISearchUI.init(Panel.searchInput_);
 };
 
@@ -914,10 +902,15 @@ window.addEventListener('load', function() {
 }, false);
 
 window.addEventListener('hashchange', function() {
-  if (location.hash == '#fullscreen' || location.hash == '#focus') {
-    Panel.originalStickyState_ = cvox.ChromeVox.isStickyPrefOn;
-    cvox.ChromeVox.isStickyPrefOn = false;
-  } else {
-    cvox.ChromeVox.isStickyPrefOn = Panel.originalStickyState_;
-  }
+  var bkgnd = chrome.extension.getBackgroundPage();
+
+  // Save the sticky state when a user first focuses the panel.
+  if (location.hash == '#fullscreen' || location.hash == '#focus')
+    Panel.originalStickyState_ = bkgnd['cvox']['ChromeVox']['isStickyPrefOn'];
+
+  // If the original sticky state was on when we first entered the panel, toggle
+  // it in in every case. (fullscreen/focus turns the state off, collapse
+  // turns it back on).
+  if (Panel.originalStickyState_)
+    bkgnd['CommandHandler']['onCommand']('toggleStickyMode');
 }, false);

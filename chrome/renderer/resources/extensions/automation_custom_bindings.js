@@ -198,14 +198,12 @@ automation.registerCustomHook(function(bindingsAPI) {
 
 });
 
-automationInternal.onChildTreeID.addListener(function(treeID,
-                                                      nodeID) {
-  var tree = AutomationRootNode.getOrCreate(treeID);
-  if (!tree)
-    return;
+automationInternal.onChildTreeID.addListener(function(childTreeId) {
+  var targetTree = AutomationRootNode.get(childTreeId);
 
-  var node = privates(tree).impl.get(nodeID);
-  if (!node)
+  // If the tree is already loded, or if we previously requested it be loaded
+  // (i.e. have a callback for it), don't try to do so again.
+  if (targetTree || idToCallback[childTreeId])
     return;
 
   // A WebView in the desktop tree has a different AX tree as its child.
@@ -213,30 +211,11 @@ automationInternal.onChildTreeID.addListener(function(treeID,
   // currently have cached, explicitly request that AX tree from the
   // browser process and set up a callback when it loads to attach that
   // tree as a child of this node and fire appropriate events.
-  var childTreeID = GetIntAttribute(treeID, nodeID, 'childTreeId');
-  if (!childTreeID)
-    return;
+  automationUtil.storeTreeCallback(childTreeId, function(root) {
+    privates(root).impl.dispatchEvent('loadComplete', 'page');
+  }, true);
 
-  var subroot = AutomationRootNode.get(childTreeID);
-  if (!subroot || subroot.role == 'unknown') {
-    automationUtil.storeTreeCallback(childTreeID, function(root) {
-      // Return early if the root has already been attached.
-      if (root.parent)
-        return;
-
-      privates(root).impl.setHostNode(node);
-
-      if (root.docLoaded) {
-        privates(root).impl.dispatchEvent('loadComplete', 'page');
-      }
-
-      privates(node).impl.dispatchEvent('childrenChanged', 'none');
-    });
-
-    automationInternal.enableFrame(childTreeID);
-  } else {
-    privates(subroot).impl.setHostNode(node);
-  }
+  automationInternal.enableFrame(childTreeId);
 });
 
 automationInternal.onTreeChange.addListener(function(observerID,

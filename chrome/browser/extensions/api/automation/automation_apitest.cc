@@ -221,6 +221,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusViews) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopGetNextTextMatch) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop",
+                                  "get_next_text_match.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, LocationInWebView) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunPlatformAppTest("automation/tests/webview")) << message_;
