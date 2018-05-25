@@ -14,7 +14,7 @@ struct Sounds {
   SoundId hover_leave = kSoundNone;
   SoundId button_down = kSoundNone;
   SoundId button_up = kSoundNone;
-  SoundId move = kSoundNone;
+  SoundId hover_move = kSoundNone;
 };
 
 }  // namespace vr

@@ -279,7 +279,7 @@ void UiInputManager::SendMove(UiElement* element,
   if (element->name() == kContentQuad && in_click_) {
     return;
   }
-  element->OnMove(target_point);
+  element->OnHoverMove(target_point);
 }
 
 void UiInputManager::SendButtonDown(UiElement* target,

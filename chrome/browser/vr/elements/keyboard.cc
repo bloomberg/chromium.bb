@@ -77,11 +77,11 @@ void Keyboard::OnHoverLeave() {
   delegate_->OnHoverLeave();
 }
 
-void Keyboard::OnMove(const gfx::PointF& position) {
+void Keyboard::OnHoverMove(const gfx::PointF& position) {
   if (!delegate_)
     return;
 
-  delegate_->OnMove(position);
+  delegate_->OnHoverMove(position);
 }
 
 void Keyboard::OnButtonDown(const gfx::PointF& position) {

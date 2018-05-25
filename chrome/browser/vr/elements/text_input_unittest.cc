@@ -162,13 +162,13 @@ TEST(TextInputTest, ControllerInteractionsSentToDelegate) {
 
   EXPECT_CALL(*kb_delegate, OnHoverEnter(_)).InSequence(s);
   EXPECT_CALL(*kb_delegate, OnHoverLeave()).InSequence(s);
-  EXPECT_CALL(*kb_delegate, OnMove(_)).InSequence(s);
+  EXPECT_CALL(*kb_delegate, OnHoverMove(_)).InSequence(s);
   EXPECT_CALL(*kb_delegate, OnButtonDown(_)).InSequence(s);
   EXPECT_CALL(*kb_delegate, OnButtonUp(_)).InSequence(s);
   gfx::PointF p;
   keyboard->OnHoverEnter(p);
   keyboard->OnHoverLeave();
-  keyboard->OnMove(p);
+  keyboard->OnHoverMove(p);
   keyboard->OnButtonDown(p);
   keyboard->OnButtonUp(p);
 }

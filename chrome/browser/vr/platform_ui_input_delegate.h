@@ -44,7 +44,7 @@ class PlatformUiInputDelegate {
   // MockContentInputDelegate.
   VIRTUAL_FOR_MOCKS void OnHoverEnter(const gfx::PointF& normalized_hit_point);
   VIRTUAL_FOR_MOCKS void OnHoverLeave();
-  VIRTUAL_FOR_MOCKS void OnMove(const gfx::PointF& normalized_hit_point);
+  VIRTUAL_FOR_MOCKS void OnHoverMove(const gfx::PointF& normalized_hit_point);
   VIRTUAL_FOR_MOCKS void OnButtonDown(const gfx::PointF& normalized_hit_point);
   VIRTUAL_FOR_MOCKS void OnButtonUp(const gfx::PointF& normalized_hit_point);
   VIRTUAL_FOR_MOCKS void OnFlingCancel(

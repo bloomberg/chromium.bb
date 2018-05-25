@@ -176,14 +176,14 @@ void UiElement::OnHoverLeave() {
   }
 }
 
-void UiElement::OnMove(const gfx::PointF& position) {
-  if (GetSounds().move != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(GetSounds().move);
+void UiElement::OnHoverMove(const gfx::PointF& position) {
+  if (GetSounds().hover_move != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().hover_move);
   }
   if (event_handlers_.hover_move) {
     event_handlers_.hover_move.Run(position);
   } else if (parent() && bubble_events()) {
-    parent()->OnMove(position);
+    parent()->OnHoverMove(position);
   }
 }
 

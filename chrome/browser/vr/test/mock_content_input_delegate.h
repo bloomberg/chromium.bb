@@ -19,7 +19,7 @@ class MockContentInputDelegate : public ContentInputDelegate {
 
   MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF& normalized_hit_point));
   MOCK_METHOD0(OnHoverLeave, void());
-  MOCK_METHOD1(OnMove, void(const gfx::PointF& normalized_hit_point));
+  MOCK_METHOD1(OnHoverMove, void(const gfx::PointF& normalized_hit_point));
   MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& normalized_hit_point));
   MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& normalized_hit_point));
 

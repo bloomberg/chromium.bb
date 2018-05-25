@@ -43,7 +43,8 @@ void PlatformUiInputDelegate::OnHoverLeave() {
       MakeMouseEvent(blink::WebInputEvent::kMouseLeave, kOutOfBoundsPoint));
 }
 
-void PlatformUiInputDelegate::OnMove(const gfx::PointF& normalized_hit_point) {
+void PlatformUiInputDelegate::OnHoverMove(
+    const gfx::PointF& normalized_hit_point) {
   SendGestureToTarget(
       MakeMouseEvent(blink::WebInputEvent::kMouseMove, normalized_hit_point));
 }

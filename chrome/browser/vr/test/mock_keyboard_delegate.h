@@ -29,7 +29,7 @@ class MockKeyboardDelegate : public KeyboardDelegate {
   MOCK_METHOD0(SupportsSelection, bool());
   MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF&));
   MOCK_METHOD0(OnHoverLeave, void());
-  MOCK_METHOD1(OnMove, void(const gfx::PointF&));
+  MOCK_METHOD1(OnHoverMove, void(const gfx::PointF&));
   MOCK_METHOD1(OnButtonDown, void(const gfx::PointF&));
   MOCK_METHOD1(OnButtonUp, void(const gfx::PointF&));
 

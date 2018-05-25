@@ -47,7 +47,7 @@ class MockRect : public Rect {
 
   MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF& position));
   MOCK_METHOD0(OnHoverLeave, void());
-  MOCK_METHOD1(OnMove, void(const gfx::PointF& position));
+  MOCK_METHOD1(OnHoverMove, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& position));
   MOCK_METHOD2(OnScrollBegin,
@@ -220,7 +220,7 @@ TEST_F(UiInputManagerTest, FocusableChildStealsFocus) {
   EXPECT_CALL(*p_child, OnHoverEnter(_)).InSequence(s);
   EXPECT_CALL(*p_child, OnButtonDown(_)).InSequence(s);
   HandleInput(kForwardVector, kDown);
-  EXPECT_CALL(*p_child, OnMove(_)).InSequence(s);
+  EXPECT_CALL(*p_child, OnHoverMove(_)).InSequence(s);
   EXPECT_CALL(*p_child, OnButtonUp(_)).InSequence(s);
   EXPECT_CALL(*p_element, OnFocusChanged(false)).InSequence(s);
   HandleInput(kForwardVector, kUp);
@@ -284,18 +284,18 @@ TEST_F(UiInputManagerTest, HoverClick) {
   // Move over the test element.
   EXPECT_CALL(*p_element, OnHoverEnter(_));
   HandleInput(kForwardVector, kUp);
-  EXPECT_CALL(*p_element, OnMove(_));
+  EXPECT_CALL(*p_element, OnHoverMove(_));
   HandleInput(kForwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
 
   // Press the button while on the element.
-  EXPECT_CALL(*p_element, OnMove(_));
+  EXPECT_CALL(*p_element, OnHoverMove(_));
   EXPECT_CALL(*p_element, OnButtonDown(_));
   HandleInput(kForwardVector, kDown);
   Mock::VerifyAndClearExpectations(p_element);
 
   // Release the button while on the element.
-  EXPECT_CALL(*p_element, OnMove(_));
+  EXPECT_CALL(*p_element, OnHoverMove(_));
   EXPECT_CALL(*p_element, OnButtonUp(_));
   HandleInput(kForwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
@@ -343,7 +343,7 @@ TEST_F(UiInputManagerTest, ReleaseButtonOnAnotherElement) {
   EXPECT_CALL(*p_front_element, OnHoverLeave());
   EXPECT_CALL(*p_back_element, OnHoverEnter(_));
   HandleInput(kBackwardVector, kDown);
-  EXPECT_CALL(*p_back_element, OnMove(_));
+  EXPECT_CALL(*p_back_element, OnHoverMove(_));
   EXPECT_CALL(*p_front_element, OnButtonUp(_));
   HandleInput(kBackwardVector, kUp);
   EXPECT_CALL(*p_back_element, OnHoverLeave());
@@ -499,7 +499,7 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
   // Unless we suppress content move events during clicks, this will cause us to
   // call OnContentMove on the delegate. We should do this suppression, so we
   // set the expected number of calls to zero.
-  EXPECT_CALL(*content_input_delegate_, OnMove(testing::_)).Times(0);
+  EXPECT_CALL(*content_input_delegate_, OnHoverMove(testing::_)).Times(0);
 
   input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,
                               &reticle_model, &gesture_list);
