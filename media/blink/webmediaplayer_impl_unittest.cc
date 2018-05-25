@@ -168,12 +168,12 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(HasNativeControls, bool());
   MOCK_METHOD0(IsAudioElement, bool());
   MOCK_CONST_METHOD0(DisplayType, blink::WebMediaPlayer::DisplayType());
+  MOCK_CONST_METHOD0(IsInAutoPIP, bool());
   MOCK_METHOD1(ActivateViewportIntersectionMonitoring, void(bool));
   MOCK_METHOD1(MediaRemotingStarted, void(const blink::WebString&));
   MOCK_METHOD1(MediaRemotingStopped, void(blink::WebLocalizedString::Name));
   MOCK_METHOD0(PictureInPictureStarted, void());
   MOCK_METHOD0(PictureInPictureStopped, void());
-  MOCK_METHOD0(IsInPictureInPictureMode, bool());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
 
   void set_is_autoplaying_muted(bool value) { is_autoplaying_muted_ = value; }
@@ -1349,7 +1349,9 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
-  EXPECT_CALL(client_, IsInPictureInPictureMode()).WillRepeatedly(Return(true));
+  EXPECT_CALL(client_, DisplayType())
+      .WillRepeatedly(
+          Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
   EXPECT_CALL(delegate_,
               DidPictureInPictureSurfaceChange(delegate_.player_id(),
                                                surface_id_, GetNaturalSize()))
@@ -1427,8 +1429,9 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     SetDuration(base::TimeDelta::FromSeconds(GetDurationSec()));
 
     if (IsPictureInPictureOn()) {
-      EXPECT_CALL(client_, IsInPictureInPictureMode())
-          .WillRepeatedly(Return(true));
+      EXPECT_CALL(client_, DisplayType())
+          .WillRepeatedly(
+              Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
 
       wmpi_->OnSurfaceIdUpdated(surface_id_);
     }

@@ -43,9 +43,6 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
-  // Implementation of PictureInPictureController.
-  Status IsElementAllowed(const HTMLVideoElement&) const override;
-
   // Enter Picture-in-Picture for a video element and resolve promise.
   void EnterPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*);
 
@@ -58,11 +55,13 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
   // Exit Picture-in-Picture for a video element and resolve promise if any.
   void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*);
 
-  // Implementation of PictureInPictureController.
-  void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
-
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement(TreeScope&) const;
+
+  // Implementation of PictureInPictureController.
+  void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
+  Status IsElementAllowed(const HTMLVideoElement&) const override;
+  bool IsPictureInPictureElement(const Element*) const override;
 
   void Trace(blink::Visitor*) override;
 

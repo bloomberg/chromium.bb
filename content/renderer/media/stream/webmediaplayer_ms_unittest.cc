@@ -555,14 +555,13 @@ class WebMediaPlayerMSTest
   blink::WebMediaPlayer::DisplayType DisplayType() const override {
     return blink::WebMediaPlayer::DisplayType::kInline;
   }
+  bool IsInAutoPIP() const override { return false; }
   void ActivateViewportIntersectionMonitoring(bool activate) override {}
   void MediaRemotingStarted(
       const blink::WebString& remote_device_friendly_name) override {}
   void MediaRemotingStopped(
       blink::WebLocalizedString::Name error_msg) override {}
-  void PictureInPictureStarted() override {}
   void PictureInPictureStopped() override {}
-  bool IsInPictureInPictureMode() override { return false; }
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

@@ -259,7 +259,7 @@ void HTMLVideoElement::SetDisplayMode(DisplayMode mode) {
 // TODO(zqzhang): this callback could be used to hide native controls instead of
 // using a settings. See `HTMLMediaElement::onMediaControlsEnabledChange`.
 void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
-  is_picture_in_picture_ = value;
+  is_auto_picture_in_picture_ = value;
 
   if (value) {
     // Record the type of video. If it is already fullscreen, it is a video with
@@ -545,7 +545,25 @@ bool HTMLVideoElement::SupportsPictureInPicture() const {
          PictureInPictureController::Status::kEnabled;
 }
 
-void HTMLVideoElement::PictureInPictureStarted() {
+void HTMLVideoElement::PictureInPictureStopped() {
+  PictureInPictureController::From(GetDocument())
+      .OnExitedPictureInPicture(nullptr);
+}
+
+WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
+  if (is_auto_picture_in_picture_ ||
+      PictureInPictureController::From(GetDocument())
+          .IsPictureInPictureElement(this)) {
+    return WebMediaPlayer::DisplayType::kPictureInPicture;
+  }
+  return HTMLMediaElement::DisplayType();
+}
+
+bool HTMLVideoElement::IsInAutoPIP() const {
+  return is_auto_picture_in_picture_;
+}
+
+void HTMLVideoElement::OnEnteredPictureInPicture() {
   if (!picture_in_picture_interstitial_) {
     picture_in_picture_interstitial_ = new PictureInPictureInterstitial(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
@@ -554,25 +572,17 @@ void HTMLVideoElement::PictureInPictureStarted() {
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);
   }
   picture_in_picture_interstitial_->Show();
+
+  DCHECK(GetWebMediaPlayer());
+  GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
 }
 
-void HTMLVideoElement::PictureInPictureStopped() {
+void HTMLVideoElement::OnExitedPictureInPicture() {
   if (picture_in_picture_interstitial_)
     picture_in_picture_interstitial_->Hide();
 
-  PictureInPictureController::From(GetDocument())
-      .OnExitedPictureInPicture(nullptr);
-}
-
-bool HTMLVideoElement::IsInPictureInPictureMode() {
-  return picture_in_picture_interstitial_ &&
-         picture_in_picture_interstitial_->IsVisible();
-}
-
-WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
-  if (is_picture_in_picture_)
-    return WebMediaPlayer::DisplayType::kPictureInPicture;
-  return HTMLMediaElement::DisplayType();
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
 }
 
 void HTMLVideoElement::AddedEventListener(

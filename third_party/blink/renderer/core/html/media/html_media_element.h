@@ -440,6 +440,7 @@ class CORE_EXPORT HTMLMediaElement
   }
   gfx::ColorSpace TargetColorSpace() override;
   bool WasAutoplayInitiated() override;
+  bool IsInAutoPIP() const override { return false; }
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired(TimerBase*);

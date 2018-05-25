@@ -47,6 +47,9 @@ class CORE_EXPORT PictureInPictureController
   // Should be called when an element has exited Picture-in-Picture.
   virtual void OnExitedPictureInPicture(ScriptPromiseResolver*) = 0;
 
+  // Returns whether the given element is currently in Picture-in-Picture.
+  virtual bool IsPictureInPictureElement(const Element*) const = 0;
+
   void Trace(blink::Visitor*) override;
 
  protected:

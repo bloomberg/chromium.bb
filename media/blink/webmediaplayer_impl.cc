@@ -331,7 +331,10 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
 
-  if (client_->IsInPictureInPictureMode())
+  // If running in Picture-in-Picture but not in auto-pip, notify the player.
+  if (client_->DisplayType() ==
+          WebMediaPlayer::DisplayType::kPictureInPicture &&
+      !client_->IsInAutoPIP())
     ExitPictureInPicture(base::DoNothing());
 
   if (!surface_layer_for_video_enabled_ && video_layer_) {
@@ -415,7 +418,10 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // disabled.
   // The viz::SurfaceId may be updated when the video begins playback or when
   // the size of the video changes.
-  if (client_ && client_->IsInPictureInPictureMode()) {
+  if (client_ &&
+      client_->DisplayType() ==
+          WebMediaPlayer::DisplayType::kPictureInPicture &&
+      !client_->IsInAutoPIP()) {
     delegate_->DidPictureInPictureSurfaceChange(
         delegate_id_, surface_id, pipeline_metadata_.natural_size);
   }
@@ -801,9 +807,6 @@ void WebMediaPlayerImpl::EnterPictureInPicture(
   delegate_->DidPictureInPictureModeStart(delegate_id_, pip_surface_id_,
                                           pipeline_metadata_.natural_size,
                                           std::move(callback));
-
-  if (client_)
-    client_->PictureInPictureStarted();
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture(
@@ -821,7 +824,9 @@ void WebMediaPlayerImpl::ExitPictureInPicture(
 void WebMediaPlayerImpl::RegisterPictureInPictureWindowResizeCallback(
     blink::WebMediaPlayer::PipWindowResizedCallback callback) {
   DCHECK(pip_surface_id_.is_valid());
-  DCHECK(client_->IsInPictureInPictureMode());
+  DCHECK(client_->DisplayType() ==
+             WebMediaPlayer::DisplayType::kPictureInPicture &&
+         !client_->IsInAutoPIP());
 
   delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
                                                           std::move(callback));
@@ -2967,7 +2972,7 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Don't optimize Picture-in-Picture players.
-  if (client_->IsInPictureInPictureMode())
+  if (client_->DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture)
     return false;
 
 #if defined(OS_ANDROID)  // WMPI_CAST

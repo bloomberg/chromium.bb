@@ -148,11 +148,15 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   bool SupportsPictureInPicture() const final;
-  void PictureInPictureStarted() final;
   void PictureInPictureStopped() final;
-  bool IsInPictureInPictureMode() final;
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
   WebMediaPlayer::DisplayType DisplayType() const final;
+  bool IsInAutoPIP() const final;
+
+  // Used by the PictureInPictureController as callback when the video element
+  // enters or exits Picture-in-Picture state.
+  void OnEnteredPictureInPicture();
+  void OnExitedPictureInPicture();
 
  protected:
   // EventTarget overrides.
@@ -194,12 +198,14 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   AtomicString default_poster_url_;
 
-  // TODO(mlamouri): merge these later. At the moment, the former is used for
-  // CSS rules used to hide the custom controls and the latter is used to report
-  // the display type. It's unclear whether using the CSS rules also when native
-  // controls are used would or would not have side effects.
+  // Represents whether the video is 'persistent'. It is used for videos with
+  // custom controls that are in auto-pip (Android). This boolean is used by a
+  // CSS rule.
   bool is_persistent_ = false;
-  bool is_picture_in_picture_ = false;
+
+  // Whether the video is currently in auto-pip (Android). It is not similar to
+  // a video being in regular Picture-in-Picture mode.
+  bool is_auto_picture_in_picture_ = false;
 };
 
 }  // namespace blink

@@ -101,6 +101,8 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 
   picture_in_picture_element_ = element;
 
+  picture_in_picture_element_->OnEnteredPictureInPicture();
+
   picture_in_picture_element_->DispatchEvent(
       Event::CreateBubble(EventTypeNames::enterpictureinpicture));
 
@@ -141,6 +143,8 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
   if (picture_in_picture_element_) {
     HTMLVideoElement* element = picture_in_picture_element_;
     picture_in_picture_element_ = nullptr;
+
+    element->OnExitedPictureInPicture();
     element->DispatchEvent(
         Event::CreateBubble(EventTypeNames::leavepictureinpicture));
   }
@@ -155,6 +159,13 @@ Element* PictureInPictureControllerImpl::PictureInPictureElement(
     return nullptr;
 
   return scope.AdjustedElement(*picture_in_picture_element_);
+}
+
+bool PictureInPictureControllerImpl::IsPictureInPictureElement(
+    const Element* element) const {
+  if (!element)
+    return false;
+  return element == picture_in_picture_element_;
 }
 
 void PictureInPictureControllerImpl::Trace(blink::Visitor* visitor) {
