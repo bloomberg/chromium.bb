@@ -113,7 +113,6 @@ class CC_EXPORT InputHandler {
   enum ScrollInputType {
     TOUCHSCREEN,
     WHEEL,
-    NON_BUBBLING_GESTURE
   };
 
   enum class TouchStartOrMoveEventListenerType {

@@ -6785,7 +6785,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point()).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     host_impl_->ScrollEnd(EndState().get());
@@ -6814,7 +6814,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               grand_child->scroll_tree_index());
@@ -6839,7 +6839,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               grand_child->scroll_tree_index());
@@ -6866,7 +6866,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(1, 1)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(grand_child->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
@@ -7638,7 +7638,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point()).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     scroll_result =
         host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
@@ -7653,7 +7653,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               grand_child_layer->scroll_tree_index());
@@ -7662,7 +7662,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     scroll_result =
         host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
@@ -7679,7 +7679,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(5, 5)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(host_impl_->CurrentlyScrollingNode()->id,
               grand_child_layer->scroll_tree_index());
@@ -7799,7 +7799,7 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
                   ->ScrollBegin(BeginState(gfx::Point(0, 0)).get(),
-                                InputHandler::NON_BUBBLING_GESTURE)
+                                InputHandler::TOUCHSCREEN)
                   .thread);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_->FlingScrollBegin().thread);
