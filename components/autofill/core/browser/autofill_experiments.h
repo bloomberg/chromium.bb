@@ -9,7 +9,6 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 class PrefService;
 
@@ -23,15 +22,12 @@ class SyncService;
 
 namespace autofill {
 
-struct Suggestion;
-
 extern const base::Feature kAutofillAlwaysFillAddresses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardAblationExperiment;
 extern const base::Feature kAutofillCreditCardBankNameDisplay;
-extern const base::Feature kAutofillCreditCardPopupLayout;
 extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
 extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
@@ -80,10 +76,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email);
 
-// Returns whether the new Autofill credit card popup layout experiment is
-// enabled.
-bool IsAutofillCreditCardPopupLayoutExperimentEnabled();
-
 // Returns whether Autofill credit card last used date display experiment is
 // enabled.
 bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled();
@@ -93,38 +85,6 @@ bool ShowExpirationDateInAutofillCreditCardLastUsedDate();
 
 // Returns whether Autofill credit card bank name display experiment is enabled.
 bool IsAutofillCreditCardBankNameDisplayExperimentEnabled();
-
-// Returns the background color for credit card autofill popup, or
-// |SK_ColorTRANSPARENT| if the new credit card autofill popup layout experiment
-// is not enabled.
-SkColor GetCreditCardPopupBackgroundColor();
-
-// Returns the divider color for credit card autofill popup, or
-// |SK_ColorTRANSPARENT| if the new credit card autofill popup layout experiment
-// is not enabled.
-SkColor GetCreditCardPopupDividerColor();
-
-// Returns true if the credit card autofill popup suggestion value is displayed
-// in bold type face.
-bool IsCreditCardPopupValueBold();
-
-// Returns the dropdown item height for autofill popup, returning 0 if the
-// dropdown item height isn't configured in an experiment to tweak autofill
-// popup layout.
-unsigned int GetPopupDropdownItemHeight();
-
-// Returns true if the icon in the credit card autofill popup must be displayed
-// before the credit card value or any other suggestion text.
-bool IsIconInCreditCardPopupAtStart();
-
-// Modifies the suggestion value and label if the new credit card autofill popup
-// experiment is enabled to tweak the display of the value and label.
-void ModifyAutofillCreditCardSuggestion(struct Suggestion* suggestion);
-
-// Returns the margin for the icon, label and between icon and label. Returns 0
-// if the margin isn't configured in an experiment to tweak autofill popup
-// layout.
-unsigned int GetPopupMargin();
 
 // Returns whether the experiment is enabled where Chrome Upstream always checks
 // to see if it can offer to save (even though some data like name, address, and

@@ -98,21 +98,11 @@ public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.On
      * Shows an Autofill popup with specified suggestions.
      * @param suggestions Autofill suggestions to be displayed.
      * @param isRtl @code true if right-to-left text.
-     * @param backgroundColor popup background color, or {@code Color.TRANSPARENT} if not specified
-     * in experiment.
-     * @param dividerColor color for divider between popup items, or {@code Color.TRANSPARENT} if
-     * not specified in experiment.
-     * @param dropdownItemHeight height of each dropdown item in dimension independent pixel units,
-     * 0 if not specified in experiment.
-     * @param margin Margin for icon, label and between icon and label in dimension independent
-     * pixel units, 0 if not specified in experiment.
      */
     @CalledByNative
-    private void show(AutofillSuggestion[] suggestions, boolean isRtl, int backgroundColor,
-            int dividerColor, int dropdownItemHeight, int margin) {
+    private void show(AutofillSuggestion[] suggestions, boolean isRtl) {
         if (mAutofillPopup != null) {
-            mAutofillPopup.filterAndShow(
-                    suggestions, isRtl, backgroundColor, dividerColor, dropdownItemHeight, margin);
+            mAutofillPopup.filterAndShow(suggestions, isRtl);
             mWebContentsAccessibility.onAutofillPopupDisplayed(mAutofillPopup.getListView());
         }
     }

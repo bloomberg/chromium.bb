@@ -5,7 +5,6 @@
 package org.chromium.android_webview;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -72,8 +71,7 @@ public class AwAutofillClient {
                 return;
             }
         }
-        mAutofillPopup.filterAndShow(suggestions, isRtl, Color.TRANSPARENT /* backgroundColor */,
-                Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */, 0 /* margin */);
+        mAutofillPopup.filterAndShow(suggestions, isRtl);
     }
 
     @CalledByNative

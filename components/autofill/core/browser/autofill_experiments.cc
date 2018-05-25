@@ -37,8 +37,6 @@ const base::Feature kAutofillCreditCardBankNameDisplay{
     "AutofillCreditCardBankNameDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillCreditCardPopupLayout{
-    "AutofillCreditCardPopupLayout", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardLastUsedDateDisplay{
     "AutofillCreditCardLastUsedDateDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillDeleteDisusedAddresses{
@@ -73,15 +71,6 @@ const base::Feature kAutofillVoteUsingInvalidProfileData{
     "AutofillVoteUsingInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
-const char kAutofillCreditCardPopupBackgroundColorKey[] = "background_color";
-const char kAutofillCreditCardPopupDividerColorKey[] = "dropdown_divider_color";
-const char kAutofillCreditCardPopupValueBoldKey[] = "is_value_bold";
-const char kAutofillCreditCardPopupIsValueAndLabelInSingleLineKey[] =
-    "is_value_and_label_in_single_line";
-const char kAutofillPopupDropdownItemHeightKey[] = "dropdown_item_height";
-const char kAutofillCreditCardPopupIsIconAtStartKey[] =
-    "is_credit_card_icon_at_start";
-const char kAutofillPopupMarginKey[] = "margin";
 const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
     "show_expiration_date";
 
@@ -89,22 +78,6 @@ const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
 const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
-
-namespace {
-
-// Returns parameter value in |kAutofillCreditCardPopupLayout| feature, or 0 if
-// parameter is not specified.
-unsigned int GetCreditCardPopupParameterUintValue(
-    const std::string& param_name) {
-  unsigned int value;
-  const std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillCreditCardPopupLayout, param_name);
-  if (!param_value.empty() && base::StringToUint(param_value, &value))
-    return value;
-  return 0;
-}
-
-}  // namespace
 
 bool IsAutofillEnabled(const PrefService* pref_service) {
   return pref_service->GetBoolean(prefs::kAutofillEnabled);
@@ -124,10 +97,6 @@ bool IsAutofillCreditCardAssistEnabled() {
 #endif
 }
 
-bool IsAutofillCreditCardPopupLayoutExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillCreditCardPopupLayout);
-}
-
 bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardLastUsedDateDisplay);
 }
@@ -136,65 +105,11 @@ bool IsAutofillCreditCardBankNameDisplayExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardBankNameDisplay);
 }
 
-// |GetCreditCardPopupParameterUintValue| returns 0 if experiment parameter is
-// not specified. 0 == |SK_ColorTRANSPARENT|.
-SkColor GetCreditCardPopupBackgroundColor() {
-  return GetCreditCardPopupParameterUintValue(
-      kAutofillCreditCardPopupBackgroundColorKey);
-}
-
-SkColor GetCreditCardPopupDividerColor() {
-  return GetCreditCardPopupParameterUintValue(
-      kAutofillCreditCardPopupDividerColorKey);
-}
-
-bool IsCreditCardPopupValueBold() {
-  const std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillCreditCardPopupLayout, kAutofillCreditCardPopupValueBoldKey);
-  return param_value == "true";
-}
-
-unsigned int GetPopupDropdownItemHeight() {
-  return GetCreditCardPopupParameterUintValue(
-      kAutofillPopupDropdownItemHeightKey);
-}
-
-bool IsIconInCreditCardPopupAtStart() {
-  const std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillCreditCardPopupLayout, kAutofillCreditCardPopupIsIconAtStartKey);
-  return param_value == "true";
-}
-
 bool ShowExpirationDateInAutofillCreditCardLastUsedDate() {
   const std::string param_value = variations::GetVariationParamValueByFeature(
       kAutofillCreditCardLastUsedDateDisplay,
       kAutofillCreditCardLastUsedDateShowExpirationDateKey);
   return param_value == "true";
-}
-
-// Modifies |suggestion| as follows if experiment to display value and label in
-// a single line is enabled.
-// Say, |value| is 'Visa ....1111' and |label| is '01/18' (expiration date).
-// Modifies |value| to 'Visa ....1111, exp 01/18' and clears |label|.
-void ModifyAutofillCreditCardSuggestion(Suggestion* suggestion) {
-  DCHECK(IsAutofillCreditCardPopupLayoutExperimentEnabled());
-  const std::string param_value = variations::GetVariationParamValueByFeature(
-      kAutofillCreditCardPopupLayout,
-      kAutofillCreditCardPopupIsValueAndLabelInSingleLineKey);
-  if (param_value == "true") {
-    const base::string16 format_string = l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_LABEL_AND_ABBR);
-    if (!format_string.empty()) {
-      suggestion->value.append(l10n_util::GetStringFUTF16(
-          IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_LABEL_AND_ABBR,
-          suggestion->label));
-    }
-    suggestion->label.clear();
-  }
-}
-
-unsigned int GetPopupMargin() {
-  return GetCreditCardPopupParameterUintValue(kAutofillPopupMarginKey);
 }
 
 bool OfferStoreUnmaskedCards() {

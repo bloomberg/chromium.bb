@@ -2097,11 +2097,6 @@ const char kEnableOmniboxClipboardProviderDescription[] =
     "Provide a suggestion of the URL stored in the clipboard (if any) upon "
     "focus in the omnibox.";
 
-const char kEnableExpandedAutofillCreditCardPopupLayoutName[] =
-    "Use expanded autofill credit card popup layout.";
-const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[] =
-    "If enabled, displays autofill credit card popup using expanded layout.";
-
 const char kEnableNtpArticleSuggestionsExpandableHeaderName[] =
     "Show article suggestions expandable header on New Tab Page";
 const char kEnableNtpArticleSuggestionsExpandableHeaderDescription[] =

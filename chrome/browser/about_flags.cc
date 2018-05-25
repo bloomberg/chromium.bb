@@ -824,36 +824,6 @@ const FeatureEntry::FeatureVariation kNoStatePrefetchFeatureVariations[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
-    kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart[] = {
-        {"is_credit_card_icon_at_start", "true"}};
-
-const FeatureEntry::FeatureParam
-    kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight[] = {
-        {"dropdown_item_height", "56"}};
-
-const FeatureEntry::FeatureParam
-    kAutofillCreditCardPopupLayoutFeatureVariationExpanded[] = {
-        {"is_credit_card_icon_at_start", "true"},
-        {"dropdown_item_height", "56"},
-        {"margin", "18"}};
-
-const FeatureEntry::FeatureVariation
-    kAutofillCreditCardPopupLayoutFeatureVariations[] = {
-        {"Display credit card icon at start",
-         kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart,
-         arraysize(kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart),
-         nullptr},
-        {"Increase dropdown item height",
-         kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight,
-         arraysize(
-             kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight),
-         nullptr},
-        {"Display credit card icon at start and increase dropdown item height",
-         kAutofillCreditCardPopupLayoutFeatureVariationExpanded,
-         arraysize(kAutofillCreditCardPopupLayoutFeatureVariationExpanded),
-         nullptr}};
-
-const FeatureEntry::FeatureParam
     kAutofillKeyboardAccessoryFeatureVariationAnimationDuration[] = {
         {autofill::kAutofillKeyboardAccessoryAnimationDurationKey, "1000"}};
 
@@ -2846,19 +2816,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
                                     kNoStatePrefetchFeatureVariations,
                                     "NoStatePrefetchValidation")},
-
-#if defined(OS_ANDROID)
-    {"enable-expanded-autofill-credit-card-popup",
-     flag_descriptions::kEnableExpandedAutofillCreditCardPopupLayoutName,
-     flag_descriptions::kEnableExpandedAutofillCreditCardPopupLayoutDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::kAutofillCreditCardPopupLayout,
-         kAutofillCreditCardPopupLayoutFeatureVariations,
-         // Must be AutofillCreditCardDropdownVariations to prevent DCHECK crash
-         // when the flag is manually enabled in a local build.
-         "AutofillCreditCardDropdownVariations")},
-#endif  // OS_ANDROID
 
 #if defined(OS_CHROMEOS)
     {switches::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,
