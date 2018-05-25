@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -79,6 +80,15 @@ class TranslateManager {
   // If no language is found then an empty string is returned.
   static std::string GetTargetLanguage(const TranslatePrefs* prefs,
                                        language::LanguageModel* language_model);
+
+  // Returns the language to translate to using the same logic as
+  // GetTargetLanguage but doesn't returned languages contained in
+  // |skipped_languages| if |language_model| is not null and there is at least
+  // one other suitable language.
+  static std::string GetTargetLanguage(
+      const TranslatePrefs* prefs,
+      language::LanguageModel* language_model,
+      const std::set<std::string>& skipped_languages);
 
   // Returns the language to automatically translate to. |original_language| is
   // the webpage's original language.

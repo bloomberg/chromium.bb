@@ -4,6 +4,11 @@
 
 #include "components/language/core/common/language_experiments.h"
 
+#include <map>
+#include <string>
+
+#include "base/metrics/field_trial_params.h"
+
 namespace language {
 
 const base::Feature kUseHeuristicLanguageModel{
@@ -11,13 +16,39 @@ const base::Feature kUseHeuristicLanguageModel{
 
 const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kOverrideModelKey[] = "override_model";
+const char kEnforceRankerKey[] = "enforce_ranker";
+const char kOverrideModelHeuristicValue[] = "heuristic";
+const char kOverrideModelGeoValue[] = "geo";
 
 OverrideLanguageModel GetOverrideLanguageModel() {
-  if (base::FeatureList::IsEnabled(kUseHeuristicLanguageModel))
+  std::map<std::string, std::string> params;
+  bool should_override_model = base::GetFieldTrialParamsByFeature(
+      kOverrideTranslateTriggerInIndia, &params);
+
+  if (base::FeatureList::IsEnabled(kUseHeuristicLanguageModel) ||
+      (should_override_model &&
+       params[kOverrideModelKey] == kOverrideModelHeuristicValue)) {
     return OverrideLanguageModel::HEURISTIC;
-  // TODO(crbug.com/840367): Take the kOverrideTranslateTriggerInIndia params
-  // into account to decide which model to use.
+  }
+
+  if (should_override_model &&
+      params[kOverrideModelKey] == kOverrideModelGeoValue) {
+    return OverrideLanguageModel::GEO;
+  }
+
   return OverrideLanguageModel::DEFAULT;
+}
+
+bool ShouldForceTriggerTranslateOnEnglishPages() {
+  return base::FeatureList::IsEnabled(kOverrideTranslateTriggerInIndia);
+}
+
+bool ShouldPreventRankerEnforcementInIndia() {
+  std::map<std::string, std::string> params;
+  return base::GetFieldTrialParamsByFeature(kOverrideTranslateTriggerInIndia,
+                                            &params) &&
+         params[kEnforceRankerKey] == "false";
 }
 
 }  // namespace language
