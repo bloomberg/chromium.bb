@@ -15,21 +15,17 @@
 
 namespace blink {
 
-WorkerShadowPage::WorkerShadowPage(
-    Client* client,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
+WorkerShadowPage::WorkerShadowPage(Client* client)
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
                                     mojom::PageVisibilityState::kVisible,
                                     nullptr)),
-      main_frame_(
-          WebLocalFrameImpl::CreateMainFrame(web_view_,
-                                             this,
-                                             nullptr /* interface_registry */,
-                                             nullptr /* opener */,
-                                             g_empty_atom,
-                                             WebSandboxFlags::kNone)),
-      loader_factory_(std::move(loader_factory)) {
+      main_frame_(WebLocalFrameImpl::CreateMainFrame(web_view_,
+                                                     this,
+                                                     nullptr,
+                                                     nullptr,
+                                                     g_empty_atom,
+                                                     WebSandboxFlags::kNone)) {
   DCHECK(IsMainThread());
 
   // TODO(http://crbug.com/363843): This needs to find a better way to
@@ -91,8 +87,6 @@ WorkerShadowPage::CreateApplicationCacheHost(
 std::unique_ptr<blink::WebURLLoaderFactory>
 WorkerShadowPage::CreateURLLoaderFactory() {
   DCHECK(IsMainThread());
-  if (loader_factory_)
-    return Platform::Current()->WrapSharedURLLoaderFactory(loader_factory_);
   return Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 

@@ -13,7 +13,6 @@
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/common/url_loader_factory_bundle.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -23,7 +22,6 @@
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
@@ -35,7 +33,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
-#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
@@ -145,19 +142,15 @@ class WebServiceWorkerNetworkProviderForSharedWorker
               provider_->script_loader_factory()));
     }
 
-    // Otherwise, it's an importScript. Use the subresource loader factory if
-    // it exists (we are controlled by a service worker).
+    // Otherwise, it's an importScript. Use the subresource loader factory.
     if (!provider_->context() ||
         !provider_->context()->GetSubresourceLoaderFactory()) {
       return nullptr;
     }
 
     // If it's not for HTTP or HTTPS, no need to intercept the request.
-    // TODO(falken): Allow SubresourceLoaderFactory to handle it in order
-    // to support chrome-extension://.
-    if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS()) {
+    if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS())
       return nullptr;
-    }
 
     // If GetSkipServiceWorker() returns true, do not intercept the request.
     if (request.GetSkipServiceWorker())
@@ -190,7 +183,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider)
@@ -208,29 +200,11 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   service_worker_provider_info_ = std::move(service_worker_provider_info);
   script_loader_factory_info_ = std::move(script_loader_factory_info);
 
-  // Make the factory bundle for the shadow page to use for importScripts().
-  auto loader_factories = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
-      impl_->GetTaskRunner(blink::TaskType::kInternalLoading));
-  // In some tests |render_thread| could be null.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread) {
-    loader_factories->Update(render_thread->blink_platform_impl()
-                                 ->CreateDefaultURLLoaderFactoryBundle()
-                                 ->PassInterface(),
-                             base::nullopt /* subresource_overrides */);
-  }
-  if (subresource_loaders) {
-    loader_factories->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-                                 std::move(subresource_loaders)),
-                             base::nullopt /* subresource_overrides */);
-  }
-
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      devtools_worker_token, std::move(loader_factories),
-      content_settings.PassInterface().PassHandle(),
+      devtools_worker_token, content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle());
 
   // If the host drops its connection, then self-destruct.
@@ -304,9 +278,6 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory;
   // current() may be null in tests.
   if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
-    // TODO(crbug.com/839982): Make a bundle using the |factory_bundle| passed
-    // to the ctor instead, otherwise chrome-extension:// won't work for network
-    // fallback.
     scoped_refptr<ChildURLLoaderFactoryBundle> bundle =
         render_thread->blink_platform_impl()
             ->CreateDefaultURLLoaderFactoryBundle();
