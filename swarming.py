@@ -127,6 +127,16 @@ TaskProperties = collections.namedtuple(
 
 
 # See ../appengine/swarming/swarming_rpcs.py.
+TaskSlice = collections.namedtuple(
+    'TaskSlice',
+    [
+      'expiration_secs',
+      'properties',
+      'wait_for_capacity',
+    ])
+
+
+# See ../appengine/swarming/swarming_rpcs.py.
 NewTaskRequest = collections.namedtuple(
     'NewTaskRequest',
     [
@@ -949,7 +959,7 @@ def add_trigger_options(parser):
   isolateserver.add_isolate_server_options(parser)
   add_filter_options(parser)
 
-  group = optparse.OptionGroup(parser, 'Task properties')
+  group = optparse.OptionGroup(parser, 'TaskSlice properties')
   group.add_option(
       '-s', '--isolated', metavar='HASH',
       help='Hash of the .isolated to grab from the isolate server')
@@ -1003,9 +1013,14 @@ def add_trigger_options(parser):
       help='A list of files to return in addition to those written to '
            '${ISOLATED_OUTDIR}. An error will occur if a file specified by'
            'this option is also written directly to ${ISOLATED_OUTDIR}.')
+  group.add_option(
+      '--wait-for-capacity', action='store_true', default=False,
+      help='Instructs to leave the task PENDING even if there\'s no known bot '
+           'that could run this task, otherwise the task will be denied with '
+           'NO_RESOURCE')
   parser.add_option_group(group)
 
-  group = optparse.OptionGroup(parser, 'Task request')
+  group = optparse.OptionGroup(parser, 'TaskRequest details')
   group.add_option(
       '--priority', type='int', default=100,
       help='The lower value, the more important the task is')
@@ -1134,17 +1149,15 @@ def process_trigger_options(parser, options, args):
       io_timeout_secs=options.io_timeout,
       outputs=options.output,
       secret_bytes=secret_bytes)
-
+  task_slice = TaskSlice(
+      expiration_secs=options.expiration,
+      properties=properties,
+      wait_for_capacity=options.wait_for_capacity)
   return NewTaskRequest(
       name=default_task_name(options),
       parent_task_id=os.environ.get('SWARMING_TASK_ID', ''),
       priority=options.priority,
-      task_slices=[
-        {
-          'expiration_secs': options.expiration,
-          'properties': properties,
-        },
-      ],
+      task_slices=[task_slice],
       service_account=options.service_account,
       tags=options.tags,
       user=options.user)
@@ -1581,11 +1594,11 @@ def CMDrun(parser, args):
   if not options.timeout:
     offset = 0
     for s in task_request.task_slices:
-      m = (offset + s['properties'].execution_timeout_secs +
-            s['expiration_secs'])
+      m = (offset + s.properties.execution_timeout_secs +
+            s.expiration_secs)
       if m > options.timeout:
         options.timeout = m
-      offset += s['expiration_secs']
+      offset += s.expiration_secs
     options.timeout += 10.
   try:
     return collect(
