@@ -36,7 +36,7 @@ namespace offline_pages {
 // schema.
 //
 // Looking for procedure to update the schema, please refer to
-// offline_page_metadata_store_sql.h
+// offline_page_metadata_store.h
 class RequestQueueStoreSQL : public RequestQueueStore {
  public:
   RequestQueueStoreSQL(

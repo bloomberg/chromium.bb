@@ -42,12 +42,12 @@ void OfflinePageMetadataStoreTestUtil::BuildStore() {
   }
 
   store_.reset(
-      new OfflinePageMetadataStoreSQL(task_runner_, temp_directory_.GetPath()));
+      new OfflinePageMetadataStore(task_runner_, temp_directory_.GetPath()));
   store_ptr_ = store_.get();
 }
 
 void OfflinePageMetadataStoreTestUtil::BuildStoreInMemory() {
-  store_.reset(new OfflinePageMetadataStoreSQL(task_runner_));
+  store_.reset(new OfflinePageMetadataStore(task_runner_));
   store_ptr_ = store_.get();
 }
 
@@ -57,7 +57,7 @@ void OfflinePageMetadataStoreTestUtil::DeleteStore() {
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
-std::unique_ptr<OfflinePageMetadataStoreSQL>
+std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTestUtil::ReleaseStore() {
   return std::move(store_);
 }

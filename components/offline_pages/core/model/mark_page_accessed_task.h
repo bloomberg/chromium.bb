@@ -15,14 +15,14 @@ class Time;
 
 namespace offline_pages {
 
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // Task that marks a page accessed in the metadata store. It takes the offline
 // ID of the page accessed, and the time when it was accessed.
 // There is no callback needed for this task.
 class MarkPageAccessedTask : public Task {
  public:
-  MarkPageAccessedTask(OfflinePageMetadataStoreSQL* store,
+  MarkPageAccessedTask(OfflinePageMetadataStore* store,
                        int64_t offline_id,
                        const base::Time& access_time);
   ~MarkPageAccessedTask() override;
@@ -34,7 +34,7 @@ class MarkPageAccessedTask : public Task {
   void OnMarkPageAccessedDone(bool result);
 
   // The metadata store used to update the page. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
 
   int64_t offline_id_;
   base::Time access_time_;

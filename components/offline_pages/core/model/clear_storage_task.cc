@@ -18,7 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -226,7 +226,7 @@ std::map<std::string, LifetimePolicy> GetTempNamespacePolicyMap(
 
 }  // namespace
 
-ClearStorageTask::ClearStorageTask(OfflinePageMetadataStoreSQL* store,
+ClearStorageTask::ClearStorageTask(OfflinePageMetadataStore* store,
                                    ArchiveManager* archive_manager,
                                    ClientPolicyController* policy_controller,
                                    const base::Time& clearup_time,

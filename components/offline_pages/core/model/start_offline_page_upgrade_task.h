@@ -15,13 +15,13 @@
 
 namespace offline_pages {
 
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // This task is responsible for starting the upgrade process for an offline
 // page.
 class StartOfflinePageUpgradeTask : public Task {
  public:
-  StartOfflinePageUpgradeTask(OfflinePageMetadataStoreSQL* store,
+  StartOfflinePageUpgradeTask(OfflinePageMetadataStore* store,
                               int64_t offline_id,
                               const base::FilePath& target_directory,
                               StartUpgradeCallback callback);
@@ -34,7 +34,7 @@ class StartOfflinePageUpgradeTask : public Task {
   void InformUpgradeAttemptDone(StartUpgradeResult result);
 
   // The store containing the pages to be cleared. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
 
   // ID of the item that needs to be updated.
   int64_t offline_id_;

@@ -38,7 +38,7 @@ struct OfflinePageItem;
 class ArchiveManager;
 class ClientPolicyController;
 class OfflinePageArchiver;
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 class SystemDownloadManager;
 
 // Implementaion of OfflinePageModel, which is a service for saving pages
@@ -56,7 +56,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Delay between the scheduling and actual running of maintenance tasks. To
   // not cause the re-opening of the metadata store this delay should be kept
-  // smaller than OfflinePageMetadataStoreSQL::kClosingDelay.
+  // smaller than OfflinePageMetadataStore::kClosingDelay.
   static constexpr base::TimeDelta kMaintenanceTasksDelay =
       base::TimeDelta::FromSeconds(10);
 
@@ -65,7 +65,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       base::TimeDelta::FromMinutes(30);
 
   OfflinePageModelTaskified(
-      std::unique_ptr<OfflinePageMetadataStoreSQL> store,
+      std::unique_ptr<OfflinePageMetadataStore> store,
       std::unique_ptr<ArchiveManager> archive_manager,
       std::unique_ptr<SystemDownloadManager> download_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -150,7 +150,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       PublishPageCallback publish_done_callback) override;
 
   // Methods for testing only:
-  OfflinePageMetadataStoreSQL* GetStoreForTesting() { return store_.get(); }
+  OfflinePageMetadataStore* GetStoreForTesting() { return store_.get(); }
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
   void SetSkipClearingOriginalUrlForTesting() {
     skip_clearing_original_url_for_testing_ = true;
@@ -241,7 +241,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   base::Time GetCurrentTime();
 
   // Persistent store for offline page metadata.
-  std::unique_ptr<OfflinePageMetadataStoreSQL> store_;
+  std::unique_ptr<OfflinePageMetadataStore> store_;
 
   // Manager for the offline archive files and directory.
   std::unique_ptr<ArchiveManager> archive_manager_;

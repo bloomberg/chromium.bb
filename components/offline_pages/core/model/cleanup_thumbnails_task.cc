@@ -5,7 +5,7 @@
 #include "components/offline_pages/core/model/cleanup_thumbnails_task.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -38,7 +38,7 @@ CleanupThumbnailsTask::Result CleanupThumbnailsSync(base::Time now,
 }  // namespace
 
 CleanupThumbnailsTask::CleanupThumbnailsTask(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     base::Time now,
     CleanupThumbnailsCallback complete_callback)
     : store_(store),

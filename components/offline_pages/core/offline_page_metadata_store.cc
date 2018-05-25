@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -24,9 +24,9 @@
 
 namespace offline_pages {
 
-const int OfflinePageMetadataStoreSQL::kFirstPostLegacyVersion;
-const int OfflinePageMetadataStoreSQL::kCurrentVersion;
-const int OfflinePageMetadataStoreSQL::kCompatibleVersion;
+const int OfflinePageMetadataStore::kFirstPostLegacyVersion;
+const int OfflinePageMetadataStore::kCurrentVersion;
+const int OfflinePageMetadataStore::kCompatibleVersion;
 
 namespace {
 
@@ -195,8 +195,8 @@ bool CreateLatestSchema(sql::Connection* db) {
     return false;
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, OfflinePageMetadataStoreSQL::kCurrentVersion,
-                       OfflinePageMetadataStoreSQL::kCompatibleVersion))
+  if (!meta_table.Init(db, OfflinePageMetadataStore::kCurrentVersion,
+                       OfflinePageMetadataStore::kCompatibleVersion))
     return false;
 
   return transaction.Commit();
@@ -235,8 +235,8 @@ bool UpgradeFromLegacyVersion(sql::Connection* db) {
   }
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, OfflinePageMetadataStoreSQL::kFirstPostLegacyVersion,
-                       OfflinePageMetadataStoreSQL::kCompatibleVersion))
+  if (!meta_table.Init(db, OfflinePageMetadataStore::kFirstPostLegacyVersion,
+                       OfflinePageMetadataStore::kCompatibleVersion))
     return false;
 
   return transaction.Commit();
@@ -288,8 +288,8 @@ bool CreateSchema(sql::Connection* db) {
   }
 
   sql::MetaTable meta_table;
-  if (!meta_table.Init(db, OfflinePageMetadataStoreSQL::kCurrentVersion,
-                       OfflinePageMetadataStoreSQL::kCompatibleVersion))
+  if (!meta_table.Init(db, OfflinePageMetadataStore::kCurrentVersion,
+                       OfflinePageMetadataStore::kCompatibleVersion))
     return false;
 
   for (;;) {
@@ -302,7 +302,7 @@ bool CreateSchema(sql::Connection* db) {
         if (!UpgradeFromVersion2ToVersion3(db, &meta_table))
           return false;
         break;
-      case OfflinePageMetadataStoreSQL::kCurrentVersion:
+      case OfflinePageMetadataStore::kCurrentVersion:
         return true;
       default:
         return false;
@@ -364,9 +364,9 @@ void CloseDatabaseSync(
 }  // anonymous namespace
 
 // static
-constexpr base::TimeDelta OfflinePageMetadataStoreSQL::kClosingDelay;
+constexpr base::TimeDelta OfflinePageMetadataStore::kClosingDelay;
 
-OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
+OfflinePageMetadataStore::OfflinePageMetadataStore(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : background_task_runner_(std::move(background_task_runner)),
       in_memory_(true),
@@ -374,7 +374,7 @@ OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
       weak_ptr_factory_(this),
       closing_weak_ptr_factory_(this) {}
 
-OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
+OfflinePageMetadataStore::OfflinePageMetadataStore(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const base::FilePath& path)
     : background_task_runner_(std::move(background_task_runner)),
@@ -384,25 +384,25 @@ OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
       weak_ptr_factory_(this),
       closing_weak_ptr_factory_(this) {}
 
-OfflinePageMetadataStoreSQL::~OfflinePageMetadataStoreSQL() {
+OfflinePageMetadataStore::~OfflinePageMetadataStore() {
   if (db_.get() &&
       !background_task_runner_->DeleteSoon(FROM_HERE, db_.release())) {
     DLOG(WARNING) << "SQL database will not be deleted.";
   }
 }
 
-StoreState OfflinePageMetadataStoreSQL::GetStateForTesting() const {
+StoreState OfflinePageMetadataStore::GetStateForTesting() const {
   return state_;
 }
 
-void OfflinePageMetadataStoreSQL::SetStateForTesting(StoreState state,
-                                                     bool reset_db) {
+void OfflinePageMetadataStore::SetStateForTesting(StoreState state,
+                                                  bool reset_db) {
   state_ = state;
   if (reset_db)
     db_.reset(nullptr);
 }
 
-void OfflinePageMetadataStoreSQL::InitializeInternal(
+void OfflinePageMetadataStore::InitializeInternal(
     base::OnceClosure pending_command) {
   TRACE_EVENT_ASYNC_BEGIN1("offline_pages", "Metadata Store", this, "is reopen",
                            !last_closing_time_.is_null());
@@ -424,12 +424,12 @@ void OfflinePageMetadataStoreSQL::InitializeInternal(
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&InitDatabase, db_.get(), db_file_path_, in_memory_),
-      base::BindOnce(&OfflinePageMetadataStoreSQL::OnInitializeInternalDone,
+      base::BindOnce(&OfflinePageMetadataStore::OnInitializeInternalDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(pending_command)));
 }
 
-void OfflinePageMetadataStoreSQL::OnInitializeInternalDone(
+void OfflinePageMetadataStore::OnInitializeInternalDone(
     base::OnceClosure pending_command,
     bool success) {
   TRACE_EVENT_ASYNC_STEP_PAST1("offline_pages", "Metadata Store", this,
@@ -459,7 +459,7 @@ void OfflinePageMetadataStoreSQL::OnInitializeInternalDone(
     state_ = StoreState::NOT_LOADED;
 }
 
-void OfflinePageMetadataStoreSQL::CloseInternal() {
+void OfflinePageMetadataStore::CloseInternal() {
   if (state_ != StoreState::LOADED) {
     ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSE_SKIPPED);
     return;
@@ -474,11 +474,11 @@ void OfflinePageMetadataStoreSQL::CloseInternal() {
       FROM_HERE,
       base::BindOnce(
           &CloseDatabaseSync, db_.get(), base::ThreadTaskRunnerHandle::Get(),
-          base::BindOnce(&OfflinePageMetadataStoreSQL::CloseInternalDone,
+          base::BindOnce(&OfflinePageMetadataStore::CloseInternalDone,
                          weak_ptr_factory_.GetWeakPtr(), std::move(db_))));
 }
 
-void OfflinePageMetadataStoreSQL::CloseInternalDone(
+void OfflinePageMetadataStore::CloseInternalDone(
     std::unique_ptr<sql::Connection> db) {
   db.reset();
   TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Metadata Store", this,

@@ -14,7 +14,7 @@
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -113,7 +113,7 @@ bool MarkPagesAsReappeared(const std::vector<int64_t>& ids_of_reappeared_pages,
 
 PersistentPageConsistencyCheckTask::CheckResult
 PersistentPageConsistencyCheckSync(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     const base::FilePath& private_dir,
     const base::FilePath& public_dir,
     const std::vector<std::string>& persistent_namespaces,
@@ -200,7 +200,7 @@ PersistentPageConsistencyCheckTask::CheckResult::operator=(
 PersistentPageConsistencyCheckTask::CheckResult::~CheckResult() {}
 
 PersistentPageConsistencyCheckTask::PersistentPageConsistencyCheckTask(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     ArchiveManager* archive_manager,
     ClientPolicyController* policy_controller,
     base::Time check_time,

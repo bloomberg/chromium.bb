@@ -16,12 +16,12 @@
 
 namespace offline_pages {
 
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 class SystemDownloadManager;
 
 class AddPageToDownloadManagerTask : public Task {
  public:
-  AddPageToDownloadManagerTask(OfflinePageMetadataStoreSQL* store,
+  AddPageToDownloadManagerTask(OfflinePageMetadataStore* store,
                                SystemDownloadManager* download_manager,
                                int64_t offline_id,
                                const std::string& title,
@@ -40,7 +40,7 @@ class AddPageToDownloadManagerTask : public Task {
   void OnAddIdDone(bool result);
 
   // Unowned pointer to the Metadata SQL store.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
   const std::string title_;
   const std::string description_;
   const std::string path_;

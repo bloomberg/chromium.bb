@@ -26,7 +26,7 @@
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_test_archiver.h"
@@ -129,7 +129,7 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   // Getters for private fields.
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
   OfflinePageModelTaskified* model() { return model_.get(); }
-  OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
+  OfflinePageMetadataStore* store() { return store_test_util_.store(); }
   OfflinePageMetadataStoreTestUtil* store_test_util() {
     return &store_test_util_;
   }

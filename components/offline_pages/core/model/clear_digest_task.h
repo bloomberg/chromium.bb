@@ -13,14 +13,14 @@
 
 namespace offline_pages {
 
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // Task that clears the digest field of a page in the metadata store. It takes
 // the offline ID of the page that needs to have digest cleared.
 // There is no callback needed for this task.
 class ClearDigestTask : public Task {
  public:
-  ClearDigestTask(OfflinePageMetadataStoreSQL* store, int64_t offline_id);
+  ClearDigestTask(OfflinePageMetadataStore* store, int64_t offline_id);
   ~ClearDigestTask() override;
 
   // Task implementation.
@@ -30,7 +30,7 @@ class ClearDigestTask : public Task {
   void OnClearDigestDone(bool result);
 
   // The metadata store used to clear the digest. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
 
   int64_t offline_id_;
 

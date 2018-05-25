@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/task.h"
@@ -22,7 +22,7 @@ class Connection;
 namespace offline_pages {
 
 struct ClientId;
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // Task that deletes pages from the metadata store. It takes the store and
 // archive manager for deleting entries from database and file system. Also the
@@ -51,20 +51,20 @@ class DeletePageTask : public Task {
 
   // Creates a task to delete pages with offline ids in |offline_ids|.
   static std::unique_ptr<DeletePageTask> CreateTaskMatchingOfflineIds(
-      OfflinePageMetadataStoreSQL* store,
+      OfflinePageMetadataStore* store,
       DeletePageTask::DeletePageTaskCallback callback,
       const std::vector<int64_t>& offline_ids);
 
   // Creates a task to delete pages with client ids in |client_ids|.
   static std::unique_ptr<DeletePageTask> CreateTaskMatchingClientIds(
-      OfflinePageMetadataStoreSQL* store,
+      OfflinePageMetadataStore* store,
       DeletePageTask::DeletePageTaskCallback callback,
       const std::vector<ClientId>& client_ids);
 
   // Creates a task to delete pages with the client ids in |client_ids|
   // provided they also have origin |origin|.
   static std::unique_ptr<DeletePageTask> CreateTaskMatchingClientIdsAndOrigin(
-      OfflinePageMetadataStoreSQL* store,
+      OfflinePageMetadataStore* store,
       DeletePageTask::DeletePageTaskCallback callback,
       const std::vector<ClientId>& client_ids,
       const std::string& origin);
@@ -72,7 +72,7 @@ class DeletePageTask : public Task {
   // Creates a task to delete pages which satisfy |predicate|.
   static std::unique_ptr<DeletePageTask>
   CreateTaskMatchingUrlPredicateForCachedPages(
-      OfflinePageMetadataStoreSQL* store,
+      OfflinePageMetadataStore* store,
       DeletePageTask::DeletePageTaskCallback callback,
       ClientPolicyController* policy_controller,
       const UrlPredicate& predicate);
@@ -82,7 +82,7 @@ class DeletePageTask : public Task {
   // defined with the namespace that this |page| belongs to.
   // Returns nullptr if there's no page limit per url of the page's namespace.
   static std::unique_ptr<DeletePageTask> CreateTaskDeletingForPageLimit(
-      OfflinePageMetadataStoreSQL* store,
+      OfflinePageMetadataStore* store,
       DeletePageTask::DeletePageTaskCallback callback,
       ClientPolicyController* policy_controller,
       const OfflinePageItem& page);
@@ -98,7 +98,7 @@ class DeletePageTask : public Task {
 
   // Making the constructor private, in order to use static methods to create
   // tasks.
-  DeletePageTask(OfflinePageMetadataStoreSQL* store,
+  DeletePageTask(OfflinePageMetadataStore* store,
                  DeleteFunction func,
                  DeletePageTaskCallback callback);
 
@@ -109,7 +109,7 @@ class DeletePageTask : public Task {
   void InformDeletePageDone(DeletePageResult result);
 
   // The store to delete pages from. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
   // The function which will delete pages.
   DeleteFunction func_;
   DeletePageTaskCallback callback_;

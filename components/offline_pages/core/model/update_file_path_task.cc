@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -49,7 +49,7 @@ bool UpdateFilePathSync(const base::FilePath& new_file_path,
 
 }  // namespace
 
-UpdateFilePathTask::UpdateFilePathTask(OfflinePageMetadataStoreSQL* store,
+UpdateFilePathTask::UpdateFilePathTask(OfflinePageMetadataStore* store,
                                        int64_t offline_id,
                                        const base::FilePath& file_path,
                                        UpdateFilePathDoneCallback callback)

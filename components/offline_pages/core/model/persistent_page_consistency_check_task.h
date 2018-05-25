@@ -16,7 +16,7 @@ namespace offline_pages {
 
 class ArchiveManager;
 class ClientPolicyController;
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // This task is responsible for checking consistency of persistent pages, mark
 // the expired ones with the file missing time and recover the previously
@@ -40,7 +40,7 @@ class PersistentPageConsistencyCheckTask : public Task {
   };
 
   PersistentPageConsistencyCheckTask(
-      OfflinePageMetadataStoreSQL* store,
+      OfflinePageMetadataStore* store,
       ArchiveManager* archive_manager,
       ClientPolicyController* policy_controller,
       base::Time check_time,
@@ -54,7 +54,7 @@ class PersistentPageConsistencyCheckTask : public Task {
   void OnPersistentPageConsistencyCheckDone(CheckResult result);
 
   // The store containing the offline pages. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
   // The archive manager storing archive directories. Not owned.
   ArchiveManager* archive_manager_;
   // The policy controller which is used to acquire names of namespaces. Not

@@ -5,7 +5,7 @@
 #include "components/offline_pages/core/model/add_page_to_download_manager_task.h"
 
 #include "base/bind.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/system_download_manager.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -34,7 +34,7 @@ bool SetDownloadIdSync(int64_t offline_id,
 }  // namespace
 
 AddPageToDownloadManagerTask::AddPageToDownloadManagerTask(
-    OfflinePageMetadataStoreSQL* store,
+    OfflinePageMetadataStore* store,
     SystemDownloadManager* download_manager,
     int64_t offline_id,
     const std::string& title,

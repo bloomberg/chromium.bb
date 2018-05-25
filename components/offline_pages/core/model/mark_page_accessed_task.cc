@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
-#include "components/offline_pages/core/offline_page_metadata_store_sql.h"
+#include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -76,7 +76,7 @@ bool MarkPageAccessedSync(const base::Time& access_time,
 
 }  // namespace
 
-MarkPageAccessedTask::MarkPageAccessedTask(OfflinePageMetadataStoreSQL* store,
+MarkPageAccessedTask::MarkPageAccessedTask(OfflinePageMetadataStore* store,
                                            int64_t offline_id,
                                            const base::Time& access_time)
     : store_(store),

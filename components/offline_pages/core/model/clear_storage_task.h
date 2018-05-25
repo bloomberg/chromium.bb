@@ -20,7 +20,7 @@ class Time;
 namespace offline_pages {
 
 class ClientPolicyController;
-class OfflinePageMetadataStoreSQL;
+class OfflinePageMetadataStore;
 
 // This task is responsible for clearing expired temporary pages from metadata
 // store and disk.
@@ -48,7 +48,7 @@ class ClearStorageTask : public Task {
   typedef base::OnceCallback<void(size_t, ClearStorageResult)>
       ClearStorageCallback;
 
-  ClearStorageTask(OfflinePageMetadataStoreSQL* store,
+  ClearStorageTask(OfflinePageMetadataStore* store,
                    ArchiveManager* archive_manager,
                    ClientPolicyController* policy_controller,
                    const base::Time& clearup_time,
@@ -64,7 +64,7 @@ class ClearStorageTask : public Task {
   void InformClearStorageDone(size_t pages_cleared, ClearStorageResult result);
 
   // The store containing the pages to be cleared. Not owned.
-  OfflinePageMetadataStoreSQL* store_;
+  OfflinePageMetadataStore* store_;
   // The archive manager owning the archive directories to delete pages from.
   // Not owned.
   ArchiveManager* archive_manager_;
