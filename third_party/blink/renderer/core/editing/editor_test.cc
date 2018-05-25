@@ -8,10 +8,22 @@
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
 class EditorTest : public EditingTestBase {
+ public:
+  void TearDown() override {
+    SystemClipboard::GetInstance().WritePlainText(String(""));
+    EditingTestBase::TearDown();
+  }
+
+  void ExecuteCopy() {
+    Editor& editor = GetDocument().GetFrame()->GetEditor();
+    editor.CreateCommand("Copy").Execute();
+    test::RunPendingTasks();
+  }
 };
 
 TEST_F(EditorTest, copyGeneratedPassword) {
@@ -36,10 +48,24 @@ TEST_F(EditorTest, copyGeneratedPassword) {
   EXPECT_TRUE(editor.CanCopy());
 }
 
+TEST_F(EditorTest, CopyVisibleSelection) {
+  const char* body_content = "<input id=hiding value=HEY>";
+  SetBodyContent(body_content);
+
+  HTMLInputElement& text_control =
+      ToHTMLInputElement(*GetDocument().getElementById("hiding"));
+  text_control.select();
+
+  ExecuteCopy();
+
+  const String copied = SystemClipboard::GetInstance().ReadPlainText();
+  EXPECT_EQ("HEY", copied);
+}
+
 TEST_F(EditorTest, DontCopyHiddenSelections) {
   const char* body_content =
       "<input type=checkbox id=checkbox>"
-      "<input id=hiding value=HEY></input>";
+      "<input id=hiding value=HEY>";
   SetBodyContent(body_content);
 
   HTMLInputElement& text_control =
@@ -50,8 +76,7 @@ TEST_F(EditorTest, DontCopyHiddenSelections) {
       ToHTMLInputElement(*GetDocument().getElementById("checkbox"));
   checkbox.focus();
 
-  Editor& editor = GetDocument().GetFrame()->GetEditor();
-  editor.CreateCommand("Copy").Execute();
+  ExecuteCopy();
 
   const String copied = SystemClipboard::GetInstance().ReadPlainText();
   EXPECT_TRUE(copied.IsEmpty()) << copied << " was copied.";
