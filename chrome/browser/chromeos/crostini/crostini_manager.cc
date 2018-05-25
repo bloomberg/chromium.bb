@@ -251,7 +251,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     }
     CrostiniManager::GetInstance()->StartTerminaVm(
-        vm_name_, result_path,
+        cryptohome_id_, vm_name_, result_path,
         base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished, this));
   }
 
@@ -539,9 +539,16 @@ void CrostiniManager::DestroyDiskImage(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::StartTerminaVm(std::string name,
+void CrostiniManager::StartTerminaVm(std::string owner_id,
+                                     std::string name,
                                      const base::FilePath& disk_path,
                                      StartTerminaVmCallback callback) {
+  if (owner_id.empty()) {
+    LOG(ERROR) << "owner_id is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+
   if (name.empty()) {
     LOG(ERROR) << "name is required";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
@@ -558,6 +565,7 @@ void CrostiniManager::StartTerminaVm(std::string name,
   vm_tools::concierge::StartVmRequest request;
   request.set_name(std::move(name));
   request.set_start_termina(true);
+  request.set_owner_id(std::move(owner_id));
 
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
   disk_image->set_path(std::move(disk_path_string));
