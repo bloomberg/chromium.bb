@@ -21,6 +21,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -56,15 +58,17 @@ enum class TrayActionState;
 // screen views are embedded within this one. LockContentsView is per-display,
 // but it is always shown on the primary display. There is only one instance
 // at a time.
-class ASH_EXPORT LockContentsView : public NonAccessibleView,
-                                    public LoginScreenControllerObserver,
-                                    public LoginDataDispatcher::Observer,
-                                    public SystemTrayFocusObserver,
-                                    public display::DisplayObserver,
-                                    public views::StyledLabelListener,
-                                    public SessionObserver,
-                                    public keyboard::KeyboardControllerObserver,
-                                    public ShellObserver {
+class ASH_EXPORT LockContentsView
+    : public NonAccessibleView,
+      public LoginScreenControllerObserver,
+      public LoginDataDispatcher::Observer,
+      public SystemTrayFocusObserver,
+      public display::DisplayObserver,
+      public views::StyledLabelListener,
+      public SessionObserver,
+      public keyboard::KeyboardControllerObserver,
+      public ShellObserver,
+      public chromeos::PowerManagerClient::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -169,6 +173,9 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
 
   // keyboard::KeyboardControllerObserver:
   void OnStateChanged(const keyboard::KeyboardControllerState state) override;
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
  private:
   class UserState {
