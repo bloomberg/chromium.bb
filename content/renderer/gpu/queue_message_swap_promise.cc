@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "cc/trees/frame_token_allocator.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
@@ -47,9 +46,7 @@ void QueueMessageSwapPromise::DidActivate() {
   // The OutputSurface will take care of the Drain+Send.
 }
 
-void QueueMessageSwapPromise::WillSwap(
-    viz::CompositorFrameMetadata* metadata,
-    cc::FrameTokenAllocator* frame_token_allocator) {
+void QueueMessageSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif

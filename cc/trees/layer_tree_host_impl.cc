@@ -68,7 +68,6 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/frame_rate_counter.h"
-#include "cc/trees/frame_token_allocator.h"
 #include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -2001,7 +2000,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
       frame->use_default_lower_bound_deadline);
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
-  active_tree()->FinishSwapPromises(&metadata, &frame_token_allocator_);
+  active_tree()->FinishSwapPromises(&metadata);
   // The swap-promises should not change the frame-token.
   DCHECK_EQ(metadata.frame_token + 1, next_frame_token_);
 
@@ -4029,7 +4028,7 @@ void LayerTreeHostImpl::UpdateImageDecodingHints(
 void LayerTreeHostImpl::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   render_frame_metadata_observer_ = std::move(observer);
-  render_frame_metadata_observer_->BindToCurrentThread(&frame_token_allocator_);
+  render_frame_metadata_observer_->BindToCurrentThread();
 }
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(

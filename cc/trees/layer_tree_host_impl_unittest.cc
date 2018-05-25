@@ -14097,10 +14097,7 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
       : increment_counter_(increment_counter) {}
   ~TestRenderFrameMetadataObserver() override {}
 
-  void BindToCurrentThread(
-      FrameTokenAllocator* frame_token_allocator) override {
-    frame_token_allocator_ = frame_token_allocator;
-  }
+  void BindToCurrentThread() override {}
   void OnRenderFrameSubmission(
       const RenderFrameMetadata& render_frame_metadata,
       viz::CompositorFrameMetadata* compositor_frame_metadata) override {
@@ -14114,7 +14111,6 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
   }
 
  private:
-  FrameTokenAllocator* frame_token_allocator_;
   bool increment_counter_;
   base::Optional<RenderFrameMetadata> last_metadata_;
 
