@@ -47,6 +47,7 @@ class VulkanBrowserCompositorOutputSurface
   uint32_t GetFramebufferCopyTextureFormat() override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   void SetDrawRectangle(const gfx::Rect& rect) override;
+  unsigned UpdateGpuFence() override;
 
   gpu::VulkanSurface* GetVulkanSurface() override;
 

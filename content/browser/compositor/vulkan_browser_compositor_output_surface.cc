@@ -94,6 +94,10 @@ void VulkanBrowserCompositorOutputSurface::SetDrawRectangle(
   NOTREACHED();
 }
 
+unsigned VulkanBrowserCompositorOutputSurface::UpdateGpuFence() {
+  return 0;
+}
+
 uint32_t
 VulkanBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
   NOTIMPLEMENTED();
