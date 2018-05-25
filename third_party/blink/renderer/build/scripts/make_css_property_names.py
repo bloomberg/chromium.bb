@@ -50,7 +50,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
     def generate_implementation(self):
         enum_value_to_name = {}
         for property_ in self._css_properties.properties_including_aliases:
-            enum_value_to_name[property_['enum_value']] = property_['name']
+            enum_value_to_name[property_['enum_value']] = property_['name'].original
         property_offsets = []
         property_names = []
         current_offset = 0
@@ -63,7 +63,7 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
                 current_offset += len(name) + 1
 
         css_name_and_enum_pairs = [
-            (property_['name'], property_['property_id'])
+            (property_['name'].original, property_['property_id'])
             for property_ in self._css_properties.properties_including_aliases]
 
         return {

@@ -98,6 +98,22 @@ class NameStyleConverter(object):
 
     def __init__(self, name):
         self.tokens = tokenize_name(name)
+        self._original = name
+
+    @property
+    def original(self):
+        return self._original
+
+    def __str__(self):
+        return self._original
+
+    # Make this class workable with sort().
+    def __lt__(self, other):
+        return self.original < other.original
+
+    # Make this class workable with groupby().
+    def __eq__(self, other):
+        return self.original == other.original
 
     def to_snake_case(self):
         """Snake case is the file and variable name style per Google C++ Style

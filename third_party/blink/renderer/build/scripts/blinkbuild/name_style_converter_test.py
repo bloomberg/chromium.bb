@@ -118,6 +118,9 @@ class SmartTokenizerTest(unittest.TestCase):
 
 
 class NameStyleConverterTest(unittest.TestCase):
+    def test_original(self):
+        self.assertEqual(NameStyleConverter('-webkit-appearance').original, '-webkit-appearance')
+
     def test_snake_case(self):
         converter = NameStyleConverter('HTMLElement')
         self.assertEqual(converter.to_snake_case(), 'html_element')

@@ -121,13 +121,13 @@ class EventFactoryWriter(json5_generator.Writer):
         exit(1)
 
     def _headers_header_include_path(self, entry):
-        path = os.path.dirname(entry['name'])
+        path = os.path.dirname(entry['name'].original)
         if len(path):
             path += '/'
         if entry['ImplementedAs']:
             path += self.get_file_basename(entry['ImplementedAs'])
         else:
-            path += self.get_file_basename(os.path.basename(entry['name']))
+            path += self.get_file_basename(os.path.basename(entry['name'].original))
         return path + '.h'
 
     def _headers_header_includes(self, entries):

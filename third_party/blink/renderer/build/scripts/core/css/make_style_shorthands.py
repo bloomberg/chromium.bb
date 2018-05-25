@@ -65,7 +65,7 @@ class StylePropertyShorthandWriter(json5_generator.Writer):
             # alphabetically
             longhands.sort(
                 key=lambda property_: (
-                    -len(property_['longhand_property_ids']), property_['name'])
+                    -len(property_['longhand_property_ids']), property_['name'].original)
             )
 
     @template_expander.use_jinja(

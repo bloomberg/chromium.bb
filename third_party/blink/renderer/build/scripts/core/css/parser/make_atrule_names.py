@@ -39,12 +39,12 @@ class AtRuleNamesWriter(json5_generator.Writer):
         self._longest_name_length = 0
         for offset, descriptor in enumerate(self._descriptors):
             descriptor['upper_camel_name'] = upper_camel_case(
-                descriptor['name'])
+                descriptor['name'].original)
             descriptor['enum_value'] = first_descriptor_id + offset
             self._character_offsets.append(chars_used)
-            chars_used += len(descriptor['name'])
+            chars_used += len(descriptor['name'].original)
             self._longest_name_length = max(
-                len(descriptor['name']),
+                len(descriptor['name'].original),
                 len(descriptor['alias']),
                 self._longest_name_length)
 

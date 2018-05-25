@@ -32,8 +32,8 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         property_methods = json5_generator.Json5File.load_from_files(
             [json5_file_paths[2]])
         for property_method in property_methods.name_dictionaries:
-            self._property_methods[property_method['name']] = PropertyMethod(
-                name=property_method['name'],
+            self._property_methods[property_method['name'].original] = PropertyMethod(
+                name=property_method['name'].original,
                 return_type=property_method['return_type'],
                 parameters=property_method['parameters'],
             )

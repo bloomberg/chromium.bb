@@ -58,7 +58,7 @@ class ElementLookupTrieWriter(json5_generator.Writer):
         super(ElementLookupTrieWriter, self).__init__(json5_file_paths, output_dir)
         self._tags = {}
         for entry in self.json5_file.name_dictionaries:
-            self._tags[entry['name']] = entry['name']
+            self._tags[entry['name'].original] = entry['name'].original
         self._namespace = self.json5_file.metadata['namespace'].strip('"')
         basename = self._namespace.lower() + '_element_lookup_trie'
         self._outputs = {

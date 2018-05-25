@@ -4,7 +4,7 @@
 
 
 def mediaFeatureSymbol(entry, suffix):
-    name = entry['name']
+    name = entry['name'].original
     if name.startswith('-webkit-'):
         name = name[8:]
 

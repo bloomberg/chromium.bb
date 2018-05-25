@@ -121,7 +121,8 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
             [self.css_values_dictionary_file],
             default_parameters=self.default_parameters
         ).name_dictionaries
-        name_to_position_dictionary = dict(zip([x['name'] for x in css_values_dictionary], range(len(css_values_dictionary))))
+        name_to_position_dictionary = dict(zip([x['name'].original for x in css_values_dictionary],
+                                               range(len(css_values_dictionary))))
 
         for property_ in self.css_properties.properties_including_aliases:
             include_paths.update(property_['include_paths'])

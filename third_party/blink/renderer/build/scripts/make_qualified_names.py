@@ -40,7 +40,7 @@ from json5_generator import Json5File
 
 
 def _symbol(entry):
-    return entry['name'].replace('-', '_')
+    return entry['name'].original.replace('-', '_')
 
 
 class MakeQualifiedNamesWriter(json5_generator.Writer):
