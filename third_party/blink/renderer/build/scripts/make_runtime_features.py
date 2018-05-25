@@ -31,8 +31,6 @@ import sys
 
 from blinkbuild.name_style_converter import NameStyleConverter
 import json5_generator
-import name_utilities
-from name_utilities import class_member_name
 import template_expander
 
 
@@ -49,18 +47,23 @@ class RuntimeFeatureWriter(json5_generator.Writer):
         self._features = self.json5_file.name_dictionaries
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
-            feature['class_member_name'] = class_member_name(feature['name'].original)
-            # Most features just check their isFooEnabled bool
+            feature['data_member_name'] = self._data_member_name(feature['name'])
+            # Most features just check their is_foo_enabled_ bool
             # but some depend on or are implied by other bools.
-            enabled_condition = 'is_%senabled_' % feature['class_member_name']
+            enabled_condition = feature['data_member_name']
             assert not feature['implied_by'] or not feature['depends_on'], 'Only one of implied_by and depends_on is allowed'
             for implied_by_name in feature['implied_by']:
-                enabled_condition += ' || is_%senabled_' % class_member_name(implied_by_name)
+                enabled_condition += ' || ' + self._data_member_name(implied_by_name)
             for dependant_name in feature['depends_on']:
-                enabled_condition += ' && is_%senabled_' % class_member_name(dependant_name)
+                enabled_condition += ' && ' + self._data_member_name(dependant_name)
             feature['enabled_condition'] = enabled_condition
         self._standard_features = [feature for feature in self._features if not feature['custom']]
         self._origin_trial_features = [feature for feature in self._features if feature['origin_trial_feature_name']]
+
+    @staticmethod
+    def _data_member_name(str_or_converter):
+        converter = NameStyleConverter(str_or_converter) if type(str_or_converter) is str else str_or_converter
+        return converter.to_class_data_member(prefix='is', suffix='enabled')
 
     def _feature_sets(self):
         # Another way to think of the status levels is as "sets of features"

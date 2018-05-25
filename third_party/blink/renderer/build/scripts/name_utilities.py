@@ -133,10 +133,5 @@ def class_name(words):
 
 
 @naming_style
-def class_member_name(words):
-    return snake_case(words) + "_"
-
-
-@naming_style
 def method_name(words):
     return upper_camel_case(words)

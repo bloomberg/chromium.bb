@@ -26,7 +26,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
    private:
     {% for feature in standard_features %}
-    bool {{feature.class_member_name}};
+    bool {{feature.name.to_class_data_member()}};
     {% endfor %}
   };
 
@@ -42,7 +42,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% if feature.custom %}
   static bool {{feature.name}}Enabled();
   {% else %}
-  static void Set{{feature.name}}Enabled(bool enabled) { is_{{feature.class_member_name}}enabled_ = enabled; }
+  static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
   static bool {{feature.name}}Enabled() { return {{feature.enabled_condition}}; }
   {% endif %}
 
@@ -64,7 +64,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   {% if feature.custom %}
   static bool {{feature.name}}EnabledByRuntimeFlag();
   {% else %}
-  static void Set{{feature.name}}Enabled(bool enabled) { is_{{feature.class_member_name}}enabled_ = enabled; }
+  static void Set{{feature.name}}Enabled(bool enabled) { {{feature.data_member_name}} = enabled; }
   static bool {{feature.name}}EnabledByRuntimeFlag() { return {{feature.enabled_condition}}; }
   {% endif %}
 
@@ -73,7 +73,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
 
  private:
   {% for feature in standard_features %}
-  static bool is_{{feature.class_member_name}}enabled_;
+  static bool {{feature.data_member_name}};
   {% endfor %}
 };
 

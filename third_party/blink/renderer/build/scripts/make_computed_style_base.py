@@ -12,7 +12,7 @@ import keyword_utils
 import bisect
 
 from name_utilities import (
-    enum_value_name, class_member_name, method_name, class_name, join_names
+    enum_value_name, method_name, class_name, join_names
 )
 
 from core.css import css_properties
