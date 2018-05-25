@@ -73,6 +73,12 @@ ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__NR_stat64)
     case __NR_stat64:
 #endif
+#if defined(__NR_lstat)
+    case __NR_lstat:
+#endif
+#if defined(__NR_lstat64)
+    case __NR_lstat64:
+#endif
 #if defined(__NR_fstatat)
     case __NR_fstatat:
 #endif
