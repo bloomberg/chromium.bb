@@ -164,6 +164,7 @@ class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
+class ShellState;
 class ShutdownController;
 class SmsObserver;
 class SplitViewController;
@@ -498,6 +499,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShelfModel* shelf_model();
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
+  ShellState* shell_state() { return shell_state_.get(); }
   ShutdownController* shutdown_controller() {
     return shutdown_controller_.get();
   }
@@ -580,11 +582,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
-
-  // NOTE: Prefer ScopedRootWindowForNewWindows when setting temporarily.
-  void set_root_window_for_new_windows(aura::Window* root) {
-    root_window_for_new_windows_ = root;
-  }
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
 
@@ -766,6 +763,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
+  std::unique_ptr<ShellState> shell_state_;
   std::unique_ptr<ShutdownController> shutdown_controller_;
   std::unique_ptr<SystemNotificationController> system_notification_controller_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
@@ -891,10 +889,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;
-
-  // See comment for GetRootWindowForNewWindows().
-  aura::Window* root_window_for_new_windows_ = nullptr;
-  aura::Window* scoped_root_window_for_new_windows_ = nullptr;
 
   std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
 

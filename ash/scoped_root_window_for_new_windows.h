@@ -19,6 +19,9 @@ namespace ash {
 // in the same window where a user interaction happened.
 // An example usage is to specify the target root window when creating
 // a new window using launcher's icon.
+// NOTE: This is not "scoped" in the usual sense. It is a temporary
+// override and does not maintain a stack of scoped values. Opening
+// windows from the app list relies on this behavior.
 class ASH_EXPORT ScopedRootWindowForNewWindows {
  public:
   explicit ScopedRootWindowForNewWindows(aura::Window* new_root);

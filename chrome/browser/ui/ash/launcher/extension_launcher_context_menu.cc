@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "ash/scoped_root_window_for_new_windows.h"  // mash-ok
-#include "ash/shell.h"                               // mash-ok
 #include "base/bind.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -18,6 +16,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/shell_state_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,6 +32,27 @@ namespace {
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
+
+// Temporarily sets the display for new windows. Only use this when it's
+// guaranteed messages won't be received from ash to update the display.
+// For example, it's OK to use temporarily at function scope, but don't
+// heap-allocate one and hang on to it.
+class ScopedDisplayIdForNewWindows {
+ public:
+  explicit ScopedDisplayIdForNewWindows(int64_t display_id)
+      : old_display_id_(display_id) {
+    ShellStateClient::Get()->SetDisplayIdForNewWindows(display_id);
+  }
+
+  ~ScopedDisplayIdForNewWindows() {
+    ShellStateClient::Get()->SetDisplayIdForNewWindows(old_display_id_);
+  }
+
+ private:
+  const int64_t old_display_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisplayIdForNewWindows);
+};
 
 }  // namespace
 
@@ -94,12 +114,7 @@ void ExtensionLauncherContextMenu::ExecuteCommand(int command_id,
     return;
 
   // Place new windows on the same display as the context menu.
-  // TODO(crbug.com/768908): Fix this in mash (where Chrome can't use Shell).
-  std::unique_ptr<ash::ScopedRootWindowForNewWindows> scoped_root;
-  if (chromeos::GetAshConfig() != ash::Config::MASH) {
-    aura::Window* root = ash::Shell::GetRootWindowForDisplayId(display_id());
-    scoped_root = std::make_unique<ash::ScopedRootWindowForNewWindows>(root);
-  }
+  ScopedDisplayIdForNewWindows scoped_display(display_id());
 
   switch (static_cast<MenuItem>(command_id)) {
     case LAUNCH_TYPE_PINNED_TAB:

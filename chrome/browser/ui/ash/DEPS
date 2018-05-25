@@ -21,6 +21,7 @@ include_rules = [
 specific_include_rules = {
   ".*test.*": [
    "!ash",
+   "+ash/public",
   ],
   # AshShellInit supports CLASSIC and MUS modes so allow ash/ includes.
   "ash_shell_init\.cc": [

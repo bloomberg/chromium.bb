@@ -31,6 +31,7 @@
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shell_state.h"
 #include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/network/vpn_list.h"
@@ -166,6 +167,10 @@ void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   Shell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
 
+void BindShellStateOnMainThread(mojom::ShellStateRequest request) {
+  Shell::Get()->shell_state()->BindRequest(std::move(request));
+}
+
 void BindShutdownControllerRequestOnMainThread(
     mojom::ShutdownControllerRequest request) {
   Shell::Get()->shutdown_controller()->BindRequest(std::move(request));
@@ -273,6 +278,8 @@ void RegisterInterfaces(
       base::Bind(&BindProcessCreationTimeRecorderOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSessionControllerRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindShellStateOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfRequestOnMainThread),
                          main_thread_task_runner);

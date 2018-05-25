@@ -33,6 +33,7 @@
 #include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
+#include "ash/shell_state.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/touch/touch_hud_debug.h"
@@ -1035,7 +1036,7 @@ void RootWindowController::ResetRootForNewWindowsIfNecessary() {
     // The root window for new windows is being destroyed. Switch to the primary
     // root window if possible.
     aura::Window* primary_root = Shell::GetPrimaryRootWindow();
-    Shell::Get()->set_root_window_for_new_windows(
+    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
         primary_root == root ? nullptr : primary_root);
   }
 }

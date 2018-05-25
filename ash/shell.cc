@@ -84,6 +84,7 @@
 #include "ash/shell_observer.h"
 #include "ash/shell_port.h"
 #include "ash/shell_port_classic.h"
+#include "ash/shell_state.h"
 #include "ash/shutdown_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
@@ -339,11 +340,7 @@ aura::Window* Shell::GetPrimaryRootWindow() {
 
 // static
 aura::Window* Shell::GetRootWindowForNewWindows() {
-  CHECK(Shell::HasInstance());
-  Shell* shell = Shell::Get();
-  if (shell->scoped_root_window_for_new_windows_)
-    return shell->scoped_root_window_for_new_windows_;
-  return shell->root_window_for_new_windows_;
+  return Shell::Get()->shell_state_->GetRootWindowForNewWindows();
 }
 
 // static
@@ -697,6 +694,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           shell_delegate->GetShellConnector())),
       note_taking_controller_(std::make_unique<NoteTakingController>()),
       shell_delegate_(std::move(shell_delegate)),
+      shell_state_(std::make_unique<ShellState>()),
       shutdown_controller_(std::make_unique<ShutdownController>()),
       system_tray_controller_(std::make_unique<SystemTrayController>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
@@ -1087,7 +1085,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
   time_to_first_present_recorder_ =
       std::make_unique<TimeToFirstPresentRecorder>(GetPrimaryRootWindow());
 
-  root_window_for_new_windows_ = GetPrimaryRootWindow();
+  shell_state_->SetRootWindowForNewWindows(GetPrimaryRootWindow());
 
   resolution_notification_controller_ =
       std::make_unique<ResolutionNotificationController>();
@@ -1455,8 +1453,10 @@ void Shell::OnWindowActivated(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  if (gained_active)
-    root_window_for_new_windows_ = gained_active->GetRootWindow();
+  if (!gained_active)
+    return;
+
+  shell_state_->SetRootWindowForNewWindows(gained_active->GetRootWindow());
 }
 
 void Shell::OnFirstSessionStarted() {

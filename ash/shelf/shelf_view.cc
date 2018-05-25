@@ -501,8 +501,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // Place new windows on the same display as the button.
   aura::Window* window = sender->GetWidget()->GetNativeWindow();
-  scoped_root_window_for_new_windows_.reset(
-      new ScopedRootWindowForNewWindows(window->GetRootWindow()));
+  scoped_root_window_for_new_windows_ =
+      std::make_unique<ScopedRootWindowForNewWindows>(window->GetRootWindow());
 
   // Slow down activation animations if shift key is pressed.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
