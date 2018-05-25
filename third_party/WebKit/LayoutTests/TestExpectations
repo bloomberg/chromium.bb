@@ -4828,3 +4828,4 @@ crbug.com/823837 http/tests/devtools/tracing/timeline-time/timeline-usertiming.j
 
 # Sheriff 2018-05-25
 crbug.com/846547 fast/webgl/webgl-composite-modes.html [ Pass Failure ]
+crbug.com/846471 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Timeout ]
