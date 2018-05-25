@@ -337,7 +337,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       InstallationErrorInfoBarDelegate::Create(
           GetInfoBarService(),
           extensions::CrxInstallError(
-              extensions::CrxInstallError::ERROR_OFF_STORE, msg));
+              extensions::CrxInstallErrorType::OTHER,
+              extensions::CrxInstallErrorDetail::OFFSTORE_INSTALL_DISALLOWED,
+              msg));
       break;
     }
 

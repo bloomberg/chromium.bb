@@ -237,7 +237,7 @@ class FakeExtensionSystem : public MockExtensionSystem {
     if (!next_install_callback_.is_null()) {
       std::move(next_install_callback_).Run();
     }
-    std::move(install_update_callback).Run(true);
+    std::move(install_update_callback).Run(base::nullopt);
   }
 
  private:

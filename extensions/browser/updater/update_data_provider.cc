@@ -10,9 +10,10 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "components/update_client/update_client.h"
+#include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/content_verifier.h"
@@ -20,6 +21,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension.h"
 
@@ -34,17 +36,26 @@ void InstallUpdateCallback(content::BrowserContext* context,
                            const std::string& public_key,
                            const base::FilePath& unpacked_dir,
                            UpdateClientCallback update_client_callback) {
-  using InstallError = update_client::InstallError;
-  using Result = update_client::CrxInstaller::Result;
-
+  // Note that error codes are converted into custom error codes, which are all
+  // based on a constant (see ToInstallerResult). This means that custom codes
+  // from different embedders may collide. However, for any given extension ID,
+  // there should be only one embedder, so this should be OK from Omaha.
   ExtensionSystem::Get(context)->InstallUpdate(
       extension_id, public_key, unpacked_dir,
       base::BindOnce(
-          [](UpdateClientCallback update_client_callback, bool success) {
+          [](UpdateClientCallback callback,
+             const base::Optional<CrxInstallError>& error) {
             DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-            std::move(update_client_callback)
-                .Run(Result(success ? InstallError::NONE
-                                    : InstallError::GENERIC_ERROR));
+            update_client::CrxInstaller::Result result(0);
+            if (error.has_value()) {
+              int detail =
+                  error->type() ==
+                          CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE
+                      ? static_cast<int>(error->sandbox_failure_detail())
+                      : static_cast<int>(error->detail());
+              result = update_client::ToInstallerResult(error->type(), detail);
+            }
+            std::move(callback).Run(result);
           },
           std::move(update_client_callback)));
 }

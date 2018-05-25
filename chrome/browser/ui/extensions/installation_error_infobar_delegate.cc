@@ -38,7 +38,9 @@ int InstallationErrorInfoBarDelegate::GetButtons() const {
 }
 
 base::string16 InstallationErrorInfoBarDelegate::GetLinkText() const {
-  return error_.type() == extensions::CrxInstallError::ERROR_OFF_STORE
+  return error_.type() == extensions::CrxInstallErrorType::OTHER &&
+                 error_.detail() == extensions::CrxInstallErrorDetail::
+                                        OFFSTORE_INSTALL_DISALLOWED
              ? l10n_util::GetStringUTF16(IDS_LEARN_MORE)
              : base::string16();
 }

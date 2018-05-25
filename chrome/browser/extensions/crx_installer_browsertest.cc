@@ -45,6 +45,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
@@ -296,9 +297,9 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 
   static void InstallerCallback(base::OnceClosure quit_closure,
                                 CrxInstaller::InstallerResultCallback callback,
-                                bool success) {
+                                const base::Optional<CrxInstallError>& error) {
     if (!callback.is_null())
-      std::move(callback).Run(success);
+      std::move(callback).Run(error);
     std::move(quit_closure).Run();
   }
 
@@ -546,7 +547,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
                        MAYBE_GrantScopes_WithCallback) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall(
       "browsertest/scopes",
-      base::BindOnce([](bool success) { EXPECT_TRUE(success); }), true));
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        EXPECT_EQ(base::nullopt, error);
+      }),
+      true));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
@@ -559,7 +563,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTestWithExperimentalApis,
                        DoNotGrantScopes_WithCallback) {
   EXPECT_NO_FATAL_FAILURE(CheckHasEmptyScopesAfterInstall(
       "browsertest/scopes",
-      base::BindOnce([](bool success) { EXPECT_TRUE(success); }), false));
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        EXPECT_EQ(base::nullopt, error);
+      }),
+      false));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
@@ -724,9 +731,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   std::unique_ptr<WebstoreInstaller::Approval> approval =
       GetApproval("crx_installer/v2_no_permission_change/", id, false);
 
-  RunCrxInstaller(approval.get(), mock_prompt->CreatePrompt(),
-                  base::BindOnce([](bool success) { EXPECT_TRUE(success); }),
-                  test_data_dir_.AppendASCII("crx_installer/v1.crx"));
+  RunCrxInstaller(
+      approval.get(), mock_prompt->CreatePrompt(),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        EXPECT_EQ(base::nullopt, error);
+      }),
+      test_data_dir_.AppendASCII("crx_installer/v1.crx"));
 
   EXPECT_TRUE(mock_prompt->did_succeed());
 }
@@ -746,7 +756,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const std::string public_key = "123456";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](bool success) { EXPECT_FALSE(success); }),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        ASSERT_NE(base::nullopt, error);
+        ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+                  error->type());
+        EXPECT_EQ(SandboxedUnpackerFailureReason::DIRECTORY_MOVE_FAILED,
+                  error->sandbox_failure_detail());
+      }),
       std::string(), public_key, folder);
 
   EXPECT_FALSE(mock_prompt->did_succeed());
@@ -765,7 +781,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const std::string public_key = "123456";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](bool success) { EXPECT_FALSE(success); }),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        ASSERT_NE(base::nullopt, error);
+        ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+                  error->type());
+        EXPECT_EQ(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED,
+                  error->sandbox_failure_detail());
+      }),
       std::string(), public_key, temp_dir.GetPath());
 
   EXPECT_FALSE(mock_prompt->did_succeed());
@@ -790,7 +812,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   const std::string public_key = "123456";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](bool success) { EXPECT_FALSE(success); }),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        ASSERT_NE(base::nullopt, error);
+        ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+                  error->type());
+        EXPECT_EQ(SandboxedUnpackerFailureReason::INVALID_MANIFEST,
+                  error->sandbox_failure_detail());
+      }),
       std::string(), public_key, temp_dir.GetPath());
 
   EXPECT_FALSE(mock_prompt->did_succeed());
@@ -818,8 +846,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallUnpackedCrx_Success) {
       "y0ury28n8jbN0PnInKKWcxpIXXmNQyC19HBuO3QIeUq9Dqc+7YFQIDAQAB";
   RunCrxInstallerFromUnpackedDirectory(
       mock_prompt->CreatePrompt(),
-      base::BindOnce([](bool success) { EXPECT_TRUE(success); }), std::string(),
-      public_key, temp_dir.GetPath());
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        EXPECT_EQ(base::nullopt, error);
+      }),
+      std::string(), public_key, temp_dir.GetPath());
 
   EXPECT_TRUE(mock_prompt->did_succeed());
   EXPECT_FALSE(base::PathExists(temp_dir.GetPath()));
@@ -840,10 +870,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
       "y0ury28n8jbN0PnInKKWcxpIXXmNQyC19HBuO3QIeUq9Dqc+7YFQIDAQAB";
   ASSERT_EQ(nullptr, GetInstalledExtension(extension_id));
   auto temp_dir = UnpackedCrxTempDir();
-  RunUpdateExtension(mock_prompt->CreatePrompt(), extension_id, public_key,
-                     temp_dir->GetPath(), base::BindOnce([](bool success) {
-                       EXPECT_FALSE(success);
-                     }));
+  RunUpdateExtension(
+      mock_prompt->CreatePrompt(), extension_id, public_key,
+      temp_dir->GetPath(),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        ASSERT_NE(base::nullopt, error);
+        EXPECT_EQ(CrxInstallErrorType::OTHER, error->type());
+        EXPECT_EQ(CrxInstallErrorDetail::UPDATE_NON_EXISTING_EXTENSION,
+                  error->detail());
+      }));
 
   // The unpacked folder should be deleted.
   EXPECT_FALSE(mock_prompt->did_succeed());
@@ -868,10 +903,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   AddExtension(extension_id, "0.0");
 
   auto temp_dir = UnpackedCrxTempDir();
-  RunUpdateExtension(mock_prompt->CreatePrompt(), extension_id, public_key,
-                     temp_dir->GetPath(), base::BindOnce([](bool success) {
-                       EXPECT_TRUE(success);
-                     }));
+  RunUpdateExtension(
+      mock_prompt->CreatePrompt(), extension_id, public_key,
+      temp_dir->GetPath(),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        EXPECT_EQ(base::nullopt, error);
+      }));
 
   EXPECT_TRUE(mock_prompt->did_succeed());
 
@@ -896,10 +933,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   AddExtension(extension_id, "0.0");
 
   auto temp_dir = UnpackedCrxTempDir();
-  RunUpdateExtension(mock_prompt->CreatePrompt(), extension_id, public_key,
-                     temp_dir->GetPath(), base::BindOnce([](bool success) {
-                       EXPECT_FALSE(success);
-                     }));
+  RunUpdateExtension(
+      mock_prompt->CreatePrompt(), extension_id, public_key,
+      temp_dir->GetPath(),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        ASSERT_NE(base::nullopt, error);
+        ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+                  error->type());
+        EXPECT_EQ(SandboxedUnpackerFailureReason::INVALID_MANIFEST,
+                  error->sandbox_failure_detail());
+      }));
 
   EXPECT_FALSE(mock_prompt->did_succeed());
 
@@ -928,10 +971,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   AddExtension(extension_id, "0.0");
 
   auto temp_dir = UnpackedCrxTempDir();
-  RunUpdateExtension(mock_prompt->CreatePrompt(), extension_id, public_key,
-                     temp_dir->GetPath(), base::BindOnce([](bool success) {
-                       EXPECT_FALSE(success);
-                     }));
+  RunUpdateExtension(
+      mock_prompt->CreatePrompt(), extension_id, public_key,
+      temp_dir->GetPath(),
+      base::BindOnce([](const base::Optional<CrxInstallError>& error) {
+        ASSERT_NE(base::nullopt, error);
+        EXPECT_EQ(CrxInstallErrorType::OTHER, error->type());
+        EXPECT_EQ(CrxInstallErrorDetail::UNEXPECTED_ID, error->detail());
+      }));
 
   EXPECT_FALSE(mock_prompt->did_succeed());
 
