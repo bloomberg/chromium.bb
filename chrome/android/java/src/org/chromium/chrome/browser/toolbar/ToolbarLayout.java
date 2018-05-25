@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -963,5 +964,28 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public static String getNTPButtonVariation() {
         return VariationsAssociatedData.getVariationParamValue(
                 NTP_BUTTON_TRIAL_NAME, NTP_BUTTON_VARIATION_PARAM_NAME);
+    }
+
+    protected void changeIconToNTPIcon(TintedImageButton ntpButton) {
+        String variation = getNTPButtonVariation();
+        if (TextUtils.isEmpty(variation)) return;
+
+        int iconResId = 0;
+        switch (variation) {
+            case "home":
+                iconResId = R.drawable.ic_home;
+                break;
+            case "news_feed":
+                iconResId = R.drawable.ic_library_news_feed;
+                break;
+            case "chrome":
+                iconResId = R.drawable.ic_chrome;
+                break;
+            default:
+                break;
+        }
+        assert iconResId != 0;
+
+        ntpButton.setImageResource(iconResId);
     }
 }

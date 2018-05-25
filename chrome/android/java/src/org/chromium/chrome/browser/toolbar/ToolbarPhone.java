@@ -366,6 +366,7 @@ public class ToolbarPhone extends ToolbarLayout
         mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
         mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
+        if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
 
         mUrlBar = (TextView) findViewById(R.id.url_bar);
 

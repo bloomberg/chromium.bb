@@ -129,6 +129,8 @@ public class ToolbarTablet
         mShouldAnimateButtonVisibilityChange = false;
         mToolbarButtonsVisible = true;
         mToolbarButtons = new TintedImageButton[] {mBackButton, mForwardButton, mReloadButton};
+
+        if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
     }
 
     @Override
