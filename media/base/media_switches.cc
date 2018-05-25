@@ -142,10 +142,10 @@ const char kDisableRTCSmoothnessAlgorithm[] =
 // Force media player using SurfaceView instead of SurfaceTexture on Android.
 const char kForceVideoOverlays[] = "force-video-overlays";
 
-// Allows explicitly specifying MSE audio/video buffer sizes.
+// Allows explicitly specifying MSE audio/video buffer sizes as megabytes.
 // Default values are 150M for video and 12M for audio.
-const char kMSEAudioBufferSizeLimit[] = "mse-audio-buffer-size-limit";
-const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
+const char kMSEAudioBufferSizeLimitMb[] = "mse-audio-buffer-size-limit-mb";
+const char kMSEVideoBufferSizeLimitMb[] = "mse-video-buffer-size-limit-mb";
 
 // Specifies the path to the Clear Key CDM for testing, which is necessary to
 // support External Clear Key key system when library CDM is enabled. Note that

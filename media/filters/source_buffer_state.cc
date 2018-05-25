@@ -55,6 +55,17 @@ bool CheckBytestreamTrackIds(
   return true;
 }
 
+unsigned GetMSEBufferSizeLimitIfExists(base::StringPiece switch_string) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  unsigned memory_limit;
+  if (command_line->HasSwitch(switch_string) &&
+      base::StringToUint(command_line->GetSwitchValueASCII(switch_string),
+                         &memory_limit)) {
+    return memory_limit * 1024 * 1024;
+  }
+  return 0;
+}
+
 }  // namespace
 
 // List of time ranges for each SourceBuffer.
@@ -806,32 +817,24 @@ bool SourceBufferState::OnNewConfigs(
 }
 
 void SourceBufferState::SetStreamMemoryLimits() {
-  auto* cmd_line = base::CommandLine::ForCurrentProcess();
-
-  std::string audio_buf_limit_switch =
-      cmd_line->GetSwitchValueASCII(switches::kMSEAudioBufferSizeLimit);
-  unsigned audio_buf_size_limit = 0;
-  if (base::StringToUint(audio_buf_limit_switch, &audio_buf_size_limit) &&
-      audio_buf_size_limit > 0) {
+  size_t audio_buf_size_limit =
+      GetMSEBufferSizeLimitIfExists(switches::kMSEAudioBufferSizeLimitMb);
+  if (audio_buf_size_limit) {
     MEDIA_LOG(INFO, media_log_)
         << "Custom audio per-track SourceBuffer size limit="
         << audio_buf_size_limit;
-    for (const auto& it : audio_streams_) {
+    for (const auto& it : audio_streams_)
       it.second->SetStreamMemoryLimit(audio_buf_size_limit);
-    }
   }
 
-  std::string video_buf_limit_switch =
-      cmd_line->GetSwitchValueASCII(switches::kMSEVideoBufferSizeLimit);
-  unsigned video_buf_size_limit = 0;
-  if (base::StringToUint(video_buf_limit_switch, &video_buf_size_limit) &&
-      video_buf_size_limit > 0) {
+  size_t video_buf_size_limit =
+      GetMSEBufferSizeLimitIfExists(switches::kMSEVideoBufferSizeLimitMb);
+  if (video_buf_size_limit) {
     MEDIA_LOG(INFO, media_log_)
         << "Custom video per-track SourceBuffer size limit="
         << video_buf_size_limit;
-    for (const auto& it : video_streams_) {
+    for (const auto& it : video_streams_)
       it.second->SetStreamMemoryLimit(video_buf_size_limit);
-    }
   }
 }
 

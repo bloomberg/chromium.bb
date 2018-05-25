@@ -78,8 +78,8 @@ MEDIA_EXPORT extern const char kDisableRTCSmoothnessAlgorithm[];
 
 MEDIA_EXPORT extern const char kForceVideoOverlays[];
 
-MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimit[];
-MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimit[];
+MEDIA_EXPORT extern const char kMSEAudioBufferSizeLimitMb[];
+MEDIA_EXPORT extern const char kMSEVideoBufferSizeLimitMb[];
 
 MEDIA_EXPORT extern const char kClearKeyCdmPathForTesting[];
 MEDIA_EXPORT extern const char kOverrideEnabledCdmInterfaceVersion[];
