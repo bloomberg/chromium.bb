@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 // https://heycam.github.io/webidl/#dfn-attribute-getter
+// https://heycam.github.io/webidl/#dfn-attribute-setter
 
-// Attribute getters must behave differently based on whether [LenientThis] has
-// been specified or whether the attribute's type is Promise<T>.
-// All attributes below are marked readonly because we are only interested in
-// the behavior of attribute getters.
+// This interface tests unique behaviors of getters and setters of specific
+// types, e.g. returning Promise<T>, having [LenientThis] or [LenientSetter].
 
-interface TestAttributeGetters {
+interface TestAttributes {
     // [LenientThis] causes some V8 type checks to be bypassed; they are done
     // on the Blink side instead and access exceptions just return undefined.
     [LenientThis] readonly attribute long lenientThisLongAttribute;
@@ -24,6 +23,11 @@ interface TestAttributeGetters {
     // [RaisesException] also creates an ExceptionState instance. Make sure it
     // is not declared twice.
     [RaisesException] readonly attribute Promise<short> raisesExceptionShortPromiseAttribute;
+
+    // [LenientSetter] indicates a no-op setter will be generated for the
+    // readonly attribute's accessor property. This avoids throwing an exception
+    // in strict mode.
+    [LenientSetter] readonly attribute boolean lenientSetterBoolAttribute;
 
     // Regular attribute with no special rules.
     readonly attribute float floatAttribute;

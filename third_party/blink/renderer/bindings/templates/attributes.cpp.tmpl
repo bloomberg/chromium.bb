@@ -446,8 +446,8 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
       .DeleteProperty(holder, v8::Undefined(isolate));
   {% endif %}
   {% endif %}{# attribute.is_put_forwards #}
+  {% endfilter %}{# format_remove_duplicates #}
 }
-{% endfilter %}{# format_remove_duplicates #}
 {% endmacro %}
 
 
@@ -459,6 +459,9 @@ v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInf
 {%- else %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
+  {% if attribute.is_lenient_setter %}
+  // Setter for {{attribute.name}} is no-op because [LenientSetter] is specified.
+  {% else %}
   {% if attribute.runtime_call_stats.extended_attribute_defined %}
   {{ runtime_timer_scope(attribute.runtime_call_stats.setter_counter) | trim | indent(2) }}
   {% else %}
@@ -504,6 +507,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% else %}
   {{cpp_class_or_partial}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
   {% endif %}
+  {% endif %}{# attribute.is_lenient_setter #}
 }
 {% endmacro %}
 
