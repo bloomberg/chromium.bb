@@ -354,6 +354,8 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // this PrefService. Subclasses may access it for unit testing.
   const std::unique_ptr<PrefValueStore> pref_value_store_;
 
+  const scoped_refptr<PrefRegistry> pref_registry_;
+
   // Pref Stores and profile that we passed to the PrefValueStore.
   const scoped_refptr<PersistentPrefStore> user_pref_store_;
 
@@ -428,8 +430,6 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // value (GetValue() calls back though the preference service to
   // actually get the value.).
   const base::Value* GetPreferenceValue(const std::string& path) const;
-
-  const scoped_refptr<PrefRegistry> pref_registry_;
 
   // Local cache of registered Preference objects. The pref_registry_
   // is authoritative with respect to what the types and default values
