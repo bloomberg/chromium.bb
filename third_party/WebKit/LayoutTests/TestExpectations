@@ -2351,9 +2351,6 @@ crbug.com/467477 virtual/disable-spv175/fast/multicol/vertical-rl/nested-columns
 
 crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 
-crbug.com/846211 [ Linux ] http/tests/devtools/audits2/audits2-limited-run.js [ Skip ]
-crbug.com/846211 [ Linux ] http/tests/devtools/audits2/audits2-successful-run.js [ Skip ]
-
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400841 virtual/video-surface-layer/media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 media/video-object-fit.html [ Failure ]
