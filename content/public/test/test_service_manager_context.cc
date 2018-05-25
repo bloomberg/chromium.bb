@@ -15,7 +15,8 @@ TestServiceManagerContext::TestServiceManagerContext() {
   // ServiceManagerConnection (e.g. in
   // RenderProcessHostImpl::InitializeChannelProxy()).
   ServiceManagerConnection::DestroyForProcess();
-  context_.reset(new ServiceManagerContext);
+  context_.reset(new ServiceManagerContext(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 }
 
 TestServiceManagerContext::~TestServiceManagerContext() {
