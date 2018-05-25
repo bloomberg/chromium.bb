@@ -101,7 +101,8 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
       VideoPixelFormatToGfxBufferFormat(pixel_format);
   texture_ref->pixmap_ =
       factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
-                                  buffer_format, gfx::BufferUsage::SCANOUT);
+                                  buffer_format,
+                                  gfx::BufferUsage::SCANOUT_VDA_WRITE);
   LOG_ASSERT(texture_ref->pixmap_);
 #endif
 
