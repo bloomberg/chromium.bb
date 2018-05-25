@@ -85,33 +85,4 @@ namespace blink {
 
 {% endif %}
 {% endfor %}
-
-{% macro apply_svg_paint(property_id, paint_type) %}
-{% set property = properties_by_id[property_id] %}
-{% set visited_link_setter = 'SetVisitedLink' + paint_type %}
-{{declare_initial_function(property_id)}} {
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(SVGComputedStyle::Initial{{paint_type}}());
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->AccessSVGStyle().{{visited_link_setter}}(SVGComputedStyle::Initial{{paint_type}}());
-}
-
-{{declare_inherit_function(property_id)}} {
-  const SVGComputedStyle& parent_svg_style = state.ParentStyle()->SvgStyle();
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(parent_svg_style.{{paint_type}}());
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->AccessSVGStyle().{{visited_link_setter}}(parent_svg_style.{{paint_type}}());
-}
-
-{{declare_value_function(property_id)}} {
-  SVGPaint paint = StyleBuilderConverter::ConvertSVGPaint(state, value);
-  if (state.ApplyPropertyToRegularStyle())
-    {{set_value(property)}}(paint);
-  if (state.ApplyPropertyToVisitedLinkStyle())
-    state.Style()->AccessSVGStyle().{{visited_link_setter}}(paint);
-}
-{% endmacro %}
-{{apply_svg_paint('CSSPropertyFill', 'FillPaint')}}
-{{apply_svg_paint('CSSPropertyStroke', 'StrokePaint')}}
 } // namespace blink

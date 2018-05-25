@@ -69,6 +69,7 @@
         "legacy",
         "mask_box",
         "mask_layer",
+        "svg_paint",
         "transition",
       ],
     },
@@ -1602,8 +1603,11 @@
       inherited: true,
       svg: true,
       setter: "SetFillPaint",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      converter: "ConvertSVGPaint",
+      style_builder_template: "svg_paint",
+      style_builder_template_args: {
+        paint_type: "FillPaint",
+      },
     },
     {
       name: "fill-opacity",
@@ -2936,8 +2940,11 @@
       inherited: true,
       svg: true,
       setter: "SetStrokePaint",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      converter: "ConvertSVGPaint",
+      style_builder_template: "svg_paint",
+      style_builder_template_args: {
+        paint_type: "StrokePaint",
+      },
     },
     {
       name: "stroke-dasharray",
