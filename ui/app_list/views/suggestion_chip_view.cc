@@ -54,16 +54,26 @@ int SuggestionChipView::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
+void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
+  // When icon visibility is modified we need to update layout padding.
+  if (child == icon_view_) {
+    const int padding_left_dip =
+        icon_view_->visible() ? kIconMarginDip : kPaddingDip;
+    layout_manager_->set_inside_border_insets(
+        gfx::Insets(0, padding_left_dip, 0, kPaddingDip));
+  }
+  PreferredSizeChanged();
+}
+
 void SuggestionChipView::InitLayout(const Params& params) {
   // Layout padding differs depending on icon visibility.
   const int padding_left_dip = params.icon ? kIconMarginDip : kPaddingDip;
 
-  views::BoxLayout* layout_manager =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, padding_left_dip, 0, kPaddingDip), kIconMarginDip));
+  layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, padding_left_dip, 0, kPaddingDip), kIconMarginDip));
 
-  layout_manager->set_cross_axis_alignment(
+  layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Icon.
@@ -117,6 +127,11 @@ bool SuggestionChipView::OnMousePressed(const ui::MouseEvent& event) {
   if (listener_)
     listener_->OnSuggestionChipPressed(this);
   return true;
+}
+
+void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
+  icon_view_->SetImage(icon);
+  icon_view_->SetVisible(true);
 }
 
 const base::string16& SuggestionChipView::GetText() const {

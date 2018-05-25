@@ -11,6 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class BoxLayout;
 class ImageView;
 class Label;
 }  // namespace views
@@ -32,7 +33,7 @@ class APP_LIST_EXPORT SuggestionChipListener {
 // View representing a suggestion chip.
 class APP_LIST_EXPORT SuggestionChipView : public views::View {
  public:
-  static constexpr int kIconSizeDip = 20;
+  static constexpr int kIconSizeDip = 16;
 
   // Initialization parameters.
   struct Params {
@@ -51,10 +52,13 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void ChildVisibilityChanged(views::View* child) override;
   int GetHeightForWidth(int width) const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+
+  void SetIcon(const gfx::ImageSkia& icon);
 
   const base::string16& GetText() const;
 
@@ -64,6 +68,8 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
   views::ImageView* icon_view_;  // Owned by view hierarchy.
   views::Label* text_view_;  // Owned by view hierarchy.
   SuggestionChipListener* listener_;
+
+  views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipView);
 };

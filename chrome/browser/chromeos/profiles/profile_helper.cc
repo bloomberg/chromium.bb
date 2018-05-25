@@ -299,6 +299,18 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
       ->CloseCurrentSigninSession(on_clear_profile_stage_finished_);
 }
 
+Profile* ProfileHelper::GetProfileByAccountId(const AccountId& account_id) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+
+  if (!user) {
+    LOG(WARNING) << "Unable to retrieve user for account_id.";
+    return nullptr;
+  }
+
+  return GetProfileByUser(user);
+}
+
 Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
   // This map is non-empty only in tests.
   if (!user_to_profile_for_testing_.empty()) {

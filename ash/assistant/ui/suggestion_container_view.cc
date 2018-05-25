@@ -7,10 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -47,7 +44,8 @@ class InvisibleScrollBar : public views::OverlayScrollBar {
 SuggestionContainerView::SuggestionContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      contents_view_(new views::View()) {
+      contents_view_(new views::View()),
+      download_request_weak_factory_(this) {
   InitLayout();
 
   // The Assistant controller indirectly owns the view hierarchy to which
@@ -87,23 +85,38 @@ void SuggestionContainerView::InitLayout() {
 void SuggestionContainerView::OnSuggestionsAdded(
     const std::map<int, AssistantSuggestion*>& suggestions) {
   for (const std::pair<int, AssistantSuggestion*>& suggestion : suggestions) {
+    // We will use the same identifier by which the Assistant interaction model
+    // uniquely identifies a suggestion to uniquely identify its corresponding
+    // suggestion chip view.
+    const int id = suggestion.first;
+
     app_list::SuggestionChipView::Params params;
     params.text = base::UTF8ToUTF16(suggestion.second->text);
 
-    // TODO(dmblack): Here we are using a placeholder image for the suggestion
-    // chip icon but we need to handle the actual icon URL.
-    if (!suggestion.second->icon_url.is_empty())
-      params.icon = gfx::CreateVectorIcon(
-          kCircleIcon, app_list::SuggestionChipView::kIconSizeDip,
-          gfx::kGoogleGrey300);
+    if (!suggestion.second->icon_url.is_empty()) {
+      // Initiate a request to download the image for the suggestion chip icon.
+      // Note that the request is identified by the suggestion id.
+      assistant_controller_->DownloadImage(
+          suggestion.second->icon_url,
+          base::BindOnce(
+              &SuggestionContainerView::OnSuggestionChipIconDownloaded,
+              download_request_weak_factory_.GetWeakPtr(), id));
 
-    views::View* suggestion_chip_view =
+      // To reserve layout space until the actual icon can be downloaded, we
+      // supply an empty placeholder image to the suggestion chip view.
+      params.icon = gfx::ImageSkia();
+    }
+
+    app_list::SuggestionChipView* suggestion_chip_view =
         new app_list::SuggestionChipView(params, /*listener=*/this);
 
-    // When adding a SuggestionChipView, we give the view the same id by which
-    // the interaction model identifies the corresponding suggestion. This
-    // allows us to look up the suggestion for the view during event handling.
-    suggestion_chip_view->set_id(suggestion.first);
+    // Given a suggestion chip view, we need to be able to look up the id of
+    // the underlying suggestion. This is used for handling press events.
+    suggestion_chip_view->set_id(id);
+
+    // Given an id, we also want to be able to look up the corresponding
+    // suggestion chip view. This is used for handling icon download events.
+    suggestion_chip_views_[id] = suggestion_chip_view;
 
     contents_view_->AddChildView(suggestion_chip_view);
   }
@@ -112,9 +125,23 @@ void SuggestionContainerView::OnSuggestionsAdded(
 }
 
 void SuggestionContainerView::OnSuggestionsCleared() {
+  // Abort any download requests in progress.
+  download_request_weak_factory_.InvalidateWeakPtrs();
+
   SetVisible(false);
+
+  // When modifying the view hierarchy, make sure we keep our view cache synced.
   contents_view_->RemoveAllChildViews(/*delete_children=*/true);
+  suggestion_chip_views_.clear();
+
   UpdateContentsBounds();
+}
+
+void SuggestionContainerView::OnSuggestionChipIconDownloaded(
+    int id,
+    const gfx::ImageSkia& icon) {
+  if (!icon.isNull())
+    suggestion_chip_views_[id]->SetIcon(icon);
 }
 
 void SuggestionContainerView::OnSuggestionChipPressed(

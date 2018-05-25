@@ -3715,6 +3715,8 @@ split_static_library("ui") {
       "ash/assistant/assistant_context.h",
       "ash/assistant/assistant_context_util.cc",
       "ash/assistant/assistant_context_util.h",
+      "ash/assistant/assistant_image_downloader.cc",
+      "ash/assistant/assistant_image_downloader.h",
       "ash/assistant/platform_audio_input_host.cc",
       "ash/assistant/platform_audio_input_host.h",
     ]
