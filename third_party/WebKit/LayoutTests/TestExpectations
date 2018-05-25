@@ -4766,7 +4766,7 @@ crbug.com/840659 [ Win Linux Mac10.10 Mac10.11 ] virtual/webrtc-wpt-unified-plan
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831686 [ Linux ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Pass Timeout ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
-crbug.com/831673 [ Linux ] http/tests/devtools/reveal-objects.js [ Pass Timeout ]
+crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/831496 [ Linux ] virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
 crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
