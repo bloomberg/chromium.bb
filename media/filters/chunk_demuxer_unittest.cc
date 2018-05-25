@@ -874,7 +874,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2)).Times(7);
     // Expect duration adjustment since actual duration differs slightly from
     // duration in the init segment.
-    EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
+    EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
     EXPECT_TRUE(AppendData(bear1->data(), bear1->data_size()));
     // Last audio frame has timestamp 2721 and duration 24 (estimated from max
     // seen so far for audio track).
@@ -901,7 +901,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     // segment.
     EXPECT_CALL(*this, InitSegmentReceivedMock(_));
     EXPECT_TRUE(AppendData(bear1->data(), 4370));
-    EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(23));
+    EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(24));
     EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(779000, 759000, 3000));
     EXPECT_TRUE(AppendData(bear1->data() + 72737, 28183));
     CheckExpectedRanges("{ [0,2736) }");
@@ -1244,6 +1244,7 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     // Read a WebM file into memory and send the data to the demuxer.
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
     EXPECT_CALL(*this, InitSegmentReceivedMock(_));
+
     EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 
     // Verify that the timestamps on the first few packets match what we
@@ -2199,7 +2200,7 @@ TEST_P(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
 
   // Expect duration adjustment since actual duration differs slightly from
   // duration in the init segment.
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744)));
@@ -2243,7 +2244,7 @@ TEST_P(ChunkDemuxerTest, WebMFile_AudioOnly) {
 
   // Expect duration adjustment since actual duration differs slightly from
   // duration in the init segment.
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2746)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-audio-only.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744),
@@ -2282,6 +2283,10 @@ TEST_P(ChunkDemuxerTest, WebMFile_AltRefFrames) {
     {100, 12},
     {kSkip, kSkip},
   };
+
+  // Expect duration adjustment since actual duration differs slightly from
+  // duration in the init segment.
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
 
   ExpectInitMediaLogs(HAS_AUDIO | HAS_VIDEO);
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(2));
@@ -3655,7 +3660,6 @@ TEST_P(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
 
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(23)).Times(2);
-  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(2000, 1000, 22000));
   for (size_t i = 0; i < sizeof(kBuffer); i++) {
     DVLOG(3) << "Appending and testing index " << i;
     ASSERT_TRUE(AppendData(kBuffer + i, 1));
@@ -4226,7 +4230,7 @@ TEST_P(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
   // append window.
   // Expect duration adjustment since actual duration differs slightly from
   // duration in the init segment.
-  const base::TimeDelta duration_1 = base::TimeDelta::FromMilliseconds(2746);
+  const base::TimeDelta duration_1 = base::TimeDelta::FromMilliseconds(2768);
   append_window_start_for_next_append_ = duration_1;
 
   EXPECT_MEDIA_LOG(DroppedFrameCheckAppendWindow(
@@ -4251,16 +4255,16 @@ TEST_P(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
   scoped_refptr<DecoderBuffer> buffer2 =
       ReadTestDataFile("bear-320x240-audio-only-48khz.webm");
   EXPECT_CALL(*this, InitSegmentReceivedMock(_));
-  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(21));
+  EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(22));
   EXPECT_CALL(host_, SetDuration(_)).Times(AnyNumber());
   ASSERT_TRUE(SetTimestampOffset(kSourceId, duration_1));
   ASSERT_TRUE(AppendDataInPieces(buffer2->data(), buffer2->data_size(), 512));
-  CheckExpectedRanges("{ [2746,5519) }");
+  CheckExpectedRanges("{ [2768,5542) }");
 
   Seek(duration_1);
   ExpectConfigChanged(DemuxerStream::AUDIO);
   ASSERT_FALSE(config_1.Matches(stream->audio_decoder_config()));
-  CheckExpectedBuffers(stream, "2746K 2767K 2789K 2810K");
+  CheckExpectedBuffers(stream, "2768K 2789K 2811K 2832K");
 }
 
 TEST_P(ChunkDemuxerTest, AppendWindow_Text) {

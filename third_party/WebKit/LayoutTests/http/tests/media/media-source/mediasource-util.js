@@ -10,9 +10,9 @@
             url: '/media/resources/media-source/webm/test.webm',
             type: 'video/webm; codecs="vp8, vorbis"',
             durationInInitSegment: 6.042,
-            duration: 6.042,
+            duration: 6.051,
             // Supports jagged-ended stream end timestamps with some less than duration:
-            bufferedRangeEndBeforeEndOfStream: 6.040,
+            bufferedRangeEndBeforeEndOfStream: 6.042,
             init: { offset: 0, size: 4357 },
             media: [
                 {  offset: 4357, size: 11830, timecode: 0, highest_end_time: 0.398 },
@@ -30,7 +30,7 @@
                 {  offset: 168226, size: 15094, timecode: 4.773, highest_end_time: 5.179 },
                 {  offset: 183320, size: 13069, timecode: 5.168, highest_end_time: 5.577 },
                 {  offset: 196389, size: 13788, timecode: 5.563, highest_end_time: 5.976 },
-                {  offset: 210177, size: 9009, timecode: 5.957, highest_end_time: 6.042 },
+                {  offset: 210177, size: 9009, timecode: 5.957, highest_end_time: 6.051 },
             ],
         },
         {
