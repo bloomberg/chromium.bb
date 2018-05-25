@@ -4810,7 +4810,9 @@ crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [
 
 # Sheriff 2018-05-17
 crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Pass Timeout ]
-crbug.com/810437 fast/events/hr-timestamp/input-events.html [ Pass Timeout ]
+crbug.com/810437 fast/events/hr-timestamp/input-events.html [ Pass Timeout Failure ]
+crbug.com/846726 virtual/mouseevent_fractional/fast/events/hr-timestamp/input-events.html [ Pass Failure ]
+
 
 # This will break for now
 crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
