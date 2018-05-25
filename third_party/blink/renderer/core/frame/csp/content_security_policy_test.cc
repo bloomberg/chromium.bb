@@ -1348,6 +1348,34 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
       "report-to relative-path/reporting;"
       "base-uri http://example.com 'self'",
       ""));
+
+  // CRLF should not be allowed
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri\nhttp://example.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri http://example.com\nhttp://example2.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base\n-uri http://example.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "\nbase-uri http://example.com", ""));
+
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri\r\nhttp://example.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri http://example.com\r\nhttp://example2.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base\r\n-uri http://example.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "\r\nbase-uri http://example.com", ""));
+
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri\rhttp://example.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base-uri http://example.com\rhttp://example2.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "base\r-uri http://example.com", ""));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "\rbase-uri http://example.com", ""));
 }
 
 }  // namespace blink
