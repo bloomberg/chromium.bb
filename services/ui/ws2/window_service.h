@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/ime/ime_driver_bridge.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
@@ -26,6 +27,10 @@ class Window;
 namespace client {
 class FocusClient;
 }
+}
+
+namespace clipboard {
+class ClipboardImpl;
 }
 
 namespace gfx {
@@ -111,6 +116,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Provides info to InputDeviceClient users, via InputDeviceManager.
   ui::InputDeviceServer input_device_server_;
+
+  std::unique_ptr<clipboard::ClipboardImpl> clipboard_;
 
   // Id for the next WindowServiceClient.
   ClientSpecificId next_client_id_ = kWindowServerClientId + 1;
