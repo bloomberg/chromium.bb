@@ -78,16 +78,19 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
  private:
   const String& GetText() const;
 
-  unsigned PreviousBreakOpportunity(unsigned offset,
-                                    unsigned start,
-                                    bool* is_hyphenated) const;
-  unsigned NextBreakOpportunity(unsigned offset,
-                                unsigned start,
-                                bool* is_hyphenated) const;
-  unsigned Hyphenate(unsigned offset,
-                     unsigned start,
-                     bool backwards,
-                     bool* is_hyphenated) const;
+  // Represents a break opportunity offset and its properties.
+  struct BreakOpportunity {
+    STACK_ALLOCATED();
+
+    unsigned offset;
+    bool is_hyphenated;
+  };
+  BreakOpportunity PreviousBreakOpportunity(unsigned offset,
+                                            unsigned start) const;
+  BreakOpportunity NextBreakOpportunity(unsigned offset, unsigned start) const;
+  BreakOpportunity Hyphenate(unsigned offset,
+                             unsigned start,
+                             bool backwards) const;
   unsigned Hyphenate(unsigned offset,
                      unsigned word_start,
                      unsigned word_end,

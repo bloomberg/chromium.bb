@@ -103,16 +103,15 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
   }
 }
 
-unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
-                                       unsigned start,
-                                       bool backwards,
-                                       bool* is_hyphenated) const {
-  DCHECK(is_hyphenated && !*is_hyphenated);
+ShapingLineBreaker::BreakOpportunity ShapingLineBreaker::Hyphenate(
+    unsigned offset,
+    unsigned start,
+    bool backwards) const {
   const String& text = GetText();
   unsigned word_end = break_iterator_->NextBreakOpportunity(offset);
   if (word_end == offset) {
     DCHECK_EQ(offset, break_iterator_->PreviousBreakOpportunity(offset, start));
-    return word_end;
+    return {word_end, false};
   }
   unsigned previous_break_opportunity =
       break_iterator_->PreviousBreakOpportunity(offset, start);
@@ -125,52 +124,47 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
   if (offset >= word_start &&
       ShouldHyphenate(text, previous_break_opportunity, word_end)) {
     unsigned prefix_length = Hyphenate(offset, word_start, word_end, backwards);
-    if (prefix_length) {
-      *is_hyphenated = true;
-      return word_start + prefix_length;
-    }
+    if (prefix_length)
+      return {word_start + prefix_length, true};
   }
-  return backwards ? previous_break_opportunity : word_end;
+  return {backwards ? previous_break_opportunity : word_end, false};
 }
 
-unsigned ShapingLineBreaker::PreviousBreakOpportunity(
-    unsigned offset,
-    unsigned start,
-    bool* is_hyphenated) const {
-  DCHECK(is_hyphenated && !*is_hyphenated);
+ShapingLineBreaker::BreakOpportunity
+ShapingLineBreaker::PreviousBreakOpportunity(unsigned offset,
+                                             unsigned start) const {
   if (UNLIKELY(!IsSoftHyphenEnabled())) {
     const String& text = GetText();
     for (;; offset--) {
       offset = break_iterator_->PreviousBreakOpportunity(offset, start);
       if (offset <= start || offset >= text.length() ||
           text[offset - 1] != kSoftHyphenCharacter)
-        return offset;
+        return {offset, false};
     }
   }
 
   if (UNLIKELY(hyphenation_))
-    return Hyphenate(offset, start, true, is_hyphenated);
+    return Hyphenate(offset, start, true);
 
-  return break_iterator_->PreviousBreakOpportunity(offset, start);
+  return {break_iterator_->PreviousBreakOpportunity(offset, start), false};
 }
 
-unsigned ShapingLineBreaker::NextBreakOpportunity(unsigned offset,
-                                                  unsigned start,
-                                                  bool* is_hyphenated) const {
-  DCHECK(is_hyphenated && !*is_hyphenated);
+ShapingLineBreaker::BreakOpportunity ShapingLineBreaker::NextBreakOpportunity(
+    unsigned offset,
+    unsigned start) const {
   if (UNLIKELY(!IsSoftHyphenEnabled())) {
     const String& text = GetText();
     for (;; offset++) {
       offset = break_iterator_->NextBreakOpportunity(offset);
       if (offset >= text.length() || text[offset - 1] != kSoftHyphenCharacter)
-        return offset;
+        return {offset, false};
     }
   }
 
   if (UNLIKELY(hyphenation_))
-    return Hyphenate(offset, start, false, is_hyphenated);
+    return Hyphenate(offset, start, false);
 
-  return break_iterator_->NextBreakOpportunity(offset);
+  return {break_iterator_->NextBreakOpportunity(offset), false};
 }
 
 inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direction,
@@ -255,30 +249,32 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   // comparing floats. See ShapeLineZeroAvailableWidth on Linux/Mac.
   candidate_break = std::max(candidate_break, start);
 
-  unsigned break_opportunity = PreviousBreakOpportunity(
-      candidate_break, start, &result_out->is_hyphenated);
-  if (break_opportunity <= start) {
+  // If there are no break opportunity before candidate_break, overflow.
+  // Find the next break opportunity after the candidate_break.
+  BreakOpportunity break_opportunity =
+      PreviousBreakOpportunity(candidate_break, start);
+  bool is_overflow = break_opportunity.offset <= start;
+  if (is_overflow) {
     break_opportunity =
-        NextBreakOpportunity(std::max(candidate_break, start + 1), start,
-                             &result_out->is_hyphenated);
+        NextBreakOpportunity(std::max(candidate_break, start + 1), start);
     // |range_end| may not be a break opportunity, but this function cannot
     // measure beyond it.
-    if (break_opportunity >= range_end) {
+    if (break_opportunity.offset >= range_end) {
       result_out->break_offset = range_end;
       return ShapeToEnd(start, first_safe, range_end);
     }
   }
-  DCHECK_GT(break_opportunity, start);
+  DCHECK_GT(break_opportunity.offset, start);
 
   // If the start offset is not at a safe-to-break boundary the content between
   // the start and the next safe-to-break boundary needs to be reshaped and the
   // available space adjusted to take the reshaping into account.
   scoped_refptr<ShapeResult> line_start_result;
   if (first_safe != start) {
-    if (first_safe >= break_opportunity) {
+    if (first_safe >= break_opportunity.offset) {
       // There is no safe-to-break, reshape the whole range.
-      result_out->break_offset = break_opportunity;
-      return Shape(direction, start, break_opportunity);
+      result_out->break_offset = break_opportunity.offset;
+      return Shape(direction, start, break_opportunity.offset);
     }
     LayoutUnit original_width =
         FlipRtl(SnapEnd(result_->PositionForOffset(first_safe - range_start),
@@ -288,53 +284,60 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     line_start_result = Shape(direction, start, first_safe);
     available_space += line_start_result->SnappedWidth() - original_width;
   }
+  DCHECK_GE(first_safe, start);
+  DCHECK_LE(first_safe, break_opportunity.offset);
 
   scoped_refptr<ShapeResult> line_end_result;
-  unsigned last_safe = break_opportunity;
-  while (break_opportunity > start) {
+  unsigned last_safe = break_opportunity.offset;
+  if (break_opportunity.offset > start) {
     // If the previous valid break opportunity is not at a safe-to-break
     // boundary reshape between the safe-to-break offset and the valid break
     // offset. If the resulting width exceeds the available space the
     // preceding boundary is tried until the available space is sufficient.
-    unsigned previous_safe =
-        std::max(result_->PreviousSafeToBreakOffset(break_opportunity), start);
-    DCHECK_LE(previous_safe, break_opportunity);
-    if (previous_safe != break_opportunity) {
-      LayoutUnit safe_position = SnapStart(
-          result_->PositionForOffset(previous_safe - range_start), direction);
-      while (break_opportunity > previous_safe && previous_safe >= start) {
-        DCHECK_LE(break_opportunity, range_end);
-        line_end_result = Shape(direction, previous_safe, break_opportunity);
-        if (line_end_result->SnappedWidth() <=
-            FlipRtl(end_position - safe_position, direction))
-          break;
-        // Doesn't fit after the reshape. Try previous break opportunity, or
-        // overflow if there were none.
-        bool is_previous_break_opportunity_hyphenated = false;
-        unsigned previous_break_opportunity =
-            PreviousBreakOpportunity(break_opportunity - 1, start,
-                                     &is_previous_break_opportunity_hyphenated);
-        if (previous_break_opportunity <= start)
-          break;
-        break_opportunity = previous_break_opportunity;
-        result_out->is_hyphenated = is_previous_break_opportunity_hyphenated;
-        line_end_result = nullptr;
+    while (true) {
+      DCHECK_LE(first_safe, break_opportunity.offset);
+      last_safe =
+          std::max(result_->PreviousSafeToBreakOffset(break_opportunity.offset),
+                   first_safe);
+      DCHECK_LE(last_safe, break_opportunity.offset);
+      DCHECK_GE(last_safe, first_safe);
+      if (last_safe == break_opportunity.offset)
+        break;
+      DCHECK_LE(break_opportunity.offset, range_end);
+      if (is_overflow) {
+        line_end_result = Shape(direction, last_safe, break_opportunity.offset);
+        break;
       }
-    }
+      LayoutUnit safe_position = SnapStart(
+          result_->PositionForOffset(last_safe - range_start), direction);
+      line_end_result = Shape(direction, last_safe, break_opportunity.offset);
+      if (line_end_result->SnappedWidth() <=
+          FlipRtl(end_position - safe_position, direction))
+        break;
 
-    if (break_opportunity > start) {
-      last_safe = previous_safe;
-      break;
-    }
+      // Doesn't fit after the reshape. Try the previous break opportunity.
+      line_end_result = nullptr;
+      break_opportunity =
+          PreviousBreakOpportunity(break_opportunity.offset - 1, start);
+      if (break_opportunity.offset > start)
+        continue;
 
-    // No suitable break opportunity, not exceeding the available space,
-    // found. Choose the next valid one even though it will overflow.
-    break_opportunity = NextBreakOpportunity(candidate_break, start,
-                                             &result_out->is_hyphenated);
-    // |range_end| may not be a break opportunity, but this function cannot
-    // measure beyond it.
-    break_opportunity = std::min(break_opportunity, range_end);
+      // No suitable break opportunity, not exceeding the available space,
+      // found. Any break opportunities beyond candidate_break won't fit
+      // either because the ShapeResult has the full context.
+      // This line will overflow, but there are multiple choices to break,
+      // because none can fit. The one after candidate_break is better for
+      // ligatures, but the one before is better for kernings.
+      break_opportunity = PreviousBreakOpportunity(candidate_break, start);
+      // Loop once more to compute last_safe for the new break opportunity.
+      is_overflow = true;
+    }
   }
+  DCHECK_GE(break_opportunity.offset, last_safe);
+  DCHECK_EQ(break_opportunity.offset - start,
+            (line_start_result ? line_start_result->NumCharacters() : 0) +
+                (last_safe > first_safe ? last_safe - first_safe : 0) +
+                (line_end_result ? line_end_result->NumCharacters() : 0));
 
   // Create shape results for the line by copying from the re-shaped result (if
   // reshaping was needed) and the original shape results.
@@ -347,16 +350,14 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   if (line_end_result)
     line_end_result->CopyRange(last_safe, max_length, line_result.get());
 
-  DCHECK_GT(break_opportunity, start);
-  // TODO(layout-dev): This hits on Mac and Mac only for a number of tests in
-  // virtual/layout_ng/external/wpt/css/CSS2/floats-clear/.
-  // DCHECK_EQ(std::min(break_opportunity, range_end) - start,
-  //          line_result->NumCharacters());
+  DCHECK_GT(break_opportunity.offset, start);
+  DCHECK_LE(break_opportunity.offset, range_end);
+  DCHECK_EQ(break_opportunity.offset - start, line_result->NumCharacters());
 
-  result_out->break_offset = break_opportunity;
-  if (!result_out->is_hyphenated &&
-      text[break_opportunity - 1] == kSoftHyphenCharacter)
-    result_out->is_hyphenated = true;
+  result_out->break_offset = break_opportunity.offset;
+  result_out->is_hyphenated =
+      break_opportunity.is_hyphenated ||
+      text[break_opportunity.offset - 1] == kSoftHyphenCharacter;
   return line_result;
 }
 
@@ -384,6 +385,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeToEnd(unsigned start,
   // Otherwise reshape to |first_safe|, then copy the rest.
   scoped_refptr<ShapeResult> line_result = Shape(direction, start, first_safe);
   result_->CopyRange(first_safe, range_end, line_result.get());
+  DCHECK_EQ(range_end - start, line_result->NumCharacters());
   return line_result;
 }
 

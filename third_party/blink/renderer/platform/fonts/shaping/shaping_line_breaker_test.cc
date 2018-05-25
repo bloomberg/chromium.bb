@@ -48,8 +48,7 @@ class ShapingLineBreakerTest : public testing::Test {
                                         const String& string) {
     Vector<unsigned> break_positions;
     for (unsigned i = 0; i <= string.length(); i++) {
-      bool is_hyphenated = false;
-      unsigned next = breaker.NextBreakOpportunity(i, 0, &is_hyphenated);
+      unsigned next = breaker.NextBreakOpportunity(i, 0).offset;
       if (break_positions.IsEmpty() || break_positions.back() != next)
         break_positions.push_back(next);
     }
@@ -61,9 +60,7 @@ class ShapingLineBreakerTest : public testing::Test {
                                             const String& string) {
     Vector<unsigned> break_positions;
     for (unsigned i = string.length(); i; i--) {
-      bool is_hyphenated = false;
-      unsigned previous =
-          breaker.PreviousBreakOpportunity(i, 0, &is_hyphenated);
+      unsigned previous = breaker.PreviousBreakOpportunity(i, 0).offset;
       if (previous &&
           (break_positions.IsEmpty() || break_positions.back() != previous))
         break_positions.push_back(previous);
