@@ -17,13 +17,7 @@ static std::unique_ptr<protocol::Value> ParseJSON(const String& string) {
   return protocol::StringUtil::parseJSON(string);
 }
 
-// The test fails on Android. https://crbug.com/845816
-#if defined(OS_ANDROID)
-#define MAYBE_Reading DISABLED_Reading
-#else
-#define MAYBE_Reading Reading
-#endif
-TEST(ProtocolParserTest, MAYBE_Reading) {
+TEST(ProtocolParserTest, Reading) {
   Value* tmp_value;
   std::unique_ptr<Value> root;
   std::unique_ptr<Value> root2;
