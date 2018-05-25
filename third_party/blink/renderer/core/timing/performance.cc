@@ -120,6 +120,10 @@ MemoryInfo* Performance::memory() const {
   return nullptr;
 }
 
+bool Performance::shouldYield() const {
+  return false;
+}
+
 DOMHighResTimeStamp Performance::timeOrigin() const {
   DCHECK(!time_origin_.is_null());
   return GetUnixAtZeroMonotonic() +

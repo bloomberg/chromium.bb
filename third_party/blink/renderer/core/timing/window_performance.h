@@ -61,6 +61,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   MemoryInfo* memory() const override;
 
+  bool shouldYield() const override;
+
   void UpdateLongTaskInstrumentation() override;
 
   bool ObservingEventTimingEntries();

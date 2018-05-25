@@ -453,6 +453,14 @@
       status: "experimental"
     },
     {
+      // Enables the attribute performance.shouldYield in windows. This
+      // attribute indicates that the frame should pause its current task so
+      // that the browser can perform some high priority work. See
+      // https://crbug.com/836310.
+      name: "ExperimentalShouldYield",
+      status: "experimental"
+    },
+    {
       name: "ExperimentalV8Extras",
       status: "experimental",
     },
