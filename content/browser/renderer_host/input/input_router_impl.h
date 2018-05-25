@@ -139,6 +139,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void ForwardGestureEventWithLatencyInfo(
       const blink::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& latency_info) override;
+  bool IsWheelScrollInProgress() override;
 
   void FilterAndSendWebInputEvent(
       const blink::WebInputEvent& input_event,

@@ -33,6 +33,7 @@ class CONTENT_EXPORT MouseWheelEventQueueClient {
   virtual void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                                     InputEventAckSource ack_source,
                                     InputEventAckState ack_result) = 0;
+  virtual bool IsWheelScrollInProgress() = 0;
 };
 
 // A queue for throttling and coalescing mouse wheel events.
@@ -99,9 +100,6 @@ class CONTENT_EXPORT MouseWheelEventQueue {
   // GSB has been sent in the past.
   // This variable is used only when scroll latching is disabled.
   bool needs_scroll_end_when_scroll_latching_disabled_;
-
-  // True when a GSB is sent and its corresponding GSE is not sent.
-  bool scroll_in_progress_;
 
   // True if the touchpad and wheel scroll latching flag is enabled.
   bool enable_scroll_latching_;
