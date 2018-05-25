@@ -4362,8 +4362,6 @@ TEST_F(PasswordFormManagerTest,
 }
 
 TEST_F(PasswordFormManagerTest, FirstLoginVote) {
-  PasswordForm different_password(*saved_match());
-  different_password.password_value = ASCIIToUTF16("DifferentPassword");
 
   PasswordForm old_without_username = *saved_match();
   old_without_username.username_value.clear();
@@ -4375,7 +4373,6 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote) {
   } test_cases[] = {
       {{saved_match()}, "Credential reused"},
       {{psl_saved_match()}, "PSL credential reused"},
-      {{&different_password}, "Different password"},  // I.e. update password.
       {{&old_without_username},
        "Submitted credential adds a username to a stored credential without "
        "one"},
@@ -4489,6 +4486,59 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_NoVote) {
     Mock::VerifyAndClearExpectations(
         client()->mock_driver()->mock_autofill_download_manager());
   }
+}
+
+// If we update an existing credential with a new password, only the username is
+// a known value.
+TEST_F(PasswordFormManagerTest,
+       FirstLoginVote_UpdatePasswordVotesOnlyForUsername) {
+  PasswordForm different_password(*saved_match());
+  different_password.password_value = ASCIIToUTF16("DifferentPassword");
+  fake_form_fetcher()->SetNonFederated({&different_password}, 0u);
+
+  PasswordForm submitted_form =
+      CreateMinimalCrowdsourcableForm(*observed_form());
+  submitted_form.username_value = saved_match()->username_value;
+  submitted_form.password_value = saved_match()->password_value;
+  submitted_form.form_data.fields[0].value = submitted_form.username_value;
+  submitted_form.form_data.fields[1].value = submitted_form.password_value;
+  submitted_form.preferred = true;
+  EXPECT_TRUE(FormStructure(submitted_form.form_data).ShouldBeUploaded());
+
+  form_manager()->ProvisionallySave(submitted_form);
+
+  // The username and password fields contain stored values. This should be
+  // signaled in the vote.
+  std::map<base::string16, autofill::FieldPropertiesMask>
+      expected_field_properties = {
+          {submitted_form.username_element, FieldPropertiesFlags::KNOWN_VALUE},
+          {submitted_form.password_element, 0}};
+
+  // All votes should be FIRST_USE.
+  std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>
+      expected_vote_types = {
+          {submitted_form.username_element,
+           autofill::AutofillUploadContents::Field::FIRST_USE}};
+
+  // Unrelated vote
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(SignatureIsSameAs(different_password), _, _, _, _))
+      .Times(AtMost(1));
+  // First login vote
+  EXPECT_CALL(
+      *client()->mock_driver()->mock_autofill_download_manager(),
+      StartUploadRequest(
+          AllOf(SignatureIsSameAs(submitted_form),
+                UploadedAutofillTypesAre(FieldTypeMap(
+                    {{submitted_form.username_element, autofill::USERNAME},
+                     {submitted_form.password_element, autofill::UNKNOWN_TYPE},
+                     {ASCIIToUTF16("petname"), autofill::UNKNOWN_TYPE}})),
+                UploadedFieldPropertiesMasksAre(expected_field_properties),
+                VoteTypesAre(expected_vote_types)),
+          _, autofill::ServerFieldTypeSet({autofill::USERNAME}), _, true));
+
+  form_manager()->Save();
 }
 
 // Values on a submitted form should be marked as KNOWN_VALUE only if they match
