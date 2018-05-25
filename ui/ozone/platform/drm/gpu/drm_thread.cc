@@ -15,6 +15,7 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"

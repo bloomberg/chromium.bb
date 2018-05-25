@@ -140,6 +140,7 @@ source_set("gbm") {
     "//ui/gl",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
+    "//ui/ozone/common:linux",
     "//ui/ozone/public/interfaces",
     "//ui/platform_window",
   ]
@@ -180,5 +181,6 @@ source_set("gbm_unittests") {
     "//ui/gfx",
     "//ui/ozone:platform",
     "//ui/ozone/common",
+    "//ui/ozone/common:linux",
   ]
 }
