@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_VIDEO_CONSUMER_H_
 
 #include "base/time/time.h"
+#include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
@@ -18,8 +18,8 @@ namespace content {
 // This class is the video consumer to FrameSinkVideoCapturerImpl. This class,
 // in turn sends video frames to its host via the OnFrameCapturedCallback. Used
 // when the VizDisplayCompositor feature is enabled.
-// TODO(https://crbug.com/813929): Use this class everywhere even if viz is not
-// enabled.
+// TODO(crbug.com/846811): This class can probably be merged into
+// viz::ClientFrameSinkVideoCapturer.
 class CONTENT_EXPORT DevToolsVideoConsumer
     : public viz::mojom::FrameSinkVideoConsumer {
  public:
@@ -35,7 +35,7 @@ class CONTENT_EXPORT DevToolsVideoConsumer
   // If not currently capturing, this creates the capturer and starts capturing.
   void StartCapture();
 
-  // Closes |binding_|. Stops capturing and resets |capturer_|.
+  // Stops capturing and resets |capturer_|.
   void StopCapture();
 
   // These functions cache the values passed to them and if we're currently
@@ -49,15 +49,11 @@ class CONTENT_EXPORT DevToolsVideoConsumer
 
  private:
   friend class DevToolsVideoConsumerTest;
-  // Sets up a mojo message pipe and requests the HostFrameSinkManager create a
-  // new capturer instance bound to it. Returns the client-side interface.
-  viz::mojom::FrameSinkVideoCapturerPtrInfo CreateCapturer();
 
-  // Binds |capturer_info| to the |capturer_|, sets capture parameters, and
-  // starts capture. Normally, CreateCapturer produces the |capturer_info|, but
-  // unittests can provide a mock.
+  // Sets |capturer_|, sends capture parameters, and starts capture. Normally,
+  // CreateCapturer produces the |capturer|, but unittests can provide a mock.
   void InnerStartCapture(
-      viz::mojom::FrameSinkVideoCapturerPtrInfo capturer_info);
+      std::unique_ptr<viz::ClientFrameSinkVideoCapturer> capturer);
 
   // Checks that |min_frame_size| and |max_frame_size| are in the expected
   // range. Limits are specified in media::limits.
@@ -90,11 +86,8 @@ class CONTENT_EXPORT DevToolsVideoConsumer
   gfx::Size max_frame_size_;
   viz::FrameSinkId frame_sink_id_;
 
-  // Mojo pointer to the viz::FrameSinkVideoCapturer instance. If |capturer_|
-  // is alive, then we are currently capturing.
-  viz::mojom::FrameSinkVideoCapturerPtr capturer_;
-
-  mojo::Binding<viz::mojom::FrameSinkVideoConsumer> binding_;
+  // If |capturer_| is alive, then we are currently capturing.
+  std::unique_ptr<viz::ClientFrameSinkVideoCapturer> capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsVideoConsumer);
 };

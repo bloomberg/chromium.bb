@@ -38,6 +38,11 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
     binding_.Bind(std::move(request));
   }
 
+  void Reset() {
+    binding_.Close();
+    consumer_.reset();
+  }
+
   // This is never called.
   MOCK_METHOD2(SetFormat,
                void(media::VideoPixelFormat format,
@@ -177,7 +182,7 @@ class DevToolsVideoConsumerTest : public testing::Test {
   }
 
   void StartCaptureWithMockCapturer() {
-    consumer_->InnerStartCapture(BindMockCapturer());
+    consumer_->InnerStartCapture(CreateMockCapturer());
   }
 
   bool IsValidMinAndMaxFrameSize(gfx::Size min_frame_size,
@@ -208,10 +213,14 @@ class DevToolsVideoConsumerTest : public testing::Test {
   std::unique_ptr<DevToolsVideoConsumer> consumer_;
 
  private:
-  viz::mojom::FrameSinkVideoCapturerPtrInfo BindMockCapturer() {
-    viz::mojom::FrameSinkVideoCapturerPtr capturer_ptr;
-    capturer_.Bind(mojo::MakeRequest(&capturer_ptr));
-    return capturer_ptr.PassInterface();
+  std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateMockCapturer() {
+    return std::make_unique<viz::ClientFrameSinkVideoCapturer>(
+        base::BindRepeating(
+            [](base::WeakPtr<DevToolsVideoConsumerTest> self,
+               viz::mojom::FrameSinkVideoCapturerRequest request) {
+              self->capturer_.Bind(std::move(request));
+            },
+            weak_factory_.GetWeakPtr()));
   }
 
   base::MessageLoop message_loop_;
@@ -281,9 +290,10 @@ TEST_F(DevToolsVideoConsumerTest, StartCaptureCallsSetFunctions) {
   base::RunLoop().RunUntilIdle();
 
   // Stop capturing.
-  EXPECT_CALL(capturer_, MockStop());
   consumer_->StopCapture();
-  base::RunLoop().RunUntilIdle();
+
+  // Reset the mock to allow the next consumer to connect.
+  capturer_.Reset();
 
   // Start capturing again, and expect that these |capturer_| functions are
   // called once. This will re-bind the |capturer_| and ensures that destroyed
