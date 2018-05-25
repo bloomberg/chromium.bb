@@ -77,12 +77,12 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   // content::mojom::CookieStore implementation
   void AppendSubscriptions(
       int64_t service_worker_registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
       blink::mojom::CookieStore::AppendSubscriptionsCallback callback);
   void GetSubscriptions(
       int64_t service_worker_registration_id,
-      const GURL& origin,
+      const url::Origin& origin,
       blink::mojom::CookieStore::GetSubscriptionsCallback callback);
 
   // ServiceWorkerContextCoreObserver

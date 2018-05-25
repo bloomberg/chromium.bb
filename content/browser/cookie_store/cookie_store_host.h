@@ -10,13 +10,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
-#include "url/gurl.h"
-
-namespace url {
-
-class Origin;
-
-}  // namespace url
+#include "url/origin.h"
 
 namespace content {
 
@@ -49,7 +43,7 @@ class CookieStoreHost : public blink::mojom::CookieStore {
   // mojo::BindingSet.
   CookieStoreManager* const manager_;
 
-  const GURL origin_;
+  const url::Origin origin_;
 
   // Instances of this class are currently bound to the IO thread, because they
   // call ServiceWorkerContextWrapper methods that are restricted to the IO

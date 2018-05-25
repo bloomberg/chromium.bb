@@ -16,7 +16,6 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -53,17 +52,18 @@ class CookieStoreSync {
     return success;
   }
 
-  Subscriptions GetSubscriptions(int64_t service_worker_registration_id) {
-    Subscriptions result;
+  base::Optional<Subscriptions> GetSubscriptions(
+      int64_t service_worker_registration_id) {
+    base::Optional<Subscriptions> result;
     base::RunLoop run_loop;
     cookie_store_service_->GetSubscriptions(
         service_worker_registration_id,
         base::BindOnce(
-            [](base::RunLoop* run_loop, Subscriptions* result,
-               Subscriptions service_result, bool success) {
-              *result = std::move(service_result);
+            [](base::RunLoop* run_loop, base::Optional<Subscriptions>* result,
+               Subscriptions service_result, bool service_success) {
+              if (service_success)
+                *result = std::move(service_result);
               run_loop->Quit();
-              EXPECT_TRUE(success) << "GetSubscriptions failed";
             },
             &run_loop, &result));
     run_loop.Run();
@@ -354,9 +354,10 @@ TEST_P(CookieStoreManagerTest, NoSubscriptions) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  EXPECT_EQ(0u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  EXPECT_EQ(0u, all_subscriptions_opt.value().size());
 }
 
 TEST_P(CookieStoreManagerTest, EmptySubscriptions) {
@@ -371,9 +372,10 @@ TEST_P(CookieStoreManagerTest, EmptySubscriptions) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  EXPECT_EQ(0u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  EXPECT_EQ(0u, all_subscriptions_opt.value().size());
 }
 
 TEST_P(CookieStoreManagerTest, OneSubscription) {
@@ -396,8 +398,11 @@ TEST_P(CookieStoreManagerTest, OneSubscription) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  CookieStoreSync::Subscriptions all_subscriptions =
+      std::move(all_subscriptions_opt).value();
   EXPECT_EQ(1u, all_subscriptions.size());
   EXPECT_EQ("cookie_name_prefix", all_subscriptions[0]->name);
   EXPECT_EQ(::network::mojom::CookieMatchType::STARTS_WITH,
@@ -426,9 +431,10 @@ TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterEmptyInstall) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  EXPECT_EQ(0u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  EXPECT_EQ(0u, all_subscriptions_opt.value().size());
 }
 
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterInstall) {
@@ -465,13 +471,43 @@ TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterInstall) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  CookieStoreSync::Subscriptions all_subscriptions =
+      std::move(all_subscriptions_opt).value();
   EXPECT_EQ(1u, all_subscriptions.size());
   EXPECT_EQ("cookie_name_prefix", all_subscriptions[0]->name);
   EXPECT_EQ(::network::mojom::CookieMatchType::STARTS_WITH,
             all_subscriptions[0]->match_type);
   EXPECT_EQ(GURL(kExampleScope), all_subscriptions[0]->url);
+}
+
+TEST_P(CookieStoreManagerTest, AppendSubscriptionsFromWrongOrigin) {
+  worker_test_helper_->SetOnInstallSubscriptions(
+      std::vector<CookieStoreSync::Subscriptions>(),
+      example_service_ptr_.get());
+  int64_t example_registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(example_registration_id, kInvalidRegistrationId);
+
+  CookieStoreSync::Subscriptions subscriptions;
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "cookie_name_prefix";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kExampleScope);
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  EXPECT_FALSE(google_service_->AppendSubscriptions(example_registration_id,
+                                                    std::move(subscriptions)));
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      example_service_->GetSubscriptions(example_registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  EXPECT_EQ(0u, all_subscriptions_opt.value().size());
 }
 
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsInvalidRegistrationId) {
@@ -495,9 +531,10 @@ TEST_P(CookieStoreManagerTest, AppendSubscriptionsInvalidRegistrationId) {
   EXPECT_FALSE(example_service_->AppendSubscriptions(registration_id + 100,
                                                      std::move(subscriptions)));
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  EXPECT_EQ(0u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  EXPECT_EQ(0u, all_subscriptions_opt.value().size());
 }
 
 TEST_P(CookieStoreManagerTest, MultiWorkerSubscriptions) {
@@ -541,16 +578,22 @@ TEST_P(CookieStoreManagerTest, MultiWorkerSubscriptions) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> example_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> example_subscriptions_opt =
       example_service_->GetSubscriptions(example_registration_id);
+  ASSERT_TRUE(example_subscriptions_opt.has_value());
+  CookieStoreSync::Subscriptions example_subscriptions =
+      std::move(example_subscriptions_opt).value();
   EXPECT_EQ(1u, example_subscriptions.size());
   EXPECT_EQ("cookie_name_prefix", example_subscriptions[0]->name);
   EXPECT_EQ(::network::mojom::CookieMatchType::STARTS_WITH,
             example_subscriptions[0]->match_type);
   EXPECT_EQ(GURL(kExampleScope), example_subscriptions[0]->url);
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> google_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> google_subscriptions_opt =
       google_service_->GetSubscriptions(google_registration_id);
+  ASSERT_TRUE(google_subscriptions_opt.has_value());
+  CookieStoreSync::Subscriptions google_subscriptions =
+      std::move(google_subscriptions_opt).value();
   EXPECT_EQ(1u, google_subscriptions.size());
   EXPECT_EQ("cookie_name", google_subscriptions[0]->name);
   EXPECT_EQ(::network::mojom::CookieMatchType::EQUALS,
@@ -599,8 +642,11 @@ TEST_P(CookieStoreManagerTest, MultipleSubscriptions) {
   if (reset_context_during_test())
     ResetServiceWorkerContext();
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  CookieStoreSync::Subscriptions all_subscriptions =
+      std::move(all_subscriptions_opt).value();
 
   std::sort(all_subscriptions.begin(), all_subscriptions.end(),
             CookieChangeSubscriptionLessThan);
@@ -637,9 +683,10 @@ TEST_P(CookieStoreManagerTest, OneCookieChange) {
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  ASSERT_EQ(1u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
 
   if (reset_context_during_test())
     ResetServiceWorkerContext();
@@ -674,9 +721,10 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  ASSERT_EQ(1u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
 
   if (reset_context_during_test())
     ResetServiceWorkerContext();
@@ -730,9 +778,10 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
       RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
   ASSERT_NE(registration_id, kInvalidRegistrationId);
 
-  std::vector<blink::mojom::CookieChangeSubscriptionPtr> all_subscriptions =
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
       example_service_->GetSubscriptions(registration_id);
-  ASSERT_EQ(1u, all_subscriptions.size());
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
 
   if (reset_context_during_test())
     ResetServiceWorkerContext();
@@ -773,6 +822,36 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   EXPECT_EQ("/a", worker_test_helper_->changes()[0].first.Path());
   EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
             worker_test_helper_->changes()[0].second);
+}
+
+TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "cookie_name_prefix";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kExampleScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 example_service_ptr_.get());
+  int64_t example_registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(example_registration_id, kInvalidRegistrationId);
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      example_service_->GetSubscriptions(example_registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  EXPECT_EQ(1u, all_subscriptions_opt.value().size());
+
+  base::Optional<CookieStoreSync::Subscriptions> wrong_subscriptions_opt =
+      google_service_->GetSubscriptions(example_registration_id);
+  EXPECT_FALSE(wrong_subscriptions_opt.has_value());
 }
 
 INSTANTIATE_TEST_CASE_P(CookieStoreManagerTest,

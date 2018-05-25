@@ -146,7 +146,7 @@ void CookieStoreManager::DidLoadAllSubscriptions(
 
 void CookieStoreManager::AppendSubscriptions(
     int64_t service_worker_registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     std::vector<blink::mojom::CookieChangeSubscriptionPtr> mojo_subscriptions,
     blink::mojom::CookieStore::AppendSubscriptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -179,7 +179,9 @@ void CookieStoreManager::AppendSubscriptions(
   ServiceWorkerRegistration* service_worker_registration =
       service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
-  if (!service_worker_registration) {
+  if (!service_worker_registration ||
+      !origin.IsSameOriginWith(
+          url::Origin::Create(service_worker_registration->pattern()))) {
     // This error case is a good fit for mojo::ReportBadMessage(), because the
     // renderer has passed an invalid registration ID. However, the code here
     // might run without a mojo call context, if the original call was delayed
@@ -239,7 +241,7 @@ void CookieStoreManager::AppendSubscriptions(
 
 void CookieStoreManager::GetSubscriptions(
     int64_t service_worker_registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     blink::mojom::CookieStore::GetSubscriptionsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -257,9 +259,32 @@ void CookieStoreManager::GetSubscriptions(
   }
 
   auto it = subscriptions_by_registration_.find(service_worker_registration_id);
-  if (it == subscriptions_by_registration_.end()) {
+  if (it == subscriptions_by_registration_.end() || it->second.empty()) {
     std::move(callback).Run(
         std::vector<blink::mojom::CookieChangeSubscriptionPtr>(), true);
+    return;
+  }
+
+  const url::Origin& first_origin = url::Origin::Create(it->second[0].url());
+#if DCHECK_IS_ON()
+  for (const auto& subscription : it->second) {
+    DCHECK(
+        first_origin.IsSameOriginWith(url::Origin::Create(subscription.url())))
+        << "Service worker's change subscriptions don't have the same origin";
+  }
+#endif  // DCHECK_IS_ON()
+
+  if (!origin.IsSameOriginWith(first_origin)) {
+    // This error case is a good fit for mojo::ReportBadMessage(), because the
+    // renderer has passed an invalid registration ID. However, the code here
+    // might run without a mojo call context, if the original call was delayed
+    // while loading on-disk subscription data.
+    //
+    // While it would be possible to have two code paths for the two situations,
+    // the extra complexity doesn't seem warranted for the limited debuggig
+    // benefits provided by mojo::ReportBadMessage.
+    std::move(callback).Run(
+        std::vector<blink::mojom::CookieChangeSubscriptionPtr>(), false);
     return;
   }
 
