@@ -122,6 +122,12 @@ int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
     std::transform(spki_fingerprints.begin(), spki_fingerprints.end(),
                    std::back_inserter(verify_result->public_key_hashes),
                    [](const SHA256HashValue& v) { return HashValue(v); });
+    if (!params.ocsp_response().empty()) {
+      verify_result->ocsp_result.response_status =
+          net::OCSPVerifyResult::PROVIDED;
+      verify_result->ocsp_result.revocation_status =
+          net::OCSPRevocationStatus::GOOD;
+    }
     return net::OK;
   }
 

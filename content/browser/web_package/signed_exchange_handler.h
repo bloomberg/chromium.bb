@@ -28,6 +28,7 @@ class CertVerifyResult;
 class DrainableIOBuffer;
 class SourceStream;
 class URLRequestContextGetter;
+struct OCSPVerifyResult;
 }  // namespace net
 
 namespace network {
@@ -95,6 +96,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void OnCertReceived(
       std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
   void OnCertVerifyComplete(int result);
+  bool CheckOCSPStatus(const net::OCSPVerifyResult& ocsp_result);
 
   ExchangeHeadersCallback headers_callback_;
   base::Optional<SignedExchangeVersion> version_;
