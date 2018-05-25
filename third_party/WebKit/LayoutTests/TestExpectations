@@ -4831,3 +4831,4 @@ crbug.com/846471 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Timeou
 crbug.com/846656 [ Linux ] external/wpt/css/selectors/focus-visible-002-manual.html [ Pass Timeout ]
 crbug.com/846631 virtual/service-worker-servicification/http/tests/serviceworker/navigation_preload/navigation-preload-resource-timing.html [ Pass Failure ]
 crbug.com/846632 virtual/threaded/animations/responsive/zoom-responsive-transform-animation-002.html [ Pass Failure Crash Timeout ]
+crbug.com/846693 [ Mac ] virtual/threaded/animations/composited-animation-independent-transform-cancel.html [ Pass Crash Timeout ]
