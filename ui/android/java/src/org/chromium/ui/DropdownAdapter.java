@@ -7,7 +7,6 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -32,55 +31,23 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
     private final Context mContext;
     private final Set<Integer> mSeparators;
     private final boolean mAreAllItemsEnabled;
-    private final Integer mBackgroundColor;
-    private final Integer mDividerColor;
-    private final Integer mDropdownItemHeight;
-    private final int mLabelVerticalMargin;
-    private final int mLabelHorizontalMargin;
-    private final boolean mHasUniformHorizontalMargin;
+    private final int mLabelMargin;
 
     /**
      * Creates an {@code ArrayAdapter} with specified parameters.
      * @param context Application context.
      * @param items List of labels and icons to display.
      * @param separators Set of positions that separate {@code items}.
-     * @param backgroundColor Popup background color, or {@code null} to use default background
-     * color. The default color is {@code Color.TRANSPARENT}.
-     * @param dividerColor If {@code null}, use the values in colors.xml for the divider
-     * between items. Otherwise, uses {@param dividerColor} for the divider between items. Always
-     * uses the values in colors.xml for the dark divider for the separators.
-     * @param dropdownItemHeight If {@code null}, uses the {@code dropdown_item_height} in
-     * dimens.xml. Otherwise, uses {@param dropdownItemHeight}.
-     * @param margin If {@code null}, uses the {@code dropdown_icon_margin} and
-     * {@code dropdown_item_label_margin} in dropdown_item.xml. Otherwise, uses {@param margin}
-     * for uniform margin for icon, label and between icon and label.
      */
-    public DropdownAdapter(Context context, List<? extends DropdownItem> items,
-            Set<Integer> separators, @Nullable Integer backgroundColor,
-            @Nullable Integer dividerColor, @Nullable Integer dropdownItemHeight,
-            @Nullable Integer margin) {
+    public DropdownAdapter(
+            Context context, List<? extends DropdownItem> items, Set<Integer> separators) {
         super(context, R.layout.dropdown_item);
         mContext = context;
         addAll(items);
         mSeparators = separators;
         mAreAllItemsEnabled = checkAreAllItemsEnabled();
-        mBackgroundColor = backgroundColor;
-        mDividerColor = dividerColor;
-        mDropdownItemHeight = dropdownItemHeight;
-        mLabelVerticalMargin = context.getResources().getDimensionPixelSize(
-                R.dimen.dropdown_item_label_margin);
-        if (margin == null) {
-            mLabelHorizontalMargin = mLabelVerticalMargin;
-            mHasUniformHorizontalMargin = false;
-        } else {
-            // We use a uniform margin between start and the icon, between icon and the label and
-            // between the label and the end.
-            // <-- margin -->|icon|<-- margin -->|label|<-- margin -->
-            // <-- margin -->|label|<-- margin -->
-            mLabelHorizontalMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    margin, context.getResources().getDisplayMetrics());
-            mHasUniformHorizontalMargin = true;
-        }
+        mLabelMargin =
+                context.getResources().getDimensionPixelSize(R.dimen.dropdown_item_label_margin);
     }
 
     private boolean checkAreAllItemsEnabled() {
@@ -100,16 +67,10 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             LayoutInflater inflater =
                     (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             layout = inflater.inflate(R.layout.dropdown_item, null);
-            layout.setBackground(new DropdownDividerDrawable(mBackgroundColor));
+            layout.setBackground(new DropdownDividerDrawable(/*backgroundColor=*/null));
         }
         DropdownDividerDrawable divider = (DropdownDividerDrawable) layout.getBackground();
-        int height;
-        if (mDropdownItemHeight == null) {
-            height = mContext.getResources().getDimensionPixelSize(R.dimen.dropdown_item_height);
-        } else {
-            height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    mDropdownItemHeight, mContext.getResources().getDisplayMetrics());
-        }
+        int height = mContext.getResources().getDimensionPixelSize(R.dimen.dropdown_item_height);
 
         if (position == 0) {
             divider.setDividerColor(Color.TRANSPARENT);
@@ -122,11 +83,9 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             if (mSeparators != null && mSeparators.contains(position)) {
                 dividerColor = ApiCompatibilityUtils.getColor(mContext.getResources(),
                         R.color.dropdown_dark_divider_color);
-            } else if (mDividerColor == null) {
+            } else {
                 dividerColor = ApiCompatibilityUtils.getColor(mContext.getResources(),
                         R.color.dropdown_divider_color);
-            } else {
-                dividerColor = mDividerColor;
             }
             divider.setDividerColor(dividerColor);
         }
@@ -148,31 +107,24 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
 
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(0, height, 1));
 
+        // Layout of the main label view.
         TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
         labelView.setText(item.getLabel());
         labelView.setSingleLine(!item.isMultilineLabel());
-
-        LinearLayout.LayoutParams layoutParams;
         if (item.isLabelAndSublabelOnSameLine()) {
-            layoutParams = new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1);
+            labelView.setLayoutParams(
+                    new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
         } else {
-            layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-                    LayoutParams.WRAP_CONTENT);
-            if (item.getIconId() == DropdownItem.NO_ICON || !mHasUniformHorizontalMargin) {
-                ApiCompatibilityUtils.setMarginStart(layoutParams, mLabelHorizontalMargin);
-            }
-            ApiCompatibilityUtils.setMarginEnd(layoutParams, mLabelHorizontalMargin);
             if (item.isMultilineLabel()) {
                 // If there is a multiline label, we add extra padding at the top and bottom because
                 // WRAP_CONTENT, defined above for multiline labels, leaves none.
                 int existingStart = ApiCompatibilityUtils.getPaddingStart(labelView);
                 int existingEnd = ApiCompatibilityUtils.getPaddingEnd(labelView);
-                ApiCompatibilityUtils.setPaddingRelative(labelView,
-                        existingStart, mLabelVerticalMargin, existingEnd, mLabelVerticalMargin);
+                ApiCompatibilityUtils.setPaddingRelative(
+                        labelView, existingStart, mLabelMargin, existingEnd, mLabelMargin);
             }
         }
 
-        labelView.setLayoutParams(layoutParams);
         labelView.setEnabled(item.isEnabled());
         if (item.isGroupHeader() || item.isBoldLabel()) {
             labelView.setTypeface(null, Typeface.BOLD);
@@ -185,6 +137,8 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         labelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                 mContext.getResources().getDimension(item.getLabelFontSizeResId()));
 
+        // Layout of the sublabel view, which has a smaller font and usually sits below the main
+        // label.
         TextView sublabelView = (TextView) layout.findViewById(R.id.dropdown_sublabel);
         CharSequence sublabel = item.getSublabel();
         if (TextUtils.isEmpty(sublabel)) {
@@ -196,11 +150,9 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
                 // reused and the label and sublabel are on the same line when the view is reused.
                 LinearLayout.LayoutParams subLabelLayoutParams = new LinearLayout.LayoutParams(
                         LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                ApiCompatibilityUtils.setMarginStart(subLabelLayoutParams, mLabelHorizontalMargin);
-                ApiCompatibilityUtils.setMarginEnd(subLabelLayoutParams, mLabelHorizontalMargin);
+                ApiCompatibilityUtils.setMarginStart(subLabelLayoutParams, mLabelMargin);
+                ApiCompatibilityUtils.setMarginEnd(subLabelLayoutParams, mLabelMargin);
                 sublabelView.setLayoutParams(subLabelLayoutParams);
-            } else {
-                sublabelView.setLayoutParams(layoutParams);
             }
             sublabelView.setText(sublabel);
             sublabelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
@@ -228,8 +180,8 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
                     (ViewGroup.MarginLayoutParams) iconView.getLayoutParams();
             iconLayoutParams.width = iconSize;
             iconLayoutParams.height = iconSize;
-            int iconMargin = mHasUniformHorizontalMargin ? mLabelHorizontalMargin
-                    : mContext.getResources().getDimensionPixelSize(item.getIconMarginResId());
+            int iconMargin =
+                    mContext.getResources().getDimensionPixelSize(item.getIconMarginResId());
             ApiCompatibilityUtils.setMarginStart(iconLayoutParams, iconMargin);
             ApiCompatibilityUtils.setMarginEnd(iconLayoutParams, iconMargin);
             iconView.setLayoutParams(iconLayoutParams);

@@ -1277,9 +1277,6 @@ extern const char kEnableDataReductionProxyMainMenuDescription[];
 extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
 
-extern const char kEnableExpandedAutofillCreditCardPopupLayoutName[];
-extern const char kEnableExpandedAutofillCreditCardPopupLayoutDescription[];
-
 extern const char kEnableNtpArticleSuggestionsExpandableHeaderName[];
 extern const char kEnableNtpArticleSuggestionsExpandableHeaderDescription[];
 

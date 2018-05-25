@@ -267,31 +267,4 @@ const gfx::Rect AutofillPopupLayoutModel::RoundedElementBounds() const {
   return gfx::ToEnclosingRect(delegate_->element_bounds());
 }
 
-bool AutofillPopupLayoutModel::IsPopupLayoutExperimentEnabled() const {
-  return is_credit_card_popup_ &&
-      IsAutofillCreditCardPopupLayoutExperimentEnabled();
-}
-
-SkColor AutofillPopupLayoutModel::GetBackgroundColor() const {
-  return is_credit_card_popup_ ?
-      GetCreditCardPopupBackgroundColor() : SK_ColorTRANSPARENT;
-}
-
-SkColor AutofillPopupLayoutModel::GetDividerColor() const {
-  return is_credit_card_popup_ ?
-      GetCreditCardPopupDividerColor() : SK_ColorTRANSPARENT;
-}
-
-unsigned int AutofillPopupLayoutModel::GetDropdownItemHeight() const {
-  return GetPopupDropdownItemHeight();
-}
-
-bool AutofillPopupLayoutModel::IsIconAtStart(int frontend_id) const {
-  return (is_credit_card_popup_ && IsIconInCreditCardPopupAtStart());
-}
-
-unsigned int AutofillPopupLayoutModel::GetMargin() const {
-  return GetPopupMargin();
-}
-
 }  // namespace autofill

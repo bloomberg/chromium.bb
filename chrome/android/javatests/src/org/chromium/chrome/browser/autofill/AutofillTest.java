@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.graphics.Color;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 
@@ -68,10 +67,7 @@ public class AutofillTest {
 
             mWindowAndroid = new ActivityWindowAndroid(activity);
             mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
-            mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */,
-                    Color.TRANSPARENT /* backgroundColor */,
-                    Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
-                    0 /* margin */);
+            mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false /* isRtl */);
         });
     }
 
@@ -137,10 +133,7 @@ public class AutofillTest {
 
     public void openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mAutofillPopup.filterAndShow(suggestions, false /* isRtl */,
-                        Color.TRANSPARENT /* backgroundColor */,
-                        Color.TRANSPARENT /* dividerColor */, 0 /* dropdownItemHeight */,
-                        0 /* margin */));
+                () -> mAutofillPopup.filterAndShow(suggestions, false /* isRtl */));
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
