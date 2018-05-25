@@ -207,4 +207,51 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
+// Tests that when starting a new Picture-in-Picture session from the same tab,
+// the previous video is no longer in Picture-in-Picture mode.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       OpenSecondPictureInPictureStopsFirst) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents);
+
+  SetUpWindowController(active_web_contents);
+  ASSERT_TRUE(window_controller());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "enterPictureInPicture();"));
+
+  // Check that the Picture-in-Picture window was resized once.
+  base::string16 expected_title = base::ASCIIToUTF16("1");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  bool in_picture_in_picture = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+
+  EXPECT_TRUE(
+      content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
+
+  // 'left' is sent when the first video leaves Picture-in-Picture.
+  expected_title = base::ASCIIToUTF16("left");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  in_picture_in_picture = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_FALSE(in_picture_in_picture);
+}
+
 #endif  // !defined(OS_LINUX) && !defined(OS_WIN)

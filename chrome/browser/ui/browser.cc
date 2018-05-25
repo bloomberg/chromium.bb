@@ -1410,15 +1410,15 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
 
 gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
                                          const gfx::Size& natural_size) {
+  // If there was already a controller, close the existing window before
+  // creating the next one.
+  if (pip_window_controller_)
+    pip_window_controller_->Close();
+
+  // Create or update |pip_window_controller_| for the current WebContents.
   if (!pip_window_controller_ ||
       pip_window_controller_->GetInitiatorWebContents() !=
           tab_strip_model_->GetActiveWebContents()) {
-    // If there was already a controller, close the existing window before
-    // creating the next one.
-    if (pip_window_controller_)
-      pip_window_controller_->Close();
-
-    // Update |pip_window_controller_| for the current content::WebContents.
     pip_window_controller_ =
         content::PictureInPictureWindowController::GetOrCreateForWebContents(
             tab_strip_model_->GetActiveWebContents());

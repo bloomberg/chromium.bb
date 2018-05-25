@@ -11,6 +11,14 @@
   let pipWindow = null;
   let sizeCountUpdates = 0;
 
+  // This video is created here in order to be used in
+  // `secondPictureInPicture()`. Unfortunately, the `requestPictureInPicture()`
+  // method has to be called during a user activation event handler so it's not
+  // possible to load the video on-demand.
+  const secondVideo = document.createElement('video');
+  secondVideo.src = '../bigbuck.webm';
+  secondVideo.load();
+
   function updateTitle() {
     // TODO(mlamouri): ideally, we should send the actual size but it will be
     // flaky and require some minutia so starting with the basics.
@@ -19,9 +27,7 @@
   }
 
   function enterPictureInPicture() {
-    if (video.readyState > 0)
-      return enterPictureInPictureInternal();
-    video.addEventListener('loadedmetadata', enterPictureInPictureInternal, { once: true });
+    enterPictureInPictureInternal();
   }
 
   function isInPictureInPicture() {
@@ -38,6 +44,10 @@
         document.title = 'left';
       }, { once: true });
     });
+  }
+
+  function secondPictureInPicture() {
+    secondVideo.requestPictureInPicture();
   }
 </script>
 </html>
