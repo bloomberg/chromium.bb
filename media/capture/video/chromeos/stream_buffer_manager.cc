@@ -239,7 +239,7 @@ void StreamBufferManager::SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
 uint64_t StreamBufferManager::GetBufferIpcId(StreamType stream_type,
                                              size_t index) {
   uint64_t id = 0;
-  id |= static_cast<int64_t>(stream_type) << 32;
+  id |= static_cast<uint64_t>(stream_type) << 32;
   id |= index;
   return id;
 }
@@ -284,7 +284,7 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
     return;
   }
 
-  size_t buffer_id = stream_context_[stream_type]->free_buffers.front();
+  uint64_t buffer_id = stream_context_[stream_type]->free_buffers.front();
   stream_context_[stream_type]->free_buffers.pop();
   const gfx::GpuMemoryBuffer* buffer =
       stream_context_[stream_type]->buffers[GetBufferIndex(buffer_id)].get();
