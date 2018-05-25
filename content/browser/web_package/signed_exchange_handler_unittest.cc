@@ -458,7 +458,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPNotChecked) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
   ReadStream(source_, nullptr);
 }
@@ -488,7 +488,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPNotProvided) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
   ReadStream(source_, nullptr);
 }
@@ -519,7 +519,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPInvalid) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
   ReadStream(source_, nullptr);
 }
@@ -551,7 +551,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPRevoked) {
   WaitForHeader();
 
   ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::ERR_FAILED, error());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
   // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
   ReadStream(source_, nullptr);
 }
