@@ -54,3 +54,6 @@
 
 # Flaky, https://crbug.com/811881
 -AddressSpaceRandomizationTest.RandomBitCorrelations*
+
+# Too slow due to QEMU overheads, https://crbug.com/844416
+-FileUtilMultiThreadedTest.MultiThreadedTempFiles
