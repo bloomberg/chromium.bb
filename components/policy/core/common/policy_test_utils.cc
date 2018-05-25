@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
@@ -70,8 +69,8 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
     case base::Value::Type::INTEGER: {
       int int_value;
       if (value.GetAsInteger(&int_value)) {
-        return CFNumberCreate(
-            kCFAllocatorDefault, kCFNumberIntType, &int_value);
+        return CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType,
+                              &int_value);
       }
       break;
     }
@@ -79,8 +78,8 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
     case base::Value::Type::DOUBLE: {
       double double_value;
       if (value.GetAsDouble(&double_value)) {
-        return CFNumberCreate(
-            kCFAllocatorDefault, kCFNumberDoubleType, &double_value);
+        return CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType,
+                              &double_value);
       }
       break;
     }
@@ -96,11 +95,9 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
       const base::DictionaryValue* dict_value;
       if (value.GetAsDictionary(&dict_value)) {
         // |dict| is owned by the caller.
-        CFMutableDictionaryRef dict =
-            CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                      dict_value->size(),
-                                      &kCFTypeDictionaryKeyCallBacks,
-                                      &kCFTypeDictionaryValueCallBacks);
+        CFMutableDictionaryRef dict = CFDictionaryCreateMutable(
+            kCFAllocatorDefault, dict_value->size(),
+            &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
         for (base::DictionaryValue::Iterator iterator(*dict_value);
              !iterator.IsAtEnd(); iterator.Advance()) {
           // CFDictionaryAddValue() retains both |key| and |value|, so make sure
@@ -148,8 +145,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
 
 }  // namespace policy
 
-std::ostream& operator<<(std::ostream& os,
-                         const policy::PolicyBundle& bundle) {
+std::ostream& operator<<(std::ostream& os, const policy::PolicyBundle& bundle) {
   os << "{" << std::endl;
   for (policy::PolicyBundle::const_iterator iter = bundle.begin();
        iter != bundle.end(); ++iter) {
@@ -161,82 +157,53 @@ std::ostream& operator<<(std::ostream& os,
 
 std::ostream& operator<<(std::ostream& os, policy::PolicyScope scope) {
   switch (scope) {
-    case policy::POLICY_SCOPE_USER: {
-      os << "POLICY_SCOPE_USER";
-      break;
-    }
-    case policy::POLICY_SCOPE_MACHINE: {
-      os << "POLICY_SCOPE_MACHINE";
-      break;
-    }
-    default: {
-      os << "POLICY_SCOPE_UNKNOWN(" << int(scope) << ")";
-    }
+    case policy::POLICY_SCOPE_USER:
+      return os << "POLICY_SCOPE_USER";
+    case policy::POLICY_SCOPE_MACHINE:
+      return os << "POLICY_SCOPE_MACHINE";
   }
-  return os;
+  return os << "POLICY_SCOPE_UNKNOWN(" << int(scope) << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, policy::PolicyLevel level) {
   switch (level) {
-    case policy::POLICY_LEVEL_RECOMMENDED: {
-      os << "POLICY_LEVEL_RECOMMENDED";
-      break;
-    }
-    case policy::POLICY_LEVEL_MANDATORY: {
-      os << "POLICY_LEVEL_MANDATORY";
-      break;
-    }
-    default: {
-      os << "POLICY_LEVEL_UNKNOWN(" << int(level) << ")";
-    }
+    case policy::POLICY_LEVEL_RECOMMENDED:
+      return os << "POLICY_LEVEL_RECOMMENDED";
+    case policy::POLICY_LEVEL_MANDATORY:
+      return os << "POLICY_LEVEL_MANDATORY";
   }
-  return os;
+  return os << "POLICY_LEVEL_UNKNOWN(" << int(level) << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, policy::PolicyDomain domain) {
   switch (domain) {
-    case policy::POLICY_DOMAIN_CHROME: {
-      os << "POLICY_DOMAIN_CHROME";
+    case policy::POLICY_DOMAIN_CHROME:
+      return os << "POLICY_DOMAIN_CHROME";
+    case policy::POLICY_DOMAIN_EXTENSIONS:
+      return os << "POLICY_DOMAIN_EXTENSIONS";
+    case policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS:
+      return os << "POLICY_DOMAIN_SIGNIN_EXTENSIONS";
+    case policy::POLICY_DOMAIN_SIZE:
       break;
-    }
-    case policy::POLICY_DOMAIN_EXTENSIONS: {
-      os << "POLICY_DOMAIN_EXTENSIONS";
-      break;
-    }
-    case policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS: {
-      os << "POLICY_DOMAIN_SIGNIN_EXTENSIONS";
-      break;
-    }
-    default: {
-      os << "POLICY_DOMAIN_UNKNOWN(" << int(domain) << ")";
-    }
   }
-  return os;
+  return os << "POLICY_DOMAIN_UNKNOWN(" << int(domain) << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, const policy::PolicyMap& policies) {
   os << "{" << std::endl;
-  for (policy::PolicyMap::const_iterator iter = policies.begin();
-       iter != policies.end(); ++iter) {
-    os << "  \"" << iter->first << "\": " << iter->second << "," << std::endl;
-  }
+  for (const auto& iter : policies)
+    os << "  \"" << iter.first << "\": " << iter.second << "," << std::endl;
   os << "}";
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const policy::PolicyMap::Entry& e) {
-  std::string value;
-  base::JSONWriter::WriteWithOptions(
-      *e.value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &value);
-  os << "{" << std::endl
-     << "  \"level\": " << e.level << "," << std::endl
-     << "  \"scope\": " << e.scope << "," << std::endl
-     << "  \"value\": " << value
-     << "}";
-  return os;
+  return os << "{" << std::endl
+            << "  \"level\": " << e.level << "," << std::endl
+            << "  \"scope\": " << e.scope << "," << std::endl
+            << "  \"value\": " << *e.value << "}";
 }
 
 std::ostream& operator<<(std::ostream& os, const policy::PolicyNamespace& ns) {
-  os << ns.domain << "/" << ns.component_id;
-  return os;
+  return os << ns.domain << "/" << ns.component_id;
 }
