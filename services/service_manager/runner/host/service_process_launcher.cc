@@ -18,7 +18,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
@@ -82,12 +81,12 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
         switches::kServiceSandboxType,
         StringFromUtilitySandboxType(sandbox_type_));
   }
-  mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
-  mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
-      child_command_line.get(), &handle_passing_info_);
+  channel_.emplace();
+  channel_->PrepareToPassRemoteEndpoint(&handle_passing_info_,
+                                        child_command_line.get());
 
-  mojom::ServicePtr client = PassServiceRequestOnCommandLine(
-      &broker_client_invitation_, child_command_line.get());
+  mojom::ServicePtr client =
+      PassServiceRequestOnCommandLine(&invitation_, child_command_line.get());
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
@@ -103,9 +102,9 @@ void ServiceProcessLauncher::Join() {
   // TODO: This code runs on the IO thread where Wait() is not allowed. This
   // needs to be fixed: https://crbug.com/844078.
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_sync;
-  if (mojo_ipc_channel_)
+  if (channel_)
     start_child_process_event_.Wait();
-  mojo_ipc_channel_.reset();
+  channel_.reset();
   if (child_process_.IsValid()) {
     int rv = -1;
     LOG_IF(ERROR, !child_process_.WaitForExit(&rv))
@@ -119,7 +118,7 @@ void ServiceProcessLauncher::DidStart(ProcessReadyCallback callback) {
     std::move(callback).Run(child_process_.Pid());
   } else {
     LOG(ERROR) << "Failed to start child process";
-    mojo_ipc_channel_.reset();
+    channel_.reset();
     std::move(callback).Run(base::kNullProcessId);
   }
 }
@@ -202,12 +201,11 @@ void ServiceProcessLauncher::DoLaunch(
         << ", instance=" << target_.instance() << ", name=" << target_.name()
         << ", user_id=" << target_.user_id();
 
-    if (mojo_ipc_channel_.get()) {
-      mojo_ipc_channel_->ChildProcessLaunched();
-      broker_client_invitation_.Send(
-          child_process_.Handle(),
-          mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                      mojo_ipc_channel_->PassServerHandle()));
+    if (channel_) {
+      channel_->RemoteProcessLaunched();
+      mojo::OutgoingInvitation::Send(std::move(invitation_),
+                                     child_process_.Handle(),
+                                     channel_->TakeLocalEndpoint());
     }
   }
   start_child_process_event_.Signal();

@@ -22,11 +22,10 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -264,20 +263,20 @@ class ServiceManagerTest : public test::ServiceTest,
 
     // Create the channel to be shared with the target process. Pass one end
     // on the command line.
-    mojo::edk::PlatformChannelPair platform_channel_pair;
+    mojo::PlatformChannel channel;
     base::LaunchOptions options;
 #if defined(OS_WIN)
-    platform_channel_pair.PrepareToPassClientHandleToChildProcess(
-        &child_command_line, &options.handles_to_inherit);
+    channel.PrepareToPassRemoteEndpoint(&options.handles_to_inherit,
+                                        &child_command_line);
 #elif defined(OS_FUCHSIA)
-    platform_channel_pair.PrepareToPassClientHandleToChildProcess(
-        &child_command_line, &options.handles_to_transfer);
+    channel.PrepareToPassRemoteEndpoint(&options.handles_to_transfer,
+                                        &child_command_line);
 #else
-    platform_channel_pair.PrepareToPassClientHandleToChildProcess(
-        &child_command_line, &options.fds_to_remap);
+    channel.PrepareToPassRemoteEndpoint(&options.fds_to_remap,
+                                        &child_command_line);
 #endif
 
-    mojo::edk::OutgoingBrokerClientInvitation invitation;
+    mojo::OutgoingInvitation invitation;
     service_manager::mojom::ServicePtr client =
         service_manager::PassServiceRequestOnCommandLine(&invitation,
                                                          &child_command_line);
@@ -293,12 +292,10 @@ class ServiceManagerTest : public test::ServiceTest,
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());
-    platform_channel_pair.ChildProcessLaunched();
+    channel.RemoteProcessLaunched();
     receiver->SetPID(target_.Pid());
-    invitation.Send(
-        target_.Handle(),
-        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                    platform_channel_pair.PassServerHandle()));
+    mojo::OutgoingInvitation::Send(std::move(invitation), target_.Handle(),
+                                   channel.TakeLocalEndpoint());
   }
 
   void StartEmbedderService() {

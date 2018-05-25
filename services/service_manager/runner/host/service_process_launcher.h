@@ -12,10 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -68,9 +69,9 @@ class ServiceProcessLauncher {
   base::Process child_process_;
 
   // Used to initialize the Mojo IPC channel between parent and child.
-  std::unique_ptr<mojo::edk::PlatformChannelPair> mojo_ipc_channel_;
-  mojo::edk::HandlePassingInformation handle_passing_info_;
-  mojo::edk::OutgoingBrokerClientInvitation broker_client_invitation_;
+  base::Optional<mojo::PlatformChannel> channel_;
+  mojo::PlatformChannel::HandlePassingInfo handle_passing_info_;
+  mojo::OutgoingInvitation invitation_;
 
   // Since Start() calls a method on another thread, we use an event to block
   // the main thread if it tries to destruct |this| while launching the process.

@@ -12,6 +12,7 @@ source_set("standalone_service") {
 
   deps = [
     "//mojo/edk",
+    "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner:init",

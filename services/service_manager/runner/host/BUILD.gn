@@ -35,7 +35,7 @@ source_set("lib") {
 
   public_deps = [
     "//base",
-    "//mojo/edk",
+    "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
   ]
 
@@ -61,7 +61,6 @@ if (!is_ios) {
       ":lib",
       "//base",
       "//base/test:test_support",
-      "//mojo/edk",
       "//services/service_manager",
       "//services/service_manager/runner:init",
       "//services/service_manager/runner/common",
