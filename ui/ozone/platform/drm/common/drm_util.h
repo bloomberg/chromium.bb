@@ -99,9 +99,6 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     const MovableDisplaySnapshots& displays);
 
-int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format);
-gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format);
-
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 
 gfx::Size GetMaximumCursorSize(int fd);
