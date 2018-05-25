@@ -154,7 +154,7 @@ def write_results(
 
 
 def execute_benchmark(benchmark, isolated_out_dir,
-                      args, rest_args, is_reference):
+                      args, rest_args, is_reference, stories=None):
   # While we are between chartjson and histogram set we need
   # to determine which output format to look for or see if it was
   # already passed in in which case that format applies to all benchmarks
@@ -178,6 +178,16 @@ def execute_benchmark(benchmark, isolated_out_dir,
     per_benchmark_args.append('--max-failures=5')
     per_benchmark_args.append('--output-trace-tag=_ref')
     benchmark_name = benchmark + '.reference'
+
+  # If we are only running a subset of stories, add in the begin and end
+  # index.
+  if stories:
+    if 'begin' in stories.keys():
+      per_benchmark_args.append(
+          ('--experimental-story-shard-begin-index=%d' % stories['begin']))
+    if 'end' in stories.keys():
+      per_benchmark_args.append(
+          ('--experimental-story-shard-end-index=%d' % stories['end']))
 
   # We don't care exactly what these are. In particular, the perf results
   # could be any format (chartjson, legacy, histogram). We just pass these
@@ -284,17 +294,18 @@ def main():
       sharding_map_path = get_sharding_map_path(args)
       with open(sharding_map_path) as f:
         sharding_map = json.load(f)
-      sharding = None
       sharding = sharding_map[shard_index]['benchmarks']
 
-      for benchmark in sharding:
+      for benchmark, stories in sharding.iteritems():
         # Need to run the benchmark twice on browser and reference build
         return_code = (execute_benchmark(
-            benchmark, isolated_out_dir, args, rest_args, False) or return_code)
+            benchmark, isolated_out_dir, args, rest_args,
+            False, stories=stories) or return_code)
         # We ignore the return code of the reference build since we do not
         # monitor it.
         if args.run_ref_build:
-          execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True)
+          execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True,
+                            stories=stories)
 
   return return_code
 
