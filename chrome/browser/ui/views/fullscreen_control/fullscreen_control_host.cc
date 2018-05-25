@@ -66,9 +66,7 @@ bool IsExitUiEnabled() {
   // menu and controls reveal when the cursor is moved to the top.
   return false;
 #else
-  return chrome::GetChannel() == version_info::Channel::CANARY ||
-         chrome::GetChannel() == version_info::Channel::DEV ||
-         base::FeatureList::IsEnabled(features::kFullscreenExitUI);
+  return base::FeatureList::IsEnabled(features::kFullscreenExitUI);
 #endif
 }
 
