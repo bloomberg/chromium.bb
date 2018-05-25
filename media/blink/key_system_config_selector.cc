@@ -350,8 +350,10 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   SplitCodecsToVector(codecs, &stripped_codec_vector, true);
   EmeConfigRule codecs_rule = key_systems_->GetContentTypeConfigRule(
       key_system, media_type, container_lower, stripped_codec_vector);
-  if (!config_state->IsRuleSupported(codecs_rule))
+  if (!config_state->IsRuleSupported(codecs_rule)) {
+    DVLOG(3) << "Container mime type and codecs are not supported by CDM";
     return false;
+  }
   config_state->AddRule(codecs_rule);
 
   return true;
