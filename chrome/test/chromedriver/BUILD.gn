@@ -424,6 +424,7 @@ test("chromedriver_tests") {
     "net/test_http_server.cc",
     "net/test_http_server.h",
     "net/websocket_unittest.cc",
+    "run_all_unittests.cc",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -432,10 +433,12 @@ test("chromedriver_tests") {
   deps = [
     ":lib",
     "//base",
-    "//base/test:run_all_unittests",
+    "//mojo/edk",
     "//net",
-    "//net:http_server",
     "//net:test_support",
+    "//services/network:network_service",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//testing/gtest",
     "//ui/events:test_support",
     "//url",

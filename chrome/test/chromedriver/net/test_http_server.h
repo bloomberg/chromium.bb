@@ -12,8 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
-#include "net/server/http_server.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/server/http_server.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -23,7 +26,7 @@ class WaitableEvent;
 // HTTP server for web socket testing purposes that runs on its own thread.
 // All public methods are thread safe and may be called on any thread, unless
 // noted otherwise.
-class TestHttpServer : public net::HttpServer::Delegate {
+class TestHttpServer : public network::server::HttpServer::Delegate {
  public:
   enum WebSocketRequestAction {
     kAccept,
@@ -63,12 +66,14 @@ class TestHttpServer : public net::HttpServer::Delegate {
   // Returns the web socket URL that points to the server.
   GURL web_socket_url() const;
 
-  // Overridden from net::HttpServer::Delegate:
+  // Overridden from network::server::HttpServer::Delegate:
   void OnConnect(int connection_id) override;
-  void OnHttpRequest(int connection_id,
-                     const net::HttpServerRequestInfo& info) override {}
-  void OnWebSocketRequest(int connection_id,
-                          const net::HttpServerRequestInfo& info) override;
+  void OnHttpRequest(
+      int connection_id,
+      const network::server::HttpServerRequestInfo& info) override {}
+  void OnWebSocketRequest(
+      int connection_id,
+      const network::server::HttpServerRequestInfo& info) override;
   void OnWebSocketMessage(int connection_id, const std::string& data) override;
   void OnClose(int connection_id) override;
 
@@ -79,7 +84,7 @@ class TestHttpServer : public net::HttpServer::Delegate {
   base::Thread thread_;
 
   // Access only on the server thread.
-  std::unique_ptr<net::HttpServer> server_;
+  std::unique_ptr<network::server::HttpServer> server_;
 
   // Access only on the server thread.
   std::set<int> connections_;
@@ -89,6 +94,11 @@ class TestHttpServer : public net::HttpServer::Delegate {
   // Protects |web_socket_url_|.
   mutable base::Lock url_lock_;
   GURL web_socket_url_;
+
+  std::unique_ptr<network::NetworkService> network_service_;
+  std::unique_ptr<network::NetworkContext> network_context_;
+
+  network::mojom::NetworkContextPtr network_context_ptr_;
 
   // Protects the action flags and |message_callback_|.
   base::Lock action_lock_;

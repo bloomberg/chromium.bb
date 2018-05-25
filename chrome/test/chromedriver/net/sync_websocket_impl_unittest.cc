@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -23,7 +24,9 @@ namespace {
 class SyncWebSocketImplTest : public testing::Test {
  protected:
   SyncWebSocketImplTest()
-      : client_thread_("ClientThread"),
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        client_thread_("ClientThread"),
         long_timeout_(base::TimeDelta::FromMinutes(1)) {}
   ~SyncWebSocketImplTest() override {}
 
@@ -38,6 +41,7 @@ class SyncWebSocketImplTest : public testing::Test {
 
   Timeout long_timeout() const { return Timeout(long_timeout_); }
 
+  base::test::ScopedTaskEnvironment task_environment_;
   base::Thread client_thread_;
   TestHttpServer server_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
