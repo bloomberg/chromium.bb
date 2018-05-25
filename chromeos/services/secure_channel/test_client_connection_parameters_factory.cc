@@ -35,13 +35,13 @@ ClientConnectionParameters TestClientConnectionParametersFactory::Create(
 
 FakeConnectionDelegate*
 TestClientConnectionParametersFactory::GetDelegateForParameters(
-    const ClientConnectionParameters& client_connection_parameters) {
+    const base::UnguessableToken& client_connection_parameters_id) {
   if (!base::ContainsKey(client_id_to_delegate_map_,
-                         client_connection_parameters.id())) {
+                         client_connection_parameters_id)) {
     return nullptr;
   }
 
-  return client_id_to_delegate_map_[client_connection_parameters.id()].get();
+  return client_id_to_delegate_map_[client_connection_parameters_id].get();
 }
 
 }  // namespace secure_channel

@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
 #include "chromeos/services/secure_channel/test_client_connection_parameters_factory.h"
@@ -33,7 +34,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
         std::make_unique<FakePendingConnectionRequestDelegate>();
     auto client_connection_parameters =
         TestClientConnectionParametersFactory::Get()->Create(kTestFeature);
-    client_connection_parameters_ = &client_connection_parameters;
+    client_connection_parameters_id_ = client_connection_parameters.id();
 
     pending_ble_initiator_request_ =
         PendingBleInitiatorConnectionRequest::Factory::Get()->BuildInstance(
@@ -70,7 +71,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
 
   FakeConnectionDelegate* fake_connection_delegate() {
     return TestClientConnectionParametersFactory::Get()
-        ->GetDelegateForParameters(*client_connection_parameters_);
+        ->GetDelegateForParameters(client_connection_parameters_id_);
   }
 
  private:
@@ -78,7 +79,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
 
   std::unique_ptr<FakePendingConnectionRequestDelegate>
       fake_pending_connection_request_delegate_;
-  ClientConnectionParameters* client_connection_parameters_;
+  base::UnguessableToken client_connection_parameters_id_;
 
   std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
       pending_ble_initiator_request_;
