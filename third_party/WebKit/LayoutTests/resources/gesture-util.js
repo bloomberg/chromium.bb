@@ -1,3 +1,13 @@
+function waitForCompositorCommit() {
+  return new Promise((resolve) => {
+    // For now, we just rAF twice. It would be nice to have a proper mechanism
+    // for this.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(resolve);
+    });
+  });
+}
+
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {
