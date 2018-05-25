@@ -4261,6 +4261,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Recorded"/>
 </enum>
 
+<enum name="BooleanRecurrentError">
+  <int value="0" label="Not a recurrent error"/>
+  <int value="1" label="A recurrent error"/>
+</enum>
+
 <enum name="BooleanRegistered">
   <int value="0" label="Not Registered"/>
   <int value="1" label="Registered"/>
@@ -39043,6 +39048,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="RunElevatedSucceeded"/>
   <int value="8" label="RunElevatedSkipped"/>
   <int value="9" label="DownloadError"/>
+</enum>
+
+<enum name="RecurrentErrorAction">
+  <int value="0" label="Recurrent error interstitial shown"/>
+  <int value="1" label="User proceeded through recurrent error interstitial"/>
 </enum>
 
 <enum name="RefcountOperation">

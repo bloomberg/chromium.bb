@@ -663,3 +663,10 @@ bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
 
   return false;
 }
+
+void ChromeSSLHostStateDelegate::ResetRecurrentErrorCountForTesting() {
+  recurrent_errors_.clear();
+  DictionaryPrefUpdate pref_update(profile_->GetPrefs(),
+                                   prefs::kRecurrentSSLInterstitial);
+  pref_update->Clear();
+}

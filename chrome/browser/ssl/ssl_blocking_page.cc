@@ -91,6 +91,14 @@ SSLBlockingPage* SSLBlockingPage::Create(
       ChromeSSLHostStateDelegateFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   state->DidDisplayErrorPage(cert_error);
+  bool is_recurrent_error = state->HasSeenRecurrentErrors(cert_error);
+  if (overridable) {
+    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_overridable.is_recurrent_error",
+                          is_recurrent_error);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_nonoverridable.is_recurrent_error",
+                          is_recurrent_error);
+  }
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
                              options_mask, time_triggered, support_url,
