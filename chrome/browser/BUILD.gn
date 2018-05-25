@@ -56,6 +56,14 @@ if (is_win) {
   }
 }
 
+# This proto library is used for non-android NTPs below.
+proto_library("ntp_background_proto") {
+  sources = [
+    "search/background/ntp_background.proto",
+  ]
+  generate_python = false
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 jumbo_split_static_library("browser") {
@@ -1595,6 +1603,7 @@ jumbo_split_static_library("browser") {
   ]
   deps = [
     ":active_use_util",
+    ":ntp_background_proto",
     ":resource_prefetch_predictor_proto",
     "//base:i18n",
     "//base/allocator:buildflags",
@@ -2694,6 +2703,13 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/tab_manager_web_contents_data.h",
       "resource_coordinator/tab_metrics_logger.cc",
       "resource_coordinator/tab_metrics_logger.h",
+      "search/background/ntp_background_data.cc",
+      "search/background/ntp_background_data.h",
+      "search/background/ntp_background_service.cc",
+      "search/background/ntp_background_service.h",
+      "search/background/ntp_background_service_factory.cc",
+      "search/background/ntp_background_service_factory.h",
+      "search/background/ntp_background_service_observer.h",
       "search/iframe_source.cc",
       "search/iframe_source.h",
       "search/instant_service.cc",

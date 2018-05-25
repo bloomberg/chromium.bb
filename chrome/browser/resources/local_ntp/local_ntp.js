@@ -301,8 +301,23 @@ function renderTheme() {
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
-  $('edit-background').hidden =
-      !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
+  if (configData.isGooglePage) {
+    $('edit-background').hidden =
+        !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
+    $('edit-background').onclick = function(event) {
+      var collElement = $('ntp-collection-loader');
+      if (collElement) {
+        collElement.parentNode.removeChild(collElement);
+      }
+      // Load the NTPBackgroundCollections script. It'll create a global
+      // variable name "coll" which is a dict of background collections data.
+      var collScript = document.createElement('script');
+      collScript.id = 'ntp-collection-loader';
+      collScript.src =
+          'chrome-search://local-ntp/ntp-background-collections.js';
+      document.body.appendChild(collScript);
+    };
+  }
 }
 
 /**
