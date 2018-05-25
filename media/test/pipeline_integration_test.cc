@@ -804,7 +804,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
 }
 
 TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
   Play();
 
   ASSERT_TRUE(Suspend());
@@ -837,6 +837,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
 
   // Re-enable video track.
   OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
+  ASSERT_TRUE(Resume(TimestampMs(400)));
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
@@ -867,7 +868,7 @@ TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
 }
 
 TEST_F(PipelineIntegrationTest, ReinitRenderersWhileVideoTrackIsDisabled) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed | kNoClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
   Play();
 
   // These get triggered every time playback is resumed.
@@ -918,8 +919,7 @@ TEST_F(PipelineIntegrationTest, PipelineStoppedWhileVideoRestartPending) {
 }
 
 TEST_F(PipelineIntegrationTest, SwitchAudioTrackDuringPlayback) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("multitrack-3video-2audio.webm", kHashed | kNoClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("multitrack-3video-2audio.webm", kNoClockless));
   Play();
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(100)));
   // The first audio track (TrackId=4) is enabled by default. This should
@@ -932,8 +932,7 @@ TEST_F(PipelineIntegrationTest, SwitchAudioTrackDuringPlayback) {
 }
 
 TEST_F(PipelineIntegrationTest, SwitchVideoTrackDuringPlayback) {
-  ASSERT_EQ(PIPELINE_OK,
-            Start("multitrack-3video-2audio.webm", kHashed | kNoClockless));
+  ASSERT_EQ(PIPELINE_OK, Start("multitrack-3video-2audio.webm", kNoClockless));
   Play();
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(100)));
   // The first video track (TrackId=1) is enabled by default. This should
