@@ -488,9 +488,11 @@ component("headless") {
         "//components/services/pdf_compositor/public/interfaces",
       ]
     }
+  }
 
-    # Normally set to false (see build/args/headless.gn), but we can optionally
-    # use external v8 startup data too.
+  # Normally set to false (see build/args/headless.gn), but we can optionally
+  # use external v8 startup data too.
+  if ((is_win && is_component_build) || !is_win) {
     if (v8_use_external_startup_data) {
       sources += [ "$root_out_dir/natives_blob.bin" ]
       public_deps += [ "//v8" ]
