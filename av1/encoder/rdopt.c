@@ -8475,7 +8475,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                   &tmp_rate_mv, preds0, preds1, strides, mi_row, mi_col);
             }
             break;
-          default: assert(0); return 0;
+          default: assert(0); return INT64_MAX;
         }
 
         if (best_rd_cur < best_rd_compound) {
@@ -8667,8 +8667,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
   if (early_terminate == INT64_MAX) return INT64_MAX;
   if (ret_val != 0) return ret_val;
-
-  return 0;  // The rate-distortion cost will be re-calculated by caller.
+  return RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
 }
 
 static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
@@ -10126,10 +10125,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         int ref_set =
             AOMMIN(MAX_REF_MV_SERCH - 1,
                    mbmi_ext->ref_mv_count[ref_frame_type] - 1 - idx_offset);
-        if (tmp_ref_rd != INT64_MAX) {
-          tmp_ref_rd = RDCOST(x->rdmult, rate2, distortion2);
-        }
-
         memcpy(x->blk_skip_drl, x->blk_skip,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
@@ -10228,11 +10223,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             args.single_newmv = search_state.single_newmv[0];
             args.single_newmv_rate = search_state.single_newmv_rate[0];
             args.single_newmv_valid = search_state.single_newmv_valid[0];
-          }
-
-          if (tmp_alt_rd < INT64_MAX) {
-            tmp_alt_rd =
-                RDCOST(x->rdmult, tmp_rd_stats.rate, tmp_rd_stats.dist);
           }
 
           if (tmp_ref_rd > tmp_alt_rd) {
