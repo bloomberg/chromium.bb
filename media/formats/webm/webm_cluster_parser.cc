@@ -629,7 +629,6 @@ WebMClusterParser::Track::Track(int track_num,
     : track_num_(track_num),
       track_type_(track_type),
       default_duration_(default_duration),
-      min_frame_duration_(kNoTimestamp),
       max_frame_duration_(kNoTimestamp),
       media_log_(media_log) {
   DCHECK(default_duration_ == kNoTimestamp ||
@@ -718,19 +717,8 @@ void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
   if (!last_added_buffer_missing_duration_)
     return;
 
-  bool constant_duration_estimate = false;
-  last_added_buffer_missing_duration_->set_duration(
-      GetDurationEstimate(&constant_duration_estimate));
-
-  // Signal to downstream to make informed decisions about buffer adjacency
-  // and splicing.
-  if (constant_duration_estimate) {
-    last_added_buffer_missing_duration_->set_duration_type(
-        DurationType::kConstantEstimate);
-  } else {
-    last_added_buffer_missing_duration_->set_duration_type(
-        DurationType::kRoughEstimate);
-  }
+  last_added_buffer_missing_duration_->set_duration(GetDurationEstimate());
+  last_added_buffer_missing_duration_->set_is_duration_estimated(true);
 
   LIMITED_MEDIA_LOG(INFO, media_log_, num_duration_estimates_,
                     kMaxDurationEstimateLogs)
@@ -784,22 +772,14 @@ bool WebMClusterParser::Track::QueueBuffer(
   }
 
   if (duration > base::TimeDelta()) {
-    base::TimeDelta orig_min_duration = min_frame_duration_;
     base::TimeDelta orig_max_duration = max_frame_duration_;
 
-    if (min_frame_duration_ == kNoTimestamp) {
-      DCHECK_EQ(max_frame_duration_, kNoTimestamp);
-      min_frame_duration_ = max_frame_duration_ = duration;
+    if (max_frame_duration_ == kNoTimestamp) {
+      max_frame_duration_ = duration;
     } else {
-      min_frame_duration_ = std::min(min_frame_duration_, duration);
       max_frame_duration_ = std::max(max_frame_duration_, duration);
     }
 
-    if (min_frame_duration_ != orig_min_duration) {
-      DVLOG(3) << "Updated min duration estimate:" << orig_min_duration
-               << " -> " << min_frame_duration_ << " at timestamp: "
-               << buffer->GetDecodeTimestamp().InSecondsF();
-    }
     if (max_frame_duration_ != orig_max_duration) {
       DVLOG(3) << "Updated max duration estimate:" << orig_max_duration
                << " -> " << max_frame_duration_ << " at timestamp: "
@@ -811,13 +791,10 @@ bool WebMClusterParser::Track::QueueBuffer(
   return true;
 }
 
-base::TimeDelta WebMClusterParser::Track::GetDurationEstimate(
-    bool* constant_duration_estimate) {
-  *constant_duration_estimate = false;
+base::TimeDelta WebMClusterParser::Track::GetDurationEstimate() {
   base::TimeDelta duration;
 
-  if (min_frame_duration_ == kNoTimestamp) {
-    DCHECK_EQ(max_frame_duration_, kNoTimestamp);
+  if (max_frame_duration_ == kNoTimestamp) {
     DVLOG(3) << __func__ << " : using hardcoded default duration";
     if (track_type_ == TrackType::AUDIO) {
       duration =
@@ -828,18 +805,10 @@ base::TimeDelta WebMClusterParser::Track::GetDurationEstimate(
           base::TimeDelta::FromMilliseconds(kDefaultVideoBufferDurationInMs);
     }
   } else {
-    *constant_duration_estimate = min_frame_duration_ == max_frame_duration_;
-
-    if (track_type_ == TrackType::AUDIO) {
-      // Audio uses min to avoid overtriggering splice trimming logic. See
-      // http://crbug.com/396634
-      duration = min_frame_duration_;
-    } else {
-      // Both kText and kVideo types safely use max because these formats don't
-      // undergo trimming analagous to the audio splicing (no risk of over
-      // trimming nor av sync loss).
-      duration = max_frame_duration_;
-    }
+    // Use max duration to minimize the risk of introducing gaps in the buffered
+    // range. For audio, this is still safe because overlap trimming is not
+    // applied to buffers where is_duration_estimated() = true.
+    duration = max_frame_duration_;
   }
 
   DCHECK(duration > base::TimeDelta());

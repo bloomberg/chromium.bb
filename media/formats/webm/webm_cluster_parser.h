@@ -108,9 +108,8 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     bool QueueBuffer(scoped_refptr<StreamParserBuffer> buffer);
 
     // Helper that calculates the buffer duration to use in
-    // ApplyDurationEstimateIfNeeded(). |constant_duration| will be set true
-    // when track is so far comprised of all same-duration packets.
-    base::TimeDelta GetDurationEstimate(bool* constant_duration);
+    // ApplyDurationEstimateIfNeeded().
+    base::TimeDelta GetDurationEstimate();
 
     // Counts the number of estimated durations used in this track. Used to
     // prevent log spam for MEDIA_LOG()s about estimated duration.
@@ -137,14 +136,10 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // If kNoTimestamp, then |{min|max}_frame_duration_| will be used.
     base::TimeDelta default_duration_;
 
-    // Tracks the min/max durations seen for this track. Used to estimate block
-    // durations at the end of clusters. Video uses maximum to minimize chance
-    // of introudcing discontinuities. Audio uses minimum to minimize chance of
-    // overtriggering splice logic, which may lead to AV sync loss. Keeping both
-    // min and max allows us to detect cases where min==max, which gives high
-    // enough confidence in estimate to potentially allow splicing. Research
-    // is ongoing. See http://crbug.com/396634.
-    base::TimeDelta min_frame_duration_;
+    // Tracks the max duration seen for this track. Used to estimate block
+    // durations at the end of clusters. Max minimizes the chance of introducing
+    // gaps in the buffered range and is safe for audio because we don't splice
+    // on estimated durations. See http://crbug.com/396634.
     base::TimeDelta max_frame_duration_;
 
     MediaLog* media_log_;

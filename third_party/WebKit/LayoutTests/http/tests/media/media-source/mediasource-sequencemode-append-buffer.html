@@ -50,7 +50,6 @@
           // and calls |callback| on success.
           function verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                               expectedTimestampOffset, expectedBufferedRangeStartTime,
-                                              expectedBufferedRangeMaxEndTimeBeforeEOS,
                                               expectedBufferedRangeEndTimeAfterEOS,
                                               callback) {
               assert_equals(threeDecimalPlaces(sourceBuffer.timestampOffset),
@@ -65,7 +64,7 @@
                             threeDecimalPlaces(expectedBufferedRangeStartTime),
                             'sourceBuffer.buffered range begins where expected before EOS');
               assert_less_than_equal(threeDecimalPlaces(sourceBuffer.buffered.end(0)),
-                                     threeDecimalPlaces(expectedBufferedRangeMaxEndTimeBeforeEOS),
+                                     threeDecimalPlaces(expectedBufferedRangeEndTimeAfterEOS),
                                      'sourceBuffer.buffered range ends at or before expected upper bound before EOS');
 
               test.expectEvent(mediaSource, 'sourceended', 'mediaSource endOfStream');
@@ -86,7 +85,6 @@
               {
                   verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                              0, 0,
-                                             segmentInfo.media[1].timecode + sourceBuffer.timestampOffset,
                                              segmentInfo.media[0].highest_end_time + sourceBuffer.timestampOffset,
                                              test.done);
               });
@@ -99,7 +97,6 @@
               {
                   verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                              -segmentInfo.media[1].timecode, 0,
-                                             segmentInfo.media[2].timecode + sourceBuffer.timestampOffset,
                                              segmentInfo.media[1].highest_end_time + sourceBuffer.timestampOffset,
                                              test.done);
               });
@@ -118,7 +115,6 @@
                       // by an earlier timestampOffset).
                       verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                                  segmentInfo.media[1].highest_end_time - segmentInfo.media[1].timecode, 0,
-                                                 segmentInfo.media[1].timecode + sourceBuffer.timestampOffset,
                                                  segmentInfo.media[0].highest_end_time + sourceBuffer.timestampOffset,
                                                  test.done);
                   })
@@ -135,7 +131,6 @@
                   {
                       verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                                  0, 0,
-                                                 segmentInfo.media[2].timecode + sourceBuffer.timestampOffset,
                                                  segmentInfo.media[1].highest_end_time + sourceBuffer.timestampOffset,
                                                  test.done);
                   })
@@ -151,7 +146,6 @@
                   verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                              10 - segmentInfo.media[1].timecode,
                                              10,
-                                             segmentInfo.media[2].timecode + sourceBuffer.timestampOffset,
                                              segmentInfo.media[1].highest_end_time + sourceBuffer.timestampOffset,
                                              test.done);
               });
@@ -170,7 +164,6 @@
                       verify_offset_and_buffered(test, mediaSource, sourceBuffer,
                                                  segmentInfo.media[0].highest_end_time - segmentInfo.media[4].timecode,
                                                  0,
-                                                 segmentInfo.media[5].timecode + sourceBuffer.timestampOffset,
                                                  segmentInfo.media[4].highest_end_time + sourceBuffer.timestampOffset,
                                                  test.done);
                   });

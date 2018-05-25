@@ -721,7 +721,7 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
           &kDataA, kDataSize, is_keyframe, GetStreamType(), 0);
       buffer->set_timestamp(buffer_timestamps[0]);
       if (is_duration_estimated)
-        buffer->set_duration_type(DurationType::kRoughEstimate);
+        buffer->set_is_duration_estimated(true);
 
       if (buffer_timestamps[1] != buffer_timestamps[0]) {
         buffer->SetDecodeTimestamp(
@@ -4542,6 +4542,27 @@ TEST_P(SourceBufferStreamTest, Audio_NoSpliceForBadOverlap) {
   NewCodedFrameGroupAppend("2D10K");
   CheckExpectedRangesByTimestamp("{ [0,12) }");
   CheckExpectedBuffers("0D10K 0D10K 2D10K");
+  CheckNoNextBuffer();
+}
+
+TEST_P(SourceBufferStreamTest, Audio_NoSpliceForEstimatedDuration) {
+  SetAudioStream();
+  Seek(0);
+
+  // Append two buffers, the latter having estimated duration.
+  NewCodedFrameGroupAppend("0D10K 10D10EK");
+  CheckExpectedRangesByTimestamp("{ [0,20) }");
+  CheckExpectedBuffers("0D10K 10D10EK");
+  CheckNoNextBuffer();
+
+  Seek(0);
+
+  // Add a new frame in a separate coded frame group that falls in the middle of
+  // the second buffer. In spite of the overlap, no splice should be performed
+  // due to the overlapped buffer having estimated duration.
+  NewCodedFrameGroupAppend("15D10K");
+  CheckExpectedRangesByTimestamp("{ [0,25) }");
+  CheckExpectedBuffers("0D10K 10D10EK 15D10K");
   CheckNoNextBuffer();
 }
 
