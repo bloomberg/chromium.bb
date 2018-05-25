@@ -36,14 +36,9 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
   background_image_->SetSrc(videoElement.getAttribute(HTMLNames::posterAttr));
   AppendChild(background_image_);
 
-  pip_icon_ = HTMLDivElement::Create(GetDocument());
-  pip_icon_->SetShadowPseudoId(
-      AtomicString("-internal-picture-in-picture-icon"));
-  AppendChild(pip_icon_);
-
   HTMLDivElement* message_element_ = HTMLDivElement::Create(GetDocument());
   message_element_->SetShadowPseudoId(
-      AtomicString("-internal-media-interstitial-message"));
+      AtomicString("-internal-picture-in-picture-interstitial-message"));
   message_element_->setInnerText(
       GetVideoElement().GetLocale().QueryString(
           WebLocalizedString::kPictureInPictureInterstitialText),
@@ -101,7 +96,6 @@ void PictureInPictureInterstitial::OnPosterImageChanged() {
 void PictureInPictureInterstitial::Trace(blink::Visitor* visitor) {
   visitor->Trace(video_element_);
   visitor->Trace(background_image_);
-  visitor->Trace(pip_icon_);
   visitor->Trace(message_element_);
   HTMLDivElement::Trace(visitor);
 }
