@@ -40,7 +40,7 @@ namespace tray {
 class VPNListView : public NetworkStateListDetailedView,
                     public VpnList::Observer {
  public:
-  VPNListView(SystemTrayItem* owner, LoginStatus login);
+  VPNListView(DetailedViewDelegate* delegate, LoginStatus login);
   ~VPNListView() override;
 
   // Make following functions publicly accessible for VPNListNetworkEntry.

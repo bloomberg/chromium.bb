@@ -24,6 +24,7 @@ class IMEDetailedView;
 
 class ImeController;
 class TrayItemView;
+class DetailedViewDelegate;
 
 // Controller for IME options in the system menu. Note this is separate from
 // the "opt-in" IME menu which can appear as a button in the system tray
@@ -92,6 +93,8 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
 
   // Whether the IME label and tray items should be visible.
   bool is_visible_;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };

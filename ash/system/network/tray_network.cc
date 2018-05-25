@@ -14,6 +14,7 @@
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -103,7 +104,9 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_NETWORK),
       tray_(nullptr),
       default_(nullptr),
-      detailed_(nullptr) {
+      detailed_(nullptr),
+      detailed_view_delegate_(
+          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
 }
 
@@ -133,7 +136,7 @@ views::View* TrayNetwork::CreateDetailedView(LoginStatus status) {
       UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   if (!chromeos::NetworkHandler::IsInitialized())
     return nullptr;
-  detailed_ = new tray::NetworkListView(this, status);
+  detailed_ = new tray::NetworkListView(detailed_view_delegate_.get(), status);
   detailed_->Init();
   return detailed_;
 }

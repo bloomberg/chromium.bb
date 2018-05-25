@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
@@ -76,8 +77,8 @@ class IMEDefaultView : public TrayItemMore {
 // enterprise-controlled icon).
 class IMEDetailedView : public ImeListView {
  public:
-  IMEDetailedView(SystemTrayItem* owner, ImeController* ime_controller)
-      : ImeListView(owner), ime_controller_(ime_controller) {
+  IMEDetailedView(DetailedViewDelegate* delegate, ImeController* ime_controller)
+      : ImeListView(delegate), ime_controller_(ime_controller) {
     DCHECK(ime_controller_);
   }
 
@@ -131,8 +132,7 @@ class IMEDetailedView : public ImeListView {
   void ShowSettings() {
     base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
     Shell::Get()->system_tray_controller()->ShowIMESettings();
-    if (owner()->system_tray())
-      owner()->system_tray()->CloseBubble();
+    CloseBubble();
   }
 
   ImeController* const ime_controller_;
@@ -155,7 +155,9 @@ TrayIME::TrayIME(SystemTray* system_tray)
       default_(nullptr),
       detailed_(nullptr),
       keyboard_suppressed_(false),
-      is_visible_(true) {
+      is_visible_(true),
+      detailed_view_delegate_(
+          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   DCHECK(ime_controller_);
   SystemTrayNotifier* tray_notifier = Shell::Get()->system_tray_notifier();
   tray_notifier->AddVirtualKeyboardObserver(this);
@@ -250,7 +252,8 @@ views::View* TrayIME::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayIME::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == nullptr);
-  detailed_ = new tray::IMEDetailedView(this, ime_controller_);
+  detailed_ =
+      new tray::IMEDetailedView(detailed_view_delegate_.get(), ime_controller_);
   detailed_->Init(ShouldShowKeyboardToggle(), GetSingleImeBehavior());
   return detailed_;
 }

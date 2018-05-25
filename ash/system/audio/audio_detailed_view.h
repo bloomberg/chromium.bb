@@ -20,7 +20,7 @@ namespace tray {
 
 class AudioDetailedView : public TrayDetailedView {
  public:
-  explicit AudioDetailedView(SystemTrayItem* owner);
+  explicit AudioDetailedView(DetailedViewDelegate* delegate);
 
   ~AudioDetailedView() override;
 

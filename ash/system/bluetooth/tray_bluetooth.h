@@ -15,6 +15,8 @@ class BluetoothDefaultView;
 class BluetoothDetailedView;
 }
 
+class DetailedViewDelegate;
+
 // Bluetooth section in the main system tray menu. Contains:
 // * Toggle to turn Bluetooth on and off
 // * Gear icon that takes the user to the web ui settings
@@ -39,6 +41,8 @@ class TrayBluetooth : public SystemTrayItem, public BluetoothObserver {
 
   tray::BluetoothDefaultView* default_;
   tray::BluetoothDetailedView* detailed_;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBluetooth);
 };

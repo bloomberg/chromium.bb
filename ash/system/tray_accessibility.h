@@ -28,7 +28,7 @@ class View;
 
 namespace ash {
 class HoverHighlightView;
-class SystemTrayItem;
+class DetailedViewDelegate;
 class TrayAccessibilityLoginScreenTest;
 class TrayAccessibilityTest;
 
@@ -37,7 +37,7 @@ namespace tray {
 // Create the detailed view of accessibility tray.
 class AccessibilityDetailedView : public TrayDetailedView {
  public:
-  explicit AccessibilityDetailedView(SystemTrayItem* owner);
+  explicit AccessibilityDetailedView(DetailedViewDelegate* delegate);
   ~AccessibilityDetailedView() override {}
 
   void OnAccessibilityStatusChanged();
@@ -134,6 +134,8 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
 
   // A11y feature status on just entering the lock screen.
   bool show_a11y_menu_on_lock_screen_;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
 };

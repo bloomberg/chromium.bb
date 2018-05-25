@@ -9,6 +9,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/test/ash_test_base.h"
@@ -27,7 +28,8 @@ namespace {
 
 class TestDetailsView : public TrayDetailedView {
  public:
-  explicit TestDetailsView(SystemTrayItem* owner) : TrayDetailedView(owner) {
+  explicit TestDetailsView(DetailedViewDelegate* delegate)
+      : TrayDetailedView(delegate) {
     // Uses bluetooth label for testing purpose. It can be changed to any
     // string_id.
     CreateTitleRow(IDS_ASH_STATUS_TRAY_BLUETOOTH);
@@ -52,7 +54,9 @@ class TestItem : public SystemTrayItem {
       : SystemTrayItem(AshTestBase::GetPrimarySystemTray(), UMA_TEST),
         tray_view_(nullptr),
         default_view_(nullptr),
-        detailed_view_(nullptr) {}
+        detailed_view_(nullptr),
+        detailed_view_delegate_(
+            std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {}
 
   // Overridden from SystemTrayItem:
   views::View* CreateTrayView(LoginStatus status) override {
@@ -65,7 +69,7 @@ class TestItem : public SystemTrayItem {
     return default_view_;
   }
   views::View* CreateDetailedView(LoginStatus status) override {
-    detailed_view_ = new TestDetailsView(this);
+    detailed_view_ = new TestDetailsView(detailed_view_delegate_.get());
     return detailed_view_;
   }
   void OnTrayViewDestroyed() override { tray_view_ = NULL; }
@@ -80,6 +84,7 @@ class TestItem : public SystemTrayItem {
   views::View* tray_view_;
   views::View* default_view_;
   TestDetailsView* detailed_view_;
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestItem);
 };
@@ -92,7 +97,7 @@ class TrayDetailedViewTest : public AshTestBase {
   ~TrayDetailedViewTest() override = default;
 
   void TransitionFromDetailedToDefaultView(TestDetailsView* detailed) {
-    detailed->TransitionToDefaultView();
+    detailed->TransitionToMainView();
     (*scoped_task_runner_)
         ->FastForwardBy(base::TimeDelta::FromMilliseconds(
             kTrayDetailedViewTransitionDelayMs));

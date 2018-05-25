@@ -32,7 +32,7 @@ class ImeListView : public TrayDetailedView {
     HIDE_SINGLE_IME
   };
 
-  explicit ImeListView(SystemTrayItem* owner);
+  explicit ImeListView(DetailedViewDelegate* delegate);
 
   ~ImeListView() override;
 

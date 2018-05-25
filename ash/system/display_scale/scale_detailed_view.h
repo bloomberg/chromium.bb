@@ -19,7 +19,7 @@ namespace tray {
 
 class ScaleDetailedView : public TrayDetailedView {
  public:
-  explicit ScaleDetailedView(SystemTrayItem* owner);
+  explicit ScaleDetailedView(DetailedViewDelegate* delegate);
 
   ~ScaleDetailedView() override;
 

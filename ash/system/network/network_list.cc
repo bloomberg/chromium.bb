@@ -501,8 +501,9 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
 
 // NetworkListView:
 
-NetworkListView::NetworkListView(SystemTrayItem* owner, LoginStatus login)
-    : NetworkStateListDetailedView(owner, LIST_TYPE_NETWORK, login),
+NetworkListView::NetworkListView(DetailedViewDelegate* delegate,
+                                 LoginStatus login)
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login),
       needs_relayout_(false),
       no_wifi_networks_view_(nullptr),
       mobile_header_view_(nullptr),

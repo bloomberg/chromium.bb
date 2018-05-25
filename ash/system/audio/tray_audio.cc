@@ -11,6 +11,7 @@
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/volume_view.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
@@ -28,7 +29,9 @@ TrayAudio::TrayAudio(SystemTray* system_tray)
     : TrayImageItem(system_tray, kSystemTrayVolumeMuteIcon, UMA_AUDIO),
       volume_view_(nullptr),
       pop_up_volume_view_(false),
-      audio_detail_view_(nullptr) {
+      audio_detail_view_(nullptr),
+      detailed_view_delegate_(
+          std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->AddAudioObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
@@ -71,7 +74,8 @@ views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
   } else {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_AUDIO_VIEW);
-    audio_detail_view_ = new tray::AudioDetailedView(this);
+    audio_detail_view_ =
+        new tray::AudioDetailedView(detailed_view_delegate_.get());
     return audio_detail_view_;
   }
 }

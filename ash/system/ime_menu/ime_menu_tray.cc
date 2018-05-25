@@ -253,7 +253,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 // height depending on the number of IMEs in the list.
 class ImeMenuListView : public ImeListView {
  public:
-  ImeMenuListView(SystemTrayItem* owner) : ImeListView(owner) {
+  ImeMenuListView(DetailedViewDelegate* delegate) : ImeListView(delegate) {
     set_should_focus_ime_after_selection_with_keyboard(true);
   }
 

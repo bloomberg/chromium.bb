@@ -20,6 +20,8 @@ class CastDetailedView;
 class CastDuplexView;
 }  // namespace tray
 
+class DetailedViewDelegate;
+
 class ASH_EXPORT TrayCast : public SystemTrayItem,
                             public ShellObserver,
                             public CastConfigControllerObserver {
@@ -69,6 +71,8 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   tray::CastTrayView* tray_ = nullptr;
   tray::CastDuplexView* default_ = nullptr;
   tray::CastDetailedView* detailed_ = nullptr;
+
+  const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayCast);
 };

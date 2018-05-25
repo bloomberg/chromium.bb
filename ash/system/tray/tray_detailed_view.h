@@ -11,7 +11,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -28,16 +27,16 @@ class ScrollView;
 
 namespace ash {
 
+class DetailedViewDelegate;
 class HoverHighlightView;
 class ScrollBorder;
-class SystemTrayItem;
 class TriView;
 
 class ASH_EXPORT TrayDetailedView : public views::View,
                                     public ViewClickListener,
                                     public views::ButtonListener {
  public:
-  explicit TrayDetailedView(SystemTrayItem* owner);
+  explicit TrayDetailedView(DetailedViewDelegate* delegate);
   ~TrayDetailedView() override;
 
   // ViewClickListener:
@@ -47,8 +46,6 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // views::ButtonListener:
   // Don't override this --- override HandleButtonPressed.
   void ButtonPressed(views::Button* sender, const ui::Event& event) final;
-
-  SystemTrayItem* owner() { return owner_; }
 
  protected:
   // views::View:
@@ -110,6 +107,9 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   views::Button* CreateSettingsButton(int setting_accessible_name_id);
   views::Button* CreateHelpButton();
 
+  // Closes the bubble that contains the detailed view.
+  void CloseBubble();
+
   TriView* tri_view() { return tri_view_; }
   views::ScrollView* scroller() const { return scroller_; }
   views::View* scroll_content() const { return scroll_content_; }
@@ -127,23 +127,15 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // Creates and adds subclass-specific buttons to the title row.
   virtual void CreateExtraTitleRowButtons();
 
-  // Transition to default view from details view. If |title_row_| has focus
-  // before transition, the default view should focus on the owner of this
-  // details view.
-  //
-  // In Material Design the actual transition is intentionally delayed to allow
-  // the user to perceive the ink drop animation on the clicked target.
-  void TransitionToDefaultView();
-
-  // Actually transitions to the default view.
-  void DoTransitionToDefaultView();
+  // Transition to main view from detailed view.
+  void TransitionToMainView();
 
   // Helper function which creates and returns the back button used in the
   // material design top-most header row. The caller assumes ownership of the
   // returned button.
   views::Button* CreateBackButton();
 
-  SystemTrayItem* owner_;
+  DetailedViewDelegate* const delegate_;
   views::BoxLayout* box_layout_;
   views::ScrollView* scroller_;
   views::View* scroll_content_;
@@ -156,9 +148,6 @@ class ASH_EXPORT TrayDetailedView : public views::View,
 
   // The back button that appears in the material design title row. Not owned.
   views::Button* back_button_;
-
-  // Used to delay the transition to the default view.
-  base::OneShotTimer transition_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailedView);
 };

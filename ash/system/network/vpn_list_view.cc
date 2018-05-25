@@ -220,8 +220,8 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 
 }  // namespace
 
-VPNListView::VPNListView(SystemTrayItem* owner, LoginStatus login)
-    : NetworkStateListDetailedView(owner, LIST_TYPE_VPN, login) {
+VPNListView::VPNListView(DetailedViewDelegate* delegate, LoginStatus login)
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login) {
   Shell::Get()->vpn_list()->AddObserver(this);
 }
 
