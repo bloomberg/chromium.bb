@@ -5,7 +5,6 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_MANAGER_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_MANAGER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -181,19 +180,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
 
-  // Removes synchronously token from token_service
-  void HandleRemoveAccessTokenFromCache(
-      const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scopes,
-      const std::string& access_token);
-
-  // Notifies diagnostics observers. Invoked asynchronously from
-  // OnAccessTokenRequested() to mimic the effect of receiving this call
-  // asynchronously from the Identity Service.
-  void HandleOnAccessTokenRequested(const std::string& account_id,
-                                    const std::string& consumer_id,
-                                    const OAuth2TokenService::ScopeSet& scopes);
-
   // Backing signin classes. NOTE: We strive to limit synchronous access to
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is backed by
@@ -208,8 +194,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Makes sure lists are empty on destruction.
   base::ObserverList<Observer, true> observer_list_;
   base::ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
-
-  base::WeakPtrFactory<IdentityManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };
