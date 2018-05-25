@@ -13,11 +13,13 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/translate/core/browser/mock_translate_client.h"
 #include "components/translate/core/browser/mock_translate_driver.h"
 #include "components/translate/core/browser/mock_translate_ranker.h"
+#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -275,6 +277,152 @@ TEST_F(TranslateManagerTest, GetTargetLanguageFromModel) {
       MockLanguageModel::LanguageDetails("nb", 1.0)};
   EXPECT_EQ("no", TranslateManager::GetTargetLanguage(&translate_prefs_,
                                                       &mock_language_model_));
+}
+
+// Test that the language model is used if provided, and that languages that
+// should be skipped actually are.
+TEST_F(TranslateManagerTest, GetTargetLanguageFromModelWithSkippedLanguages) {
+  // Try with a single, supported language but request it to be skipped. It
+  // should still be chosen since there is no fallback.
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("en"));
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0)};
+  EXPECT_EQ("en", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"en"}));
+
+  // Try with two supported languages and skip the first one.
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("de"));
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("de", 1.0),
+      MockLanguageModel::LanguageDetails("en", 0.5)};
+  EXPECT_EQ("en", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"de"}));
+
+  // Try with first supported language lower in the list but request it to be
+  // skipped. It should still be chosen since there is no fallback.
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("xx"));
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("xx", 1.0),
+      MockLanguageModel::LanguageDetails("en", 0.5)};
+  EXPECT_EQ("en", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"en"}));
+
+  // Try non standard codes. Skipping should be specified using the supported
+  // language in pairs of synonyms.
+  // 'he', 'fil', 'nb' => 'iw', 'tl', 'no'
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("iw"));
+  ASSERT_FALSE(TranslateDownloadManager::IsSupportedLanguage("he"));
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("he", 1.0),
+      MockLanguageModel::LanguageDetails("en", 0.5)};
+  EXPECT_EQ("en", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"iw"}));
+
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("iw", 1.0),
+      MockLanguageModel::LanguageDetails("en", 0.5)};
+  EXPECT_EQ("iw", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"he"}));
+}
+
+TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kOverrideTranslateTriggerInIndia,
+      {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0),
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+  EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"en"}));
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
+}
+
+TEST_F(TranslateManagerTest, ShouldHonorExperimentRankerEnforcement_Enforce) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kOverrideTranslateTriggerInIndia,
+      {{"override_model", "heuristic"}, {"enforce_ranker", "true"}});
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0),
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  // Simulate that Ranker decides to suppress the translation UI. This should be
+  // honored since "enforce_ranker" is "true" in the experiment params.
+  mock_translate_ranker_.set_should_offer_translation(false);
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+  EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"en"}));
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER,
+      1);
+}
+
+TEST_F(TranslateManagerTest,
+       ShouldHonorExperimentRankerEnforcement_DontEnforce) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kOverrideTranslateTriggerInIndia,
+      {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("en", 1.0),
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  // Simulate that Ranker decides to suppress the translation UI. This should
+  // not be honored since "enforce_ranker" is "true" in the experiment params.
+  mock_translate_ranker_.set_should_offer_translation(false);
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+  EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
+                      &translate_prefs_, &mock_language_model_, {"en"}));
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
 }
 
 TEST_F(TranslateManagerTest, DontTranslateOffline) {
