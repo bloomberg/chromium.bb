@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -60,7 +59,6 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   void Start();
 
   void WaitForRefreshToken();
-  void ScheduleStartAccessTokenRequest();
   void StartAccessTokenRequest();
 
   // SigninManagerBase::Observer implementation.
@@ -93,8 +91,6 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   bool access_token_retried_;
 
   Mode mode_;
-
-  base::WeakPtrFactory<PrimaryAccountAccessTokenFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrimaryAccountAccessTokenFetcher);
 };

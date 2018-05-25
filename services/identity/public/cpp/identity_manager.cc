@@ -3,16 +3,14 @@
 // found in the LICENSE file.
 
 #include "services/identity/public/cpp/identity_manager.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace identity {
 
 IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service)
-    : signin_manager_(signin_manager),
-      token_service_(token_service),
-      weak_ptr_factory_(this) {
+    : signin_manager_(signin_manager), token_service_(token_service) {
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
   signin_manager_->AddObserver(this);
 #if !defined(OS_CHROMEOS)
@@ -95,13 +93,14 @@ void IdentityManager::RemoveAccessTokenFromCache(
     const AccountInfo& account_info,
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token) {
-  // Call PO2TS asynchronously to mimic the eventual interaction with the
-  // Identity Service.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IdentityManager::HandleRemoveAccessTokenFromCache,
-                     weak_ptr_factory_.GetWeakPtr(), account_info.account_id,
-                     scopes, access_token));
+  // TODO(843510): Consider making the request to ProfileOAuth2TokenService
+  // asynchronously once there are no direct clients of PO2TS. This change would
+  // need to be made together with changing all callsites to
+  // ProfileOAuth2TokenService::RequestAccessToken() to be made asynchronously
+  // as well (to maintain ordering in the case where a client removes an access
+  // token from the cache and then immediately requests an access token).
+  token_service_->InvalidateAccessToken(account_info.account_id, scopes,
+                                        access_token);
 }
 
 void IdentityManager::AddObserver(Observer* observer) {
@@ -181,26 +180,8 @@ void IdentityManager::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
-  // Fire observer callbacks asynchronously to mimic this callback itself coming
-  // in asynchronously from the Identity Service rather than synchronously from
-  // ProfileOAuth2TokenService.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&IdentityManager::HandleOnAccessTokenRequested,
-                                weak_ptr_factory_.GetWeakPtr(), account_id,
-                                consumer_id, scopes));
-}
-
-void IdentityManager::HandleRemoveAccessTokenFromCache(
-    const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
-    const std::string& access_token) {
-  token_service_->InvalidateAccessToken(account_id, scopes, access_token);
-}
-
-void IdentityManager::HandleOnAccessTokenRequested(
-    const std::string& account_id,
-    const std::string& consumer_id,
-    const OAuth2TokenService::ScopeSet& scopes) {
+  // TODO(843510): Consider notifying observers asynchronously once there
+  // are no direct clients of ProfileOAuth2TokenService.
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnAccessTokenRequested(account_id, consumer_id, scopes);
   }

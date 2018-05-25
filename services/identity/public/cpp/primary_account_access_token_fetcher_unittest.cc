@@ -207,34 +207,6 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
-TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotRequestIfDestroyedEarly) {
-  TestTokenCallback callback;
-
-  base::RunLoop run_loop;
-  set_on_access_token_request_callback(
-      base::BindOnce([]() { EXPECT_TRUE(false); }));
-
-  SignIn("account");
-  token_service()->UpdateCredentials("account", "refresh token");
-
-  // Signed in and refresh token already exists, so this should result in
-  // posting a task to make a request for an access token.
-  auto fetcher = CreateFetcher(
-      callback.Get(), PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
-
-  // Destroy the fetcher immediately.
-  fetcher.reset();
-
-  // No access token request should occur (i.e., the posted task should not
-  // actually execute).
-  run_loop.RunUntilIdle();
-
-  // Now fulfilling the access token request should have no effect.
-  token_service()->IssueAllTokensForAccount(
-      "account", "access token",
-      base::Time::Now() + base::TimeDelta::FromHours(1));
-}
-
 TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotCallsBackWhenSignedOut) {
   base::RunLoop run_loop;
 

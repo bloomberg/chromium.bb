@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace identity {
 
@@ -26,8 +25,7 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
       waiting_for_sign_in_(false),
       waiting_for_refresh_token_(false),
       access_token_retried_(false),
-      mode_(mode),
-      weak_factory_(this) {
+      mode_(mode) {
   Start();
 }
 
@@ -42,7 +40,7 @@ PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {
 
 void PrimaryAccountAccessTokenFetcher::Start() {
   if (mode_ == Mode::kImmediate) {
-    ScheduleStartAccessTokenRequest();
+    StartAccessTokenRequest();
     return;
   }
 
@@ -68,7 +66,7 @@ void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
   if (token_service_->RefreshTokenIsAvailable(
           signin_manager_->GetAuthenticatedAccountId())) {
     // Already have refresh token: Get the access token directly.
-    ScheduleStartAccessTokenRequest();
+    StartAccessTokenRequest();
     return;
   }
 
@@ -78,22 +76,15 @@ void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
   token_service_->AddObserver(this);
 }
 
-void PrimaryAccountAccessTokenFetcher::ScheduleStartAccessTokenRequest() {
-  // Fire off the request asynchronously to mimic the asynchronous flow that
-  // will occur when this request is going through the Identity Service.
-  // NOTE: Posting the task using a WeakPtr is necessary as this instance
-  // might die before the posted task runs (https://crbug.com/800263).
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest,
-                     weak_factory_.GetWeakPtr()));
-}
-
 void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
   // Note: We might get here even in cases where we know that there's no refresh
   // token. We're requesting an access token anyway, so that the token service
   // will generate an appropriate error code that we can return to the client.
   DCHECK(!access_token_request_);
+
+  // TODO(843510): Consider making the request to ProfileOAuth2TokenService
+  // asynchronously once there are no direct clients of PO2TS (i.e., PO2TS is
+  // used only by this class and IdentityManager).
   access_token_request_ = token_service_->StartRequest(
       signin_manager_->GetAuthenticatedAccountId(), scopes_, this);
 }
@@ -135,7 +126,7 @@ void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
 
   waiting_for_refresh_token_ = false;
   token_service_->RemoveObserver(this);
-  ScheduleStartAccessTokenRequest();
+  StartAccessTokenRequest();
 }
 
 void PrimaryAccountAccessTokenFetcher::OnRefreshTokensLoaded() {
@@ -150,7 +141,7 @@ void PrimaryAccountAccessTokenFetcher::OnRefreshTokensLoaded() {
   // provide us with an appropriate error code.
   waiting_for_refresh_token_ = false;
   token_service_->RemoveObserver(this);
-  ScheduleStartAccessTokenRequest();
+  StartAccessTokenRequest();
 }
 
 void PrimaryAccountAccessTokenFetcher::OnGetTokenSuccess(
@@ -188,7 +179,7 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
       token_service_->RefreshTokenIsAvailable(
           signin_manager_->GetAuthenticatedAccountId())) {
     access_token_retried_ = true;
-    ScheduleStartAccessTokenRequest();
+    StartAccessTokenRequest();
     return;
   }
 
