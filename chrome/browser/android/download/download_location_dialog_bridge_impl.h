@@ -32,6 +32,10 @@ class DownloadLocationDialogBridgeImpl : public DownloadLocationDialogBridge {
                   const base::android::JavaParamRef<jobject>& obj) override;
 
  private:
+  // Called when the download location is selected by the user.
+  void CompleteLocationSelection(DownloadLocationDialogResult result,
+                                 base::FilePath file_path);
+
   bool is_dialog_showing_;
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   LocationCallback location_callback_;

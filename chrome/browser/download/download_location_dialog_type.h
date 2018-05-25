@@ -8,20 +8,16 @@
 // The type of download location dialog that should by shown by Android.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.download
+// Recorded in histogram, so do not delete or reuse entries. The values must
+// match DownloadLocationDialogType in enums.xml.
 enum class DownloadLocationDialogType {
-  NO_DIALOG,           // No dialog.
-  DEFAULT,             // Dialog without any error states.
-  LOCATION_FULL,       // Error dialog, default location is full.
-  LOCATION_NOT_FOUND,  // Error dialog, default location is not found.
-  NAME_CONFLICT,       // Error dialog, there is already a file with that name.
-  NAME_TOO_LONG,       // Error dialog, the file name is too long.
-};
-
-// Result of download location dialog.
-enum class DownloadLocationDialogResult {
-  USER_CONFIRMED = 0,  // User confirmed a file path.
-  USER_CANCELED,       // User canceled file path selection.
-  DUPLICATE_DIALOG,    // Dialog is already showing.
+  NO_DIALOG = 0,           // No dialog.
+  DEFAULT = 1,             // Dialog without any error states.
+  LOCATION_FULL = 2,       // Error dialog, default location is full.
+  LOCATION_NOT_FOUND = 3,  // Error dialog, default location is not found.
+  NAME_CONFLICT = 4,  // Error dialog, there is already a file with that name.
+  NAME_TOO_LONG = 5,  // Error dialog, the file name is too long.
+  kMaxValue = NAME_TOO_LONG
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_LOCATION_DIALOG_TYPE_H_

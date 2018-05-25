@@ -103,6 +103,8 @@ public class DownloadLocationPreferenceAdapter
 
         mSelectedPosition = selectedId;
 
+        option.recordDirectoryOptionType();
+
         // Refresh the list of download directories UI.
         notifyDataSetChanged();
     }

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/download/download_controller.h"
 #include "jni/DownloadLocationDialogBridge_jni.h"
 #include "ui/android/window_android.h"
@@ -32,22 +33,26 @@ void DownloadLocationDialogBridgeImpl::ShowDialog(
   if (!native_window)
     return;
 
+  UMA_HISTOGRAM_ENUMERATION("MobileDownload.Location.Dialog.Type", dialog_type);
+
+  location_callback_ = std::move(location_callback);
+
   // This shouldn't happen, but if it does, cancel download.
   if (dialog_type == DownloadLocationDialogType::NO_DIALOG) {
     NOTREACHED();
-    std::move(location_callback)
-        .Run(DownloadLocationDialogResult::USER_CANCELED, base::FilePath());
+    CompleteLocationSelection(DownloadLocationDialogResult::USER_CANCELED,
+                              base::FilePath());
+    return;
   }
 
   // If dialog is showing, run the callback to continue without confirmation.
   if (is_dialog_showing_) {
-    std::move(location_callback)
-        .Run(DownloadLocationDialogResult::DUPLICATE_DIALOG, suggested_path);
+    CompleteLocationSelection(DownloadLocationDialogResult::DUPLICATE_DIALOG,
+                              std::move(suggested_path));
     return;
   }
 
   is_dialog_showing_ = true;
-  location_callback_ = std::move(location_callback);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadLocationDialogBridge_showDialog(
@@ -64,11 +69,8 @@ void DownloadLocationDialogBridgeImpl::OnComplete(
   std::string path_string(
       base::android::ConvertJavaStringToUTF8(env, returned_path));
 
-  if (location_callback_) {
-    std::move(location_callback_)
-        .Run(DownloadLocationDialogResult::USER_CONFIRMED,
-             base::FilePath(FILE_PATH_LITERAL(path_string)));
-  }
+  CompleteLocationSelection(DownloadLocationDialogResult::USER_CONFIRMED,
+                            base::FilePath(FILE_PATH_LITERAL(path_string)));
 
   is_dialog_showing_ = false;
 }
@@ -79,9 +81,18 @@ void DownloadLocationDialogBridgeImpl::OnCanceled(
   if (location_callback_) {
     DownloadController::RecordDownloadCancelReason(
         DownloadController::CANCEL_REASON_USER_CANCELED);
-    std::move(location_callback_)
-        .Run(DownloadLocationDialogResult::USER_CANCELED, base::FilePath());
+    CompleteLocationSelection(DownloadLocationDialogResult::USER_CANCELED,
+                              base::FilePath());
   }
 
   is_dialog_showing_ = false;
+}
+
+void DownloadLocationDialogBridgeImpl::CompleteLocationSelection(
+    DownloadLocationDialogResult result,
+    base::FilePath file_path) {
+  if (location_callback_) {
+    UMA_HISTOGRAM_ENUMERATION("MobileDownload.Location.Dialog.Result", result);
+    std::move(location_callback_).Run(result, std::move(file_path));
+  }
 }
