@@ -111,6 +111,11 @@ class SmartTokenizerTest(unittest.TestCase):
 
         self.assertEqual(tokenize_name('matrix3d'), ['matrix', '3d'])
 
+        self.assertEqual(tokenize_name('uint8ArrayMember'), ['uint8', 'Array', 'Member'])
+        self.assertEqual(tokenize_name('webgl2Element'), ['webgl2', 'Element'])
+        self.assertEqual(tokenize_name('webGL2Element'), ['webGL2', 'Element'])
+        self.assertEqual(tokenize_name('xssError'), ['xss', 'Error'])
+
     def test_ignoring_characters(self):
         self.assertEqual(tokenize_name('Animation.idl'), ['Animation', 'idl'])
         self.assertEqual(tokenize_name('-webkit-appearance'), ['webkit', 'appearance'])
