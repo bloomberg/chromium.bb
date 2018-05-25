@@ -70,6 +70,10 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("ComboBoxMenuButton");
     case blink::kWebAXRoleComplementary:
       return result.append("Complementary");
+    case blink::kWebAXRoleContentDeletion:
+      return result.append("ContentDeletion");
+    case blink::kWebAXRoleContentInsertion:
+      return result.append("ContentInsertion");
     case blink::kWebAXRoleContentInfo:
       return result.append("ContentInfo");
     case blink::kWebAXRoleDate:

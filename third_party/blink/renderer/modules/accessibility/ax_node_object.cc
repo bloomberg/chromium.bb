@@ -428,6 +428,12 @@ AccessibilityRole AXNodeObject::NativeAccessibilityRoleIgnoringAria() const {
   if (GetNode()->HasTagName(articleTag))
     return kArticleRole;
 
+  if (GetNode()->HasTagName(delTag))
+    return kContentDeletionRole;
+
+  if (GetNode()->HasTagName(insTag))
+    return kContentInsertionRole;
+
   if (GetNode()->HasTagName(mainTag))
     return kMainRole;
 

@@ -511,6 +511,8 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
 
 SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
   const kNoBrailleMessageRequired = new Set([
+    'contentDeletion',
+    'contentInsertion',
     'docAbstract',
     'docAcknowledgments',
     'docAfterword',

@@ -534,6 +534,12 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kComplementary:
       message_id = IDS_AX_ROLE_COMPLEMENTARY;
       break;
+    case ax::mojom::Role::kContentDeletion:
+      message_id = IDS_AX_ROLE_CONTENT_DELETION;
+      break;
+    case ax::mojom::Role::kContentInsertion:
+      message_id = IDS_AX_ROLE_CONTENT_INSERTION;
+      break;
     case ax::mojom::Role::kContentInfo:
       message_id = IDS_AX_ROLE_CONTENT_INFO;
       break;

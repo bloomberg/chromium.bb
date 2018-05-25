@@ -32,6 +32,8 @@ enum AccessibilityRole {
   kComboBoxGroupingRole,
   kComboBoxMenuButtonRole,
   kComplementaryRole,
+  kContentDeletionRole,   // ARIA role mapping expected in ARIA v1.2.
+  kContentInsertionRole,  // ARIA role mapping expected in ARIA v1.2.
   kContentInfoRole,
   kDateRole,      // No mapping to ARIA role.
   kDateTimeRole,  // No mapping to ARIA role.
@@ -159,7 +161,7 @@ enum AccessibilityRole {
   kSearchRole,
   kSearchBoxRole,
   kSliderRole,
-  kSliderThumbRole,     // No mapping to ARIA role.
+  kSliderThumbRole,  // No mapping to ARIA role.
   kSpinButtonRole,
   kSplitterRole,
   kStaticTextRole,  // No mapping to ARIA role.

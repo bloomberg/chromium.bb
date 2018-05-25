@@ -1010,6 +1010,10 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_COMBO_BOX;
     case ax::mojom::Role::kComplementary:
       return ATK_ROLE_LANDMARK;
+    case ax::mojom::Role::kContentDeletion:
+      return ATK_ROLE_PANEL;  // TODO(accessibility) text attribute diff:del.
+    case ax::mojom::Role::kContentInsertion:
+      return ATK_ROLE_PANEL;  // TODO(accessibility) text attribute diff:ins.
     case ax::mojom::Role::kContentInfo:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kDate:

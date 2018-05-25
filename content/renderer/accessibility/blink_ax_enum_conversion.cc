@@ -113,6 +113,10 @@ ax::mojom::Role AXRoleFromBlink(blink::WebAXRole role) {
       return ax::mojom::Role::kComboBoxMenuButton;
     case blink::kWebAXRoleComplementary:
       return ax::mojom::Role::kComplementary;
+    case blink::kWebAXRoleContentDeletion:
+      return ax::mojom::Role::kContentDeletion;
+    case blink::kWebAXRoleContentInsertion:
+      return ax::mojom::Role::kContentInsertion;
     case blink::kWebAXRoleContentInfo:
       return ax::mojom::Role::kContentInfo;
     case blink::kWebAXRoleDate:

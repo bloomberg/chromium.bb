@@ -88,6 +88,7 @@ struct RoleEntry {
   AccessibilityRole webcore_role;
 };
 
+// Mapping of ARIA role name to internal role name.
 const RoleEntry kRoles[] = {{"alert", kAlertRole},
                             {"alertdialog", kAlertDialogRole},
                             {"application", kApplicationRole},
@@ -240,6 +241,8 @@ const InternalRoleEntry kInternalRoles[] = {
     {kComboBoxGroupingRole, "ComboBox"},
     {kComboBoxMenuButtonRole, "ComboBox"},
     {kComplementaryRole, "Complementary"},
+    {kContentDeletionRole, "ContentDeletion"},
+    {kContentInsertionRole, "ContentInsertion"},
     {kContentInfoRole, "ContentInfo"},
     {kDateRole, "Date"},
     {kDateTimeRole, "DateTime"},
@@ -2844,6 +2847,8 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kAnnotationRole:
     case kCanvasRole:
     case kCaptionRole:
+    case kContentDeletionRole:
+    case kContentInsertionRole:
     case kDescriptionListDetailRole:
     case kDescriptionListRole:
     case kDescriptionListTermRole:

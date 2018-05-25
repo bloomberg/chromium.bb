@@ -3,9 +3,11 @@ AXWebArea
 ++++AXWebArea
 ++++++AXGroup
 ++++++++AXStaticText AXValue='My favorite browser is '
-++++++++AXStaticText AXValue='ABC'
+++++++++AXGroup
+++++++++++AXStaticText AXValue='ABC'
 ++++++++AXStaticText AXValue=' '
-++++++++AXStaticText AXValue='Chrome'
+++++++++AXGroup
+++++++++++AXStaticText AXValue='Chrome'
 ++++++++AXStaticText AXValue='!'
 ++AXGroup
 ++++AXWebArea
