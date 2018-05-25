@@ -32,6 +32,8 @@ component("lib") {
     "client_root.h",
     "client_window.cc",
     "client_window.h",
+    "embedding.cc",
+    "embedding.h",
     "focus_handler.cc",
     "focus_handler.h",
     "pointer_watcher.cc",
@@ -128,6 +130,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "embedding_unittest.cc",
     "focus_handler_unittest.cc",
     "screen_provider_unittest.cc",
     "window_service_client_unittest.cc",

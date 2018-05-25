@@ -455,15 +455,16 @@ TEST(WindowServiceClientTest, CaptureNotificationForEmbedRoot) {
 
   // Set capture on the embed-root from the embedded client. The embedder
   // should be notified.
-  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(window);
-  ASSERT_TRUE(embedding);
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(window);
+  ASSERT_TRUE(embedding_helper);
   setup.changes()->clear();
-  embedding->changes()->clear();
-  EXPECT_TRUE(embedding->client_test_helper->SetCapture(window));
+  embedding_helper->changes()->clear();
+  EXPECT_TRUE(embedding_helper->client_test_helper->SetCapture(window));
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
             SingleChangeToDescription(*(setup.changes())));
   setup.changes()->clear();
-  EXPECT_TRUE(embedding->changes()->empty());
+  EXPECT_TRUE(embedding_helper->changes()->empty());
 
   // Set capture from the embedder. This triggers the embedded client to lose
   // capture.
@@ -472,14 +473,14 @@ TEST(WindowServiceClientTest, CaptureNotificationForEmbedRoot) {
   // NOTE: the '2' is because the embedded client sees the high order bits of
   // the root.
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=2,1",
-            SingleChangeToDescription(*(embedding->changes())));
-  embedding->changes()->clear();
+            SingleChangeToDescription(*(embedding_helper->changes())));
+  embedding_helper->changes()->clear();
 
   // And release capture locally.
   wm::CaptureController::Get()->ReleaseCapture(window);
   EXPECT_EQ("OnCaptureChanged new_window=null old_window=0,1",
             SingleChangeToDescription(*(setup.changes())));
-  EXPECT_TRUE(embedding->changes()->empty());
+  EXPECT_TRUE(embedding_helper->changes()->empty());
 }
 
 TEST(WindowServiceClientTest, CaptureNotificationForTopLevel) {
@@ -625,10 +626,11 @@ TEST(WindowServiceClientTest, Embed) {
   window->AddChild(embed_window);
   embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
 
-  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(embed_window);
-  ASSERT_TRUE(embedding);
-  ASSERT_EQ("OnEmbed", SingleChangeToDescription(*embedding->changes()));
-  const Change& test_change = (*embedding->changes())[0];
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(embed_window);
+  ASSERT_TRUE(embedding_helper);
+  ASSERT_EQ("OnEmbed", SingleChangeToDescription(*embedding_helper->changes()));
+  const Change& test_change = (*embedding_helper->changes())[0];
   ASSERT_EQ(1u, test_change.windows.size());
   EXPECT_EQ(embed_window->bounds(), test_change.windows[0].bounds);
   EXPECT_EQ(kInvalidTransportId, test_change.windows[0].parent_id);

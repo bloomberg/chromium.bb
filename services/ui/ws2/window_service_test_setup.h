@@ -25,10 +25,9 @@ namespace ws2 {
 
 class WindowService;
 class WindowServiceClient;
-class WindowServiceClientBinding;
 class WindowServiceClientTestHelper;
 
-struct Embedding;
+struct EmbeddingHelper;
 
 // Helper to setup state needed for WindowService tests.
 class WindowServiceTestSetup {
@@ -39,8 +38,8 @@ class WindowServiceTestSetup {
   ~WindowServiceTestSetup();
 
   // |flags| mirrors that from mojom::WindowTree::Embed(), see it for details.
-  std::unique_ptr<Embedding> CreateEmbedding(aura::Window* embed_root,
-                                             uint32_t flags = 0);
+  std::unique_ptr<EmbeddingHelper> CreateEmbedding(aura::Window* embed_root,
+                                                   uint32_t flags = 0);
 
   aura::Window* root() { return aura_test_helper_.root_window(); }
   TestWindowServiceDelegate* delegate() { return &delegate_; }
@@ -69,19 +68,18 @@ class WindowServiceTestSetup {
   DISALLOW_COPY_AND_ASSIGN(WindowServiceTestSetup);
 };
 
-// Embedding contains the object necessary for an embedding. This is created
-// by way of WindowServiceTestSetup::CreateEmbededing().
-struct Embedding {
-  Embedding();
-  ~Embedding();
+// EmbeddingHelper contains the object necessary for an embedding. This is
+// created by way of WindowServiceTestSetup::CreateEmbedding().
+struct EmbeddingHelper {
+  EmbeddingHelper();
+  ~EmbeddingHelper();
 
   std::vector<Change>* changes() {
     return window_tree_client.tracker()->changes();
   }
 
-  // This is created by WindowServiceClient::Embed(). It owns
-  // |window_service_client_|.
-  WindowServiceClientBinding* binding = nullptr;
+  // The Embedding. This is owned by the window the embedding was created on.
+  Embedding* embedding = nullptr;
 
   TestWindowTreeClient window_tree_client;
 

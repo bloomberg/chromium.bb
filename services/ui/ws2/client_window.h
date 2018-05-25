@@ -25,6 +25,7 @@ class EventHandler;
 
 namespace ws2 {
 
+class Embedding;
 class WindowServiceClient;
 
 // Tracks any state associated with an aura::Window for the WindowService.
@@ -61,15 +62,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
     return owning_window_service_client_;
   }
 
-  void set_embedded_window_service_client(WindowServiceClient* client) {
-    embedded_window_service_client_ = client;
-  }
-  WindowServiceClient* embedded_window_service_client() {
-    return embedded_window_service_client_;
-  }
-  const WindowServiceClient* embedded_window_service_client() const {
-    return embedded_window_service_client_;
-  }
+  WindowServiceClient* embedded_window_service_client();
+  const WindowServiceClient* embedded_window_service_client() const;
 
   void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
     frame_sink_id_ = frame_sink_id;
@@ -94,9 +88,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   bool DoesOwnerInterceptEvents() const;
 
   // Returns true if this window has a client embedded in it.
-  bool HasEmbedding() const {
-    return embedded_window_service_client_ != nullptr;
-  }
+  bool HasEmbedding() const { return embedding_.get() != nullptr; }
+  void SetEmbedding(std::unique_ptr<Embedding> embedding);
+  Embedding* embedding() { return embedding_.get(); }
 
   // Returns true if the window is a top-level window and there is at least some
   // non-client area.
@@ -128,12 +122,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   // calls InitForEmbed() on a Window not associated with any other clients.
   WindowServiceClient* owning_window_service_client_;
 
-  // This is the WindowServiceClient that has the Window as a ClientRoot. This
-  // is only set at embed points. For example, if a client creates a new window,
-  // then |embedded_window_service_client_| is initially null for that window.
-  // If the client embeds another client in it, then
-  // |embedded_window_service_client_| is set appropriately.
-  WindowServiceClient* embedded_window_service_client_ = nullptr;
+  // Non-null if there is an embedding in this window.
+  std::unique_ptr<Embedding> embedding_;
 
   // This is initially the id supplied by the client (for locally created
   // windows it is kWindowServerClientId for the high part and low part an ever

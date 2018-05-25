@@ -27,8 +27,6 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
     : window_service_client_(window_service_client),
       window_(window),
       is_top_level_(is_top_level) {
-  ClientWindow::GetMayBeNull(window)->set_embedded_window_service_client(
-      window_service_client);
   window_->AddObserver(this);
   // TODO: wire up gfx::Insets() correctly below. See usage in
   // aura::ClientSurfaceEmbedder for details. Insets here are used for
@@ -43,7 +41,6 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
 
 ClientRoot::~ClientRoot() {
   ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
-  client_window->set_embedded_window_service_client(nullptr);
   window_->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =

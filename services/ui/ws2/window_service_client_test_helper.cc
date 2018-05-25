@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/window_service_client_test_helper.h"
 
+#include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_client_binding.h"
 
@@ -92,7 +93,7 @@ void WindowServiceClientTestHelper::SetWindowProperty(
       change_id, TransportIdForWindow(window), name, value);
 }
 
-WindowServiceClientBinding* WindowServiceClientTestHelper::Embed(
+Embedding* WindowServiceClientTestHelper::Embed(
     aura::Window* window,
     mojom::WindowTreeClientPtr client_ptr,
     mojom::WindowTreeClient* client,
@@ -103,7 +104,7 @@ WindowServiceClientBinding* WindowServiceClientTestHelper::Embed(
           std::move(client_ptr), client, embed_flags)) {
     return nullptr;
   }
-  return window_service_client_->embedded_client_bindings_.back().get();
+  return ClientWindow::GetMayBeNull(window)->embedding();
 }
 
 void WindowServiceClientTestHelper::SetEventTargetingPolicy(
@@ -129,10 +130,9 @@ void WindowServiceClientTestHelper::SetCanFocus(aura::Window* window,
       window_service_client_->TransportIdForWindow(window), can_focus);
 }
 
-void WindowServiceClientTestHelper::DestroyBinding(
-    WindowServiceClientBinding* binding) {
-  // Triggers WindowServiceClient to delete WindowServiceClientBinding.
-  window_service_client_->OnChildBindingConnectionLost(binding);
+void WindowServiceClientTestHelper::DestroyEmbedding(Embedding* embedding) {
+  // Triggers WindowServiceClient deleting the Embedding.
+  window_service_client_->OnEmbeddedClientConnectionLost(embedding);
 }
 
 ClientWindowId WindowServiceClientTestHelper::ClientWindowIdForWindow(

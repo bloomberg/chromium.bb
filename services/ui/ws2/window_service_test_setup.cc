@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/window_service_test_setup.h"
 
+#include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
@@ -68,31 +69,32 @@ WindowServiceTestSetup::~WindowServiceTestSetup() {
   ui::TerminateContextFactoryForTests();
 }
 
-std::unique_ptr<Embedding> WindowServiceTestSetup::CreateEmbedding(
+std::unique_ptr<EmbeddingHelper> WindowServiceTestSetup::CreateEmbedding(
     aura::Window* embed_root,
     uint32_t flags) {
-  std::unique_ptr<Embedding> embedding = std::make_unique<Embedding>();
-  embedding->binding = client_test_helper_->Embed(
-      embed_root, nullptr, &embedding->window_tree_client, flags);
-  if (!embedding->binding)
+  auto embedding_helper = std::make_unique<EmbeddingHelper>();
+  embedding_helper->embedding = client_test_helper_->Embed(
+      embed_root, nullptr, &embedding_helper->window_tree_client, flags);
+  if (!embedding_helper->embedding)
     return nullptr;
-  embedding->window_service_client =
-      embedding->binding->window_service_client();
-  embedding->client_test_helper =
+  embedding_helper->window_service_client =
+      embedding_helper->embedding->embedded_client();
+  embedding_helper->client_test_helper =
       std::make_unique<WindowServiceClientTestHelper>(
-          embedding->window_service_client);
-  embedding->parent_window_service_client = window_service_client_.get();
-  return embedding;
+          embedding_helper->window_service_client);
+  embedding_helper->parent_window_service_client =
+      embedding_helper->embedding->embedding_client();
+  return embedding_helper;
 }
 
-Embedding::Embedding() = default;
+EmbeddingHelper::EmbeddingHelper() = default;
 
-Embedding::~Embedding() {
-  if (!binding)
+EmbeddingHelper::~EmbeddingHelper() {
+  if (!embedding)
     return;
 
   WindowServiceClientTestHelper(parent_window_service_client)
-      .DestroyBinding(binding);
+      .DestroyEmbedding(embedding);
 }
 
 }  // namespace ws2

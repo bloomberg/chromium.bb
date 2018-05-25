@@ -13,10 +13,10 @@
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_root.h"
 #include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/pointer_watcher.h"
 #include "services/ui/ws2/window_delegate_impl.h"
 #include "services/ui/ws2/window_service.h"
-#include "services/ui/ws2/window_service_client_binding.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
@@ -64,10 +64,6 @@ void WindowServiceClient::InitFromFactory() {
 
 WindowServiceClient::~WindowServiceClient() {
   wm::CaptureController::Get()->RemoveObserver(this);
-  // Delete any WindowServiceClients created as a result of Embed(). There's
-  // no point in having them outlive us given all the windows they were embedded
-  // in have been destroyed.
-  embedded_client_bindings_.clear();
 
   // Delete the embeddings first, that way we don't attempt to notify the client
   // when the windows the client created are deleted.
@@ -750,19 +746,18 @@ bool WindowServiceClient::EmbedImpl(
     return false;
   }
 
-  auto new_client_binding = std::make_unique<WindowServiceClientBinding>();
-  new_client_binding->InitForEmbed(
+  const bool intercept_events =
+      (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+  std::unique_ptr<Embedding> embedding =
+      std::make_unique<Embedding>(this, window);
+  embedding->Init(
       window_service_, std::move(window_tree_client_ptr), window_tree_client,
-      flags & mojom::kEmbedFlagEmbedderInterceptsEvents, window,
-      base::BindOnce(&WindowServiceClient::OnChildBindingConnectionLost,
-                     base::Unretained(this), new_client_binding.get()));
-
-  if (flags & mojom::kEmbedFlagEmbedderControlsVisibility) {
-    new_client_binding->window_service_client_
-        ->can_change_root_window_visibility_ = false;
-  }
-
-  embedded_client_bindings_.push_back(std::move(new_client_binding));
+      intercept_events,
+      base::BindOnce(&WindowServiceClient::OnEmbeddedClientConnectionLost,
+                     base::Unretained(this), embedding.get()));
+  if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
+    embedding->embedded_client()->can_change_root_window_visibility_ = false;
+  ClientWindow::GetMayBeNull(window)->SetEmbedding(std::move(embedding));
   return true;
 }
 
@@ -791,16 +786,8 @@ void WindowServiceClient::GetWindowTreeRecursive(
     GetWindowTreeRecursive(child, windows);
 }
 
-void WindowServiceClient::OnChildBindingConnectionLost(
-    WindowServiceClientBinding* binding) {
-  for (auto iter = embedded_client_bindings_.begin();
-       iter != embedded_client_bindings_.end(); ++iter) {
-    if (iter->get() == binding) {
-      embedded_client_bindings_.erase(iter);
-      return;
-    }
-  }
-  NOTREACHED();
+void WindowServiceClient::OnEmbeddedClientConnectionLost(Embedding* embedding) {
+  ClientWindow::GetMayBeNull(embedding->window())->SetEmbedding(nullptr);
 }
 
 void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {

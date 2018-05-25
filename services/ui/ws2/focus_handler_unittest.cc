@@ -112,40 +112,42 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   embed_window->Show();
-  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(embed_window);
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(embed_window);
   setup.changes()->clear();
-  embedding->changes()->clear();
+  embedding_helper->changes()->clear();
 
   // Set focus from the embedded client.
-  EXPECT_TRUE(embedding->client_test_helper->SetFocus(embed_window));
+  EXPECT_TRUE(embedding_helper->client_test_helper->SetFocus(embed_window));
   EXPECT_TRUE(embed_window->HasFocus());
   EXPECT_TRUE(setup.changes()->empty());
-  EXPECT_TRUE(embedding->changes()->empty());
+  EXPECT_TRUE(embedding_helper->changes()->empty());
 
   // Send an event, the embedded client should get it.
   test::EventGenerator event_generator(setup.root());
   event_generator.PressKey(VKEY_A, EF_NONE);
   EXPECT_TRUE(setup.changes()->empty());
-  EXPECT_EQ("KEY_PRESSED",
-            EventToEventType(
-                embedding->window_tree_client.PopInputEvent().event.get()));
-  EXPECT_TRUE(embedding->window_tree_client.input_events().empty());
-  embedding->changes()->clear();
+  EXPECT_EQ(
+      "KEY_PRESSED",
+      EventToEventType(
+          embedding_helper->window_tree_client.PopInputEvent().event.get()));
+  EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
+  embedding_helper->changes()->clear();
 
   // Set focus from the parent. The embedded client should lose focus.
   setup.client_test_helper()->SetFocus(embed_window);
   EXPECT_TRUE(embed_window->HasFocus());
   EXPECT_TRUE(setup.changes()->empty());
   EXPECT_EQ("Focused id=null",
-            SingleChangeToDescription(*embedding->changes()));
-  embedding->changes()->clear();
+            SingleChangeToDescription(*embedding_helper->changes()));
+  embedding_helper->changes()->clear();
 
   // And events should now target the parent.
   event_generator.PressKey(VKEY_B, EF_NONE);
   EXPECT_EQ("KEY_PRESSED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
-  EXPECT_TRUE(embedding->changes()->empty());
+  EXPECT_TRUE(embedding_helper->changes()->empty());
 }
 
 TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
@@ -162,27 +164,28 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
   top_level->AddChild(embed_window);
   embed_window->Show();
 
-  std::unique_ptr<Embedding> embedding = setup.CreateEmbedding(
+  std::unique_ptr<EmbeddingHelper> embedding_helper = setup.CreateEmbedding(
       embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
-  ASSERT_TRUE(embedding);
+  ASSERT_TRUE(embedding_helper);
   aura::Window* embed_child_window =
-      embedding->client_test_helper->NewWindow(4);
+      embedding_helper->client_test_helper->NewWindow(4);
   ASSERT_TRUE(embed_child_window);
   embed_child_window->Show();
   embed_window->AddChild(embed_child_window);
   setup.changes()->clear();
-  embedding->changes()->clear();
+  embedding_helper->changes()->clear();
 
   // Set focus from the embedded client.
-  EXPECT_TRUE(embedding->client_test_helper->SetFocus(embed_child_window));
+  EXPECT_TRUE(
+      embedding_helper->client_test_helper->SetFocus(embed_child_window));
   EXPECT_TRUE(embed_child_window->HasFocus());
 
   // Generate a key-press. Even though focus is on a window in the embedded
   // client, the event goes to the embedder because it intercepts events.
   test::EventGenerator event_generator(setup.root());
   event_generator.PressKey(VKEY_A, EF_NONE);
-  EXPECT_TRUE(embedding->changes()->empty());
-  EXPECT_TRUE(embedding->window_tree_client.input_events().empty());
+  EXPECT_TRUE(embedding_helper->changes()->empty());
+  EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
   EXPECT_EQ("KEY_PRESSED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
