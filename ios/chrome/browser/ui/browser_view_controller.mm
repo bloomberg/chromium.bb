@@ -1471,9 +1471,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // dismiss the keyboard.
   [self closeFindInPage];
   [_model.currentTab.view endEditing:NO];
-  id nativeController = [self nativeControllerForTab:_model.currentTab];
-  if ([nativeController respondsToSelector:@selector(dismissKeyboard)])
-    [nativeController dismissKeyboard];
 
   // Ensure that voice search objects are created.
   [self ensureVoiceSearchControllerCreated];
@@ -4962,9 +4959,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self.dispatcher cancelOmniboxEdit];
   // Dismiss the soft keyboard (if open).
   [_model.currentTab.view endEditing:NO];
-  id nativeController = [self nativeControllerForTab:_model.currentTab];
-  if ([nativeController respondsToSelector:@selector(dismissKeyboard)])
-    [nativeController dismissKeyboard];
   // Dismiss Find in Page focus.
   [self updateFindBar:NO shouldFocus:NO];
 
