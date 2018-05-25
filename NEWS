@@ -37,7 +37,8 @@ issues]].
   - Remove dead code
 
 ** Deprecation notice
-None
+- The =mode= parameter in =lou_dotsToChar= never had any effect and is
+  now deprecated.
 
 ** Backwards incompatible changes
 

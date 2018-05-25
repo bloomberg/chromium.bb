@@ -3287,6 +3287,8 @@ consisting of characters according to the specifications in
 liblouis format or Unicode braille. The function returns 1 on success 
 and 0 on failure.
 
+Note that the @code{mode} parameter has no effect and is deprecated.
+
 @node lou_charToDots
 @section lou_charToDots
 @findex lou_charToDots
