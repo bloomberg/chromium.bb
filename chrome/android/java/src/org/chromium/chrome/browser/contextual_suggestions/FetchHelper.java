@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.webkit.URLUtil;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -57,6 +59,7 @@ class FetchHelper {
         private long mFetchTimeBaselineMillis;
         private String mUrl;
         private boolean mSuggestionsDismissed;
+        private String mCanonicalUrl;
 
         TabFetchReadinessState(String url) {
             updateUrl(url);
@@ -69,6 +72,7 @@ class FetchHelper {
          */
         void updateUrl(String url) {
             mUrl = URLUtil.isNetworkUrl(url) ? url : null;
+            mCanonicalUrl = "";
             mFetchTimeBaselineMillis = 0;
             setSuggestionsDismissed(false);
         }
@@ -76,6 +80,12 @@ class FetchHelper {
         /** @return The current URL tracked by this tab state. */
         String getUrl() {
             return mUrl;
+        }
+
+        /** Set the canonical url, which can differ from the actual URL. If the canonical url is
+         * set, the readiness state is considered to be tracking both urls. */
+        void setCanonicalUrl(String canonicalUrl) {
+            mCanonicalUrl = canonicalUrl;
         }
 
         /**
@@ -121,7 +131,8 @@ class FetchHelper {
          * @return Whether the URLs can be considered the same.
          */
         boolean isContextTheSame(String url) {
-            return UrlUtilities.urlsMatchIgnoringFragments(url, mUrl);
+            return UrlUtilities.urlsMatchIgnoringFragments(url, mUrl)
+                    || UrlUtilities.urlsMatchIgnoringFragments(url, mCanonicalUrl);
         }
     }
 
@@ -280,13 +291,39 @@ class FetchHelper {
         return false;
     }
 
-    private void maybeStartFetch(Tab tab) {
+    private void maybeStartFetch(final Tab tab) {
         if (tab == null || tab != mCurrentTab) return;
-
-        assert !tab.isIncognito();
 
         // Skip additional requests for current tab, until clearState is called.
         if (mFetchRequestedForCurrentTab) return;
+
+        if (shouldFetchCanonicalUrl(tab)) {
+            mFetchRequestedForCurrentTab = true;
+            tab.getWebContents().getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
+                @Override
+                public void onResult(String result) {
+                    // Reset mFetchRequestedForCurrentTab so that it remains false if
+                    // maybeStartFetchWithCanonicalURLResolved doesn't end up requesting
+                    // suggestions. If it does end up requesting suggestions,
+                    // mFetchRequestedForCurrentTab will be set back to true in the same synchronous
+                    // flow of execution, so there shouldn't be a race condition.
+                    mFetchRequestedForCurrentTab = false;
+                    TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(tab);
+                    tabFetchReadinessState.setCanonicalUrl(result);
+                    maybeStartFetchWithCanonicalURLResolved(
+                            tab, getUrlToFetchFor(tab.getUrl(), result));
+                }
+            });
+            return;
+        } else {
+            maybeStartFetchWithCanonicalURLResolved(tab, tab.getUrl());
+        }
+    }
+
+    private void maybeStartFetchWithCanonicalURLResolved(Tab tab, String resolvedUrl) {
+        if (tab == null || tab != mCurrentTab) return;
+
+        assert !tab.isIncognito();
 
         TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(mCurrentTab);
 
@@ -306,17 +343,16 @@ class FetchHelper {
             return;
         }
 
-        String url = tabFetchReadinessState.getUrl();
         long remainingFetchDelayMillis =
                 SystemClock.uptimeMillis() - tabFetchReadinessState.getFetchTimeBaselineMillis();
         if (!sDisableDelayForTesting && remainingFetchDelayMillis < MINIMUM_FETCH_DELAY_MILLIS) {
-            postDelayedFetch(
-                    url, mCurrentTab, MINIMUM_FETCH_DELAY_MILLIS - remainingFetchDelayMillis);
+            postDelayedFetch(resolvedUrl, mCurrentTab,
+                    MINIMUM_FETCH_DELAY_MILLIS - remainingFetchDelayMillis);
             return;
         }
 
         mFetchRequestedForCurrentTab = true;
-        mDelegate.requestSuggestions(url);
+        mDelegate.requestSuggestions(resolvedUrl);
     }
 
     private void postDelayedFetch(final String url, final Tab tab, long delayMillis) {
@@ -473,6 +509,23 @@ class FetchHelper {
         }
 
         return false;
+    }
+
+    static boolean shouldFetchCanonicalUrl(final Tab currentTab) {
+        WebContents webContents = currentTab.getWebContents();
+        if (webContents == null) return false;
+        if (webContents.getMainFrame() == null) return false;
+        String url = currentTab.getUrl();
+        if (TextUtils.isEmpty(url)) return false;
+        if (currentTab.isShowingErrorPage() || currentTab.isShowingInterstitialPage()
+                || currentTab.isShowingSadTab()) {
+            return false;
+        }
+        return true;
+    }
+
+    static String getUrlToFetchFor(String visibleUrl, String canonicalUrl) {
+        return TextUtils.isEmpty(canonicalUrl) ? visibleUrl : canonicalUrl;
     }
 
     @VisibleForTesting
