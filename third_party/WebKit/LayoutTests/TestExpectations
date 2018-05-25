@@ -289,6 +289,8 @@ crbug.com/722825 virtual/video-surface-layer/media/controls/video-enter-exit-ful
 #### crbug.com/783229 overflow
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
+crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pass ]
+
 ### external/wpt/css/css-tables/
 crbug.com/598134 external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-001.html [ Failure ]
