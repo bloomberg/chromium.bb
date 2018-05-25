@@ -4,6 +4,7 @@
 
 #include "cc/animation/scroll_offset_animations_impl.h"
 
+#include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
@@ -66,8 +67,11 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
     base::TimeTicks frame_monotonic_time,
     base::TimeDelta delayed_by) {
   DCHECK(scroll_offset_animation_);
-  if (!scroll_offset_animation_->has_element_animations())
+  if (!scroll_offset_animation_->has_element_animations()) {
+    TRACE_EVENT_INSTANT0("cc", "No element animation exists",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   DCHECK_EQ(element_id, scroll_offset_animation_->element_id());
 
@@ -75,6 +79,8 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
       scroll_offset_animation_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
   if (!keyframe_model) {
     scroll_offset_animation_->DetachElement();
+    TRACE_EVENT_INSTANT0("cc", "No keyframe model exists",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
   if (scroll_delta.IsZero())
