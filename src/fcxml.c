@@ -2780,7 +2780,10 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 	    else
 	    {
 		if (parse->scanOnly && vstack->u.string)
+		{
 		    FcStrFree (vstack->u.string);
+		    vstack->tag = FcVStackNone;
+		}
 	    }
 	    break;
 	case FcVStackPattern:
