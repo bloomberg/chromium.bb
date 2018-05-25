@@ -2174,13 +2174,10 @@ bool RenderWidgetHostViewAura::SyncSurfaceProperties(
     return false;
 
   if (delegated_frame_host_) {
-    delegated_frame_host_->SynchronizeVisualProperties(
-        window_->GetLocalSurfaceId(), window_->bounds().size(),
-        deadline_policy);
+    delegated_frame_host_->EmbedSurface(window_->GetLocalSurfaceId(),
+                                        window_->bounds().size(),
+                                        deadline_policy);
   }
-  // Note that |host_| will retrieve resize parameters from
-  // |delegated_frame_host_|, so it must have SynchronizeVisualProperties called
-  // after.
   return host()->SynchronizeVisualProperties();
 }
 

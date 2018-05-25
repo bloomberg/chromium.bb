@@ -123,9 +123,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,
                 const ui::LatencyInfo& latency_info);
-  void SynchronizeVisualProperties(const viz::LocalSurfaceId& local_surface_id,
-                                   const gfx::Size& dip_size,
-                                   cc::DeadlinePolicy deadline_policy);
+  void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
+                    const gfx::Size& dip_size,
+                    cc::DeadlinePolicy deadline_policy);
   bool HasSavedFrame() const;
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
@@ -226,7 +226,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   float active_device_scale_factor_ = 0.f;
 
   // The local surface id as of the most recent call to
-  // SynchronizeVisualProperties or WasShown. This is the surface that we expect
+  // EmbedSurface or WasShown. This is the surface that we expect
   // future frames to reference. This will eventually equal the active surface.
   viz::LocalSurfaceId pending_local_surface_id_;
   // The size of the above surface (updated at the same time).
@@ -234,7 +234,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // In non-surface sync, this is the size of the most recently activated
   // surface (which is suitable for calculating gutter size). In surface sync,
-  // this is most recent size set in SynchronizeVisualProperties.
+  // this is most recent size set in EmbedSurface.
   // TODO(ccameron): The meaning of "current" should be made more clear here.
   gfx::Size current_frame_size_in_dip_;
 
