@@ -311,22 +311,10 @@ config("asan_flags") {
 config("link_executable") {
   if (is_asan && is_win && !is_component_build) {
     if (target_cpu == "x64") {
-      libs = [ "clang_rt.asan-x86_64.lib" ]
-      ldflags = [
-        "-wholearchive:clang_rt.asan-x86_64.lib",
-        "-include:__asan_get_free_stack",
-      ]
+      ldflags = [ "-wholearchive:clang_rt.asan-x86_64.lib" ]
     } else {
       assert(target_cpu == "x86", "WinASan unsupported architecture")
-      libs = [ "clang_rt.asan-i386.lib" ]
-      ldflags = [
-        "-wholearchive:clang_rt.asan-i386.lib",
-
-        # TODO(crbug.com/777087): The linker in VS 15.4 does not respect
-        # /wholearchive. This manually includes a symbol to work around that.
-        # We can remove it when the linker is fixed.
-        "-include:___asan_get_free_stack",
-      ]
+      ldflags = [ "-wholearchive:clang_rt.asan-i386.lib" ]
     }
   }
 }
