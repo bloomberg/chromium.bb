@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -51,7 +52,13 @@ class OOPBrowserTest : public ContentBrowserTest {
 
 // This test calls into system GL which is not instrumented with MSAN.
 #if !defined(MEMORY_SANITIZER)
-IN_PROC_BROWSER_TEST_F(OOPBrowserTest, Basic) {
+// Flaky on Win/Linux (http://crbug.com/846621).
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+IN_PROC_BROWSER_TEST_F(OOPBrowserTest, MAYBE_Basic) {
   // Create a div to ensure we don't use solid color quads.
   GURL url = GURL(
       "data:text/html,"
