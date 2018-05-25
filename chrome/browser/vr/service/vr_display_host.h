@@ -36,6 +36,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   ~VRDisplayHost() override;
 
   // device::mojom::VRDisplayHost
+  void RequestSession(RequestSessionCallback callback) override;
   void RequestPresent(device::mojom::VRSubmitFrameClientPtr client,
                       device::mojom::VRPresentationProviderRequest request,
                       device::mojom::VRRequestPresentOptionsPtr options,
@@ -58,6 +59,10 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
 
  private:
   void ReportRequestPresent();
+
+  // TODO(https://crbug.com/837538): Instead, check before returning this
+  // object.
+  bool IsSecureContextRequirementSatisfied();
 
   std::unique_ptr<device::VRDisplayImpl> display_;
   BrowserXrDevice* browser_device_ = nullptr;

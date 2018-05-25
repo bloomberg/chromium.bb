@@ -30,6 +30,9 @@ const char kNoOutputContext[] =
 const char kRequestRequiresUserActivation[] =
     "The requested session requires user activation.";
 
+const char kSessionNotSupported[] =
+    "The specified session configuration is not supported.";
+
 }  // namespace
 
 XRDevice::XRDevice(
@@ -65,6 +68,25 @@ const char* XRDevice::checkSessionSupport(
     if (!options.hasOutputContext()) {
       return kNoOutputContext;
     }
+  }
+
+  // TODO(https://crbug.com/828321): Use session options instead of the flag.
+  bool is_ar = RuntimeEnabledFeatures::WebXRHitTestEnabled();
+  if (is_ar) {
+    if (!supports_ar_) {
+      return kSessionNotSupported;
+    }
+    // TODO(https://crbug.com/828321): Expose information necessary to check
+    // combinations.
+    // For now, exclusive AR is not supported.
+    if (options.exclusive()) {
+      return kSessionNotSupported;
+    }
+  } else {
+    // TODO(https://crbug.com/828321): Remove this check when properly
+    // supporting multiple VRDevice registration.
+    DCHECK(!supports_ar_);
+    // TODO(https://crbug.com/828321): Check that VR is supported.
   }
 
   return nullptr;
@@ -145,6 +167,23 @@ ScriptPromise XRDevice::requestSession(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
+  display_->RequestSession(WTF::Bind(&XRDevice::OnRequestSessionComplete,
+                                     WrapWeakPersistent(this),
+                                     WrapPersistent(resolver), options));
+
+  return promise;
+}
+
+void XRDevice::OnRequestSessionComplete(ScriptPromiseResolver* resolver,
+                                        const XRSessionCreationOptions& options,
+                                        bool success) {
+  if (!success) {
+    DOMException* exception =
+        DOMException::Create(kNotSupportedError, kSessionNotSupported);
+    resolver->Reject(exception);
+    return;
+  }
+
   XRPresentationContext* output_context = nullptr;
   if (options.hasOutputContext()) {
     output_context = options.outputContext();
@@ -158,8 +197,6 @@ ScriptPromise XRDevice::requestSession(
   } else {
     resolver->Resolve(session);
   }
-
-  return promise;
 }
 
 void XRDevice::OnFrameFocusChanged() {
@@ -220,6 +257,7 @@ void XRDevice::SetXRDisplayInfo(
   display_info_ = std::move(display_info);
   is_external_ = display_info_->capabilities->hasExternalDisplay;
   supports_exclusive_ = (display_info_->capabilities->canPresent);
+  supports_ar_ = display_info_->capabilities->can_provide_pass_through_images;
 }
 
 void XRDevice::Trace(blink::Visitor* visitor) {

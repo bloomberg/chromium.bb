@@ -274,6 +274,10 @@ class MockDevice {
     }
   }
 
+  requestSession() {
+    return Promise.resolve({success:true});
+  }
+
   requestPresent(submitFrameClient, request, presentOptions) {
     this.presentation_provider_.bind(
         submitFrameClient, request, presentOptions);

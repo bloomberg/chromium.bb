@@ -14,8 +14,6 @@
 
 namespace device {
 
-class VRDisplayImpl;
-
 // Represents one of the platform's VR devices. Owned by the respective
 // VRDeviceProvider.
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
@@ -32,7 +30,9 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   mojom::VRDisplayInfoPtr GetVRDisplayInfo() final;
   void SetMagicWindowEnabled(bool enabled) final;
   void SetVRDeviceEventListener(VRDeviceEventListener* listener) final;
-
+  void RequestSession(
+      VRDisplayImpl* display,
+      mojom::VRDisplayHost::RequestSessionCallback callback) override;
   void RequestPresent(
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,
@@ -40,9 +40,9 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
       mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void ExitPresent() override;
   bool IsFallbackDevice() override;
+  void SetListeningForActivate(bool is_listening) override;
 
   bool IsAccessAllowed(VRDisplayImpl* display);
-  void SetListeningForActivate(bool is_listening) override;
   void OnListeningForActivateChanged(VRDisplayImpl* display);
   void OnFrameFocusChanged(VRDisplayImpl* display);
   void GetMagicWindowPose(

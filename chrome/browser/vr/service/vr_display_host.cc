@@ -58,17 +58,22 @@ VRDisplayHost::~VRDisplayHost() {
   browser_device_->OnDisplayHostRemoved(this);
 }
 
+void VRDisplayHost::RequestSession(RequestSessionCallback callback) {
+  if (!IsSecureContextRequirementSatisfied()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  display_->RequestSession(std::move(callback));
+}
+
 void VRDisplayHost::RequestPresent(
     device::mojom::VRSubmitFrameClientPtr client,
     device::mojom::VRPresentationProviderRequest request,
     device::mojom::VRRequestPresentOptionsPtr options,
     bool triggered_by_displayactive,
     RequestPresentCallback callback) {
-  bool requires_secure_context =
-      !kAllowHTTPWebVRWithFlag ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebVR);
-  if (requires_secure_context && !IsSecureContext(render_frame_host_)) {
+  if (!IsSecureContextRequirementSatisfied()) {
     std::move(callback).Run(false, nullptr);
     return;
   }
@@ -141,6 +146,18 @@ void VRDisplayHost::OnActivate(device::mojom::VRDisplayEventReason reason,
 
 void VRDisplayHost::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
   client_->OnDeactivate(reason);
+}
+
+bool VRDisplayHost::IsSecureContextRequirementSatisfied() {
+  // We require secure connections unless both the webvr flag and the
+  // http flag are enabled.
+  bool requires_secure_context =
+      !kAllowHTTPWebVRWithFlag ||
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebVR);
+  if (!requires_secure_context)
+    return true;
+  return IsSecureContext(render_frame_host_);
 }
 
 }  // namespace vr

@@ -25,6 +25,11 @@ class ARCoreDevice : public VRDeviceBase {
   ARCoreDevice();
   ~ARCoreDevice() override;
 
+  // VRDeviceBase implementation.
+  void RequestSession(
+      VRDisplayImpl* display,
+      mojom::VRDisplayHost::RequestSessionCallback callback) override;
+
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }

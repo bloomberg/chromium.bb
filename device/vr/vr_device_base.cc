@@ -27,6 +27,15 @@ void VRDeviceBase::PauseTracking() {}
 
 void VRDeviceBase::ResumeTracking() {}
 
+mojom::VRDisplayInfoPtr VRDeviceBase::GetVRDisplayInfo() {
+  DCHECK(display_info_);
+  return display_info_.Clone();
+}
+
+bool VRDeviceBase::IsFallbackDevice() {
+  return false;
+};
+
 void VRDeviceBase::OnExitPresent() {
   if (listener_)
     listener_->OnExitPresent();
@@ -37,13 +46,11 @@ void VRDeviceBase::SetIsPresenting() {
   presenting_ = true;
 }
 
-bool VRDeviceBase::IsFallbackDevice() {
-  return false;
-};
-
-mojom::VRDisplayInfoPtr VRDeviceBase::GetVRDisplayInfo() {
-  DCHECK(display_info_);
-  return display_info_.Clone();
+void VRDeviceBase::RequestSession(
+    VRDisplayImpl* display,
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  // TODO(https://crbug.com/842025): Implement this for all devices.
+  std::move(callback).Run(true);
 }
 
 void VRDeviceBase::RequestPresent(

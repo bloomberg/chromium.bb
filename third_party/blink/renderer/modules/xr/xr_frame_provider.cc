@@ -430,9 +430,15 @@ void XRFrameProvider::ProcessScheduledFrame(
                                              frame_pose_->input_state.value());
     }
 
+    if (!exclusive_session_can_send_frames_)
+      return;
+
     if (frame_pose_ && frame_pose_->pose_reset) {
       exclusive_session_->OnPoseReset();
     }
+
+    if (!exclusive_session_can_send_frames_)
+      return;
 
     // If there's an exclusive session active only process its frame.
     std::unique_ptr<TransformationMatrix> pose_matrix =

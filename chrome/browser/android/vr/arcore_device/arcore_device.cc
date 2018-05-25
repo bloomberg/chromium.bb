@@ -104,6 +104,13 @@ void ARCoreDevice::PostTaskToGlThread(base::OnceClosure task) {
       FROM_HERE, std::move(task));
 }
 
+void ARCoreDevice::RequestSession(
+    VRDisplayImpl* display,
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  // TODO(https://crbug.com/837116): Hook up ARCoreDevice to ARCore library
+  std::move(callback).Run(true);
+}
+
 void ARCoreDevice::OnMagicWindowFrameDataRequest(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation,

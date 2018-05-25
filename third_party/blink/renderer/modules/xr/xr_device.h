@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class ScriptPromiseResolver;
 class XR;
 class XRFrameProvider;
 class XRSession;
@@ -86,6 +87,10 @@ class XRDevice final : public EventTargetWithInlineData,
 
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
+  void OnRequestSessionComplete(ScriptPromiseResolver* resolver,
+                                const XRSessionCreationOptions& options,
+                                bool success);
+
   // There are two components to focus - whether the frame itself has
   // traditional focus and whether the device reports that we have focus. These
   // are aggregated so we can hand out focus/blur events on sessions and
@@ -96,8 +101,9 @@ class XRDevice final : public EventTargetWithInlineData,
   Member<XR> xr_;
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
-  bool is_external_;
-  bool supports_exclusive_;
+  bool is_external_ = false;
+  bool supports_exclusive_ = false;
+  bool supports_ar_ = false;
   bool has_device_focus_ = true;
 
   // Indicates whether we've already logged a request for an exclusive session.

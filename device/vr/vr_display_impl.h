@@ -40,12 +40,16 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   virtual bool ListeningForActivate();
   virtual bool InFocusedFrame();
 
+  void RequestSession(mojom::VRDisplayHost::RequestSessionCallback callback);
+
  private:
   // mojom::VRMagicWindowProvider
   void GetPose(GetPoseCallback callback) override;
   void GetFrameData(const gfx::Size& frame_size,
                     display::Display::Rotation rotation,
                     GetFrameDataCallback callback) override;
+
+  bool CanStartNewSession();
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   device::VRDeviceBase* device_;
