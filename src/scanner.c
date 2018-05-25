@@ -894,14 +894,9 @@ verify_arguments(struct parse_context *ctx,
 			e = find_enumeration(ctx->protocol, interface,
 					     a->enumeration_name);
 
-			if (e == NULL)
-				fail(&ctx->loc,
-				     "could not find enumeration %s",
-				     a->enumeration_name);
-
 			switch (a->type) {
 			case INT:
-				if (e->bitfield)
+				if (e && e->bitfield)
 					fail(&ctx->loc,
 					     "bitfield-style enum must only be referenced by uint");
 				break;
