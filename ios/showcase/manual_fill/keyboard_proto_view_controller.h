@@ -53,7 +53,7 @@ UIView* GetFirstResponderSubview(UIView* view);
 
 // Tries to inject the passed string into the web view last focused field.
 //
-// @param string The content to be injected.
+// @param string The content to be injected. Must be JS encoded.
 - (void)fillLastSelectedFieldWithString:(NSString*)string;
 
 // Calls JS `focus()` on the last active element in an attemp to highlight it.
