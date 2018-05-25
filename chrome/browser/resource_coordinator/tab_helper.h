@@ -26,8 +26,6 @@ class ResourceCoordinatorTabHelper
 
   static bool ukm_recorder_initialized;
 
-  static bool IsEnabled();
-
   resource_coordinator::PageResourceCoordinator* page_resource_coordinator() {
     return page_resource_coordinator_.get();
   }

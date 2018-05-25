@@ -346,8 +346,6 @@ offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
 
-  if (resource_coordinator::ResourceCoordinatorTabHelper::IsEnabled()) {
-    resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
-        web_contents);
-  }
+  resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
+      web_contents);
 }

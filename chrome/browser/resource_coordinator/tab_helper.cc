@@ -35,46 +35,40 @@ namespace resource_coordinator {
 ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
+  TabLoadTracker::Get()->StartTracking(web_contents);
+
   service_manager::Connector* connector = nullptr;
-  // |ServiceManagerConnection| is null in test.
-  if (content::ServiceManagerConnection::GetForProcess()) {
+  if (resource_coordinator::IsResourceCoordinatorEnabled() &&
+      content::ServiceManagerConnection::GetForProcess()) {
     connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    page_resource_coordinator_ =
+        std::make_unique<resource_coordinator::PageResourceCoordinator>(
+            connector);
+
+    // Make sure to set the visibility property when we create
+    // |page_resource_coordinator_|.
+    const bool is_visible =
+        web_contents->GetVisibility() != content::Visibility::HIDDEN;
+    page_resource_coordinator_->SetVisibility(is_visible);
+
+    if (auto* page_signal_receiver =
+            resource_coordinator::PageSignalReceiver::GetInstance()) {
+      // Gets CoordinationUnitID for this WebContents and adds it to
+      // PageSignalReceiver.
+      page_signal_receiver->AssociateCoordinationUnitIDWithWebContents(
+          page_resource_coordinator_->id(), web_contents);
+    }
+
+    TabMemoryMetricsReporter::Get()->StartReporting(TabLoadTracker::Get());
   }
-
-  page_resource_coordinator_ =
-      std::make_unique<resource_coordinator::PageResourceCoordinator>(
-          connector);
-
-  // Make sure to set the visibility property when we create
-  // |page_resource_coordinator_|.
-  const bool is_visible =
-      web_contents->GetVisibility() != content::Visibility::HIDDEN;
-  page_resource_coordinator_->SetVisibility(is_visible);
-
-  if (auto* page_signal_receiver =
-          resource_coordinator::PageSignalReceiver::GetInstance()) {
-    // Gets CoordinationUnitID for this WebContents and adds it to
-    // PageSignalReceiver.
-    page_signal_receiver->AssociateCoordinationUnitIDWithWebContents(
-        page_resource_coordinator_->id(), web_contents);
-  }
-
-  TabLoadTracker::Get()->StartTracking(web_contents);
-  TabMemoryMetricsReporter::Get()->StartReporting(TabLoadTracker::Get());
 }
 
 ResourceCoordinatorTabHelper::~ResourceCoordinatorTabHelper() = default;
 
-// static
-bool ResourceCoordinatorTabHelper::IsEnabled() {
-  // Check that service_manager is active and GRC is enabled.
-  return content::ServiceManagerConnection::GetForProcess() != nullptr &&
-         resource_coordinator::IsResourceCoordinatorEnabled();
-}
-
 void ResourceCoordinatorTabHelper::DidStartLoading() {
-  page_resource_coordinator_->SetIsLoading(true);
+  if (page_resource_coordinator_)
+    page_resource_coordinator_->SetIsLoading(true);
   TabLoadTracker::Get()->DidStartLoading(web_contents());
 }
 
@@ -83,7 +77,8 @@ void ResourceCoordinatorTabHelper::DidReceiveResponse() {
 }
 
 void ResourceCoordinatorTabHelper::DidStopLoading() {
-  page_resource_coordinator_->SetIsLoading(false);
+  if (page_resource_coordinator_)
+    page_resource_coordinator_->SetIsLoading(false);
   TabLoadTracker::Get()->DidStopLoading(web_contents());
 }
 
@@ -97,18 +92,22 @@ void ResourceCoordinatorTabHelper::DidFailLoad(
 
 void ResourceCoordinatorTabHelper::OnVisibilityChanged(
     content::Visibility visibility) {
-  // TODO(fdoray): An OCCLUDED tab should not be considered visible.
-  const bool is_visible = visibility != content::Visibility::HIDDEN;
-  page_resource_coordinator_->SetVisibility(is_visible);
+  if (page_resource_coordinator_) {
+    // TODO(fdoray): An OCCLUDED tab should not be considered visible.
+    const bool is_visible = visibility != content::Visibility::HIDDEN;
+    page_resource_coordinator_->SetVisibility(is_visible);
+  }
 }
 
 void ResourceCoordinatorTabHelper::WebContentsDestroyed() {
-  if (auto* page_signal_receiver =
-          resource_coordinator::PageSignalReceiver::GetInstance()) {
-    // Gets CoordinationUnitID for this WebContents and removes it from
-    // PageSignalReceiver.
-    page_signal_receiver->RemoveCoordinationUnitID(
-        page_resource_coordinator_->id());
+  if (page_resource_coordinator_) {
+    if (auto* page_signal_receiver =
+            resource_coordinator::PageSignalReceiver::GetInstance()) {
+      // Gets CoordinationUnitID for this WebContents and removes it from
+      // PageSignalReceiver.
+      page_signal_receiver->RemoveCoordinationUnitID(
+          page_resource_coordinator_->id());
+    }
   }
   TabLoadTracker::Get()->StopTracking(web_contents());
 }
@@ -123,20 +122,22 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
 
-  // Make sure the hierarchical structure is constructed before sending signal
-  // to Resource Coordinator.
-  auto* frame_resource_coordinator =
-      render_frame_host->GetFrameResourceCoordinator();
-  page_resource_coordinator_->AddFrame(*frame_resource_coordinator);
+  if (page_resource_coordinator_) {
+    // Make sure the hierarchical structure is constructed before sending signal
+    // to Resource Coordinator.
+    auto* frame_resource_coordinator =
+        render_frame_host->GetFrameResourceCoordinator();
+    page_resource_coordinator_->AddFrame(*frame_resource_coordinator);
 
-  auto* process_resource_coordinator =
-      render_frame_host->GetProcess()->GetProcessResourceCoordinator();
-  process_resource_coordinator->AddFrame(*frame_resource_coordinator);
+    auto* process_resource_coordinator =
+        render_frame_host->GetProcess()->GetProcessResourceCoordinator();
+    process_resource_coordinator->AddFrame(*frame_resource_coordinator);
 
-  if (navigation_handle->IsInMainFrame()) {
-    UpdateUkmRecorder(navigation_handle->GetNavigationId());
-    ResetFlag();
-    page_resource_coordinator_->OnMainFrameNavigationCommitted();
+    if (navigation_handle->IsInMainFrame()) {
+      UpdateUkmRecorder(navigation_handle->GetNavigationId());
+      ResetFlag();
+      page_resource_coordinator_->OnMainFrameNavigationCommitted();
+    }
   }
 }
 
@@ -146,7 +147,8 @@ void ResourceCoordinatorTabHelper::TitleWasSet(
     first_time_title_set_ = true;
     return;
   }
-  page_resource_coordinator_->OnTitleUpdated();
+  if (page_resource_coordinator_)
+    page_resource_coordinator_->OnTitleUpdated();
 }
 
 void ResourceCoordinatorTabHelper::DidUpdateFaviconURL(
@@ -155,13 +157,15 @@ void ResourceCoordinatorTabHelper::DidUpdateFaviconURL(
     first_time_favicon_set_ = true;
     return;
   }
-  page_resource_coordinator_->OnFaviconUpdated();
+  if (page_resource_coordinator_)
+    page_resource_coordinator_->OnFaviconUpdated();
 }
 
 void ResourceCoordinatorTabHelper::UpdateUkmRecorder(int64_t navigation_id) {
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
-  page_resource_coordinator_->SetUKMSourceId(ukm_source_id_);
+  if (page_resource_coordinator_)
+    page_resource_coordinator_->SetUKMSourceId(ukm_source_id_);
 }
 
 void ResourceCoordinatorTabHelper::ResetFlag() {
