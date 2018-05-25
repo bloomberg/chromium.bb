@@ -38,6 +38,8 @@ component("system") {
     "handle_signal_tracker.cc",
     "handle_signal_tracker.h",
     "handle_signals_state.h",
+    "invitation.cc",
+    "invitation.h",
     "message.h",
     "message_pipe.cc",
     "message_pipe.h",

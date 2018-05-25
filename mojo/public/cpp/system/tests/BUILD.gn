@@ -18,11 +18,16 @@ source_set("tests") {
     "wait_unittest.cc",
   ]
 
+  if (!is_ios) {
+    sources += [ "invitation_unittest.cc" ]
+  }
+
   deps = [
     "//base",
     "//base/test:test_support",
     "//mojo/edk/test:test_support",
     "//mojo/public/c/system/tests",
+    "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
