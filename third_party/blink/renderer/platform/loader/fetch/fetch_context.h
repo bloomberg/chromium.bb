@@ -118,7 +118,7 @@ class PLATFORM_EXPORT FetchContext
                                                  ResourceLoadPriority,
                                                  int intra_priority_value);
 
-  // This internally dispatches WebFrameClient::willSendRequest and hooks
+  // This internally dispatches WebLocalFrameClient::willSendRequest and hooks
   // request interceptors like ServiceWorker and ApplicationCache.
   // This may modify the request.
   enum class RedirectType { kForRedirect, kNotForRedirect };

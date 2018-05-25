@@ -440,7 +440,7 @@ class TestRunner : public WebTestRunner {
   void SetUseMockTheme(bool use);
 
   // Sets a flag that causes the test to be marked as completed when the
-  // WebFrameClient receives a loadURLExternally() call.
+  // WebLocalFrameClient receives a loadURLExternally() call.
   void WaitUntilExternalURLLoad();
 
   // This function sets a flag to dump the drag image when the next drag&drop is

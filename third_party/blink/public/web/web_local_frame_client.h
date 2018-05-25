@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_CLIENT_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_CLIENT_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_CLIENT_H_
 
 #include <memory>
 #include <vector>
@@ -123,14 +123,14 @@ struct WebResourceTimingInfo;
 struct WebScrollIntoViewParams;
 struct WebURLError;
 
-class BLINK_EXPORT WebFrameClient {
+class BLINK_EXPORT WebLocalFrameClient {
  public:
-  virtual ~WebFrameClient() = default;
+  virtual ~WebLocalFrameClient() = default;
 
   // Initialization ------------------------------------------------------
   // Called exactly once during construction to notify the client about the
   // created WebLocalFrame. Guaranteed to be invoked before any other
-  // WebFrameClient callbacks.
+  // WebLocalFrameClient callbacks.
   virtual void BindToFrame(WebLocalFrame*) {}
 
   // Factory methods -----------------------------------------------------
@@ -690,8 +690,8 @@ class BLINK_EXPORT WebFrameClient {
   // Informs the browser that the draggable regions have been updated.
   virtual void DraggableRegionsChanged() {}
 
-  // Scrolls a local frame in its remote process. Called on the WebFrameClient
-  // of a local frame only.
+  // Scrolls a local frame in its remote process. Called on the
+  // WebLocalFrameClient of a local frame only.
   virtual void ScrollRectToVisibleInParentFrame(
       const WebRect&,
       const WebScrollIntoViewParams&) {}
@@ -844,4 +844,4 @@ class BLINK_EXPORT WebFrameClient {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_CLIENT_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_CLIENT_H_

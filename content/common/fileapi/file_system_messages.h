@@ -43,7 +43,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(storage::QuotaLimitType, storage::kQuotaLimitTypeLast)
 
 // File system messages sent from the browser to the child process.
 
-// WebFrameClient::openFileSystem response messages.
+// WebLocalFrameClient::openFileSystem response messages.
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidOpenFileSystem,
                      int /* request_id */,
                      std::string /* name */,
@@ -79,7 +79,7 @@ IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
 
 // File system messages sent from the child process to the browser.
 
-// WebFrameClient::openFileSystem() message.
+// WebLocalFrameClient::openFileSystem() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFileSystem,
                      int /* request_id */,
                      GURL /* origin_url */,

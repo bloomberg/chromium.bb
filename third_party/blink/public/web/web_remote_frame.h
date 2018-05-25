@@ -20,7 +20,7 @@ namespace blink {
 
 enum class WebTreeScopeType;
 class InterfaceRegistry;
-class WebFrameClient;
+class WebLocalFrameClient;
 class WebRemoteFrameClient;
 class WebString;
 class WebView;
@@ -49,7 +49,7 @@ class WebRemoteFrame : public WebFrame {
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                           const WebString& name,
                                           WebSandboxFlags,
-                                          WebFrameClient*,
+                                          WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
                                           WebFrame* previous_sibling,
                                           const ParsedFeaturePolicy&,

@@ -32,7 +32,7 @@
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -1104,7 +1104,7 @@ void AXObjectCacheImpl::PostPlatformNotification(AXObject* obj,
   if (!obj || !obj->GetDocument() || !obj->DocumentFrameView() ||
       !obj->DocumentFrameView()->GetFrame().GetPage())
     return;
-  // Send via WebFrameClient
+  // Send via WebLocalFrameClient
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(
       obj->GetDocument()->AXObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client()) {

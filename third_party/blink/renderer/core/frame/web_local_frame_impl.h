@@ -60,7 +60,7 @@ class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebAutofillClient;
 class WebDevToolsAgentImpl;
-class WebFrameClient;
+class WebLocalFrameClient;
 class WebFrameWidgetBase;
 class WebNode;
 class WebPerformance;
@@ -243,11 +243,11 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const override;
 
-  WebFrameClient* Client() const override { return client_; }
+  WebLocalFrameClient* Client() const override { return client_; }
 
   // WebLocalFrame methods:
   WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
-                                      WebFrameClient*,
+                                      WebLocalFrameClient*,
                                       blink::InterfaceRegistry*) override;
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
@@ -337,16 +337,16 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WillDetachParent();
 
   static WebLocalFrameImpl* Create(WebTreeScopeType,
-                                   WebFrameClient*,
+                                   WebLocalFrameClient*,
                                    InterfaceRegistry*,
                                    WebFrame* opener);
   static WebLocalFrameImpl* CreateMainFrame(WebView*,
-                                            WebFrameClient*,
+                                            WebLocalFrameClient*,
                                             InterfaceRegistry*,
                                             WebFrame* opener,
                                             const WebString& name,
                                             WebSandboxFlags);
-  static WebLocalFrameImpl* CreateProvisional(WebFrameClient*,
+  static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,
                                               WebRemoteFrame*,
                                               WebSandboxFlags,
@@ -392,7 +392,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Otherwise, disallow scrolling.
   void SetCanHaveScrollbars(bool) override;
 
-  void SetClient(WebFrameClient* client) { client_ = client; }
+  void SetClient(WebLocalFrameClient* client) { client_ = client; }
 
   WebFrameWidgetBase* FrameWidgetImpl() { return frame_widget_; }
 
@@ -439,10 +439,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   friend LocalFrameClientImpl;
 
   WebLocalFrameImpl(WebTreeScopeType,
-                    WebFrameClient*,
+                    WebLocalFrameClient*,
                     blink::InterfaceRegistry*);
   WebLocalFrameImpl(WebRemoteFrame*,
-                    WebFrameClient*,
+                    WebLocalFrameClient*,
                     blink::InterfaceRegistry*);
 
   // Sets the local core frame and registers destruction observers.
@@ -467,7 +467,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void BindDevToolsAgentRequest(mojom::blink::DevToolsAgentAssociatedRequest);
 
-  WebFrameClient* client_;
+  WebLocalFrameClient* client_;
 
   // TODO(dcheng): Inline this field directly rather than going through Member.
   const Member<LocalFrameClientImpl> local_frame_client_;

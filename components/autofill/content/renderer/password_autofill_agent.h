@@ -81,7 +81,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void OnFormSubmitted(const blink::WebFormElement& form) override;
   void OnInferredFormSubmission(SubmissionSource source) override;
 
-  // WebFrameClient editor related calls forwarded by AutofillAgent.
+  // WebLocalFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
   // be used for any other autofill activity.
   bool TextDidChangeInTextField(const blink::WebInputElement& element);

@@ -638,7 +638,7 @@ void WebFrameTestClient::DidAddMessageToConsole(
 }
 
 blink::WebNavigationPolicy WebFrameTestClient::DecidePolicyForNavigation(
-    const blink::WebFrameClient::NavigationPolicyInfo& info) {
+    const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
   // PlzNavigate
   // Navigation requests initiated by the renderer have checked navigation
   // policy when the navigation was sent to the browser. Some layout tests

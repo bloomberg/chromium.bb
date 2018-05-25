@@ -6,8 +6,8 @@
 #define EXTENSIONS_RENDERER_SCOPED_WEB_FRAME_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view.h"
 
 namespace extensions {
@@ -22,7 +22,7 @@ public:
   blink::WebLocalFrame* frame() { return frame_; }
 
 private:
- blink::WebFrameClient frame_client_;
+ blink::WebLocalFrameClient frame_client_;
 
  // The webview and the frame are kept alive by the ScopedWebFrame
  // because they are not destructed unless ~ScopedWebFrame explicitly

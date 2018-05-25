@@ -31,7 +31,7 @@ class NavigatorContentUtilsClientMock final
 
  private:
   // TODO(sashab): Make NavigatorContentUtilsClientMock non-virtual and test it
-  // using a WebFrameClient mock.
+  // using a WebLocalFrameClient mock.
   NavigatorContentUtilsClientMock() : NavigatorContentUtilsClient(nullptr) {}
 
   typedef struct {

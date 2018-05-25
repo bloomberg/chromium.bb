@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 
 namespace test_runner {
 
@@ -18,11 +18,12 @@ class WebFrameTestProxyBase;
 class WebTestDelegate;
 class WebViewTestProxyBase;
 
-// WebFrameTestClient implements WebFrameClient interface, providing behavior
-// expected by tests.  WebFrameTestClient ends up used by WebFrameTestProxy
-// which coordinates forwarding WebFrameClient calls either to
-// WebFrameTestClient or to the product code (i.e. to RenderFrameImpl).
-class WebFrameTestClient : public blink::WebFrameClient {
+// WebFrameTestClient implements WebLocalFrameClient interface, providing
+// behavior expected by tests.  WebFrameTestClient ends up used by
+// WebFrameTestProxy which coordinates forwarding WebLocalFrameClient calls
+// either to WebFrameTestClient or to the product code (i.e. to
+// RenderFrameImpl).
+class WebFrameTestClient : public blink::WebLocalFrameClient {
  public:
   // Caller has to ensure that all arguments (|delegate|,
   // |web_view_test_proxy_base_| and so forth) live longer than |this|.
@@ -32,7 +33,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
 
   ~WebFrameTestClient() override;
 
-  // WebFrameClient overrides needed by WebFrameTestProxy.
+  // WebLocalFrameClient overrides needed by WebFrameTestProxy.
   void RunModalAlertDialog(const blink::WebString& message) override;
   bool RunModalConfirmDialog(const blink::WebString& message) override;
   bool RunModalPromptDialog(const blink::WebString& message,
@@ -80,7 +81,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void WillSendRequest(blink::WebURLRequest& request) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const blink::WebFrameClient::NavigationPolicyInfo& info) override;
+      const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;

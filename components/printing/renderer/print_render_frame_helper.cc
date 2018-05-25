@@ -47,10 +47,10 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_print_params.h"
@@ -554,7 +554,7 @@ void FrameReference::Reset(blink::WebLocalFrame* frame) {
   if (frame) {
     view_ = frame->View();
     // Make sure this isn't called too early in the |frame| lifecycle... i.e.
-    // calling this in WebFrameClient::BindToFrame() doesn't work.
+    // calling this in WebLocalFrameClient::BindToFrame() doesn't work.
     // TODO(dcheng): It's a bit awkward that lifetime details like this leak out
     // of Blink. Fixing https://crbug.com/727166 should allow this to be
     // addressed.
@@ -611,9 +611,9 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
       /* opener = */ nullptr);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
-  class HeaderAndFooterClient final : public blink::WebFrameClient {
+  class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
    public:
-    // WebFrameClient:
+    // WebLocalFrameClient:
     void BindToFrame(blink::WebLocalFrame* frame) override { frame_ = frame; }
     void FrameDetached(DetachType detach_type) override {
       frame_->FrameWidget()->Close();
@@ -678,7 +678,7 @@ float PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
 class PrepareFrameAndViewForPrint : public blink::WebViewClient,
-                                    public blink::WebFrameClient {
+                                    public blink::WebLocalFrameClient {
  public:
   PrepareFrameAndViewForPrint(const PrintMsg_Print_Params& params,
                               blink::WebLocalFrame* frame,
@@ -714,7 +714,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   // layerTreeView.
   bool AllowsBrokenNullLayerTreeView() const override;
 
-  // blink::WebFrameClient:
+  // blink::WebLocalFrameClient:
   blink::WebLocalFrame* CreateChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,

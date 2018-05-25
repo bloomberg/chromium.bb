@@ -196,7 +196,7 @@ void TestRenderFrame::SetCompositionFromExistingText(
 }
 
 blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
-    const blink::WebFrameClient::NavigationPolicyInfo& info) {
+    const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
   if (IsBrowserSideNavigationEnabled() &&
       info.url_request.CheckForBrowserSideNavigation() &&
       ((GetWebFrame()->Parent() && info.form.IsNull()) ||

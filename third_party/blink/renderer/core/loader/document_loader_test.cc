@@ -114,7 +114,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
         DispatchOneByte();
     }
 
-    // WebFrameClient overrides:
+    // WebLocalFrameClient overrides:
     void FrameDetached(DetachType detach_type) override {
       if (dispatching_did_receive_data_) {
         // This should be called by the first didReceiveData() call, since
@@ -179,8 +179,8 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
 
   EXPECT_TRUE(child_delegate.ServedReentrantly());
 
-  // delegate is a WebFrameClient and stack-allocated, so manually reset() the
-  // WebViewHelper here.
+  // delegate is a WebLocalFrameClient and stack-allocated, so manually reset()
+  // the WebViewHelper here.
   web_view_helper_.Reset();
 }
 

@@ -108,7 +108,7 @@ ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
   // created when the LocalFrame is created so we shouldn't be in that
   // situation.
   // In order to create the ScreenOrientationController lazily, we would need
-  // to be able to access WebFrameClient from modules/.
+  // to be able to access WebLocalFrameClient from modules/.
 
   orientation->Controller()->SetOrientation(orientation);
   return orientation;

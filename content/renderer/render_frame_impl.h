@@ -82,11 +82,11 @@
 #include "third_party/blink/public/web/commit_result.mojom.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_frame_serializer_client.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_icon_url.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
@@ -190,7 +190,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::FullscreenVideoElementHandler,
       mojom::HostZoom,
       mojom::FrameBindingsControl,
-      public blink::WebFrameClient,
+      public blink::WebLocalFrameClient,
       public blink::WebFrameSerializerClient,
       service_manager::mojom::InterfaceProvider {
  public:
@@ -314,7 +314,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Start/Stop loading notifications.
   // TODO(nasko): Those are page-level methods at this time and come from
-  // WebViewClient. We should move them to be WebFrameClient calls and put
+  // WebViewClient. We should move them to be WebLocalFrameClient calls and put
   // logic in the browser side to balance starts/stops.
   // |to_different_document| will be true unless the load is a fragment
   // navigation, or triggered by history.pushState/replaceState.
@@ -547,7 +547,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // mojom::HostZoom implementation:
   void SetHostZoomLevel(const GURL& url, double zoom_level) override;
 
-  // blink::WebFrameClient implementation:
+  // blink::WebLocalFrameClient implementation:
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* CreateMediaPlayer(
       const blink::WebMediaPlayerSource& source,

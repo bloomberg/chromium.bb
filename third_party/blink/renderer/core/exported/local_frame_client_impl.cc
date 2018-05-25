@@ -49,7 +49,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
@@ -317,17 +317,17 @@ void LocalFrameClientImpl::WillBeDetached() {
 void LocalFrameClientImpl::Detached(FrameDetachType type) {
   // Alert the client that the frame is being detached. This is the last
   // chance we have to communicate with the client.
-  WebFrameClient* client = web_frame_->Client();
+  WebLocalFrameClient* client = web_frame_->Client();
   if (!client)
     return;
 
   web_frame_->WillDetachParent();
 
-  // Signal that no further communication with WebFrameClient should take
+  // Signal that no further communication with WebLocalFrameClient should take
   // place at this point since we are no longer associated with the Page.
   web_frame_->SetClient(nullptr);
 
-  client->FrameDetached(static_cast<WebFrameClient::DetachType>(type));
+  client->FrameDetached(static_cast<WebLocalFrameClient::DetachType>(type));
 
   if (type == FrameDetachType::kRemove)
     web_frame_->DetachFromParent();
@@ -338,7 +338,7 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
 }
 
 void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
-  // Give the WebFrameClient a crack at the request.
+  // Give the WebLocalFrameClient a crack at the request.
   if (web_frame_->Client()) {
     WrappedResourceRequest webreq(request);
     web_frame_->Client()->WillSendRequest(webreq);
@@ -354,9 +354,9 @@ void LocalFrameClientImpl::DispatchDidReceiveResponse(
 }
 
 void LocalFrameClientImpl::DispatchDidFinishDocumentLoad() {
-  // TODO(dglazkov): Sadly, workers are WebFrameClients, and they can totally
-  // destroy themselves when didFinishDocumentLoad is invoked, and in turn
-  // destroy the fake WebLocalFrame that they create, which means that you
+  // TODO(dglazkov): Sadly, workers are WebLocalFrameClients, and they can
+  // totally destroy themselves when didFinishDocumentLoad is invoked, and in
+  // turn destroy the fake WebLocalFrame that they create, which means that you
   // should not put any code touching `this` after the two lines below.
   if (web_frame_->Client())
     web_frame_->Client()->DidFinishDocumentLoad();
@@ -536,7 +536,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
       WebDocumentLoaderImpl::FromDocumentLoader(document_loader);
 
   WrappedResourceRequest wrapped_resource_request(request);
-  WebFrameClient::NavigationPolicyInfo navigation_info(
+  WebLocalFrameClient::NavigationPolicyInfo navigation_info(
       wrapped_resource_request);
   navigation_info.navigation_type = static_cast<WebNavigationType>(type);
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
@@ -569,8 +569,8 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   // should the output be spread back across multiple processes?
   navigation_info.archive_status =
       IsLoadedAsMHTMLArchive(local_parent_frame)
-          ? WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Present
-          : WebFrameClient::NavigationPolicyInfo::ArchiveStatus::Absent;
+          ? WebLocalFrameClient::NavigationPolicyInfo::ArchiveStatus::Present
+          : WebLocalFrameClient::NavigationPolicyInfo::ArchiveStatus::Absent;
 
   if (form)
     navigation_info.form = WebFormElement(form);
@@ -753,7 +753,7 @@ bool LocalFrameClientImpl::ShouldTrackUseCounter(const KURL& url) {
 void LocalFrameClientImpl::SelectorMatchChanged(
     const Vector<String>& added_selectors,
     const Vector<String>& removed_selectors) {
-  if (WebFrameClient* client = web_frame_->Client()) {
+  if (WebLocalFrameClient* client = web_frame_->Client()) {
     client->DidMatchCSS(WebVector<WebString>(added_selectors),
                         WebVector<WebString>(removed_selectors));
   }
@@ -992,7 +992,7 @@ void LocalFrameClientImpl::SuddenTerminationDisablerChanged(
 }
 
 BlameContext* LocalFrameClientImpl::GetFrameBlameContext() {
-  if (WebFrameClient* client = web_frame_->Client())
+  if (WebLocalFrameClient* client = web_frame_->Client())
     return client->GetFrameBlameContext();
   return nullptr;
 }

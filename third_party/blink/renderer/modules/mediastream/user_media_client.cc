@@ -32,7 +32,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"

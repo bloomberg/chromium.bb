@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -82,7 +82,8 @@ void ComputedAccessibleNodePromiseResolver::EnsureUpToDate() {
 
 void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
   LocalFrame* local_frame = element_->ownerDocument()->GetFrame();
-  WebFrameClient* client = WebLocalFrameImpl::FromFrame(local_frame)->Client();
+  WebLocalFrameClient* client =
+      WebLocalFrameImpl::FromFrame(local_frame)->Client();
   WebComputedAXTree* tree = client->GetOrCreateWebComputedAXTree();
   tree->ComputeAccessibilityTree();
 

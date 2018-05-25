@@ -14,8 +14,8 @@
 #include "ppapi/thunk/thunk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view.h"
 
 // This test is a end-to-end test from the resource to the WebKit request
@@ -23,7 +23,7 @@
 // test it by making sure the conversion routines actually work at the same
 // time.
 
-using blink::WebFrameClient;
+using blink::WebLocalFrameClient;
 using blink::WebString;
 using blink::WebView;
 using blink::WebURL;
@@ -32,7 +32,7 @@ using blink::WebURLRequest;
 namespace {
 
 // The base class destructor is protected, so derive.
-class TestWebFrameClient : public WebFrameClient {};
+class TestWebFrameClient : public WebLocalFrameClient {};
 
 }  // namespace
 

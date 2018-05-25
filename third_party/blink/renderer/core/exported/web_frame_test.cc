@@ -63,10 +63,10 @@
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_form_element.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
@@ -4641,8 +4641,8 @@ TEST_F(WebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
   EXPECT_EQ(4, counter.Count());
 }
 
-// Implementation of WebFrameClient that tracks the v8 contexts that are created
-// and destroyed for verification.
+// Implementation of WebLocalFrameClient that tracks the v8 contexts that are
+// created and destroyed for verification.
 class ContextLifetimeTestWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
@@ -4679,7 +4679,7 @@ class ContextLifetimeTestWebFrameClient
     release_notifications_.clear();
   }
 
-  // WebFrameClient:
+  // WebLocalFrameClient:
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType scope,
                                   const WebString& name,
@@ -7469,7 +7469,7 @@ class TestScrolledFrameClient : public FrameTestHelpers::TestWebFrameClient {
   void Reset() { did_scroll_frame_ = false; }
   bool WasFrameScrolled() const { return did_scroll_frame_; }
 
-  // WebFrameClient:
+  // WebLocalFrameClient:
   void DidChangeScrollOffset() override {
     if (Frame()->Parent())
       return;
@@ -8326,7 +8326,7 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
   int call_count_;
 };
 
-// Test that we don't crash if WebFrameClient::createChildFrame() fails.
+// Test that we don't crash if WebLocalFrameClient::createChildFrame() fails.
 TEST_F(WebFrameTest, CreateChildFrameFailure) {
   RegisterMockedHttpURLLoad("create_child_frame_fail.html");
   FailCreateChildFrame client;
@@ -10282,7 +10282,7 @@ TEST_F(WebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
       popup_web_frame_client.messages[1].text.Utf8().find("Blocked a frame"));
 
   // Manually reset to break WebViewHelpers' dependencies on the stack
-  // allocated WebFrameClients.
+  // allocated WebLocalFrameClients.
   web_view_helper.Reset();
   popup_web_view_helper.Reset();
 }
@@ -11229,7 +11229,7 @@ class SaveImageFromDataURLWebFrameClient
   SaveImageFromDataURLWebFrameClient() = default;
   ~SaveImageFromDataURLWebFrameClient() override = default;
 
-  // WebFrameClient:
+  // WebLocalFrameClient:
   void SaveImageFromDataURL(const WebString& data_url) override {
     data_url_ = data_url;
   }
@@ -12536,7 +12536,7 @@ class ContextMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
   ContextMenuWebFrameClient() = default;
   ~ContextMenuWebFrameClient() override = default;
 
-  // WebFrameClient:
+  // WebLocalFrameClient:
   void ShowContextMenu(const WebContextMenuData& data) override {
     menu_data_ = data;
   }
