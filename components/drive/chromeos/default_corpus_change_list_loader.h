@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_DRIVE_CHROMEOS_DEFAULT_CORPUS_CHANGE_LIST_LOADER_H_
 #define COMPONENTS_DRIVE_CHROMEOS_DEFAULT_CORPUS_CHANGE_LIST_LOADER_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/directory_loader.h"
 #include "components/drive/chromeos/drive_change_list_loader.h"
@@ -49,6 +52,8 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
   void CheckForUpdates(const FileOperationCallback& callback) override;
 
  private:
+  std::unique_ptr<internal::AboutResourceRootFolderIdLoader>
+      root_folder_id_loader_;
   std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
   std::unique_ptr<internal::DirectoryLoader> directory_loader_;
   std::unique_ptr<internal::StartPageTokenLoader> start_page_token_loader_;
@@ -57,7 +62,6 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;         // Not owned.
   JobScheduler* scheduler_;                     // Not owned.
-  AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;         // Not owned.
 
   THREAD_CHECKER(thread_checker_);

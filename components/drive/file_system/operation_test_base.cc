@@ -6,6 +6,7 @@
 
 #include "base/task_scheduler/post_task.h"
 #include "components/drive/chromeos/about_resource_loader.h"
+#include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/fake_free_disk_space_getter.h"
 #include "components/drive/chromeos/file_cache.h"
@@ -122,12 +123,15 @@ void OperationTestBase::SetUp() {
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
   about_resource_loader_.reset(new internal::AboutResourceLoader(
       scheduler_.get()));
+  root_folder_id_loader_ =
+      std::make_unique<internal::AboutResourceRootFolderIdLoader>(
+          about_resource_loader_.get());
   start_page_token_loader_.reset(new internal::StartPageTokenLoader(
       drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
   loader_controller_.reset(new internal::LoaderController);
   change_list_loader_.reset(new internal::ChangeListLoader(
       logger_.get(), blocking_task_runner_.get(), metadata_.get(),
-      scheduler_.get(), about_resource_loader_.get(),
+      scheduler_.get(), root_folder_id_loader_.get(),
       start_page_token_loader_.get(), loader_controller_.get()));
   change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));

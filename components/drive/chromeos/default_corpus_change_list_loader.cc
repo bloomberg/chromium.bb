@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/file_system_core_util.h"
 
 namespace drive {
@@ -22,19 +23,21 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      about_resource_loader_(about_resource_loader),
       loader_controller_(apply_task_controller) {
+  root_folder_id_loader_ =
+      std::make_unique<AboutResourceRootFolderIdLoader>(about_resource_loader);
+
   start_page_token_loader_ = std::make_unique<StartPageTokenLoader>(
       util::kTeamDriveIdDefaultCorpus, scheduler_);
 
   change_list_loader_ = std::make_unique<ChangeListLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
-      about_resource_loader_, start_page_token_loader_.get(),
+      root_folder_id_loader_.get(), start_page_token_loader_.get(),
       loader_controller_);
 
   directory_loader_ = std::make_unique<DirectoryLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
-      about_resource_loader_, start_page_token_loader_.get(),
+      root_folder_id_loader_.get(), start_page_token_loader_.get(),
       loader_controller_);
 }
 

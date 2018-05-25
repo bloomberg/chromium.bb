@@ -14,6 +14,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/about_resource_loader.h"
+#include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/chromeos/fake_free_disk_space_getter.h"
@@ -138,12 +139,15 @@ class SyncClientTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
+    root_folder_id_loader_ = std::make_unique<AboutResourceRootFolderIdLoader>(
+        about_resource_loader_.get());
+
     start_page_token_loader_.reset(new StartPageTokenLoader(
         drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
     loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(new ChangeListLoader(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
-        metadata_.get(), scheduler_.get(), about_resource_loader_.get(),
+        metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
         start_page_token_loader_.get(), loader_controller_.get()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
@@ -265,6 +269,7 @@ class SyncClientTest : public testing::Test {
   std::unique_ptr<LoaderController> loader_controller_;
   std::unique_ptr<ChangeListLoader> change_list_loader_;
   std::unique_ptr<SyncClient> sync_client_;
+  std::unique_ptr<AboutResourceRootFolderIdLoader> root_folder_id_loader_;
 
   std::map<std::string, std::string> resource_ids_;  // Name-to-id map.
 };

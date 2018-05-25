@@ -16,11 +16,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/root_folder_id_loader.h"
 #include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
@@ -202,14 +202,14 @@ DirectoryLoader::DirectoryLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
-    AboutResourceLoader* about_resource_loader,
+    RootFolderIdLoader* root_folder_id_loader,
     StartPageTokenLoader* start_page_token_loader,
     LoaderController* loader_controller)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      about_resource_loader_(about_resource_loader),
+      root_folder_id_loader_(root_folder_id_loader),
       start_page_token_loader_(start_page_token_loader),
       loader_controller_(loader_controller),
       weak_ptr_factory_(this) {}
@@ -298,8 +298,8 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
   if (pending_load_callback_[local_id].size() > 1)
     return;
 
-  about_resource_loader_->GetAboutResource(
-      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetAboutResource,
+  root_folder_id_loader_->GetRootFolderId(
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetRootFolderId,
                  weak_ptr_factory_.GetWeakPtr(), local_id));
 }
 
@@ -333,24 +333,22 @@ void DirectoryLoader::ReadDirectoryAfterLoadParent(
                  base::Owned(entry)));
 }
 
-void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
+void DirectoryLoader::ReadDirectoryAfterGetRootFolderId(
     const std::string& local_id,
-    google_apis::DriveApiErrorCode status,
-    std::unique_ptr<google_apis::AboutResource> about_resource) {
+    FileError error,
+    base::Optional<std::string> root_folder_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     OnDirectoryLoadComplete(local_id, error);
     return;
   }
 
-  DCHECK(about_resource);
+  DCHECK(root_folder_id);
 
-  start_page_token_loader_->GetStartPageToken(
-      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetStartPageToken,
-                 weak_ptr_factory_.GetWeakPtr(), local_id,
-                 about_resource->root_folder_id()));
+  start_page_token_loader_->GetStartPageToken(base::Bind(
+      &DirectoryLoader::ReadDirectoryAfterGetStartPageToken,
+      weak_ptr_factory_.GetWeakPtr(), local_id, root_folder_id.value()));
 }
 
 void DirectoryLoader::ReadDirectoryAfterGetStartPageToken(
@@ -378,12 +376,14 @@ void DirectoryLoader::ReadDirectoryAfterGetStartPageToken(
       base::BindOnce(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
                      weak_ptr_factory_.GetWeakPtr(),
                      start_page_token->start_page_token(), local_id,
-                     base::Owned(entry), base::Owned(local_start_page_token)));
+                     root_folder_id, base::Owned(entry),
+                     base::Owned(local_start_page_token)));
 }
 
 void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
     const std::string& remote_start_page_token,
     const std::string& local_id,
+    const std::string& root_folder_id,
     const ResourceEntry* entry,
     const std::string* local_start_page_token,
     FileError error) {
@@ -418,7 +418,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
         "load directory from server %s; directory start page token: %s ",
         directory_fetch_info.ToString().c_str(),
         directory_start_page_token.c_str());
-    LoadDirectoryFromServer(directory_fetch_info);
+    LoadDirectoryFromServer(directory_fetch_info, root_folder_id);
     return;
   }
 
@@ -435,7 +435,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
         "remove start page token: %s",
         directory_fetch_info.ToString().c_str(),
         local_start_page_token->c_str(), remote_start_page_token.c_str());
-    LoadDirectoryFromServer(directory_fetch_info);
+    LoadDirectoryFromServer(directory_fetch_info, root_folder_id);
     return;
   }
 
@@ -452,7 +452,7 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
   } else {
     // Start fetching the directory content, and mark it with the changestamp
     // |remote_changestamp|.
-    LoadDirectoryFromServer(directory_fetch_info);
+    LoadDirectoryFromServer(directory_fetch_info, root_folder_id);
   }
 }
 
@@ -533,7 +533,8 @@ void DirectoryLoader::SendEntries(const std::string& local_id,
 }
 
 void DirectoryLoader::LoadDirectoryFromServer(
-    const DirectoryFetchInfo& directory_fetch_info) {
+    const DirectoryFetchInfo& directory_fetch_info,
+    const std::string& root_folder_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
@@ -547,13 +548,9 @@ void DirectoryLoader::LoadDirectoryFromServer(
                directory_fetch_info.ToString().c_str(),
                start_page_token->start_page_token().c_str());
 
-  const google_apis::AboutResource* about_resource =
-      about_resource_loader_->cached_about_resource();
-  DCHECK(about_resource);
+  FeedFetcher* fetcher =
+      new FeedFetcher(this, directory_fetch_info, root_folder_id);
 
-  FeedFetcher* fetcher = new FeedFetcher(this,
-                                         directory_fetch_info,
-                                         about_resource->root_folder_id());
   fast_fetch_feed_fetcher_set_.insert(base::WrapUnique(fetcher));
   fetcher->Run(
       base::Bind(&DirectoryLoader::LoadDirectoryFromServerAfterLoad,

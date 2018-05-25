@@ -100,6 +100,8 @@ if (is_chromeos) {
     sources = [
       "chromeos/about_resource_loader.cc",
       "chromeos/about_resource_loader.h",
+      "chromeos/about_resource_root_folder_id_loader.cc",
+      "chromeos/about_resource_root_folder_id_loader.h",
       "chromeos/change_list_loader.cc",
       "chromeos/change_list_loader.h",
       "chromeos/change_list_loader_observer.h",
@@ -151,6 +153,7 @@ if (is_chromeos) {
       "chromeos/remove_stale_cache_files.h",
       "chromeos/resource_metadata.cc",
       "chromeos/resource_metadata.h",
+      "chromeos/root_folder_id_loader.h",
       "chromeos/search_metadata.cc",
       "chromeos/search_metadata.h",
       "chromeos/start_page_token_loader.cc",

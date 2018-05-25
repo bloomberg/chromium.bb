@@ -17,11 +17,11 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/drive/chromeos/about_resource_loader.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/root_folder_id_loader.h"
 #include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
@@ -236,7 +236,7 @@ ChangeListLoader::ChangeListLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
-    AboutResourceLoader* about_resource_loader,
+    RootFolderIdLoader* root_folder_id_loader,
     StartPageTokenLoader* start_page_token_loader,
     LoaderController* loader_controller)
     : logger_(logger),
@@ -244,7 +244,7 @@ ChangeListLoader::ChangeListLoader(
       in_shutdown_(new base::CancellationFlag),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      about_resource_loader_(about_resource_loader),
+      root_folder_id_loader_(root_folder_id_loader),
       start_page_token_loader_(start_page_token_loader),
       loader_controller_(loader_controller),
       loaded_(false),
@@ -356,30 +356,29 @@ void ChangeListLoader::LoadAfterGetLocalStartPageToken(
     pending_load_callback_.push_back(base::DoNothing());
   }
 
-  about_resource_loader_->GetAboutResource(
-      base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
+  root_folder_id_loader_->GetRootFolderId(
+      base::Bind(&ChangeListLoader::LoadAfterGetRootFolderId,
                  weak_ptr_factory_.GetWeakPtr(), *local_start_page_token));
 }
 
-void ChangeListLoader::LoadAfterGetAboutResource(
+void ChangeListLoader::LoadAfterGetRootFolderId(
     const std::string& local_start_page_token,
-    google_apis::DriveApiErrorCode status,
-    std::unique_ptr<google_apis::AboutResource> about_resource) {
+    FileError error,
+    base::Optional<std::string> root_folder_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!change_feed_fetcher_);
 
-  FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
     OnChangeListLoadComplete(error);
     return;
   }
 
-  DCHECK(about_resource);
+  DCHECK(root_folder_id);
 
   start_page_token_loader_->GetStartPageToken(
       base::Bind(&ChangeListLoader::LoadAfterGetStartPageToken,
                  weak_ptr_factory_.GetWeakPtr(), local_start_page_token,
-                 about_resource->root_folder_id()));
+                 std::move(root_folder_id.value())));
 }
 
 void ChangeListLoader::LoadAfterGetStartPageToken(
