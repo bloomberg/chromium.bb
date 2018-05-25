@@ -31,7 +31,12 @@ source_set("unified_consent_ui") {
     "unified_consent_view_controller.mm",
   ]
   deps = [
+    "resources:ic_assistant",
+    "resources:ic_google",
+    "resources:ic_settings",
+    "resources:ic_sync_complete",
     "resources:identity_picker_view_arrow_down",
+    "resources:unified_consent_header",
     "//base",
     "//components/google/core/browser",
     "//ios/chrome/app/strings",
