@@ -47,24 +47,17 @@ public final class CalendarUtils {
 
         sCal1.setTimeInMillis(t1);
         sCal2.setTimeInMillis(t2);
-        return compareCalendarDay(sCal1, sCal2) == 0;
+        return isSameDay(sCal1, sCal2);
+    }
+
+    /** @return Whether {@code cal1} and {@code cal2} have the same localized calendar day. */
+    public static boolean isSameDay(Calendar cal1, Calendar cal2) {
+        return cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+                && cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR);
     }
 
     private static void ensureCalendarsAreAvailable() {
         if (sCal1 == null) sCal1 = CalendarFactory.get();
         if (sCal2 == null) sCal2 = CalendarFactory.get();
-    }
-
-    private static int compareCalendarDay(Calendar cal1, Calendar cal2) {
-        boolean sameDay = cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
-                && cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR);
-
-        if (sameDay) {
-            return 0;
-        } else if (cal1.before(cal2)) {
-            return 1;
-        } else {
-            return -1;
-        }
     }
 }

@@ -120,8 +120,17 @@ class DateOrderedListMutator implements OfflineItemFilterObserver {
 
     private int getBestIndexFor(OfflineItem item) {
         for (int i = 0; i < mModel.getItemCount(); i++) {
-            long timeStamp = mModel.getItemAt(i).date.getTime();
-            if (item.creationTimeMs < timeStamp) return i;
+            DateOrderedListModel.ListItem listItem = mModel.getItemAt(i);
+
+            // We need to compare different things depending on whether or not the ListItem is a
+            // header.  If it is a header we want to compare the day, otherwise we want to compare
+            // the exact time.
+            boolean isHeader = listItem.item == null;
+            long itemTimestamp = isHeader
+                    ? CalendarUtils.getStartOfDay(item.creationTimeMs).getTimeInMillis()
+                    : item.creationTimeMs;
+
+            if (itemTimestamp > listItem.date.getTime()) return i;
         }
 
         return mModel.getItemCount();

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
@@ -20,7 +19,7 @@ public class DateOrderedListCoordinator {
 
     private final DateOrderedListModel mModel;
     private final DateOrderedListMediator mMediator;
-    private final RecyclerView mView;
+    private final DateOrderedListView mView;
 
     /** Creates an instance of a DateOrderedListCoordinator, which will visually represent
      * {@code provider} as a list of items.
@@ -30,15 +29,20 @@ public class DateOrderedListCoordinator {
     public DateOrderedListCoordinator(Context context, OfflineContentProvider provider) {
         mModel = new DateOrderedListModel();
         mMediator = new DateOrderedListMediator(provider, mModel);
-        mView = new RecyclerView(context);
+        mView = new DateOrderedListView(context, mModel);
 
         // Hook up the FilterCoordinator with our mediator.
         mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(filter -> mMediator.onFilterTypeSelected(filter));
     }
 
+    /** Tears down this coordinator. */
+    public void destroy() {
+        mMediator.destroy();
+    }
+
     /** @return The {@link View} representing downloads home. */
     public View getView() {
-        return mView;
+        return mView.getView();
     }
 }
