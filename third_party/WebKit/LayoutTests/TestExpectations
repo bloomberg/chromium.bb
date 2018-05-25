@@ -188,6 +188,9 @@ crbug.com/804670 virtual/disable-spv175/paint/filters/drop-shadow-clipped.html [
 
 crbug.com/842668 [ Win7 ] paint/invalidation/svg/zoom-foreignObject.svg [ Failure ]
 
+# Sheriff 2018/05/25
+crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
