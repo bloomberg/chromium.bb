@@ -511,7 +511,6 @@ static int main_loop(int argc, const char **argv_) {
   int dec_flags = 0;
   int do_scale = 0;
   int operating_point = 0;
-  int output_all_layers = 0;
   aom_image_t *scaled_img = NULL;
   aom_image_t *img_shifted = NULL;
   int frame_avail, got_data, flush_decoder = 0;
@@ -624,7 +623,6 @@ static int main_loop(int argc, const char **argv_) {
     } else if (arg_match(&arg, &oppointarg, argi)) {
       operating_point = arg_parse_int(&arg);
     } else if (arg_match(&arg, &outallarg, argi)) {
-      output_all_layers = 1;
       input.obu_ctx->last_layer_id = 0;
     } else {
       argj++;
@@ -840,12 +838,6 @@ static int main_loop(int argc, const char **argv_) {
     if ((img = aom_codec_get_frame(&decoder, &iter))) {
       ++frame_out;
       got_data = 1;
-      if (output_all_layers) {
-        if (obu_ctx.last_layer_id++ == img->max_spatial_id) {
-          // We've decoded the last layer.  Reset
-          obu_ctx.last_layer_id = 0;
-        }
-      }
     }
 
     aom_usec_timer_mark(&timer);

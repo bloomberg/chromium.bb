@@ -173,9 +173,8 @@ typedef struct aom_image {
 
   int bps; /**< bits per sample (for packed formats) */
 
-  int temporal_id;    /**< Temporal layer Id of image */
-  int spatial_id;     /**< Spatial layer Id of image */
-  int max_spatial_id; /**< Maximum spatial layer Id in sequence */
+  int temporal_id; /**< Temporal layer Id of image */
+  int spatial_id;  /**< Spatial layer Id of image */
 
   /*!\brief The following member may be set by the application to associate
    * data with this image.

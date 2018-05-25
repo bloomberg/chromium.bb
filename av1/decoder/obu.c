@@ -542,7 +542,6 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   AV1_COMMON *const cm = &pbi->common;
   int frame_decoding_finished = 0;
   int is_first_tg_obu_received = 1;
-  int frame_header_received = 0;
   int frame_header_size = 0;
   int seq_header_received = 0;
   size_t seq_header_size = 0;
@@ -567,7 +566,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     size_t bytes_read = 0;
     const size_t bytes_available = data_end - data;
 
-    if (bytes_available == 0 && !frame_header_received) {
+    if (bytes_available == 0 && !pbi->seen_frame_header) {
       cm->error.error_code = AOM_CODEC_OK;
       return;
     }
@@ -604,6 +603,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     switch (obu_header.type) {
       case OBU_TEMPORAL_DELIMITER:
         decoded_payload_size = read_temporal_delimiter_obu();
+        pbi->seen_frame_header = 0;
         break;
       case OBU_SEQUENCE_HEADER:
         if (!seq_header_received) {
@@ -626,13 +626,13 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_REDUNDANT_FRAME_HEADER:
       case OBU_FRAME:
         // Only decode first frame header received
-        if (!frame_header_received ||
+        if (!pbi->seen_frame_header ||
             (cm->large_scale_tile && !pbi->camera_frame_header_ready)) {
+          pbi->seen_frame_header = 1;
           pbi->dropped_obus = 0;
           av1_init_read_bit_buffer(pbi, &rb, data, data_end);
           frame_header_size = read_frame_header_obu(
               pbi, &rb, data, p_data_end, obu_header.type != OBU_FRAME);
-          frame_header_received = 1;
           if (cm->large_scale_tile) pbi->camera_frame_header_ready = 1;
         }
         decoded_payload_size = frame_header_size;
@@ -641,13 +641,14 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         // before any tile list OBU.
         if (cm->show_existing_frame || pbi->camera_frame_header_ready) {
           frame_decoding_finished = 1;
+          pbi->seen_frame_header = 0;
           break;
         }
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
       case OBU_TILE_GROUP:
-        if (!frame_header_received) {
+        if (!pbi->seen_frame_header) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
           return;
         }
@@ -661,6 +662,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
             data + payload_size, p_data_end, &frame_decoding_finished,
             obu_header.type == OBU_FRAME);
         is_first_tg_obu_received = 0;
+        if (frame_decoding_finished) pbi->seen_frame_header = 0;
         break;
       case OBU_METADATA:
         if (data_end < data + payload_size) {

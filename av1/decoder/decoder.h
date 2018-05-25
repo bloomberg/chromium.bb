@@ -104,6 +104,7 @@ typedef struct AV1Decoder {
   int operating_point;
   int current_operating_point;
   int dropped_obus;
+  int seen_frame_header;
 
   // State if the camera frame header is already decoded while
   // large_scale_tile = 1.

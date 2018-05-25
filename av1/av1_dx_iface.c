@@ -663,7 +663,6 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
-          img->max_spatial_id = cm->number_spatial_layers - 1;
           return add_grain_if_needed(
               img, ctx->image_with_grain,
               &frame_worker_data->pbi->common.film_grain_params);
@@ -835,9 +834,9 @@ static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
       AVxWorker *const worker = ctx->frame_workers;
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
-      RefCntBuffer *const frame_bufs =
-          frame_worker_data->pbi->common.buffer_pool->frame_bufs;
-      if (frame_worker_data->pbi->common.frame_to_show == NULL)
+      AV1Decoder *const pbi = frame_worker_data->pbi;
+      RefCntBuffer *const frame_bufs = pbi->common.buffer_pool->frame_bufs;
+      if (pbi->seen_frame_header && pbi->common.frame_to_show == NULL)
         return AOM_CODEC_ERROR;
       if (ctx->last_show_frame >= 0)
         *corrupted = frame_bufs[ctx->last_show_frame].buf.corrupted;
