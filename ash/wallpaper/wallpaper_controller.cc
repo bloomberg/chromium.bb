@@ -341,7 +341,7 @@ bool IsActiveUser(const AccountId& account_id) {
 
 // Returns the file path of the wallpaper corresponding to |url| if it exists in
 // local file system, otherwise returns an empty file path.
-base::FilePath GetExistingOnlineWallpaperPath(const GURL& url) {
+base::FilePath GetExistingOnlineWallpaperPath(const std::string& url) {
   WallpaperController::WallpaperResolution resolution =
       WallpaperController::GetAppropriateResolution();
   base::FilePath wallpaper_path =
@@ -361,7 +361,7 @@ base::FilePath GetExistingOnlineWallpaperPath(const GURL& url) {
 
 // Saves the online wallpaper with both large and small sizes to local file
 // system.
-void SaveOnlineWallpaper(const GURL& url,
+void SaveOnlineWallpaper(const std::string& url,
                          WallpaperLayout layout,
                          std::unique_ptr<gfx::ImageSkia> image) {
   DCHECK(!GlobalChromeOSWallpapersDir().empty());
@@ -385,7 +385,7 @@ void SaveOnlineWallpaper(const GURL& url,
 // Implementation of |WallpaperController::GetOfflineWallpaper|.
 std::vector<std::string> GetOfflineWallpaperListImpl() {
   DCHECK(!GlobalChromeOSWallpapersDir().empty());
-  std::vector<std::string> file_names;
+  std::vector<std::string> url_list;
   if (base::DirectoryExists(GlobalChromeOSWallpapersDir())) {
     base::FileEnumerator files(GlobalChromeOSWallpapersDir(),
                                /*recursive=*/false,
@@ -396,11 +396,11 @@ std::vector<std::string> GetOfflineWallpaperListImpl() {
       if (!base::EndsWith(current.BaseName().RemoveExtension().value(),
                           kSmallWallpaperSuffix,
                           base::CompareCase::SENSITIVE)) {
-        file_names.push_back(current.BaseName().value());
+        url_list.push_back(current.BaseName().value());
       }
     }
   }
-  return file_names;
+  return url_list;
 }
 
 }  // namespace
@@ -486,9 +486,9 @@ WallpaperController::GetAppropriateResolution() {
 
 // static
 base::FilePath WallpaperController::GetOnlineWallpaperPath(
-    const GURL& url,
+    const std::string& url,
     WallpaperResolution resolution) {
-  std::string file_name = url.ExtractFileName();
+  std::string file_name = GURL(url).ExtractFileName();
   if (resolution == WALLPAPER_RESOLUTION_SMALL) {
     file_name = base::FilePath(file_name)
                     .InsertBeforeExtension(kSmallWallpaperSuffix)
@@ -1093,7 +1093,7 @@ void WallpaperController::SetCustomWallpaper(
 
 void WallpaperController::SetOnlineWallpaperIfExists(
     mojom::WallpaperUserInfoPtr user_info,
-    const GURL& url,
+    const std::string& url,
     WallpaperLayout layout,
     bool preview_mode,
     SetOnlineWallpaperIfExistsCallback callback) {
@@ -1113,7 +1113,7 @@ void WallpaperController::SetOnlineWallpaperIfExists(
 void WallpaperController::SetOnlineWallpaperFromData(
     mojom::WallpaperUserInfoPtr user_info,
     const std::string& image_data,
-    const GURL& url,
+    const std::string& url,
     WallpaperLayout layout,
     bool preview_mode) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
@@ -1644,12 +1644,12 @@ void WallpaperController::OnOnlineWallpaperDecoded(
     confirm_preview_wallpaper_callback_ = base::BindOnce(
         &WallpaperController::SetOnlineWallpaperImpl,
         weak_factory_.GetWeakPtr(), params, image, /*show_wallpaper=*/false);
-    reload_preview_wallpaper_callback_ = base::BindRepeating(
-        &WallpaperController::ShowWallpaperImage, weak_factory_.GetWeakPtr(),
-        image,
-        WallpaperInfo{params.url.spec(), params.layout, ONLINE,
-                      base::Time::Now().LocalMidnight()},
-        /*preview_mode=*/true);
+    reload_preview_wallpaper_callback_ =
+        base::BindRepeating(&WallpaperController::ShowWallpaperImage,
+                            weak_factory_.GetWeakPtr(), image,
+                            WallpaperInfo{params.url, params.layout, ONLINE,
+                                          base::Time::Now().LocalMidnight()},
+                            /*preview_mode=*/true);
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
   } else {
@@ -1661,7 +1661,7 @@ void WallpaperController::SetOnlineWallpaperImpl(
     const OnlineWallpaperParams& params,
     const gfx::ImageSkia& image,
     bool show_wallpaper) {
-  WallpaperInfo wallpaper_info = {params.url.spec(), params.layout, ONLINE,
+  WallpaperInfo wallpaper_info = {params.url, params.layout, ONLINE,
                                   base::Time::Now().LocalMidnight()};
   if (!SetUserWallpaperInfo(params.account_id, wallpaper_info,
                             params.is_ephemeral)) {
@@ -1701,9 +1701,8 @@ void WallpaperController::SetWallpaperFromInfo(
 
   base::FilePath wallpaper_path;
   if (info.type == ONLINE) {
-    const GURL url = GURL(info.location);
-    DCHECK(url.is_valid());
-    wallpaper_path = GetOnlineWallpaperPath(url, GetAppropriateResolution());
+    wallpaper_path =
+        GetOnlineWallpaperPath(info.location, GetAppropriateResolution());
 
     // If the wallpaper exists and it already contains the correct image we
     // can return immediately.

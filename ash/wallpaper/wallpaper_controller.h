@@ -101,7 +101,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   // Returns the path of the online wallpaper corresponding to |url| and
   // |resolution|.
-  static base::FilePath GetOnlineWallpaperPath(const GURL& url,
+  static base::FilePath GetOnlineWallpaperPath(const std::string& url,
                                                WallpaperResolution resolution);
 
   // Returns wallpaper subdirectory name for current resolution.
@@ -291,13 +291,13 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                           bool preview_mode) override;
   void SetOnlineWallpaperIfExists(
       mojom::WallpaperUserInfoPtr user_info,
-      const GURL& url,
+      const std::string& url,
       WallpaperLayout layout,
       bool preview_mode,
       SetOnlineWallpaperIfExistsCallback callback) override;
   void SetOnlineWallpaperFromData(mojom::WallpaperUserInfoPtr user_info,
                                   const std::string& image_data,
-                                  const GURL& url,
+                                  const std::string& url,
                                   WallpaperLayout layout,
                                   bool preview_mode) override;
   void SetDefaultWallpaper(mojom::WallpaperUserInfoPtr user_info,
@@ -389,7 +389,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   struct OnlineWallpaperParams {
     AccountId account_id;
     bool is_ephemeral;
-    GURL url;
+    std::string url;
     WallpaperLayout layout;
     bool preview_mode;
   };

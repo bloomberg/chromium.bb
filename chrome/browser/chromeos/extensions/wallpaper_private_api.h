@@ -249,8 +249,7 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
 
  private:
   // Responds with the list of urls.
-  void OnOfflineWallpaperListReturned(
-      const std::vector<std::string>& file_names);
+  void OnOfflineWallpaperListReturned(const std::vector<std::string>& url_list);
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetOfflineWallpaperListFunction);
 };

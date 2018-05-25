@@ -50,7 +50,7 @@ void TestWallpaperController::SetCustomWallpaper(
 
 void TestWallpaperController::SetOnlineWallpaperIfExists(
     ash::mojom::WallpaperUserInfoPtr user_info,
-    const GURL& url,
+    const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode,
     ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
@@ -61,7 +61,7 @@ void TestWallpaperController::SetOnlineWallpaperIfExists(
 void TestWallpaperController::SetOnlineWallpaperFromData(
     ash::mojom::WallpaperUserInfoPtr user_info,
     const std::string& image_data,
-    const GURL& url,
+    const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode) {
   NOTIMPLEMENTED();

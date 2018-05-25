@@ -39,14 +39,14 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           bool preview_mode);
   void SetOnlineWallpaperIfExists(
       const AccountId& account_id,
-      const GURL& url,
+      const std::string& url,
       ash::WallpaperLayout layout,
       bool preview_mode,
       ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
           callback);
   void SetOnlineWallpaperFromData(const AccountId& account_id,
                                   const std::string& image_data,
-                                  const GURL& url,
+                                  const std::string& url,
                                   ash::WallpaperLayout layout,
                                   bool preview_mode);
   void SetDefaultWallpaper(const AccountId& account_id, bool show_wallpaper);

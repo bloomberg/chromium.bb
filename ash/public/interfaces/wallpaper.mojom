@@ -91,7 +91,7 @@ interface WallpaperController {
   //                 called.
   // |file_exists|: If the wallpaper file exists in local file system.
   SetOnlineWallpaperIfExists(WallpaperUserInfo user_info,
-                             url.mojom.Url url,
+                             string url,
                              WallpaperLayout layout,
                              bool preview_mode) => (bool file_exists);
 
@@ -107,7 +107,7 @@ interface WallpaperController {
   //                 called.
   SetOnlineWallpaperFromData(WallpaperUserInfo user_info,
                              string image_data,
-                             url.mojom.Url url,
+                             string url,
                              WallpaperLayout layout,
                              bool preview_mode);
 
@@ -210,10 +210,10 @@ interface WallpaperController {
   // |wallpaper_files_id|: The file id for user_info.account_id.
   RemovePolicyWallpaper(WallpaperUserInfo user_info, string wallpaper_files_id);
 
-  // Returns the file names of the wallpapers that exist in local file system
-  // (i.e. |SetOnlineWallpaperFromData| was called earlier). The file name is
-  // used as id to identify which wallpapers are available to be set offline.
-  GetOfflineWallpaperList() => (array<string> file_names);
+  // Returns the urls of the wallpapers that exist in local file system (i.e.
+  // |SetOnlineWallpaperFromData| was called earlier). The url is used as id
+  // to identify which wallpapers are available to be set offline.
+  GetOfflineWallpaperList() => (array<string> url_list);
 
   // Sets wallpaper animation duration. Passing an empty value disables the
   // animation.
