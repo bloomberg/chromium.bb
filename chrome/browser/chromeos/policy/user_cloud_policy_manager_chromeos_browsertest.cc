@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
       content::NotificationService::AllSources());
   GetLoginDisplay()->ShowSigninScreenForTest(kAccountId, kAccountPassword,
                                              kEmptyServices);
-  base::RunLoop().Run();
+  RunUntilBrowserProcessQuits();
   // Should not receive a SESSION_STARTED notification.
   ASSERT_EQ(0, observer.notification_count());
 

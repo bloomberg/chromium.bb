@@ -691,7 +691,7 @@ class KioskTest : public OobeBaseTest {
 
     // Wait until the app terminates if it is still running.
     if (!app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
-      content::RunMessageLoop();
+      RunUntilBrowserProcessQuits();
 
     // Check that the app had been informed that it is running in a kiosk
     // session.

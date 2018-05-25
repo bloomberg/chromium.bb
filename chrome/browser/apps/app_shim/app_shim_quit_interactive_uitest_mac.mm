@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(AppShimQuitTest, QuitWithKeyEvent) {
             atStart:NO];
 
   // This will time out if the event above does not terminate Chrome.
-  content::RunMessageLoop();
+  RunUntilBrowserProcessQuits();
 
   EXPECT_FALSE(handler_->FindHost(profile(), extension_id_));
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());

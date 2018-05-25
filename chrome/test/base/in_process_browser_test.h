@@ -152,6 +152,11 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // outstanding resources.
   void CloseAllBrowsers();
 
+  // Runs the main thread message loop until the BrowserProcess indicates
+  // we should quit. This will normally be called automatically during test
+  // teardown, but may instead be run manually by the test, if necessary.
+  void RunUntilBrowserProcessQuits();
+
   // Convenience methods for adding tabs to a Browser.
   void AddTabAtIndexToBrowser(Browser* browser,
                               int index,
@@ -246,6 +251,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // Browser created in BrowserMain().
   Browser* browser_;
+
+  // Used to run the process until the BrowserProcess signals the test to quit.
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   // Temporary user data directory. Used only when a user data directory is not
   // specified in the command line.

@@ -87,7 +87,7 @@ class UnaffiliatedArcAllowedTest
     if (chromeos::LoginDisplayHost::default_host()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-      content::RunMessageLoop();
+      RunUntilBrowserProcessQuits();
     }
     arc::ArcSessionManager::Get()->Shutdown();
     DevicePolicyCrosBrowserTest::TearDownOnMainThread();

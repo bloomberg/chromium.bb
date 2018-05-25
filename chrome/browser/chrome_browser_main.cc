@@ -309,6 +309,11 @@ using content::BrowserThread;
 
 namespace {
 
+#if !defined(OS_ANDROID)
+// Holds the RunLoop for the non-Android MainMessageLoopRun() to Run().
+base::RunLoop* g_run_loop = nullptr;
+#endif
+
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
 void HandleTestParameters(const base::CommandLine& command_line) {
@@ -1309,6 +1314,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 
 #if !defined(OS_ANDROID)
+  // Create the RunLoop for MainMessageLoopRun() to use, and pass a copy of
+  // its QuitClosure to the BrowserProcessImpl to call when it is time to exit.
+  DCHECK(!g_run_loop);
+  g_run_loop = new base::RunLoop;
+  browser_process_->SetQuitClosure(g_run_loop->QuitWhenIdleClosure());
+
   // These members must be initialized before returning from this function.
   // Android doesn't use StartupBrowserCreator.
   browser_creator_.reset(new StartupBrowserCreator);
@@ -1843,7 +1854,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (first_run::IsChromeFirstRun()) {
     first_run::AutoImport(profile_, master_prefs_->import_bookmarks_path);
 
-    // Note: this can pop the first run consent dialog on linux.
+    // Note: This can pop-up the first run consent dialog on Linux & Mac.
     first_run::DoPostImportTasks(profile_,
                                  master_prefs_->make_chrome_default_for_user);
 
@@ -2133,7 +2144,6 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   RecordBrowserStartupTime();
 
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  base::RunLoop run_loop;
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
@@ -2142,7 +2152,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   metrics::MetricsService::SetExecutionPhase(
       metrics::ExecutionPhase::MAIN_MESSAGE_LOOP_RUN,
       g_browser_process->local_state());
-  run_loop.Run();
+  g_run_loop->Run();
 
   return true;
 #endif  // defined(OS_ANDROID)
@@ -2239,3 +2249,12 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
 void ChromeBrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
   chrome_extra_parts_.push_back(parts);
 }
+
+#if !defined(OS_ANDROID)
+// static
+std::unique_ptr<base::RunLoop> ChromeBrowserMainParts::TakeRunLoopForTest() {
+  auto run_loop = base::WrapUnique<base::RunLoop>(g_run_loop);
+  g_run_loop = nullptr;
+  return run_loop;
+}
+#endif

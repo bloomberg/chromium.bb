@@ -328,7 +328,7 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
     if (LoginDisplayHost::default_host()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&chrome::AttemptExit));
-      content::RunMessageLoop();
+      RunUntilBrowserProcessQuits();
     }
   }
 
