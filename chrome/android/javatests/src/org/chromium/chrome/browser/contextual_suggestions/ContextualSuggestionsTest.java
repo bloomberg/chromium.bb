@@ -110,6 +110,7 @@ public class ContextualSuggestionsTest {
 
     @Rule
     public MethodRule mMethodParamAnnotationProcessor = new MethodParamAnnotationRule();
+    /** Parameter provider for the Slim Peek UI */
     public static class SlimPeekUIParams implements ParameterProvider {
         @Override
         public Iterable<ParameterSet> getParameters() {
@@ -158,6 +159,7 @@ public class ContextualSuggestionsTest {
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
+        final CallbackHelper waitForSuggestionsHelper = new CallbackHelper();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator =
@@ -171,9 +173,13 @@ public class ContextualSuggestionsTest {
                         && mModel.getToolbarShadowVisibility()) {
                     mToolbarShadowVisibleCallback.notifyCalled();
                 }
+                if (propertyKey == PropertyKey.TITLE && mModel.getTitle() != null) {
+                    waitForSuggestionsHelper.notifyCalled();
+                }
             });
         });
 
+        waitForSuggestionsHelper.waitForCallback(0);
         mBottomSheet = mActivityTestRule.getActivity().getBottomSheet();
     }
 

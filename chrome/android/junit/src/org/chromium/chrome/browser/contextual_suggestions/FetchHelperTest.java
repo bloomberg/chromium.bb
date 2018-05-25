@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,9 +21,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.contextual_suggestions.FetchHelper.Delegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,6 +37,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -43,8 +48,8 @@ import java.util.function.Consumer;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 public final class FetchHelperTest {
-    private static final String STARTING_URL = "http://starting.url";
-    private static final String DIFFERENT_URL = "http://different.url";
+    private static final String STARTING_URL = "https://starting.url";
+    private static final String DIFFERENT_URL = "https://different.url";
 
     private class TestFetchHelper extends FetchHelper {
         public TestFetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
@@ -70,6 +75,8 @@ public final class FetchHelperTest {
     private Tab mTab;
     @Mock
     private WebContents mWebContents;
+    @Mock
+    private RenderFrameHost mFrameHost;
     @Mock
     private Tab mTab2;
     @Mock
@@ -385,6 +392,30 @@ public final class FetchHelperTest {
         verify(mDelegate, times(2)).clearState();
         verify(mDelegate, times(1)).reportFetchDelayed(eq(mWebContents));
         verify(mDelegate, times(1)).requestSuggestions(eq(STARTING_URL));
+    }
+
+    @Test
+    public void canonicalUrl_isResolved() {
+        doReturn(false).when(mTab).isLoading();
+        doReturn(mFrameHost).when(mWebContents).getMainFrame();
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                if (invocation.getArguments()[0] instanceof Callback) {
+                    @SuppressWarnings("unchecked")
+                    Callback<String> callback = (Callback<String>) invocation.getArguments()[0];
+                    callback.onResult(DIFFERENT_URL);
+                }
+                return null;
+            }
+        })
+                .when(mFrameHost)
+                .getCanonicalUrlForSharing(any());
+        FetchHelper helper = createFetchHelper();
+
+        getTabObserver().onPageLoadFinished(mTab);
+        runUntilFetchPossible();
+        verify(mDelegate, times(1)).requestSuggestions(DIFFERENT_URL);
     }
 
     private void addTab(Tab tab) {
