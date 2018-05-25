@@ -105,6 +105,7 @@ android_assets("android_webview_apk_assets") {
 }
 
 shared_library("libstandalonelibwebviewchromium") {
+  testonly = true
   sources = [
     "../lib/webview_entry_point.cc",
   ]

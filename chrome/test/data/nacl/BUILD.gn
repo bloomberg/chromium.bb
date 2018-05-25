@@ -581,6 +581,8 @@ if (is_linux && is_clang) {
       "nonsfi/libc_free.c",
     ]
 
+    no_default_deps = true
+
     # Here, we would like to link a relocatable, libc-free executable.
     # -shared/-fPIC make this binary relocatable. -nostdlib ensures
     # this is libc-free.
