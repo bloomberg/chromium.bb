@@ -9,10 +9,37 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+class DeathAwareScriptWrappable;
+
+namespace internal {
+
+class InObjectContainer {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+ public:
+  explicit InObjectContainer(DeathAwareScriptWrappable* dependency)
+      : dependency_(dependency) {}
+
+  virtual ~InObjectContainer() {}
+
+  virtual void Trace(Visitor* visitor) { visitor->Trace(dependency_); }
+
+  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
+    visitor->TraceWrappers(dependency_);
+  }
+
+ private:
+  TraceWrapperMember<DeathAwareScriptWrappable> dependency_;
+};
+
+}  // namespace internal
+
+// ScriptWrappable that can be used to
+// (a) build a graph of ScriptWrappables, and
+// (b) observe a single DeathAwareScriptWrappable for being garbage collected.
 class DeathAwareScriptWrappable : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   static DeathAwareScriptWrappable* instance_;
@@ -20,12 +47,6 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
 
  public:
   typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
-
-  ~DeathAwareScriptWrappable() override {
-    if (this == instance_) {
-      has_died_ = true;
-    }
-  }
 
   static DeathAwareScriptWrappable* Create() {
     return new DeathAwareScriptWrappable();
@@ -37,10 +58,17 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     instance_ = instance;
   }
 
+  ~DeathAwareScriptWrappable() override {
+    if (this == instance_) {
+      has_died_ = true;
+    }
+  }
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(wrapped_dependency_);
     visitor->Trace(wrapped_vector_dependency_);
     visitor->Trace(wrapped_hash_map_dependency_);
+    visitor->Trace(in_object_dependency_);
     ScriptWrappable::Trace(visitor);
   }
 
@@ -52,6 +80,9 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     for (auto pair : wrapped_hash_map_dependency_) {
       visitor->TraceWrappers(pair.key);
       visitor->TraceWrappers(pair.value);
+    }
+    for (const auto& in_object_dependency : in_object_dependency_) {
+      in_object_dependency.TraceWrappers(visitor);
     }
     ScriptWrappable::TraceWrappers(visitor);
   }
@@ -69,12 +100,17 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     wrapped_hash_map_dependency_.insert(key, value);
   }
 
+  void AddInObjectDependency(DeathAwareScriptWrappable* dependency) {
+    in_object_dependency_.push_back(internal::InObjectContainer(dependency));
+  }
+
  private:
   DeathAwareScriptWrappable() = default;
 
   Wrapper wrapped_dependency_;
   HeapVector<Wrapper> wrapped_vector_dependency_;
   HeapHashMap<Wrapper, Wrapper> wrapped_hash_map_dependency_;
+  HeapVector<internal::InObjectContainer> in_object_dependency_;
 };
 
 }  // namespace blink
