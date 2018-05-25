@@ -105,7 +105,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
         instrument_->icon_resource_id(), instrument_->icon_image_skia(),
         instrument_->GetLabel());
     icon_view->SetImageSize(gfx::Size(32, 20));
-    return std::move(icon_view);
+    return icon_view;
   }
 
   std::unique_ptr<views::View> CreateContentView(
@@ -179,7 +179,7 @@ std::unique_ptr<views::View> CreateHeaderView(const base::string16& text) {
   label->SetBorder(views::CreateEmptyBorder(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets, 0,
       kPaymentRequestRowHorizontalInsets));
-  return std::move(label);
+  return label;
 }
 
 }  // namespace
