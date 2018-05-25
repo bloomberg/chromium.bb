@@ -61,13 +61,6 @@
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 -SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled*
 
-#### Compositor Frame Submission
-# Waiting for CompositorFrames times out http://crbug.com/787941
--SitePerProcessBrowserTest.CompositorFrameSwapped
--SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFrames
--SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
--SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
-
 #### VizProcessTransportFactory
 # No ContextProvider http://crbug.com/785268
 -ImageTransportFactoryTearDownBrowserTest.*

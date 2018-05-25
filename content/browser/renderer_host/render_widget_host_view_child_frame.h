@@ -288,6 +288,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   FRIEND_TEST_ALL_PREFIXES(
       SitePerProcessBrowserTest,
       HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           SubframeVisibleAfterRenderViewBecomesSwappedOut);
 
   virtual void SendSurfaceInfoToEmbedderImpl(
       const viz::SurfaceInfo& surface_info);

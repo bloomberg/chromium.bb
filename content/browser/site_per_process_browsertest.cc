@@ -2138,19 +2138,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CompositorFrameSwapped) {
   EXPECT_EQ(site_url, child_node->current_url());
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
             child_node->current_frame_host()->GetSiteInstance());
-  RenderWidgetHostViewBase* rwhv_base = static_cast<RenderWidgetHostViewBase*>(
-      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
-
-  // Wait for OnSwapCompositorFrame message.
-  while (rwhv_base->RendererFrameNumber() <= 0) {
-    // TODO(lazyboy): Find a better way to avoid sleeping like this. See
-    // http://crbug.com/405282 for details.
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
-  }
+  // Wait for CompositorFrame submission.
+  RenderFrameSubmissionObserver observer(
+      child_node->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->render_frame_metadata_provider());
+  observer.WaitForAnyFrameSubmission();
 }
 
 // Ensure that OOPIFs are deleted after navigating to a new main frame.
@@ -6274,54 +6267,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CSSVisibilityChanged) {
   }
 }
 
-// A class which counts the number of times a RenderWidgetHostViewChildFrame
-// swaps compositor frames.
-class ChildFrameCompositorFrameSwapCounter {
- public:
-  explicit ChildFrameCompositorFrameSwapCounter(
-      RenderWidgetHostViewChildFrame* view)
-      : view_(view), weak_factory_(this) {
-    RegisterCallback();
-  }
-
-  ~ChildFrameCompositorFrameSwapCounter() {}
-
-  // Wait until at least |count| new frames are swapped.
-  void WaitForNewFrames(size_t count) {
-    while (counter_ < count) {
-      base::RunLoop loop;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, loop.QuitClosure(), TestTimeouts::tiny_timeout());
-      loop.Run();
-    }
-  }
-
-  void ResetCounter() { counter_ = 0; }
-  size_t GetCount() const { return counter_; }
-
- private:
-  void RegisterCallback() {
-    view_->RegisterFrameSwappedCallback(
-        base::BindOnce(&ChildFrameCompositorFrameSwapCounter::OnFrameSwapped,
-                       weak_factory_.GetWeakPtr()));
-  }
-
-  void OnFrameSwapped() {
-    counter_++;
-
-    // Register a new callback as the old one is released now.
-    RegisterCallback();
-  }
-
-  size_t counter_ = 0;
-
- private:
-  RenderWidgetHostViewChildFrame* view_;
-  base::WeakPtrFactory<ChildFrameCompositorFrameSwapCounter> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositorFrameSwapCounter);
-};
-
 // This test verifies that hiding an OOPIF in CSS will stop generating
 // compositor frames for the OOPIF and any nested OOPIFs inside it. This holds
 // even when the whole page is shown.
@@ -6370,24 +6315,28 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<RenderWidgetHostViewChildFrame*>(
           root->child_at(0)->child_at(0)->current_frame_host()->GetView());
 
-  ChildFrameCompositorFrameSwapCounter first_counter(first_child_view);
-  ChildFrameCompositorFrameSwapCounter second_counter(second_child_view);
-  ChildFrameCompositorFrameSwapCounter third_counter(nested_child_view);
+  RenderFrameSubmissionObserver first_frame_counter(
+      first_child_view->host_->render_frame_metadata_provider());
+  RenderFrameSubmissionObserver second_frame_counter(
+      second_child_view->host_->render_frame_metadata_provider());
+  RenderFrameSubmissionObserver third_frame_counter(
+      nested_child_view->host_->render_frame_metadata_provider());
 
-  const size_t kFrameCountLimit = 20u;
+  const int kFrameCountLimit = 20;
 
   // Wait for a minimum number of compositor frames for the second frame.
-  second_counter.WaitForNewFrames(kFrameCountLimit);
-  ASSERT_LE(kFrameCountLimit, second_counter.GetCount());
+  while (second_frame_counter.render_frame_count() < kFrameCountLimit)
+    second_frame_counter.WaitForAnyFrameSubmission();
+  ASSERT_LE(kFrameCountLimit, second_frame_counter.render_frame_count());
 
   // Now make sure all frames have roughly the counter value in the sense that
   // no counter value is more than twice any other.
-  float ratio = static_cast<float>(first_counter.GetCount()) /
-                static_cast<float>(second_counter.GetCount());
+  float ratio = static_cast<float>(first_frame_counter.render_frame_count()) /
+                static_cast<float>(second_frame_counter.render_frame_count());
   EXPECT_GT(2.5f, ratio + 1 / ratio) << "Ratio is: " << ratio;
 
-  ratio = static_cast<float>(first_counter.GetCount()) /
-          static_cast<float>(third_counter.GetCount());
+  ratio = static_cast<float>(first_frame_counter.render_frame_count()) /
+          static_cast<float>(third_frame_counter.render_frame_count());
   EXPECT_GT(2.5f, ratio + 1 / ratio) << "Ratio is: " << ratio;
 
   // Make sure all views can become visible.
@@ -6416,21 +6365,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   shell()->web_contents()->WasHidden();
   shell()->web_contents()->WasShown();
 
-  first_counter.ResetCounter();
-  second_counter.ResetCounter();
-  third_counter.ResetCounter();
+  first_frame_counter.ResetCounter();
+  second_frame_counter.ResetCounter();
+  third_frame_counter.ResetCounter();
 
   // We expect the second counter to keep running.
-  second_counter.WaitForNewFrames(kFrameCountLimit);
-  ASSERT_LT(kFrameCountLimit, second_counter.GetCount() + 1u);
+  while (second_frame_counter.render_frame_count() < kFrameCountLimit)
+    second_frame_counter.WaitForAnyFrameSubmission();
+  ASSERT_LT(kFrameCountLimit, second_frame_counter.render_frame_count() + 1);
 
   // Verify that the counter for other two frames did not count much.
-  ratio = static_cast<float>(first_counter.GetCount()) /
-          static_cast<float>(second_counter.GetCount());
+  ratio = static_cast<float>(first_frame_counter.render_frame_count()) /
+          static_cast<float>(second_frame_counter.render_frame_count());
   EXPECT_GT(0.5f, ratio) << "Ratio is: " << ratio;
 
-  ratio = static_cast<float>(third_counter.GetCount()) /
-          static_cast<float>(second_counter.GetCount());
+  ratio = static_cast<float>(third_frame_counter.render_frame_count()) /
+          static_cast<float>(second_frame_counter.render_frame_count());
   EXPECT_GT(0.5f, ratio) << "Ratio is: " << ratio;
 }
 
@@ -6486,19 +6436,22 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_FALSE(first_child_view->CanBecomeVisible());
 
-  ChildFrameCompositorFrameSwapCounter first_counter(first_child_view);
-  ChildFrameCompositorFrameSwapCounter second_counter(second_child_view);
+  RenderFrameSubmissionObserver first_frame_counter(
+      first_child_view->host_->render_frame_metadata_provider());
+  RenderFrameSubmissionObserver second_frame_counter(
+      second_child_view->host_->render_frame_metadata_provider());
 
-  const size_t kFrameCountLimit = 20u;
+  const int kFrameCountLimit = 20;
 
   // Wait for a certain number of swapped compositor frames generated for the
   // second child view. During the same interval the first frame should not have
   // swapped any compositor frames.
-  second_counter.WaitForNewFrames(kFrameCountLimit);
-  ASSERT_LT(kFrameCountLimit, second_counter.GetCount() + 1u);
+  while (second_frame_counter.render_frame_count() < kFrameCountLimit)
+    second_frame_counter.WaitForAnyFrameSubmission();
+  ASSERT_LT(kFrameCountLimit, second_frame_counter.render_frame_count() + 1);
 
-  float ratio = static_cast<float>(first_counter.GetCount()) /
-                static_cast<float>(second_counter.GetCount());
+  float ratio = static_cast<float>(first_frame_counter.render_frame_count()) /
+                static_cast<float>(second_frame_counter.render_frame_count());
   EXPECT_GT(0.5f, ratio) << "Ratio is: " << ratio;
 }
 
@@ -11315,8 +11268,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
           popup_child->current_frame_host()->GetView());
 
   // Make sure the child frame keeps generating compositor frames.
-  ChildFrameCompositorFrameSwapCounter counter(child_view);
-  counter.WaitForNewFrames(10u);
+  RenderFrameSubmissionObserver frame_counter(
+      child_view->host_->render_frame_metadata_provider());
+  while (frame_counter.render_frame_count() < 10)
+    frame_counter.WaitForAnyFrameSubmission();
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthSimple) {
