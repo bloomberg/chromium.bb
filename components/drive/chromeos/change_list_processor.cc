@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "components/drive/chromeos/drive_file_util.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -118,11 +119,15 @@ class ChangeListProcessor::ChangeListToEntryMapUMAStats {
   int num_hosted_documents_;
 };
 
-ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata,
+ChangeListProcessor::ChangeListProcessor(const std::string& team_drive_id,
+                                         const base::FilePath& root_entry_path,
+                                         ResourceMetadata* resource_metadata,
                                          base::CancellationFlag* in_shutdown)
     : resource_metadata_(resource_metadata),
       in_shutdown_(in_shutdown),
-      changed_files_(new FileChange) {}
+      changed_files_(new FileChange),
+      team_drive_id_(team_drive_id),
+      root_entry_path_(root_entry_path) {}
 
 ChangeListProcessor::~ChangeListProcessor() = default;
 
@@ -143,8 +148,8 @@ FileError ChangeListProcessor::ApplyUserChangeList(
 
   ResourceEntry root;
   // Update the resource ID of the entry for "My Drive" directory.
-  FileError error = resource_metadata_->GetResourceEntryByPath(
-      util::GetDriveMyDriveRootPath(), &root);
+  FileError error =
+      resource_metadata_->GetResourceEntryByPath(root_entry_path_, &root);
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to get root entry: " << FileErrorToString(error);
     return error;
@@ -163,7 +168,8 @@ FileError ChangeListProcessor::ApplyUserChangeList(
     return error;
 
   // Update start_page_token in the metadata header.
-  error = resource_metadata_->SetStartPageToken(new_start_page_token);
+  error = SetStartPageToken(resource_metadata_, team_drive_id_,
+                            new_start_page_token);
   if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "SetStartPageToken failed: " << FileErrorToString(error);
     return error;

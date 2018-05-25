@@ -120,7 +120,8 @@ class ChangeListLoaderTest : public testing::Test {
     change_list_loader_.reset(new ChangeListLoader(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
         metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
-        start_page_token_loader_.get(), loader_controller_.get()));
+        start_page_token_loader_.get(), loader_controller_.get(),
+        util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath()));
   }
 
   void SetUpForTeamDrives() {
@@ -265,7 +266,8 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   change_list_loader_.reset(new ChangeListLoader(
       logger_.get(), base::ThreadTaskRunnerHandle::Get().get(), metadata_.get(),
       scheduler_.get(), root_folder_id_loader_.get(),
-      start_page_token_loader_.get(), loader_controller_.get()));
+      start_page_token_loader_.get(), loader_controller_.get(),
+      util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath()));
 
   // Add a file to the service.
   std::unique_ptr<google_apis::FileResource> gdata_entry =

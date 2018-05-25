@@ -131,7 +131,9 @@ class ChangeListProcessorTest : public testing::Test {
   // start page token |kBaseStartPageToken|.
   FileError ApplyFullResourceList(
       std::vector<std::unique_ptr<ChangeList>> changes) {
-    ChangeListProcessor processor(metadata_.get(), nullptr);
+    ChangeListProcessor processor(util::kTeamDriveIdDefaultCorpus,
+                                  util::GetDriveMyDriveRootPath(),
+                                  metadata_.get(), nullptr);
     return processor.ApplyUserChangeList(kBaseStartPageToken, kRootId,
                                          std::move(changes),
                                          false /* is_delta_update */);
@@ -143,7 +145,9 @@ class ChangeListProcessorTest : public testing::Test {
   FileError ApplyUserChangeList(
       std::vector<std::unique_ptr<ChangeList>> changes,
       FileChange* changed_files) {
-    ChangeListProcessor processor(metadata_.get(), nullptr);
+    ChangeListProcessor processor(util::kTeamDriveIdDefaultCorpus,
+                                  util::GetDriveMyDriveRootPath(),
+                                  metadata_.get(), nullptr);
     FileError error = processor.ApplyUserChangeList(kBaseStartPageToken,
                                                     kRootId, std::move(changes),
                                                     true /* is_delta_update */);

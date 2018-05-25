@@ -238,7 +238,9 @@ ChangeListLoader::ChangeListLoader(
     JobScheduler* scheduler,
     RootFolderIdLoader* root_folder_id_loader,
     StartPageTokenLoader* start_page_token_loader,
-    LoaderController* loader_controller)
+    LoaderController* loader_controller,
+    const std::string& team_drive_id,
+    const base::FilePath& root_entry_path)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       in_shutdown_(new base::CancellationFlag),
@@ -248,6 +250,8 @@ ChangeListLoader::ChangeListLoader(
       start_page_token_loader_(start_page_token_loader),
       loader_controller_(loader_controller),
       loaded_(false),
+      team_drive_id_(team_drive_id),
+      root_entry_path_(root_entry_path),
       weak_ptr_factory_(this) {}
 
 ChangeListLoader::~ChangeListLoader() {
@@ -525,8 +529,8 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
                              std::make_move_iterator(change_lists.begin()),
                              std::make_move_iterator(change_lists.end()));
 
-  ChangeListProcessor* change_list_processor =
-      new ChangeListProcessor(resource_metadata_, in_shutdown_.get());
+  ChangeListProcessor* change_list_processor = new ChangeListProcessor(
+      team_drive_id_, root_entry_path_, resource_metadata_, in_shutdown_.get());
   // Don't send directory content change notification while performing
   // the initial content retrieval.
   const bool should_notify_changed_directories = is_delta_update;

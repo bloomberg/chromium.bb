@@ -51,7 +51,8 @@ class DirectoryLoader {
                   JobScheduler* scheduler,
                   RootFolderIdLoader* root_folder_id_loader,
                   StartPageTokenLoader* start_page_token_loader,
-                  LoaderController* apply_task_controller);
+                  LoaderController* apply_task_controller,
+                  const base::FilePath& root_entry_path);
   ~DirectoryLoader();
 
   // Adds and removes the observer.
@@ -144,6 +145,11 @@ class DirectoryLoader {
 
   // Set of the running feed fetcher for the fast fetch.
   std::set<std::unique_ptr<FeedFetcher>> fast_fetch_feed_fetcher_set_;
+
+  // The root entry path for changes being loaded by this directory loader.
+  // Can be a team drive root entry or for the users default corpus will be the
+  // drive root entry.
+  const base::FilePath root_entry_path_;
 
   THREAD_CHECKER(thread_checker_);
 
