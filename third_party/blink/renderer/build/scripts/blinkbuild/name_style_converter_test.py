@@ -130,6 +130,14 @@ class NameStyleConverterTest(unittest.TestCase):
         converter = NameStyleConverter('HTMLElement')
         self.assertEqual(converter.to_snake_case(), 'html_element')
 
+    def test_to_class_data_member(self):
+        converter = NameStyleConverter('HTMLElement')
+        self.assertEqual(converter.to_class_data_member(), 'html_element_')
+        self.assertEqual(converter.to_class_data_member(prefix='is'), 'is_html_element_')
+        self.assertEqual(converter.to_class_data_member(suffix='enabled'), 'html_element_enabled_')
+        self.assertEqual(converter.to_class_data_member(prefix='is', suffix='enabled'), 'is_html_element_enabled_')
+        self.assertEqual(converter.to_class_data_member(prefix='fooBar', suffix='V0V8'), 'foobar_html_element_v0v8_')
+
     def test_upper_camel_case(self):
         converter = NameStyleConverter('someSuperThing')
         self.assertEqual(converter.to_upper_camel_case(), 'SomeSuperThing')

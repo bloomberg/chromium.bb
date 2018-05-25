@@ -178,3 +178,11 @@ class NameStyleConverter(object):
             'upper_camel_case': self.to_upper_camel_case(),
             'macro_case': self.to_macro_case(),
         }
+
+    # Use the following high level naming functions which describe the semantics
+    # of the name, rather than a particular style.
+
+    def to_class_data_member(self, prefix=None, suffix=None):
+        lower_prefix = prefix.lower() + '_' if prefix else ''
+        lower_suffix = suffix.lower() + '_' if suffix else ''
+        return lower_prefix + self.to_snake_case() + '_' + lower_suffix
