@@ -369,7 +369,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
             "OCSP check failed. response status: %d, revocation status: %d",
             cert_verify_result_.ocsp_result.response_status,
             cert_verify_result_.ocsp_result.revocation_status));
-    RunErrorCallback(static_cast<net::Error>(net::ERR_FAILED));
+    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 
