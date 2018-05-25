@@ -1,31 +1,47 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
 
 from page_sets.login_helpers import google_login
+from page_sets.rendering import rendering_story
+from page_sets.system_health import platforms
 
 
-class KeyDesktopMoveCasesPage(page_module.Page):
+class KeyDesktopMoveCasesPage(rendering_story.RenderingStory):
+  """Abstract base class for key desktop move cases pages."""
+  ABSTRACT_STORY = True
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
-  def __init__(self, url, page_set, name=''):
-    if name == '':
-      name = url
+  def __init__(self,
+               page_set,
+               shared_page_state_class,
+               name_suffix='',
+               extra_browser_args=None):
     super(KeyDesktopMoveCasesPage, self).__init__(
-        url=url, page_set=page_set, name=name,
-        shared_page_state_class=shared_page_state.SharedDesktopPageState)
+        page_set=page_set,
+        shared_page_state_class=shared_page_state_class,
+        name_suffix=name_suffix,
+        extra_browser_args=extra_browser_args)
 
 
 class GmailMouseScrollPage(KeyDesktopMoveCasesPage):
-
   """ Why: productivity, top google properties """
+  BASE_NAME = 'gmail_move'
+  URL = 'https://mail.google.com/mail/'
 
-  def __init__(self, page_set):
+  def __init__(self,
+               page_set,
+               shared_page_state_class=shared_page_state.SharedDesktopPageState,
+               name_suffix='',
+               extra_browser_args=None):
     super(GmailMouseScrollPage, self).__init__(
-      url='https://mail.google.com/mail/',
-      page_set=page_set)
+        page_set=page_set,
+        shared_page_state_class=shared_page_state_class,
+        name_suffix=name_suffix,
+        extra_browser_args=extra_browser_args
+    )
 
     self.scrollable_element_function = '''
       function(callback) {
@@ -85,14 +101,20 @@ class GmailMouseScrollPage(KeyDesktopMoveCasesPage):
 
 
 class GoogleMapsPage(KeyDesktopMoveCasesPage):
-
   """ Why: productivity, top google properties; Supports drag gestures """
+  BASE_NAME = 'maps_move'
+  URL = 'https://www.google.co.uk/maps/@51.5043968,-0.1526806'
 
-  def __init__(self, page_set):
+  def __init__(self,
+               page_set,
+               shared_page_state_class=shared_page_state.SharedDesktopPageState,
+               name_suffix='',
+               extra_browser_args=None):
     super(GoogleMapsPage, self).__init__(
-        url='https://www.google.co.uk/maps/@51.5043968,-0.1526806',
         page_set=page_set,
-        name='Maps')
+        shared_page_state_class=shared_page_state_class,
+        name_suffix=name_suffix,
+        extra_browser_args=extra_browser_args)
 
   def RunNavigateSteps(self, action_runner):
     super(GoogleMapsPage, self).RunNavigateSteps(action_runner)
@@ -116,7 +138,7 @@ class KeyDesktopMoveCasesPageSet(story.StorySet):
 
   def __init__(self):
     super(KeyDesktopMoveCasesPageSet, self).__init__(
-      archive_data_file='data/key_desktop_move_cases.json',
+      archive_data_file='../data/key_desktop_move_cases.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddStory(GmailMouseScrollPage(self))
