@@ -60,6 +60,10 @@ class UnifiedSystemTrayView : public views::View {
   // Hide the main view and show the given |detailed_view|.
   void SetDetailedView(views::View* detailed_view);
 
+  // Remove the detailed view set by SetDetailedView, and show the main view.
+  // It deletes |detailed_view| and children.
+  void ResetDetailedView();
+
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);

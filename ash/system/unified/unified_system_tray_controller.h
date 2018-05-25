@@ -77,6 +77,13 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
 
   // If you want to add a new detailed view, add here.
 
+  // Show the main view back from a detailed view. Called from a detailed view
+  // controller.
+  void TransitionToMainView();
+
+  // Close the bubble. Called from a detailed view controller.
+  void CloseBubble();
+
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;

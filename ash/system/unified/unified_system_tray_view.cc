@@ -165,6 +165,12 @@ void UnifiedSystemTrayView::SetDetailedView(views::View* detailed_view) {
   Layout();
 }
 
+void UnifiedSystemTrayView::ResetDetailedView() {
+  detailed_view_container_->RemoveAllChildViews(true /* delete_children */);
+  system_tray_container_->SetVisible(true);
+  Layout();
+}
+
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
   if (expanded_amount == 1.0 || expanded_amount == 0.0)

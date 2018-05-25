@@ -356,10 +356,6 @@ TrayAudio* SystemTray::GetTrayAudio() const {
   return tray_audio_;
 }
 
-TrayNetwork* SystemTray::GetTrayNetwork() const {
-  return tray_network_;
-}
-
 TrayBluetooth* SystemTray::GetTrayBluetooth() const {
   return tray_bluetooth_;
 }

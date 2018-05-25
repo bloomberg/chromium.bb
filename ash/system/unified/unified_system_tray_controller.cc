@@ -20,6 +20,7 @@
 #include "ash/system/network/network_feature_pod_controller.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_vpn.h"
+#include "ash/system/network/unified_network_detailed_view_controller.h"
 #include "ash/system/network/vpn_feature_pod_controller.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
@@ -218,8 +219,8 @@ void UnifiedSystemTrayController::ShowUserChooserWidget() {
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {
-  // TODO(tetsui): Implement Network's own DetailedViewController.
-  ShowSystemTrayItemDetailedView(system_tray_->GetTrayNetwork());
+  ShowDetailedView(
+      std::make_unique<UnifiedNetworkDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
@@ -245,6 +246,16 @@ void UnifiedSystemTrayController::ShowVPNDetailedView() {
 void UnifiedSystemTrayController::ShowIMEDetailedView() {
   // TODO(tetsui): Implement IME's own DetailedViewController.
   ShowSystemTrayItemDetailedView(system_tray_->GetTrayIME());
+}
+
+void UnifiedSystemTrayController::TransitionToMainView() {
+  detailed_view_controller_.reset();
+  unified_view_->ResetDetailedView();
+}
+
+void UnifiedSystemTrayController::CloseBubble() {
+  if (unified_view_->GetWidget())
+    unified_view_->GetWidget()->Close();
 }
 
 void UnifiedSystemTrayController::AnimationEnded(
