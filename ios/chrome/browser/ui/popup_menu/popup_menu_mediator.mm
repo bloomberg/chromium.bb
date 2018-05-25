@@ -561,23 +561,11 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 // Creates the menu items for the tab grid menu.
 - (void)createTabGridMenuItems {
-  NSMutableArray* closeItems = [NSMutableArray array];
-  if (self.isIncognito) {
-    PopupMenuToolsItem* closeAllIncognitoTabs = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_CLOSE_ALL_INCOGNITO_TABS,
-        PopupMenuActionCloseAllIncognitoTabs, @"popup_menu_new_incognito_tab",
-        kToolsMenuCloseAllIncognitoTabsId);
-    closeAllIncognitoTabs.destructiveAction = YES;
-    [closeItems addObject:closeAllIncognitoTabs];
-  }
-
   PopupMenuToolsItem* closeTab =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_CLOSE_TAB, PopupMenuActionCloseTab,
                           @"popup_menu_close_tab", kToolsMenuCloseTabId);
   closeTab.destructiveAction = YES;
-  [closeItems addObject:closeTab];
-
-  self.items = @[ [self itemsForNewTab], closeItems ];
+  self.items = @[ [self itemsForNewTab], @[ closeTab ] ];
 }
 
 // Creates the menu items for the search menu.

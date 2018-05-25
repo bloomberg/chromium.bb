@@ -173,7 +173,7 @@ TEST_F(PopupMenuMediatorTest, TestElementsTabGridNonIncognito) {
 // for the Tab Grid type, in incognito.
 TEST_F(PopupMenuMediatorTest, TestElementsTabGridIncognito) {
   CreateMediator(PopupMenuTypeTabGrid, YES, NO);
-  CheckMediatorSetItems(@[ @(2), @(2) ]);
+  CheckMediatorSetItems(@[ @(2), @(1) ]);
 }
 
 // Tests that the mediator is asking for an item to be highlighted when asked.
