@@ -109,7 +109,7 @@ static void ApplyClipRects(const ClipRectsContext& context,
     if (box.CanContainFixedPositionObjects())
       clip_rects.SetFixedClipRect(
           Intersection(new_overflow_clip, clip_rects.FixedClipRect()));
-    if (box.StyleRef().ContainsPaint())
+    if (box.ShouldApplyPaintContainment())
       clip_rects.SetPosClipRect(
           Intersection(new_overflow_clip, clip_rects.PosClipRect()));
   }

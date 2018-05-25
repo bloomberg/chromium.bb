@@ -61,7 +61,8 @@ void LayoutTableBoxComponent::StyleDidChange(StyleDifference diff,
                                              const ComputedStyle* old_style) {
   LayoutBox::StyleDidChange(diff, old_style);
   SetCanContainFixedPositionObjects(
-      Style()->CanContainFixedPositionObjects(false));
+      Style()->CanContainFixedPositionObjects(false) ||
+      ShouldApplyPaintContainment());
 }
 
 }  // namespace blink

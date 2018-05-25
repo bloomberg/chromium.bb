@@ -543,11 +543,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForDisplay(style, layout_parent_style,
                           element ? &element->GetDocument() : nullptr);
 
-    // Paint containment forces a block formatting context, so we must coerce
-    // from inline.  https://drafts.csswg.org/css-containment/#containment-paint
-    if (style.ContainsPaint() && style.Display() == EDisplay::kInline)
-      style.SetDisplay(EDisplay::kBlock);
-
     // If this is a child of a LayoutCustom, we need the name of the parent
     // layout function for invalidation purposes.
     if (layout_parent_style.IsDisplayLayoutCustomBox()) {

@@ -492,7 +492,7 @@ bool LayoutObject::HasClipRelatedProperty() const {
   // CSS clip-path/mask/filter induces a stacking context and applies inherited
   // clip to that stacking context, while resetting clip for descendants. This
   // special behavior is already handled elsewhere.
-  if (HasClip() || HasOverflowClip() || Style()->ContainsPaint())
+  if (HasClip() || HasOverflowClip() || ShouldApplyPaintContainment())
     return true;
   if (IsBox() && ToLayoutBox(this)->HasControlClip())
     return true;

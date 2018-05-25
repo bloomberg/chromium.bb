@@ -104,7 +104,8 @@ void NGInlineItem::ComputeBoxProperties() {
       should_create_box_fragment_ =
           ToLayoutBoxModelObject(layout_object_)->HasSelfPaintingLayer() ||
           style_->HasOutline() || style_->CanContainAbsolutePositionObjects() ||
-          style_->CanContainFixedPositionObjects(false);
+          style_->CanContainFixedPositionObjects(false) ||
+          ToLayoutBoxModelObject(layout_object_)->ShouldApplyPaintContainment();
     }
     return;
   }

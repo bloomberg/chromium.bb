@@ -158,12 +158,14 @@ void LayoutBlock::StyleWillChange(StyleDifference diff,
 
   if (old_style && Parent()) {
     bool old_style_contains_fixed_position =
-        old_style->CanContainFixedPositionObjects(IsDocumentElement());
+        old_style->CanContainFixedPositionObjects(IsDocumentElement()) ||
+        ShouldApplyPaintContainment();
     bool old_style_contains_absolute_position =
         old_style_contains_fixed_position ||
         old_style->CanContainAbsolutePositionObjects();
     bool new_style_contains_fixed_position =
-        new_style.CanContainFixedPositionObjects(IsDocumentElement());
+        new_style.CanContainFixedPositionObjects(IsDocumentElement()) ||
+        ShouldApplyPaintContainment();
     bool new_style_contains_absolute_position =
         new_style_contains_fixed_position ||
         new_style.CanContainAbsolutePositionObjects();
@@ -259,7 +261,8 @@ void LayoutBlock::StyleDidChange(StyleDifference diff,
   // transformed, or contain:paint is specified.
   SetCanContainFixedPositionObjects(
       IsLayoutView() || IsSVGForeignObject() || IsTextControl() ||
-      new_style.CanContainFixedPositionObjects(IsDocumentElement()));
+      new_style.CanContainFixedPositionObjects(IsDocumentElement()) ||
+      ShouldApplyPaintContainment());
 
   // It's possible for our border/padding to change, but for the overall logical
   // width or height of the block to end up being the same. We keep track of
