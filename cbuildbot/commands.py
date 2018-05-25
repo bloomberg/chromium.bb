@@ -68,6 +68,22 @@ _MAX_HWTEST_START_CMD_RETRY = 1
 JSON_DICT_START = '#JSON_START#'
 JSON_DICT_END = '#JSON_END#'
 
+# Filename for tarball containing Autotest server files needed for Server-Side
+# Packaging.
+AUTOTEST_SERVER_PACKAGE = 'autotest_server_package.tar.bz2'
+
+# Directory within AUTOTEST_SERVER_PACKAGE where Tast files needed to run with
+# Server-Side Packaging are stored.
+_TAST_SSP_SUBDIR = 'tast'
+
+# Tast files and directories to include in AUTOTEST_SERVER_PACKAGE relative to
+# the chroot. Public so it can be used by commands_unittest.py.
+TAST_SSP_FILES = [
+    '/usr/bin/tast',                # Main Tast executable.
+    '/usr/bin/remote_test_runner',  # Runs remote tests.
+    '/usr/libexec/tast/bundles',    # Dir containing test bundles.
+    '/usr/share/tast/data',         # Dir containing test data.
+]
 
 # =========================== Command Helpers =================================
 
@@ -2212,9 +2228,43 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
       '*', target='autotest', cwd=cwd,
       exclude_dirs=('autotest/packages', 'autotest/client/deps/',
                     'autotest/client/tests', 'autotest/client/site_tests'))
-  tarball = os.path.join(tarball_dir, 'autotest_server_package.tar.bz2')
-  BuildTarball(buildroot, autotest_files, tarball, cwd=cwd, error_code_ok=True)
+
+  tast_files, transforms = \
+      _GetTastServerFilesAndTarTransforms(os.path.join(buildroot, 'chroot'))
+
+  tarball = os.path.join(tarball_dir, AUTOTEST_SERVER_PACKAGE)
+  BuildTarball(buildroot, autotest_files + tast_files, tarball, cwd=cwd,
+               extra_args=transforms, error_code_ok=True)
   return tarball
+
+
+def _GetTastServerFilesAndTarTransforms(chroot):
+  """Returns Tast server files and corresponding tar transform flags.
+
+  The returned paths should be included in AUTOTEST_SERVER_PACKAGE. The
+  --transform arguments should be passed to GNU tar to convert the paths to
+  appropriate destinations in the tarball.
+
+  Args:
+    chroot: Absolute path of the Chrome OS chroot.
+
+  Returns:
+    (files, transforms), where files is a list of absolute paths to Tast server
+        files/directories and transforms is a list of --transform arguments to
+        pass to GNU tar when archiving those files.
+  """
+  files = []
+  transforms = []
+
+  for p in TAST_SSP_FILES:
+    path = os.path.join(chroot, os.path.relpath(p, '/'))
+    if os.path.exists(path):
+      files.append(path)
+      dest = os.path.join(_TAST_SSP_SUBDIR, os.path.basename(path))
+      transforms.append('--transform=s|^%s|%s|' %
+                        (os.path.relpath(path, '/'), dest))
+
+  return files, transforms
 
 
 def BuildAutotestTarballsForHWTest(buildroot, cwd, tarball_dir):

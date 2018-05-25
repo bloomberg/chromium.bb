@@ -1137,15 +1137,30 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     """Tests that generating the autotest server package tarball is correct."""
     control_file_list = ['autotest/server/site_tests/testA/control',
                          'autotest/server/site_tests/testB/control']
+    # Pass a copy of the file list so the code under test can't mutate it.
     self.PatchObject(commands, 'FindFilesWithPattern',
-                     return_value=control_file_list)
+                     return_value=list(control_file_list))
     tar_mock = self.PatchObject(commands, 'BuildTarball')
+
+    expected_files = list(control_file_list)
+
+    # Touch Tast paths so they'll be included in the tar command. Skip creating
+    # the last file so we can verify that it's omitted from the tar command.
+    chroot = os.path.join(self._buildroot, 'chroot')
+    for p in commands.TAST_SSP_FILES[:-1]:
+      path = os.path.join(chroot, os.path.relpath(p, '/'))
+      if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+      open(path, 'a').close()
+      expected_files.append(path)
+
     commands.BuildAutotestServerPackageTarball(self._buildroot, self._cwd,
                                                self._tarball_dir)
+
     tar_mock.assert_called_once_with(
-        self._buildroot, control_file_list,
-        os.path.join(self._tarball_dir, 'autotest_server_package.tar.bz2'),
-        cwd=self._cwd, error_code_ok=True)
+        self._buildroot, expected_files,
+        os.path.join(self._tarball_dir, commands.AUTOTEST_SERVER_PACKAGE),
+        cwd=self._cwd, extra_args=mock.ANY, error_code_ok=True)
 
   def testBuildStrippedPackagesArchive(self):
     """Test generation of stripped package tarball using globs."""
