@@ -1884,10 +1884,6 @@ test("content_unittests") {
     sources += [ "../browser/posix_file_descriptor_info_impl_unittest.cc" ]
   }
 
-  if (enable_net_mojo) {
-    deps += [ "//net:net_utility_services" ]
-  }
-
   if (enable_plugins) {
     sources += [
       "../browser/plugin_service_impl_unittest.cc",

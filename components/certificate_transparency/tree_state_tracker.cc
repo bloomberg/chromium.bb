@@ -17,7 +17,6 @@
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_client.h"
-#include "net/dns/dns_config_service.h"
 #include "net/log/net_log.h"
 
 using net::X509Certificate;

@@ -1800,8 +1800,8 @@ jumbo_split_static_library("browser") {
     "//media/mojo/services",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
+    "//net",
     "//net:extras",
-    "//net:net_browser_services",
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//rlz/buildflags",
@@ -2395,8 +2395,8 @@ jumbo_split_static_library("browser") {
     # Android does in-process PAC, so must link against V8 directly. Other
     # platforms use OOP Mojo resolution.
     deps += [
-      "//net:net_utility_services",
       "//net:net_with_v8",
+      "//net/dns:mojo_client",
       "//v8",
     ]
 
@@ -2862,7 +2862,6 @@ jumbo_split_static_library("browser") {
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
-      "//net:net",
     ]
 
     if (is_posix || is_fuchsia) {

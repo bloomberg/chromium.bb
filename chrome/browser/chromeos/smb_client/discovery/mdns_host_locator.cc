@@ -6,9 +6,10 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "net/dns/dns_protocol.h"
-#include "net/dns/mdns_client_impl.h"
+#include "net/dns/mdns_client.h"
 #include "net/dns/record_rdata.h"
 
 namespace chromeos {
