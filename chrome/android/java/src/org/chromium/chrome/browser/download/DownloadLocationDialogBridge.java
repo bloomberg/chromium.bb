@@ -59,7 +59,7 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     public void onClick(@ModalDialogView.ButtonType int buttonType) {
         switch (buttonType) {
             case ModalDialogView.BUTTON_POSITIVE:
-                handleResponses(mLocationDialog.getFileName(), mLocationDialog.getFileLocation(),
+                handleResponses(mLocationDialog.getFileName(), mLocationDialog.getDirectoryOption(),
                         mLocationDialog.getDontShowAgain());
                 mModalDialogManager.dismissDialog(mLocationDialog);
                 break;
@@ -86,12 +86,13 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
      * Pass along information from location dialog to native.
      *
      * @param fileName      Name the user gave the file.
-     * @param fileLocation  Location the user wants the file saved to.
+     * @param directoryOption  Location the user wants the file saved to.
      * @param dontShowAgain Whether the user wants the "Save download to..." dialog shown again.
      */
-    private void handleResponses(String fileName, File fileLocation, boolean dontShowAgain) {
+    private void handleResponses(
+            String fileName, DirectoryOption directoryOption, boolean dontShowAgain) {
         // If there's no file location, treat as a cancellation.
-        if (fileLocation == null) {
+        if (directoryOption == null || directoryOption.location == null) {
             cancel();
             return;
         }
@@ -99,10 +100,11 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         // Update native with new path.
         if (mNativeDownloadLocationDialogBridge != 0) {
             PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
-                    fileLocation.getAbsolutePath());
+                    directoryOption.location.getAbsolutePath());
+            directoryOption.recordDirectoryOptionType();
 
-            File filePath = new File(fileLocation, fileName);
-            nativeOnComplete(mNativeDownloadLocationDialogBridge, filePath.getAbsolutePath());
+            File file = new File(directoryOption.location, fileName);
+            nativeOnComplete(mNativeDownloadLocationDialogBridge, file.getAbsolutePath());
         }
 
         // Update preference to show prompt based on whether checkbox is checked.

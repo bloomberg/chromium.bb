@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "chrome/browser/download/download_location_dialog_result.h"
 #include "chrome/browser/download/download_location_dialog_type.h"
 #include "ui/gfx/native_widget_types.h"
 

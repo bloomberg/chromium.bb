@@ -209,8 +209,9 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         mCanonicalOptions.clear();
         File directoryLocation =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        mCanonicalOptions.add(new DirectoryOption(mContext.getString(R.string.menu_downloads),
-                directoryLocation, directoryLocation.getUsableSpace()));
+        mCanonicalOptions.add(
+                new DirectoryOption(mContext.getString(R.string.menu_downloads), directoryLocation,
+                        directoryLocation.getUsableSpace(), DirectoryOption.DEFAULT_OPTION));
     }
 
     private void setAdditionalDirectoryOptions() {
@@ -235,7 +236,8 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
                     : mContext.getString(org.chromium.chrome.R.string.downloads_location_sd_card);
 
             File file = new File(dir);
-            mAdditionalOptions.add(new DirectoryOption(directoryName, file, file.getUsableSpace()));
+            mAdditionalOptions.add(new DirectoryOption(
+                    directoryName, file, file.getUsableSpace(), DirectoryOption.ADDITIONAL_OPTION));
             numOtherAdditionalDirectories++;
         }
     }
@@ -245,8 +247,8 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
             mErrorOptions.clear();
         } else {
             mErrorOptions.add(new DirectoryOption(
-                    mContext.getString(R.string.download_location_no_available_locations), null,
-                    0));
+                    mContext.getString(R.string.download_location_no_available_locations), null, 0,
+                    DirectoryOption.ERROR_OPTION));
         }
     }
 }

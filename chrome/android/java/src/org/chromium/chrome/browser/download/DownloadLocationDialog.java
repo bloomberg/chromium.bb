@@ -126,10 +126,10 @@ public class DownloadLocationDialog extends ModalDialogView {
      * @return  The file path based on what the user selected as the location of the file.
      */
     @Nullable
-    File getFileLocation() {
+    DirectoryOption getDirectoryOption() {
         if (mFileLocation == null) return null;
         DirectoryOption selected = (DirectoryOption) mFileLocation.getSelectedItem();
-        return selected.location;
+        return selected;
     }
 
     /**
