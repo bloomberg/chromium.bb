@@ -44,7 +44,7 @@ class MakeInternalSettingsWriter(json5_generator.Writer):
     def __init__(self, json5_file_path, output_dir):
         super(MakeInternalSettingsWriter, self).__init__(json5_file_path, output_dir)
 
-        self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'])
+        self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'].original)
 
         self._outputs = {
             'internal_settings_generated.h': self.generate_header,

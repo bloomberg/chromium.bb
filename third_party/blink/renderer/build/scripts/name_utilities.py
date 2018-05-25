@@ -52,7 +52,7 @@ def to_macro_style(name):
 
 
 def script_name(entry):
-    return os.path.basename(entry['name'])
+    return os.path.basename(entry['name'].original)
 
 
 def cpp_bool(value):

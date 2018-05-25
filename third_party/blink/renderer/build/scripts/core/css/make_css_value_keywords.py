@@ -24,10 +24,10 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
         self._value_keywords = self.json5_file.name_dictionaries
         first_keyword_id = 1
         for offset, keyword in enumerate(self._value_keywords):
-            keyword['lower_name'] = keyword['name'].lower()
-            keyword['enum_name'] = enum_for_css_keyword(keyword['name'])
+            keyword['lower_name'] = keyword['name'].original.lower()
+            keyword['enum_name'] = enum_for_css_keyword(keyword['name'].original)
             keyword['enum_value'] = first_keyword_id + offset
-            if keyword['name'].startswith('-internal-'):
+            if keyword['name'].original.startswith('-internal-'):
                 assert keyword['mode'] is None, 'Can\'t specify mode for ' \
                     'value keywords with the prefix "-internal-".'
                 keyword['mode'] = 'UASheet'
@@ -42,7 +42,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
             'value_keywords': self._value_keywords,
             'value_keywords_count': self._keyword_count,
             'max_value_keyword_length':
-                max(len(keyword['name']) for keyword in self._value_keywords),
+                max(len(keyword['name'].original) for keyword in self._value_keywords),
         }
 
     def _value_keywords_with_mode(self, mode):
@@ -59,7 +59,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
         current_offset = 0
         for keyword in self._value_keywords:
             keyword_offsets.append(current_offset)
-            current_offset += len(keyword["name"]) + 1
+            current_offset += len(keyword["name"].original) + 1
 
         return {
             'value_keywords': self._value_keywords,

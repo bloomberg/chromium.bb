@@ -70,7 +70,7 @@ void init() {
   {% set attrnames = attrs|map(attribute='name')|list() %}
   static const NameEntry kNames[] = {
   {% for name, tag_list in (tags + attrs)|groupby('name')|sort(attribute=0, case_sensitive=True) %}
-    { "{{name}}", {{name|hash}}, {{name|length}}, {{ (name in tagnames)|int }}, {{ (name in attrnames)|int }} },
+    { "{{name}}", {{name.original|hash}}, {{name.original|length}}, {{ (name in tagnames)|int }}, {{ (name in attrnames)|int }} },
   {% endfor %}
   };
 

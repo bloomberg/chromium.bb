@@ -91,7 +91,7 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
     def _interface(self, tag):
         if tag['interfaceName']:
             return tag['interfaceName']
-        name = tag['tokenized_name'].to_upper_camel_case()
+        name = tag['name'].to_upper_camel_case()
         # FIXME: We shouldn't hard-code HTML here.
         if name == 'HTML':
             name = 'Html'

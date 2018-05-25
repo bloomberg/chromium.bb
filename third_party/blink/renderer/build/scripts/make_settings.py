@@ -65,7 +65,7 @@ class MakeSettingsWriter(json5_generator.Writer):
     def __init__(self, json5_file_path, output_dir):
         super(MakeSettingsWriter, self).__init__(json5_file_path, output_dir)
 
-        self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'])
+        self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'].original)
 
         self._outputs = {
             ('settings_macros.h'): self.generate_macros,
