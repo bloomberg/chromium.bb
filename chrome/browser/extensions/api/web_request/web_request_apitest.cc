@@ -503,14 +503,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestNewTab) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// This test times out regularly on MSAN trybots. See http://crbug.com/733395.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_WebRequestDeclarative1 DISABLED_WebRequestDeclarative1
-#else
-#define MAYBE_WebRequestDeclarative1 WebRequestDeclarative1
-#endif
+// This test times out regularly on MSAN trybots. See https://crbug.com/733395.
+// Also flaky. See https://crbug.com/846555.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       MAYBE_WebRequestDeclarative1) {
+                       DISABLED_WebRequestDeclarative1) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_declarative1.html"))
       << message_;
