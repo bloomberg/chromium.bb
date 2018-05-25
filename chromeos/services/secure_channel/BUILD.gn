@@ -29,6 +29,8 @@ static_library("secure_channel") {
     "multiplexed_channel.h",
     "multiplexed_channel_impl.cc",
     "multiplexed_channel_impl.h",
+    "pending_ble_listener_connection_request.cc",
+    "pending_ble_listener_connection_request.h",
     "pending_connection_request.h",
     "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
@@ -94,6 +96,7 @@ source_set("unit_tests") {
     "connect_to_device_operation_factory_base_unittest.cc",
     "connection_attempt_base_unittest.cc",
     "multiplexed_channel_impl_unittest.cc",
+    "pending_ble_listener_connection_request_unittest.cc",
     "pending_connection_request_base_unittest.cc",
     "single_client_message_proxy_impl_unittest.cc",
   ]
