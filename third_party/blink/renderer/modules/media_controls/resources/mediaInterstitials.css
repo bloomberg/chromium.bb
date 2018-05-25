@@ -37,8 +37,7 @@ video::-internal-media-interstitial-background-image {
     filter: grayscale(100%) blur(5px) opacity(40%);
 }
 
-video::-internal-media-remoting-cast-icon,
-video::-internal-picture-in-picture-icon {
+video::-internal-media-remoting-cast-icon {
     -webkit-appearance: none;
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -55,7 +54,8 @@ video::-internal-picture-in-picture-icon {
     top: calc(50% - 3vw);
 }
 
-video::-internal-media-interstitial-message {
+video::-internal-media-interstitial-message,
+video::-internal-picture-in-picture-interstitial-message {
     display: inline;
     position: absolute;
     top: calc(50% + 1vw);
@@ -69,6 +69,14 @@ video::-internal-media-interstitial-message {
     font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
     padding: 0px;
     margin: 0px;
+}
+
+video::-internal-picture-in-picture-interstitial-message {
+    top: calc(1vw);
+    color: rgba(255,255,255,0.8);
+    text-align: left;
+    font-size: 0.75em;
+    margin: 15px; /* Follows modern controls margins. */
 }
 
 video::-internal-media-remoting-toast-message {
@@ -92,9 +100,4 @@ video::-internal-media-remoting-cast-icon {
   background-image: -webkit-image-set(
     url(default_100_percent/legacy/mediaremoting_cast.png) 1x,
     url(default_200_percent/legacy/mediaremoting_cast.png) 2x);
-}
-
-video::-internal-picture-in-picture-icon {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_pictureinpicture.png) 1x);
 }

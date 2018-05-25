@@ -20,9 +20,7 @@ class HTMLVideoElement;
 // +-HTMLImageElement
 // |    (-internal-media-interstitial-background-image)
 // \-HTMLDivElement
-// |    (-internal-picture-in-picture-icon)
-// \-HTMLDivElement
-// |    (-internal-media-interstitial-message)
+// |    (-internal-picture-in-picture-interstitial-message)
 class PictureInPictureInterstitial final : public HTMLDivElement {
  public:
   explicit PictureInPictureInterstitial(HTMLVideoElement&);
@@ -51,7 +49,6 @@ class PictureInPictureInterstitial final : public HTMLDivElement {
   TaskRunnerTimer<PictureInPictureInterstitial> interstitial_timer_;
   Member<HTMLVideoElement> video_element_;
   Member<HTMLImageElement> background_image_;
-  Member<HTMLDivElement> pip_icon_;
   Member<HTMLDivElement> message_element_;
 };
 

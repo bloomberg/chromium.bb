@@ -12,7 +12,7 @@ function clickPictureInPictureButton(video, callback) {
 }
 
 function checkPictureInPictureInterstitialDoesNotExist(video) {
-  var controlID = '-internal-picture-in-picture-icon';
+  var controlID = '-internal-picture-in-picture-interstitial-message';
 
   var interstitial = getElementByPseudoId(internals.shadowRoot(video), controlID);
   if (interstitial)
