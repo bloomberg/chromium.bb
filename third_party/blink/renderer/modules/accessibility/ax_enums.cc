@@ -33,6 +33,8 @@ STATIC_ASSERT_ENUM(kWebAXRoleColumn, kColumnRole);
 STATIC_ASSERT_ENUM(kWebAXRoleComboBoxGrouping, kComboBoxGroupingRole);
 STATIC_ASSERT_ENUM(kWebAXRoleComboBoxMenuButton, kComboBoxMenuButtonRole);
 STATIC_ASSERT_ENUM(kWebAXRoleComplementary, kComplementaryRole);
+STATIC_ASSERT_ENUM(kWebAXRoleContentDeletion, kContentDeletionRole);
+STATIC_ASSERT_ENUM(kWebAXRoleContentInsertion, kContentInsertionRole);
 STATIC_ASSERT_ENUM(kWebAXRoleContentInfo, kContentInfoRole);
 STATIC_ASSERT_ENUM(kWebAXRoleDate, kDateRole);
 STATIC_ASSERT_ENUM(kWebAXRoleDateTime, kDateTimeRole);

@@ -1,4 +1,5 @@
 AXWebArea
 ++AXGroup
 ++++AXStaticText AXValue='I am '
-++++AXStaticText AXValue='vegetarian'
+++++AXGroup AXSubrole=AXDeleteStyleGroup
+++++++AXStaticText AXValue='vegetarian'

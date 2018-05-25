@@ -267,6 +267,10 @@ const char* ToString(ax::mojom::Role role) {
       return "comboBoxMenuButton";
     case ax::mojom::Role::kComplementary:
       return "complementary";
+    case ax::mojom::Role::kContentDeletion:
+      return "contentDeletion";
+    case ax::mojom::Role::kContentInsertion:
+      return "contentInsertion";
     case ax::mojom::Role::kContentInfo:
       return "contentInfo";
     case ax::mojom::Role::kDate:
@@ -619,6 +623,10 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kComboBoxMenuButton;
   if (0 == strcmp(role, "complementary"))
     return ax::mojom::Role::kComplementary;
+  if (0 == strcmp(role, "contentDeletion"))
+    return ax::mojom::Role::kContentDeletion;
+  if (0 == strcmp(role, "contentInsertion"))
+    return ax::mojom::Role::kContentInsertion;
   if (0 == strcmp(role, "contentInfo"))
     return ax::mojom::Role::kContentInfo;
   if (0 == strcmp(role, "date"))

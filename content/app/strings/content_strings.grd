@@ -251,6 +251,12 @@ below:
       <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="Accessibility role description for complementary">
         complementary
       </message>
+      <message name="IDS_AX_ROLE_CONTENT_DELETION" desc="Accessibility role description for content deletion, meaning content that is has been or is suggested to be removed from a document, such as in a revision review">
+        deletion
+      </message>
+      <message name="IDS_AX_ROLE_CONTENT_INSERTION" desc="Accessibility role description for content insertion, meaning content that has been marked or is suggested to be inserte nto a document, such as in a revision review">
+        insertion
+      </message>
       <message name="IDS_AX_ROLE_CHECK_BOX" desc="Accessibility role description for a check box">
         checkbox
       </message>

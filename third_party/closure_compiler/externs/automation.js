@@ -101,6 +101,8 @@ chrome.automation.RoleType = {
   COMBO_BOX_GROUPING: 'comboBoxGrouping',
   COMBO_BOX_MENU_BUTTON: 'comboBoxMenuButton',
   COMPLEMENTARY: 'complementary',
+  CONTENT_DELETION: 'contentDeletion',
+  CONTENT_INSERTION: 'contentInsertion',
   CONTENT_INFO: 'contentInfo',
   DATE: 'date',
   DATE_TIME: 'dateTime',

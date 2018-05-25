@@ -2500,6 +2500,10 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kComplementary:
       return ROLE_SYSTEM_GROUPING;
 
+    case ax::mojom::Role::kContentDeletion:
+    case ax::mojom::Role::kContentInsertion:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kContentInfo:
       return ROLE_SYSTEM_GROUPING;
 

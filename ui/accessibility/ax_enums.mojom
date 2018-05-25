@@ -112,6 +112,8 @@ enum Role {
   kComboBoxGrouping,
   kComboBoxMenuButton,
   kComplementary,
+  kContentDeletion,
+  kContentInsertion,
   kContentInfo,
   kDate,
   kDateTime,

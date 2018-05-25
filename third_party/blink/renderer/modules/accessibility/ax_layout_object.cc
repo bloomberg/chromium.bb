@@ -681,6 +681,12 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (RoleValue() == kFigureRole)
     return false;
 
+  if (RoleValue() == kContentDeletionRole)
+    return false;
+
+  if (RoleValue() == kContentInsertionRole)
+    return false;
+
   if (RoleValue() == kDetailsRole)
     return false;
 

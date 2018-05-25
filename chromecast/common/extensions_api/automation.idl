@@ -90,6 +90,8 @@
     comboBoxGrouping,
     comboBoxMenuButton,
     complementary,
+    contentDeletion,
+    contentInsertion,
     contentInfo,
     date,
     dateTime,

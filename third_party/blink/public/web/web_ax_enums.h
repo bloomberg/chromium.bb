@@ -95,6 +95,8 @@ enum WebAXRole {
   kWebAXRoleComboBoxGrouping,
   kWebAXRoleComboBoxMenuButton,
   kWebAXRoleComplementary,
+  kWebAXRoleContentDeletion,
+  kWebAXRoleContentInsertion,
   kWebAXRoleContentInfo,
   kWebAXRoleDate,
   kWebAXRoleDateTime,
