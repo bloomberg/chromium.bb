@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "device/gamepad/gamepad_data_fetcher.h"
 
 #import <Foundation/Foundation.h>
 
@@ -111,7 +112,7 @@ bool GamepadDeviceMac::AddButtonsAndAxes(Gamepad* gamepad) {
   DCHECK(gamepad);
   gamepad->axes_length = 0;
   gamepad->buttons_length = 0;
-  gamepad->timestamp = 0;
+  gamepad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
   memset(gamepad->axes, 0, sizeof(gamepad->axes));
   memset(gamepad->buttons, 0, sizeof(gamepad->buttons));
 
@@ -210,8 +211,7 @@ void GamepadDeviceMac::UpdateGamepadForValue(IOHIDValueRef value,
       bool pressed = IOHIDValueGetIntegerValue(value);
       gamepad->buttons[i].pressed = pressed;
       gamepad->buttons[i].value = pressed ? 1.f : 0.f;
-      gamepad->timestamp =
-          std::max(gamepad->timestamp, IOHIDValueGetTimeStamp(value));
+      gamepad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
       return;
     }
   }
@@ -242,9 +242,7 @@ void GamepadDeviceMac::UpdateGamepadForValue(IOHIDValueRef value,
       } else {
         gamepad->axes[i] = NormalizeAxis(axis_value, axis_min, axis_max);
       }
-
-      gamepad->timestamp =
-          std::max(gamepad->timestamp, IOHIDValueGetTimeStamp(value));
+      gamepad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
       return;
     }
   }

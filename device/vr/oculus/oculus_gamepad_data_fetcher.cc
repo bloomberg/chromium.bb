@@ -96,7 +96,7 @@ void SetTouchData(PadState* state,
         return;
     }
   }
-  pad.timestamp = input_state.TimeInSeconds;
+  pad.timestamp = OculusGamepadDataFetcher::CurrentTimeInMicroseconds();
   pad.axes_length = 0;
   pad.buttons_length = 0;
   pad.axes[pad.axes_length++] = input_state.Thumbstick[hand].x;
@@ -229,7 +229,7 @@ void OculusGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
         pad.is_xr = true;
         pad.display_id = display_id_;
       }
-      pad.timestamp = input_state.TimeInSeconds;
+      pad.timestamp = CurrentTimeInMicroseconds();
       pad.axes_length = 0;
       pad.buttons_length = 0;
       SetGamepadButton(&pad, input_state, ovrButton_Enter);

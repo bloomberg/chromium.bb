@@ -54,7 +54,7 @@ struct GamepadHapticActuator {
 struct Gamepad {
   bool connected;
   array<uint16> id;
-  uint64 timestamp;
+  int64 timestamp;
   array<double> axes;
   array<GamepadButton> buttons;
   GamepadHapticActuator? vibration_actuator;

@@ -34,7 +34,7 @@ interface Gamepad {
     readonly attribute DOMString id;
     readonly attribute unsigned long index;
     readonly attribute boolean connected;
-    readonly attribute unsigned long long timestamp;
+    readonly attribute DOMHighResTimeStamp timestamp;
     readonly attribute DOMString mapping;
     [CachedAttribute=isAxisDataDirty, MeasureAs=GamepadAxes] readonly attribute FrozenArray<double> axes;
     [CachedAttribute=isButtonDataDirty, MeasureAs=GamepadButtons] readonly attribute FrozenArray<GamepadButton> buttons;

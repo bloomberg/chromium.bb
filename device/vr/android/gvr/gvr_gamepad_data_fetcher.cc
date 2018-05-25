@@ -102,7 +102,7 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   }
 
   pad.connected = provided_data.connected;
-  pad.timestamp = provided_data.timestamp;
+  pad.timestamp = CurrentTimeInMicroseconds();
 
   if (provided_data.is_touching) {
     gfx::Vector2dF touch_position = provided_data.touch_pos;
