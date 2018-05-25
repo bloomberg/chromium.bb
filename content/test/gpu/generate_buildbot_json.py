@@ -2507,12 +2507,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
-          # TODO(crbug.com/825906): Enable test on Win7 FYI bots when OOP-D +
-          # passthrough command decoder bug is fixed.
-          'Win7 FYI Release (NVIDIA)',
-          'Win7 FYI Release (AMD)',
-          'Win7 FYI Debug (AMD)',
-          'Win7 FYI x64 Release (NVIDIA)',
         ],
       },
     ],
