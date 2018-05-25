@@ -10,7 +10,6 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -239,10 +238,6 @@ void InstallResizeHandleWindowTargeterForWindow(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
   window->SetEventTargeter(std::make_unique<ResizeHandleWindowTargeter>(
       window, immersive_fullscreen_controller));
-}
-
-bool IsDraggingTabs(const aura::Window* window) {
-  return window->GetProperty(ash::kIsDraggingTabsKey);
 }
 
 }  // namespace wm

@@ -30,7 +30,7 @@ struct ASH_EXPORT DragDetails {
   const gfx::Rect initial_bounds_in_parent;
 
   // Restore bounds (in screen coordinates) of the window before the drag
-  // started. Only set if the window is being dragged.
+  // started. Only set if the window is normal and is being dragged.
   gfx::Rect restore_bounds;
 
   // Location passed to the constructor, in |window->parent()|'s coordinates.

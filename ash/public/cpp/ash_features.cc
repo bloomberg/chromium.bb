@@ -13,14 +13,8 @@ const base::Feature kDisplayMoveWindowAccels{"DisplayMoveWindowAccels",
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDragTabsInTabletMode{"DragTabsInTabletMode",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kLockScreenNotifications{"LockScreenNotifications",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewOverviewAnimations{"NewOverviewAnimations",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
@@ -40,6 +34,9 @@ const base::Feature kTapVisualizerApp{"TapVisualizerApp",
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLockScreenNotifications{"LockScreenNotifications",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsDisplayMoveWindowAccelsEnabled() {
   return base::FeatureList::IsEnabled(kDisplayMoveWindowAccels);
 }
@@ -50,10 +47,6 @@ bool IsDockedMagnifierEnabled() {
 
 bool IsKeyboardShortcutViewerEnabled() {
   return base::FeatureList::IsEnabled(kKeyboardShortcutViewer);
-}
-
-bool IsLockScreenNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
 
 bool IsPersistentWindowBoundsEnabled() {
@@ -68,6 +61,10 @@ bool IsTrilinearFilteringEnabled() {
   static bool use_trilinear_filtering =
       base::FeatureList::IsEnabled(kTrilinearFiltering);
   return use_trilinear_filtering;
+}
+
+bool IsLockScreenNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
 
 }  // namespace features

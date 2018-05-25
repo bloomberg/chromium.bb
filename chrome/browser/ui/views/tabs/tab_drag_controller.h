@@ -426,13 +426,6 @@ class TabDragController : public views::WidgetObserver,
                                           const gfx::Point& point_in_screen,
                                           std::vector<gfx::Rect>* drag_bounds);
 
-  // Calculates and returns the dragged bounds for the non-maximize dragged
-  // browser window. Taks into consideration the initial drag offset so that
-  // the dragged tab remains under the |point_in_screen|.
-  gfx::Rect CalculateNonMaximizedDraggedBrowserBounds(
-      views::Widget* widget,
-      const gfx::Point& point_in_screen);
-
   // Calculates scaled |drag_bounds| for dragged tabs and sets the tabs bounds.
   // Layout of the tabstrip is performed and a new tabstrip width calculated.
   // When |last_tabstrip_width| is larger than the new tabstrip width the tabs
@@ -469,18 +462,6 @@ class TabDragController : public views::WidgetObserver,
   Liveness GetLocalProcessWindow(const gfx::Point& screen_point,
                                  bool exclude_dragged_view,
                                  gfx::NativeWindow* window) WARN_UNUSED_RESULT;
-
-  // Sets the dragging info for the current dragged tabstrip. On Chrome OS, the
-  // dragging info include two window properties: one is to indicate if the
-  // tab-dragging process starts/stops, and the other is to indicate which
-  // window initiates the dragging. This function is supposed to be called
-  // whenever the dragged tabs are attached to a new tabstrip.
-  void SetTabDraggingInfo();
-
-  // Clears the tab dragging info for the current dragged tabstrip. This
-  // function is supposed to be called whenever the dragged tabs are detached
-  // from the old tabstrip or the tab dragging is ended.
-  void ClearTabDraggingInfo();
 
   EventSource event_source_;
 
