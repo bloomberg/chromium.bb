@@ -189,6 +189,13 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& certificate_data,
       const StatusCallback& callback);
 
+  // Upload an enrollment identifier to the server. Like FetchPolicy, this
+  // method requires that the client is in a registered state.
+  // |enrollment_id| must hold an enrollment identifier. The |callback| will be
+  // called when the operation completes.
+  virtual void UploadEnterpriseEnrollmentId(const std::string& enrollment_id,
+                                            const StatusCallback& callback);
+
   // Uploads device/session status to the server. As above, the client must be
   // in a registered state. If non-null, |device_status| and |session_status|
   // will be included in the upload status request. The |callback| will be

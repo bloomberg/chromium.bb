@@ -64,6 +64,15 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   }
 
  protected:
+  static constexpr char kEnrollmentId[] =
+      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
+
+  void SetUp() override {
+    DeviceSettingsTestBase::SetUp();
+    cryptohome_client_.set_tpm_attestation_enrollment_id(
+        true /* ignore_cache */, kEnrollmentId);
+  }
+
   void SetUpEnrollmentIdNeeded(bool enrollment_id_needed) {
     if (enrollment_id_needed) {
       EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
@@ -96,6 +105,8 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
 };
 
+constexpr char EnrollmentPolicyObserverTest::kEnrollmentId[];
+
 TEST_F(EnrollmentPolicyObserverTest, UploadEnterpriseEnrollmentCertificate) {
   SetUpEnrollmentIdNeeded(true);
   Run();
@@ -121,7 +132,7 @@ TEST_F(EnrollmentPolicyObserverTest, GetCertificateUnspecifiedFailure) {
 TEST_F(EnrollmentPolicyObserverTest, GetCertificateBadRequestFailure) {
   EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
       .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
-  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentCertificate("", _))
+  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentId(kEnrollmentId, _))
       .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
   SetUpDevicePolicy(true);
   Run();

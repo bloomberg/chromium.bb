@@ -287,6 +287,13 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // when the operation completes.
   virtual void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) = 0;
 
+  // Requests the device's enrollment identifier (EID). The |callback| will be
+  // called with the EID. If |ignore_cache| is true, the EID is calculated
+  // even if the attestation database already contains a cached version.
+  virtual void TpmAttestationGetEnrollmentId(
+      bool ignore_cache,
+      DBusMethodCallback<TpmAttestationDataResult> callback) = 0;
+
   // Calls the TpmAttestationIsEnrolled dbus method.  The callback is called
   // when the operation completes.
   virtual void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) = 0;

@@ -85,6 +85,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   bool InstallAttributesIsInvalid(bool* is_invalid) override;
   bool InstallAttributesIsFirstInstall(bool* is_first_install) override;
   void TpmAttestationIsPrepared(DBusMethodCallback<bool> callback) override;
+  void TpmAttestationGetEnrollmentId(
+      bool ignore_cache,
+      DBusMethodCallback<TpmAttestationDataResult> callback) override;
   void TpmAttestationIsEnrolled(DBusMethodCallback<bool> callback) override;
   void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
@@ -236,6 +239,15 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
     cryptohome_error_ = error;
   }
 
+  void set_tpm_attestation_enrollment_id(bool ignore_cache,
+                                         const std::string& eid) {
+    if (ignore_cache) {
+      tpm_attestation_enrollment_id_ignore_cache_ = eid;
+    } else {
+      tpm_attestation_enrollment_id_ = eid;
+    }
+  }
+
   void set_tpm_attestation_is_enrolled(bool enrolled) {
     tpm_attestation_is_enrolled_ = enrolled;
   }
@@ -369,6 +381,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   uint64_t dircrypto_migration_progress_;
 
   bool needs_dircrypto_migration_ = false;
+  std::string tpm_attestation_enrollment_id_ignore_cache_ =
+      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
+  std::string tpm_attestation_enrollment_id_ =
+      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
   bool tpm_attestation_is_enrolled_ = true;
   bool tpm_attestation_is_prepared_ = true;
   bool tpm_attestation_does_key_exist_should_succeed_ = true;
