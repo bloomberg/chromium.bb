@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -352,8 +353,14 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
   if (!browser || !multi_user_util::IsProfileFromActiveUser(browser->profile()))
     return false;
 
-  // V1 App popup windows may have their own item.
   if (browser->is_app() && browser->is_type_popup()) {
+    // Crostini Terminals always have their own item.
+    // TODO(rjwright): We shouldn't need to special-case Crostini here.
+    // https://crbug.com/846546
+    if (CrostiniAppIdFromAppName(browser->app_name()))
+      return false;
+
+    // V1 App popup windows may have their own item.
     ash::ShelfID id(
         web_app::GetExtensionIdFromApplicationName(browser->app_name()));
     if (ChromeLauncherController::instance()->GetItem(id) != nullptr)
