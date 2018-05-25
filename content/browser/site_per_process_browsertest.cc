@@ -1477,7 +1477,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
 }
 
 // Test that fling on an out-of-process iframe progresses properly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, GestureFlingStart) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       TouchscreenGestureFlingStart) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1519,6 +1520,53 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, GestureFlingStart) {
   gesture_fling_start.data.fling_start.velocity_x = 0.f;
   gesture_fling_start.data.fling_start.velocity_y = 50.f;
   child_rwh->ForwardGestureEvent(gesture_fling_start);
+  gesture_scroll_update_ack_observer.Wait();
+}
+
+// Test that fling on an out-of-process iframe progresses properly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_iframe_node = root->child_at(0);
+
+  RenderWidgetHost* child_rwh =
+      child_iframe_node->current_frame_host()->GetRenderWidgetHost();
+
+  // Send a wheel event with phaseBegan to start scrolling sequence.
+  InputEventAckWaiter gesture_scroll_begin_ack_observer(
+      child_rwh, blink::WebInputEvent::kGestureScrollBegin);
+  blink::WebMouseWheelEvent scroll_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = 5.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  scroll_event.has_precise_scrolling_deltas = true;
+  child_rwh->ForwardWheelEvent(scroll_event);
+  gesture_scroll_begin_ack_observer.Wait();
+
+  // Send a GFS and wait for the ack of the first GSU generated from progressing
+  // the fling on the browser.
+  InputEventAckWaiter gesture_scroll_update_ack_observer(
+      child_rwh, blink::WebInputEvent::kGestureScrollUpdate);
+  gesture_scroll_update_ack_observer.Reset();
+  blink::WebGestureEvent gesture_fling_start(
+      blink::WebGestureEvent::kGestureFlingStart,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+  gesture_fling_start.data.fling_start.velocity_x = 0.f;
+  gesture_fling_start.data.fling_start.velocity_y = 50.f;
+  child_rwh->ForwardGestureEvent(gesture_fling_start);
+  // The test will pass when the GSU ack arrives, since it shows that the fling
+  // controller has properly generated a GSU event from progressing the fling.
   gesture_scroll_update_ack_observer.Wait();
 }
 
