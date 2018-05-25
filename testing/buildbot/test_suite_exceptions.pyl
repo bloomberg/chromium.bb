@@ -924,6 +924,8 @@
       'Mac10.11 Tests',
       'Mac10.12 Tests',
       'Mac10.13 Tests (dbg)',
+      # crbug.com/846729 - re-enable when this passes reliably.
+      'Win7 Tests (1)',
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
