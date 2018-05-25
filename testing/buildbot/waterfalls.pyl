@@ -1344,6 +1344,8 @@
               'pool': 'Chrome-CrOS-VM',
             },
           ],
+          'hard_timeout': 3600,
+          'io_timeout': 3600,
         },
       },
     },

@@ -7032,7 +7032,9 @@
               "os": "Ubuntu-14.04",
               "pool": "Chrome-CrOS-VM"
             }
-          ]
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
         },
         "test": "base_unittests"
       },
@@ -7045,7 +7047,9 @@
               "os": "Ubuntu-14.04",
               "pool": "Chrome-CrOS-VM"
             }
-          ]
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
         },
         "test": "cros_vm_sanity_test"
       },
@@ -7058,7 +7062,9 @@
               "os": "Ubuntu-14.04",
               "pool": "Chrome-CrOS-VM"
             }
-          ]
+          ],
+          "hard_timeout": 3600,
+          "io_timeout": 3600
         },
         "test": "net_unittests"
       }
@@ -7083,7 +7089,8 @@
               "pool": "Chrome-CrOS-VM"
             }
           ],
-          "hard_timeout": 1200,
+          "hard_timeout": 3600,
+          "io_timeout": 3600,
           "shards": 12
         }
       }
