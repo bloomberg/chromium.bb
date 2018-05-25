@@ -600,39 +600,44 @@ if(ENABLE_DOCS)
   endif()
 endif()
 
-# Aomedia install rule.
-list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aom.h"
-            "${AOM_ROOT}/aom/aom_codec.h" "${AOM_ROOT}/aom/aom_frame_buffer.h"
-            "${AOM_ROOT}/aom/aom_image.h" "${AOM_ROOT}/aom/aom_integer.h"
-            "${AOM_ROOT}/aom/aom.h")
+if(NOT (MSVC OR XCODE))
 
-if(CONFIG_AV1_DECODER)
-  if(ENABLE_EXAMPLES)
-    list(APPEND AOM_INSTALL_BINS aomdec)
+  # Aomedia install rule.
+  list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aom.h"
+              "${AOM_ROOT}/aom/aom_codec.h"
+              "${AOM_ROOT}/aom/aom_frame_buffer.h"
+              "${AOM_ROOT}/aom/aom_image.h" "${AOM_ROOT}/aom/aom_integer.h"
+              "${AOM_ROOT}/aom/aom.h")
+
+  if(CONFIG_AV1_DECODER)
+    if(ENABLE_EXAMPLES)
+      list(APPEND AOM_INSTALL_BINS aomdec)
+    endif()
+
+    list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aom_decoder.h"
+                "${AOM_ROOT}/aom/aomdx.h")
   endif()
 
-  list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aom_decoder.h"
-              "${AOM_ROOT}/aom/aomdx.h")
-endif()
+  if(CONFIG_AV1_ENCODER)
+    if(ENABLE_EXAMPLES)
+      list(APPEND AOM_INSTALL_BINS aomenc)
+    endif()
 
-if(CONFIG_AV1_ENCODER)
-  if(ENABLE_EXAMPLES)
-    list(APPEND AOM_INSTALL_BINS aomenc)
+    list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aomcx.h"
+                "${AOM_ROOT}/aom/aom_encoder.h")
   endif()
 
-  list(APPEND AOM_INSTALL_INCS "${AOM_ROOT}/aom/aomcx.h"
-              "${AOM_ROOT}/aom/aom_encoder.h")
-endif()
+  set(AOM_INSTALL_LIBS aom)
 
-set(AOM_INSTALL_LIBS aom)
+  install(FILES ${AOM_INSTALL_INCS} DESTINATION "${INCLUDE_INSTALL_DIR}/aom")
+  install(FILES "${AOM_CONFIG_DIR}/aom.pc" DESTINATION
+                "${LIB_INSTALL_DIR}/pkgconfig")
+  install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${LIB_INSTALL_DIR}")
 
-install(FILES ${AOM_INSTALL_INCS} DESTINATION "${INCLUDE_INSTALL_DIR}/aom")
-install(FILES "${AOM_CONFIG_DIR}/aom.pc" DESTINATION
-              "${LIB_INSTALL_DIR}/pkgconfig")
-install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${LIB_INSTALL_DIR}")
-
-if(ENABLE_EXAMPLES)
-  install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+  if(ENABLE_EXAMPLES)
+    install(TARGETS ${AOM_INSTALL_BINS} DESTINATION
+                    "${CMAKE_INSTALL_PREFIX}/bin")
+  endif()
 endif()
 
 # Aomedia dist rule.
