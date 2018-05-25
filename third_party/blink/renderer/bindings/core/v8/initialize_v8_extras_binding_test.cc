@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8.h"
 
@@ -31,6 +32,7 @@ TEST(InitializeV8ExtrasBindingTest, SupportedId) {
   V8TestingScope scope;
   InitializeV8ExtrasBinding(scope.GetScriptState());
   AddExtrasBindingToGlobal(&scope);
+  Page::InsertOrdinaryPageForTesting(&scope.GetPage());
 
   ScriptValue rv = EvalWithPrintingError(
       &scope, "binding.countUse('TransformStreamConstructor');");

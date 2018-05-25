@@ -286,6 +286,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
+    Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
     document = &dummy_page_holder->GetDocument();
     document->SetURL(main_resource_url);
     fetch_context =
@@ -1188,7 +1189,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 
 // Tests that the client hints lifetime header is parsed correctly only when the
 // frame belongs to a secure context.
-// TODO(lunalu): remove this test when blink side use counter is removed
+// TODO(loonybear): remove this test when blink side use counter is removed
 // (crbug.com/811948).
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        PersistClientHintsSecureContext) {

@@ -107,6 +107,7 @@ TEST_F(MainThreadWorkletTest, ContentSecurityPolicy) {
 }
 
 TEST_F(MainThreadWorkletTest, UseCounter) {
+  Page::InsertOrdinaryPageForTesting(&GetPage());
   // This feature is randomly selected.
   const WebFeature kFeature1 = WebFeature::kRequestFileSystem;
 
