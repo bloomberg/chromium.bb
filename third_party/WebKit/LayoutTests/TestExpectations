@@ -4533,6 +4533,9 @@ crbug.com/807838 virtual/service-worker-servicification/external/wpt/service-wor
 crbug.com/830472 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 crbug.com/830472 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 
+# document.querySelector(":target") is flaky when called in window.load event.
+crbug.com/843523 external/wpt/dom/nodes/query-target-in-load-event.html [ Failure ]
+
 # Sheriff faulures 2017-12-12
 crbug.com/794180 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure Pass ]
 
