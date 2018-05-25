@@ -49,16 +49,30 @@
         top: 0;
       }
 
+      /**
+       * When using mixins, avoid using padding shorthand. Using both the
+       * shorthand and top/bottom/start/end can lead to style override issues.
+       * This is only noticable when the |optimize_webui=true| build arguement
+       * is used.
+       *
+       * See https://crbug.com/846254 and associated CL for more information.
+       */
       :host ::slotted([slot=body]) {
-        padding: 0 20px;
+        -webkit-padding-end: 20px;
+        -webkit-padding-start: 20px;
+        padding-bottom: 0;
+        padding-top: 0;
         @apply --cr-dialog-body;
       }
 
       :host ::slotted([slot=title]) {
+        -webkit-padding-end: 20px;
+        -webkit-padding-start: 20px;
         flex: 1;
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
-        padding: 16px 20px;
+        padding-bottom: 16px;
+        padding-top: 16px;
         @apply --cr-dialog-title;
       }
 
