@@ -14,6 +14,7 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
@@ -99,9 +100,9 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
     if (!plane->in_use() && (plane->type() != HardwareDisplayPlane::kDummy)) {
       // This plane is being released, so we need to zero it.
       if (!drm_->PageFlipOverlay(plane->owning_crtc(), 0, gfx::Rect(),
-                                 gfx::Rect(), plane->plane_id())) {
+                                 gfx::Rect(), plane->id())) {
         PLOG(ERROR) << "Cannot free overlay: crtc=" << plane->owning_crtc()
-                    << " plane=" << plane->plane_id();
+                    << " plane=" << plane->id();
         ret = false;
         break;
       }
@@ -174,7 +175,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
   } else {
     plane_list->legacy_page_flips.back().planes.push_back(
         HardwareDisplayPlaneList::PageFlipInfo::Plane(
-            hw_plane->plane_id(), overlay.buffer->GetOpaqueFramebufferId(),
+            hw_plane->id(), overlay.buffer->GetOpaqueFramebufferId(),
             overlay.display_bounds, src_rect));
   }
   return true;

@@ -13,6 +13,7 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 #include "ui/ozone/platform/drm/gpu/mock_scanout_buffer.h"
 
@@ -22,11 +23,11 @@ namespace {
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
 
-const uint32_t kPrimaryCrtc = 1;
-const uint32_t kPrimaryConnector = 2;
-const uint32_t kSecondaryCrtc = 3;
-const uint32_t kSecondaryConnector = 4;
-const size_t kPlanesPerCrtc = 2;
+constexpr uint32_t kCrtcIdBase = 1;
+constexpr uint32_t kPrimaryCrtc = kCrtcIdBase;
+constexpr uint32_t kSecondaryCrtc = kCrtcIdBase + 1;
+constexpr uint32_t kPrimaryConnector = 10;
+constexpr uint32_t kSecondaryConnector = 11;
 
 const gfx::Size kDefaultModeSize(kDefaultMode.hdisplay, kDefaultMode.vdisplay);
 const gfx::Size kOverlaySize(kDefaultMode.hdisplay / 2,
@@ -43,6 +44,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  void InitializeDrmDevice(bool use_atomic);
   void PageFlipCallback(gfx::SwapResult result,
                         const gfx::PresentationFeedback& feedback);
 
@@ -62,10 +64,9 @@ void HardwareDisplayControllerTest::SetUp() {
   page_flips_ = 0;
   last_swap_result_ = gfx::SwapResult::SWAP_FAILED;
 
-  std::vector<uint32_t> crtcs;
-  crtcs.push_back(kPrimaryCrtc);
-  crtcs.push_back(kSecondaryCrtc);
-  drm_ = new ui::MockDrmDevice(false, crtcs, kPlanesPerCrtc);
+  drm_ = new ui::MockDrmDevice(false);
+  InitializeDrmDevice(/* use_atomic= */ false);
+
   controller_.reset(new ui::HardwareDisplayController(
       std::unique_ptr<ui::CrtcController>(
           new ui::CrtcController(drm_.get(), kPrimaryCrtc, kPrimaryConnector)),
@@ -75,6 +76,60 @@ void HardwareDisplayControllerTest::SetUp() {
 void HardwareDisplayControllerTest::TearDown() {
   controller_.reset();
   drm_ = nullptr;
+}
+
+void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
+  constexpr uint32_t kTypePropId = 300;
+  constexpr uint32_t kInFormatsPropId = 301;
+  constexpr uint32_t kInFormatsBlobPropId = 400;
+
+  std::vector<ui::MockDrmDevice::CrtcProperties> crtc_properties(2);
+  std::vector<ui::MockDrmDevice::PlaneProperties> plane_properties;
+  std::map<uint32_t, std::string> property_names = {
+      // Add all required properties.
+      {200, "CRTC_ID"},
+      {201, "CRTC_X"},
+      {202, "CRTC_Y"},
+      {203, "CRTC_W"},
+      {204, "CRTC_H"},
+      {205, "FB_ID"},
+      {206, "SRC_X"},
+      {207, "SRC_Y"},
+      {208, "SRC_W"},
+      {209, "SRC_H"},
+      // Add some optional properties we use for convenience.
+      {kTypePropId, "type"},
+      {kInFormatsPropId, "IN_FORMATS"},
+  };
+
+  for (size_t i = 0; i < crtc_properties.size(); ++i) {
+    crtc_properties[i].id = kCrtcIdBase + i;
+
+    for (size_t j = 0; j < 2; ++j) {
+      const uint32_t offset = plane_properties.size();
+
+      ui::MockDrmDevice::PlaneProperties plane;
+      plane.id = 100 + offset;
+      plane.crtc_mask = 1 << i;
+      for (const auto& pair : property_names) {
+        uint32_t value = 0;
+        if (pair.first == kTypePropId)
+          value = j == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY;
+        else if (pair.first == kInFormatsPropId)
+          value = kInFormatsBlobPropId;
+
+        plane.properties.push_back({.id = pair.first, .value = value});
+      };
+
+      drm_->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
+          kInFormatsBlobPropId, {DRM_FORMAT_XRGB8888}, {}));
+
+      plane_properties.emplace_back(std::move(plane));
+    }
+  }
+
+  drm_->InitializeState(crtc_properties, plane_properties, property_names,
+                        use_atomic);
 }
 
 void HardwareDisplayControllerTest::PageFlipCallback(
@@ -480,6 +535,9 @@ TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
 }
 
 TEST_F(HardwareDisplayControllerTest, Disable) {
+  // Page flipping overlays is only supported on atomic configurations.
+  InitializeDrmDevice(/* use_atomic= */ true);
+
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
                           nullptr);
@@ -497,7 +555,6 @@ TEST_F(HardwareDisplayControllerTest, Disable) {
                              base::Unretained(this)));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);
-  EXPECT_EQ(1, page_flips_);
 
   controller_->Disable();
 

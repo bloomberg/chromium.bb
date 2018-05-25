@@ -49,8 +49,7 @@ class ScreenManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    drm_ = new ui::MockDrmDevice(false, std::vector<uint32_t>(1, kPrimaryCrtc),
-                                 4 /* planes per crtc */);
+    drm_ = new ui::MockDrmDevice(false);
     device_manager_.reset(new ui::DrmDeviceManager(nullptr));
     buffer_generator_.reset(new ui::MockScanoutBufferGenerator());
     screen_manager_.reset(new ui::ScreenManager(buffer_generator_.get()));
@@ -354,7 +353,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
 
 TEST_F(ScreenManagerTest,
        CheckProperConfigurationWithDifferentDeviceAndSameCrtc) {
-  scoped_refptr<ui::MockDrmDevice> drm2 = new ui::MockDrmDevice();
+  scoped_refptr<ui::MockDrmDevice> drm2 = new ui::MockDrmDevice(false);
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
   screen_manager_->AddDisplayController(drm2, kPrimaryCrtc, kPrimaryConnector);
