@@ -172,7 +172,7 @@ enum class TaskType : unsigned {
   kInternalIntersectionObserver = 44,
 
   ///////////////////////////////////////
-  // The following task types are only for MainThreadTaskQueue.
+  // The following task types are only for thread-local queues.
   ///////////////////////////////////////
 
   kMainThreadTaskQueueV8 = 37,
@@ -185,6 +185,7 @@ enum class TaskType : unsigned {
   kCompositorThreadTaskQueueDefault = 45,
   kWorkerThreadTaskQueueDefault = 46,
   kWorkerThreadTaskQueueV8 = 47,
+  kWorkerThreadTaskQueueCompositor = 48,
 
   ///////////////////////////////////////
   // The following task types are DEPRECATED! Use kInternal* instead.
@@ -194,7 +195,7 @@ enum class TaskType : unsigned {
   // should be very limited.
   kUnthrottled = 25,
 
-  kCount = 48,
+  kCount = 49,
 };
 
 }  // namespace blink
