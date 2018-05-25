@@ -13,15 +13,12 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/path_service.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_enum_reader.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/flags_ui/feature_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace about_flags {
 
@@ -29,143 +26,6 @@ namespace {
 
 typedef base::HistogramBase::Sample Sample;
 typedef std::map<std::string, Sample> SwitchToIdMap;
-
-// This is a helper function to the ReadEnumFromHistogramsXml().
-// Extracts single enum (with integer values) from histograms.xml.
-// Expects |reader| to point at given enum.
-// Returns map { value => label }.
-// Returns empty map on error.
-std::map<Sample, std::string> ParseEnumFromHistogramsXml(
-    const std::string& enum_name,
-    XmlReader* reader) {
-  int entries_index = -1;
-
-  std::map<Sample, std::string> result;
-  bool success = true;
-
-  while (true) {
-    const std::string node_name = reader->NodeName();
-    if (node_name == "enum" && reader->IsClosingElement())
-      break;
-
-    if (node_name == "int") {
-      ++entries_index;
-      std::string value_str;
-      std::string label;
-      const bool has_value = reader->NodeAttribute("value", &value_str);
-      const bool has_label = reader->NodeAttribute("label", &label);
-      if (!has_value) {
-        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
-                      << entries_index << ", label='" << label
-                      << "'): No 'value' attribute.";
-        success = false;
-      }
-      if (!has_label) {
-        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
-                      << entries_index << ", value_str='" << value_str
-                      << "'): No 'label' attribute.";
-        success = false;
-      }
-
-      Sample value;
-      if (has_value && !base::StringToInt(value_str, &value)) {
-        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
-                      << entries_index << ", label='" << label
-                      << "', value_str='" << value_str
-                      << "'): 'value' attribute is not integer.";
-        success = false;
-      }
-      if (result.count(value)) {
-        ADD_FAILURE() << "Bad " << enum_name << " enum entry (at index "
-                      << entries_index << ", label='" << label
-                      << "', value_str='" << value_str
-                      << "'): duplicate value '" << value_str
-                      << "' found in enum. The previous one has label='"
-                      << result[value] << "'.";
-        success = false;
-      }
-      if (success) {
-        result[value] = label;
-      }
-    }
-    // All enum entries are on the same level, so it is enough to iterate
-    // until possible.
-    reader->Next();
-  }
-  return (success ? result : std::map<Sample, std::string>());
-}
-
-// Find and read given enum (with integer values) from histograms.xml.
-// |enum_name| - enum name.
-// |histograms_xml| - must be loaded histograms.xml file.
-//
-// Returns map { value => label } so that:
-//   <int value="9" label="enable-pinch-virtual-viewport"/>
-// becomes:
-//   { 9 => "enable-pinch-virtual-viewport" }
-// Returns empty map on error.
-std::map<Sample, std::string> ReadEnumFromHistogramsXml(
-    const std::string& enum_name,
-    XmlReader* histograms_xml) {
-  std::map<Sample, std::string> login_custom_flags;
-
-  // Implement simple depth first search.
-  while (true) {
-    const std::string node_name = histograms_xml->NodeName();
-    if (node_name == "enum") {
-      std::string name;
-      if (histograms_xml->NodeAttribute("name", &name) && name == enum_name) {
-        if (!login_custom_flags.empty()) {
-          EXPECT_TRUE(login_custom_flags.empty())
-              << "Duplicate enum '" << enum_name << "' found in histograms.xml";
-          return std::map<Sample, std::string>();
-        }
-
-        const bool got_into_enum = histograms_xml->Read();
-        if (got_into_enum) {
-          login_custom_flags =
-              ParseEnumFromHistogramsXml(enum_name, histograms_xml);
-          EXPECT_FALSE(login_custom_flags.empty())
-              << "Bad enum '" << enum_name
-              << "' found in histograms.xml (format error).";
-        } else {
-          EXPECT_TRUE(got_into_enum)
-              << "Bad enum '" << enum_name
-              << "' (looks empty) found in histograms.xml.";
-        }
-        if (login_custom_flags.empty())
-          return std::map<Sample, std::string>();
-      }
-    }
-    // Go deeper if possible (stops at the closing tag of the deepest node).
-    if (histograms_xml->Read())
-      continue;
-
-    // Try next node on the same level (skips closing tag).
-    if (histograms_xml->Next())
-      continue;
-
-    // Go up until next node on the same level exists.
-    while (histograms_xml->Depth() && !histograms_xml->SkipToElement()) {
-    }
-
-    // Reached top. histograms.xml consists of the single top level node
-    // 'histogram-configuration', so this is the end.
-    if (!histograms_xml->Depth())
-      break;
-  }
-  EXPECT_FALSE(login_custom_flags.empty())
-      << "Enum '" << enum_name << "' is not found in histograms.xml.";
-  return login_custom_flags;
-}
-
-std::string FilePathStringTypeToString(const base::FilePath::StringType& path) {
-#if defined(OS_WIN)
-  return base::UTF16ToUTF8(path);
-#else
-  return path;
-#endif
-}
 
 // Get all associated switches corresponding to defined about_flags.cc entries.
 std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
@@ -243,32 +103,21 @@ class AboutFlagsHistogramTest : public ::testing::Test {
 };
 
 TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
-  base::FilePath histograms_xml_file_path;
-  ASSERT_TRUE(
-      base::PathService::Get(base::DIR_SOURCE_ROOT, &histograms_xml_file_path));
-  histograms_xml_file_path = histograms_xml_file_path.AppendASCII("tools")
-                                 .AppendASCII("metrics")
-                                 .AppendASCII("histograms")
-                                 .AppendASCII("enums.xml");
-
-  XmlReader histograms_xml;
-  ASSERT_TRUE(histograms_xml.LoadFile(
-      FilePathStringTypeToString(histograms_xml_file_path.value())));
-  std::map<Sample, std::string> login_custom_flags =
-      ReadEnumFromHistogramsXml("LoginCustomFlags", &histograms_xml);
-  ASSERT_TRUE(login_custom_flags.size())
+  base::Optional<base::HistogramEnumEntryMap> login_custom_flags =
+      base::ReadEnumFromEnumsXml("LoginCustomFlags");
+  ASSERT_TRUE(login_custom_flags)
       << "Error reading enum 'LoginCustomFlags' from enums.xml.";
 
   // Build reverse map {switch_name => id} from login_custom_flags.
   SwitchToIdMap histograms_xml_switches_ids;
 
-  EXPECT_TRUE(login_custom_flags.count(testing::kBadSwitchFormatHistogramId))
+  EXPECT_TRUE(login_custom_flags->count(testing::kBadSwitchFormatHistogramId))
       << "Entry for UMA ID of incorrect command-line flag is not found in "
          "enums.xml enum LoginCustomFlags. "
          "Consider adding entry:\n"
       << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
   // Check that all LoginCustomFlags entries have correct values.
-  for (const auto& entry : login_custom_flags) {
+  for (const auto& entry : *login_custom_flags) {
     if (entry.first == testing::kBadSwitchFormatHistogramId) {
       // Add error value with empty name.
       SetSwitchToHistogramIdMapping(std::string(), entry.first,
