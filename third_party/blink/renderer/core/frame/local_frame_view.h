@@ -488,8 +488,10 @@ class CORE_EXPORT LocalFrameView final
   int ScrollSize(ScrollbarOrientation) const override;
   bool IsScrollCornerVisible() const override;
   bool UpdateAfterCompositingChange() override;
-  bool UserInputScrollable(ScrollbarOrientation) const override;
-  bool ShouldPlaceVerticalScrollbarOnLeft() const override;
+  bool UserInputScrollable(ScrollbarOrientation) const override {
+    return false;
+  }
+  bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
   bool ScheduleAnimation() override;
   CompositorAnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
@@ -581,10 +583,8 @@ class CORE_EXPORT LocalFrameView final
   // (e.g. DevTool's viewport override).
   void ClipPaintRect(FloatRect*) const;
 
-  // Functions for getting/setting the size of the document contained inside the
-  // LocalFrameView (as an IntSize or as individual width and height values).
-  // Always at least as big as the visibleWidth()/visibleHeight().
-  IntSize ContentsSize() const override;
+  // TODO(chrishtr) these methods are wrong, fix all callsites.
+  IntSize ContentsSize() const override { return Size(); }
   int ContentsWidth() const { return ContentsSize().Width(); }
   int ContentsHeight() const { return ContentsSize().Height(); }
 
@@ -815,7 +815,7 @@ class CORE_EXPORT LocalFrameView final
   bool RestoreScrollAnchor(const SerializedAnchor&) override;
   ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
   void ClearScrollAnchor();
-  bool ShouldPerformScrollAnchoring() const override;
+  bool ShouldPerformScrollAnchoring() const override { return false; }
   void EnqueueScrollAnchoringAdjustment(ScrollableArea*);
   void DequeueScrollAnchoringAdjustment(ScrollableArea*);
   void PerformScrollAnchoringAdjustments();
@@ -938,11 +938,6 @@ class CORE_EXPORT LocalFrameView final
                                  ComputeScrollbarExistenceOption = kFirstPass);
   void UpdateScrollbarGeometry();
 
-  // Called to update the scrollbars to accurately reflect the state of the
-  // view.
-  void UpdateScrollbars();
-  void UpdateScrollbarsIfNeeded();
-
   class InUpdateScrollbarsScope {
     STACK_ALLOCATED();
 
@@ -996,7 +991,6 @@ class CORE_EXPORT LocalFrameView final
   bool UpdateLifecyclePhasesInternal(
       DocumentLifecycle::LifecycleState target_state);
 
-  void ScrollContentsIfNeededRecursive();
   void NotifyFrameRectsChangedIfNeededRecursive();
   void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
@@ -1081,9 +1075,7 @@ class CORE_EXPORT LocalFrameView final
 
   void SetLayoutSizeInternal(const IntSize&);
 
-  bool AdjustScrollbarExistence(ComputeScrollbarExistenceOption = kFirstPass);
   void AdjustScrollbarOpacity();
-  void AdjustScrollOffsetFromUpdateScrollbars();
   bool VisualViewportSuppliesScrollbars();
 
   ScrollingCoordinator* GetScrollingCoordinator() const;
@@ -1250,7 +1242,6 @@ class CORE_EXPORT LocalFrameView final
   // ScrollbarManager holds the Scrollbar instances.
   ScrollbarManager scrollbar_manager_;
 
-  bool needs_scrollbars_update_;
   bool suppress_adjust_view_size_;
   bool allows_layout_invalidation_after_layout_clean_;
   bool needs_intersection_observation_;
