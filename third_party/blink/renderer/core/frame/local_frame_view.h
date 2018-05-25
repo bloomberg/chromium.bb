@@ -596,15 +596,10 @@ class CORE_EXPORT LocalFrameView final
     return ToIntSize(VisibleContentRect().Location());
   }
   ScrollOffset GetScrollOffset() const override { return scroll_offset_; }
-  ScrollOffset PendingScrollDelta() const { return pending_scroll_delta_; }
   IntSize MinimumScrollOffsetInt()
       const override;  // The minimum offset we can be scrolled to.
   int ScrollX() const { return ScrollOffsetInt().Width(); }
   int ScrollY() const { return ScrollOffsetInt().Height(); }
-
-  // Scroll the actual contents of the view (either blitting or invalidating as
-  // needed).
-  void ScrollContents(const IntSize& scroll_delta);
 
   // This gives us a means of blocking updating our scrollbars until the first
   // layout has occurred.
@@ -918,15 +913,8 @@ class CORE_EXPORT LocalFrameView final
   JankTracker& GetJankTracker() { return jank_tracker_; }
 
  protected:
-  // Scroll the content via the compositor.
-  bool ScrollContentsFastPath(const IntSize& scroll_delta);
-
-  // Scroll the content by invalidating everything.
-  void ScrollContentsSlowPath();
-
   ScrollBehavior ScrollBehaviorStyle() const override;
 
-  void ScrollContentsIfNeeded();
   void NotifyFrameRectsChangedIfNeeded();
 
   enum ComputeScrollbarExistenceOption { kFirstPass, kIncremental };
@@ -1003,8 +991,6 @@ class CORE_EXPORT LocalFrameView final
   void Init();
 
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
-
-  bool ContentsInCompositedLayer() const;
 
   void PerformPreLayoutTasks();
   void PerformLayout(bool in_subtree_layout);
@@ -1190,7 +1176,6 @@ class CORE_EXPORT LocalFrameView final
   PluginSet plugins_;
   HeapHashSet<Member<Scrollbar>> scrollbars_;
 
-  ScrollOffset pending_scroll_delta_;
   ScrollOffset scroll_offset_;
 
   // TODO(bokan): This is unneeded when root-layer-scrolls is turned on.

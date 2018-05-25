@@ -494,7 +494,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
     MapCoordinatesFlags mode,
     VisualRectFlags visual_rect_flags) const {
   if (mode & kIsFixed)
-    transform_state.Move(OffsetForFixedPosition(true));
+    transform_state.Move(OffsetForFixedPosition());
 
   // Apply our transform if we have one (because of full page zooming).
   if (Layer() && Layer()->Transform()) {
@@ -551,20 +551,10 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
   return false;
 }
 
-LayoutSize LayoutView::OffsetForFixedPosition(
-    bool include_pending_scroll) const {
+LayoutSize LayoutView::OffsetForFixedPosition() const {
   FloatSize adjustment;
   if (frame_view_) {
     adjustment += frame_view_->GetScrollOffset();
-
-    // FIXME: Paint invalidation should happen after scroll updates, so there
-    // should be no pending scroll delta.
-    // However, we still have paint invalidation during layout, so we can't
-    // DCHECK for now. crbug.com/434950.
-    // DCHECK(m_frameView->pendingScrollDelta().isZero());
-    // If we have a pending scroll, invalidate the previous scroll position.
-    if (include_pending_scroll && !frame_view_->PendingScrollDelta().IsZero())
-      adjustment -= frame_view_->PendingScrollDelta();
   }
 
   if (HasOverflowClip())
