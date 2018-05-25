@@ -86,6 +86,11 @@ void ActionView::OnMicStateChanged(MicState mic_state) {
   UpdateState(/*animate=*/true);
 }
 
+void ActionView::OnSpeechLevelChanged(float speech_level_db) {
+  // TODO(wutao): will handle in next cl.
+  NOTIMPLEMENTED();
+}
+
 void ActionView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
       assistant_controller_->interaction_model();

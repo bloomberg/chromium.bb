@@ -46,6 +46,7 @@ class ActionView : public views::View,
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnMicStateChanged(MicState mic_state) override;
+  void OnSpeechLevelChanged(float speech_level_db) override;
 
  private:
   void InitLayout();

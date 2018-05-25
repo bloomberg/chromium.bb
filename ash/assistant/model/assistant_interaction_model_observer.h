@@ -64,6 +64,9 @@ class AssistantInteractionModelObserver {
   // Invoked when all suggestions associated with the interaction are cleared.
   virtual void OnSuggestionsCleared() {}
 
+  // Invoked when the speech level is changed.
+  virtual void OnSpeechLevelChanged(float speech_level_db) {}
+
  protected:
   AssistantInteractionModelObserver() = default;
   virtual ~AssistantInteractionModelObserver() = default;
