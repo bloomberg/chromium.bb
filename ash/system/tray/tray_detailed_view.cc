@@ -279,10 +279,8 @@ void TrayDetailedView::CreateTitleRow(int string_id) {
 
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
 
-  if (!features::IsSystemTrayUnifiedEnabled()) {
-    back_button_ = CreateBackButton();
-    tri_view_->AddView(TriView::Container::START, back_button_);
-  }
+  back_button_ = CreateBackButton();
+  tri_view_->AddView(TriView::Container::START, back_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   auto* label = TrayPopupUtils::CreateDefaultLabel();
