@@ -112,14 +112,13 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
     NavigateParams* params,
     const content::OpenURLParams* open_url_params,
     const blink::mojom::WindowFeatures& window_features) {
+  DCHECK(web_contents);
   DCHECK(!open_url_params ||
          open_url_params->user_gesture == params->user_gesture);
 
   LogAction(Action::kInitiated);
 
   const bool user_gesture = params->user_gesture;
-  if (!web_contents)
-    return false;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePopupBlocking)) {
