@@ -289,6 +289,11 @@ const char kEmbeddedExtensionOptionsDescription[] =
     "Display extension options as an embedded element in chrome://extensions "
     "rather than opening a new tab.";
 
+const char kEnableAccessibilityObjectModelName[] = "Accessibility Object Model";
+const char kEnableAccessibilityObjectModelDescription[] =
+    "Enables experimental support for Accessibility Object Model APIs "
+    "that are in development.";
+
 const char kEnableAsmWasmName[] =
     "Experimental Validate Asm.js and convert to WebAssembly when valid.";
 const char kEnableAsmWasmDescription[] =
