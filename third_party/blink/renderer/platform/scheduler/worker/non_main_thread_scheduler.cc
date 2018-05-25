@@ -71,11 +71,6 @@ void NonMainThreadScheduler::PostNonNestableIdleTask(
       base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-NonMainThreadScheduler::CompositorTaskRunner() {
-  return nullptr;
-}
-
 std::unique_ptr<blink::PageScheduler>
 NonMainThreadScheduler::CreatePageScheduler(PageScheduler::Delegate* delegate) {
   NOTREACHED();

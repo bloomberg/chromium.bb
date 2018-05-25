@@ -120,6 +120,12 @@ WorkerThreadScheduler::V8TaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
+WorkerThreadScheduler::CompositorTaskRunner() {
+  DCHECK(initialized_);
+  return compositor_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThreadScheduler::IPCTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
@@ -173,6 +179,8 @@ void WorkerThreadScheduler::InitImpl() {
 
   v8_task_runner_ = TaskQueueWithTaskType::Create(
       DefaultTaskQueue(), TaskType::kWorkerThreadTaskQueueV8);
+  compositor_task_runner_ = TaskQueueWithTaskType::Create(
+      DefaultTaskQueue(), TaskType::kWorkerThreadTaskQueueCompositor);
 }
 
 void WorkerThreadScheduler::OnTaskCompleted(

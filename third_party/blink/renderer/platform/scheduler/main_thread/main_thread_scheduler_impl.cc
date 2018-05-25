@@ -209,6 +209,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "WorkerThreadTaskQueueDefault";
     case TaskType::kWorkerThreadTaskQueueV8:
       return "WorkerThreadTaskQueueV8";
+    case TaskType::kWorkerThreadTaskQueueCompositor:
+      return "WorkerThreadTaskQueueCompositor";
     case TaskType::kCount:
       return "Count";
   }
