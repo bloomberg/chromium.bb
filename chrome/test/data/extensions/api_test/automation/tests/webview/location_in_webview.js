@@ -5,6 +5,7 @@
 var assertTrue = chrome.test.assertTrue;
 
 var EventType = chrome.automation.EventType;
+var RoleType = chrome.automation.RoleType;
 
 var allTests = [
   function testLocationInWebView() {

@@ -22,6 +22,7 @@ BackgroundTest.prototype = {
 
   /** @override */
   setUp: function() {
+    window.EventType = chrome.automation.EventType;
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
     window.press = this.press;
@@ -1169,7 +1170,8 @@ TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
     <p>start</p>
     <input type="text"></input>
   */}, function(root) {
-    this.listenOnce(root, 'focus', function(e) {
+    this.listenOnce(
+        root.find({role: RoleType.TEXT_FIELD}), 'focus', function(e) {
       var focus = ChromeVoxState.instance.currentRange.start.node;
       assertEquals(RoleType.TEXT_FIELD, focus.role);
       assertTrue(focus.state.focused);
@@ -1473,53 +1475,54 @@ TEST_F('BackgroundTest', 'NavigationEscapesEdit', function() {
     const [contentEditable, textArea] =
           root.findAll({role: RoleType.TEXT_FIELD});
 
-    mockFeedback.call(contentEditable.focus.bind(contentEditable))
-        .expectSpeech('Edit text')
-        .call(assertBeginning.bind(this, true))
-        .call(assertEnd.bind(this, false))
+    this.listenOnce(contentEditable, EventType.FOCUS, function() {
+      mockFeedback.call(assertBeginning.bind(this, true))
+          .call(assertEnd.bind(this, false))
 
-        .call(press(40  /* ArrowDown */))
-        .expectSpeech('is')
-        .call(assertBeginning.bind(this, false))
-        .call(assertEnd.bind(this, false))
+          .call(press(40  /* ArrowDown */))
+          .expectSpeech('is')
+          .call(assertBeginning.bind(this, false))
+          .call(assertEnd.bind(this, false))
 
-        .call(press(40  /* ArrowDown */))
-        .expectSpeech('a')
-        .call(assertBeginning.bind(this, false))
-        .call(assertEnd.bind(this, false))
+          .call(press(40  /* ArrowDown */))
+          .expectSpeech('a')
+          .call(assertBeginning.bind(this, false))
+          .call(assertEnd.bind(this, false))
 
-        .call(press(40  /* ArrowDown */))
-        .expectSpeech('test')
-        .call(assertBeginning.bind(this, false))
-        .call(assertEnd.bind(this, true))
+          .call(press(40  /* ArrowDown */))
+          .expectSpeech('test')
+          .call(assertBeginning.bind(this, false))
+          .call(assertEnd.bind(this, true))
 
-        .call(textArea.focus.bind(textArea))
-        .expectSpeech('Text area')
-        .call(assertBeginning.bind(this, true))
-        .call(assertEnd.bind(this, false))
-        .clearPendingOutput()
+          .call(textArea.focus.bind(textArea))
+          .expectSpeech('Text area')
+          .call(assertBeginning.bind(this, true))
+          .call(assertEnd.bind(this, false))
+          .clearPendingOutput()
 
-        .call(press(40  /* ArrowDown */))
-        .expectSpeech('is')
-        .call(press(39  /* ArrowRight */))
-        .expectSpeech('s')
-        .call(assertBeginning.bind(this, false))
-        .call(assertEnd.bind(this, false))
+          .call(press(40  /* ArrowDown */))
+          .expectSpeech('is')
+          .call(press(39  /* ArrowRight */))
+          .expectSpeech('s')
+          .call(assertBeginning.bind(this, false))
+          .call(assertEnd.bind(this, false))
 
-        .call(press(40  /* ArrowDown */))
-        .call(press(37  /* ArrowLeft */))
-        .expectSpeech('a')
-        .call(assertBeginning.bind(this, false))
-        .call(assertEnd.bind(this, false))
+          .call(press(40  /* ArrowDown */))
+          .call(press(37  /* ArrowLeft */))
+          .expectSpeech('a')
+          .call(assertBeginning.bind(this, false))
+          .call(assertEnd.bind(this, false))
 
-        .call(press(40  /* ArrowDown */))
-        .expectSpeech('test')
-        .call(press(39  /* ArrowRight */))
-        .expectSpeech('e')
-        .call(assertBeginning.bind(this, false))
-        .call(assertEnd.bind(this, true))
+          .call(press(40  /* ArrowDown */))
+          .expectSpeech('test')
+          .call(press(39  /* ArrowRight */))
+          .expectSpeech('e')
+          .call(assertBeginning.bind(this, false))
+          .call(assertEnd.bind(this, true))
 
-        .replay();
+          .replay();
+    }.bind(this));
+    contentEditable.focus();
   });
 });
 

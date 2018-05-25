@@ -19,6 +19,7 @@ goog.require('cursors.Cursor');
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
 var Dir = constants.Dir;
+var RoleType = chrome.automation.RoleType;
 
 /**
  * An interface implemented by objects that wish to handle events related to
@@ -59,12 +60,6 @@ ISearch = function(cursor) {
   /** @type {!cursors.Cursor} */
   this.cursor = cursors.Cursor.fromNode(leaf);
 
-  /**
-   * This tracks the id of a search that is in progress.
-   * @type {number} @private
-   */
-  this.pendingSearchId_ = 0;
-
   // Global exports.
   /** Exported for this background script. */
   cvox.ChromeVox = chrome.extension.getBackgroundPage()['cvox']['ChromeVox'];
@@ -85,27 +80,37 @@ ISearch.prototype = {
    */
   search: function(searchStr, dir) {
     searchStr = searchStr.toLocaleLowerCase();
-    // Keep things responsive by chunking cursor moves up into discrete
-    // blocks. We can, if needed, simulate getting interrupted by the enter key.
-    var currentSearchId = ++this.pendingSearchId_;
-    var move = function(curNode) {
-      var cur = cursors.Cursor.fromNode(curNode);
-      var prev = cur;
-      cur = cur.move(cursors.Unit.NODE, cursors.Movement.DIRECTIONAL, dir);
-      if (prev.equals(cur)) {
-        this.handler_.onSearchReachedBoundary(this.cursor.node);
-        return;
-      }
+    var node = this.cursor.node;
+    var result = node;
+    var prev = node;
+    do {
+      // Because Closure cannot infer much about prev.
+      if (!prev)
+        break;
 
-      if (cur.getText().toLocaleLowerCase().indexOf(searchStr) != -1) {
-        this.cursor = cur;
-        this.handler_.onSearchResultChanged(this.cursor.node);
-        return;
+      // We want to start/continue the search at the next object.
+      result =
+          AutomationUtil.findNextNode(prev, dir, AutomationPredicate.object);
+
+      if (!result)
+        break;
+
+      // Ask native to search the underlying data for a performance boost.
+      prev = result;
+      result = result.getNextTextMatch(searchStr, dir == Dir.BACKWARD);
+      prev = result || prev;
+
+      // Check to ensure we have an object-like node; otherwise, continue.
+      if (result && !AutomationPredicate.object(result))
+        continue;
+    } while (!result);
+
+    if (result) {
+      this.cursor = cursors.Cursor.fromNode(result);
+      this.handler_.onSearchResultChanged(result);
+    } else {
+      this.handler_.onSearchReachedBoundary(this.cursor.node);
       }
-      if (this.pendingSearchId_ == currentSearchId)
-        window.setTimeout(move.bind(this, cur.node), 0);
-    };
-    window.setTimeout(move.bind(this, this.cursor.node), 0);
   }
 };
 
@@ -127,7 +132,7 @@ ISearchUI = function(input) {
   this.onTextInput = this.onTextInput.bind(this);
 
   input.addEventListener('keydown', this.onKeyDown, true);
-  input.addEventListener('textInput', this.onTextInput, true);
+  input.addEventListener('textInput', this.onTextInput, false);
 };
 
 /**
@@ -139,7 +144,7 @@ ISearchUI.init = function(input) {
     ISearchUI.instance_.destroy();
 
   if (!input)
-    return null;
+    throw 'Expected search input';
 
   ISearchUI.instance_ = new ISearchUI(input);
   input.focus();
@@ -162,11 +167,9 @@ ISearchUI.prototype = {
         this.dir_ = Dir.FORWARD;
         break;
       case 'Escape':
-        this.pendingSearchId_ = 0;
         Panel.closeMenusAndRestoreFocus();
         return false;
       case 'Enter':
-        this.pendingSearchId_ = 0;
         Panel.setPendingCallback(function() {
           var node = this.iSearch_.cursor.node;
           if (!node)
@@ -178,7 +181,6 @@ ISearchUI.prototype = {
         Panel.closeMenusAndRestoreFocus();
         return false;
       default:
-        this.pendingSearchId_ = 0;
         return false;
     }
     this.iSearch_.search(this.input_.value, this.dir_);
@@ -193,7 +195,8 @@ ISearchUI.prototype = {
    * @return {boolean}
    */
   onTextInput: function(evt) {
-    this.iSearch_.search(this.input_.value, this.dir_);
+    var searchStr = evt.target.value + evt.data;
+    this.iSearch_.search(searchStr, this.dir_);
     return true;
   },
 
@@ -234,7 +237,7 @@ ISearchUI.prototype = {
     var input = this.input_;
     this.input_ = null;
     input.removeEventListener('keydown', this.onKeyDown, true);
-    input.removeEventListener('textInput', this.onTextInput, true);
+    input.removeEventListener('textInput', this.onTextInput, false);
   }
 };
 

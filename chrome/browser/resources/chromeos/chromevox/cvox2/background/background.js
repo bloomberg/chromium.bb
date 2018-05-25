@@ -190,7 +190,7 @@ Background.prototype = {
       start.makeVisible();
 
       var root = AutomationUtil.getTopLevelRoot(start);
-      if (!root || root.role == RoleType.DESKTOP)
+      if (!root || root.role == RoleType.DESKTOP || root == start)
         return;
 
       var position = {};

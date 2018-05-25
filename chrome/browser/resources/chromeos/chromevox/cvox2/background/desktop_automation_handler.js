@@ -197,6 +197,21 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationNode} node The hit result.
    */
   onHitTestResult: function(node) {
+    // It is possible that the user moved since we requested a hit test.
+    // The following events occur:
+    // load complete
+    // a hit test with reply is requested
+    // user moves
+    // we end up here
+    // As a result, check to ensure we're still on a root web area, before
+    // continuing.
+    if (ChromeVoxState.instance.currentRange &&
+        ChromeVoxState.instance.currentRange.start &&
+        ChromeVoxState.instance.currentRange.start.node &&
+        ChromeVoxState.instance.currentRange.start.node.role !=
+            RoleType.ROOT_WEB_AREA)
+      return;
+
     chrome.automation.getFocus(function(focus) {
       if (!focus && !node)
         return;
@@ -326,7 +341,8 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onFocus: function(evt) {
-    if (evt.target.role == RoleType.ROOT_WEB_AREA) {
+    if (evt.target.role == RoleType.ROOT_WEB_AREA &&
+        evt.eventFrom != 'action') {
       chrome.automation.getFocus(
           this.maybeRecoverFocusAndOutput_.bind(this, evt));
       return;

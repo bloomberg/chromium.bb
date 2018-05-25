@@ -144,7 +144,7 @@ namespace automationInternal {
                              long nodeID,
                              DOMString changeType);
 
-    static void onChildTreeID(long treeID, long nodeID);
+    static void onChildTreeID(long treeID);
 
     static void onNodesRemoved(long treeID, long[] nodeIDs);
 
