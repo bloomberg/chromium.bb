@@ -74,6 +74,9 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  // Set the frame's width in pixels.
+  virtual void SetWidthInPixels(int width_in_pixels);
+
  protected:
   FrameHeader(views::Widget* target_widget, views::View* view);
 

@@ -79,12 +79,13 @@ class ASH_EXPORT HeaderView : public views::View,
 
   void UpdateCaptionButtons();
 
+  void SetWidthInPixels(int width_in_pixels);
+
   // Called when the target widget show state changed.
   void OnShowStateChanged(ui::WindowShowState show_state);
 
   // views::View:
   void Layout() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // TabletModeObserver:
@@ -121,6 +122,12 @@ class ASH_EXPORT HeaderView : public views::View,
   FrameHeader* GetFrameHeaderForTest() { return frame_header_.get(); }
 
  private:
+  class HeaderContentView;
+  friend class HeaderContentView;
+
+  // Paint the header content.
+  void PaintHeaderContent(gfx::Canvas* canvas);
+
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;
 
@@ -134,6 +141,9 @@ class ASH_EXPORT HeaderView : public views::View,
   std::unique_ptr<FrameHeader> frame_header_;
 
   views::ImageView* avatar_icon_;
+
+  // View which draws the content of the frame.
+  HeaderContentView* header_content_view_ = nullptr;
 
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;

@@ -38,6 +38,7 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
   AshLayoutSize GetButtonLayoutSize() const override;
   SkColor GetTitleColor() const override;
   SkColor GetCurrentFrameColor() const override;
+  void SetWidthInPixels(int width_in_pixels) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, FrameColors);
@@ -48,6 +49,8 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
 
   SkColor active_frame_color_;
   SkColor inactive_frame_color_;
+
+  int width_in_pixels_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultFrameHeader);
 };

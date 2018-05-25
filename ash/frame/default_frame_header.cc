@@ -75,6 +75,13 @@ void DefaultFrameHeader::SetThemeColor(SkColor theme_color) {
   SetFrameColorsImpl(theme_color, theme_color);
 }
 
+void DefaultFrameHeader::SetWidthInPixels(int width_in_pixels) {
+  if (width_in_pixels_ == width_in_pixels)
+    return;
+  width_in_pixels_ = width_in_pixels;
+  SchedulePaintForTitle();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultFrameHeader, protected:
 
@@ -89,8 +96,17 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
   flags.setColor(color_utils::AlphaBlend(active_frame_color_,
                                          inactive_frame_color_, active_alpha));
   flags.setAntiAlias(true);
-  TileRoundRect(canvas, flags, GetPaintedBounds(), corner_radius);
+  if (width_in_pixels_ > 0) {
+    canvas->Save();
+    float scale = canvas->UndoDeviceScaleFactor();
+    gfx::Rect rect = ScaleToEnclosingRect(GetPaintedBounds(), scale, scale);
 
+    rect.set_width(width_in_pixels_);
+    TileRoundRect(canvas, flags, rect, static_cast<int>(corner_radius * scale));
+    canvas->Restore();
+  } else {
+    TileRoundRect(canvas, flags, GetPaintedBounds(), corner_radius);
+  }
   PaintTitleBar(canvas);
 }
 
