@@ -279,8 +279,8 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       notification_indicator_(nullptr),
       state_(STATE_NORMAL),
       destroyed_flag_(nullptr),
-      is_touchable_app_context_menu_enabled_(
-          features::IsTouchableAppContextMenuEnabled()) {
+      is_notification_indicator_enabled_(
+          features::IsNotificationIndicatorEnabled()) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
@@ -305,7 +305,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
 
   AddChildView(indicator_);
   AddChildView(icon_view_);
-  if (is_touchable_app_context_menu_enabled_) {
+  if (is_notification_indicator_enabled_) {
     notification_indicator_ = new AppNotificationIndicatorView(kIndicatorColor);
     notification_indicator_->SetPaintToLayer();
     notification_indicator_->layer()->SetFillsBoundsOpaquely(false);
@@ -363,7 +363,7 @@ void ShelfButton::AddState(State state) {
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(true);
 
-    if (is_touchable_app_context_menu_enabled_ && (state & STATE_NOTIFICATION))
+    if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
       notification_indicator_->SetVisible(true);
 
     if (state & STATE_DRAGGING)
@@ -378,7 +378,7 @@ void ShelfButton::ClearState(State state) {
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(false);
 
-    if (is_touchable_app_context_menu_enabled_ && (state & STATE_NOTIFICATION))
+    if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
       notification_indicator_->SetVisible(false);
 
     if (state & STATE_DRAGGING)
@@ -511,7 +511,7 @@ void ShelfButton::Layout() {
 
   // The indicators should be aligned with the icon, not the icon + shadow.
   gfx::Point indicator_midpoint = icon_view_bounds.CenterPoint();
-  if (is_touchable_app_context_menu_enabled_) {
+  if (is_notification_indicator_enabled_) {
     notification_indicator_->SetBoundsRect(
         gfx::Rect(icon_view_bounds.right() - kNotificationIndicatorRadiusDip,
                   icon_view_bounds.y(), kNotificationIndicatorRadiusDip * 2,

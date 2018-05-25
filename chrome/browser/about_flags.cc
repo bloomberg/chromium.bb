@@ -1479,6 +1479,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchableAppContextMenuName,
      flag_descriptions::kTouchableAppContextMenuDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTouchableAppContextMenu)},
+    {"enable-notification-indicator",
+     flag_descriptions::kNotificationIndicatorName,
+     flag_descriptions::kNotificationIndicatorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNotificationIndicator)},
     {
         "enable-pinch", flag_descriptions::kPinchScaleName,
         flag_descriptions::kPinchScaleDescription, kOsLinux | kOsWin | kOsCrOS,

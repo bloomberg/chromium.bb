@@ -21,9 +21,11 @@ UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
 UI_BASE_EXPORT extern const base::Feature kSystemKeyboardLock;
 UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
+UI_BASE_EXPORT extern const base::Feature kNotificationIndicator;
 UI_BASE_EXPORT extern const base::Feature kUiCompositorScrollWithLayers;
 
 UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
+UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
 
 UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
 

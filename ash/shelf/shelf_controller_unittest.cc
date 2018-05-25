@@ -216,8 +216,9 @@ class ShelfControllerTouchableContextMenuTest : public AshTestBase {
   ~ShelfControllerTouchableContextMenuTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kTouchableAppContextMenu);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kTouchableAppContextMenu, features::kNotificationIndicator},
+        {});
     AshTestBase::SetUp();
   }
 

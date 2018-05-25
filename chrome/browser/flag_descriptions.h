@@ -660,6 +660,9 @@ extern const char kNewblueDescription[];
 extern const char kNostatePrefetchName[];
 extern const char kNostatePrefetchDescription[];
 
+extern const char kNotificationIndicatorName[];
+extern const char kNotificationIndicatorDescription[];
+
 extern const char kNotificationsNativeFlagName[];
 extern const char kNotificationsNativeFlagDescription[];
 

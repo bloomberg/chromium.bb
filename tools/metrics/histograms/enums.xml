@@ -26597,6 +26597,7 @@ from previous Chrome versions.
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
+  <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2099457894" label="Mash:enabled"/>
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
   <int value="-2098610409" label="disable-lcd-text"/>
@@ -27138,6 +27139,7 @@ from previous Chrome versions.
   <int value="-1014649471" label="committed-interstitials"/>
   <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
+  <int value="-994558985" label="EnableNotificationIndicator:disabled"/>
   <int value="-994088375" label="VrBrowsingExperimentalRendering:enabled"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>

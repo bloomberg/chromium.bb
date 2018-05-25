@@ -54,6 +54,13 @@ bool IsTouchableAppContextMenuEnabled() {
          switches::IsTouchableAppContextMenuEnabled();
 }
 
+const base::Feature kNotificationIndicator = {
+    "EnableNotificationIndicator", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsNotificationIndicatorEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationIndicator);
+}
+
 // Enables GPU rasterization for all UI drawing (where not blacklisted).
 const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

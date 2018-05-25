@@ -2071,8 +2071,9 @@ class ShelfViewTouchableContextMenuTest : public ShelfViewTest {
   ~ShelfViewTouchableContextMenuTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kTouchableAppContextMenu);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kTouchableAppContextMenu, features::kNotificationIndicator},
+        {});
 
     ShelfViewTest::SetUp();
   }

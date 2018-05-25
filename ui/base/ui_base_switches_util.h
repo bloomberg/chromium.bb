@@ -16,6 +16,10 @@ UI_BASE_EXPORT bool IsTouchDragDropEnabled();
 // features::IsTouchableAppContextMenuEnabled().
 UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 
+// Returns whether the notification indicator switch has been set. Prefer
+// features::IsNotificationIndicatorEnabled().
+UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
+
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_UTIL_H_
