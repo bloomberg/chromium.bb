@@ -126,7 +126,8 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
 // ui::mojom::kResizeBehavior values.
 AURA_EXPORT extern const WindowProperty<int32_t>* const kResizeBehaviorKey;
 
-// A property key to store the restore bounds for a window.
+// A property key to store the restore bounds in screen coordinates for a
+// window.
 AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 
 // A property key to store ui::WindowShowState for a window.

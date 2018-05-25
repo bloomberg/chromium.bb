@@ -396,6 +396,19 @@ void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
   }
 }
 
+void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
+  is_dragging_window_ = true;
+  divider_widget_->SetAlwaysOnTop(false);
+  // Make sure |divider_widget_| is placed below the dragged window.
+  dragged_window->parent()->StackChildBelow(divider_widget_->GetNativeWindow(),
+                                            dragged_window);
+}
+
+void SplitViewDivider::OnWindowDragEnded() {
+  is_dragging_window_ = false;
+  divider_widget_->SetAlwaysOnTop(true);
+}
+
 void SplitViewDivider::OnWindowDestroying(aura::Window* window) {
   RemoveObservedWindow(window);
 }
@@ -403,11 +416,15 @@ void SplitViewDivider::OnWindowDestroying(aura::Window* window) {
 void SplitViewDivider::OnWindowActivated(ActivationReason reason,
                                          aura::Window* gained_active,
                                          aura::Window* lost_active) {
-  if (base::ContainsValue(observed_windows_, gained_active)) {
+  if (!is_dragging_window_ &&
+      (!gained_active ||
+       base::ContainsValue(observed_windows_, gained_active))) {
     divider_widget_->SetAlwaysOnTop(true);
   } else {
+    // If |gained_active| is not one of the observed windows, or there is one
+    // window that is currently being dragged, |divider_widget_| should not
+    // be placed on top.
     divider_widget_->SetAlwaysOnTop(false);
-    divider_widget_->Deactivate();
   }
 }
 
@@ -417,6 +434,7 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   divider_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
   DividerView* divider_view = new DividerView(this);

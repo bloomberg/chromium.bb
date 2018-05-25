@@ -14,6 +14,7 @@
 
 namespace aura {
 class PropertyConverter;
+class Window;
 template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }
@@ -63,6 +64,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::ImageSkia*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kHideShelfWhenFullscreenKey;
 
+// If true, the window is a browser window and its tab(s) are currently being
+// dragged.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kIsDraggingTabsKey;
+
 // If true (and the window is a panel), it's attached to its shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kPanelAttachedKey;
@@ -71,9 +77,9 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kRenderTitleAreaProperty;
 
-// A property key which stores the bounds to restore a window to. These take
-// preference over the current bounds. This is used by e.g. the tablet mode
-// window manager.
+// A property key which stores the bounds in screen coordinates to restore a
+// window to. These take preference over the current bounds. This is used by
+// e.g. the tablet mode window manager.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
     kRestoreBoundsOverrideKey;
 
@@ -96,6 +102,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 // mode and Alt + Tab.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kShowInOverviewKey;
+
+// A property key to store the address of the source window that the drag
+// originated from if the window is currenlty in tab-dragging process.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<aura::Window*>* const
+    kTabDraggingSourceWindowKey;
 
 // A property key to store the active color on the window frame.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const

@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/shadow_types.h"
@@ -85,6 +86,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
                                    kFrameImageActiveKey,
                                    nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDraggingTabsKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
@@ -96,6 +98,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kShelfIDKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kShowInOverviewKey, true);
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,
+                             kTabDraggingSourceWindowKey,
+                             nullptr);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,

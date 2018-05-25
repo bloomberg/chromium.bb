@@ -43,6 +43,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"               // nogncheck
 #include "ash/public/interfaces/window_state_type.mojom.h"  // nogncheck
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -108,11 +109,37 @@ bool IsSnapped(const TabStrip* tab_strip) {
   return type == ash::mojom::WindowStateType::LEFT_SNAPPED ||
          type == ash::mojom::WindowStateType::RIGHT_SNAPPED;
 }
+
+// In Chrome OS tablet mode, when dragging a tab/tabs around, the desired
+// browser bounds during dragging is one-fourth of the workspace bounds.
+gfx::Rect GetDraggedBrowserBoundsInTabletMode(aura::Window* window) {
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
+  gfx::Rect bounds(window->bounds());
+  bounds.set_width(work_area.width() / 2);
+  bounds.set_height(work_area.height() / 2);
+  return bounds;
+}
+
+// Store the current window bounds if we're in Chrome OS tablet mode and tab
+// dragging is allowed on browser windows.
+void StoreCurrentDraggedBrowserBoundsInTabletMode(
+    aura::Window* window,
+    const gfx::Rect& bounds_in_screen) {
+  if (TabletModeClient::Get()->tablet_mode_enabled() &&
+      base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
+    // The bounds that is stored in ash::kRestoreBoundsOverrideKey will be used
+    // by DragDetails to calculate the window bounds during dragging in tablet
+    // mode.
+    window->SetProperty(ash::kRestoreBoundsOverrideKey,
+                        new gfx::Rect(bounds_in_screen));
+  }
+}
 #else
 bool IsSnapped(const TabStrip* tab_strip) {
   return false;
 }
-#endif
+#endif  // #if defined(OS_CHROMEOS)
 
 #if defined(USE_AURA)
 gfx::NativeWindow GetModalTransient(gfx::NativeWindow window) {
@@ -303,8 +330,10 @@ void TabDragController::Init(TabStrip* source_tabstrip,
     source_tabstrip_->GetWidget()->SetCapture(source_tabstrip_);
 
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled())
+  if (TabletModeClient::Get()->tablet_mode_enabled() &&
+      !base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
     detach_behavior_ = NOT_DETACHABLE;
+  }
 #endif
 }
 
@@ -359,17 +388,17 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     Attach(source_tabstrip_, gfx::Point());
     if (static_cast<int>(drag_data_.size()) ==
         GetModel(source_tabstrip_)->count()) {
+      views::Widget* widget = GetAttachedBrowserWidget();
+      gfx::Rect new_bounds;
       if (was_source_maximized_ || was_source_fullscreen_) {
         did_restore_window_ = true;
         // When all tabs in a maximized browser are dragged the browser gets
         // restored during the drag and maximized back when the drag ends.
-        views::Widget* widget = GetAttachedBrowserWidget();
         const int last_tabstrip_width = attached_tabstrip_->GetTabAreaWidth();
         std::vector<gfx::Rect> drag_bounds = CalculateBoundsForDraggedTabs();
         OffsetX(GetAttachedDragPoint(point_in_screen).x(), &drag_bounds);
-        gfx::Rect new_bounds(CalculateDraggedBrowserBounds(source_tabstrip_,
-                                                           point_in_screen,
-                                                           &drag_bounds));
+        new_bounds = CalculateDraggedBrowserBounds(
+            source_tabstrip_, point_in_screen, &drag_bounds);
         new_bounds.Offset(-widget->GetRestoredBounds().x() +
                           point_in_screen.x() -
                           mouse_offset_.x(), 0);
@@ -381,15 +410,16 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
                                          &drag_bounds);
         widget->SetVisibilityChangedAnimationsEnabled(true);
       } else {
-        // The user has to move the mouse some amount of pixels before the drag
-        // starts. Offset the window by this amount so that the relative offset
-        // of the initial location is consistent. See crbug.com/518740
-        views::Widget* widget = GetAttachedBrowserWidget();
-        gfx::Rect bounds = widget->GetWindowBoundsInScreen();
-        bounds.Offset(point_in_screen.x() - start_point_in_screen_.x(),
-                      point_in_screen.y() - start_point_in_screen_.y());
-        widget->SetBounds(bounds);
+        new_bounds =
+            CalculateNonMaximizedDraggedBrowserBounds(widget, point_in_screen);
+        widget->SetBounds(new_bounds);
       }
+
+#if defined(OS_CHROMEOS)
+      StoreCurrentDraggedBrowserBoundsInTabletMode(widget->GetNativeWindow(),
+                                                   new_bounds);
+#endif
+
       RunMoveLoop(GetWindowOffset(point_in_screen));
       return;
     }
@@ -433,7 +463,14 @@ void TabDragController::TabStripEmpty() {
   GetModel(source_tabstrip_)->RemoveObserver(this);
   // NULL out source_tabstrip_ so that we don't attempt to add back to it (in
   // the case of a revert).
-  source_tabstrip_ = NULL;
+  source_tabstrip_ = nullptr;
+#if defined(OS_CHROMEOS)
+  // Also update the source window info for the current dragged window.
+  if (attached_tabstrip_) {
+    attached_tabstrip_->GetWidget()->GetNativeWindow()->ClearProperty(
+        ash::kTabDraggingSourceWindowKey);
+  }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -955,6 +992,7 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   // drag isn't prematurely canceled.
   attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
   attached_tabstrip_->OwnDragController(this);
+  SetTabDraggingInfo();
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
@@ -1004,6 +1042,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     }
   }
 
+  ClearTabDraggingInfo();
   attached_tabstrip_->DraggedTabsDetached();
   attached_tabstrip_ = NULL;
 }
@@ -1334,6 +1373,8 @@ void TabDragController::EndDragImpl(EndDragType type) {
 
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
+
+  ClearTabDraggingInfo();
 
   if (is_dragging_window_) {
     waiting_for_run_loop_to_exit_ = true;
@@ -1673,6 +1714,15 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
     new_bounds.set_height(
         std::max(max_size.height() / 2, new_bounds.height()));
   }
+
+#if defined(OS_CHROMEOS)
+  if (TabletModeClient::Get()->tablet_mode_enabled() &&
+      base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
+    new_bounds = GetDraggedBrowserBoundsInTabletMode(
+        source->GetWidget()->GetNativeWindow());
+  }
+#endif
+
   new_bounds.set_y(point_in_screen.y() - center.y());
   switch (GetDetachPosition(point_in_screen)) {
     case DETACH_BEFORE:
@@ -1700,6 +1750,25 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
         0, frame_view->GetTopInset(false) - frame_view->GetTopInset(true));
   }
   return new_bounds;
+}
+
+gfx::Rect TabDragController::CalculateNonMaximizedDraggedBrowserBounds(
+    views::Widget* widget,
+    const gfx::Point& point_in_screen) {
+  gfx::Rect bounds = widget->GetWindowBoundsInScreen();
+#if defined(OS_CHROMEOS)
+  if (TabletModeClient::Get()->tablet_mode_enabled() &&
+      base::FeatureList::IsEnabled(ash::features::kDragTabsInTabletMode)) {
+    bounds = GetDraggedBrowserBoundsInTabletMode(widget->GetNativeWindow());
+  }
+#endif
+
+  // The user has to move the mouse some amount of pixels before the drag
+  // starts. Offset the window by this amount so that the relative offset
+  // of the initial location is consistent. See https://crbug.com/518740
+  bounds.Offset(point_in_screen.x() - start_point_in_screen_.x(),
+                point_in_screen.y() - start_point_in_screen_.y());
+  return bounds;
 }
 
 void TabDragController::AdjustBrowserAndTabBoundsForDrag(
@@ -1822,4 +1891,43 @@ TabDragController::Liveness TabDragController::GetLocalProcessWindow(
   base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
   *window = window_finder_->GetLocalProcessWindowAtPoint(screen_point, exclude);
   return ref ? Liveness::ALIVE : Liveness::DELETED;
+}
+
+void TabDragController::SetTabDraggingInfo() {
+#if defined(OS_CHROMEOS)
+  TabStrip* dragged_tabstrip =
+      attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
+  DCHECK(dragged_tabstrip->IsDragSessionActive() && active_);
+
+  aura::Window* dragged_window =
+      dragged_tabstrip->GetWidget()->GetNativeWindow();
+  aura::Window* source_window =
+      source_tabstrip_ ? source_tabstrip_->GetWidget()->GetNativeWindow()
+                       : nullptr;
+  dragged_window->SetProperty(ash::kIsDraggingTabsKey, true);
+  if (source_window != dragged_window) {
+    dragged_window->SetProperty(ash::kTabDraggingSourceWindowKey,
+                                source_window);
+  }
+#endif
+}
+
+void TabDragController::ClearTabDraggingInfo() {
+#if defined(OS_CHROMEOS)
+  TabStrip* dragged_tabstrip =
+      attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
+  DCHECK(!dragged_tabstrip->IsDragSessionActive() || !active_);
+  // Do not clear the dragging info properties for a to-be-destroyed window.
+  // They will be cleared later in Window's destrutor. It's intentional as
+  // ash::SplitViewController::TabDraggedWindowObserver listens to both
+  // OnWindowDestroying() event and the window properties change event, and uses
+  // the two events to decide what to do next.
+  if (GetModel(dragged_tabstrip)->empty())
+    return;
+
+  aura::Window* dragged_window =
+      dragged_tabstrip->GetWidget()->GetNativeWindow();
+  dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
+  dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
+#endif
 }

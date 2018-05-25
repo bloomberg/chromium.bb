@@ -62,6 +62,11 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void AddObservedWindow(aura::Window* window);
   void RemoveObservedWindow(aura::Window* window);
 
+  // Called when a window tab(s) are being dragged around the workspace. The
+  // divider should be placed beneath the dragged window during dragging.
+  void OnWindowDragStarted(aura::Window* dragged_window);
+  void OnWindowDragEnded();
+
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
@@ -88,6 +93,9 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // the user presses on it and drag it to left or right, the left and right
   // window will be resized accordingly.
   views::Widget* divider_widget_ = nullptr;
+
+  // If true there is a window whose tabs are currently being dragged around.
+  bool is_dragging_window_ = false;
 
   // Tracks observed windows.
   aura::Window::Windows observed_windows_;
