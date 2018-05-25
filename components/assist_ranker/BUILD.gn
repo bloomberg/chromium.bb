@@ -39,6 +39,9 @@ static_library("assist_ranker") {
     "//components/keyed_service/core",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//services/network:network_service",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//url",
   ]
 }
@@ -62,6 +65,8 @@ source_set("unit_tests") {
     "//components/assist_ranker/proto",
     "//components/ukm:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gtest",
   ]
 }

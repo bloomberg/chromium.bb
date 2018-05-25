@@ -13,8 +13,8 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace assist_ranker {
@@ -32,7 +32,8 @@ class BinaryClassifierPredictor : public BasePredictor {
   static std::unique_ptr<BinaryClassifierPredictor> Create(
       const PredictorConfig& config,
       const base::FilePath& model_path,
-      net::URLRequestContextGetter* request_context_getter) WARN_UNUSED_RESULT;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      WARN_UNUSED_RESULT;
 
   // Fills in a boolean decision given a RankerExample. Returns false if a
   // prediction could not be made (e.g. the model is not loaded yet).

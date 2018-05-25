@@ -13,7 +13,7 @@
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 #include "components/assist_ranker/ranker_model.h"
 #include "components/assist_ranker/ranker_model_loader_impl.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace assist_ranker {
 
@@ -26,7 +26,7 @@ BinaryClassifierPredictor::~BinaryClassifierPredictor(){};
 std::unique_ptr<BinaryClassifierPredictor> BinaryClassifierPredictor::Create(
     const PredictorConfig& config,
     const base::FilePath& model_path,
-    net::URLRequestContextGetter* request_context_getter) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   std::unique_ptr<BinaryClassifierPredictor> predictor(
       new BinaryClassifierPredictor(config));
   if (!predictor->is_query_enabled()) {
@@ -40,7 +40,7 @@ std::unique_ptr<BinaryClassifierPredictor> BinaryClassifierPredictor::Create(
       base::BindRepeating(&BinaryClassifierPredictor::ValidateModel),
       base::BindRepeating(&BinaryClassifierPredictor::OnModelAvailable,
                           base::Unretained(predictor.get())),
-      request_context_getter, model_path, model_url, config.uma_prefix);
+      url_loader_factory, model_path, model_url, config.uma_prefix);
   predictor->LoadModel(std::move(model_loader));
   return predictor;
 }
