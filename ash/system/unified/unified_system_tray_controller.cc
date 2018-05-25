@@ -27,6 +27,7 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/unified/accessibility_feature_pod_controller.h"
+#include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -48,6 +49,40 @@ const int kExpandAnimationDurationMs = 500;
 // Threshold in pixel that fully collapses / expands the view through gesture.
 const int kDragThreshold = 200;
 
+// As a hack, we embedded detailed views by holding a reference to old
+// SystemTray. UnifiedSystemTray should not have references to SystemTray and
+// SystemTrayItems, so this class will be removed soon. The right approach to
+// embed a detailed view is to write a subclass of DetailedViewController
+// for each detailed view, and instantiate it in Show*DetailedView() method.
+//
+// TODO(tetsui): Remove this class.
+class SystemTrayItemDetailedViewController : public DetailedViewController {
+ public:
+  explicit SystemTrayItemDetailedViewController(
+      SystemTrayItem* system_tray_item)
+      : system_tray_item_(system_tray_item) {}
+
+  views::View* CreateView() override {
+    LoginStatus login_status =
+        Shell::Get()->session_controller()->login_status();
+    return system_tray_item_->CreateDetailedView(login_status);
+  }
+
+  ~SystemTrayItemDetailedViewController() override {
+    // We have to call SystemTrayItem::OnDetailedViewDestoryed() on bubble
+    // close, because typically each SystemTrayItem observes a model and it
+    // calls Update() method of each detailed view.
+    system_tray_item_->OnDetailedViewDestroyed();
+  }
+
+ private:
+  // Reference to the SystemTrayItem of the currently shown detailed view.
+  // Unowned.
+  SystemTrayItem* const system_tray_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayItemDetailedViewController);
+};
+
 }  // namespace
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
@@ -61,10 +96,7 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 }
 
-UnifiedSystemTrayController::~UnifiedSystemTrayController() {
-  if (detailed_view_item_)
-    detailed_view_item_->OnDetailedViewDestroyed();
-}
+UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
 
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
@@ -186,33 +218,33 @@ void UnifiedSystemTrayController::ShowUserChooserWidget() {
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {
-  // TODO(tetsui): Implement UnifiedSystemTray's Network detailed view.
-  ShowSystemTrayDetailedView(system_tray_->GetTrayNetwork());
+  // TODO(tetsui): Implement Network's own DetailedViewController.
+  ShowSystemTrayItemDetailedView(system_tray_->GetTrayNetwork());
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
-  // TODO(tetsui): Implement UnifiedSystemTray's Bluetooth detailed view.
-  ShowSystemTrayDetailedView(system_tray_->GetTrayBluetooth());
+  // TODO(tetsui): Implement Bluetooth's own DetailedViewController.
+  ShowSystemTrayItemDetailedView(system_tray_->GetTrayBluetooth());
 }
 
 void UnifiedSystemTrayController::ShowCastDetailedView() {
-  // TODO(tetsui): Implement UnifiedSystemTray's Cast detailed view.
-  ShowSystemTrayDetailedView(system_tray_->GetTrayCast());
+  // TODO(tetsui): Implement Cast's own DetailedViewController.
+  ShowSystemTrayItemDetailedView(system_tray_->GetTrayCast());
 }
 
 void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
-  // TODO(tetsui): Implement UnifiedSystemTray's Accessibility detailed view.
-  ShowSystemTrayDetailedView(system_tray_->GetTrayAccessibility());
+  // TODO(tetsui): Implement Accessibility 's own DetailedViewController.
+  ShowSystemTrayItemDetailedView(system_tray_->GetTrayAccessibility());
 }
 
 void UnifiedSystemTrayController::ShowVPNDetailedView() {
-  // TODO(tetsui): Implement UnifiedSystemTray's VPN detailed view.
-  ShowSystemTrayDetailedView(system_tray_->GetTrayVPN());
+  // TODO(tetsui): Implement VPN's own DetailedViewController.
+  ShowSystemTrayItemDetailedView(system_tray_->GetTrayVPN());
 }
 
 void UnifiedSystemTrayController::ShowIMEDetailedView() {
-  // TODO(tetsui): Implement UnifiedSystemTray's IME detailed view.
-  ShowSystemTrayDetailedView(system_tray_->GetTrayIME());
+  // TODO(tetsui): Implement IME's own DetailedViewController.
+  ShowSystemTrayItemDetailedView(system_tray_->GetTrayIME());
 }
 
 void UnifiedSystemTrayController::AnimationEnded(
@@ -243,7 +275,6 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
 
   // If you want to add a new feature pod item, add here.
-  // TODO(tetsui): Add more feature pod items in spec.
 }
 
 void UnifiedSystemTrayController::AddFeaturePodItem(
@@ -253,12 +284,16 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
   feature_pod_controllers_.push_back(std::move(controller));
 }
 
-void UnifiedSystemTrayController::ShowSystemTrayDetailedView(
+void UnifiedSystemTrayController::ShowDetailedView(
+    std::unique_ptr<DetailedViewController> controller) {
+  unified_view_->SetDetailedView(controller->CreateView());
+  detailed_view_controller_ = std::move(controller);
+}
+
+void UnifiedSystemTrayController::ShowSystemTrayItemDetailedView(
     SystemTrayItem* system_tray_item) {
-  LoginStatus login_status = Shell::Get()->session_controller()->login_status();
-  unified_view_->SetDetailedView(
-      system_tray_item->CreateDetailedView(login_status));
-  detailed_view_item_ = system_tray_item;
+  ShowDetailedView(
+      std::make_unique<SystemTrayItemDetailedViewController>(system_tray_item));
 }
 
 void UnifiedSystemTrayController::UpdateExpandedAmount() {

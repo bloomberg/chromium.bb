@@ -19,6 +19,7 @@ class SlideAnimation;
 
 namespace ash {
 
+class DetailedViewController;
 class FeaturePodControllerBase;
 class SystemTray;
 class SystemTrayItem;
@@ -74,6 +75,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Show the detailed view of IME. Called from the view.
   void ShowIMEDetailedView();
 
+  // If you want to add a new detailed view, add here.
+
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -99,10 +102,13 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Add the feature pod controller and its view.
   void AddFeaturePodItem(std::unique_ptr<FeaturePodControllerBase> controller);
 
-  // Show detailed view of SystemTray.
-  // TODO(tetsui): Remove when detailed views are implemented on
-  // UnifiedSystemTray.
-  void ShowSystemTrayDetailedView(SystemTrayItem* system_tray_item);
+  // Show the detailed view.
+  void ShowDetailedView(std::unique_ptr<DetailedViewController> controller);
+
+  // Show detailed view of SystemTrayItem.
+  // TODO(tetsui): Remove when Unified's own DetailedViewControllers are
+  // implemented.
+  void ShowSystemTrayItemDetailedView(SystemTrayItem* system_tray_item);
 
   // Update how much the view is expanded based on |animation_|.
   void UpdateExpandedAmount();
@@ -125,16 +131,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Unowned. Owned by Views hierarchy.
   UnifiedSystemTrayView* unified_view_ = nullptr;
 
-  // Reference to the SystemTrayItem of the currently shown detailed view.
-  // Unowned.
-  // We have to call SystemTrayItem::OnDetailedViewDestoryed() on bubble close,
-  // because typically each SystemTrayItem observes a model and it calls
-  // Update() method of each detailed view.
-  // To remove this, detailed views should observe models directly so that
-  // UnifiedSystemTrayController can instantiate them directly.
-  // TODO(tetsui): Remove this hack when we implement our own detailed views of
-  // UnifiedSystemTray.
-  SystemTrayItem* detailed_view_item_ = nullptr;
+  // The controller of the current detailed view. If the main view is shown,
+  // it's null. Owned.
+  std::unique_ptr<DetailedViewController> detailed_view_controller_;
 
   // Controllers of feature pod buttons. Owned by this.
   std::vector<std::unique_ptr<FeaturePodControllerBase>>
