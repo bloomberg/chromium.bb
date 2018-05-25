@@ -256,8 +256,13 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
 
 void SignedExchangeHandler::RunErrorCallback(net::Error error) {
   DCHECK_NE(state_, State::kHeadersCallbackCalled);
-  if (devtools_proxy_)
-    devtools_proxy_->OnSignedExchangeReceived(header_, nullptr);
+  if (devtools_proxy_) {
+    devtools_proxy_->OnSignedExchangeReceived(
+        header_,
+        unverified_cert_chain_ ? unverified_cert_chain_->cert()
+                               : scoped_refptr<net::X509Certificate>(),
+        nullptr);
+  }
   std::move(headers_callback_)
       .Run(error, GURL(), std::string(), network::ResourceResponseHead(),
            nullptr);
@@ -277,9 +282,11 @@ void SignedExchangeHandler::OnCertReceived(
     return;
   }
 
-  if (SignedExchangeSignatureVerifier::Verify(*header_, cert_chain->cert(),
-                                              GetVerificationTime(),
-                                              devtools_proxy_.get()) !=
+  unverified_cert_chain_ = std::move(cert_chain);
+
+  if (SignedExchangeSignatureVerifier::Verify(
+          *header_, unverified_cert_chain_->cert(), GetVerificationTime(),
+          devtools_proxy_.get()) !=
       SignedExchangeSignatureVerifier::Result::kSuccess) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertReceived",
@@ -296,8 +303,6 @@ void SignedExchangeHandler::OnCertReceived(
     RunErrorCallback(net::ERR_CONTEXT_SHUT_DOWN);
     return;
   }
-
-  unverified_cert_chain_ = std::move(cert_chain);
 
   net::SSLConfig config;
   request_context->ssl_config_service()->GetSSLConfig(&config);
@@ -406,8 +411,10 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
       net::IsCertStatusError(ssl_info.cert_status) &&
       !net::IsCertStatusMinorError(ssl_info.cert_status);
 
-  if (devtools_proxy_)
-    devtools_proxy_->OnSignedExchangeReceived(header_, &ssl_info);
+  if (devtools_proxy_) {
+    devtools_proxy_->OnSignedExchangeReceived(
+        header_, unverified_cert_chain_->cert(), &ssl_info);
+  }
 
   response_head.ssl_info = std::move(ssl_info);
   // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.

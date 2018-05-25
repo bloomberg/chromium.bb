@@ -231,12 +231,13 @@ void RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
     const GURL& outer_request_url,
     const network::ResourceResponseHead& outer_response,
     const base::Optional<SignedExchangeHeader>& header,
+    const scoped_refptr<net::X509Certificate>& certificate,
     const base::Optional<net::SSLInfo>& ssl_info,
     const std::vector<std::string>& error_messages) {
   DispatchToAgents(frame_tree_node,
                    &protocol::NetworkHandler::OnSignedExchangeReceived,
                    devtools_navigation_token, outer_request_url, outer_response,
-                   header, ssl_info, error_messages);
+                   header, certificate, ssl_info, error_messages);
 }
 
 // static
