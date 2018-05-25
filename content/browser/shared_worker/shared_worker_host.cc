@@ -14,6 +14,8 @@
 #include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/common/url_loader_factory_bundle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -121,7 +123,8 @@ void SharedWorkerHost::Start(
     mojom::SharedWorkerFactoryPtr factory,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
-    network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory) {
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory,
+    std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AdvanceTo(Phase::kStarted);
 
@@ -151,17 +154,46 @@ void SharedWorkerHost::Start(
       mojom::kNavigation_SharedWorkerSpec, process_id_,
       mojo::MakeRequest(&interface_provider)));
 
+  // NetworkService: Add the network factory to the bundle to pass to the
+  // renderer. The bundle is only provided (along with |script_loader_factory|)
+  // if NetworkService/S13nSW is enabled.
+  DCHECK(!script_loader_factory || factory_bundle);
+  if (factory_bundle) {
+    network::mojom::URLLoaderFactoryPtrInfo network_factory_info;
+    CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
+    DCHECK(!factory_bundle->default_factory_info());
+    factory_bundle->default_factory_info() = std::move(network_factory_info);
+  }
+
   // Send the CreateSharedWorker message.
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
       std::move(content_settings), std::move(service_worker_provider_info),
-      std::move(script_loader_factory), std::move(host),
-      std::move(worker_request_), std::move(interface_provider));
+      std::move(script_loader_factory), std::move(factory_bundle),
+      std::move(host), std::move(worker_request_),
+      std::move(interface_provider));
 
   // Monitor the lifetime of the worker.
   worker_.set_connection_error_handler(base::BindOnce(
       &SharedWorkerHost::OnWorkerConnectionLost, weak_factory_.GetWeakPtr()));
+}
+
+//  This is similar to
+//  RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve.
+void SharedWorkerHost::CreateNetworkFactory(
+    network::mojom::URLLoaderFactoryRequest request) {
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = process_id_;
+  // TODO(lukasza): https://crbug.com/792546: Start using CORB.
+  params->is_corb_enabled = false;
+
+  service_->storage_partition()->GetNetworkContext()->CreateURLLoaderFactory(
+      std::move(request), std::move(params));
+
+  // TODO(falken): Detect connection error and send a IPC with a new network
+  // factory like UpdateSubresourceLoaderFactories does for frames.
 }
 
 void SharedWorkerHost::AllowFileSystem(

@@ -37,8 +37,17 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace blink {
 
@@ -63,6 +72,7 @@ class BLINK_EXPORT WebSharedWorker {
       WebContentSecurityPolicyType,
       mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider) = 0;
 
@@ -76,6 +86,9 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void PauseWorkerContextOnStart() = 0;
   virtual void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      TaskType) = 0;
 };
 
 }  // namespace blink

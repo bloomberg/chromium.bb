@@ -1914,6 +1914,7 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttpreques
 crbug.com/771118 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 
 crbug.com/846237 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/import-scripts-updated-flag.https.html [ Crash ]
+crbug.com/846637 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Crash ]
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]

@@ -40,6 +40,7 @@ class MessagePortChannel;
 }
 
 namespace content {
+class URLLoaderFactoryBundleInfo;
 class WebApplicationCacheHostImpl;
 
 // A stub class to receive IPC from browser process and talk to
@@ -63,6 +64,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider);

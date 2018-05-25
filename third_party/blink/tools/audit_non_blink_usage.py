@@ -153,6 +153,9 @@ _CONFIG = [
             # nested in the blink namespace.
             'internal::.+',
 
+            # Network service.
+            'network::.+',
+
             # Some test helpers live in the blink::test namespace.
             'test::.+',
 

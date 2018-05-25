@@ -22,6 +22,7 @@
 class GURL;
 
 namespace content {
+class URLLoaderFactoryBundleInfo;
 
 class MockSharedWorker : public mojom::SharedWorker {
  public:
@@ -71,6 +72,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_ptr_info,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
