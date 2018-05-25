@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/assistant/ui/assistant_bubble.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -38,7 +39,11 @@ class AssistantControllerTest : public AshTestBase {
     chromeos::assistant::mojom::AssistantPtr assistant;
     assistant_binding_->Bind(mojo::MakeRequest(&assistant));
     controller_->SetAssistant(std::move(assistant));
+
+    ASSERT_FALSE(IsAssistantBubbleShown());
   }
+
+  bool IsAssistantBubbleShown() { return controller_->bubble().IsVisible(); }
 
   const AssistantInteractionModel* interaction_model() {
     return controller_->interaction_model();
@@ -62,18 +67,21 @@ TEST_F(AssistantControllerTest, HighlighterEnabledStatus) {
   EXPECT_EQ(InputModality::kStylus, interaction_model()->input_modality());
   EXPECT_EQ(InteractionState::kActive,
             interaction_model()->interaction_state());
+  EXPECT_TRUE(IsAssistantBubbleShown());
 
   // Metalayer mode session end should keep interaction state active.
   highlighter_controller->UpdateEnabledState(
       HighlighterEnabledState::kDisabledBySessionEnd);
   EXPECT_EQ(InteractionState::kActive,
             interaction_model()->interaction_state());
+  EXPECT_TRUE(IsAssistantBubbleShown());
 
   // Disabling directly by user action should make interaction state inactive.
   highlighter_controller->UpdateEnabledState(
       HighlighterEnabledState::kDisabledByUser);
   EXPECT_EQ(InteractionState::kInactive,
             interaction_model()->interaction_state());
+  EXPECT_FALSE(IsAssistantBubbleShown());
 }
 
 }  // namespace ash

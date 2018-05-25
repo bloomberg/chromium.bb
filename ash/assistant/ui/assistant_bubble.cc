@@ -149,6 +149,10 @@ void AssistantBubble::OnInteractionStateChanged(
   }
 }
 
+bool AssistantBubble::IsVisible() const {
+  return container_view_ && container_view_->GetWidget()->IsVisible();
+}
+
 void AssistantBubble::Show() {
   if (!container_view_) {
     container_view_ = new AssistantContainerView(assistant_controller_);

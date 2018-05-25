@@ -133,6 +133,11 @@ class AssistantController
                          RequestScreenshotCallback callback) override;
   void OnCardPressed(const GURL& url) override;
 
+  const AssistantBubble& bubble() const {
+    DCHECK(assistant_bubble_);
+    return *assistant_bubble_;
+  }
+
  private:
   mojo::BindingSet<mojom::AssistantController> assistant_controller_bindings_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
