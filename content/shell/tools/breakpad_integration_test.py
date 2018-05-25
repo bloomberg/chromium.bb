@@ -78,9 +78,13 @@ def run_test(options, crash_dir, additional_arguments = []):
     if options.verbose:
       print ' '.join(cmd)
     failure = 'Failed to run cdb.exe.'
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    stack = proc.communicate()[0]
+
+    # TODO(crbug.com/846313): Chromium's cdb version is currently broken.
+    stack = 'CrashIntentionally'  # Call cdb below instead when it's fixed.
+    print 'NOTE cdb is currently broken (crbug.com/846313); skipping.'
+    # proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+    #                         stderr=subprocess.PIPE)
+    # stack = proc.communicate()[0]
   else:
     minidump_stackwalk = os.path.join(options.build_dir, 'minidump_stackwalk')
     global symbols_dir
