@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_store.h"
 #include "components/sync_preferences/pref_model_associator_client.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -44,9 +45,11 @@ class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
 
 class AbstractPreferenceMergeTest : public testing::Test {
  protected:
-  AbstractPreferenceMergeTest() {
+  AbstractPreferenceMergeTest()
+      : user_prefs_(base::MakeRefCounted<TestingPrefStore>()) {
     PrefServiceMockFactory factory;
     factory.SetPrefModelAssociatorClient(&client_);
+    factory.set_user_prefs(user_prefs_);
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry(
         new user_prefs::PrefRegistrySyncable);
     pref_registry->RegisterStringPref(
@@ -89,6 +92,7 @@ class AbstractPreferenceMergeTest : public testing::Test {
   }
 
   TestPrefModelAssociatorClient client_;
+  scoped_refptr<TestingPrefStore> user_prefs_;
   std::unique_ptr<PrefServiceSyncable> pref_service_;
   PrefModelAssociator* pref_sync_service_;
 };
