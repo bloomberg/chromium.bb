@@ -5,13 +5,11 @@
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,15 +22,10 @@ namespace tracing {
 
 namespace {
 
-const char kCategoryGroup[] = "foo";
-
 class MockProducerClient : public ProducerClient {
  public:
-  explicit MockProducerClient(
-      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
-      : delegate_(perfetto::base::kPageSize),
-        stream_(&delegate_),
-        main_thread_task_runner_(std::move(main_thread_task_runner)) {
+  MockProducerClient()
+      : delegate_(perfetto::base::kPageSize), stream_(&delegate_) {
     trace_packet_.Reset(&stream_);
   }
 
@@ -51,10 +44,7 @@ class MockProducerClient : public ProducerClient {
 
       auto proto = std::make_unique<perfetto::protos::TracePacket>();
       EXPECT_TRUE(proto->ParseFromArray(buffer.begin, message_size));
-      if (proto->has_chrome_events() &&
-          proto->chrome_events().trace_events().size() > 0 &&
-          proto->chrome_events().trace_events()[0].category_group_name() ==
-              kCategoryGroup) {
+      if (proto->has_chrome_events()) {
         finalized_packets_.push_back(std::move(proto));
       }
     }
@@ -89,33 +79,6 @@ class MockProducerClient : public ProducerClient {
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
-};
-
-// For sequences/threads other than our own, we just want to ignore
-// any events coming in.
-class DummyTraceWriter : public perfetto::TraceWriter {
- public:
-  DummyTraceWriter()
-      : delegate_(perfetto::base::kPageSize), stream_(&delegate_) {}
-
-  perfetto::TraceWriter::TracePacketHandle NewTracePacket() override {
-    stream_.Reset(delegate_.GetNewBuffer());
-    trace_packet_.Reset(&stream_);
-
-    return perfetto::TraceWriter::TracePacketHandle(&trace_packet_);
-  }
-
-  void Flush(std::function<void()> callback = {}) override {}
-
-  perfetto::WriterID writer_id() const override {
-    return perfetto::WriterID(0);
-  }
-
- private:
-  perfetto::protos::pbzero::TracePacket trace_packet_;
-  protozero::ScatteredStreamWriterNullDelegate delegate_;
-  protozero::ScatteredStreamWriter stream_;
 };
 
 class MockTraceWriter : public perfetto::TraceWriter {
@@ -140,19 +103,14 @@ class MockTraceWriter : public perfetto::TraceWriter {
 
 std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
     perfetto::BufferID target_buffer) {
-  if (main_thread_task_runner_->RunsTasksInCurrentSequence()) {
-    return std::make_unique<MockTraceWriter>(this);
-  } else {
-    return std::make_unique<DummyTraceWriter>();
-  }
+  return std::make_unique<MockTraceWriter>(this);
 }
 
 class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
-    ProducerClient::ResetTaskRunnerForTesting();
-    producer_client_ = std::make_unique<MockProducerClient>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+    message_loop_ = std::make_unique<base::MessageLoop>();
+    producer_client_ = std::make_unique<MockProducerClient>();
   }
 
   void TearDown() override {
@@ -165,10 +123,13 @@ class TraceEventDataSourceTest : public testing::Test {
     wait_for_tracelog_flush.Run();
 
     // As MockTraceWriter keeps a pointer to our MockProducerClient,
-    // we need to make sure to clean it up from TLS. The other sequences
-    // get DummyTraceWriters that we don't care about.
+    // we need to make sure to clean it up from TLS. This means
+    // these tests can't use a multithreaded task environment that
+    // might add trace events from other threads, as those might
+    // use old TraceWriters writing into invalid memory.
     TraceEventDataSource::GetInstance()->ResetCurrentThreadForTesting();
     producer_client_.reset();
+    message_loop_.reset();
   }
 
   void CreateTraceEventDataSource() {
@@ -181,20 +142,20 @@ class TraceEventDataSourceTest : public testing::Test {
 
  private:
   std::unique_ptr<MockProducerClient> producer_client_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 TEST_F(TraceEventDataSourceTest, BasicTraceEvent) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_BEGIN0(kCategoryGroup, "bar");
+  TRACE_EVENT_BEGIN0("foo", "bar");
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
 
   auto trace_event = trace_events[0];
   EXPECT_EQ("bar", trace_event.name());
-  EXPECT_EQ(kCategoryGroup, trace_event.category_group_name());
+  EXPECT_EQ("foo", trace_event.category_group_name());
   EXPECT_EQ(TRACE_EVENT_PHASE_BEGIN, trace_event.phase());
 }
 
@@ -202,7 +163,7 @@ TEST_F(TraceEventDataSourceTest, TimestampedTraceEvent) {
   CreateTraceEventDataSource();
 
   TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
-      kCategoryGroup, "bar", 42, 4242,
+      "foo", "bar", 42, 4242,
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(424242));
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
@@ -210,7 +171,7 @@ TEST_F(TraceEventDataSourceTest, TimestampedTraceEvent) {
 
   auto trace_event = trace_events[0];
   EXPECT_EQ("bar", trace_event.name());
-  EXPECT_EQ(kCategoryGroup, trace_event.category_group_name());
+  EXPECT_EQ("foo", trace_event.category_group_name());
   EXPECT_EQ(42u, trace_event.id());
   EXPECT_EQ(4242, trace_event.thread_id());
   EXPECT_EQ(424242, trace_event.timestamp());
@@ -220,14 +181,14 @@ TEST_F(TraceEventDataSourceTest, TimestampedTraceEvent) {
 TEST_F(TraceEventDataSourceTest, InstantTraceEvent) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT0(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("foo", "bar", TRACE_EVENT_SCOPE_THREAD);
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
 
   auto trace_event = trace_events[0];
   EXPECT_EQ("bar", trace_event.name());
-  EXPECT_EQ(kCategoryGroup, trace_event.category_group_name());
+  EXPECT_EQ("foo", trace_event.category_group_name());
   EXPECT_EQ(TRACE_EVENT_SCOPE_THREAD, trace_event.flags());
   EXPECT_EQ(TRACE_EVENT_PHASE_INSTANT, trace_event.phase());
 }
@@ -235,8 +196,8 @@ TEST_F(TraceEventDataSourceTest, InstantTraceEvent) {
 TEST_F(TraceEventDataSourceTest, EventWithStringArgs) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD,
-                       "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "arg1_name",
+                       "arg1_val", "arg2_name", "arg2_val");
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
@@ -253,8 +214,8 @@ TEST_F(TraceEventDataSourceTest, EventWithStringArgs) {
 TEST_F(TraceEventDataSourceTest, EventWithUIntArgs) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
-                       42u, "bar", 4242u);
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", 42u,
+                       "bar", 4242u);
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
@@ -269,8 +230,8 @@ TEST_F(TraceEventDataSourceTest, EventWithUIntArgs) {
 TEST_F(TraceEventDataSourceTest, EventWithIntArgs) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
-                       42, "bar", 4242);
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", 42, "bar",
+                       4242);
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
@@ -285,8 +246,8 @@ TEST_F(TraceEventDataSourceTest, EventWithIntArgs) {
 TEST_F(TraceEventDataSourceTest, EventWithBoolArgs) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
-                       true, "bar", false);
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", true,
+                       "bar", false);
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
@@ -303,8 +264,8 @@ TEST_F(TraceEventDataSourceTest, EventWithBoolArgs) {
 TEST_F(TraceEventDataSourceTest, EventWithDoubleArgs) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
-                       42.42, "bar", 4242.42);
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo", 42.42,
+                       "bar", 4242.42);
 
   auto trace_events = producer_client()->GetChromeTraceEvents();
   EXPECT_EQ(trace_events.size(), 1);
@@ -319,7 +280,7 @@ TEST_F(TraceEventDataSourceTest, EventWithDoubleArgs) {
 TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
+  TRACE_EVENT_INSTANT2("foo", "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
                        reinterpret_cast<void*>(0xBEEF), "bar",
                        reinterpret_cast<void*>(0xF00D));
 
@@ -334,6 +295,7 @@ TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
 }
 
 TEST_F(TraceEventDataSourceTest, CompleteTraceEventsIntoSeparateBeginAndEnd) {
+  static const char kCategoryGroup[] = "foo";
   static const char kEventName[] = "bar";
 
   CreateTraceEventDataSource();

@@ -27,16 +27,6 @@ class TraceEventDataSource::ThreadLocalEventSink {
       std::unique_ptr<perfetto::TraceWriter> trace_writer)
       : trace_writer_(std::move(trace_writer)) {}
 
-  ~ThreadLocalEventSink() {
-    // Delete the TraceWriter on the sequence that Perfetto runs on, needed
-    // as the ThreadLocalEventSink gets deleted on thread
-    // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
-    // (which can happen as the TraceWriter destructor might make a Mojo call
-    // and trigger it).
-    ProducerClient::GetTaskRunner()->DeleteSoon(FROM_HERE,
-                                                std::move(trace_writer_));
-  }
-
   void AddTraceEvent(const TraceEvent& trace_event) {
     // TODO(oysteine): Adding trace events to Perfetto will
     // stall in some situations, specifically when we overflow
