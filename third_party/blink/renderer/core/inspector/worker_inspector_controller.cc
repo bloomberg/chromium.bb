@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 
 #include "third_party/blink/renderer/core/CoreProbeSink.h"
+#include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -83,6 +84,7 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
     DCHECK(worker_global_scope->EnsureFetcher());
     session->Append(new InspectorNetworkAgent(
         inspected_frames, worker_global_scope, session->V8Session()));
+    session->Append(new InspectorEmulationAgent(nullptr));
     session->Append(
         new InspectorWorkerAgent(inspected_frames, worker_global_scope));
   }

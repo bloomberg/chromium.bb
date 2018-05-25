@@ -995,7 +995,6 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 
 Response NetworkHandler::Disable() {
   enabled_ = false;
-  user_agent_ = std::string();
   interception_handle_.reset();
   url_loader_interceptor_.reset();
   SetNetworkConditions(nullptr);
@@ -1264,16 +1263,6 @@ void NetworkHandler::DeleteCookies(
   cookie_manager->GetAllCookies(base::BindOnce(
       &DeleteFilteredCookies, base::Unretained(cookie_manager), name,
       normalized_domain, path.fromMaybe(""), std::move(callback)));
-}
-
-Response NetworkHandler::SetUserAgentOverride(const std::string& user_agent) {
-  if (user_agent.find('\n') != std::string::npos ||
-      user_agent.find('\r') != std::string::npos ||
-      user_agent.find('\0') != std::string::npos) {
-    return Response::InvalidParams("Invalid characters found in userAgent");
-  }
-  user_agent_ = user_agent;
-  return Response::FallThrough();
 }
 
 Response NetworkHandler::SetExtraHTTPHeaders(
@@ -1995,8 +1984,6 @@ void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
                                     bool* skip_service_worker,
                                     bool* disable_cache) {
   headers->SetHeader(kDevToolsEmulateNetworkConditionsClientId, host_id_);
-  if (!user_agent_.empty())
-    headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);
   for (auto& entry : extra_headers_)
     headers->SetHeader(entry.first, entry.second);
   *skip_service_worker |= bypass_service_worker_;

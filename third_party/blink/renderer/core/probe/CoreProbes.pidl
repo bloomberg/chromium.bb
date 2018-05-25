@@ -89,6 +89,7 @@ interface CoreProbes {
   void didFireWebGLErrorOrWarning(Element*, const String& message);
   void didResizeMainFrame(LocalFrame*);
   void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
+  void applyAcceptLanguageOverride(LocalFrame*, String* acceptLanguage);
   void applyUserAgentOverride(ExecutionContext*, String* userAgent);
   void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, Resource::Type);
   void didChangeResourcePriority(LocalFrame*, DocumentLoader*, unsigned long identifier, ResourceLoadPriority loadPriority);

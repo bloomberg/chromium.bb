@@ -1,0 +1,7 @@
+Tests emulation of the user agent.
+navigator.userAgent == Test UA
+User-Agent: Test UA
+navigator.language == en-uk
+Accept-Language: en-uk,en
+navigator.platform == new_platform
+

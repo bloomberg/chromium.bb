@@ -11,13 +11,19 @@
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
+class DocumentLoader;
+class ExecutionContext;
+class ResourceRequest;
+class ResourceResponse;
 class WebLocalFrameImpl;
 class WebViewImpl;
+struct FetchInitiatorInfo;
 
 namespace protocol {
 namespace DOM {
@@ -65,9 +71,22 @@ class CORE_EXPORT InspectorEmulationAgent final
       protocol::Maybe<protocol::Emulation::ScreenOrientation>,
       protocol::Maybe<protocol::Page::Viewport>) override;
   protocol::Response clearDeviceMetricsOverride() override;
+  protocol::Response setUserAgentOverride(
+      const String& user_agent,
+      protocol::Maybe<String> accept_language,
+      protocol::Maybe<String> platform) override;
 
   // InspectorInstrumentation API
+  void ApplyAcceptLanguageOverride(String* accept_lang);
+  void ApplyUserAgentOverride(String* user_agent);
   void FrameStartedLoading(LocalFrame*, FrameLoadType);
+  void WillSendRequest(ExecutionContext*,
+                       unsigned long identifier,
+                       DocumentLoader*,
+                       ResourceRequest&,
+                       const ResourceResponse& redirect_response,
+                       const FetchInitiatorInfo&,
+                       Resource::Type);
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;
@@ -81,7 +100,9 @@ class CORE_EXPORT InspectorEmulationAgent final
 
  private:
   WebViewImpl* GetWebViewImpl();
+  protocol::Response AssertPage();
   void VirtualTimeBudgetExpired();
+  void InnerEnable();
 
   struct PendingVirtualTimePolicy {
     PageScheduler::VirtualTimePolicy policy;
@@ -97,6 +118,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   // Supports a virtual time policy change scheduled to occur after any
   // navigation has started.
   base::Optional<PendingVirtualTimePolicy> pending_virtual_time_policy_;
+  bool enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorEmulationAgent);
 };

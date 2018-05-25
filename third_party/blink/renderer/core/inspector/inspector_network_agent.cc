@@ -96,7 +96,6 @@ static const char kNetworkAgentEnabled[] = "networkAgentEnabled";
 static const char kExtraRequestHeaders[] = "extraRequestHeaders";
 static const char kCacheDisabled[] = "cacheDisabled";
 static const char kBypassServiceWorker[] = "bypassServiceWorker";
-static const char kUserAgentOverride[] = "userAgentOverride";
 static const char kBlockedURLs[] = "blockedURLs";
 static const char kTotalBufferSize[] = "totalBufferSize";
 static const char kResourceBufferSize[] = "resourceBufferSize";
@@ -1163,14 +1162,6 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
       data);
 }
 
-void InspectorNetworkAgent::ApplyUserAgentOverride(String* user_agent) {
-  String user_agent_override;
-  state_->getString(NetworkAgentState::kUserAgentOverride,
-                    &user_agent_override);
-  if (!user_agent_override.IsEmpty())
-    *user_agent = user_agent_override;
-}
-
 std::unique_ptr<protocol::Network::Initiator>
 InspectorNetworkAgent::BuildInitiatorObject(
     Document* document,
@@ -1363,18 +1354,8 @@ void InspectorNetworkAgent::Enable(int total_buffer_size,
 Response InspectorNetworkAgent::disable() {
   DCHECK(!pending_request_);
   state_->setBoolean(NetworkAgentState::kNetworkAgentEnabled, false);
-  state_->setString(NetworkAgentState::kUserAgentOverride, "");
   instrumenting_agents_->removeInspectorNetworkAgent(this);
   resources_data_->Clear();
-  return Response::OK();
-}
-
-Response InspectorNetworkAgent::setUserAgentOverride(const String& user_agent) {
-  if (user_agent.Contains('\n') || user_agent.Contains('\r') ||
-      user_agent.Contains('\0')) {
-    return Response::Error("Invalid characters found in userAgent");
-  }
-  state_->setString(NetworkAgentState::kUserAgentOverride, user_agent);
   return Response::OK();
 }
 
