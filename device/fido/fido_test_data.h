@@ -35,7 +35,7 @@ constexpr uint8_t kClientDataHash[] = {
 
 constexpr uint8_t kUserId[] = {0x10, 0x98, 0x23, 0x72, 0x35, 0x40, 0x98, 0x72};
 
-constexpr char kRelyingPartyId[] = "example.com";
+constexpr char kRelyingPartyId[] = "acme.com";
 
 constexpr uint8_t kU2fRegisterCommandApduWithIndividualAttestation[] = {
     // CLA, INS, P1, P2 APDU instructions
