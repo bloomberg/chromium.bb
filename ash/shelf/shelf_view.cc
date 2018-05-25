@@ -1514,8 +1514,6 @@ gfx::Rect ShelfView::GetMenuAnchorRect(const views::View* source,
 gfx::Rect ShelfView::GetTouchMenuAnchorRect(const views::View* source,
                                             const gfx::Point& location) const {
   const bool for_item = ShelfItemForView(source);
-  const bool use_touchable_menu_alignment =
-      features::IsTouchableAppContextMenuEnabled() && for_item;
   const gfx::Rect shelf_bounds =
       is_overflow_mode()
           ? owner_overflow_bubble_->bubble_view()->GetBubbleBounds()
@@ -1527,21 +1525,26 @@ gfx::Rect ShelfView::GetTouchMenuAnchorRect(const views::View* source,
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
       origin =
-          gfx::Point(use_touchable_menu_alignment ? source_bounds_in_screen.x()
-                                                  : location.x(),
+          gfx::Point((features::IsTouchableAppContextMenuEnabled() && for_item)
+                         ? source_bounds_in_screen.x()
+                         : location.x(),
                      shelf_bounds.bottom() - kShelfSize);
       break;
     case SHELF_ALIGNMENT_LEFT:
-      if (use_touchable_menu_alignment)
-        origin = gfx::Point(shelf_bounds.x(), source_bounds_in_screen.y());
-      else
+      if (features::IsTouchableAppContextMenuEnabled()) {
+        origin =
+            gfx::Point(shelf_bounds.x(),
+                       for_item ? source_bounds_in_screen.y() : location.y());
+      } else {
         origin = gfx::Point(shelf_bounds.x() + kShelfSize, location.y());
+      }
       break;
     case SHELF_ALIGNMENT_RIGHT:
       origin =
           gfx::Point(shelf_bounds.right() - kShelfSize,
-                     use_touchable_menu_alignment ? source_bounds_in_screen.y()
-                                                  : location.y());
+                     (features::IsTouchableAppContextMenuEnabled() && for_item)
+                         ? source_bounds_in_screen.y()
+                         : location.y());
       break;
   }
   return gfx::Rect(origin,
@@ -1551,7 +1554,7 @@ gfx::Rect ShelfView::GetTouchMenuAnchorRect(const views::View* source,
 views::MenuAnchorPosition ShelfView::GetMenuAnchorPosition(
     bool for_item,
     bool context_menu) const {
-  if (features::IsTouchableAppContextMenuEnabled() && for_item) {
+  if (features::IsTouchableAppContextMenuEnabled()) {
     return shelf_->IsHorizontalAlignment()
                ? views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE
                : views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
@@ -2002,15 +2005,14 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
   menu_model_ = std::move(menu_model);
   closing_event_time_ = base::TimeTicks();
   int run_types = 0;
-  if (context_menu)
+  if (context_menu) {
     run_types |=
         views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR;
-
-  const ShelfItem* item = ShelfItemForView(source);
-  // Only use the touchable layout if the menu is for an app.
-  if (features::IsTouchableAppContextMenuEnabled() && item)
+  }
+  if (features::IsTouchableAppContextMenuEnabled())
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT;
 
+  const ShelfItem* item = ShelfItemForView(source);
   // Only selected shelf items with context menu opened can be dragged.
   if (context_menu && item && ShelfButtonIsInDrag(item->type, source) &&
       source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
