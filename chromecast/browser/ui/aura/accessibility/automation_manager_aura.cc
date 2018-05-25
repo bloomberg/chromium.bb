@@ -141,8 +141,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   std::vector<ExtensionMsg_AccessibilityEventParams> events;
   events.emplace_back(ExtensionMsg_AccessibilityEventParams());
   ExtensionMsg_AccessibilityEventParams& params = events.back();
-  current_tree_serializer_->BeginSerializingChanges(&params.update);
-  if (!current_tree_serializer_->SerializeOneChange(aura_obj)) {
+  if (!current_tree_serializer_->SerializeChanges(aura_obj, &params.update)) {
     LOG(ERROR) << "Unable to serialize one accessibility event.";
     return;
   }
@@ -151,9 +150,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   views::AXAuraObjWrapper* focus =
       views::AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
-    current_tree_serializer_->SerializeOneChange(focus);
-
-  current_tree_serializer_->FinishSerializingChanges();
+    current_tree_serializer_->SerializeChanges(focus, &params.update);
 
   params.tree_id = 0;
   params.id = aura_obj->GetUniqueId().Get();
