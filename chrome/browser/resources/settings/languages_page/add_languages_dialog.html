@@ -12,12 +12,14 @@
 <dom-module id="settings-add-languages-dialog">
   <template>
     <style include="settings-shared">
-      [slot=body] {
-        -webkit-padding-end: 0 !important;
-        display: flex;
-        flex-direction: column;
-        height: 350px;
-        overflow: auto;
+      cr-dialog {
+        --cr-dialog-body: {
+          -webkit-padding-end: 0;
+          display: flex;
+          flex-direction: column;
+          height: 350px;
+          overflow: auto;
+        }
       }
 
       settings-subpage-search {
