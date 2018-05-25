@@ -153,7 +153,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   void WarnIfValueIsInvalidAndElementIsVisible(const String&) const;
 
   virtual bool IsKeyboardFocusable() const;
-  virtual bool ShouldShowFocusRingOnMouseFocus() const;
+  virtual bool MayTriggerVirtualKeyboard() const;
   virtual bool CanBeSuccessfulSubmitButton();
   virtual bool MatchesDefaultPseudoClass();
 

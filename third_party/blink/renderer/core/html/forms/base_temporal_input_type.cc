@@ -191,7 +191,7 @@ bool BaseTemporalInputType::ValueMissing(const String& value) const {
   return GetElement().IsRequired() && value.IsEmpty();
 }
 
-bool BaseTemporalInputType::ShouldShowFocusRingOnMouseFocus() const {
+bool BaseTemporalInputType::MayTriggerVirtualKeyboard() const {
   return true;
 }
 

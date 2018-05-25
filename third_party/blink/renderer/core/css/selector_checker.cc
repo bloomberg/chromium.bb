@@ -1383,14 +1383,15 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
                           &force_pseudo_state);
   if (force_pseudo_state)
     return true;
-  bool always_show_focus_ring =
-      IsHTMLFormControlElement(element) &&
-      ToHTMLFormControlElement(element).ShouldShowFocusRingOnMouseFocus();
-  // Avoid probing for force_pseudo_state. Otherwise, as currently implemented,
-  // :focus-visible will always match if :focus is forced, since no focus
-  // source flags will be set.
-  return element.IsFocused() && IsFrameFocused(element) &&
-         (!element.WasFocusedByMouse() || always_show_focus_ring);
+
+  bool always_show_focus_ring = element.MayTriggerVirtualKeyboard();
+  bool last_focus_from_mouse =
+      element.GetDocument().GetFrame() &&
+      element.GetDocument().GetFrame()->Selection().FrameIsFocusedAndActive() &&
+      element.GetDocument().LastFocusType() == kWebFocusTypeMouse;
+
+  return element.IsFocused() &&
+         (!last_focus_from_mouse || always_show_focus_ring);
 }
 
 }  // namespace blink

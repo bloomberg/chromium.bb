@@ -73,7 +73,8 @@ bool HTMLAnchorElement::MatchesEnabledPseudoClass() const {
 }
 
 bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
-  return !WasFocusedByMouse() || HTMLElement::SupportsFocus();
+  return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
+         HTMLElement::SupportsFocus();
 }
 
 bool HTMLAnchorElement::IsMouseFocusable() const {

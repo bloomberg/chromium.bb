@@ -457,7 +457,7 @@ bool InputType::IsKeyboardFocusable() const {
   return GetElement().IsFocusable();
 }
 
-bool InputType::ShouldShowFocusRingOnMouseFocus() const {
+bool InputType::MayTriggerVirtualKeyboard() const {
   return false;
 }
 

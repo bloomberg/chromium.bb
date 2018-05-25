@@ -293,8 +293,8 @@ bool HTMLInputElement::IsKeyboardFocusable() const {
   return input_type_->IsKeyboardFocusable();
 }
 
-bool HTMLInputElement::ShouldShowFocusRingOnMouseFocus() const {
-  return input_type_->ShouldShowFocusRingOnMouseFocus();
+bool HTMLInputElement::MayTriggerVirtualKeyboard() const {
+  return input_type_->MayTriggerVirtualKeyboard();
 }
 
 void HTMLInputElement::UpdateFocusAppearanceWithOptions(

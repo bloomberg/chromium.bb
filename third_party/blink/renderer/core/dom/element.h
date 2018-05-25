@@ -722,6 +722,8 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual bool MatchesReadWritePseudoClass() const { return false; }
   virtual bool MatchesValidityPseudoClasses() const { return false; }
 
+  virtual bool MayTriggerVirtualKeyboard() const;
+
   // https://dom.spec.whatwg.org/#dom-element-matches
   bool matches(const AtomicString& selectors, ExceptionState&);
   bool matches(const AtomicString& selectors);

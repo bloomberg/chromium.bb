@@ -180,7 +180,7 @@ class CORE_EXPORT HTMLSelectElement final
  private:
   const AtomicString& FormControlType() const override;
 
-  bool ShouldShowFocusRingOnMouseFocus() const override;
+  bool MayTriggerVirtualKeyboard() const override;
 
   void DispatchFocusEvent(
       Element* old_focused_element,

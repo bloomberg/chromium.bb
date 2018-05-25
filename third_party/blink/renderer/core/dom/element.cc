@@ -3976,6 +3976,10 @@ bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
   return !!GetLayoutObject();
 }
 
+bool Element::MayTriggerVirtualKeyboard() const {
+  return HasEditableStyle(*this);
+}
+
 bool Element::matches(const AtomicString& selectors,
                       ExceptionState& exception_state) {
   SelectorQuery* selector_query = GetDocument().GetSelectorQueryCache().Add(

@@ -323,7 +323,7 @@ void HTMLSelectElement::ParseAttribute(
   }
 }
 
-bool HTMLSelectElement::ShouldShowFocusRingOnMouseFocus() const {
+bool HTMLSelectElement::MayTriggerVirtualKeyboard() const {
   return true;
 }
 
