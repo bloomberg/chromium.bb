@@ -8,7 +8,6 @@ import "content/common/service_worker/service_worker_provider.mojom";
 import "content/common/shared_worker/shared_worker.mojom";
 import "content/common/shared_worker/shared_worker_host.mojom";
 import "content/common/shared_worker/shared_worker_info.mojom";
-import "content/common/url_loader_factory_bundle.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
@@ -53,14 +52,6 @@ interface SharedWorkerFactory {
       // associated interface ptr used for both service worker and shared
       // worker execution contexts.
       associated network.mojom.URLLoaderFactory? script_loader_factory_ptr_info,
-
-      // NetworkService:
-      // When the Network Service is enabled, |subresource_loader_factories|
-      // may also be provided a means for the shared worker to load
-      // subresources where applicable. For example, this allows the shared
-      // worker to load chrome-extension:// URLs which the renderer's default
-      // loader factory can't load.
-      URLLoaderFactoryBundle? subresource_loader_factories,
 
       SharedWorkerHost host,
       SharedWorker& shared_worker,
