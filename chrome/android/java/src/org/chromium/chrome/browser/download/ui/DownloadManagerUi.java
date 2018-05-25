@@ -161,6 +161,8 @@ public class DownloadManagerUi
             // AsyncTask that batch deletes all of the files. The thread pool has a finite
             // number of tasks that can be queued at once. If too many tasks are queued an
             // exception is thrown. See crbug.com/643811.
+            // On Android M, Android DownloadManager may not delete the actual file, so we need to
+            // delete the files here.
             if (filesToDelete.size() != 0) {
                 new AsyncTask<Void, Void, Void>() {
                     @Override
