@@ -37,6 +37,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -283,6 +284,7 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/846619")
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testTriggerAfterClose() throws InterruptedException, TimeoutException {
