@@ -207,8 +207,7 @@ bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
 bool BoxPaintInvalidator::ViewBackgroundShouldFullyInvalidate() const {
   DCHECK(box_.IsLayoutView());
   // Fixed attachment background is handled in LayoutView::layout().
-  // TODO(wangxianzhu): Combine code for fixed-attachment background when we
-  // enable rootLayerScrolling permanently.
+  // TODO(wangxianzhu): Combine code for fixed-attachment background.
   if (box_.StyleRef().HasEntirelyFixedBackground())
     return false;
 

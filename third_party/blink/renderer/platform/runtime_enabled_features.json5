@@ -1071,12 +1071,6 @@
       name: "RestrictCanRequestURLCharacterSet",
       status: "stable",
     },
-    // Handles frame scrolling via the root PaintLayer instead of the FrameView.
-    // The master bug for the root layer scrolling project is crbug.com/417782.
-    {
-      name: "RootLayerScrolling",
-      status: "stable",
-    },
     {
       name: "RtcPeerConnectionId",
       origin_trial_feature_name: "RtcPeerConnectionId",

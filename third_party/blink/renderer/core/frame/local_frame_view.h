@@ -1040,8 +1040,6 @@ class CORE_EXPORT LocalFrameView final
   bool WasViewportResized();
   void SendResizeEventIfNeeded();
 
-  void UpdateParentScrollableAreaSet();
-
   void ScheduleUpdatePluginsIfNecessary();
   void UpdatePluginsTimerFired(TimerBase*);
   bool UpdatePlugins();
