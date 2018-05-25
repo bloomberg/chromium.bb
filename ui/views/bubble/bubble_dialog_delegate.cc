@@ -335,12 +335,16 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
 
   anchor_view_tracker_->SetView(anchor_view);
 
-  // Do not update anchoring for NULL views; this could indicate that our
-  // NativeWindow is being destroyed, so it would be dangerous for us to update
-  // our anchor bounds at that point. (It's safe to skip this, since if we were
-  // to update the bounds when |anchor_view| is NULL, the bubble won't move.)
-  if (anchor_view && GetWidget())
+  if (anchor_view && GetWidget()) {
+    // Do not update anchoring for NULL views; this could indicate
+    // that our NativeWindow is being destroyed, so it would be
+    // dangerous for us to update our anchor bounds at that
+    // point. (It's safe to skip this, since if we were to update the
+    // bounds when |anchor_view| is NULL, the bubble won't move.)
     OnAnchorBoundsChanged();
+
+    EnableFocusTraversalFromAnchorView();
+  }
 }
 
 void BubbleDialogDelegateView::SetAnchorRect(const gfx::Rect& rect) {
