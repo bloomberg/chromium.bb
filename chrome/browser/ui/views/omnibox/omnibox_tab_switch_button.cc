@@ -65,7 +65,8 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   if (!visible_)
     return gfx::Size();
   gfx::Size size = MdTextButton::CalculatePreferredSize();
-  size.set_height(text_height_ + 2 * kVerticalPadding);
+  // Bump height if odd.
+  size.set_height(text_height_ + (text_height_ & 1) + 2 * kVerticalPadding);
   return size;
 }
 
