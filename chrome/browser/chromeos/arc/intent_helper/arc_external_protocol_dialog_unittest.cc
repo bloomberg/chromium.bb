@@ -26,21 +26,21 @@ class ArcExternalProtocolDialogTestUtils : public BrowserWithTestWindowTest {
   void CreateTab(bool started_from_arc) {
     AddTab(browser(), GURL("http://www.tests.com"));
 
-    tab_ = browser()->tab_strip_model()->GetWebContentsAt(0);
+    web_contents_ = browser()->tab_strip_model()->GetWebContentsAt(0);
     if (started_from_arc) {
-      tab_->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                        std::make_unique<arc::ArcWebContentsData>());
+      web_contents_->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                                 std::make_unique<arc::ArcWebContentsData>());
     }
   }
 
   bool WasTabStartedFromArc() {
     return GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
-        tab_);
+        web_contents_);
   }
 
  private:
   // Keep only one |WebContents| at a time.
-  content::WebContents* tab_;
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcExternalProtocolDialogTestUtils);
 };
@@ -860,7 +860,7 @@ TEST(ArcExternalProtocolDialogTest,
 
 // Checks that the flag is correctly attached to the current tab.
 TEST_F(ArcExternalProtocolDialogTestUtils, TestTabIsStartedFromArc) {
-  CreateTab(true /* started_from_arc */);
+  CreateTab(/*started_from_arc=*/true);
 
   EXPECT_TRUE(WasTabStartedFromArc());
 }
@@ -868,7 +868,7 @@ TEST_F(ArcExternalProtocolDialogTestUtils, TestTabIsStartedFromArc) {
 // Tests the same as the previous, just for when the data is not attached to the
 // tab.
 TEST_F(ArcExternalProtocolDialogTestUtils, TestTabIsNotStartedFromArc) {
-  CreateTab(false /* started_from_arc */);
+  CreateTab(/*started_from_arc=*/false);
 
   EXPECT_FALSE(WasTabStartedFromArc());
 }

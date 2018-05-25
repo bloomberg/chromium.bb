@@ -62,7 +62,7 @@ GURL GetUrlToNavigateOnDeactivateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
 bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
-    content::WebContents* tab);
+    content::WebContents* web_contents);
 
 bool IsChromeAnAppCandidateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
