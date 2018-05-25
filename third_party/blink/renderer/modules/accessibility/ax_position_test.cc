@@ -19,117 +19,207 @@ namespace blink {
 //
 
 TEST_F(AccessibilityTest, PositionInText) {
-  SetBodyInnerHTML(R"HTML(<p id='paragraph'>Hello</p>)HTML");
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(text, position.AnchorNode());
   EXPECT_EQ(3, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
 }
 
 // To prevent surprises when comparing equality of two |AXPosition|s, position
 // before text object should be the same as position in text object at offset 0.
 TEST_F(AccessibilityTest, PositionBeforeText) {
-  SetBodyInnerHTML(R"HTML(<p id='paragraph'>Hello</p>)HTML");
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position =
       AXPosition::CreatePositionBeforeObject(*ax_static_text);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(text, position.AnchorNode());
   EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
 }
 
 TEST_F(AccessibilityTest, PositionBeforeTextWithFirstLetterCSSRule) {
   SetBodyInnerHTML(
-      R"HTML(<style>p ::first-letter { color: red; font-size: 200%; }</style>"
-      R"<p id='paragraph'>Hello</p>)HTML");
+      R"HTML(<style>p ::first-letter { color: red; font-size: 200%; }</style>
+      <p id="paragraph">Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position =
       AXPosition::CreatePositionBeforeObject(*ax_static_text);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(text, position.AnchorNode());
   EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
 }
 
 // To prevent surprises when comparing equality of two |AXPosition|s, position
 // after text object should be the same as position in text object at offset
 // text length.
 TEST_F(AccessibilityTest, PositionAfterText) {
-  SetBodyInnerHTML(R"HTML(<p id='paragraph'>Hello</p>)HTML");
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position =
       AXPosition::CreatePositionAfterObject(*ax_static_text);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(text, position.AnchorNode());
   EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
 }
 
 TEST_F(AccessibilityTest, PositionBeforeLineBreak) {
-  SetBodyInnerHTML(R"HTML(Hello<br id='br'>there)HTML");
+  SetBodyInnerHTML(R"HTML(Hello<br id="br">there)HTML");
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
+  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+
   const auto ax_position = AXPosition::CreatePositionBeforeObject(*ax_br);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(GetDocument().body(), position.AnchorNode());
   EXPECT_EQ(1, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_br, ax_position_from_dom.ObjectAfterPosition());
 }
 
 TEST_F(AccessibilityTest, PositionAfterLineBreak) {
-  SetBodyInnerHTML(R"HTML(Hello<br id='br'>there)HTML");
+  SetBodyInnerHTML(R"HTML(Hello<br id="br">there)HTML");
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
+  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+  const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_br);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(GetDocument().body(), position.AnchorNode());
   EXPECT_EQ(2, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_static_text, ax_position_from_dom.ObjectAfterPosition());
 }
 
-TEST_F(AccessibilityTest, FirstPositionInContainerDiv) {
-  SetBodyInnerHTML(R"HTML(<div id='div'>Hello<br>there</div>)HTML");
+TEST_F(AccessibilityTest, FirstPositionInDivContainer) {
+  SetBodyInnerHTML(R"HTML(<div id="div">Hello<br>there</div>)HTML");
   const Element* div = GetElementById("div");
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
+  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  const AXObject* ax_static_text = GetAXRootObject()->DeepestFirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(div, position.AnchorNode());
   EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_static_text, ax_position_from_dom.ObjectAfterPosition());
 }
 
-TEST_F(AccessibilityTest, LastPositionInContainerDiv) {
-  SetBodyInnerHTML(R"HTML(<div id='div'>Hello<br>there</div>)HTML");
+TEST_F(AccessibilityTest, LastPositionInDivContainer) {
+  SetBodyInnerHTML(R"HTML(<div id="div">Hello<br>there</div>
+                   <div id="divNext">Next div</div>)HTML");
   const Element* div = GetElementById("div");
   ASSERT_NE(nullptr, div);
   const AXObject* ax_div = GetAXObjectByElementId("div");
   ASSERT_NE(nullptr, ax_div);
+  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  const AXObject* ax_div_next = GetAXObjectByElementId("divNext");
+  ASSERT_NE(nullptr, ax_div_next);
+  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div_next->RoleValue());
+
   const auto ax_position = AXPosition::CreateLastPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(div, position.AnchorNode());
   EXPECT_TRUE(position.GetPosition().IsAfterChildren());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_div_next, ax_position_from_dom.ObjectAfterPosition());
 }
 
-TEST_F(AccessibilityTest, PositionFromPosition) {}
+TEST_F(AccessibilityTest, FirstPositionInTextContainer) {
+  SetBodyInnerHTML(R"HTML(<div id="div">Hello</div>)HTML");
+  const Node* text = GetElementById("div")->firstChild();
+  ASSERT_NE(nullptr, text);
+  const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
+  const auto ax_position =
+      AXPosition::CreateFirstPositionInObject(*ax_static_text);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
+}
+
+TEST_F(AccessibilityTest, LastPositionInTextContainer) {
+  SetBodyInnerHTML(R"HTML(<div id="div">Hello</div>)HTML");
+  const Node* text = GetElementById("div")->lastChild();
+  ASSERT_NE(nullptr, text);
+  const AXObject* ax_static_text = GetAXObjectByElementId("div")->LastChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
+  const auto ax_position =
+      AXPosition::CreateLastPositionInObject(*ax_static_text);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
+}
 
 //
 // Test comparing two AXPosition objects based on their position in the
@@ -137,8 +227,8 @@ TEST_F(AccessibilityTest, PositionFromPosition) {}
 //
 
 TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
-  SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
-                   R"<p id='paragraph'>hello<br>there</p>)HTML");
+  SetBodyInnerHTML(R"HTML(<input id="input" type="text" value="value">
+                   <p id="paragraph">hello<br>there</p>)HTML");
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
@@ -195,33 +285,180 @@ TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
 //
 
 TEST_F(AccessibilityTest, PositionInTextWithWhiteSpace) {
-  SetBodyInnerHTML(R"HTML(<p id='paragraph'>     Hello     </p>)HTML");
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">     Hello     </p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
   const auto ax_position =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(text, position.AnchorNode());
   EXPECT_EQ(8, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
 }
 
-TEST_F(AccessibilityTest, PositionBeforeTextWithWhiteSpace) {}
+TEST_F(AccessibilityTest, PositionBeforeTextWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">     Hello     </p>)HTML");
+  const Node* text = GetElementById("paragraph")->firstChild();
+  ASSERT_NE(nullptr, text);
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("paragraph")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
 
-TEST_F(AccessibilityTest, PositionAfterTextWithWhiteSpace) {}
+  const auto ax_position =
+      AXPosition::CreatePositionBeforeObject(*ax_static_text);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
 
-TEST_F(AccessibilityTest, PositionBeforeLineBreakWithWhiteSpace) {}
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
+}
 
-TEST_F(AccessibilityTest, PositionAfterLineBreakWithWhiteSpace) {}
+TEST_F(AccessibilityTest, PositionAfterTextWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(<p id="paragraph">     Hello     </p>)HTML");
+  const Node* text = GetElementById("paragraph")->lastChild();
+  ASSERT_NE(nullptr, text);
+  const AXObject* ax_static_text =
+      GetAXObjectByElementId("paragraph")->LastChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
 
-TEST_F(AccessibilityTest, FirstPositionInContainerDivWithWhiteSpace) {}
+  const auto ax_position =
+      AXPosition::CreatePositionAfterObject(*ax_static_text);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_EQ(10, position.GetPosition().OffsetInContainerNode());
 
-TEST_F(AccessibilityTest, LastPositionInContainerDivWithWhiteSpace) {}
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
+}
 
-TEST_F(AccessibilityTest, PositionFromTextPositionWithWhiteSpace) {}
+TEST_F(AccessibilityTest, PositionBeforeLineBreakWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(Hello     <br id="br">     there)HTML");
+  const AXObject* ax_br = GetAXObjectByElementId("br");
+  ASSERT_NE(nullptr, ax_br);
+  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+
+  const auto ax_position = AXPosition::CreatePositionBeforeObject(*ax_br);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
+  EXPECT_EQ(1, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_br, ax_position_from_dom.ObjectAfterPosition());
+}
+
+TEST_F(AccessibilityTest, PositionAfterLineBreakWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(Hello     <br id="br">     there)HTML");
+  const AXObject* ax_br = GetAXObjectByElementId("br");
+  ASSERT_NE(nullptr, ax_br);
+  ASSERT_EQ(AccessibilityRole::kLineBreakRole, ax_br->RoleValue());
+  const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
+  const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_br);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
+  EXPECT_EQ(2, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_static_text, ax_position_from_dom.ObjectAfterPosition());
+}
+
+TEST_F(AccessibilityTest, FirstPositionInDivContainerWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(<div id="div">     Hello<br>there     </div>)HTML");
+  const Element* div = GetElementById("div");
+  ASSERT_NE(nullptr, div);
+  const AXObject* ax_div = GetAXObjectByElementId("div");
+  ASSERT_NE(nullptr, ax_div);
+  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  const AXObject* ax_static_text = GetAXRootObject()->DeepestFirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
+  const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(div, position.AnchorNode());
+  EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_static_text, ax_position_from_dom.ObjectAfterPosition());
+}
+
+TEST_F(AccessibilityTest, LastPositionInDivContainerWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(<div id="div">     Hello<br>there     </div>
+                   <div id="divNext">Next div</div>)HTML");
+  const Element* div = GetElementById("div");
+  ASSERT_NE(nullptr, div);
+  const AXObject* ax_div = GetAXObjectByElementId("div");
+  ASSERT_NE(nullptr, ax_div);
+  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div->RoleValue());
+  const AXObject* ax_div_next = GetAXObjectByElementId("divNext");
+  ASSERT_NE(nullptr, ax_div_next);
+  ASSERT_EQ(AccessibilityRole::kGenericContainerRole, ax_div_next->RoleValue());
+
+  const auto ax_position = AXPosition::CreateLastPositionInObject(*ax_div);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(div, position.AnchorNode());
+  EXPECT_TRUE(position.GetPosition().IsAfterChildren());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(ax_div_next, ax_position_from_dom.ObjectAfterPosition());
+}
+
+TEST_F(AccessibilityTest, FirstPositionInTextContainerWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(<div id="div">     Hello     </div>)HTML");
+  const Node* text = GetElementById("div")->firstChild();
+  ASSERT_NE(nullptr, text);
+  const AXObject* ax_static_text = GetAXObjectByElementId("div")->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
+  const auto ax_position =
+      AXPosition::CreateFirstPositionInObject(*ax_static_text);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
+}
+
+TEST_F(AccessibilityTest, LastPositionInTextContainerWithWhiteSpace) {
+  SetBodyInnerHTML(R"HTML(<div id="div">     Hello     </div>)HTML");
+  const Node* text = GetElementById("div")->lastChild();
+  ASSERT_NE(nullptr, text);
+  const AXObject* ax_static_text = GetAXObjectByElementId("div")->LastChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(AccessibilityRole::kStaticTextRole, ax_static_text->RoleValue());
+
+  const auto ax_position =
+      AXPosition::CreateLastPositionInObject(*ax_static_text);
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_EQ(10, position.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_from_dom = AXPosition::FromPosition(position);
+  EXPECT_EQ(ax_position, ax_position_from_dom);
+  EXPECT_EQ(nullptr, ax_position_from_dom.ObjectAfterPosition());
+}
 
 //
 // Test affinity.
@@ -279,7 +516,7 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {}
 TEST_F(AccessibilityTest, PositionInCanvas) {}
 
 //
-// Some layout objects, e.g. list bullets and CSS::before/after content, appears
+// Some layout objects, e.g. list bullets and CSS::before/after content, appear
 // in the accessibility tree but is not present in the DOM.
 //
 
