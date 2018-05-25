@@ -29,8 +29,8 @@ namespace identity {
 class IdentityManager;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace version_info {
@@ -98,7 +98,7 @@ class WebHistoryService : public KeyedService {
 
   WebHistoryService(
       identity::IdentityManager* identity_manager,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~WebHistoryService() override;
 
   void AddObserver(WebHistoryServiceObserver* observer);
@@ -223,7 +223,7 @@ class WebHistoryService : public KeyedService {
   identity::IdentityManager* identity_manager_;
 
   // Request context getter to use.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Stores the version_info token received from the server in response to
   // a mutation operation (e.g., deleting history). This is used to ensure that

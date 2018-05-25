@@ -120,8 +120,7 @@ class TestBrowsingHistoryDriver : public BrowsingHistoryDriver {
 
 class TestWebHistoryService : public FakeWebHistoryService {
  public:
-  TestWebHistoryService()
-      : FakeWebHistoryService(scoped_refptr<net::URLRequestContextGetter>()) {}
+  TestWebHistoryService() : FakeWebHistoryService() {}
 
   void TriggerOnWebHistoryDeleted() {
     TestRequest request;

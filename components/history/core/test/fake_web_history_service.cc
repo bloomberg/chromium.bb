@@ -18,7 +18,7 @@
 #include "components/sync/protocol/history_status.pb.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace history {
 
@@ -177,13 +177,12 @@ void FakeWebHistoryService::FakeRequest::Start() {
 
 // FakeWebHistoryService -------------------------------------------------------
 
-FakeWebHistoryService::FakeWebHistoryService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+FakeWebHistoryService::FakeWebHistoryService()
     // NOTE: Simply pass null object for IdentityManager. WebHistoryService's
     // only usage of this object is to fetch access tokens via RequestImpl, and
     // FakeWebHistoryService deliberately replaces this flow with
     // FakeWebHistoryService::FakeRequest.
-    : history::WebHistoryService(nullptr, request_context),
+    : history::WebHistoryService(nullptr, nullptr),
       emulate_success_(true),
       emulate_response_code_(net::HTTP_OK),
       web_and_app_activity_enabled_(false),
