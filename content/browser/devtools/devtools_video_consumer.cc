@@ -25,6 +25,11 @@ constexpr base::TimeDelta kDefaultMinPeriod = base::TimeDelta();
 // Allow variable aspect ratio.
 const bool kDefaultUseFixedAspectRatio = false;
 
+// Creates a ClientFrameSinkVideoCapturer via HostFrameSinkManager.
+std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateCapturer() {
+  return GetHostFrameSinkManager()->CreateVideoCapturer();
+}
+
 }  // namespace
 
 // static
@@ -37,8 +42,7 @@ DevToolsVideoConsumer::DevToolsVideoConsumer(OnFrameCapturedCallback callback)
     : callback_(std::move(callback)),
       min_capture_period_(kDefaultMinCapturePeriod),
       min_frame_size_(kDefaultMinFrameSize),
-      max_frame_size_(kDefaultMaxFrameSize),
-      binding_(this) {}
+      max_frame_size_(kDefaultMaxFrameSize) {}
 
 DevToolsVideoConsumer::~DevToolsVideoConsumer() = default;
 
@@ -63,8 +67,6 @@ void DevToolsVideoConsumer::StartCapture() {
 void DevToolsVideoConsumer::StopCapture() {
   if (!capturer_)
     return;
-  binding_.Close();
-  capturer_->Stop();
   capturer_.reset();
 }
 
@@ -93,17 +95,9 @@ void DevToolsVideoConsumer::SetMinAndMaxFrameSize(gfx::Size min_frame_size,
   }
 }
 
-viz::mojom::FrameSinkVideoCapturerPtrInfo
-DevToolsVideoConsumer::CreateCapturer() {
-  viz::HostFrameSinkManager* const manager = GetHostFrameSinkManager();
-  viz::mojom::FrameSinkVideoCapturerPtr capturer;
-  manager->CreateVideoCapturer(mojo::MakeRequest(&capturer));
-  return capturer.PassInterface();
-}
-
 void DevToolsVideoConsumer::InnerStartCapture(
-    viz::mojom::FrameSinkVideoCapturerPtrInfo capturer_info) {
-  capturer_.Bind(std::move(capturer_info));
+    std::unique_ptr<viz::ClientFrameSinkVideoCapturer> capturer) {
+  capturer_ = std::move(capturer);
 
   // Give |capturer_| the capture parameters.
   capturer_->SetMinCapturePeriod(min_capture_period_);
@@ -112,9 +106,7 @@ void DevToolsVideoConsumer::InnerStartCapture(
                                       kDefaultUseFixedAspectRatio);
   capturer_->ChangeTarget(frame_sink_id_);
 
-  viz::mojom::FrameSinkVideoConsumerPtr consumer;
-  binding_.Bind(mojo::MakeRequest(&consumer));
-  capturer_->Start(std::move(consumer));
+  capturer_->Start(this);
 }
 
 bool DevToolsVideoConsumer::IsValidMinAndMaxFrameSize(
