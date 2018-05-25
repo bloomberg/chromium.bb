@@ -20,7 +20,7 @@ sk_sp<SkImage> SkiaHelper::ApplyImageFilter(sk_sp<SkImage> src_image,
     return nullptr;
 
   if (!src_image) {
-    TRACE_EVENT_INSTANT0("cc",
+    TRACE_EVENT_INSTANT0("viz",
                          "ApplyImageFilter wrap background texture failed",
                          TRACE_EVENT_SCOPE_THREAD);
     return nullptr;

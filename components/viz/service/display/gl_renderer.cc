@@ -831,7 +831,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       use_gr_context->context(), SkBudgeted::kYes, dst_info);
   if (!surface) {
-    TRACE_EVENT_INSTANT0("cc",
+    TRACE_EVENT_INSTANT0("viz",
                          "ApplyBackgroundFilters surface allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);
     return nullptr;
@@ -2485,8 +2485,8 @@ void GLRenderer::FinishDrawingFrame() {
   ScheduleDCLayers();
   ScheduleOverlays();
 
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.triangles"),
-                 "Triangles Drawn", num_triangles_drawn_);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.triangles"), "Triangles Drawn",
+                 num_triangles_drawn_);
 }
 
 void GLRenderer::FinishDrawingQuadList() {
@@ -3525,8 +3525,8 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   // Occlusion queries can be expensive, so only collect trace data if we select
   // cc.debug.overdraw.
   bool tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"), &tracing_enabled);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"),
+                                     &tracing_enabled);
 
   // Trace only the root render pass.
   if (current_frame()->current_render_pass != current_frame()->root_render_pass)
@@ -3587,7 +3587,7 @@ void GLRenderer::ProcessOverdrawFeedback(std::vector<int>* overdraw,
 
   // Report GPU overdraw as a percentage of |max_result|.
   TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"), "GPU Overdraw",
+      TRACE_DISABLED_BY_DEFAULT("viz.overdraw"), "GPU Overdraw",
       (std::accumulate(overdraw->begin(), overdraw->end(), 0) * 100) /
           max_result);
 }

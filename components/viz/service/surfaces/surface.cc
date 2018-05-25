@@ -132,7 +132,7 @@ bool Surface::QueueFrame(
 
   if (frame.size_in_pixels() != surface_info_.size_in_pixels() ||
       frame.device_scale_factor() != surface_info_.device_scale_factor()) {
-    TRACE_EVENT_INSTANT0("cc", "Surface invariants violation",
+    TRACE_EVENT_INSTANT0("viz", "Surface invariants violation",
                          TRACE_EVENT_SCOPE_THREAD);
     if (presented_callback) {
       std::move(presented_callback)

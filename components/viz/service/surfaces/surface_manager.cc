@@ -547,7 +547,8 @@ void SurfaceManager::SurfaceActivated(
   // Trigger a display frame if necessary.
   const CompositorFrame& frame = surface->GetActiveFrame();
   if (!SurfaceModified(surface->surface_id(), frame.metadata.begin_frame_ack)) {
-    TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("viz", "Damage not visible.",
+                         TRACE_EVENT_SCOPE_THREAD);
     surface->RunDrawCallback();
   }
 

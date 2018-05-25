@@ -427,7 +427,7 @@ void DisplayResourceProvider::PopulateSkBitmapWithResource(
 
 void DisplayResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
                                                      DeleteStyle style) {
-  TRACE_EVENT0("cc", "DosplayResourceProvider::DeleteResourceInternal");
+  TRACE_EVENT0("viz", "DosplayResourceProvider::DeleteResourceInternal");
   internal::Resource* resource = &it->second;
 
   if (resource->gl_id) {
@@ -950,7 +950,7 @@ void DisplayResourceProvider::SynchronousFence::Wait() {
 }
 
 void DisplayResourceProvider::SynchronousFence::Synchronize() {
-  TRACE_EVENT0("cc", "DisplayResourceProvider::SynchronousFence::Synchronize");
+  TRACE_EVENT0("viz", "DisplayResourceProvider::SynchronousFence::Synchronize");
   gl_->Finish();
 }
 

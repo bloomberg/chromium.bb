@@ -20,8 +20,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 
-#define TRACE_TASK(function, task)                                       \
-  TRACE_EVENT_INSTANT1("cc", function, TRACE_EVENT_SCOPE_THREAD, "task", \
+#define TRACE_TASK(function, task)                                        \
+  TRACE_EVENT_INSTANT1("viz", function, TRACE_EVENT_SCOPE_THREAD, "task", \
                        task.AsValue());
 
 #define TRACE_TASK_RUN(function, tag, task)

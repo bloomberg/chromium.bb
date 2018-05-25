@@ -10,9 +10,8 @@ namespace cc {
 namespace frame_viewer_instrumentation {
 
 const char kCategoryLayerTree[] =
-    TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
-    TRACE_DISABLED_BY_DEFAULT("cc.debug.quads") ","
-    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers");
+    TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
+        "viz.quads") "," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers");
 
 namespace {
 

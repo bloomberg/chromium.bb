@@ -211,9 +211,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   DCHECK(root_render_pass);
 
   bool overdraw_tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.overdraw"),
-      &overdraw_tracing_enabled);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"),
+                                     &overdraw_tracing_enabled);
   bool overdraw_feedback =
       settings_->show_overdraw_feedback || overdraw_tracing_enabled;
   if (overdraw_feedback && !output_surface_->capabilities().supports_stencil) {
