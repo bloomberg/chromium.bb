@@ -17,8 +17,6 @@ static_library("sync_preferences") {
     "synced_pref_change_registrar.cc",
     "synced_pref_change_registrar.h",
     "synced_pref_observer.h",
-    "unknown_user_pref_accessor.cc",
-    "unknown_user_pref_accessor.h",
   ]
 
   deps = [
@@ -63,7 +61,6 @@ source_set("unit_tests") {
   deps = [
     ":sync_preferences",
     ":test_support",
-    "//base/test:test_support",
     "//components/pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",
