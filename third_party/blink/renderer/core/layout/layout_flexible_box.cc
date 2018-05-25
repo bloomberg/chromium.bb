@@ -1730,14 +1730,15 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(
     // FIXME: Can avoid laying out here in some cases. See
     // https://webkit.org/b/87905.
     bool child_needs_relayout = desired_logical_height != child.LogicalHeight();
-    if (child.IsLayoutBlock() &&
-        ToLayoutBlock(child).HasPercentHeightDescendants() &&
-        relaid_out_children_.Contains(&child)) {
+    if ((child.IsLayoutNGMixin() &&
+         ShouldForceLayoutForNGChild(ToLayoutBlockFlow(child))) ||
+        (child.IsLayoutBlock() &&
+         ToLayoutBlock(child).HasPercentHeightDescendants())) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our
       // previous layout of the child was done without an override height set.
       // So, redo it here.
-      child_needs_relayout = true;
+      child_needs_relayout = relaid_out_children_.Contains(&child);
     }
     if (child_needs_relayout || !child.HasOverrideLogicalHeight())
       child.SetOverrideLogicalHeight(desired_logical_height);
