@@ -110,10 +110,6 @@ EventSource::~EventSource() {
   DCHECK(!loader_);
 }
 
-void EventSource::Dispose() {
-  probe::detachClientRequest(GetExecutionContext(), this);
-}
-
 void EventSource::ScheduleInitialConnect() {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(!loader_);
@@ -170,8 +166,6 @@ void EventSource::Connect() {
 }
 
 void EventSource::NetworkRequestEnded() {
-  probe::didFinishEventSourceRequest(GetExecutionContext(), this);
-
   loader_ = nullptr;
 
   if (state_ != kClosed)
@@ -360,7 +354,6 @@ void EventSource::AbortConnectionAttempt() {
 }
 
 void EventSource::ContextDestroyed(ExecutionContext*) {
-  probe::detachClientRequest(GetExecutionContext(), this);
   close();
 }
 

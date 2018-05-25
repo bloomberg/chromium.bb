@@ -104,7 +104,6 @@
     InspectorNetworkAgent: {
       probes: [
         "applyUserAgentOverride",
-        "detachClientRequest",
         "didBlockRequest",
         "didChangeResourcePriority",
         "didCloseWebSocket",
@@ -112,7 +111,6 @@
         "didCreateWebSocket",
         "didFailLoading",
         "didFailXHRLoading",
-        "didFinishEventSourceRequest",
         "didFinishLoading",
         "didFinishXHRLoading",
         "didReceiveCORSRedirectResponse",
@@ -125,8 +123,6 @@
         "didReceiveWebSocketFrameError",
         "didReceiveWebSocketHandshakeResponse",
         "didSendWebSocketFrame",
-        "documentThreadableLoaderFailedToStartLoadingForClient",
-        "documentThreadableLoaderStartedLoadingForClient",
         "frameClearedScheduledClientNavigation",
         "frameClearedScheduledNavigation",
         "frameScheduledClientNavigation",

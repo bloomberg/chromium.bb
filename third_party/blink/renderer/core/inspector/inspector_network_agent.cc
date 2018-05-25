@@ -774,7 +774,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
 
-  resources_data_->SetResourceType(request_id, type);
+  resources_data_->SetResourceType(
+      request_id, pending_request_ ? pending_request_type_ : type);
 
   if (is_navigation)
     return;
@@ -817,8 +818,15 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       CurrentTimeTicksInSeconds(), CurrentTime(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id), request.HasUserGesture());
-  if (pending_xhr_replay_data_ && !pending_xhr_replay_data_->Async())
-    GetFrontend()->flush();
+
+  if (pending_xhr_replay_data_) {
+    resources_data_->SetXHRReplayData(request_id,
+                                      pending_xhr_replay_data_.Get());
+    if (!pending_xhr_replay_data_->Async())
+      GetFrontend()->flush();
+    pending_xhr_replay_data_.Clear();
+  }
+  pending_request_ = nullptr;
 }
 
 void InspectorNetworkAgent::WillSendRequest(
@@ -1077,49 +1085,10 @@ void InspectorNetworkAgent::DidReceiveScriptResponse(unsigned long identifier) {
       InspectorPageAgent::kScriptResource);
 }
 
-void InspectorNetworkAgent::ClearPendingRequestData() {
-  if (pending_request_type_ == InspectorPageAgent::kXHRResource)
-    pending_xhr_replay_data_.Clear();
-  pending_request_ = nullptr;
-}
-
 // static
 bool InspectorNetworkAgent::IsNavigation(DocumentLoader* loader,
                                          unsigned long identifier) {
   return loader && loader->MainResourceIdentifier() == identifier;
-}
-
-void InspectorNetworkAgent::DocumentThreadableLoaderStartedLoadingForClient(
-    unsigned long identifier,
-    ThreadableLoaderClient* client) {
-  if (!client)
-    return;
-  if (client != pending_request_) {
-    DCHECK(!pending_request_);
-    return;
-  }
-
-  String request_id = IdentifiersFactory::SubresourceRequestId(identifier);
-  resources_data_->SetResourceType(request_id, pending_request_type_);
-  if (pending_request_type_ == InspectorPageAgent::kXHRResource) {
-    resources_data_->SetXHRReplayData(request_id,
-                                      pending_xhr_replay_data_.Get());
-  }
-
-  ClearPendingRequestData();
-}
-
-void InspectorNetworkAgent::
-    DocumentThreadableLoaderFailedToStartLoadingForClient(
-        ThreadableLoaderClient* client) {
-  if (!client)
-    return;
-  if (client != pending_request_) {
-    DCHECK(!pending_request_);
-    return;
-  }
-
-  ClearPendingRequestData();
 }
 
 void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
@@ -1137,14 +1106,6 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
       method, UrlWithoutFragment(url), async, include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
-}
-
-void InspectorNetworkAgent::DelayedRemoveReplayXHR(XMLHttpRequest* xhr) {
-  if (!replay_xhrs_.Contains(xhr))
-    return;
-  replay_xhrs_to_be_deleted_.insert(xhr);
-  replay_xhrs_.erase(xhr);
-  remove_finished_replay_xhr_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void InspectorNetworkAgent::DidFailXHRLoading(ExecutionContext* context,
@@ -1169,11 +1130,13 @@ void InspectorNetworkAgent::DidFinishXHRInternal(ExecutionContext* context,
                                                  const AtomicString& method,
                                                  const String& url,
                                                  bool success) {
-  ClearPendingRequestData();
-
   // This method will be called from the XHR.
   // We delay deleting the replay XHR, as deleting here may delete the caller.
-  DelayedRemoveReplayXHR(xhr);
+  if (!replay_xhrs_.Contains(xhr))
+    return;
+  replay_xhrs_to_be_deleted_.insert(xhr);
+  replay_xhrs_.erase(xhr);
+  remove_finished_replay_xhr_timer_.StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void InspectorNetworkAgent::WillStartFetch(ThreadableLoaderClient* client) {
@@ -1198,24 +1161,6 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
       IdentifiersFactory::SubresourceRequestId(identifier),
       CurrentTimeTicksInSeconds(), event_name.GetString(), event_id.GetString(),
       data);
-}
-
-void InspectorNetworkAgent::DidFinishEventSourceRequest(
-    ThreadableLoaderClient* event_source) {
-  ClearPendingRequestData();
-}
-
-void InspectorNetworkAgent::DetachClientRequest(
-    ThreadableLoaderClient* client) {
-  // This method is called by loader clients when finalizing
-  // (i.e., from their "prefinalizers".) The client reference must
-  // no longer be held onto upon completion.
-  if (pending_request_ == client) {
-    pending_request_ = nullptr;
-    if (pending_request_type_ == InspectorPageAgent::kXHRResource) {
-      pending_xhr_replay_data_.Clear();
-    }
-  }
 }
 
 void InspectorNetworkAgent::ApplyUserAgentOverride(String* user_agent) {

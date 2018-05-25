@@ -5,6 +5,6 @@ http://127.0.0.1:8000/devtools/service-workers/resources/network-fetch-worker.js
 resource.type: other
 request.failed: false
 http://127.0.0.1:8000/devtools/network/resources/resource.php
-resource.type: other
+resource.type: fetch
 request.failed: true
 
