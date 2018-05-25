@@ -46,8 +46,6 @@ static const gfx::Rect taskbar_top_work_area(0, 34, 1024, 734);
 static const gfx::Rect taskbar_left_work_area(107, 0, 917, 768);
 static const gfx::Rect taskbar_right_work_area(0, 0, 917, 768);
 
-extern int kWindowTilePixels;
-
 // Testing implementation of WindowSizer::StateProvider that we use to fake
 // persistent storage and existing windows.
 class TestStateProvider : public WindowSizer::StateProvider {

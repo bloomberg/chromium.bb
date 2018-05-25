@@ -54,7 +54,7 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
       // For trusted popups (v1 apps and system windows), do not use the last
       // active window bounds, only use saved or default bounds.
       if (!GetSavedWindowBounds(bounds, show_state))
-        *bounds = GetDefaultWindowBoundsAsh(GetTargetDisplay(gfx::Rect()));
+        *bounds = GetDefaultWindowBoundsAsh(GetDisplayForNewWindow());
       determined = true;
     } else if (state_provider_) {
       // In Ash, prioritize the last saved |show_state|. If you have questions
@@ -66,7 +66,8 @@ bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,
   }
 
   if (browser_->is_type_tabbed() && *show_state == ui::SHOW_STATE_DEFAULT) {
-    display::Display display = screen_->GetDisplayMatching(*bounds);
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayMatching(*bounds);
     gfx::Rect work_area = display.work_area();
     bounds->AdjustToFit(work_area);
     if (*bounds == work_area) {
@@ -93,13 +94,14 @@ void WindowSizer::GetTabbedBrowserBoundsAsh(
   const ui::WindowShowState passed_show_state = *show_state;
 
   bool is_saved_bounds = GetSavedWindowBounds(bounds_in_screen, show_state);
-  display::Display display = GetTargetDisplay(*bounds_in_screen);
+  display::Display display = GetDisplayForNewWindow(*bounds_in_screen);
   if (!is_saved_bounds)
     *bounds_in_screen = GetDefaultWindowBoundsAsh(display);
 
   if (browser_->is_session_restore()) {
     // Respect display for saved bounds during session restore.
-    display = screen_->GetDisplayMatching(*bounds_in_screen);
+    display =
+        display::Screen::GetScreen()->GetDisplayMatching(*bounds_in_screen);
   } else if (BrowserList::GetInstance()->empty() && !is_saved_bounds &&
              (ShouldForceMaximizeOnFirstRun() ||
               display.work_area().width() <= kForceMaximizeWidthLimit)) {

@@ -67,6 +67,7 @@ constexpr int kForceMaximizeWidthLimit = 1366;
 using util = WindowSizerTestUtil;
 const int kDesktopBorderSize = WindowSizer::kDesktopBorderSize;
 const int kMaximumWindowWidth = WindowSizer::kMaximumWindowWidth;
+const int kWindowTilePixels = WindowSizer::kWindowTilePixels;
 
 std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
                                            const gfx::Rect& bounds,

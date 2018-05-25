@@ -10,6 +10,7 @@
 
 namespace {
 using util = WindowSizerTestUtil;
+const int kWindowTilePixels = WindowSizer::kWindowTilePixels;
 }
 
 // Test that the window is sized appropriately for the first run experience

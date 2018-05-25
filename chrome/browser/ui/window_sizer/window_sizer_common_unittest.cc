@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/screen_base.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -25,8 +26,7 @@ namespace {
 
 using util = WindowSizerTestUtil;
 
-// TODO(rjkroege): Use the common TestScreen.
-class TestScreen : public display::Screen {
+class TestScreen : public display::ScreenBase {
  public:
   TestScreen() : previous_screen_(display::Screen::GetScreen()) {
     display::Screen::SetScreenInstance(this);
@@ -35,88 +35,18 @@ class TestScreen : public display::Screen {
     display::Screen::SetScreenInstance(previous_screen_);
   }
 
-  // Sets the index of the display returned from GetDisplayNearestWindow().
-  // Only used on aura.
-  void set_index_of_display_nearest_window(int index) {
-    index_of_display_nearest_window_ = index;
-  }
-
-  // Overridden from display::Screen:
-  gfx::Point GetCursorScreenPoint() override {
-    NOTREACHED();
-    return gfx::Point();
-  }
-
-  bool IsWindowUnderCursor(gfx::NativeWindow window) override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
-    NOTREACHED();
-    return NULL;
-  }
-
-  int GetNumDisplays() const override { return displays_.size(); }
-
-  const std::vector<display::Display>& GetAllDisplays() const override {
-    return displays_;
-  }
-
-  display::Display GetDisplayNearestWindow(
-      gfx::NativeWindow window) const override {
-#if defined(USE_AURA)
-    return displays_[index_of_display_nearest_window_];
-#else
-    NOTREACHED();
-    return display::Display();
-#endif
-  }
-
-  display::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const override {
-    NOTREACHED();
-    return display::Display();
-  }
-
-  display::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const override {
-    int max_area = 0;
-    size_t max_area_index = 0;
-
-    for (size_t i = 0; i < displays_.size(); ++i) {
-      gfx::Rect overlap = displays_[i].bounds();
-      overlap.Intersect(match_rect);
-      int area = overlap.width() * overlap.height();
-      if (area > max_area) {
-        max_area = area;
-        max_area_index = i;
-      }
-    }
-    return displays_[max_area_index];
-  }
-
-  display::Display GetPrimaryDisplay() const override { return displays_[0]; }
-
-  void AddObserver(display::DisplayObserver* observer) override {
-    NOTREACHED();
-  }
-
-  void RemoveObserver(display::DisplayObserver* observer) override {
-    NOTREACHED();
-  }
-
   void AddDisplay(const gfx::Rect& bounds,
                   const gfx::Rect& work_area) {
-    display::Display display(displays_.size(), bounds);
+    display::Display display(display_list().displays().size(), bounds);
     display.set_work_area(work_area);
-    displays_.push_back(display);
+    display_list().AddDisplay(display,
+                              display_list().displays().empty()
+                                  ? display::DisplayList::Type::PRIMARY
+                                  : display::DisplayList::Type::NOT_PRIMARY);
   }
 
  private:
   display::Screen* previous_screen_;
-  size_t index_of_display_nearest_window_ = 0u;
-  std::vector<display::Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
@@ -169,8 +99,6 @@ bool TestStateProvider::GetLastActiveWindowState(
   return has_last_active_data_;
 }
 
-int kWindowTilePixels = WindowSizer::kWindowTilePixels;
-
 // static
 void WindowSizerTestUtil::GetWindowBoundsAndShowState(
     const gfx::Rect& monitor1_bounds,
@@ -191,14 +119,13 @@ void WindowSizerTestUtil::GetWindowBoundsAndShowState(
   test_screen.AddDisplay(monitor1_bounds, monitor1_work_area);
   if (!monitor2_bounds.IsEmpty())
     test_screen.AddDisplay(monitor2_bounds, monitor2_bounds);
-  test_screen.set_index_of_display_nearest_window(display_index);
   std::unique_ptr<TestStateProvider> sp(new TestStateProvider);
   if (source == PERSISTED || source == BOTH)
     sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
 
-  WindowSizer sizer(std::move(sp), &test_screen, browser);
+  WindowSizer sizer(std::move(sp), browser);
   sizer.DetermineWindowBoundsAndShowState(passed_in,
                                           out_bounds,
                                           out_show_state);
@@ -220,7 +147,7 @@ ui::WindowShowState WindowSizerTestUtil::GetWindowShowState(
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
 
-  WindowSizer sizer(std::move(sp), &test_screen, browser);
+  WindowSizer sizer(std::move(sp), browser);
 
   ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
   gfx::Rect out_bounds;
