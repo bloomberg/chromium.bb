@@ -88,6 +88,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(GetOpenTabsUIDelegateMock, sync_sessions::OpenTabsUIDelegate*());
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
 
+  MOCK_METHOD0(StartUpSlowEngineComponents, void());
+
   // DataTypeManagerObserver mocks.
   MOCK_METHOD1(OnConfigureDone,
                void(const syncer::DataTypeManager::ConfigureResult&));

@@ -220,7 +220,7 @@ void ProfileSyncService::Initialize() {
   // against the controller impl changing to post tasks.
   startup_controller_ = std::make_unique<syncer::StartupController>(
       &sync_prefs_,
-      base::BindRepeating(&ProfileSyncService::CanEngineStart,
+      base::BindRepeating(&ProfileSyncService::CanSyncStart,
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
                           weak_factory_.GetWeakPtr()));
@@ -518,12 +518,11 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
 }
 
 void ProfileSyncService::StartUpSlowEngineComponents() {
-  invalidation::InvalidationService* invalidator =
-      sync_client_->GetInvalidationService();
+  DCHECK(CanSyncStart());
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
-      debug_identifier_, invalidator, sync_prefs_.AsWeakPtr(),
-      FormatSyncDataPath(base_directory_));
+      debug_identifier_, sync_client_->GetInvalidationService(),
+      sync_prefs_.AsWeakPtr(), FormatSyncDataPath(base_directory_));
 
   // Clear any old errors the first time sync starts.
   if (!IsFirstSetupComplete())
@@ -619,6 +618,10 @@ void ProfileSyncService::OnRefreshTokenAvailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (HasSyncingEngine()) {
+    // TODO(treib): This call shouldn't be necessary: Either this is the initial
+    // refresh token, in which case a request is already pending, or the refresh
+    // token changed, which the SyncAuthManager should detect and handle
+    // internally (but it doesn't yet).
     auth_manager_->RequestAccessToken();
   } else {
     startup_controller_->TryStart();
@@ -1287,12 +1290,6 @@ void ProfileSyncService::TriggerRefresh(const syncer::ModelTypeSet& types) {
 bool ProfileSyncService::IsSignedIn() const {
   // Sync is logged in if there is a non-empty account id.
   return !GetAuthenticatedAccountInfo().account_id.empty();
-}
-
-bool ProfileSyncService::CanEngineStart() const {
-  if (IsLocalSyncEnabled())
-    return true;
-  return CanSyncStart() && auth_manager_->RefreshTokenIsAvailable();
 }
 
 bool ProfileSyncService::IsEngineInitialized() const {
@@ -2087,7 +2084,29 @@ syncer::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus() const {
 void ProfileSyncService::OverrideNetworkResourcesForTest(
     std::unique_ptr<syncer::NetworkResources> network_resources) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // If the engine has already been created, then it holds a pointer to the
+  // previous |network_resources_| which will become invalid. In that case, shut
+  // down and recreate the engine, so that it gets the correct (overridden)
+  // NetworkResources.
+  // This is a horrible hack; the proper fix would be to inject the
+  // NetworkResources in the ctor instead of adding them retroactively.
+  bool restart = false;
+  if (engine_) {
+    RequestStop(KEEP_DATA);
+    restart = true;
+  }
+  DCHECK(!engine_);
+
+  // If a previous request (with the wrong network resources) already failed,
+  // the next one would be backed off, which breaks tests. So reset the backoff.
+  auth_manager_->ResetRequestAccessTokenBackoffForTest();
+
   network_resources_ = std::move(network_resources);
+
+  if (restart) {
+    RequestStart();
+    DCHECK(engine_);
+  }
 }
 
 bool ProfileSyncService::HasSyncingEngine() const {

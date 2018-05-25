@@ -88,12 +88,6 @@ AccountInfo SyncAuthManager::GetAuthenticatedAccountInfo() const {
                            : AccountInfo();
 }
 
-bool SyncAuthManager::RefreshTokenIsAvailable() const {
-  std::string account_id = GetAuthenticatedAccountInfo().account_id;
-  return !account_id.empty() &&
-         token_service_->RefreshTokenIsAvailable(account_id);
-}
-
 const syncer::SyncTokenStatus& SyncAuthManager::GetSyncTokenStatus() const {
   return token_status_;
 }
@@ -283,6 +277,10 @@ bool SyncAuthManager::IsRetryingAccessTokenFetchForTest() const {
   return request_access_token_retry_timer_.IsRunning();
 }
 
+void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
+  request_access_token_backoff_.Reset();
+}
+
 void SyncAuthManager::RequestAccessToken() {
   // Only one active request at a time.
   if (ongoing_access_token_fetch_) {
@@ -311,7 +309,8 @@ void SyncAuthManager::RequestAccessToken() {
           kSyncOAuthConsumerName, oauth2_scopes,
           base::BindOnce(&SyncAuthManager::AccessTokenFetched,
                          base::Unretained(this)),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          identity::PrimaryAccountAccessTokenFetcher::Mode::
+              kWaitUntilAvailable);
 }
 
 void SyncAuthManager::AccessTokenFetched(const GoogleServiceAuthError& error,

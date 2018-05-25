@@ -279,11 +279,11 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
-  EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
-      .Times(0);
-  EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _)).Times(0);
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
+
+  SetUpSyncEngine();
+  SetUpDataTypeManager();
 
   sync_service_->Initialize();
   // Sync should not start because there are no tokens yet.
