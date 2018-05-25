@@ -1038,7 +1038,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       ],
       'platform': 'mac',
       'dimension': {
-        'pool': 'Chrome-perf-fyi',
+        'pool': 'chrome.tests.perf-fyi',
         'os': 'Mac-10.13',
         'gpu': '1002:6821'
       },
