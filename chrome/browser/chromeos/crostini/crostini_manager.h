@@ -138,12 +138,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   // Checks the arguments for starting a Termina VM. Starts a Termina VM via
   // ConciergeClient::StartTerminaVm. |callback| is called if the arguments
   // are bad, or after the method call finishes.
-  void StartTerminaVm(
-      // The human-readable name to be assigned to this VM.
-      std::string name,
-      // Path to the disk image on the host.
-      const base::FilePath& disk_path,
-      StartTerminaVmCallback callback);
+  void StartTerminaVm(std::string owner_id,
+                      // The human-readable name to be assigned to this VM.
+                      std::string name,
+                      // Path to the disk image on the host.
+                      const base::FilePath& disk_path,
+                      StartTerminaVmCallback callback);
 
   // Checks the arguments for stopping a Termina VM. Stops the Termina VM via
   // ConciergeClient::StopVm. |callback| is called if the arguments are bad,

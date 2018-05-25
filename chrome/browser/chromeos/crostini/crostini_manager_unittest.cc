@@ -16,6 +16,7 @@
 namespace crostini {
 
 namespace {
+const char kOwnerId[] = "owner_id";
 const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
 const char kContainerUserName[] = "container_username";
@@ -215,11 +216,21 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageSuccess) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniManagerTest, StartTerminaVmOwnerIdError) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+
+  CrostiniManager::GetInstance()->StartTerminaVm(
+      "", kVmName, disk_path,
+      base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
 TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   CrostiniManager::GetInstance()->StartTerminaVm(
-      "", disk_path,
+      kOwnerId, "", disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -229,7 +240,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
   const base::FilePath& disk_path = base::FilePath();
 
   CrostiniManager::GetInstance()->StartTerminaVm(
-      kVmName, disk_path,
+      kOwnerId, kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
@@ -239,7 +250,7 @@ TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
 
   CrostiniManager::GetInstance()->StartTerminaVm(
-      kVmName, disk_path,
+      kOwnerId, kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmSuccessCallback,
                      base::Unretained(this), run_loop()->QuitClosure()));
   run_loop()->Run();
