@@ -53,8 +53,10 @@ CWV_EXPORT
 // Attempts |creditCard| verification.
 // |CVC| Card verification code. e.g. 3 digit code on the back of Visa cards or
 // 4 digit code in the front of American Express cards.
-// |month| 2 digit expiration month. e.g. 08 for August.
-// |year| 4 digit expiration year. e.g. 2019.
+// |month| 1 or 2 digit expiration month. e.g. 8 or 08 for August. Ignored if
+// |needsUpdateForExpirationDate| is NO.
+// |year| 2 or 4 digit expiration year. e.g. 19 or 2019. Ignored if
+// |needsUpdateForExpirationDate| is NO.
 // |storeLocally| Whether or not to save |creditCard| locally. If YES, user will
 // not be asked again to verify this card. Ignored if |canSaveLocally| is NO.
 // |completionHandler| Use to receive verification results. Must wait for
@@ -72,8 +74,8 @@ CWV_EXPORT
 - (BOOL)isCVCValid:(NSString*)CVC;
 
 // Returns YES if |month| and |year| is in the future.
-// |month| Two digits. e.g. 08 for August.
-// |year| Four digits. e.g. 2020.
+// |month| 1 or 2 digit. e.g. 8 or 08 for August.
+// |year| 2 or 4 digit. e.g. 20 or 2020.
 - (BOOL)isExpirationDateValidForMonth:(NSString*)month year:(NSString*)year;
 
 @end
