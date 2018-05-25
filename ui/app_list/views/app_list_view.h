@@ -226,6 +226,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns true if the home launcher is enabled in tablet mode.
   bool IsHomeLauncherEnabledInTabletMode() const;
 
+  // Returns true if the home_launcher feature is enabled.
+  bool is_home_launcher_enabled() const { return is_home_launcher_enabled_; }
+
   views::View* app_list_background_shield_for_test() {
     return app_list_background_shield_;
   }
