@@ -12,27 +12,19 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/screenshot_delegate.h"
-#include "base/command_line.h"
 #include "base/macros.h"
-#include "build/build_config.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
-#include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/network/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -45,16 +37,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/theme_resources.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/arc/intent_helper/page_transition_util.h"
-#include "components/prefs/pref_service.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
@@ -110,7 +93,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 ChromeShellDelegate::ChromeShellDelegate()
     : networking_config_delegate_(
           std::make_unique<chromeos::NetworkingConfigDelegateChromeos>()) {
-  PlatformInit();
 }
 
 ChromeShellDelegate::~ChromeShellDelegate() {}
@@ -212,36 +194,4 @@ ChromeShellDelegate::CreateScreenshotDelegate() {
 ui::InputDeviceControllerClient*
 ChromeShellDelegate::GetInputDeviceControllerClient() {
   return g_browser_process->platform_part()->GetInputDeviceControllerClient();
-}
-
-void ChromeShellDelegate::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
-      Profile* profile = content::Details<Profile>(details).ptr();
-      if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
-          !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
-          !profile->IsGuestSession() && !profile->IsSupervised()) {
-        // Start the error notifier services to show auth/sync notifications.
-        SigninErrorNotifierFactory::GetForProfile(profile);
-        SyncErrorNotifierFactory::GetForProfile(profile);
-      }
-      // Do not use chrome::NOTIFICATION_PROFILE_ADDED because the
-      // profile is not fully initialized by user_manager.  Use
-      // chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED instead.
-      if (ChromeLauncherController::instance()) {
-        ChromeLauncherController::instance()->OnUserProfileReadyToSwitch(
-            profile);
-      }
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
-  }
-}
-
-void ChromeShellDelegate::PlatformInit() {
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                 content::NotificationService::AllSources());
 }
