@@ -703,6 +703,12 @@ class AutofillMetrics {
                           const base::TimeTicks& form_parsed_timestamp,
                           FormSignature form_signature);
 
+    // Log whether the autofill decided to skip or to fill each
+    // hidden/representational field.
+    void LogHiddenRepresentationalFieldSkipDecision(const FormStructure& form,
+                                                    const AutofillField& field,
+                                                    bool is_skipped);
+
     // We initialize |url_| with the form's URL when we log the first form
     // interaction. Later, we may update |url_| with the |source_url()| for the
     // submitted form.

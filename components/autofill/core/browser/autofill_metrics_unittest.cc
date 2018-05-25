@@ -67,6 +67,8 @@ using UkmSelectedMaskedServerCardType =
     ukm::builders::Autofill_SelectedMaskedServerCard;
 using UkmSuggestionFilledType = ukm::builders::Autofill_SuggestionFilled;
 using UkmTextFieldDidChangeType = ukm::builders::Autofill_TextFieldDidChange;
+using UkmLogHiddenRepresentationalFieldSkipDecisionType =
+    ukm::builders::Autofill_HiddenRepresentationalFieldSkipDecision;
 using UkmFormSubmittedType = ukm::builders::Autofill_FormSubmitted;
 using UkmFieldTypeValidationType = ukm::builders::Autofill_FieldTypeValidation;
 using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
@@ -717,6 +719,153 @@ TEST_F(AutofillMetricsTest,
     histogram_tester.ExpectBucketCount(
         rationalization_histogram, AutofillMetrics::RATIONALIZATION_GOOD, 1);
   }
+}
+
+// Test that we log the skip decisions for hidden/representational fields
+// correctly.
+TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
+  // Create a profile.
+  RecreateProfile();
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("http://example_root.com/form.html"));
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  int64_t field_signature[4];
+
+  // no decision
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(NAME_FULL);
+
+  // skips
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_LINE1);
+  field_signature[0] = Collapse(CalculateFieldSignatureForField(field));
+
+  // skips
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  field_signature[1] = Collapse(CalculateFieldSignatureForField(field));
+
+  // doesn't skip
+  test::CreateTestFormField("State", "state", "", "select-one", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  field_signature[2] = Collapse(CalculateFieldSignatureForField(field));
+
+  // doesn't skip
+  test::CreateTestFormField("Country", "country", "", "select-one", &field);
+  field.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_COUNTRY);
+  field_signature[3] = Collapse(CalculateFieldSignatureForField(field));
+
+  int64_t form_signature = Collapse(CalculateFormSignature(form));
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  // Simulate filling form.
+  {
+    base::UserActionTester user_action_tester;
+    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), guid));
+  }
+
+  VerifyFormInteractionUkm(
+      test_ukm_recorder_, form,
+      UkmLogHiddenRepresentationalFieldSkipDecisionType::kEntryName,
+      {{{UkmLogHiddenRepresentationalFieldSkipDecisionType::kFormSignatureName,
+         form_signature},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldSignatureName,
+         field_signature[0]},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::
+             kFieldOverallTypeName,
+         ADDRESS_HOME_LINE1},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHeuristicTypeName,
+         ADDRESS_HOME_LINE1},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kServerTypeName,
+         ADDRESS_HOME_LINE1},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kIsSkippedName,
+         true}},
+       {{UkmLogHiddenRepresentationalFieldSkipDecisionType::kFormSignatureName,
+         form_signature},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldSignatureName,
+         field_signature[1]},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::
+             kFieldOverallTypeName,
+         ADDRESS_HOME_CITY},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHeuristicTypeName,
+         ADDRESS_HOME_CITY},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kServerTypeName,
+         ADDRESS_HOME_CITY},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kIsSkippedName,
+         true}},
+       {{UkmLogHiddenRepresentationalFieldSkipDecisionType::kFormSignatureName,
+         form_signature},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldSignatureName,
+         field_signature[2]},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::
+             kFieldOverallTypeName,
+         ADDRESS_HOME_STATE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHeuristicTypeName,
+         ADDRESS_HOME_STATE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kServerTypeName,
+         ADDRESS_HOME_STATE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kIsSkippedName,
+         false}},
+       {{UkmLogHiddenRepresentationalFieldSkipDecisionType::kFormSignatureName,
+         form_signature},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldSignatureName,
+         field_signature[3]},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kFieldTypeGroupName,
+         ADDRESS_HOME},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::
+             kFieldOverallTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHeuristicTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kServerTypeName,
+         ADDRESS_HOME_COUNTRY},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldTypeName,
+         HTML_TYPE_UNSPECIFIED},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kHtmlFieldModeName,
+         HTML_MODE_NONE},
+        {UkmLogHiddenRepresentationalFieldSkipDecisionType::kIsSkippedName,
+         false}}});
 }
 
 // Test that we log quality metrics appropriately with fields having

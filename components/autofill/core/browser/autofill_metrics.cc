@@ -1788,6 +1788,29 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
       .Record(ukm_recorder_);
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::
+    LogHiddenRepresentationalFieldSkipDecision(const FormStructure& form,
+                                               const AutofillField& field,
+                                               bool is_skipped) {
+  if (!CanLog())
+    return;
+
+  if (source_id_ == -1)
+    GetNewSourceID();
+
+  ukm::builders::Autofill_HiddenRepresentationalFieldSkipDecision(source_id_)
+      .SetFormSignature(HashFormSignature(form.form_signature()))
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
+      .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
+      .SetFieldOverallType(static_cast<int>(field.Type().GetStorableType()))
+      .SetHeuristicType(static_cast<int>(field.heuristic_type()))
+      .SetServerType(static_cast<int>(field.server_type()))
+      .SetHtmlFieldType(static_cast<int>(field.html_type()))
+      .SetHtmlFieldMode(static_cast<int>(field.html_mode()))
+      .SetIsSkipped(is_skipped)
+      .Record(ukm_recorder_);
+}
+
 int64_t AutofillMetrics::FormTypesToBitVector(
     const std::set<FormType>& form_types) {
   int64_t form_type_bv = 0;
