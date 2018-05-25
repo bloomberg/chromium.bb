@@ -4828,3 +4828,4 @@ crbug.com/823837 http/tests/devtools/tracing/timeline-time/timeline-usertiming.j
 crbug.com/846547 fast/webgl/webgl-composite-modes.html [ Pass Failure ]
 crbug.com/846471 http/tests/devtools/coverage/reveal-autoformat.js [ Pass Timeout ]
 crbug.com/846656 [ Linux ] external/wpt/css/selectors/focus-visible-002-manual.html [ Pass Timeout ]
+crbug.com/846631 virtual/service-worker-servicification/http/tests/serviceworker/navigation_preload/navigation-preload-resource-timing.html [ Pass Failure ]
