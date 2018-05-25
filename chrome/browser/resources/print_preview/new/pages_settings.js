@@ -99,10 +99,14 @@ Polymer({
 
   /**
    * @return {boolean} Whether the controls should be disabled.
+   * Does not need to depend on |errorState_|, since |errorState_| is always
+   * defined and any change to or from NO_ERROR will also trigger a change in
+   * |disabled|.
    * @private
    */
   getDisabled_: function() {
-    return this.getSetting('pages').valid && this.disabled;
+    // Disable the input if other settings are responsible for the error state.
+    return this.errorState_ == PagesInputErrorState.NO_ERROR && this.disabled;
   },
 
   /**
