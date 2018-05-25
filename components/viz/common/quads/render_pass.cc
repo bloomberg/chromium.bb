@@ -102,9 +102,8 @@ RenderPass::RenderPass(size_t shared_quad_state_list_size,
                              shared_quad_state_list_size) {}
 
 RenderPass::~RenderPass() {
-  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), "RenderPass",
-      reinterpret_cast<void*>(id));
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
+                                     "RenderPass", reinterpret_cast<void*>(id));
 }
 
 std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
@@ -252,7 +251,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   value->EndArray();
 
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"), value, "RenderPass",
+      TRACE_DISABLED_BY_DEFAULT("viz.quads"), value, "RenderPass",
       reinterpret_cast<void*>(id));
 }
 
