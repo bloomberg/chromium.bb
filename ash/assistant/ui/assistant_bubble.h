@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_BUBBLE_H_
 
+#include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
@@ -21,8 +22,8 @@ namespace {
 class AssistantContainerView;
 }  // namespace
 
-class AssistantBubble : public views::WidgetObserver,
-                        public AssistantInteractionModelObserver {
+class ASH_EXPORT AssistantBubble : public views::WidgetObserver,
+                                   public AssistantInteractionModelObserver {
  public:
   explicit AssistantBubble(AssistantController* assistant_controller);
   ~AssistantBubble() override;
@@ -33,6 +34,9 @@ class AssistantBubble : public views::WidgetObserver,
 
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
+
+  // Returns true if assistant bubble is visible, otherwise false.
+  bool IsVisible() const;
 
  private:
   void Show();
