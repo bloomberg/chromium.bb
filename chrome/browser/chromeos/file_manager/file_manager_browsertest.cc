@@ -18,15 +18,9 @@ namespace file_manager {
 
 // TestCase: FilesAppBrowserTest parameters.
 struct TestCase {
-  explicit TestCase(const char* name)
-    : test_name(name) {}
-
-  const char* GetTestName() const {
-    CHECK(test_name) << "FATAL: no test name";
-    return test_name;
+  explicit TestCase(const char* name) : test_case_name(name) {
+    CHECK(name) << "FATAL: no test case name";
   }
-
-  GuestMode GetGuestMode() const { return guest_mode; }
 
   TestCase& InGuestMode() {
     guest_mode = IN_GUEST_MODE;
@@ -38,16 +32,22 @@ struct TestCase {
     return *this;
   }
 
-  bool GetTabletMode() const { return tablet_mode; }
-
   TestCase& TabletMode() {
     tablet_mode = true;
     return *this;
   }
 
-  const char* test_name = nullptr;
+  const char* test_case_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
+  bool trusted_events = false;
   bool tablet_mode = false;
+};
+
+// EventCase: FilesAppBrowserTest with trusted JS Events.
+struct EventCase : public TestCase {
+  explicit EventCase(const char* name) : TestCase(name) {
+    trusted_events = true;
+  }
 };
 
 // FilesApp browser test.
@@ -60,24 +60,23 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
 
-    // TODO(noel): describe this.
-    if (ShouldEnableLegacyEventDispatch()) {
+    // Prevent Blink swallowing Tab key with its default handlers: forward
+    // the Tab key event to the Files.App JS page under test instead.
+    if (GetParam().trusted_events) {
       command_line->AppendSwitchASCII("disable-blink-features",
                                       "TrustedEventsDefaultAction");
     }
 
     // Default mode is clamshell: force Ash into tablet mode if requested.
-    if (GetParam().GetTabletMode()) {
+    if (GetParam().tablet_mode) {
       command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
     }
   }
 
-  GuestMode GetGuestMode() const override {
-    return GetParam().GetGuestMode();
-  }
+  GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
 
   const char* GetTestCaseName() const override {
-    return GetParam().GetTestName();
+    return GetParam().test_case_name;
   }
 
   const char* GetTestExtensionManifestName() const override {
@@ -85,13 +84,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   }
 
  private:
-  // TODO(noel): remove this and use a bool TestCase<> paramater instead.
-  bool ShouldEnableLegacyEventDispatch() {
-    const std::string test_case_name = GetTestCaseName();
-    // crbug.com/482121 crbug.com/480491
-    return test_case_name.find("tabindex") != std::string::npos;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
 };
 
@@ -108,15 +100,16 @@ IN_PROC_BROWSER_TEST_P(FilesAppBrowserTest, Test) {
   INSTANTIATE_TEST_CASE_P(prefix, test_class, generator, &PostTestCaseName)
 
 std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
-  std::string name(test.param.GetTestName());
+  std::string name(test.param.test_case_name);
 
-  const GuestMode mode = test.param.GetGuestMode();
-  if (mode == IN_GUEST_MODE)
+  CHECK(!name.empty()) << "FATAL: a test case name is required";
+
+  if (test.param.guest_mode == IN_GUEST_MODE)
     name.append("_GuestMode");
-  else if (mode == IN_INCOGNITO)
+  else if (test.param.guest_mode == IN_INCOGNITO)
     name.append("_Incognito");
 
-  if (test.param.GetTabletMode())
+  if (test.param.tablet_mode)
     name.append("_TabletMode");
 
   return name;
@@ -320,20 +313,20 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("sortColumns").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabIndex, /* tab_index.js */
+    TabIndex, /* tab_index.js: tabindex tests require trusted JS Events. */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("tabindexSearchBoxFocus"),
-        TestCase("tabindexFocus"),
-        TestCase("tabindexFocusDownloads"),
-        TestCase("tabindexFocusDownloads").InGuestMode(),
-        TestCase("tabindexFocusDirectorySelected"),
-        TestCase("tabindexOpenDialogDrive"),
-        TestCase("tabindexOpenDialogDownloads"),
-        TestCase("tabindexOpenDialogDownloads").InGuestMode(),
-        TestCase("tabindexSaveFileDialogDrive"),
-        TestCase("tabindexSaveFileDialogDownloads"),
-        TestCase("tabindexSaveFileDialogDownloads").InGuestMode()));
+        EventCase("tabindexSearchBoxFocus"),
+        EventCase("tabindexFocus"),
+        EventCase("tabindexFocusDownloads"),
+        EventCase("tabindexFocusDownloads").InGuestMode(),
+        EventCase("tabindexFocusDirectorySelected"),
+        EventCase("tabindexOpenDialogDrive"),
+        EventCase("tabindexOpenDialogDownloads"),
+        EventCase("tabindexOpenDialogDownloads").InGuestMode(),
+        EventCase("tabindexSaveFileDialogDrive"),
+        EventCase("tabindexSaveFileDialogDownloads"),
+        EventCase("tabindexSaveFileDialogDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDialog, /* file_dialog.js */
