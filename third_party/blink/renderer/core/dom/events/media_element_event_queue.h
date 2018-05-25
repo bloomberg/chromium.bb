@@ -29,7 +29,6 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -38,16 +37,15 @@ namespace blink {
 
 // Queue for events originating in MediaElement and having
 // "media element event" task type according to the spec.
-class CORE_EXPORT MediaElementEventQueue final : public EventQueue {
+class CORE_EXPORT MediaElementEventQueue final
+    : public GarbageCollectedFinalized<MediaElementEventQueue> {
  public:
   static MediaElementEventQueue* Create(EventTarget*, ExecutionContext*);
-  ~MediaElementEventQueue() override;
+  ~MediaElementEventQueue();
 
-  // EventQueue
-  void Trace(blink::Visitor*) override;
-  bool EnqueueEvent(const base::Location&, Event*) override;
-  bool CancelEvent(Event*) override;
-  void Close() override;
+  void Trace(blink::Visitor*);
+  bool EnqueueEvent(const base::Location&, Event*);
+  void Close();
 
   void CancelAllEvents();
   bool HasPendingEvents() const;
