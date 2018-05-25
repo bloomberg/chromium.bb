@@ -4893,7 +4893,7 @@ void Element::LogUpdateAttributeIfIsolatedWorldAndInDocument(
 
 void Element::Trace(blink::Visitor* visitor) {
   if (HasRareData())
-    visitor->Trace(GetElementRareData());
+    visitor->TraceWithWrappers(GetElementRareData());
   visitor->Trace(element_data_);
   ContainerNode::Trace(visitor);
 }
