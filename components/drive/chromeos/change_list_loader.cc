@@ -45,61 +45,6 @@ class ChangeListLoader::FeedFetcher {
 
 namespace {
 
-// Fetches the list of team drives from the server.
-class TeamDriveListFetcher : public ChangeListLoader::FeedFetcher {
- public:
-  TeamDriveListFetcher(JobScheduler* scheduler)
-      : scheduler_(scheduler), weak_ptr_factory_(this) {}
-
-  ~TeamDriveListFetcher() override = default;
-
-  void Run(const FeedFetcherCallback& callback) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    DCHECK(callback);
-
-    scheduler_->GetAllTeamDriveList(
-        base::Bind(&TeamDriveListFetcher::OnTeamDriveListFetched,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
- private:
-  void OnTeamDriveListFetched(
-      const FeedFetcherCallback& callback,
-      google_apis::DriveApiErrorCode status,
-      std::unique_ptr<google_apis::TeamDriveList> team_drives) {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    DCHECK(callback);
-
-    FileError error = GDataToFileError(status);
-    if (error != FILE_ERROR_OK) {
-      callback.Run(error, std::vector<std::unique_ptr<ChangeList>>());
-      return;
-    }
-
-    change_lists_.push_back(std::make_unique<ChangeList>(*team_drives));
-
-    // Fetch more drives, if there are more.
-    if (!team_drives->next_page_token().empty()) {
-      scheduler_->GetRemainingTeamDriveList(
-          team_drives->next_page_token(),
-          base::Bind(&TeamDriveListFetcher::OnTeamDriveListFetched,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
-      return;
-    }
-
-    // Note: The fetcher is managed by ChangeListLoader, and the instance
-    // will be deleted in the callback. Do not touch the fields after this
-    // invocation.
-    callback.Run(FILE_ERROR_OK, std::move(change_lists_));
-  }
-
-  JobScheduler* scheduler_;
-  std::vector<std::unique_ptr<ChangeList>> change_lists_;
-  THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<TeamDriveListFetcher> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(TeamDriveListFetcher);
-};
-
 // Fetches all the (currently available) resource entries from the server.
 class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
@@ -400,23 +345,8 @@ void ChangeListLoader::LoadAfterGetStartPageToken(
 
   DCHECK(start_page_token);
 
-  // Fetch Team Drive before File list, so that files can be stored under root
-  // directories of each Team Drive like /team_drive/My Team Drive/.
-  if (google_apis::GetTeamDrivesIntegrationSwitch() ==
-      google_apis::TEAM_DRIVES_INTEGRATION_ENABLED) {
-    change_feed_fetcher_ = std::make_unique<TeamDriveListFetcher>(scheduler_);
-
-    change_feed_fetcher_->Run(base::Bind(
-        &ChangeListLoader::LoadChangeListFromServer,
-        weak_ptr_factory_.GetWeakPtr(), start_page_token->start_page_token(),
-        local_start_page_token, root_folder_id));
-  } else {
-    // If there are no team drives listings, the changelist starts as empty.
-    LoadChangeListFromServer(start_page_token->start_page_token(),
-                             local_start_page_token, root_folder_id,
-                             FILE_ERROR_OK,
-                             std::vector<std::unique_ptr<ChangeList>>());
-  }
+  LoadChangeListFromServer(start_page_token->start_page_token(),
+                           local_start_page_token, root_folder_id);
 }
 
 void ChangeListLoader::OnChangeListLoadComplete(FileError error) {
@@ -460,27 +390,10 @@ void ChangeListLoader::OnStartPageTokenLoaderUpdated(
 void ChangeListLoader::LoadChangeListFromServer(
     const std::string& remote_start_page_token,
     const std::string& local_start_page_token,
-    const std::string& root_resource_id,
-    FileError error,
-    std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists) {
+    const std::string& root_resource_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (error != FILE_ERROR_OK) {
-    OnChangeListLoadComplete(error);
-    return;
-  }
-
   if (local_start_page_token == remote_start_page_token) {
-    // If there are team drives change lists, update those without running a
-    // feed fetcher.
-    if (!team_drives_change_lists.empty()) {
-      LoadChangeListFromServerAfterLoadChangeList(
-          local_start_page_token, root_resource_id, true,
-          std::move(team_drives_change_lists), FILE_ERROR_OK,
-          std::vector<std::unique_ptr<ChangeList>>());
-      return;
-    }
-
     // No changes detected, tell the client that the loading was successful.
     OnChangeListLoadComplete(FILE_ERROR_OK);
     return;
@@ -496,17 +409,16 @@ void ChangeListLoader::LoadChangeListFromServer(
     change_feed_fetcher_.reset(new FullFeedFetcher(scheduler_));
   }
 
-  change_feed_fetcher_->Run(base::Bind(
-      &ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
-      weak_ptr_factory_.GetWeakPtr(), remote_start_page_token, root_resource_id,
-      is_delta_update, base::Passed(&team_drives_change_lists)));
+  change_feed_fetcher_->Run(
+      base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList,
+                 weak_ptr_factory_.GetWeakPtr(), remote_start_page_token,
+                 root_resource_id, is_delta_update));
 }
 
 void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     const std::string& start_page_token,
     const std::string& root_resource_id,
     bool is_delta_update,
-    std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists,
     FileError error,
     std::vector<std::unique_ptr<ChangeList>> change_lists) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -518,16 +430,6 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     OnChangeListLoadComplete(error);
     return;
   }
-
-  // Merge the change lists - first team drives, then changes.
-  std::vector<std::unique_ptr<ChangeList>> merged_change_lists;
-  merged_change_lists.insert(
-      merged_change_lists.end(),
-      std::make_move_iterator(team_drives_change_lists.begin()),
-      std::make_move_iterator(team_drives_change_lists.end()));
-  merged_change_lists.insert(merged_change_lists.end(),
-                             std::make_move_iterator(change_lists.begin()),
-                             std::make_move_iterator(change_lists.end()));
 
   ChangeListProcessor* change_list_processor = new ChangeListProcessor(
       team_drive_id_, root_entry_path_, resource_metadata_, in_shutdown_.get());
@@ -543,7 +445,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
       FROM_HERE,
       base::Bind(&ChangeListProcessor::ApplyUserChangeList,
                  base::Unretained(change_list_processor), start_page_token,
-                 root_resource_id, base::Passed(&merged_change_lists),
+                 root_resource_id, base::Passed(&change_lists),
                  is_delta_update),
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterUpdate,
                  weak_ptr_factory_.GetWeakPtr(),

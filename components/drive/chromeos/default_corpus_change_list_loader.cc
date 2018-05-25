@@ -23,7 +23,8 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      loader_controller_(apply_task_controller) {
+      loader_controller_(apply_task_controller),
+      weak_ptr_factory_(this) {
   root_folder_id_loader_ =
       std::make_unique<AboutResourceRootFolderIdLoader>(about_resource_loader);
 
@@ -40,6 +41,10 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
       root_folder_id_loader_.get(), start_page_token_loader_.get(),
       loader_controller_, util::GetDriveMyDriveRootPath());
+
+  team_drive_list_loader_ = std::make_unique<TeamDriveListLoader>(
+      logger_, blocking_task_runner_.get(), resource_metadata, scheduler_,
+      loader_controller_);
 }
 
 DefaultCorpusChangeListLoader::~DefaultCorpusChangeListLoader() = default;
@@ -58,12 +63,27 @@ void DefaultCorpusChangeListLoader::RemoveObserver(
 
 bool DefaultCorpusChangeListLoader::IsRefreshing() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return change_list_loader_->IsRefreshing();
+  return team_drive_list_loader_->IsRefreshing() ||
+         change_list_loader_->IsRefreshing();
 }
 
 void DefaultCorpusChangeListLoader::LoadIfNeeded(
     const FileOperationCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  team_drive_list_loader_->LoadIfNeeded(base::BindRepeating(
+      &DefaultCorpusChangeListLoader::OnTeamDriveLoadIfNeeded,
+      weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void DefaultCorpusChangeListLoader::OnTeamDriveLoadIfNeeded(
+    const FileOperationCallback& callback,
+    FileError error) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
 
   change_list_loader_->LoadIfNeeded(callback);
 }
@@ -78,7 +98,7 @@ void DefaultCorpusChangeListLoader::ReadDirectory(
                                    completion_callback);
 
   // Also start loading all of the user's contents.
-  change_list_loader_->LoadIfNeeded(base::DoNothing());
+  LoadIfNeeded(base::DoNothing());
 }
 
 void DefaultCorpusChangeListLoader::CheckForUpdates(

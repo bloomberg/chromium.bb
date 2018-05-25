@@ -8,11 +8,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/directory_loader.h"
 #include "components/drive/chromeos/drive_change_list_loader.h"
 #include "components/drive/chromeos/start_page_token_loader.h"
+#include "components/drive/chromeos/team_drive_list_loader.h"
 
 namespace drive {
 
@@ -26,7 +28,6 @@ class ChangeListLoader;
 class DirectoryLoader;
 class LoaderController;
 class ResourceMetadata;
-class StartPageTokenLoader;
 
 // Loads change lists, the full resource list, and directory contents for the
 // users default corpus.
@@ -41,6 +42,7 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
 
   ~DefaultCorpusChangeListLoader() override;
 
+  // DriveChangeListLoader overrides
   void AddObserver(ChangeListLoaderObserver* observer) override;
   void RemoveObserver(ChangeListLoaderObserver* observer) override;
 
@@ -52,11 +54,16 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
   void CheckForUpdates(const FileOperationCallback& callback) override;
 
  private:
+  // Called after calling LoadIfNeeded on team drives.
+  void OnTeamDriveLoadIfNeeded(const FileOperationCallback& callback,
+                               FileError error);
+
   std::unique_ptr<internal::AboutResourceRootFolderIdLoader>
       root_folder_id_loader_;
   std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
   std::unique_ptr<internal::DirectoryLoader> directory_loader_;
   std::unique_ptr<internal::StartPageTokenLoader> start_page_token_loader_;
+  std::unique_ptr<TeamDriveListLoader> team_drive_list_loader_;
 
   EventLogger* logger_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -66,6 +73,7 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
 
   THREAD_CHECKER(thread_checker_);
 
+  base::WeakPtrFactory<DefaultCorpusChangeListLoader> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DefaultCorpusChangeListLoader);
 };
 

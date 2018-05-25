@@ -131,12 +131,9 @@ class ChangeListLoader {
   // TODO(sashab): Currently, team_drives_change_lists always contains all of
   // the team drives. Update this so team_drives_change_lists is only filled
   // when the TD flag is newly turned on or local data cleared. crbug.com/829154
-  void LoadChangeListFromServer(
-      const std::string& remote_start_page_token,
-      const std::string& local_start_page_token,
-      const std::string& root_resource_id,
-      FileError error,
-      std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists);
+  void LoadChangeListFromServer(const std::string& remote_start_page_token,
+                                const std::string& local_start_page_token,
+                                const std::string& root_resource_id);
 
   // Part of LoadChangeListFromServer().
   // Called when the entire change list is loaded.
@@ -144,7 +141,6 @@ class ChangeListLoader {
       const std::string& start_page_token,
       const std::string& root_resource_id,
       bool is_delta_update,
-      std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists,
       FileError error,
       std::vector<std::unique_ptr<ChangeList>> change_lists);
 
