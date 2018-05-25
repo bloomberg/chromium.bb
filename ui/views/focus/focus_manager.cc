@@ -133,6 +133,13 @@ void FocusManager::AdvanceFocus(bool reverse) {
     DCHECK(v->GetWidget());
     v->GetWidget()->GetFocusManager()->SetFocusedViewWithReason(
         v, kReasonFocusTraversal);
+
+    // When moving focus from a child widget to a top-level widget,
+    // the top-level widget may report IsActive()==true because it's
+    // active even though it isn't focused. Explicitly activate the
+    // widget to ensure that case is handled.
+    if (v->GetWidget()->GetFocusManager() != this)
+      v->GetWidget()->Activate();
   }
 }
 
@@ -296,7 +303,8 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   // Easy, just clear the selection and press tab again.
   // By calling with nullptr as the starting view, we'll start from either
   // the starting views widget or |widget_|.
-  Widget* widget = original_starting_view->GetWidget();
+  Widget* widget = starting_view ? starting_view->GetWidget()
+                                 : original_starting_view->GetWidget();
   if (widget->widget_delegate()->ShouldAdvanceFocusToTopLevelWidget())
     widget = widget_;
   return GetNextFocusableView(nullptr, widget, reverse, true);

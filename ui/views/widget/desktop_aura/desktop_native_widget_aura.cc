@@ -789,8 +789,20 @@ bool DesktopNativeWidgetAura::IsVisible() const {
 }
 
 void DesktopNativeWidgetAura::Activate() {
-  if (content_window_)
+  if (content_window_) {
+    bool was_active = IsActive();
     desktop_window_tree_host_->Activate();
+
+    // If the whole window tree host was already active,
+    // treat this as a request to focus |content_window_|.
+    //
+    // Note: it might make sense to always focus |content_window_|,
+    // since if client code is calling Widget::Activate() they probably
+    // want that particular widget to be activated, not just something
+    // within that widget hierarchy.
+    if (was_active && focus_client_->GetFocusedWindow() != content_window_)
+      focus_client_->FocusWindow(content_window_);
+  }
 }
 
 void DesktopNativeWidgetAura::Deactivate() {

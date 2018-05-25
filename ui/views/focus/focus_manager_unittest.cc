@@ -21,9 +21,16 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
+#include "ui/views/test/native_widget_factory.h"
+#include "ui/views/test/test_platform_native_widget.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/client/focus_client.h"
+#include "ui/views/widget/native_widget_aura.h"
+#endif  // USE_AURA
 
 namespace views {
 
@@ -869,10 +876,28 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE) {}
   ~TestBubbleDialogDelegateView() override {}
 
+  // If this is called, the bubble will be forced to use a NativeWidgetAura.
+  // If not set, it might get a DesktopNativeWidgetAura depending on the
+  // platform and other factors.
+  void UseNativeWidgetAura() { use_native_widget_aura_ = true; }
+
   // ui::DialogModel override.
   int GetDialogButtons() const override { return 0; }
 
+  void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
+                                Widget* widget) const override {
+#if defined(USE_AURA)
+    if (use_native_widget_aura_) {
+      params->native_widget =
+          new test::TestPlatformNativeWidget<NativeWidgetAura>(widget, false,
+                                                               nullptr);
+    }
+#endif  // USE_AURA
+  }
+
  private:
+  bool use_native_widget_aura_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
@@ -1046,5 +1071,72 @@ TEST_F(FocusManagerTest, AnchoredDialogOnContainerView) {
   bubble_widget->GetFocusManager()->AdvanceFocus(true);
   EXPECT_TRUE(parent3->HasFocus());
 }
+
+// Desktop native widget Aura tests are for non Chrome OS platforms.
+// This test is specifically for the permutation where the main
+// widget is a DesktopNativeWidgetAura and the bubble is a
+// NativeWidgetAura. When focus moves back from the bubble to the
+// parent widget, ensure that the DNWA's aura window is focused.
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+TEST_F(FocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 1024, 768);
+  params.native_widget =
+      test::CreatePlatformDesktopNativeWidgetImpl(params, &widget, nullptr);
+  widget.Init(params);
+  widget.Show();
+  widget.Activate();
+
+  View* parent1 = new View();
+  View* parent2 = new View();
+
+  parent1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  widget.GetRootView()->AddChildView(parent1);
+  widget.GetRootView()->AddChildView(parent2);
+
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(parent2);
+  bubble_delegate->UseNativeWidgetAura();
+  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate));
+  bubble_delegate->EnableFocusTraversalFromAnchorView();
+  View* child = new View();
+  child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  bubble_widget->GetRootView()->AddChildView(child);
+  bubble_delegate->set_close_on_deactivate(false);
+  bubble_widget->Show();
+
+  widget.Activate();
+  parent1->RequestFocus();
+  base::RunLoop().RunUntilIdle();
+
+  // Initially the outer widget's window is focused.
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(widget.GetNativeView());
+  ASSERT_EQ(widget.GetNativeView(), focus_client->GetFocusedWindow());
+
+  // Navigate forwards
+  widget.GetFocusManager()->AdvanceFocus(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(parent2->HasFocus());
+  widget.GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(child->HasFocus());
+
+  // Now the bubble widget's window is focused.
+  ASSERT_NE(widget.GetNativeView(), focus_client->GetFocusedWindow());
+  ASSERT_EQ(bubble_widget->GetNativeView(), focus_client->GetFocusedWindow());
+
+  // Navigate backwards
+  bubble_widget->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(parent2->HasFocus());
+
+  // Finally, the outer widget's window should be focused again.
+  ASSERT_EQ(widget.GetNativeView(), focus_client->GetFocusedWindow());
+}
+#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS)
 
 }  // namespace views
