@@ -6,6 +6,7 @@
 #define CONTENT_SHELL_TEST_RUNNER_MOCK_WEB_MIDI_ACCESSOR_H_
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -39,8 +40,7 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
   void reportStartedSession(midi::mojom::Result result);
 
   void RunDidReceiveMIDIData(unsigned port_index,
-                             const unsigned char* data,
-                             size_t length,
+                             std::vector<unsigned char> data,
                              base::TimeTicks time_stamp);
 
   blink::WebMIDIAccessorClient* client_;
