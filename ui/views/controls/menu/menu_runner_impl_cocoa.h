@@ -16,6 +16,9 @@
 @class MenuControllerCocoa;
 
 namespace views {
+namespace test {
+class MenuRunnerCocoaTest;
+}
 namespace internal {
 
 // A menu runner implementation that uses NSMenu to show a context menu.
@@ -35,6 +38,8 @@ class VIEWS_EXPORT MenuRunnerImplCocoa : public MenuRunnerImplInterface {
   base::TimeTicks GetClosingEventTime() const override;
 
  private:
+  friend class views::test::MenuRunnerCocoaTest;
+
   ~MenuRunnerImplCocoa() override;
 
   // The Cocoa menu controller that this instance is bridging.

@@ -333,20 +333,20 @@ NSString* const kMenuControllerMenuDidCloseNotification =
 
 - (void)menuWillOpen:(NSMenu*)menu {
   isMenuOpen_ = YES;
-  model_->MenuWillShow();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kMenuControllerMenuWillOpenNotification
                     object:self];
+  model_->MenuWillShow();  // Note: |model_| may trigger -[self dealloc].
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
-  if (isMenuOpen_) {
-    model_->MenuWillClose();
-    isMenuOpen_ = NO;
-  }
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kMenuControllerMenuDidCloseNotification
                     object:self];
+  if (isMenuOpen_) {
+    isMenuOpen_ = NO;
+    model_->MenuWillClose();  // Note: |model_| may trigger -[self dealloc].
+  }
 }
 
 @end
