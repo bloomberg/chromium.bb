@@ -67,13 +67,16 @@ void TtsHandler::OnVoicesChanged() {
   TtsControllerImpl* impl = TtsControllerImpl::GetInstance();
   std::vector<VoiceData> voices;
   impl->GetVoices(Profile::FromWebUI(web_ui()), &voices);
+  const std::string& app_locale = g_browser_process->GetApplicationLocale();
   base::ListValue responses;
   for (const auto& voice : voices) {
     base::DictionaryValue response;
+    int language_score = GetVoiceLangMatchScore(&voice, app_locale);
     std::string language_code = l10n_util::GetLanguage(voice.lang);
     response.SetPath({"name"}, base::Value(voice.name));
     response.SetPath({"languageCode"}, base::Value(language_code));
     response.SetPath({"fullLanguageCode"}, base::Value(voice.lang));
+    response.SetPath({"languageScore"}, base::Value(language_score));
     response.SetPath({"extensionId"}, base::Value(voice.extension_id));
     response.SetPath(
         {"displayLanguage"},
@@ -136,6 +139,18 @@ void TtsHandler::OnJavascriptAllowed() {
 
 void TtsHandler::OnJavascriptDisallowed() {
   TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+}
+
+int TtsHandler::GetVoiceLangMatchScore(const VoiceData* voice,
+                                       const std::string& app_locale) {
+  if (voice->lang.empty() || app_locale.empty())
+    return 0;
+  if (voice->lang == app_locale)
+    return 2;
+  return l10n_util::GetLanguage(voice->lang) ==
+                 l10n_util::GetLanguage(app_locale)
+             ? 1
+             : 0;
 }
 
 }  // namespace settings

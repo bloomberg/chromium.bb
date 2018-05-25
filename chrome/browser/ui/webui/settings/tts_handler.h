@@ -29,6 +29,9 @@ class TtsHandler : public SettingsPageUIHandler, public VoicesChangedDelegate {
   void OnVoicesChanged() override;
 
  private:
+  int GetVoiceLangMatchScore(const VoiceData* voice,
+                             const std::string& app_locale);
+
   DISALLOW_COPY_AND_ASSIGN(TtsHandler);
 };
 
