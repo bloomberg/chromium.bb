@@ -64,11 +64,6 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
   DeviceMotionEventPumpForTesting() : DeviceMotionEventPump(nullptr) {}
   ~DeviceMotionEventPumpForTesting() override {}
 
-  // DeviceMotionEventPump:
-  void SendStartMessage() override {
-    DeviceMotionEventPump::SendStartMessageImpl();
-  }
-
   int pump_delay_microseconds() const { return kDefaultPumpDelayMicroseconds; }
 
  private:

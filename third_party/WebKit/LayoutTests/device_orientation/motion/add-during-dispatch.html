@@ -23,9 +23,10 @@ async_test(test => {
     window.addEventListener('devicemotion', () => {
       ++numSecondListenerCalls;
     });
-    setTimeout(test.step_func_done(() => {
-      assert_equals(numSecondListenerCalls, 1);
-    }), 100);
+    test.step(() => {
+      assert_equals(numSecondListenerCalls, 0);
+      test.done();
+    });
   });
 }, 'Test no fire listeners added during event dispatch.');
 </script>

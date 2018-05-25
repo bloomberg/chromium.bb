@@ -66,11 +66,6 @@ class DeviceOrientationEventPumpForTesting : public DeviceOrientationEventPump {
       : DeviceOrientationEventPump(nullptr, absolute) {}
   ~DeviceOrientationEventPumpForTesting() override {}
 
-  // DeviceOrientationEventPump:
-  void SendStartMessage() override {
-    DeviceOrientationEventPump::SendStartMessageImpl();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpForTesting);
 };

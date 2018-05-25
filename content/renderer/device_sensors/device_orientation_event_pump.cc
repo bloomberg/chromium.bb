@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/render_thread_impl.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -60,19 +59,25 @@ DeviceOrientationEventPump::DeviceOrientationEventPump(RenderThread* thread,
 DeviceOrientationEventPump::~DeviceOrientationEventPump() {}
 
 void DeviceOrientationEventPump::SendStartMessage() {
-  // When running layout tests, those observers should not listen to the
-  // actual hardware changes. In order to make that happen, don't connect
-  // the other end of the mojo pipe to anything.
-  //
-  // TODO(sammc): Remove this when JS layout test support for shared buffers
-  // is ready and the layout tests are converted to use that for mocking.
-  // https://crbug.com/774183
-  if (!RenderThreadImpl::current() ||
-      RenderThreadImpl::current()->layout_test_mode()) {
-    return;
+  if (!sensor_provider_) {
+    RenderFrame* const render_frame = GetRenderFrame();
+    if (!render_frame)
+      return;
+
+    render_frame->GetRemoteInterfaces()->GetInterface(
+        mojo::MakeRequest(&sensor_provider_));
+    sensor_provider_.set_connection_error_handler(
+        base::BindOnce(&DeviceSensorEventPump::HandleSensorProviderError,
+                       base::Unretained(this)));
   }
 
-  SendStartMessageImpl();
+  if (absolute_) {
+    absolute_orientation_sensor_.Start(sensor_provider_.get());
+  } else {
+    fall_back_to_absolute_orientation_sensor_ = true;
+    should_suspend_absolute_orientation_sensor_ = false;
+    relative_orientation_sensor_.Start(sensor_provider_.get());
+  }
 }
 
 void DeviceOrientationEventPump::SendStopMessage() {
@@ -137,28 +142,6 @@ void DeviceOrientationEventPump::DidStartIfPossible() {
     return;
   }
   DeviceSensorEventPump::DidStartIfPossible();
-}
-
-void DeviceOrientationEventPump::SendStartMessageImpl() {
-  if (!sensor_provider_) {
-    RenderFrame* const render_frame = GetRenderFrame();
-    if (!render_frame)
-      return;
-
-    render_frame->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&sensor_provider_));
-    sensor_provider_.set_connection_error_handler(
-        base::BindOnce(&DeviceSensorEventPump::HandleSensorProviderError,
-                       base::Unretained(this)));
-  }
-
-  if (absolute_) {
-    absolute_orientation_sensor_.Start(sensor_provider_.get());
-  } else {
-    fall_back_to_absolute_orientation_sensor_ = true;
-    should_suspend_absolute_orientation_sensor_ = false;
-    relative_orientation_sensor_.Start(sensor_provider_.get());
-  }
 }
 
 bool DeviceOrientationEventPump::SensorsReadyOrErrored() const {
