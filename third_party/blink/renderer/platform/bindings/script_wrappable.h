@@ -57,7 +57,7 @@ class PLATFORM_EXPORT ScriptWrappable
  public:
   virtual ~ScriptWrappable() = default;
 
-  virtual void Trace(blink::Visitor*) {}
+  virtual void Trace(blink::Visitor*);
 
   // Traces wrapper objects corresponding to this ScriptWrappable in all worlds.
   void TraceWrappers(ScriptWrappableVisitor*) const override;

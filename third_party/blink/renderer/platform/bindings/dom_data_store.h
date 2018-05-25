@@ -143,6 +143,10 @@ class DOMDataStore {
     return updated;
   }
 
+  void Trace(const ScriptWrappable* script_wrappable, Visitor* visitor) {
+    visitor->Trace(&wrapper_map_.value(), script_wrappable);
+  }
+
   void TraceWrappers(const ScriptWrappable* script_wrappable,
                      ScriptWrappableVisitor* visitor) {
     visitor->TraceWrappers(&wrapper_map_.value(), script_wrappable);
