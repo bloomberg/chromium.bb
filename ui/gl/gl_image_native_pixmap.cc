@@ -148,13 +148,7 @@ GLImageNativePixmap::~GLImageNativePixmap() {}
 bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
                                      gfx::BufferFormat format) {
   DCHECK(!pixmap_);
-  if (pixmap->GetEGLClientBuffer()) {
-    EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
-    if (!GLImageEGL::Initialize(EGL_NO_CONTEXT, EGL_NATIVE_PIXMAP_KHR,
-                                pixmap->GetEGLClientBuffer(), attrs)) {
-      return false;
-    }
-  } else if (pixmap->AreDmaBufFdsValid()) {
+  if (pixmap->AreDmaBufFdsValid()) {
     if (!ValidFormat(format)) {
       LOG(ERROR) << "Invalid format: " << gfx::BufferFormatToString(format);
       return false;
