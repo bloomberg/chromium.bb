@@ -1377,6 +1377,9 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/wrapping-column-dyn
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/writing-modes.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/z-index.html [ Failure ]
 
+# Maybe a Mac-specific rebaselining issue.
+crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
+
 ### virtual/layout_ng_experimental/css3/flexbox/mozilla/
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-items-as-stacking-contexts-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-sizing-vert-1.xhtml [ Skip ]
