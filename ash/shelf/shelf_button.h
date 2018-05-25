@@ -140,8 +140,8 @@ class ASH_EXPORT ShelfButton : public views::Button {
   // showing and used to detect if the menu was deleted while running.
   bool* destroyed_flag_;
 
-  // Whether the touchable context menu is enabled.
-  const bool is_touchable_app_context_menu_enabled_;
+  // Whether the notification indicator is enabled.
+  const bool is_notification_indicator_enabled_;
 
   // A timer to defer showing drag UI when the shelf button is pressed.
   base::OneShotTimer drag_timer_;

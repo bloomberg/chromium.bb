@@ -209,7 +209,7 @@ void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
       break;
   }
 
-  if (features::IsTouchableAppContextMenuEnabled()) {
+  if (features::IsNotificationIndicatorEnabled()) {
     if (item.has_notification)
       button->AddState(ShelfButton::STATE_NOTIFICATION);
     else

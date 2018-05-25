@@ -1052,6 +1052,12 @@ const char kNostatePrefetchDescription[] =
     R"*(similar to disabling the feature, but collects more metrics for )*"
     R"*(comparison purposes.)*";
 
+const char kNotificationIndicatorName[] = "Notification Indicators";
+const char kNotificationIndicatorDescription[] =
+    "Enable notification indicators, which appear on app icons when a "
+    "notification is active. This will also enable notifications in context "
+    "menus.";
+
 const char kNotificationsNativeFlagName[] = "Enable native notifications.";
 const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and notification "

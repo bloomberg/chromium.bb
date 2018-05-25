@@ -40,7 +40,7 @@ const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
-// Enables touchable app context menus and notification indicators.
+// Enables touchable app context menus.
 const char kEnableTouchableAppContextMenu[] =
     "enable-touchable-app-context-menus";
 
