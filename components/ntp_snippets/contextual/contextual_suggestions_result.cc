@@ -16,15 +16,17 @@ PeekConditions::PeekConditions()
 
 Cluster::Cluster() = default;
 
+Cluster::Cluster(const Cluster& other) = default;
+
 // MSVC doesn't support defaulted move constructors, so we have to define it
 // ourselves.
 Cluster::Cluster(Cluster&& other) noexcept
     : title(std::move(other.title)),
       suggestions(std::move(other.suggestions)) {}
 
-Cluster::Cluster(const Cluster&) = default;
-
 Cluster::~Cluster() = default;
+
+Cluster& Cluster::operator=(const Cluster&) = default;
 
 ClusterBuilder::ClusterBuilder(const std::string& title) {
   cluster_.title = title;
@@ -78,5 +80,8 @@ ContextualSuggestionsResult::~ContextualSuggestionsResult() = default;
 
 ContextualSuggestionsResult& ContextualSuggestionsResult::operator=(
     ContextualSuggestionsResult&& other) = default;
+
+ContextualSuggestionsResult& ContextualSuggestionsResult::operator=(
+    const ContextualSuggestionsResult& other) = default;
 
 }  // namespace contextual_suggestions

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <utility>
+
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 
 namespace contextual_suggestions {
@@ -25,6 +28,9 @@ ContextualSuggestion::ContextualSuggestion(
       favicon_image_url(std::move(other.favicon_image_url)) {}
 
 ContextualSuggestion::~ContextualSuggestion() = default;
+
+ContextualSuggestion& ContextualSuggestion::operator=(
+    const ContextualSuggestion&) = default;
 
 SuggestionBuilder::SuggestionBuilder(const GURL& url) {
   suggestion_.url = url;

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/mock_callback.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_snippets/category_info.h"
@@ -82,10 +83,10 @@ class FakeContextualSuggestionsFetcher : public ContextualSuggestionsFetcher {
 // Always fetches a fake image if the given URL is valid.
 class FakeCachedImageFetcher : public CachedImageFetcher {
  public:
-  FakeCachedImageFetcher(PrefService* pref_service)
+  explicit FakeCachedImageFetcher(PrefService* pref_service)
       : CachedImageFetcher(std::unique_ptr<image_fetcher::ImageFetcher>(),
                            pref_service,
-                           nullptr){};
+                           nullptr) {}
 
   void FetchSuggestionImage(const ContentSuggestion::ID&,
                             const GURL& image_url,
@@ -200,6 +201,82 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   EXPECT_TRUE(mock_callback.has_run);
   EXPECT_EQ(mock_callback.response_clusters.size(), 0u);
   EXPECT_EQ(mock_callback.response_peek_text, std::string());
+}
+
+TEST_F(ContextualContentSuggestionsServiceTest, ShouldCacheResults) {
+  MockClustersCallback mock_callback;
+  MockClustersCallback mock_callback2;
+  std::vector<Cluster> clusters;
+  GURL context_url("http://www.from.url");
+
+  clusters.emplace_back(ClusterBuilder("Title")
+                            .AddSuggestion(SuggestionBuilder(context_url)
+                                               .Title("Title1")
+                                               .PublisherName("from.url")
+                                               .Snippet("Summary")
+                                               .ImageId("abc")
+                                               .Build())
+                            .Build());
+  fetcher()->SetFakeResponse(clusters);
+  source()->FetchContextualSuggestionClusters(
+      context_url, mock_callback.ToOnceCallback(), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(mock_callback.has_run);
+
+  // The correct result should be present even though we haven't set the fake
+  // response.
+  source()->FetchContextualSuggestionClusters(
+      context_url, mock_callback2.ToOnceCallback(), base::DoNothing());
+  EXPECT_TRUE(mock_callback2.has_run);
+  ExpectResponsesMatch(
+      mock_callback2,
+      ContextualSuggestionsResult("peek text", clusters, PeekConditions()));
+}
+
+TEST_F(ContextualContentSuggestionsServiceTest, ShouldEvictOldCachedResults) {
+  std::vector<Cluster> clusters;
+  clusters.emplace_back(
+      ClusterBuilder("Title")
+          .AddSuggestion(SuggestionBuilder(GURL("http://foobar.com"))
+                             .Title("Title1")
+                             .PublisherName("from.url")
+                             .Snippet("Summary")
+                             .ImageId("abc")
+                             .Build())
+          .Build());
+
+  for (int i = 0; i < kFetchCacheCapacity + 1; i++) {
+    MockClustersCallback mock_callback;
+    GURL context_url("http://www.from.url/" + base::NumberToString(i));
+
+    fetcher()->SetFakeResponse(clusters);
+    source()->FetchContextualSuggestionClusters(
+        context_url, mock_callback.ToOnceCallback(), base::DoNothing());
+    base::RunLoop().RunUntilIdle();
+
+    ExpectResponsesMatch(
+        mock_callback,
+        ContextualSuggestionsResult("peek text", clusters, PeekConditions()));
+  }
+
+  // Urls numbered kFetchCacheCapacity through 1 should be cached still; 0
+  // should have been evicted.
+  for (int i = kFetchCacheCapacity; i > 0; i--) {
+    GURL context_url("http://www.from.url/" + base::NumberToString(i));
+    MockClustersCallback mock_callback;
+    source()->FetchContextualSuggestionClusters(
+        context_url, mock_callback.ToOnceCallback(), base::DoNothing());
+    ExpectResponsesMatch(
+        mock_callback,
+        ContextualSuggestionsResult("peek text", clusters, PeekConditions()));
+  }
+
+  GURL context_url("http://www.from.url/0");
+  MockClustersCallback mock_callback;
+  source()->FetchContextualSuggestionClusters(
+      context_url, mock_callback.ToOnceCallback(), base::DoNothing());
+  EXPECT_EQ(mock_callback.response_clusters.size(), 0u);
 }
 
 }  // namespace contextual_suggestions
