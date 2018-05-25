@@ -195,13 +195,9 @@ class NotificationHelperLaunchesChrome : public testing::Test {
 
   ~NotificationHelperLaunchesChrome() override = default;
 
-  void SetUp() override {
-    ASSERT_NO_FATAL_FAILURE(RegisterServer());
-  }
+  void SetUp() override { ASSERT_NO_FATAL_FAILURE(RegisterServer()); }
 
-  void TearDown() override {
-    ASSERT_NO_FATAL_FAILURE(UnregisterServer());
-  }
+  void TearDown() override { ASSERT_NO_FATAL_FAILURE(UnregisterServer()); }
 
  private:
   // Registers notification_helper.exe as the server.

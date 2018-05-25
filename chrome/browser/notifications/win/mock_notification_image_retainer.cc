@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/mock_notification_image_retainer.h"
+#include "chrome/browser/notifications/win/mock_notification_image_retainer.h"
 
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
