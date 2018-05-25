@@ -19,6 +19,12 @@ class ToggleImageButton;
 // implemented in views, which will support all desktop platforms.
 class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
  public:
+  // The list of control buttons that appear on the window.
+  enum ControlButton {
+    CONTROL_PLAY_PAUSE,
+    CONTROL_CLOSE,
+  };
+
   explicit OverlayWindowViews(
       content::PictureInPictureWindowController* controller);
   ~OverlayWindowViews() override;
@@ -44,9 +50,12 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnNativeWidgetWorkspaceChanged() override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // views::internal::NativeWidgetDelegate:
+  void OnNativeFocus() override;
+  void OnNativeBlur() override;
   void OnNativeWidgetMove() override;
   void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
 
@@ -64,8 +73,16 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // aspect ratio of the video, which is retrieved from |natural_size_|.
   void UpdateCurrentSizeWithAspectRatio(gfx::Size new_size);
 
+  // Updates the controls view::Views to reflect |is_visible|.
+  void UpdateControlsVisibility(bool is_visible);
+
   // Not owned; |controller_| owns |this|.
   content::PictureInPictureWindowController* controller_;
+
+  // Whether or not the components of the window has been set up. This is used
+  // as a check as some event handlers (e.g. focus) is propogated to the window
+  // before its contents is initialized. This is only set once.
+  bool is_initialized_ = false;
 
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.
@@ -80,6 +97,10 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // The natural size of the video to show. This is used to compute sizing and
   // ensuring factors such as aspect ratio is maintained.
   gfx::Size natural_size_;
+
+  // The currently focused button on the window. This is used for keeping
+  // track of focus on the window while tabbing.
+  ControlButton focused_control_button_;
 
   // Views to be shown.
   std::unique_ptr<views::View> video_view_;
