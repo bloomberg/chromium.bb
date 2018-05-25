@@ -23,6 +23,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/browser/install/crx_install_error.h"
+#include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -34,6 +36,7 @@
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
@@ -81,7 +84,24 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   }
 
   base::FilePath temp_dir() const { return temp_dir_; }
-  base::string16 unpack_err() const { return error_; }
+  base::string16 unpack_error_message() const {
+    if (error_)
+      return error_->message();
+    return base::string16();
+  }
+  CrxInstallErrorType unpack_error_type() const {
+    if (error_)
+      return error_->type();
+    return CrxInstallErrorType::NONE;
+  }
+  int unpack_error_detail() const {
+    if (error_) {
+      return error_->type() == CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE
+                 ? static_cast<int>(error_->sandbox_failure_detail())
+                 : static_cast<int>(error_->detail());
+    }
+    return 0;
+  }
 
   void set_deleted_tracker(bool* deleted_tracker) {
     deleted_tracker_ = deleted_tracker;
@@ -105,11 +125,11 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
   }
 
   void OnUnpackFailure(const CrxInstallError& error) override {
-    error_ = error.message();
+    error_ = error;
     quit_closure_.Run();
   }
 
-  base::string16 error_;
+  base::Optional<CrxInstallError> error_;
   base::Closure quit_closure_;
   base::FilePath temp_dir_;
   bool* deleted_tracker_ = nullptr;
@@ -207,10 +227,18 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     return client_->temp_dir().AppendASCII(kTempExtensionName);
   }
 
-  base::string16 GetInstallError() const { return client_->unpack_err(); }
+  base::string16 GetInstallErrorMessage() const {
+    return client_->unpack_error_message();
+  }
+
+  CrxInstallErrorType GetInstallErrorType() const {
+    return client_->unpack_error_type();
+  }
+
+  int GetInstallErrorDetail() const { return client_->unpack_error_detail(); }
 
   void ExpectInstallErrorContains(const std::string& error) {
-    std::string full_error = base::UTF16ToUTF8(client_->unpack_err());
+    std::string full_error = base::UTF16ToUTF8(client_->unpack_error_message());
     EXPECT_TRUE(full_error.find(error) != std::string::npos)
         << "Error message " << full_error << " does not contain " << error;
   }
@@ -222,7 +250,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     bool client_deleted = false;
     client_->set_deleted_tracker(&client_deleted);
     SetupUnpacker(package_name, "");
-    EXPECT_EQ(GetInstallError().empty(), expect_success);
+    EXPECT_EQ(GetInstallErrorMessage().empty(), expect_success);
     // Remove our reference to |sandboxed_unpacker_|, it should get deleted
     // since/ it's the last reference.
     sandboxed_unpacker_ = nullptr;
@@ -244,51 +272,92 @@ class SandboxedUnpackerTest : public ExtensionsTest {
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx", "");
   ExpectInstallErrorContains(manifest_errors::kInvalidDefaultLocale);
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx", "");
   ExpectInstallErrorContains(manifest_errors::kLocalesTreeMissing);
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx", "");
   ExpectInstallErrorContains(manifest_errors::kInvalidDefaultLocale);
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx", "");
   ExpectInstallErrorContains(manifest_errors::kLocalesNoDefaultMessages);
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx", "");
   ExpectInstallErrorContains(l10n_util::GetStringUTF8(
       IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED));
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx", "");
   EXPECT_TRUE(base::MatchPattern(
-      GetInstallError(),
+      GetInstallErrorMessage(),
       base::ASCIIToUTF16("*") +
           base::ASCIIToUTF16(manifest_errors::kLocalesMessagesFileMissing) +
           base::ASCIIToUTF16("*_locales?en_US?messages.json'.")))
-      << GetInstallError();
+      << GetInstallErrorMessage();
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, NoLocaleData) {
   SetupUnpacker("no_locale_data.crx", "");
   ExpectInstallErrorContains(manifest_errors::kLocalesNoDefaultMessages);
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, ImageDecodingError) {
   const char kExpected[] = "Could not decode image: ";
   SetupUnpacker("bad_image.crx", "");
-  EXPECT_TRUE(base::StartsWith(GetInstallError(), base::ASCIIToUTF16(kExpected),
+  EXPECT_TRUE(base::StartsWith(GetInstallErrorMessage(),
+                               base::ASCIIToUTF16(kExpected),
                                base::CompareCase::INSENSITIVE_ASCII))
       << "Expected prefix: \"" << kExpected << "\", actual error: \""
-      << GetInstallError() << "\"";
+      << GetInstallErrorMessage() << "\"";
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::UNPACKER_CLIENT_FAILED),
+      GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, BadPathError) {
@@ -297,7 +366,12 @@ TEST_F(SandboxedUnpackerTest, BadPathError) {
   SetupUnpacker("good_package.crx", "");
   // Install should have failed with an error.
   EXPECT_FALSE(InstallSucceeded());
-  EXPECT_FALSE(GetInstallError().empty());
+  EXPECT_FALSE(GetInstallErrorMessage().empty());
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(static_cast<int>(
+                SandboxedUnpackerFailureReason::INVALID_PATH_FOR_BROWSER_IMAGE),
+            GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
@@ -305,6 +379,7 @@ TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
   // Check that there is no _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_FALSE(base::PathExists(install_path));
+  EXPECT_EQ(CrxInstallErrorType::NONE, GetInstallErrorType());
 }
 
 TEST_F(SandboxedUnpackerTest, FromDirNoCatalogsSuccess) {
@@ -312,6 +387,7 @@ TEST_F(SandboxedUnpackerTest, FromDirNoCatalogsSuccess) {
   // Check that there is no _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_FALSE(base::PathExists(install_path));
+  EXPECT_EQ(CrxInstallErrorType::NONE, GetInstallErrorType());
 }
 
 TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
@@ -319,6 +395,7 @@ TEST_F(SandboxedUnpackerTest, WithCatalogsSuccess) {
   // Check that there is _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_TRUE(base::PathExists(install_path));
+  EXPECT_EQ(CrxInstallErrorType::NONE, GetInstallErrorType());
 }
 
 TEST_F(SandboxedUnpackerTest, FromDirWithCatalogsSuccess) {
@@ -326,6 +403,7 @@ TEST_F(SandboxedUnpackerTest, FromDirWithCatalogsSuccess) {
   // Check that there is _locales folder.
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_TRUE(base::PathExists(install_path));
+  EXPECT_EQ(CrxInstallErrorType::NONE, GetInstallErrorType());
 }
 
 TEST_F(SandboxedUnpackerTest, FailHashCheck) {
@@ -333,7 +411,12 @@ TEST_F(SandboxedUnpackerTest, FailHashCheck) {
       extensions::switches::kEnableCrxHashCheck);
   SetupUnpacker("good_l10n.crx", std::string(64, '0'));
   // Check that there is an error message.
-  EXPECT_NE(base::string16(), GetInstallError());
+  EXPECT_FALSE(GetInstallErrorMessage().empty());
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(static_cast<int>(
+                SandboxedUnpackerFailureReason::CRX_HASH_VERIFICATION_FAILED),
+            GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
@@ -342,10 +425,15 @@ TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {
   base::FilePath install_path = GetInstallPath().Append(kLocaleFolder);
   EXPECT_FALSE(base::PathExists(install_path));
   EXPECT_TRUE(base::MatchPattern(
-      GetInstallError(),
+      GetInstallErrorMessage(),
       base::ASCIIToUTF16("*_locales?en_US?messages.json': Line: 2, column: 10,"
                          " Syntax error.'.")))
-      << GetInstallError();
+      << GetInstallErrorMessage();
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(static_cast<int>(
+                SandboxedUnpackerFailureReason::COULD_NOT_LOCALIZE_EXTENSION),
+            GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, PassHashCheck) {
@@ -355,13 +443,15 @@ TEST_F(SandboxedUnpackerTest, PassHashCheck) {
       "good_l10n.crx",
       "614AE3D608F4C2185E9173293AB3F93EE7C7C79C9A2C3CF71F633386A3296A6C");
   // Check that there is no error message.
-  EXPECT_EQ(base::string16(), GetInstallError());
+  EXPECT_THAT(GetInstallErrorMessage(), testing::IsEmpty());
+  EXPECT_EQ(CrxInstallErrorType::NONE, GetInstallErrorType());
 }
 
 TEST_F(SandboxedUnpackerTest, SkipHashCheck) {
   SetupUnpacker("good_l10n.crx", "badhash");
   // Check that there is no error message.
-  EXPECT_EQ(base::string16(), GetInstallError());
+  EXPECT_THAT(GetInstallErrorMessage(), testing::IsEmpty());
+  EXPECT_EQ(CrxInstallErrorType::NONE, GetInstallErrorType());
 }
 
 // The following tests simulate the utility services failling.
@@ -371,7 +461,11 @@ TEST_F(SandboxedUnpackerTest, UnzipperServiceFails) {
       std::make_unique<unzip::CrashyUnzipService>());
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
-  EXPECT_FALSE(GetInstallError().empty());
+  EXPECT_FALSE(GetInstallErrorMessage().empty());
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(static_cast<int>(SandboxedUnpackerFailureReason::UNZIP_FAILED),
+            GetInstallErrorDetail());
 }
 
 TEST_F(SandboxedUnpackerTest, JsonParserFails) {
@@ -380,7 +474,9 @@ TEST_F(SandboxedUnpackerTest, JsonParserFails) {
                        /*unzip_service=*/nullptr);
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
-  EXPECT_FALSE(GetInstallError().empty());
+  EXPECT_FALSE(GetInstallErrorMessage().empty());
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
 }
 
 TEST_F(SandboxedUnpackerTest, ImageDecoderFails) {
@@ -389,7 +485,13 @@ TEST_F(SandboxedUnpackerTest, ImageDecoderFails) {
                        /*unzip_service=*/nullptr);
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
-  EXPECT_FALSE(GetInstallError().empty());
+  EXPECT_FALSE(GetInstallErrorMessage().empty());
+  ASSERT_EQ(CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE,
+            GetInstallErrorType());
+  EXPECT_EQ(
+      static_cast<int>(SandboxedUnpackerFailureReason::
+                           UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL),
+      GetInstallErrorDetail());
 }
 
 // SandboxedUnpacker is ref counted and is reference by callbacks and

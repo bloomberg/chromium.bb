@@ -1642,7 +1642,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
       // Fake install notice.  This should start the second installation,
       // which will be checked below.
-      fake_crx1->NotifyCrxInstallComplete(false);
+      fake_crx1->NotifyCrxInstallComplete(CrxInstallError(
+          CrxInstallErrorType::OTHER, CrxInstallErrorDetail::NONE));
 
       EXPECT_TRUE(updater.crx_install_is_running_);
     }
@@ -1655,7 +1656,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     if (updates_start_running) {
       EXPECT_TRUE(updater.crx_install_is_running_);
-      fake_crx2->NotifyCrxInstallComplete(false);
+      fake_crx2->NotifyCrxInstallComplete(CrxInstallError(
+          CrxInstallErrorType::OTHER, CrxInstallErrorDetail::NONE));
     }
     EXPECT_FALSE(updater.crx_install_is_running_);
   }

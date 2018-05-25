@@ -37,6 +37,7 @@ class Connector;
 
 namespace extensions {
 class Extension;
+enum class SandboxedUnpackerFailureReason;
 
 class SandboxedUnpackerClient
     : public base::RefCountedDeleteOnSequence<SandboxedUnpackerClient> {
@@ -98,7 +99,7 @@ class SandboxedUnpackerClient
 //
 class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
  public:
-  // Creates a SanboxedUnpacker that will do work to unpack an extension,
+  // Creates a SandboxedUnpacker that will do work to unpack an extension,
   // passing the |location| and |creation_flags| to Extension::Create. The
   // |extensions_dir| parameter should specify the directory under which we'll
   // create a subdirectory to write the unpacked extension contents.
@@ -132,79 +133,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
  private:
   friend class base::RefCountedThreadSafe<SandboxedUnpacker>;
 
-  // Enumerate all the ways unpacking can fail.  Calls to ReportFailure()
-  // take a failure reason as an argument, and put it in histogram
-  // Extensions.SandboxUnpackFailureReason.
-  enum FailureReason {
-    // SandboxedUnpacker::CreateTempDirectory()
-    COULD_NOT_GET_TEMP_DIRECTORY,
-    COULD_NOT_CREATE_TEMP_DIRECTORY,
-
-    // SandboxedUnpacker::Start()
-    FAILED_TO_COPY_EXTENSION_FILE_TO_TEMP_DIRECTORY,
-    COULD_NOT_GET_SANDBOX_FRIENDLY_PATH,
-
-    // SandboxedUnpacker::UnpackExtensionSucceeded()
-    COULD_NOT_LOCALIZE_EXTENSION,
-    INVALID_MANIFEST,
-
-    // SandboxedUnpacker::UnpackExtensionFailed()
-    UNPACKER_CLIENT_FAILED,
-
-    // SandboxedUnpacker::UtilityProcessCrashed()
-    UTILITY_PROCESS_CRASHED_WHILE_TRYING_TO_INSTALL,
-
-    // SandboxedUnpacker::ValidateSignature()
-    CRX_FILE_NOT_READABLE,
-    CRX_HEADER_INVALID,
-    CRX_MAGIC_NUMBER_INVALID,
-    CRX_VERSION_NUMBER_INVALID,
-    CRX_EXCESSIVELY_LARGE_KEY_OR_SIGNATURE,
-    CRX_ZERO_KEY_LENGTH,
-    CRX_ZERO_SIGNATURE_LENGTH,
-    CRX_PUBLIC_KEY_INVALID,
-    CRX_SIGNATURE_INVALID,
-    CRX_SIGNATURE_VERIFICATION_INITIALIZATION_FAILED,
-    CRX_SIGNATURE_VERIFICATION_FAILED,
-
-    // SandboxedUnpacker::RewriteManifestFile()
-    ERROR_SERIALIZING_MANIFEST_JSON,
-    ERROR_SAVING_MANIFEST_JSON,
-
-    // SandboxedUnpacker::RewriteImageFiles()
-    COULD_NOT_READ_IMAGE_DATA_FROM_DISK_UNUSED,
-    DECODED_IMAGES_DO_NOT_MATCH_THE_MANIFEST_UNUSED,
-    INVALID_PATH_FOR_BROWSER_IMAGE,
-    ERROR_REMOVING_OLD_IMAGE_FILE,
-    INVALID_PATH_FOR_BITMAP_IMAGE,
-    ERROR_RE_ENCODING_THEME_IMAGE,
-    ERROR_SAVING_THEME_IMAGE,
-    DEPRECATED_ABORTED_DUE_TO_SHUTDOWN,  // No longer used; kept for UMA.
-
-    // SandboxedUnpacker::RewriteCatalogFiles()
-    COULD_NOT_READ_CATALOG_DATA_FROM_DISK_UNUSED,
-    INVALID_CATALOG_DATA,
-    INVALID_PATH_FOR_CATALOG_UNUSED,
-    ERROR_SERIALIZING_CATALOG,
-    ERROR_SAVING_CATALOG,
-
-    // SandboxedUnpacker::ValidateSignature()
-    CRX_HASH_VERIFICATION_FAILED,
-
-    UNZIP_FAILED,
-    DIRECTORY_MOVE_FAILED,
-
-    // SandboxedUnpacker::ValidateSignature()
-    CRX_FILE_IS_DELTA_UPDATE,
-    CRX_EXPECTED_HASH_INVALID,
-
-    // SandboxedUnpacker::IndexAndPersistRulesIfNeeded()
-    ERROR_PARSING_DNR_RULESET,
-    ERROR_INDEXING_DNR_RULESET,
-
-    NUM_FAILURE_REASONS
-  };
-
   friend class SandboxedUnpackerTest;
 
   ~SandboxedUnpacker();
@@ -213,8 +141,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   bool CreateTempDirectory();
 
   // Helper functions to simplify calling ReportFailure.
-  base::string16 FailureReasonToString16(FailureReason reason);
-  void FailWithPackageError(FailureReason reason);
+  base::string16 FailureReasonToString16(
+      const SandboxedUnpackerFailureReason reason);
+  void FailWithPackageError(const SandboxedUnpackerFailureReason reason);
 
   // Validates the signature of the extension and extract the key to
   // |public_key_|. True if the signature validates, false otherwise.
@@ -261,7 +190,11 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
                      const base::Optional<int>& dnr_ruleset_checksum);
-  void ReportFailure(FailureReason reason, const base::string16& error);
+
+  // Puts a sanboxed unpacker failure in histogram
+  // Extensions.SandboxUnpackFailureReason.
+  void ReportFailure(const SandboxedUnpackerFailureReason reason,
+                     const base::string16& error);
 
   // Overwrites original manifest with safe result from utility process.
   // Returns NULL on error. Caller owns the returned object.

@@ -9,8 +9,10 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/install/crx_install_error.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension.h"
 
@@ -47,7 +49,8 @@ class ValueStoreFactory;
 class ExtensionSystem : public KeyedService {
  public:
   // A callback to be executed when InstallUpdate finishes.
-  using InstallUpdateCallback = base::OnceCallback<void(bool success)>;
+  using InstallUpdateCallback =
+      base::OnceCallback<void(const base::Optional<CrxInstallError>& result)>;
 
   ExtensionSystem();
   ~ExtensionSystem() override;
