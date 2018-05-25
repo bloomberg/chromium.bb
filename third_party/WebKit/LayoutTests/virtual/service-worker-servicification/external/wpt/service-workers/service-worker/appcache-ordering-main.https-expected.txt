@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL serviceworkers take priority over appcaches assert_unreached: unexpected rejection: assert_false: but serviceworkers should take priority expected false got true Reached unreachable code
+Harness: the test ran to completion.
+

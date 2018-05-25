@@ -668,6 +668,18 @@
     "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
   },
   {
+    "prefix": "service-worker-servicification",
+    "base": "http/tests/serviceworker",
+    "args": ["--enable-features=ServiceWorkerServicification",
+             "--disable-features=NetworkService"]
+  },
+  {
+    "prefix": "service-worker-servicification",
+    "base": "external/wpt/service-workers/service-worker",
+    "args": ["--enable-features=ServiceWorkerServicification",
+             "--disable-features=NetworkService"]
+  },
+  {
     "prefix": "off-main-thread-websocket",
     "base": "external/wpt/websockets",
     "args": ["--disable-features=OffMainThreadWebSocket"]
