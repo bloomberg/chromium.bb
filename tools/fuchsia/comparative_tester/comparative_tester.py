@@ -11,6 +11,8 @@ import os
 import re
 import subprocess
 import sys
+
+from collections import defaultdict
 from typing import *
 
 import target_spec
@@ -41,33 +43,30 @@ class TestTarget(object):
   Linux and Fuchsia.
   """
 
-  def __init__(self, target: str, filters: str = "") -> None:
-    self.Target = target
-    self.Name = target.split(":")[-1]
-    if filters != "":
-      self.FilterFlag = "--gtest_filter='" + filters + "'"
+  def __init__(self, target: str) -> None:
+    self._target = target
+    self._name = target.split(":")[-1]
+    filter_file = "testing/buildbot/filters/fuchsia.{}.filter".format(
+        self._name)
+    if not os.path.isfile(filter_file):
+      self._filter_flag = ""
     else:
-      self.FilterFlag = ""
+      self._filter_flag = "--test-launcher-filter-file={}".format(filter_file)
 
   def ExecFuchsia(self, out_dir: str, run_locally: bool) -> str:
-    runner_name = "{}/bin/run_{}".format(out_dir, self.Name)
-    command = [runner_name, self.FilterFlag]
+    runner_name = "{}/bin/run_{}".format(out_dir, self._name)
+    command = [runner_name, self._filter_flag]
     if not run_locally:
       command.append("-d")
-
-    # TODO(stephanstross): Remove this when fuchsia logging fix lands
-    command.extend([
-        "--test-launcher-summary-output", "/tmp/fuchsia.json", "--",
-        "--gtest_output=json:/data/test_summary.json"
-    ])
-    return RunCommand(
+    result = RunCommand(
         command,
-        "Test {} failed on fuchsia!".format(self.Target),
+        "Test {} failed on fuchsia!".format(self._target),
         ignore_errors=True)
+    return result
 
   def ExecLinux(self, out_dir: str, run_locally: bool) -> str:
-    local_path = "{}/{}".format(out_dir, self.Name)
-    command = []
+    local_path = "{}/{}".format(out_dir, self._name)
+    command = []  # type: List[str]
     if not run_locally:
       user = target_spec.linux_device_user
       ip = target_spec.linux_device_hostname
@@ -76,23 +75,23 @@ class TestTarget(object):
       self.TransferDependencies(out_dir, host_machine)
       command = [
           "ssh", "{}@{}".format(user, ip), "xvfb-run -a {1}/{0}/{1} {2}".format(
-              out_dir, self.Name, self.FilterFlag)
+              out_dir, self._name, self._filter_flag)
       ]
     else:
-      command = [local_path, self.FilterFlag]
+      command = [local_path, self._filter_flag]
     result = RunCommand(
         command,
-        "Test {} failed on linux!".format(self.Target),
+        "Test {} failed on linux!".format(self._target),
         ignore_errors=True)
     # Clean up the copy of the test files on the host after execution
-    RunCommand(["rm", "-rf", self.Name],
-               "Failed to remove host directory for {}".format(self.Target))
+    RunCommand(["rm", "-rf", self._name],
+               "Failed to remove host directory for {}".format(self._target))
     return result
 
   def TransferDependencies(self, out_dir: str, host: str):
-    gn_desc = ["gn", "desc", out_dir, self.Target, "runtime_deps"]
+    gn_desc = ["gn", "desc", out_dir, self._target, "runtime_deps"]
     out = RunCommand(
-        gn_desc, "Failed to get dependencies of target {}".format(self.Target))
+        gn_desc, "Failed to get dependencies of target {}".format(self._target))
 
     paths = []
     for line in out.split("\n"):
@@ -104,36 +103,39 @@ class TestTarget(object):
     common = os.path.commonpath(paths)
     paths = [os.path.relpath(path, common) for path in paths]
 
-    archive_name = self.Name + ".tar.gz"
+    archive_name = self._name + ".tar.gz"
     # Compress the dependencies of the test.
     RunCommand(
         ["tar", "-czf", archive_name] + paths,
-        "{} dependency compression failed".format(self.Target),
+        "{} dependency compression failed".format(self._target),
     )
     # Make sure the containing directory exists on the host, for easy cleanup.
-    RunCommand(["ssh", host, "mkdir -p {}".format(self.Name)],
-               "Failed to create directory on host for {}".format(self.Target))
+    RunCommand(["ssh", host, "mkdir -p {}".format(self._name)],
+               "Failed to create directory on host for {}".format(self._target))
     # Transfer the test deps to the host.
     RunCommand(
-        ["scp", archive_name, "{}:{}/{}".format(host, self.Name, archive_name)],
-        "{} dependency transfer failed".format(self.Target),
+        [
+            "scp", archive_name, "{}:{}/{}".format(host, self._name,
+                                                   archive_name)
+        ],
+        "{} dependency transfer failed".format(self._target),
     )
     # Decompress the dependencies once they're on the host.
     RunCommand(
         [
             "ssh", host, "tar -xzf {0}/{1} -C {0}".format(
-                self.Name, archive_name)
+                self._name, archive_name)
         ],
-        "{} dependency decompression failed".format(self.Target),
+        "{} dependency decompression failed".format(self._target),
     )
     # Clean up the local copy of the archive that is no longer needed.
     RunCommand(
         ["rm", archive_name],
-        "{} dependency archive cleanup failed".format(self.Target),
+        "{} dependency archive cleanup failed".format(self._target),
     )
 
 
-def ExtractParts(string: str) -> (str, float, str):
+def ExtractParts(string: str) -> Tuple[str, float, str]:
   """This function accepts lines like the one that follow this sentence, and
   attempts to extract all of the relevant pieces of information from it.
 
@@ -163,7 +165,8 @@ class ResultLine(object):
   linux and fuchsia performance scores.
   """
 
-  def __init__(self, linux_line: str, fuchsia_line: str) -> None:
+  @classmethod
+  def FromLines(cls, linux_line: str, fuchsia_line: str):
     linux_info, linux_val, linux_unit = ExtractParts(linux_line)
     fuchsia_info, fuchsia_val, fuchsia_unit = ExtractParts(fuchsia_line)
 
@@ -171,11 +174,14 @@ class ResultLine(object):
       print("Info mismatch! fuchsia was: {}".format(fuchsia_info))
     if linux_unit != fuchsia_unit:
       print("Unit mismatch! fuchsia was: {}".format(fuchsia_unit))
+    return ResultLine(linux_info, linux_val, fuchsia_val, fuchsia_unit)
 
-    self.desc = linux_info
-    self.linux = linux_val
-    self.fuchsia = fuchsia_val
-    self.unit = fuchsia_unit
+  def __init__(self, desc: str, linux: float, fuchsia: float,
+               unit: str) -> None:
+    self.desc = desc  # type: str
+    self.linux = linux  # type: float
+    self.fuchsia = fuchsia  # type: float
+    self.unit = unit  # type: str
 
   def comparison(self) -> float:
     return (self.fuchsia / self.linux) * 100.0
@@ -205,20 +211,21 @@ class TestComparison(object):
     self.tests = tests
 
   def MakeCsvFormat(self) -> str:
-    lines = []
+    out_lines = []  # type: List[str]
     for test_name, lines in self.tests.items():
       for line in lines:
-        lines.append("{},{},{}".format(self.suite_name, test_name,
-                                       line.MakeCsvFormat()))
-    return "\n".join(lines)
+        out_lines.append("{},{},{}".format(self.suite_name, test_name,
+                                           line.ToCsvFormat()))
+    return "\n".join(out_lines) + "\n"
+    # Has a + "\n" to simplify writing a list of these to a file
 
   def __format__(self, format_spec: str) -> str:
-    lines = [self.suite_name]
+    out_lines = [self.suite_name]
     for test_case, lines in self.tests.items():
-      lines.append("  {}".format(test_case))
+      out_lines.append("  {}".format(test_case))
       for line in lines:
-        lines.append("    {}".format(line))
-    return "\n".join(lines)
+        out_lines.append("    {}".format(line))
+    return "\n".join(out_lines)
 
 
 def ExtractCases(out_lines: List[str]) -> Dict[str, List[str]]:
@@ -242,13 +249,6 @@ def ExtractCases(out_lines: List[str]) -> Dict[str, List[str]]:
   [       OK ] ScheduleWorkTest.ThreadTimeToIOFromTwoThreads (5022 ms)
   [ RUN      ] ScheduleWorkTest.ThreadTimeToIOFromFourThreads
 
-  It will first skip all lines which do not contain either RUN or RESULT.
-  Then, each 'RUN' line is stripped of the bracketed portion, down to just the
-  name of the test, and then placed into a dictionary that maps it to all the
-  lines beneath it, up to the next RUN line. The RESULT lines all have their
-  RESULT portions chopped out as well, and only the piece following RESULT is
-  kept
-
   {'ScheduleWorkTest.ThreadTimeToIOFromOneThread':[
     'task: 1_threads_scheduling_to_io_pump= .47606626678091973 us/task',
     'task_min_batch_time: 1_threads_scheduling_to_io_pump= .335 us/task',
@@ -267,7 +267,7 @@ def ExtractCases(out_lines: List[str]) -> Dict[str, List[str]]:
       lines.append(line)
   cases = {}
   name = ""
-  case_lines = []
+  case_lines = []  # type: List[str]
   for line in lines:
     # We've hit a new test suite, write the old accumulators and start new
     # ones. The name variable is checked to make sure this isn't the first one
@@ -300,7 +300,8 @@ def CollateTests(linux_lines: List[str], fuchsia_lines: List[str],
   for case_name, linux_case_lines in linux_cases.items():
     # If fuchsia didn't contain that test case, skip it, but alert the user.
     if not case_name in fuchsia_cases:
-      print("Fuchsia is missing test case {}".format(case_name))
+      print("Fuchsia is missing test case {} in target {}".format(
+          case_name, test_target))
       continue
 
     fuchsia_case_lines = fuchsia_cases[case_name]
@@ -312,12 +313,13 @@ def CollateTests(linux_lines: List[str], fuchsia_lines: List[str],
     if len(linux_case_lines) != len(fuchsia_case_lines):
       print("Linux and Fuchsia have produced different output lengths for the "
             "test {}!".format(case_name))
-    desc_lines = [ResultLine(*pair) for pair in paired_case_lines]
+    desc_lines = [ResultLine.FromLines(*pair) for pair in paired_case_lines]
     comparisons[case_name] = desc_lines
 
   for case_name in fuchsia_cases.keys():
     if case_name not in comparisons.keys():
-      print("Linux is missing test case {}".format(case_name))
+      print("Linux is missing test case {} in target {}".format(
+          case_name, test_target))
 
   return TestComparison(test_target, comparisons)
 
@@ -325,9 +327,14 @@ def CollateTests(linux_lines: List[str], fuchsia_lines: List[str],
 def RunTest(target: TestTarget, run_locally: bool = False) -> TestComparison:
 
   linux_output = target.ExecLinux(target_spec.linux_out_dir, run_locally)
+  print("Ran Linux")
   fuchsia_output = target.ExecFuchsia(target_spec.fuchsia_out_dir, run_locally)
-  return CollateTests(
+  print("Ran Fuchsia")
+  tmp = CollateTests(
       linux_output.split("\n"), fuchsia_output.split("\n"), target.Name)
+  print("Collated {} tests together for suite {}".format(
+      len(tmp.tests), tmp.suite_name))
+  return tmp
 
 
 def RunGnForDirectory(dir_name: str, target_os: str) -> None:
@@ -343,7 +350,7 @@ def RunGnForDirectory(dir_name: str, target_os: str) -> None:
   subprocess.run(["gn", "gen", dir_name]).check_returncode()
 
 
-def GenerateTestData() -> List[List[TestComparison]]:
+def GenerateTestData(runs: int) -> List[List[TestComparison]]:
   DIR_SOURCE_ROOT = os.path.abspath(
       os.path.join(os.path.dirname(__file__), *([os.pardir] * 3)))
   os.chdir(DIR_SOURCE_ROOT)
@@ -351,9 +358,9 @@ def GenerateTestData() -> List[List[TestComparison]]:
   # Grab parameters from config file.
   linux_dir = target_spec.linux_out_dir
   fuchsia_dir = target_spec.fuchsia_out_dir
-  test_input = []
-  for (test, filters) in target_spec.test_targets.items():
-    test_input.append(TestTarget(test, filters))
+  test_input = []  # type: List[TestTarget]
+  for target in target_spec.test_targets:
+    test_input.append(TestTarget(target))
   print("Test targets collected:\n{}".format("\n".join(
       [test.Target for test in test_input])))
 
@@ -364,27 +371,32 @@ def GenerateTestData() -> List[List[TestComparison]]:
   for directory in [linux_dir, fuchsia_dir]:
     build_command = ["autoninja", "-C", directory] \
                   + [test.Target for test in test_input]
-    RunCommand(
-        build_command,
-        "Unable to build targets in directory {}".format(directory),
-    )
+    RunCommand(build_command,
+               "autoninja failed in directory {}".format(directory))
   print("Builds completed.")
 
   # Execute the tests, one at a time, per system, and collect their results.
-  results = []
-  print("Running Tests")
-  for test in test_input:
-    results.append(RunTest(test))
+  result_set = defaultdict(lambda: [])  # type: Dict[str, List[TestComparison]]
+  for i in range(0, runs):
+    print("Running Test set {}".format(i))
+    for test_target in test_input:
+      print("Running Target {}".format(test_target.Name))
+      result = RunTest(test_target)
+      result_set[result.suite_name].append(result)
+      print("Finished {}".format(test_target.Name))
 
   print("Tests Completed")
-  with open("comparison_results.csv", "w") as out_file:
-    out_file.write(
-        "target,test,description,linux,fuchsia,fuchsia/linux,units\n")
-    for result in results:
-      out_file.write(result.MakeCsvFormat())
-      out_file.write("\n")
-  return results
+  for _, results in result_set.items():
+    for i, result in enumerate(results):
+      with open("{}.{}.csv".format(result.suite_name, i), "w") as stat_file:
+        stat_file.write("target,test,description,linux,"
+                        "fuchsia,fuchsia/linux,units\n")
+        stat_file.write(result.MakeCsvFormat())
+
+def main() -> int:
+  GenerateTestData(1)
+  return 0
 
 
 if __name__ == "__main__":
-  sys.exit(GenerateTestData())
+  sys.exit(main())
