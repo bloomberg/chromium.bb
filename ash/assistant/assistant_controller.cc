@@ -365,8 +365,7 @@ void AssistantController::OnSpeechRecognitionFinalResult(
 }
 
 void AssistantController::OnSpeechLevelUpdated(float speech_level) {
-  // TODO(dmblack): Handle.
-  NOTIMPLEMENTED();
+  assistant_interaction_model_.SetSpeechLevel(speech_level);
 }
 
 void AssistantController::OnOpenUrlResponse(const GURL& url) {

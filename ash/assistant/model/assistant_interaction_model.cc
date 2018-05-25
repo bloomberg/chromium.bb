@@ -108,6 +108,10 @@ void AssistantInteractionModel::ClearSuggestions() {
   NotifySuggestionsCleared();
 }
 
+void AssistantInteractionModel::SetSpeechLevel(float speech_level_db) {
+  NotifySpeechLevelChanged(speech_level_db);
+}
+
 void AssistantInteractionModel::NotifyInteractionStateChanged() {
   for (AssistantInteractionModelObserver& observer : observers_)
     observer.OnInteractionStateChanged(interaction_state_);
@@ -153,6 +157,12 @@ void AssistantInteractionModel::NotifySuggestionsAdded(
 void AssistantInteractionModel::NotifySuggestionsCleared() {
   for (AssistantInteractionModelObserver& observer : observers_)
     observer.OnSuggestionsCleared();
+}
+
+void AssistantInteractionModel::NotifySpeechLevelChanged(
+    float speech_level_db) {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnSpeechLevelChanged(speech_level_db);
 }
 
 }  // namespace ash

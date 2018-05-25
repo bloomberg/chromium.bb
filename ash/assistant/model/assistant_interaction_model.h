@@ -104,6 +104,9 @@ class AssistantInteractionModel {
   // Clears all suggestions for the interaction.
   void ClearSuggestions();
 
+  // Updates the speech level in dB.
+  void SetSpeechLevel(float speech_level_db);
+
  private:
   void NotifyInteractionStateChanged();
   void NotifyInputModalityChanged();
@@ -115,6 +118,7 @@ class AssistantInteractionModel {
   void NotifySuggestionsAdded(
       const std::map<int, AssistantSuggestion*>& suggestions);
   void NotifySuggestionsCleared();
+  void NotifySpeechLevelChanged(float speech_level_db);
 
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_ = InputModality::kVoice;
