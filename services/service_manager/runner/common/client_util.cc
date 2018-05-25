@@ -7,32 +7,30 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/runner/common/switches.h"
 
 namespace service_manager {
 
 mojom::ServicePtr PassServiceRequestOnCommandLine(
-    mojo::edk::OutgoingBrokerClientInvitation* invitation,
+    mojo::OutgoingInvitation* invitation,
     base::CommandLine* command_line) {
   mojom::ServicePtr client;
-  std::string token = mojo::edk::GenerateRandomToken();
-  client.Bind(mojom::ServicePtrInfo(invitation->AttachMessagePipe(token), 0));
-  command_line->AppendSwitchASCII(switches::kServicePipeToken, token);
+  auto pipe_name = base::NumberToString(base::RandUint64());
+  client.Bind(
+      mojom::ServicePtrInfo(invitation->AttachMessagePipe(pipe_name), 0));
+  command_line->AppendSwitchASCII(switches::kServicePipeToken, pipe_name);
   return client;
 }
 
 mojom::ServiceRequest GetServiceRequestFromCommandLine(
-    mojo::edk::IncomingBrokerClientInvitation* invitation) {
-  std::string token =
+    mojo::IncomingInvitation* invitation) {
+  std::string pipe_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kServicePipeToken);
-  mojom::ServiceRequest request;
-  if (!token.empty())
-    request = mojom::ServiceRequest(invitation->ExtractMessagePipe(token));
-  return request;
+  return mojom::ServiceRequest(invitation->ExtractMessagePipe(pipe_name));
 }
 
 bool ServiceManagerIsRemote() {

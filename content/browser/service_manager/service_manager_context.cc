@@ -45,8 +45,8 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/interfaces/constants.mojom.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service_factory.h"
 #include "services/catalog/manifest_provider.h"
@@ -405,11 +405,11 @@ ServiceManagerContext::ServiceManagerContext(
   DCHECK(service_manager_thread_task_runner_);
   service_manager::mojom::ServiceRequest packaged_services_request;
   if (service_manager::ServiceManagerIsRemote()) {
-    auto invitation =
-        mojo::edk::IncomingBrokerClientInvitation::AcceptFromCommandLine(
-            mojo::edk::TransportProtocol::kLegacy);
+    auto endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+        *base::CommandLine::ForCurrentProcess());
+    auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
     packaged_services_request =
-        service_manager::GetServiceRequestFromCommandLine(invitation.get());
+        service_manager::GetServiceRequestFromCommandLine(&invitation);
   } else {
     std::unique_ptr<BuiltinManifestProvider> manifest_provider =
         std::make_unique<BuiltinManifestProvider>();

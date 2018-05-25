@@ -13,11 +13,10 @@ source_set("common") {
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
   ]
 
   public_deps = [
-    "//mojo/edk",
+    "//mojo/public/cpp/system",
     "//services/service_manager/public/mojom",
   ]
 }
