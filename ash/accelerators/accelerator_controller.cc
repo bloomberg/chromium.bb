@@ -422,10 +422,12 @@ void HandleToggleMessageCenterBubble() {
   NotificationTray* notification_tray = status_area_widget->notification_tray();
   if (!notification_tray->visible())
     return;
-  if (notification_tray->IsMessageCenterVisible())
+  if (notification_tray->IsMessageCenterVisible()) {
     notification_tray->CloseBubble();
-  else
+  } else {
     notification_tray->ShowBubble(false /* show_by_click */);
+    notification_tray->ActivateBubble();
+  }
 }
 
 void HandleToggleSystemTrayBubble() {

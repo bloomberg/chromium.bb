@@ -87,6 +87,9 @@ class ASH_EXPORT NotificationTray
   void HidePopups() override;
   bool ShowNotifierSettings() override;
 
+  // Activates the notification tray bubble.
+  void ActivateBubble();
+
   message_center::MessageCenter* message_center() const;
 
  private:
