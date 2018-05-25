@@ -634,6 +634,28 @@ set_defaults("loadable_module") {
   }
 }
 
+# Sets default dependencies for executable and shared_library targets.
+#
+# Variables
+#   no_default_deps: If true, no standard dependencies will be added.
+foreach(target_type,
+        [
+          "executable",
+          "shared_library",
+        ]) {
+  template(target_type) {
+    target(target_type, target_name) {
+      forward_variables_from(invoker, "*", [ "no_default_deps" ])
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (!defined(invoker.no_default_deps) || !invoker.no_default_deps) {
+        deps += [ "//build/config:exe_and_shlib_deps" ]
+      }
+    }
+  }
+}
+
 # ==============================================================================
 # COMPONENT SETUP
 # ==============================================================================
@@ -673,13 +695,6 @@ template("component") {
     # See http://crbug.com/594610
     forward_variables_from(invoker, [ "visibility" ])
     forward_variables_from(invoker, "*", [ "visibility" ])
-
-    # All shared libraries must have the sanitizer deps to properly link in
-    # asan mode (this target will be empty in other cases).
-    if (!defined(deps)) {
-      deps = []
-    }
-    deps += [ "//build/config:exe_and_shlib_deps" ]
   }
 }
 

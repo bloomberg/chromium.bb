@@ -6,8 +6,6 @@ import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-defines = [ "GN_BUILD" ]
-
 jumbo_static_library("gn_lib") {
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -263,6 +261,7 @@ action("last_commit_position") {
 # of GN over the large Chrome build, you will want to set the arg:
 #   enable_iterator_debugging = false
 executable("gn") {
+  defines = [ "GN_BUILD" ]
   sources = [
     "gn_main.cc",
   ]
