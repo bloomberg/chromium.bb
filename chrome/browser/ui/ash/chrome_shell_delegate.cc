@@ -11,8 +11,7 @@
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/accessibility_types.h"
-#include "ash/shell.h"
-#include "ash/wm/mru_window_tracker.h"
+#include "ash/screenshot_delegate.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -68,16 +67,6 @@ namespace {
 
 const char kKeyboardShortcutHelpPageUrl[] =
     "https://support.google.com/chromebook/answer/183101";
-
-void InitAfterFirstSessionStart() {
-  // Restore focus after the user session is started.  It's needed because some
-  // windows can be opened in background while login UI is still active because
-  // we currently restore browser windows before login UI is deleted.
-  aura::Window::Windows mru_list =
-      ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-  if (!mru_list.empty())
-    mru_list.front()->Focus();
-}
 
 class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
  public:
@@ -247,12 +236,6 @@ void ChromeShellDelegate::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_SESSION_STARTED:
-      // InitAfterFirstSessionStart() should only be called once upon system
-      // start.
-      if (user_manager::UserManager::Get()->GetLoggedInUsers().size() < 2)
-        InitAfterFirstSessionStart();
-      break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
@@ -260,7 +243,5 @@ void ChromeShellDelegate::Observe(int type,
 
 void ChromeShellDelegate::PlatformInit() {
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
 }

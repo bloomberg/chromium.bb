@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/focus_rules.h"
 #include "ash/wm/switchable_windows.h"
@@ -102,11 +103,13 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 //////////////////////////////////////////////////////////////////////////////
 // MruWindowTracker, public:
 
-MruWindowTracker::MruWindowTracker() : ignore_window_activations_(false) {
+MruWindowTracker::MruWindowTracker() {
   Shell::Get()->activation_client()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
 }
 
 MruWindowTracker::~MruWindowTracker() {
+  Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto* window : mru_windows_)
     window->RemoveObserver(this);
@@ -154,6 +157,20 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
   // to front.
   if (!ignore)
     SetActiveWindow(wm::GetActiveWindow());
+}
+
+// SessionObserver
+
+// Restore focus after the user session has started. This is needed because some
+// windows can be opened in the background while the login UI is still active
+// since we currently restore browser windows before login UI is deleted.
+void MruWindowTracker::OnUserSessionAdded(const AccountId& account_id) {
+  if (user_session_focus_restored_)
+    return;
+  user_session_focus_restored_ = true;
+  aura::Window::Windows mru_list = BuildMruWindowList();
+  if (!mru_list.empty())
+    mru_list.front()->Focus();
 }
 
 //////////////////////////////////////////////////////////////////////////////
