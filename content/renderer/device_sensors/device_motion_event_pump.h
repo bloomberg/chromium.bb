@@ -32,8 +32,6 @@ class CONTENT_EXPORT DeviceMotionEventPump
   // DeviceSensorEventPump:
   void FireEvent() override;
 
-  void SendStartMessageImpl();
-
   SensorEntry accelerometer_;
   SensorEntry linear_acceleration_sensor_;
   SensorEntry gyroscope_;

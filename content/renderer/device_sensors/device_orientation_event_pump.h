@@ -34,8 +34,6 @@ class CONTENT_EXPORT DeviceOrientationEventPump
   void FireEvent() override;
   void DidStartIfPossible() override;
 
-  void SendStartMessageImpl();
-
   SensorEntry relative_orientation_sensor_;
   SensorEntry absolute_orientation_sensor_;
 
