@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/mock_itoastnotifier.h"
+#include "chrome/browser/notifications/win/mock_itoastnotifier.h"
 
 #include <wrl/client.h>
 
-#include "chrome/browser/notifications/notification_launch_id.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win_util.h"
+#include "chrome/browser/notifications/win/notification_launch_id.h"
 
 namespace winui = ABI::Windows::UI;
 

@@ -7,9 +7,9 @@
 #include <wrl/client.h>
 
 #include "base/win/scoped_hstring.h"
-#include "chrome/browser/notifications/notification_launch_id.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win_metrics.h"
-#include "chrome/browser/notifications/notification_template_builder.h"
+#include "chrome/browser/notifications/win/notification_launch_id.h"
+#include "chrome/browser/notifications/win/notification_template_builder.h"
 
 namespace mswr = Microsoft::WRL;
 namespace winfoundtn = ABI::Windows::Foundation;

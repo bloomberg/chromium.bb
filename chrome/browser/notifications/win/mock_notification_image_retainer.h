@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_MOCK_NOTIFICATION_IMAGE_RETAINER_H_
-#define CHROME_BROWSER_NOTIFICATIONS_MOCK_NOTIFICATION_IMAGE_RETAINER_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_NOTIFICATION_IMAGE_RETAINER_H_
+#define CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_NOTIFICATION_IMAGE_RETAINER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification_image_retainer.h"
+#include "chrome/browser/notifications/win/notification_image_retainer.h"
 
 class GURL;
 
@@ -34,4 +34,4 @@ class MockNotificationImageRetainer : public NotificationImageRetainer {
   DISALLOW_COPY_AND_ASSIGN(MockNotificationImageRetainer);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_MOCK_NOTIFICATION_IMAGE_RETAINER_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_NOTIFICATION_IMAGE_RETAINER_H_
