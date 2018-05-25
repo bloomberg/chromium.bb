@@ -81,12 +81,13 @@ var CrSearchFieldBehavior = {
    * @private
    */
   onValueChanged_: function(newValue, noEvent) {
-    if (newValue == this.lastValue_)
+    const effectiveValue = newValue.replace(/\s+/g, ' ');
+    if (effectiveValue == this.lastValue_)
       return;
 
-    this.lastValue_ = newValue;
+    this.lastValue_ = effectiveValue;
 
     if (!noEvent)
-      this.fire('search-changed', newValue);
+      this.fire('search-changed', effectiveValue);
   },
 };
