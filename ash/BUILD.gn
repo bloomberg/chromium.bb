@@ -884,6 +884,7 @@ component("ash") {
     "system/unified/accessibility_feature_pod_controller.h",
     "system/unified/collapse_button.cc",
     "system/unified/collapse_button.h",
+    "system/unified/detailed_view_controller.h",
     "system/unified/feature_pod_button.cc",
     "system/unified/feature_pod_button.h",
     "system/unified/feature_pod_controller_base.cc",
