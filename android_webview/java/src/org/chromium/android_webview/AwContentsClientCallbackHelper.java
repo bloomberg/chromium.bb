@@ -255,8 +255,11 @@ public class AwContentsClientCallbackHelper {
     }
 
     public AwContentsClientCallbackHelper(Looper looper, AwContentsClient contentsClient) {
-        mHandler = new MyHandler(looper);
-        mContentsClient = contentsClient;
+        try (ScopedSysTraceEvent e =
+                        ScopedSysTraceEvent.scoped("AwContentsClientCallbackHelper.constructor")) {
+            mHandler = new MyHandler(looper);
+            mContentsClient = contentsClient;
+        }
     }
 
     // Public for tests.

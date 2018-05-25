@@ -66,7 +66,10 @@ public abstract class AwContentsClient {
 
     // Alllow injection of the callback thread, for testing.
     public AwContentsClient(Looper looper) {
-        mCallbackHelper = new AwContentsClientCallbackHelper(looper, this);
+        try (ScopedSysTraceEvent e =
+                        ScopedSysTraceEvent.scoped("AwContentsClient.constructorOneArg")) {
+            mCallbackHelper = new AwContentsClientCallbackHelper(looper, this);
+        }
     }
 
     final AwContentsClientCallbackHelper getCallbackHelper() {
