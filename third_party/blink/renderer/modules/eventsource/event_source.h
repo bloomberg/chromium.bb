@@ -59,7 +59,6 @@ class MODULES_EXPORT EventSource final
       public EventSourceParser::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EventSource);
-  USING_PRE_FINALIZER(EventSource, Dispose);
 
  public:
   static EventSource* Create(ExecutionContext*,
@@ -102,8 +101,6 @@ class MODULES_EXPORT EventSource final
 
  private:
   EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
-
-  void Dispose();
 
   void DidReceiveResponse(unsigned long,
                           const ResourceResponse&,

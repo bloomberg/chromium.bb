@@ -101,17 +101,12 @@ interface CoreProbes {
   void didFinishLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, TimeTicks finishTime, int64_t encoded_data_length, int64_t decodedBodyLength, bool blocked_cross_site_document);
   void didReceiveCORSRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didFailLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceError&);
-  void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
-  void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
   void willDispatchEventSourceEvent(ExecutionContext*, unsigned long identifier, const AtomicString& eventName, const AtomicString& eventId, const String& data);
-  void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
   void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool includeCredentials);
   void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
   void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
   void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);
-  // Detach and remove all references to the given client.
-  void detachClientRequest(ExecutionContext*, ThreadableLoaderClient*);
   void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
   void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
   void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);

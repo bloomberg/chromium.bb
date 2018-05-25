@@ -309,8 +309,6 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
   // corresponds to this line, but divert |cors_flag_| here for convenience.
   if (cors_flag_ && request.GetFetchRequestMode() ==
                         network::mojom::FetchRequestMode::kSameOrigin) {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(
-        GetExecutionContext(), client_);
     ThreadableLoaderClient* client = client_;
     Clear();
     ResourceError error = ResourceError::CancelledDueToAccessCheckError(
@@ -434,8 +432,6 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
   // send a request, preflighted or not, that's guaranteed to be denied.
   if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
           request.Url().Protocol())) {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(
-        GetExecutionContext(), client_);
     DispatchDidFailAccessControlCheck(
         ResourceError::CancelledDueToAccessCheckError(
             request.Url(), ResourceRequestBlockedReason::kOther,
@@ -1166,15 +1162,6 @@ void DocumentThreadableLoader::LoadRequestAsync(
     RawResource::Fetch(new_params, fetcher, this);
   }
   checker_.WillAddClient();
-
-  if (GetResource()->IsLoading()) {
-    unsigned long identifier = GetResource()->Identifier();
-    probe::documentThreadableLoaderStartedLoadingForClient(
-        GetExecutionContext(), identifier, client_);
-  } else {
-    probe::documentThreadableLoaderFailedToStartLoadingForClient(
-        GetExecutionContext(), client_);
-  }
 }
 
 void DocumentThreadableLoader::LoadRequestSync(
@@ -1193,8 +1180,6 @@ void DocumentThreadableLoader::LoadRequestSync(
       fetch_params, loading_context_->GetResourceFetcher());
   ResourceResponse response = resource->GetResponse();
   unsigned long identifier = resource->Identifier();
-  probe::documentThreadableLoaderStartedLoadingForClient(GetExecutionContext(),
-                                                         identifier, client_);
   ThreadableLoaderClient* client = client_;
   const KURL& request_url = request.Url();
 

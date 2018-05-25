@@ -1180,7 +1180,6 @@ void XMLHttpRequest::abort() {
 }
 
 void XMLHttpRequest::Dispose() {
-  probe::detachClientRequest(GetExecutionContext(), this);
   progress_event_throttle_->Stop();
   InternalAbort();
   // TODO(yhirano): Remove this CHECK: see https://crbug.com/570946.

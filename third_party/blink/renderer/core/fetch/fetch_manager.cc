@@ -690,7 +690,6 @@ void FetchManager::Loader::Start() {
 }
 
 void FetchManager::Loader::Dispose() {
-  probe::detachClientRequest(execution_context_, this);
   // Prevent notification
   fetch_manager_ = nullptr;
   if (threadable_loader_) {
