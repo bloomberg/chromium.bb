@@ -647,13 +647,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Whether sync has been authenticated with an account ID.
   bool IsSignedIn() const;
 
-  // The engine can only start if sync can start and has an auth token. This is
-  // different fron CanSyncStart because it represents whether the engine can
-  // be started at this moment, whereas CanSyncStart represents whether sync can
-  // conceptually start without further user action (acquiring a token is an
-  // automatic process).
-  bool CanEngineStart() const;
-
   // True if a syncing engine exists.
   bool HasSyncingEngine() const;
 

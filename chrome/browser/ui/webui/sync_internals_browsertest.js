@@ -267,19 +267,31 @@ TEST_F('SyncInternalsWebUITest', 'LoadPastedAboutInfo', function() {
 });
 
 TEST_F('SyncInternalsWebUITest', 'NetworkEventsTest', function() {
-  networkEvent1 = new Event('onProtocolEvent');
+  let networkEvent1 = new Event('onProtocolEvent');
   networkEvent1.details = NETWORK_EVENT_DETAILS_1;
-  networkEvent2 = new Event('onProtocolEvent');
+  let networkEvent2 = new Event('onProtocolEvent');
   networkEvent2.details = NETWORK_EVENT_DETAILS_2;
 
   chrome.sync.events.dispatchEvent(networkEvent1);
   chrome.sync.events.dispatchEvent(networkEvent2);
 
-  expectEquals(2, $('traffic-event-container').children.length);
+  // Make sure that both events arrived.
+  let eventCount = $('traffic-event-container').children.length;
+  assertGE(eventCount, 2);
+
+  // Check that the event details are displayed.
+  let displayedEvent1 = $('traffic-event-container').children[eventCount - 2];
+  let displayedEvent2 = $('traffic-event-container').children[eventCount - 1];
+  expectTrue(
+      displayedEvent1.innerHTML.includes(NETWORK_EVENT_DETAILS_1.details));
+  expectTrue(displayedEvent1.innerHTML.includes(NETWORK_EVENT_DETAILS_1.type));
+  expectTrue(
+      displayedEvent2.innerHTML.includes(NETWORK_EVENT_DETAILS_2.details));
+  expectTrue(displayedEvent2.innerHTML.includes(NETWORK_EVENT_DETAILS_2.type));
 
   // Test that repeated events are not re-displayed.
   chrome.sync.events.dispatchEvent(networkEvent1);
-  expectEquals(2, $('traffic-event-container').children.length);
+  expectEquals(eventCount, $('traffic-event-container').children.length);
 });
 
 TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',
@@ -373,14 +385,15 @@ TEST_F('SyncInternalsWebUITest', 'EventLogTest', function() {
 
   // Verify that it is displayed in the events log.
   var syncEventsTable = $('sync-events');
-  var firstRow = syncEventsTable.children[0];
+  assertGE(syncEventsTable.children.length, 1);
+  var lastRow = syncEventsTable.children[syncEventsTable.children.length - 1];
 
   // Makes some assumptions about column ordering.  We'll need re-think this if
   // it turns out to be a maintenance burden.
-  assertEquals(4, firstRow.children.length);
-  var detailsText = firstRow.children[0].textContent;
-  var submoduleName = firstRow.children[1].textContent;
-  var eventName = firstRow.children[2].textContent;
+  assertEquals(4, lastRow.children.length);
+  var detailsText = lastRow.children[0].textContent;
+  var submoduleName = lastRow.children[1].textContent;
+  var eventName = lastRow.children[2].textContent;
 
   expectGE(submoduleName.indexOf('manager'), 0,
       'submoduleName=' + submoduleName);

@@ -56,11 +56,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   // an empty AccountInfo if there isn't one.
   AccountInfo GetAuthenticatedAccountInfo() const;
 
-  // Returns whether a refresh token is available for the primary account.
-  // TODO(crbug.com/842697, crbug.com/825190): ProfileSyncService shouldn't have
-  // to care about the refresh token state.
-  bool RefreshTokenIsAvailable() const;
-
   const GoogleServiceAuthError& GetLastAuthError() const {
     return last_auth_error_;
   }
@@ -97,8 +92,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
 
-  // Test-only method for inspecting internal state.
+  // Test-only methods for inspecting/modifying internal state.
   bool IsRetryingAccessTokenFetchForTest() const;
+  void ResetRequestAccessTokenBackoffForTest();
 
  private:
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);

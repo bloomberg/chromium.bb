@@ -121,6 +121,9 @@ base::FilePath ProfileHelper::GetProfilePathByUserIdHash(
 // static
 base::FilePath ProfileHelper::GetSigninProfileDir() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // profile_manager can be null in unit tests.
+  if (!profile_manager)
+    return base::FilePath();
   base::FilePath user_data_dir = profile_manager->user_data_dir();
   return user_data_dir.AppendASCII(chrome::kInitialProfile);
 }
