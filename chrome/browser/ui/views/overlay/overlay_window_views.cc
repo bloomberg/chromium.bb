@@ -35,10 +35,10 @@ constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 
-// TODO(apacible): Update sizes per UX feedback and when scaling is determined.
-// http://crbug.com/836389
 constexpr gfx::Size kCloseButtonSize = gfx::Size(42, 42);
 constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(90, 90);
+
+const int kCloseButtonMargin = 8;
 
 // Colors for the control buttons.
 SkColor kBgColor = SK_ColorWHITE;
@@ -364,9 +364,10 @@ ui::Layer* OverlayWindowViews::GetPlayPauseControlsLayer() {
 }
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
-  return gfx::Rect(
-      gfx::Point(GetBounds().size().width() - kCloseButtonSize.width(), 0),
-      kCloseButtonSize);
+  return gfx::Rect(gfx::Point(GetBounds().size().width() -
+                                  kCloseButtonSize.width() - kCloseButtonMargin,
+                              kCloseButtonMargin),
+                   kCloseButtonSize);
 }
 
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
