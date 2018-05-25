@@ -27882,6 +27882,7 @@ from previous Chrome versions.
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="734900932" label="RecurrentInterstitialFeature:enabled"/>
   <int value="736911267" label="ExperimentalCrostiniUI:disabled"/>
+  <int value="737421745" label="enable-accessibility-object-model"/>
   <int value="738868972" label="GdiTextPrinting:disabled"/>
   <int value="745868416" label="disable-system-timezone-automatic-detection"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>

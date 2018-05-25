@@ -444,6 +444,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableDisplayCutoutViewportFit(true);
 #endif
 
+  if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
+    WebRuntimeFeatures::EnableAccessibilityObjectModel(true);
+
   // End individual features.
   // Do not add individual features below this line.
 

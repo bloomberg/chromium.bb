@@ -210,6 +210,9 @@ extern const char kEasyUnlockPromotionsDescription[];
 extern const char kEmbeddedExtensionOptionsName[];
 extern const char kEmbeddedExtensionOptionsDescription[];
 
+extern const char kEnableAccessibilityObjectModelName[];
+extern const char kEnableAccessibilityObjectModelDescription[];
+
 extern const char kEnableAsmWasmName[];
 extern const char kEnableAsmWasmDescription[];
 
