@@ -258,6 +258,7 @@ void V8AbstractEventListener::WrapperCleared(
 }
 
 void V8AbstractEventListener::Trace(blink::Visitor* visitor) {
+  visitor->Trace(listener_.Cast<v8::Value>());
   visitor->Trace(worker_or_worklet_global_scope_);
   EventListener::Trace(visitor);
 }

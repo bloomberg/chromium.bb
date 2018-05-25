@@ -95,6 +95,7 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
 }
 
 void ErrorEvent::Trace(blink::Visitor* visitor) {
+  visitor->Trace(error_);
   Event::Trace(visitor);
 }
 

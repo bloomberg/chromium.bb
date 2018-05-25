@@ -15,7 +15,8 @@ namespace blink {
 // Small shim around TraceWrapperReference<v8::String> with a few
 // utility methods. Internally, v8::String is represented as string
 // rope.
-class PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
+class GC_PLUGIN_IGNORE("crbug.com/841830")
+    PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
   DISALLOW_COPY_AND_ASSIGN(TraceWrapperV8String);
   DISALLOW_NEW();
 
@@ -31,6 +32,8 @@ class PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
 
   void Concat(v8::Isolate*, const String&);
   String Flatten(v8::Isolate*) const;
+
+  virtual void Trace(Visitor* visitor) { visitor->Trace(string_); }
 
   void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(string_);

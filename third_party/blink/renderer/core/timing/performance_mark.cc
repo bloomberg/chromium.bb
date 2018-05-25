@@ -36,6 +36,7 @@ ScriptValue PerformanceMark::detail(ScriptState* script_state) const {
 }
 
 void PerformanceMark::Trace(blink::Visitor* visitor) {
+  visitor->Trace(detail_);
   PerformanceEntry::Trace(visitor);
 }
 

@@ -323,7 +323,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   // Avoid using a flat WTF::String here and rather use a traced v8::String
   // which internally builds a string rope.
-  TraceWrapperV8String response_text_;
+  GC_PLUGIN_IGNORE("crbug.com/841830") TraceWrapperV8String response_text_;
   TraceWrapperMember<Document> response_document_;
   Member<DocumentParser> response_document_parser_;
 

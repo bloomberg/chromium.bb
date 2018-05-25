@@ -18,6 +18,10 @@ CallbackFunctionBase::CallbackFunctionBase(
   incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
+void CallbackFunctionBase::Trace(Visitor* visitor) {
+  visitor->Trace(callback_function_);
+}
+
 void CallbackFunctionBase::TraceWrappers(
     ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_function_);

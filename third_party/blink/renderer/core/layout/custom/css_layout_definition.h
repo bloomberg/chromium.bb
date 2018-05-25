@@ -80,7 +80,7 @@ class CSSLayoutDefinition final
     return layout_.NewLocal(isolate);
   }
 
-  void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(blink::Visitor* visitor);
   void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "CSSLayoutDefinition";

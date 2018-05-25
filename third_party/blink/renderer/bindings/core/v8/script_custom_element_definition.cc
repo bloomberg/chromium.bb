@@ -121,6 +121,15 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     attribute_changed_callback_.Set(isolate, attribute_changed_callback);
 }
 
+void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
+  visitor->Trace(constructor_.Cast<v8::Value>());
+  visitor->Trace(connected_callback_.Cast<v8::Value>());
+  visitor->Trace(disconnected_callback_.Cast<v8::Value>());
+  visitor->Trace(adopted_callback_.Cast<v8::Value>());
+  visitor->Trace(attribute_changed_callback_.Cast<v8::Value>());
+  CustomElementDefinition::Trace(visitor);
+}
+
 void ScriptCustomElementDefinition::TraceWrappers(
     ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(constructor_.Cast<v8::Value>());

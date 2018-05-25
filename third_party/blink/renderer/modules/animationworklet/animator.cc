@@ -25,6 +25,7 @@ Animator::~Animator() = default;
 void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
   visitor->Trace(effect_);
+  visitor->Trace(instance_.Cast<v8::Value>());
 }
 
 void Animator::TraceWrappers(ScriptWrappableVisitor* visitor) const {
