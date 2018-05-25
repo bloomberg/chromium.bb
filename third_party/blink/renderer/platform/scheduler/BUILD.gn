@@ -68,6 +68,7 @@ blink_platform_sources("scheduler") {
     "child/worker_scheduler_proxy.h",
     "child/worker_task_queue.cc",
     "child/worker_task_queue.h",
+    "common/frame_or_worker_scheduler.cc",
     "common/scheduler_helper.cc",
     "common/scheduler_helper.h",
     "common/thread_scheduler.cc",

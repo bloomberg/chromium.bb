@@ -23,58 +23,11 @@ class FrameScheduler : public FrameOrWorkerScheduler {
  public:
   ~FrameScheduler() override = default;
 
-  // Observer type that regulates conditions to invoke callbacks.
-  enum class ObserverType { kLoader, kWorkerScheduler };
-
-  // Represents throttling state.
-  // TODO(altimin): Move it into standalone LifecycleState.
-  enum class ThrottlingState {
-    // Frame is active and should not be throttled.
-    kNotThrottled,
-    // Frame has just been backgrounded and can be throttled non-aggressively.
-    kHidden,
-    // Frame spent some time in background and can be fully throttled.
-    kThrottled,
-    // Frame is stopped, no tasks associated with it can run.
-    kStopped,
-  };
-
-  PLATFORM_EXPORT static const char* ThrottlingStateToString(
-      ThrottlingState state);
-
   // Represents the type of frame: main (top-level) vs not.
   enum class FrameType {
     kMainFrame,
     kSubframe,
   };
-
-  // Observer interface to receive scheduling policy change events.
-  class Observer {
-   public:
-    virtual ~Observer() = default;
-
-    // Notified when throttling state is changed. May be called consecutively
-    // with the same value.
-    virtual void OnThrottlingStateChanged(ThrottlingState) = 0;
-  };
-
-  class ThrottlingObserverHandle {
-   public:
-    ThrottlingObserverHandle() = default;
-    virtual ~ThrottlingObserverHandle() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandle);
-  };
-
-  // Adds an Observer instance to be notified on scheduling policy changed.
-  // When an Observer is added, the initial state will be notified synchronously
-  // through the Observer interface.
-  // A RAII handle is returned and observer is unregistered when the handle is
-  // destroyed.
-  virtual std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
-      ObserverType,
-      Observer*) = 0;
 
   // The scheduler may throttle tasks associated with offscreen frames.
   virtual void SetFrameVisible(bool) = 0;
@@ -168,6 +121,8 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // use GetPageScheduler()->IsExemptFromBudgetBasedThrottling for the status
   // of the page.
   virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
+
+  FrameScheduler* ToFrameScheduler() override { return this; }
 };
 
 }  // namespace blink

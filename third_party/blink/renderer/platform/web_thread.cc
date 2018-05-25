@@ -19,7 +19,7 @@ namespace blink {
 WebThreadCreationParams::WebThreadCreationParams(WebThreadType thread_type)
     : thread_type(thread_type),
       name(GetNameForThreadType(thread_type)),
-      frame_scheduler(nullptr) {}
+      frame_or_worker_scheduler(nullptr) {}
 
 WebThreadCreationParams& WebThreadCreationParams::SetThreadNameForTest(
     const char* thread_name) {
@@ -27,9 +27,9 @@ WebThreadCreationParams& WebThreadCreationParams::SetThreadNameForTest(
   return *this;
 }
 
-WebThreadCreationParams& WebThreadCreationParams::SetFrameScheduler(
-    FrameScheduler* scheduler) {
-  frame_scheduler = scheduler;
+WebThreadCreationParams& WebThreadCreationParams::SetFrameOrWorkerScheduler(
+    FrameOrWorkerScheduler* scheduler) {
+  frame_or_worker_scheduler = scheduler;
   return *this;
 }
 

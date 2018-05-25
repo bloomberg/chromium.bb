@@ -24,23 +24,6 @@
 
 namespace blink {
 
-// static
-const char* FrameScheduler::ThrottlingStateToString(ThrottlingState state) {
-  switch (state) {
-    case ThrottlingState::kNotThrottled:
-      return "not throttled";
-    case ThrottlingState::kHidden:
-      return "hidden";
-    case ThrottlingState::kThrottled:
-      return "throttled";
-    case ThrottlingState::kStopped:
-      return "frozen";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
 namespace scheduler {
 
 using base::sequence_manager::TaskQueue;
@@ -88,19 +71,10 @@ FrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
 }
 
 FrameSchedulerImpl::ActiveConnectionHandleImpl::~ActiveConnectionHandleImpl() {
-  if (frame_scheduler_)
-    frame_scheduler_->DidCloseActiveConnection();
-}
-
-FrameSchedulerImpl::ThrottlingObserverHandleImpl::ThrottlingObserverHandleImpl(
-    FrameSchedulerImpl* frame_scheduler,
-    Observer* observer)
-    : frame_scheduler_(frame_scheduler->GetWeakPtr()), observer_(observer) {}
-
-FrameSchedulerImpl::ThrottlingObserverHandleImpl::
-    ~ThrottlingObserverHandleImpl() {
-  if (frame_scheduler_)
-    frame_scheduler_->RemoveThrottlingObserver(observer_);
+  if (frame_scheduler_) {
+    static_cast<FrameSchedulerImpl*>(frame_scheduler_.get())
+        ->DidCloseActiveConnection();
+  }
 }
 
 FrameSchedulerImpl::FrameSchedulerImpl(
@@ -158,8 +132,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                                     "FrameScheduler.KeepActive",
                                     this,
                                     &tracing_controller_,
-                                    KeepActiveStateToString),
-      weak_factory_(this) {}
+                                    KeepActiveStateToString) {}
 
 namespace {
 
@@ -175,8 +148,6 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
 }  // namespace
 
 FrameSchedulerImpl::~FrameSchedulerImpl() {
-  weak_factory_.InvalidateWeakPtrs();
-
   RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
 
   CleanUpQueue(loading_task_queue_.get());
@@ -217,22 +188,6 @@ void FrameSchedulerImpl::
   time_budget_pool->RemoveQueue(
       main_thread_scheduler_->tick_clock()->NowTicks(),
       throttleable_task_queue_.get());
-}
-
-std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
-FrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
-                                          Observer* observer) {
-  DCHECK(observer);
-  observer->OnThrottlingStateChanged(CalculateThrottlingState(type));
-  throttling_observers_[observer] = type;
-  return std::make_unique<ThrottlingObserverHandleImpl>(this, observer);
-}
-
-void FrameSchedulerImpl::RemoveThrottlingObserver(Observer* observer) {
-  DCHECK(observer);
-  const auto found = throttling_observers_.find(observer);
-  DCHECK(throttling_observers_.end() != found);
-  throttling_observers_.erase(found);
 }
 
 void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
@@ -606,13 +561,6 @@ void FrameSchedulerImpl::UpdateQueuePolicy(
   voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 
-void FrameSchedulerImpl::NotifyThrottlingObservers() {
-  for (const auto& observer : throttling_observers_) {
-    observer.first->OnThrottlingStateChanged(
-        CalculateThrottlingState(observer.second));
-  }
-}
-
 FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
     ObserverType type) const {
   // Detached frames are not throttled.
@@ -673,10 +621,6 @@ void FrameSchedulerImpl::UpdateThrottling() {
     main_thread_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
         throttleable_task_queue_.get());
   }
-}
-
-base::WeakPtr<FrameSchedulerImpl> FrameSchedulerImpl::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 bool FrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {

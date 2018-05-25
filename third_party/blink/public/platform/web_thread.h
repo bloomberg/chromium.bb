@@ -42,7 +42,7 @@ class TaskTimeObserver;
 
 namespace blink {
 
-class FrameScheduler;
+class FrameOrWorkerScheduler;
 class ThreadScheduler;
 
 // Always an integer value.
@@ -53,13 +53,13 @@ struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
 
   WebThreadCreationParams& SetThreadNameForTest(const char* name);
 
-  // Sets a scheduler for the frame which was responsible for the creation
+  // Sets a scheduler for the context which was responsible for the creation
   // of this thread.
-  WebThreadCreationParams& SetFrameScheduler(FrameScheduler*);
+  WebThreadCreationParams& SetFrameOrWorkerScheduler(FrameOrWorkerScheduler*);
 
   WebThreadType thread_type;
   const char* name;
-  FrameScheduler* frame_scheduler;  // NOT OWNED
+  FrameOrWorkerScheduler* frame_or_worker_scheduler;  // NOT OWNED
   base::Thread::Options thread_options;
 };
 

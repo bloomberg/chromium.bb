@@ -59,9 +59,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   ~FrameSchedulerImpl() override;
 
   // FrameScheduler implementation:
-  std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
-      ObserverType,
-      Observer*) override;
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;
   bool IsPageVisible() const override;
@@ -109,22 +106,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
     ~ActiveConnectionHandleImpl() override;
 
    private:
-    base::WeakPtr<FrameSchedulerImpl> frame_scheduler_;
+    base::WeakPtr<FrameOrWorkerScheduler> frame_scheduler_;
 
     DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
-  };
-
-  class ThrottlingObserverHandleImpl : public ThrottlingObserverHandle {
-   public:
-    ThrottlingObserverHandleImpl(FrameSchedulerImpl* frame_scheduler,
-                                 Observer* observer);
-    ~ThrottlingObserverHandleImpl() override;
-
-   private:
-    base::WeakPtr<FrameSchedulerImpl> frame_scheduler_;
-    Observer* observer_;
-
-    DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandleImpl);
   };
 
   void DetachFromPageScheduler();
@@ -132,13 +116,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
   FrameScheduler::ThrottlingState CalculateThrottlingState(
-      ObserverType type) const;
-  void RemoveThrottlingObserver(Observer* observer);
+      ObserverType type) const override;
   void UpdateQueuePolicy(
       const scoped_refptr<MainThreadTaskQueue>& queue,
       base::sequence_manager::TaskQueue::QueueEnabledVoter* voter);
   void UpdateThrottling();
-  void NotifyThrottlingObservers();
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
@@ -149,8 +131,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   scoped_refptr<base::sequence_manager::TaskQueue> DeferrableTaskQueue();
   scoped_refptr<base::sequence_manager::TaskQueue> PausableTaskQueue();
   scoped_refptr<base::sequence_manager::TaskQueue> UnpausableTaskQueue();
-
-  base::WeakPtr<FrameSchedulerImpl> GetWeakPtr();
 
   const FrameScheduler::FrameType frame_type_;
 
@@ -174,8 +154,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
-  // Observers are not owned by the scheduler.
-  std::unordered_map<Observer*, ObserverType> throttling_observers_;
   FrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
@@ -196,7 +174,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
       page_visibility_for_tracing_;
   TraceableState<bool, kTracingCategoryNameInfo> page_keep_active_for_tracing_;
 
-  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };

@@ -75,16 +75,13 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       worker_metrics_helper_(thread_type),
       default_task_runner_(TaskQueueWithTaskType::Create(
           helper_->DefaultWorkerTaskQueue(),
-          TaskType::kWorkerThreadTaskQueueDefault)),
-      weak_factory_(this) {
+          TaskType::kWorkerThreadTaskQueueDefault)) {
   thread_start_time_ = helper_->NowTicks();
   load_tracker_.Resume(thread_start_time_);
   helper_->AddTaskTimeObserver(this);
 
-  if (proxy) {
-    worker_metrics_helper_.SetParentFrameType(proxy->parent_frame_type());
-    proxy->OnWorkerSchedulerCreated(GetWeakPtr());
-  }
+  if (proxy && proxy->parent_frame_type())
+    worker_metrics_helper_.SetParentFrameType(*proxy->parent_frame_type());
 
   if (thread_type == WebThreadType::kDedicatedWorkerThread &&
       base::FeatureList::IsEnabled(kDedicatedWorkerThrottling)) {
@@ -235,10 +232,6 @@ void WorkerThreadScheduler::RegisterWorkerScheduler(
 
 scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::ControlTaskQueue() {
   return helper_->ControlWorkerTaskQueue();
-}
-
-base::WeakPtr<WorkerThreadScheduler> WorkerThreadScheduler::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void WorkerThreadScheduler::CreateTaskQueueThrottler() {

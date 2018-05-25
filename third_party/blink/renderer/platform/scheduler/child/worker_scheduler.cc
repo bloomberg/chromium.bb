@@ -5,24 +5,34 @@
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {
 
-WorkerScheduler::WorkerScheduler(
-    NonMainThreadScheduler* non_main_thread_scheduler)
-    : default_task_queue_(non_main_thread_scheduler->CreateTaskRunner()),
-      throttleable_task_queue_(non_main_thread_scheduler->CreateTaskRunner()),
-      thread_scheduler_(non_main_thread_scheduler) {
+WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
+                                 WorkerSchedulerProxy* proxy)
+    : default_task_queue_(worker_thread_scheduler->CreateTaskRunner()),
+      throttleable_task_queue_(worker_thread_scheduler->CreateTaskRunner()),
+      thread_scheduler_(worker_thread_scheduler),
+      weak_factory_(this) {
   thread_scheduler_->RegisterWorkerScheduler(this);
   if (WakeUpBudgetPool* wake_up_budget_pool =
           thread_scheduler_->wake_up_budget_pool()) {
     wake_up_budget_pool->AddQueue(thread_scheduler_->GetTickClock()->NowTicks(),
                                   throttleable_task_queue_.get());
   }
+
+  // |proxy| can be nullptr in unit tests.
+  if (proxy)
+    proxy->OnWorkerSchedulerCreated(GetWeakPtr());
+}
+
+base::WeakPtr<WorkerScheduler> WorkerScheduler::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 WorkerScheduler::~WorkerScheduler() {
@@ -34,6 +44,11 @@ WorkerScheduler::~WorkerScheduler() {
 std::unique_ptr<FrameOrWorkerScheduler::ActiveConnectionHandle>
 WorkerScheduler::OnActiveConnectionCreated() {
   return nullptr;
+}
+
+FrameOrWorkerScheduler::ThrottlingState
+WorkerScheduler::CalculateThrottlingState(ObserverType) const {
+  return thread_scheduler_->throttling_state();
 }
 
 void WorkerScheduler::Dispose() {
@@ -117,10 +132,11 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
 }
 
 void WorkerScheduler::OnThrottlingStateChanged(
-    FrameScheduler::ThrottlingState throttling_state) {
+    ThrottlingState throttling_state) {
   if (throttling_state_ == throttling_state)
     return;
   throttling_state_ = throttling_state;
+  thread_scheduler_->OnThrottlingStateChanged(throttling_state);
 
   if (TaskQueueThrottler* throttler =
           thread_scheduler_->task_queue_throttler()) {
@@ -130,6 +146,7 @@ void WorkerScheduler::OnThrottlingStateChanged(
       throttler->DecreaseThrottleRefCount(throttleable_task_queue_.get());
     }
   }
+  NotifyThrottlingObservers();
 }
 
 scoped_refptr<base::sequence_manager::TaskQueue>

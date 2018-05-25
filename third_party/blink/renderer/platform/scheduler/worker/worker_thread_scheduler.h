@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
@@ -74,6 +73,12 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   virtual void OnThrottlingStateChanged(
       FrameScheduler::ThrottlingState throttling_state);
 
+  FrameScheduler::ThrottlingState throttling_state() const {
+    return throttling_state_;
+  }
+
+  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler) override;
+
   // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
   // task queues.
@@ -92,18 +97,10 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   void OnIdlePeriodEnded() override {}
   void OnPendingTasksChanged(bool new_state) override {}
 
-  FrameScheduler::ThrottlingState throttling_state() const {
-    return throttling_state_;
-  }
-
-  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler) override;
-
   void CreateTaskQueueThrottler();
 
  private:
   void MaybeStartLongIdlePeriod();
-
-  base::WeakPtr<WorkerThreadScheduler> GetWeakPtr();
 
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -118,8 +115,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   WorkerMetricsHelper worker_metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-
-  base::WeakPtrFactory<WorkerThreadScheduler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);
 };

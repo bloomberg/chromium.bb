@@ -41,20 +41,18 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 
 namespace {
 
-FrameScheduler* GetFrameScheduler(ThreadableLoadingContext* loading_context) {
+FrameOrWorkerScheduler* GetFrameOrWorkerScheduler(
+    ThreadableLoadingContext* loading_context) {
   // |loading_context| can be null in unittests.
   if (!loading_context)
     return nullptr;
-  if (!loading_context->GetExecutionContext()->IsDocument())
-    return nullptr;
-  return ToDocument(loading_context->GetExecutionContext())
-      ->GetFrame()
-      ->GetFrameScheduler();
+  return loading_context->GetExecutionContext()->GetScheduler();
 }
 
 }  // namespace
@@ -72,7 +70,8 @@ DedicatedWorkerThread::DedicatedWorkerThread(
     : WorkerThread(loading_context, worker_object_proxy),
       worker_backing_thread_(WorkerBackingThread::Create(
           WebThreadCreationParams(GetThreadType())
-              .SetFrameScheduler(GetFrameScheduler(loading_context)))),
+              .SetFrameOrWorkerScheduler(
+                  GetFrameOrWorkerScheduler(loading_context)))),
       worker_object_proxy_(worker_object_proxy) {}
 
 DedicatedWorkerThread::~DedicatedWorkerThread() = default;

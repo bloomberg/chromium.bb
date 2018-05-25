@@ -53,7 +53,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -418,7 +418,9 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
       static_cast<scheduler::WebThreadImplForWorkerScheduler&>(
           GetWorkerBackingThread().BackingThread().PlatformThread());
   worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
-      web_thread_for_worker.GetNonMainThreadScheduler());
+      static_cast<scheduler::WorkerThreadScheduler*>(
+          web_thread_for_worker.GetNonMainThreadScheduler()),
+      web_thread_for_worker.worker_scheduler_proxy());
   waitable_event->Signal();
 }
 

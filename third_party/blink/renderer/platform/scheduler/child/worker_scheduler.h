@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_WORKER_SCHEDULER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
@@ -15,7 +16,8 @@ namespace blink {
 
 namespace scheduler {
 
-class NonMainThreadScheduler;
+class WorkerSchedulerProxy;
+class WorkerThreadScheduler;
 
 // A scheduler provides per-global-scope task queues. This is constructed when a
 // global scope is created and destructed when it's closed.
@@ -23,7 +25,8 @@ class NonMainThreadScheduler;
 // Unless stated otherwise, all methods must be called on the worker thread.
 class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
  public:
-  explicit WorkerScheduler(NonMainThreadScheduler* non_main_thread_scheduler);
+  WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
+                  WorkerSchedulerProxy* proxy);
   ~WorkerScheduler() override;
 
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
@@ -37,25 +40,34 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   // This must be called only from WorkerThread::GetTaskRunner().
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) const;
 
-  void OnThrottlingStateChanged(
-      FrameScheduler::ThrottlingState throtting_state);
+  WorkerThreadScheduler* GetWorkerThreadScheduler() const {
+    return thread_scheduler_;
+  }
+
+  void OnThrottlingStateChanged(ThrottlingState throttling_state);
+
+  ThrottlingState CalculateThrottlingState(ObserverType) const override;
 
  protected:
   scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue();
   scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
 
  private:
+  base::WeakPtr<WorkerScheduler> GetWeakPtr();
+
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
   scoped_refptr<base::sequence_manager::TaskQueue> throttleable_task_queue_;
 
   FrameScheduler::ThrottlingState throttling_state_ =
       FrameScheduler::ThrottlingState::kNotThrottled;
 
-  NonMainThreadScheduler* thread_scheduler_;  // NOT OWNED
+  WorkerThreadScheduler* thread_scheduler_;  // NOT OWNED
 
 #if DCHECK_IS_ON()
   bool is_disposed_ = false;
 #endif
+
+  base::WeakPtrFactory<WorkerScheduler> weak_factory_;
 };
 
 }  // namespace scheduler

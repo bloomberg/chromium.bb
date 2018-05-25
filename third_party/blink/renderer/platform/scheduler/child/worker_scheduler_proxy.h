@@ -8,62 +8,69 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 namespace scheduler {
-class WorkerThreadScheduler;
+class WorkerScheduler;
 
-// Helper class for communication between frame scheduler (main thread) and
-// worker scheduler (worker thread).
+// Helper class for communication between parent scheduler (may be a frame
+// scheduler on the main thread or another woker scheduler on a worker thread)
+// and worker scheduler (worker thread).
 //
 // It's owned by DedicatedWorkerThread and is created and destroyed
-// on the main thread. It's passed to WorkerScheduler during its construction.
-// Given that DedicatedWorkerThread object outlives worker thread, this class
-// outlives worker thread too.
-class PLATFORM_EXPORT WorkerSchedulerProxy : public FrameScheduler::Observer {
+// on the parent thread. It's passed to WorkerScheduler during its
+// construction. Given that DedicatedWorkerThread object outlives worker thread,
+// this class outlives worker thread too.
+class PLATFORM_EXPORT WorkerSchedulerProxy
+    : public FrameOrWorkerScheduler::Observer {
  public:
-  explicit WorkerSchedulerProxy(FrameScheduler* scheduler);
+  explicit WorkerSchedulerProxy(FrameOrWorkerScheduler* scheduler);
   ~WorkerSchedulerProxy() override;
 
   void OnWorkerSchedulerCreated(
-      base::WeakPtr<WorkerThreadScheduler> worker_scheduler);
+      base::WeakPtr<WorkerScheduler> worker_scheduler);
 
   void OnThrottlingStateChanged(
-      FrameScheduler::ThrottlingState throttling_state) override;
+      FrameOrWorkerScheduler::ThrottlingState throttling_state) override;
 
-  // Should be accessed only from the main thread or during init.
-  FrameScheduler::ThrottlingState throttling_state() const {
-    DCHECK(IsMainThread() || !initialized_);
+  // Accessed only during init.
+  FrameOrWorkerScheduler::ThrottlingState throttling_state() const {
+    DCHECK(!initialized_);
     return throttling_state_;
   }
 
-  FrameOriginType parent_frame_type() const {
-    DCHECK(IsMainThread() || !initialized_);
+  // Accessed only during init.
+  base::Optional<FrameOriginType> parent_frame_type() const {
+    DCHECK(!initialized_);
     return parent_frame_type_;
   }
 
  private:
   // Can be accessed only from the worker thread.
-  base::WeakPtr<WorkerThreadScheduler> worker_scheduler_;
+  base::WeakPtr<WorkerScheduler> worker_scheduler_;
 
   // Const after init on the worker thread.
   scoped_refptr<base::SingleThreadTaskRunner> worker_thread_task_runner_;
 
-  FrameScheduler::ThrottlingState throttling_state_ =
-      FrameScheduler::ThrottlingState::kNotThrottled;
+  FrameOrWorkerScheduler::ThrottlingState throttling_state_ =
+      FrameOrWorkerScheduler::ThrottlingState::kNotThrottled;
 
-  std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
+  std::unique_ptr<FrameOrWorkerScheduler::ThrottlingObserverHandle>
       throttling_observer_handle_;
 
   bool initialized_ = false;
 
-  FrameOriginType parent_frame_type_;
+  base::Optional<FrameOriginType> parent_frame_type_;
+
+  THREAD_CHECKER(parent_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerProxy);
 };
