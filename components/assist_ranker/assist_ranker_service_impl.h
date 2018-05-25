@@ -15,8 +15,8 @@
 #include "components/assist_ranker/assist_ranker_service.h"
 #include "components/assist_ranker/predictor_config.h"
 
-namespace network {
-class SharedURLLoaderFactory;
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace assist_ranker {
@@ -28,7 +28,7 @@ class AssistRankerServiceImpl : public AssistRankerService {
  public:
   AssistRankerServiceImpl(
       base::FilePath base_path,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      net::URLRequestContextGetter* url_request_context_getter);
   ~AssistRankerServiceImpl() override;
 
   // AssistRankerService...
@@ -39,8 +39,8 @@ class AssistRankerServiceImpl : public AssistRankerService {
   // Returns the full path to the model cache.
   base::FilePath GetModelPath(const std::string& model_filename);
 
-  // URL loader factory used for RankerURLFetcher.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  // Request Context Getter used for RankerURLFetcher.
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Base path where models are stored.
   const base::FilePath base_path_;

@@ -5,8 +5,5 @@ include_rules = [
   "+components/ukm",
   "+net",
   "+services/metrics/public",
-  "+services/network/public/cpp",
-  "+services/network/public/mojom",
-  "+services/network/test",
   "+third_party/protobuf",
 ]

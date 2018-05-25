@@ -63,7 +63,6 @@ static_library("browser") {
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
-    "//services/network/public/cpp:cpp",
     "//third_party/icu",
     "//third_party/metrics_proto",
     "//ui/base",
