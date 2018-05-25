@@ -85,8 +85,8 @@ const AXPosition AXPosition::CreateLastPositionInObject(
 // static
 const AXPosition AXPosition::CreatePositionInTextObject(
     const AXObject& container,
-    int offset,
-    TextAffinity affinity) {
+    const int offset,
+    const TextAffinity affinity) {
   DCHECK(container.GetNode() && container.GetNode()->IsTextNode())
       << "Text positions should be anchored to a text node.";
   AXPosition position(container);
@@ -97,7 +97,8 @@ const AXPosition AXPosition::CreatePositionInTextObject(
 }
 
 // static
-const AXPosition AXPosition::FromPosition(const Position& position) {
+const AXPosition AXPosition::FromPosition(const Position& position,
+                                          const TextAffinity affinity) {
   if (position.IsNull() || position.IsOrphan())
     return {};
 
@@ -124,26 +125,32 @@ const AXPosition AXPosition::FromPosition(const Position& position) {
     int offset =
         TextIterator::RangeLength(first_position, parent_anchored_position);
     ax_position.text_offset_or_child_index_ = offset;
-    DCHECK(ax_position.IsValid());
-    return ax_position;
+  } else {
+    const Node* node_after_position = position.ComputeNodeAfterPosition();
+    if (!node_after_position) {
+      ax_position.text_offset_or_child_index_ = container->ChildCount();
+    } else {
+      const AXObject* ax_child =
+          ax_object_cache_impl->GetOrCreate(node_after_position);
+      DCHECK(ax_child);
+      if (ax_child->IsDescendantOf(*container)) {
+        ax_position.text_offset_or_child_index_ = ax_child->IndexInParent();
+      } else {
+        return CreatePositionBeforeObject(*ax_child);
+      }
+    }
   }
 
-  const Node* node_after_position = position.ComputeNodeAfterPosition();
-  if (!node_after_position) {
-    ax_position.text_offset_or_child_index_ = container->ChildCount();
-    DCHECK(ax_position.IsValid());
-    return ax_position;
-  }
+  ax_position.affinity_ = affinity;
+  DCHECK(ax_position.IsValid());
+  return ax_position;
+}
 
-  const AXObject* ax_child =
-      ax_object_cache_impl->GetOrCreate(node_after_position);
-  DCHECK(ax_child);
-  if (ax_child->IsDescendantOf(*container)) {
-    ax_position.text_offset_or_child_index_ = ax_child->IndexInParent();
-    DCHECK(ax_position.IsValid());
-    return ax_position;
-  }
-  return CreatePositionBeforeObject(*ax_child);
+// static
+const AXPosition AXPosition::FromPosition(
+    const PositionWithAffinity& position_with_affinity) {
+  return FromPosition(position_with_affinity.GetPosition(),
+                      position_with_affinity.Affinity());
 }
 
 // Only for use by |AXSelection| to represent empty selection ranges.

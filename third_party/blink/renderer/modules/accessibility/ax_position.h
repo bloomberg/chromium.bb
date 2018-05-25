@@ -39,9 +39,11 @@ class MODULES_EXPORT AXPosition final {
   static const AXPosition CreateLastPositionInObject(const AXObject& container);
   static const AXPosition CreatePositionInTextObject(
       const AXObject& container,
-      int offset,
-      TextAffinity = TextAffinity::kDownstream);
-  static const AXPosition FromPosition(const Position&);
+      const int offset,
+      const TextAffinity = TextAffinity::kDownstream);
+  static const AXPosition FromPosition(
+      const Position&,
+      const TextAffinity = TextAffinity::kDownstream);
   static const AXPosition FromPosition(const PositionWithAffinity&);
 
   AXPosition(const AXPosition&) = default;
