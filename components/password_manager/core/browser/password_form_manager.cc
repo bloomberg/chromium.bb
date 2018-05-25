@@ -937,14 +937,19 @@ void PasswordFormManager::UploadFirstLoginVotes(
   if (!autofill_manager->ShouldUploadForm(form_structure))
     return;
 
+  FieldTypeMap field_types = {
+      {form_to_upload.username_element, autofill::USERNAME}};
+  VoteTypeMap vote_types = {
+      {form_to_upload.username_element,
+       autofill::AutofillUploadContents::Field::FIRST_USE}};
+  if (!password_overridden_) {
+    field_types[form_to_upload.password_element] = autofill::PASSWORD;
+    vote_types[form_to_upload.password_element] =
+        autofill::AutofillUploadContents::Field::FIRST_USE;
+  }
+
   autofill::ServerFieldTypeSet available_field_types;
-  LabelFields({{form_to_upload.username_element, autofill::USERNAME},
-               {form_to_upload.password_element, autofill::PASSWORD}},
-              {{form_to_upload.username_element,
-                autofill::AutofillUploadContents::Field::FIRST_USE},
-               {form_to_upload.password_element,
-                autofill::AutofillUploadContents::Field::FIRST_USE}},
-              &form_structure, &available_field_types);
+  LabelFields(field_types, vote_types, &form_structure, &available_field_types);
   SetKnownValueFlag(&form_structure);
 
   // Force uploading as these events are relatively rare and we want to make
@@ -962,11 +967,23 @@ void PasswordFormManager::UploadFirstLoginVotes(
 }
 
 void PasswordFormManager::SetKnownValueFlag(autofill::FormStructure* form) {
+  DCHECK(!password_overridden_ ||
+         best_matches_.find(pending_credentials_.username_value) !=
+             best_matches_.end())
+      << "The credential is being overriden, but it does not exist in "
+         "the best matches.";
+
+  const base::string16& known_username = pending_credentials_.username_value;
+  // If we are updating a password, the known value is the old password, not
+  // the new one.
+  const base::string16& known_password =
+      password_overridden_ ? best_matches_[known_username]->password_value
+                           : pending_credentials_.password_value;
+
   for (auto& field : *form) {
     if (field->value.empty())
       continue;
-    if (pending_credentials_.username_value == field->value ||
-        pending_credentials_.password_value == field->value) {
+    if (known_username == field->value || known_password == field->value) {
       field->properties_mask |= autofill::FieldPropertiesFlags::KNOWN_VALUE;
     }
   }
