@@ -123,6 +123,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   bool mounted() const { return drivefs_has_mounted_ && !mount_path_.empty(); }
   const base::FilePath& mount_path() const { return mount_path_; }
 
+  mojom::DriveFs* GetDriveFsInterface() const { return drivefs_.get(); }
+
   // Accepts the mojo connection over |handle|, delegating to
   // |mojo_connection_delegate_|.
   void AcceptMojoConnection(base::ScopedFD handle) {
@@ -287,6 +289,12 @@ const base::FilePath& DriveFsHost::GetMountPath() const {
   return mount_state_->mount_path();
 }
 
+mojom::DriveFs* DriveFsHost::GetDriveFsInterface() const {
+  if (!mount_state_ || !mount_state_->mounted()) {
+    return nullptr;
+  }
+  return mount_state_->GetDriveFsInterface();
+}
 void DriveFsHost::OnMountEvent(
     chromeos::disks::DiskMountManager::MountEvent event,
     chromeos::MountError error_code,

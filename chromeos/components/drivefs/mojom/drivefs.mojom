@@ -4,6 +4,9 @@
 
 module drivefs.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
+
 // This file tracks platform/drivefs/mojom/drivefs.mojom. Changes should be made
 // there first and then replicated here.
 
@@ -17,6 +20,13 @@ interface DriveFsBootstrap {
 
 // Implemented by DriveFS, used from Chrome.
 interface DriveFs {
+  // Returns the metadata for |path|.
+  GetMetadata(mojo_base.mojom.FilePath path) => (
+      FileError error, FileMetadata? metadata);
+
+  // Sets the file at |path| to pinned or unpinned depending on the value of
+  // |pinned|.
+  SetPinned(mojo_base.mojom.FilePath path, bool pinned) => (FileError error);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -44,4 +54,61 @@ enum AccessTokenStatus {
 
   // Getting an access token failed due to an auth error.
   kAuthError,
+};
+
+enum FileError {
+  // These match the values of drive::FileError in
+  // //components/drive/file_errors.h
+  kOk = 0,
+  kFailed = -1,
+  kInUse = -2,
+  kExists = -3,
+  kNotFound = -4,
+  kAccessDenied = -5,
+  kTooManyOpened = -6,
+  kNoMemory = -7,
+  kNoServerSpace = -8,
+  kNotADirectory = -9,
+  kInvalidOperation = -10,
+  kSecurity = -11,
+  kAbort = -12,
+  kNotAFile = -13,
+  kNotEmpty = -14,
+  kInvalidUrl = -15,
+  kNoConnection = -16,
+  kNoLocalSpace = -17,
+  kServiceUnavailable = -18,
+};
+
+struct FileMetadata {
+  int64 size;
+
+  string content_mime_type;
+
+  string custom_icon_url;
+
+  // A URL to open the file in the Drive website.
+  string alternate_url;
+
+  mojo_base.mojom.Time modification_time;
+  mojo_base.mojom.Time modification_by_me_time;
+
+  bool available_offline;
+  bool dirty;
+  bool hosted;
+  bool pinned;
+  bool shared;
+  bool starred;
+
+  // May be present if the file is an image.
+  ImageMetadata? image_metadata;
+};
+
+struct ImageMetadata {
+  // In pixels.
+  int32 height = 0;
+  int32 width = 0;
+
+  // Rotation in clockwise degrees.
+  int32 rotation = 0;
 };

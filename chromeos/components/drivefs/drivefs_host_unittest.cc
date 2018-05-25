@@ -211,11 +211,9 @@ ACTION_P(RunQuitClosure, quit) {
   std::move(*quit).Run();
 }
 
-class DriveFsHostTest : public ::testing::Test,
-                        public mojom::DriveFsBootstrap,
-                        public mojom::DriveFs {
+class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
  public:
-  DriveFsHostTest() : bootstrap_binding_(this), binding_(this) {}
+  DriveFsHostTest() : bootstrap_binding_(this) {}
 
  protected:
   void SetUp() override {
@@ -300,10 +298,10 @@ class DriveFsHostTest : public ::testing::Test,
   }
 
   void Init(mojom::DriveFsConfigurationPtr config,
-            mojom::DriveFsRequest drive_fs,
+            mojom::DriveFsRequest drive_fs_request,
             mojom::DriveFsDelegatePtr delegate) override {
     EXPECT_EQ("test@example.com", config->user_email);
-    binding_.Bind(std::move(drive_fs));
+    drive_fs_request_ = std::move(drive_fs_request);
     mojo::FuseInterface(std::move(pending_delegate_request_),
                         delegate.PassInterface());
   }
@@ -318,7 +316,7 @@ class DriveFsHostTest : public ::testing::Test,
   std::unique_ptr<DriveFsHost> host_;
 
   mojo::Binding<mojom::DriveFsBootstrap> bootstrap_binding_;
-  mojo::Binding<mojom::DriveFs> binding_;
+  mojom::DriveFsRequest drive_fs_request_;
   mojom::DriveFsDelegatePtr delegate_ptr_;
   mojom::DriveFsDelegateRequest pending_delegate_request_;
 
@@ -360,7 +358,7 @@ TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
   EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/g-ID",
                                           chromeos::UNMOUNT_OPTIONS_NONE, _));
   base::RunLoop run_loop;
-  binding_.set_connection_error_handler(run_loop.QuitClosure());
+  delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());
   host_->Unmount();
   run_loop.Run();
 }
