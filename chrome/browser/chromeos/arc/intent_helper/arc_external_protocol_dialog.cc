@@ -243,15 +243,15 @@ GetActionResult GetAction(
 // Mark as not "safe" (aka return false) on the contrary, most likely those
 // cases will require the user to pass thru the intent picker UI.
 bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlag(
-    WebContents* tab) {
+    WebContents* web_contents) {
   const char* key =
       arc::ArcWebContentsData::ArcWebContentsData::kArcTransitionFlag;
   arc::ArcWebContentsData* arc_data =
-      static_cast<arc::ArcWebContentsData*>(tab->GetUserData(key));
+      static_cast<arc::ArcWebContentsData*>(web_contents->GetUserData(key));
   if (!arc_data)
     return false;
 
-  tab->RemoveUserData(key);
+  web_contents->RemoveUserData(key);
   return true;
 }
 
@@ -579,8 +579,9 @@ GURL GetUrlToNavigateOnDeactivateForTesting(
 }
 
 bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
-    WebContents* tab) {
-  return GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlag(tab);
+    WebContents* web_contents) {
+  return GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlag(
+      web_contents);
 }
 
 bool IsChromeAnAppCandidateForTesting(
