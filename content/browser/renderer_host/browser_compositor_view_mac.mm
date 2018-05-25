@@ -267,7 +267,7 @@ void BrowserCompositorMac::ClearCompositorFrame() {
 bool BrowserCompositorMac::RequestRepaintForTesting() {
   const viz::LocalSurfaceId& new_local_surface_id =
       dfh_local_surface_id_allocator_.GenerateId();
-  delegated_frame_host_->SynchronizeVisualProperties(
+  delegated_frame_host_->EmbedSurface(
       new_local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
   return client_->SynchronizeVisualProperties();
@@ -323,7 +323,7 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   if (needs_new_surface_id) {
     if (recyclable_compositor_)
       recyclable_compositor_->Suspend();
-    GetDelegatedFrameHost()->SynchronizeVisualProperties(
+    GetDelegatedFrameHost()->EmbedSurface(
         dfh_local_surface_id_allocator_.GenerateId(), dfh_size_dip_,
         GetDeadlinePolicy());
   }
@@ -347,7 +347,7 @@ void BrowserCompositorMac::SynchronizeVisualProperties(
                                           new_size_in_pixels);
     dfh_size_pixels_ = new_size_in_pixels;
     root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
-    GetDelegatedFrameHost()->SynchronizeVisualProperties(
+    GetDelegatedFrameHost()->EmbedSurface(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         dfh_size_dip_, GetDeadlinePolicy());
   }
@@ -560,7 +560,7 @@ void BrowserCompositorMac::DidNavigate() {
     dfh_local_surface_id_allocator_.GenerateId();
   const viz::LocalSurfaceId& local_surface_id =
       dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-  delegated_frame_host_->SynchronizeVisualProperties(
+  delegated_frame_host_->EmbedSurface(
       local_surface_id, dfh_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
   client_->SynchronizeVisualProperties();

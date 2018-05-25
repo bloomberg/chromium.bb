@@ -76,9 +76,8 @@ void DelegatedFrameHost::WasShown(
 
   // Use the default deadline to synchronize web content with browser UI.
   // TODO(fsamuel): Investigate if there is a better deadline to use here.
-  SynchronizeVisualProperties(new_pending_local_surface_id,
-                              new_pending_dip_size,
-                              cc::DeadlinePolicy::UseDefaultDeadline());
+  EmbedSurface(new_pending_local_surface_id, new_pending_dip_size,
+               cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 bool DelegatedFrameHost::HasSavedFrame() const {
@@ -216,7 +215,7 @@ bool DelegatedFrameHost::HasFallbackSurface() const {
   return fallback_surface_id && fallback_surface_id->is_valid();
 }
 
-void DelegatedFrameHost::SynchronizeVisualProperties(
+void DelegatedFrameHost::EmbedSurface(
     const viz::LocalSurfaceId& new_pending_local_surface_id,
     const gfx::Size& new_pending_dip_size,
     cc::DeadlinePolicy deadline_policy) {
@@ -238,8 +237,7 @@ void DelegatedFrameHost::SynchronizeVisualProperties(
     }
     // Don't update the SurfaceLayer when invisible to avoid blocking on
     // renderers that do not submit CompositorFrames. Next time the renderer
-    // is visible, SynchronizeVisualProperties will be called again. See
-    // WasShown.
+    // is visible, EmbedSurface will be called again. See WasShown.
     return;
   }
 
