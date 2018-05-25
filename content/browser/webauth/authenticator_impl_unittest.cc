@@ -306,6 +306,24 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     return authenticator;
   }
 
+  AuthenticatorPtr ConstructAuthenticatorWithTimer(
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
+    connector_ = service_manager::Connector::Create(&request_);
+    fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
+    service_manager::Connector::TestApi test_api(connector_.get());
+    test_api.OverrideBinderForTesting(
+        service_manager::Identity(device::mojom::kServiceName),
+        device::mojom::HidManager::Name_,
+        base::Bind(&device::FakeHidManager::AddBinding,
+                   base::Unretained(fake_hid_manager_.get())));
+
+    // Set up a timer for testing.
+    auto timer =
+        std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+    timer->SetTaskRunner(task_runner);
+    return ConnectToAuthenticator(connector_.get(), std::move(timer));
+  }
+
   url::Origin GetTestOrigin() {
     const GURL test_relying_party_url(kTestOrigin1);
     CHECK(test_relying_party_url.is_valid());
@@ -349,6 +367,9 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
 
  private:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
+  service_manager::mojom::ConnectorRequest request_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<device::FakeHidManager> fake_hid_manager_;
 };
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -557,26 +578,9 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
       GetTestPublicKeyCredentialCreationOptions();
   TestMakeCredentialCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(device::mojom::kServiceName),
-      device::mojom::HidManager::Name_,
-      base::Bind(&device::FakeHidManager::AddBinding,
-                 base::Unretained(fake_hid_manager.get())));
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
-
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
 
@@ -661,26 +665,9 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
       GetTestPublicKeyCredentialRequestOptions();
   TestGetAssertionCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(device::mojom::kServiceName),
-      device::mojom::HidManager::Name_,
-      base::Bind(&device::FakeHidManager::AddBinding,
-                 base::Unretained(fake_hid_manager.get())));
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
-
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
   // Trigger timer.
@@ -744,25 +731,9 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
       GetTestPublicKeyCredentialRequestOptions();
   TestGetAssertionCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(device::mojom::kServiceName),
-      device::mojom::HidManager::Name_,
-      base::Bind(&device::FakeHidManager::AddBinding,
-                 base::Unretained(fake_hid_manager.get())));
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
   // Trigger timer.
@@ -787,25 +758,9 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
       GetTestPublicKeyCredentialCreationOptions();
   TestMakeCredentialCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(device::mojom::kServiceName),
-      device::mojom::HidManager::Name_,
-      base::Bind(&device::FakeHidManager::AddBinding,
-                 base::Unretained(fake_hid_manager.get())));
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
 
@@ -828,25 +783,9 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutSwitch) {
       GetTestPublicKeyCredentialRequestOptions();
   TestGetAssertionCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-  service_manager::Connector::TestApi test_api(connector.get());
-  test_api.OverrideBinderForTesting(
-      service_manager::Identity(device::mojom::kServiceName),
-      device::mojom::HidManager::Name_,
-      base::Bind(&device::FakeHidManager::AddBinding,
-                 base::Unretained(fake_hid_manager.get())));
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
   // Trigger timer.
@@ -868,20 +807,9 @@ TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportMakeCredential) {
       GetTestPublicKeyCredentialCreationOptions();
   TestMakeCredentialCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
-
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   device::test::ScopedVirtualFidoDevice virtual_device;
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
@@ -902,20 +830,9 @@ TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportGetAssertion) {
       GetTestPublicKeyCredentialRequestOptions();
   TestGetAssertionCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
-
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   device::test::ScopedVirtualFidoDevice virtual_device;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
@@ -936,20 +853,9 @@ TEST_F(AuthenticatorImplTest, Ctap2AcceptsEmptyAllowCredentials) {
   options->allow_credentials.clear();
   TestGetAssertionCallback callback_receiver;
 
-  // Set up service_manager::Connector for tests.
-  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-  service_manager::mojom::ConnectorRequest request;
-  auto connector = service_manager::Connector::Create(&request);
-
-  // Set up a timer for testing.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
-  auto timer =
-      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
-  timer->SetTaskRunner(task_runner);
-  AuthenticatorPtr authenticator =
-      ConnectToAuthenticator(connector.get(), std::move(timer));
-
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   device::test::ScopedVirtualFidoDevice virtual_device;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
 
