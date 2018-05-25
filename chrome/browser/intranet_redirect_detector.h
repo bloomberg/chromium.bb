@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/network_change_notifier.h"
-#include "net/dns/host_resolver_proc.h"
 #include "url/gurl.h"
 
 namespace network {

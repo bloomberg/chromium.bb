@@ -156,7 +156,7 @@ component("network_service") {
       "proxy_service_mojo.cc",
       "proxy_service_mojo.h",
     ]
-    deps += [ "//net:net_browser_services" ]
+    deps += [ "//net/dns:mojo_service" ]
   }
 
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]

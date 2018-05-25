@@ -19,8 +19,8 @@ source_set("lib") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//net:net_utility_services",
     "//net:net_with_v8",
+    "//net/dns:mojo_client",
     "//services/service_manager",
   ]
 
@@ -43,8 +43,8 @@ source_set("tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//net:net_browser_services",
     "//net:test_support",
+    "//net/dns:mojo_service",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

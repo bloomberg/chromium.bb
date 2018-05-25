@@ -257,8 +257,6 @@ component("net") {
     "der/parser.h",
     "der/tag.cc",
     "der/tag.h",
-    "dns/dns_util.cc",
-    "dns/dns_util.h",
     "http/http_auth_challenge_tokenizer.cc",
     "http/http_auth_challenge_tokenizer.h",
     "http/http_auth_scheme.cc",
@@ -363,25 +361,24 @@ component("net") {
   }
 
   deps = [
-    ":constants",
-    ":net_resources",
-    "//base",
-    "//net/base/registry_controlled_domains",
-    "//third_party/protobuf:protobuf_lite",
-    "//url:url_features",
+    ":net_deps",
   ]
 
-  if (include_transport_security_state_preload_list) {
-    deps += [ "//net/http:generate_transport_security_state" ]
-  }
-
   public_deps = [
-    ":net_nqe_proto",
-    ":net_quic_proto",
-    ":traffic_annotation",
-    "//crypto",
-    "//crypto:platform",
-    "//third_party/boringssl",
+    ":net_public_deps",
+    "//net/dns",
+    "//net/dns:dns_client",
+    "//net/dns:host_resolver_impl",
+    "//net/dns:mdns_client",
+    "//net/dns:public",
+  ]
+
+  allow_circular_includes_from = [
+    "//net/dns",
+    "//net/dns:dns_client",
+    "//net/dns:host_resolver_impl",
+    "//net/dns:mdns_client",
+    "//net/dns:public",
   ]
 
   if (!is_nacl) {
@@ -706,54 +703,6 @@ component("net") {
       "disk_cache/simple/simple_util_win.cc",
       "disk_cache/simple/simple_version_upgrade.cc",
       "disk_cache/simple/simple_version_upgrade.h",
-      "dns/address_sorter.h",
-      "dns/address_sorter_win.cc",
-      "dns/dns_client.h",
-      "dns/dns_config_service.cc",
-      "dns/dns_config_service.h",
-      "dns/dns_config_service_win.cc",
-      "dns/dns_config_service_win.h",
-      "dns/dns_config_watcher_mac.cc",
-      "dns/dns_config_watcher_mac.h",
-      "dns/dns_hosts.cc",
-      "dns/dns_hosts.h",
-      "dns/dns_protocol.h",
-      "dns/dns_query.cc",
-      "dns/dns_query.h",
-      "dns/dns_reloader.cc",
-      "dns/dns_reloader.h",
-      "dns/dns_response.cc",
-      "dns/dns_response.h",
-      "dns/dns_session.cc",
-      "dns/dns_session.h",
-      "dns/dns_socket_pool.cc",
-      "dns/dns_socket_pool.h",
-      "dns/dns_transaction.cc",
-      "dns/dns_transaction.h",
-      "dns/host_cache.cc",
-      "dns/host_cache.h",
-      "dns/host_resolver.cc",
-      "dns/host_resolver.h",
-      "dns/host_resolver_impl.cc",
-      "dns/host_resolver_impl.h",
-      "dns/host_resolver_proc.cc",
-      "dns/host_resolver_proc.h",
-      "dns/mapped_host_resolver.cc",
-      "dns/mapped_host_resolver.h",
-      "dns/mdns_cache.cc",
-      "dns/mdns_cache.h",
-      "dns/mdns_client.cc",
-      "dns/mdns_client.h",
-      "dns/mdns_client_impl.cc",
-      "dns/mdns_client_impl.h",
-      "dns/notify_watcher_mac.cc",
-      "dns/notify_watcher_mac.h",
-      "dns/record_parsed.cc",
-      "dns/record_parsed.h",
-      "dns/record_rdata.cc",
-      "dns/record_rdata.h",
-      "dns/serial_worker.cc",
-      "dns/serial_worker.h",
       "filter/filter_source_stream.cc",
       "filter/filter_source_stream.h",
       "filter/gzip_header.cc",
@@ -1786,10 +1735,6 @@ component("net") {
       "url_request/websocket_handshake_userdata_key.cc",
       "url_request/websocket_handshake_userdata_key.h",
     ]
-    deps += [
-      "//base/third_party/dynamic_annotations",
-      "//third_party/zlib",
-    ]
 
     if (enable_reporting) {
       sources += [
@@ -1846,8 +1791,6 @@ component("net") {
         "disk_cache/cache_util_posix.cc",
         "disk_cache/simple/simple_index_file_posix.cc",
         "disk_cache/simple/simple_util_posix.cc",
-        "dns/dns_config_service_posix.cc",
-        "dns/dns_config_service_posix.h",
         "http/url_security_manager_posix.cc",
         "socket/socket_posix.cc",
         "socket/socket_posix.h",
@@ -1877,16 +1820,6 @@ component("net") {
       ]
     }
 
-    if (enable_built_in_dns) {
-      sources += [ "dns/dns_client.cc" ]
-      if (is_posix || is_fuchsia) {
-        sources += [
-          "dns/address_sorter_posix.cc",
-          "dns/address_sorter_posix.h",
-        ]
-      }
-    }
-
     if (use_kerberos && ((is_posix && !is_android) || is_fuchsia)) {
       sources += [
         "http/http_auth_gssapi_posix.cc",
@@ -1904,10 +1837,6 @@ component("net") {
         "base/network_interfaces_getifaddrs.cc",
         "base/network_interfaces_getifaddrs.h",
       ]
-    }
-
-    if (use_gio) {
-      configs += [ "//build/linux:gio_config" ]
     }
 
     if (!use_nss_certs) {
@@ -1963,17 +1892,6 @@ component("net") {
       ]
     }
 
-    if (!enable_mdns) {
-      sources -= [
-        "dns/mdns_cache.cc",
-        "dns/mdns_cache.h",
-        "dns/mdns_client.cc",
-        "dns/mdns_client.h",
-        "dns/mdns_client_impl.cc",
-        "dns/mdns_client_impl.h",
-      ]
-    }
-
     if (is_win) {
       sources -= [ "http/http_auth_handler_ntlm_portable.cc" ]
     } else {  # !is_win
@@ -2017,8 +1935,6 @@ component("net") {
     }
 
     if (is_android) {
-      deps += [ ":net_jni_headers" ]
-
       # Add some Linux sources that were excluded by the filter, but which
       # are needed.
       net_unfiltered_sources += [
@@ -2036,10 +1952,7 @@ component("net") {
         "base/platform_mime_util_fuchsia.cc",
         "cert/test_root_certs_fuchsia.cc",
       ]
-      deps += [ "//third_party/fuchsia-sdk:netstack" ]
     }
-  } else {
-    public_deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
   }
 
   if (enable_unix_sockets) {
@@ -2057,12 +1970,6 @@ component("net") {
   set_sources_assignment_filter(sources_assignment_filter)
 
   cflags = []
-  configs += net_configs
-
-  public_deps += [
-    ":buildflags",
-    "//url",
-  ]
 
   if (is_mac) {
     libs = [
@@ -2206,7 +2113,6 @@ component("net") {
       if (is_android) {
         # Use ICU alternative on Android.
         sources += [ "base/net_string_util_icu_alternatives_android.cc" ]
-        deps += [ ":net_jni_headers" ]
       } else if (is_ios) {
         # Use ICU alternative on iOS.
         sources += [ "base/net_string_util_icu_alternatives_ios.mm" ]
@@ -2216,10 +2122,6 @@ component("net") {
       }
     } else {
       # Use ICU.
-      deps += [
-        "//base:i18n",
-        "//third_party/icu",
-      ]
       sources += [
         "base/filename_util_icu.cc",
         "base/net_string_util_icu.cc",
@@ -2232,10 +2134,101 @@ component("net") {
         "filter/brotli_source_stream.cc",
         "filter/brotli_source_stream.h",
       ]
-      deps += [ "//third_party/brotli:dec" ]
     } else {
       sources += [ "filter/brotli_source_stream_disabled.cc" ]
     }
+  }
+}
+
+# Private dependencies for the //net component and for any build targets (e.g.
+# source sets with circular dependencies with //net) that need to share the same
+# dependencies.
+source_set("net_deps") {
+  visibility = [
+    ":net",
+    "//net/dns",
+    "//net/dns:dns_client",
+    "//net/dns:host_resolver_impl",
+    "//net/dns:mdns_client",
+    "//net/dns:public",
+  ]
+
+  public_deps = [
+    ":constants",
+    ":net_resources",
+    "//base",
+    "//net/base/registry_controlled_domains",
+    "//third_party/protobuf:protobuf_lite",
+    "//url:url_features",
+  ]
+
+  public_configs = net_configs
+
+  if (include_transport_security_state_preload_list) {
+    public_deps += [ "//net/http:generate_transport_security_state" ]
+  }
+
+  if (!is_nacl) {
+    public_deps += [
+      "//base/third_party/dynamic_annotations",
+      "//third_party/zlib",
+    ]
+
+    if (use_gio) {
+      public_configs += [ "//build/linux:gio_config" ]
+    }
+
+    if (is_android) {
+      public_deps += [ ":net_jni_headers" ]
+    }
+
+    if (is_fuchsia) {
+      public_deps += [ "//third_party/fuchsia-sdk:netstack" ]
+    }
+
+    if (use_platform_icu_alternatives) {
+      if (is_android) {
+        public_deps += [ ":net_jni_headers" ]
+      }
+    } else {
+      public_deps += [
+        "//base:i18n",
+        "//third_party/icu",
+      ]
+    }
+
+    if (!disable_brotli_filter) {
+      public_deps += [ "//third_party/brotli:dec" ]
+    }
+  }
+}
+
+# Public dependencies for the //net component and for any build targets (e.g.
+# source sets with circular dependencies with //net) that need to share the same
+# dependencies.
+source_set("net_public_deps") {
+  visibility = [
+    ":net",
+    "//net/dns",
+    "//net/dns:dns_client",
+    "//net/dns:host_resolver_impl",
+    "//net/dns:mdns_client",
+    "//net/dns:public",
+  ]
+
+  public_deps = [
+    ":buildflags",
+    ":net_nqe_proto",
+    ":net_quic_proto",
+    ":traffic_annotation",
+    "//crypto",
+    "//crypto:platform",
+    "//third_party/boringssl",
+    "//url",
+  ]
+
+  if (is_nacl) {
+    public_deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
   }
 }
 
@@ -2248,7 +2241,7 @@ grit("net_resources") {
 }
 
 proto_library("net_nqe_proto") {
-  visibility = [ ":net" ]
+  visibility = [ ":net_public_deps" ]
 
   sources = [
     "nqe/proto/network_id_proto.proto",
@@ -2263,7 +2256,7 @@ proto_library("net_nqe_proto") {
 }
 
 proto_library("net_quic_proto") {
-  visibility = [ ":net" ]
+  visibility = [ ":net_public_deps" ]
 
   sources = [
     "third_party/quic/core/proto/cached_network_parameters.proto",
@@ -2599,12 +2592,6 @@ static_library("test_support") {
     "disk_cache/disk_cache_test_base.h",
     "disk_cache/disk_cache_test_util.cc",
     "disk_cache/disk_cache_test_util.h",
-    "dns/dns_test_util.cc",
-    "dns/dns_test_util.h",
-    "dns/mock_host_resolver.cc",
-    "dns/mock_host_resolver.h",
-    "dns/mock_mdns_socket_factory.cc",
-    "dns/mock_mdns_socket_factory.h",
     "filter/filter_source_stream_test_util.cc",
     "filter/filter_source_stream_test_util.h",
     "filter/mock_source_stream.cc",
@@ -2700,6 +2687,7 @@ static_library("test_support") {
     "//base/test:test_support",
     "//crypto",
     "//net",
+    "//net/dns:test_support",
     "//net/tools/tld_cleanup",
     "//testing/gmock",
     "//testing/gtest",
@@ -2710,6 +2698,8 @@ static_library("test_support") {
     ":simple_quic_tools",
     "//third_party/zlib",
   ]
+
+  allow_circular_includes_from = [ "//net/dns:test_support" ]
 
   data = [
     "data/",
@@ -2765,13 +2755,6 @@ static_library("test_support") {
     public_deps += [ ":net_with_v8" ]
   }
 
-  if (!enable_mdns) {
-    sources -= [
-      "dns/mock_mdns_socket_factory.cc",
-      "dns/mock_mdns_socket_factory.h",
-    ]
-  }
-
   if (!use_nss_certs) {
     sources -= [ "test/cert_test_util_nss.cc" ]
   }
@@ -2820,40 +2803,6 @@ if (use_v8_in_net) {
       "//gin",
       "//url",
       "//v8",
-    ]
-  }
-}
-
-if (enable_net_mojo) {
-  source_set("net_browser_services") {
-    sources = [
-      "dns/mojo_host_resolver_impl.cc",
-      "dns/mojo_host_resolver_impl.h",
-    ]
-
-    public_deps = [
-      ":net",
-      "//base",
-      "//mojo/public/cpp/bindings",
-      "//net/interfaces",
-    ]
-  }
-
-  source_set("net_utility_services") {
-    sources = [
-      "dns/host_resolver_mojo.cc",
-      "dns/host_resolver_mojo.h",
-    ]
-
-    deps = [
-      ":net_with_v8",
-      "//base",
-    ]
-
-    public_deps = [
-      ":net",
-      "//mojo/public/cpp/bindings",
-      "//net/interfaces",
     ]
   }
 }
@@ -4872,25 +4821,6 @@ test("net_unittests") {
     "disk_cache/simple/simple_test_util.h",
     "disk_cache/simple/simple_util_unittest.cc",
     "disk_cache/simple/simple_version_upgrade_unittest.cc",
-    "dns/dns_config_service_unittest.cc",
-    "dns/dns_config_service_win_unittest.cc",
-    "dns/dns_hosts_unittest.cc",
-    "dns/dns_query_unittest.cc",
-    "dns/dns_response_unittest.cc",
-    "dns/dns_session_unittest.cc",
-    "dns/dns_socket_pool_unittest.cc",
-    "dns/dns_transaction_unittest.cc",
-    "dns/dns_util_unittest.cc",
-    "dns/host_cache_unittest.cc",
-    "dns/host_resolver_impl_unittest.cc",
-    "dns/host_resolver_mojo_unittest.cc",
-    "dns/mapped_host_resolver_unittest.cc",
-    "dns/mdns_cache_unittest.cc",
-    "dns/mdns_client_unittest.cc",
-    "dns/mojo_host_resolver_impl_unittest.cc",
-    "dns/record_parsed_unittest.cc",
-    "dns/record_rdata_unittest.cc",
-    "dns/serial_worker_unittest.cc",
     "extras/sqlite/sqlite_channel_id_store_unittest.cc",
     "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc",
     "filter/brotli_source_stream_unittest.cc",
@@ -5400,6 +5330,7 @@ test("net_unittests") {
     "//crypto:platform",
     "//crypto:test_support",
     "//net/base/registry_controlled_domains",
+    "//net/dns:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
     "//testing/gmock",
@@ -5411,10 +5342,7 @@ test("net_unittests") {
   ]
 
   if (is_posix || is_fuchsia) {
-    sources += [
-      "dns/dns_config_service_posix_unittest.cc",
-      "socket/udp_socket_posix_unittest.cc",
-    ]
+    sources += [ "socket/udp_socket_posix_unittest.cc" ]
   }
 
   if (enable_reporting) {
@@ -5631,13 +5559,6 @@ test("net_unittests") {
     ]
   }
 
-  if (enable_built_in_dns) {
-    sources += [ "dns/address_sorter_unittest.cc" ]
-    if (is_posix || is_fuchsia) {
-      sources += [ "dns/address_sorter_posix_unittest.cc" ]
-    }
-  }
-
   if (use_v8_in_net) {
     deps += [ ":net_with_v8" ]
   } else {
@@ -5650,22 +5571,13 @@ test("net_unittests") {
 
   if (enable_net_mojo) {
     deps += [
-      ":net_browser_services",
-      ":net_utility_services",
       "//mojo/edk",
+      "//net/dns:mojo_client",
+      "//net/dns:mojo_service",
     ]
   } else {
     sources -= [
-      "dns/host_resolver_mojo_unittest.cc",
-      "dns/mojo_host_resolver_impl_unittest.cc",
       "proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
-    ]
-  }
-
-  if (!enable_mdns) {
-    sources -= [
-      "dns/mdns_cache_unittest.cc",
-      "dns/mdns_client_unittest.cc",
     ]
   }
 
@@ -5853,8 +5765,6 @@ source_set("net_fuzzer_test_support") {
 
   sources = [
     "base/fuzzer_test_support.cc",
-    "dns/fuzzed_host_resolver.cc",
-    "dns/fuzzed_host_resolver.h",
     "filter/fuzzed_source_stream.cc",
     "filter/fuzzed_source_stream.h",
     "socket/fuzzed_datagram_client_socket.cc",
@@ -5868,12 +5778,14 @@ source_set("net_fuzzer_test_support") {
   ]
   public_deps = [
     "//base/test:test_support",
+    "//net/dns:fuzzer_test_support",
   ]
   deps = [
     "//base",
     "//base:i18n",
     "//net",
   ]
+  allow_circular_includes_from = [ "//net/dns:fuzzer_test_support" ]
 }
 
 fuzzer_test("net_data_job_fuzzer") {
@@ -6033,43 +5945,6 @@ fuzzer_test("net_parse_cookie_line_fuzzer") {
     ":net_fuzzer_test_support",
     "//net",
   ]
-}
-
-fuzzer_test("net_dns_record_fuzzer") {
-  sources = [
-    "dns/dns_record_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_dns_record_fuzzer.dict"
-}
-
-fuzzer_test("net_dns_hosts_parse_fuzzer") {
-  sources = [
-    "dns/dns_hosts_parse_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_dns_hosts_parse_fuzzer.dict"
-}
-
-fuzzer_test("net_host_resolver_impl_fuzzer") {
-  sources = [
-    "dns/host_resolver_impl_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    ":test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_host_resolver_impl_fuzzer.dict"
 }
 
 fuzzer_test("net_http_stream_parser_fuzzer") {
