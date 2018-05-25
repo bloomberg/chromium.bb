@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 
 #include <memory>
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -156,8 +155,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     return;
   }
 
-  shadow_page_->Initialize(worker_start_data_.script_url,
-                           nullptr /* loader_factory */);
+  shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
@@ -286,10 +284,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
 void WebEmbeddedWorkerImpl::ResumeStartup() {
   bool was_waiting = (waiting_for_debugger_state_ == kWaitingForDebugger);
   waiting_for_debugger_state_ = kNotWaitingForDebugger;
-  if (was_waiting) {
-    shadow_page_->Initialize(worker_start_data_.script_url,
-                             nullptr /* loader_factory */);
-  }
+  if (was_waiting)
+    shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
 const base::UnguessableToken& WebEmbeddedWorkerImpl::GetDevToolsWorkerToken() {

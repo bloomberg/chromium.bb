@@ -5,7 +5,6 @@
 #include "content/renderer/shared_worker/shared_worker_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/common/url_loader_factory_bundle.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -29,7 +28,6 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_ptr_info,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
@@ -37,8 +35,8 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
   new EmbeddedSharedWorkerStub(
       std::move(info), pause_on_start, devtools_worker_token,
       std::move(content_settings), std::move(service_worker_provider_info),
-      std::move(script_loader_factory_ptr_info), std::move(subresource_loaders),
-      std::move(host), std::move(request), std::move(interface_provider));
+      std::move(script_loader_factory_ptr_info), std::move(host),
+      std::move(request), std::move(interface_provider));
 }
 
 }  // namespace content
