@@ -2846,6 +2846,7 @@
           '--time-out-ms',
           '60000'
         ],
+        'experiment_percentage': 100,
         # TODO(kbr): the "Windows-7-SP1" Swarming dimension set is implicit,
         # from prefered_os_dimension in
         # tools/build/scripts/slave/recipe_modules/swarming/api.py. Ideally,
