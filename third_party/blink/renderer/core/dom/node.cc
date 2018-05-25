@@ -845,6 +845,19 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+bool Node::IsSlotAssignmentOrLegacyDistributionDirty() const {
+  if (GetDocument().ChildNeedsDistributionRecalc())
+    return true;
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
+    if (ShadowRoot* shadow_root = ContainingShadowRoot()) {
+      if (shadow_root->NeedsSlotAssignmentRecalc()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 inline void Node::SetStyleChange(StyleChangeType change_type) {
   node_flags_ = (node_flags_ & ~kStyleChangeMask) | change_type;
 }

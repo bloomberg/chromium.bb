@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_tag_collection.h"
+#include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -689,6 +690,10 @@ Node* ContainerNode::RemoveChild(Node* old_child,
   }
 
   {
+#if DCHECK_IS_ON()
+    NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+        GetDocument().SlotAssignmentRecalcForbiddenRecursionDepth());
+#endif
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
     TreeOrderedMap::RemoveScope tree_remove_scope;
 
@@ -830,6 +835,10 @@ Node* ContainerNode::AppendChild(Node* new_child,
 
   NodeVector post_insertion_notification_targets;
   {
+#if DCHECK_IS_ON()
+    NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+        GetDocument().SlotAssignmentRecalcForbiddenRecursionDepth());
+#endif
     ChildListMutationScope mutation(*this);
     InsertNodeVector(targets, nullptr, AdoptAndAppendChild(),
                      &post_insertion_notification_targets);
