@@ -59,10 +59,9 @@ void MockWebMIDIAccessor::StartSession() {
 }
 
 void MockWebMIDIAccessor::RunDidReceiveMIDIData(unsigned port_index,
-                                                const unsigned char* data,
-                                                size_t length,
+                                                std::vector<unsigned char> data,
                                                 base::TimeTicks timestamp) {
-  client_->DidReceiveMIDIData(port_index, data, length, timestamp);
+  client_->DidReceiveMIDIData(port_index, data.data(), data.size(), timestamp);
 }
 
 void MockWebMIDIAccessor::SendMIDIData(unsigned port_index,
@@ -72,10 +71,11 @@ void MockWebMIDIAccessor::SendMIDIData(unsigned port_index,
   // Emulate a loopback device for testing. Make sure if an input port that has
   // the same index exists.
   if (port_index < next_input_port_index_) {
+    std::vector<unsigned char> copied_data(data, data + length);
     interfaces_->GetDelegate()->PostDelayedTask(
         base::BindOnce(&MockWebMIDIAccessor::RunDidReceiveMIDIData,
-                       weak_factory_.GetWeakPtr(), port_index, data, length,
-                       timestamp),
+                       weak_factory_.GetWeakPtr(), port_index,
+                       std::move(copied_data), timestamp),
         std::max(base::TimeDelta(), timestamp - base::TimeTicks::Now()));
   }
 
