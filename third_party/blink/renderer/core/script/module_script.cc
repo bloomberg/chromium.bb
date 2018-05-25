@@ -221,11 +221,12 @@ KURL ModuleScript::ResolveModuleSpecifier(const String& module_request,
 
 void ModuleScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(settings_object_);
+  visitor->Trace(record_.UnsafeCast<v8::Value>());
+  visitor->Trace(parse_error_);
+  visitor->Trace(error_to_rethrow_);
   Script::Trace(visitor);
 }
 void ModuleScript::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  // TODO(mlippautz): Support TraceWrappers(const
-  // TraceWrapperV8Reference<v8::Module>&) to remove the cast.
   visitor->TraceWrappers(record_.UnsafeCast<v8::Value>());
   visitor->TraceWrappers(parse_error_);
   visitor->TraceWrappers(error_to_rethrow_);

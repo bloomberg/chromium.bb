@@ -2005,6 +2005,7 @@ void XMLHttpRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(progress_event_throttle_);
   visitor->Trace(upload_);
   visitor->Trace(blob_loader_);
+  visitor->Trace(response_text_);
   XMLHttpRequestEventTarget::Trace(visitor);
   DocumentParserClient::Trace(visitor);
   PausableObject::Trace(visitor);

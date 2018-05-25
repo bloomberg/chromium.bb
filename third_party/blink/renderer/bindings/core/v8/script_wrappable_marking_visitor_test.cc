@@ -247,7 +247,9 @@ class HandleContainer
   static HandleContainer* Create() { return new HandleContainer(); }
   virtual ~HandleContainer() = default;
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(handle_.Cast<v8::Value>());
+  }
   void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappers(handle_.Cast<v8::Value>());
   }

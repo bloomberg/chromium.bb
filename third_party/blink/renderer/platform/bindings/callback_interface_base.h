@@ -36,7 +36,7 @@ class PLATFORM_EXPORT CallbackInterfaceBase
 
   virtual ~CallbackInterfaceBase() = default;
 
-  virtual void Trace(blink::Visitor*) {}
+  virtual void Trace(blink::Visitor*);
   void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "CallbackInterfaceBase";

@@ -60,6 +60,8 @@ bool PromiseRejectionEvent::CanBeDispatchedInWorld(
 }
 
 void PromiseRejectionEvent::Trace(blink::Visitor* visitor) {
+  visitor->Trace(promise_);
+  visitor->Trace(reason_);
   Event::Trace(visitor);
 }
 
