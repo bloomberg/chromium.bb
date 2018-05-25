@@ -2777,6 +2777,11 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 	    {
 		FcConfigMessage (parse, FcSevereError, "out of memory");
 	    }
+	    else
+	    {
+		if (parse->scanOnly && vstack->u.string)
+		    FcStrFree (vstack->u.string);
+	    }
 	    break;
 	case FcVStackPattern:
 	    if (!parse->scanOnly && !FcConfigPatternsAdd (parse->config,
@@ -2786,7 +2791,11 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 		FcConfigMessage (parse, FcSevereError, "out of memory");
 	    }
 	    else
+	    {
+		if (parse->scanOnly && vstack->u.pattern)
+		    FcPatternDestroy (vstack->u.pattern);
 		vstack->tag = FcVStackNone;
+	    }
 	    break;
 	default:
 	    FcConfigMessage (parse, FcSevereWarning, "bad font selector");
