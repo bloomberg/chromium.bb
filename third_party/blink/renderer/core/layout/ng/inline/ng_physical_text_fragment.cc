@@ -177,6 +177,15 @@ bool NGPhysicalTextFragment::IsAnonymousText() const {
   return !node || node->IsPseudoElement();
 }
 
+Node* NGPhysicalTextFragment::TextSourceNode() const {
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (layout_object && layout_object->IsText() &&
+      ToLayoutText(layout_object)->IsTextFragment()) {
+    return ToLayoutTextFragment(layout_object)->AssociatedTextNode();
+  }
+  return GetNode();
+}
+
 unsigned NGPhysicalTextFragment::TextOffsetForPoint(
     const NGPhysicalOffset& point) const {
   if (IsLineBreak())
