@@ -5,6 +5,9 @@
 #include "media/audio/pulse/pulse_util.h"
 
 #include <stdint.h>
+#include <string.h>
+
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -92,6 +95,77 @@ class ScopedPropertyList {
   pa_proplist* property_list_;
   DISALLOW_COPY_AND_ASSIGN(ScopedPropertyList);
 };
+
+struct InputBusData {
+  InputBusData(pa_threaded_mainloop* loop, const std::string& name)
+      : loop_(loop), name_(name), bus_() {}
+
+  pa_threaded_mainloop* const loop_;
+  const std::string& name_;
+  std::string bus_;
+};
+
+struct OutputBusData {
+  OutputBusData(pa_threaded_mainloop* loop, const std::string& bus)
+      : loop_(loop), name_(), bus_(bus) {}
+
+  pa_threaded_mainloop* const loop_;
+  std::string name_;
+  const std::string& bus_;
+};
+
+void InputBusCallback(pa_context* context,
+                      const pa_source_info* info,
+                      int error,
+                      void* user_data) {
+  InputBusData* data = static_cast<InputBusData*>(user_data);
+
+  if (error) {
+    // We have checked all the devices now.
+    pa_threaded_mainloop_signal(data->loop_, 0);
+    return;
+  }
+
+  if (strcmp(info->name, data->name_.c_str()) == 0 &&
+      pa_proplist_contains(info->proplist, PA_PROP_DEVICE_BUS)) {
+    data->bus_ = pa_proplist_gets(info->proplist, PA_PROP_DEVICE_BUS);
+  }
+}
+
+void OutputBusCallback(pa_context* context,
+                       const pa_sink_info* info,
+                       int error,
+                       void* user_data) {
+  OutputBusData* data = static_cast<OutputBusData*>(user_data);
+
+  if (error) {
+    // We have checked all the devices now.
+    pa_threaded_mainloop_signal(data->loop_, 0);
+    return;
+  }
+
+  if (pa_proplist_contains(info->proplist, PA_PROP_DEVICE_BUS) &&
+      strcmp(pa_proplist_gets(info->proplist, PA_PROP_DEVICE_BUS),
+             data->bus_.c_str()) == 0) {
+    data->name_ = info->name;
+  }
+}
+
+struct DefaultDevicesData {
+  explicit DefaultDevicesData(pa_threaded_mainloop* loop) : loop_(loop) {}
+  std::string input_;
+  std::string output_;
+  pa_threaded_mainloop* const loop_;
+};
+
+void GetDefaultDeviceIdCallback(pa_context* c,
+                                const pa_server_info* info,
+                                void* userdata) {
+  DefaultDevicesData* data = static_cast<DefaultDevicesData*>(userdata);
+  data->input_ = info->default_source_name;
+  data->output_ = info->default_sink_name;
+  pa_threaded_mainloop_signal(data->loop_, 0);
+}
 
 }  // namespace
 
@@ -446,6 +520,42 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   }
 
   return true;
+}
+
+std::string GetBusOfInput(pa_threaded_mainloop* mainloop,
+                          pa_context* context,
+                          const std::string& name) {
+  DCHECK(mainloop);
+  DCHECK(context);
+  AutoPulseLock auto_lock(mainloop);
+  InputBusData data(mainloop, name);
+  pa_operation* operation =
+      pa_context_get_source_info_list(context, InputBusCallback, &data);
+  WaitForOperationCompletion(mainloop, operation);
+  return data.bus_;
+}
+
+std::string GetOutputCorrespondingTo(pa_threaded_mainloop* mainloop,
+                                     pa_context* context,
+                                     const std::string& bus) {
+  DCHECK(mainloop);
+  DCHECK(context);
+  AutoPulseLock auto_lock(mainloop);
+  OutputBusData data(mainloop, bus);
+  pa_operation* operation =
+      pa_context_get_sink_info_list(context, OutputBusCallback, &data);
+  WaitForOperationCompletion(mainloop, operation);
+  return data.name_;
+}
+
+std::string GetRealDefaultDeviceId(pa_threaded_mainloop* mainloop,
+                                   pa_context* context,
+                                   RequestType type) {
+  DefaultDevicesData data(mainloop);
+  pa_operation* op =
+      pa_context_get_server_info(context, &GetDefaultDeviceIdCallback, &data);
+  WaitForOperationCompletion(mainloop, op);
+  return (type == RequestType::INPUT) ? data.input_ : data.output_;
 }
 
 #undef RETURN_ON_FAILURE

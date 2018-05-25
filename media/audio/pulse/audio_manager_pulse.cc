@@ -4,6 +4,9 @@
 
 #include "media/audio/pulse/audio_manager_pulse.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/logging.h"
@@ -147,6 +150,46 @@ AudioInputStream* AudioManagerPulse::MakeLowLatencyInputStream(
     const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   return MakeInputStream(params, device_id);
+}
+
+std::string AudioManagerPulse::GetDefaultInputDeviceID() {
+#if defined(OS_CHROMEOS)
+  return AudioManagerBase::GetDefaultInputDeviceID();
+#else
+  return pulse::GetRealDefaultDeviceId(input_mainloop_, input_context_,
+                                       pulse::RequestType::INPUT);
+#endif
+}
+
+std::string AudioManagerPulse::GetDefaultOutputDeviceID() {
+#if defined(OS_CHROMEOS)
+  return AudioManagerBase::GetDefaultOutputDeviceID();
+#else
+  return pulse::GetRealDefaultDeviceId(input_mainloop_, input_context_,
+                                       pulse::RequestType::OUTPUT);
+#endif
+}
+
+std::string AudioManagerPulse::GetAssociatedOutputDeviceID(
+    const std::string& input_device_id) {
+#if defined(OS_CHROMEOS)
+  return AudioManagerBase::GetAssociatedOutputDeviceID(input_device_id);
+#else
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(input_mainloop_);
+  DCHECK(input_context_);
+  std::string input =
+      (input_device_id == AudioDeviceDescription::kDefaultDeviceId)
+          ? pulse::GetRealDefaultDeviceId(input_mainloop_, input_context_,
+                                          pulse::RequestType::INPUT)
+          : input_device_id;
+
+  std::string input_bus =
+      pulse::GetBusOfInput(input_mainloop_, input_context_, input);
+  return input_bus.empty() ? ""
+                           : pulse::GetOutputCorrespondingTo(
+                                 input_mainloop_, input_context_, input_bus);
+#endif
 }
 
 AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(

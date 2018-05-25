@@ -6,6 +6,8 @@
 #define MEDIA_AUDIO_PULSE_AUDIO_MANAGER_PULSE_H_
 
 #include <pulse/pulseaudio.h>
+
+#include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -48,6 +50,10 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
       const AudioParameters& params,
       const std::string& device_id,
       const LogCallback& log_callback) override;
+  std::string GetDefaultInputDeviceID() override;
+  std::string GetDefaultOutputDeviceID() override;
+  std::string GetAssociatedOutputDeviceID(
+      const std::string& input_device_id) override;
 
  protected:
   void ShutdownOnAudioThread() override;
