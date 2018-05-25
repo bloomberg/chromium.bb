@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/no_destructor.h"
 #include "base/task_scheduler/post_task.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
@@ -16,24 +15,10 @@
 
 namespace tracing {
 
-namespace {
-
-scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND});
-}
-
-// We never destroy the taskrunner as we may need it for cleanup
-// of TraceWriters in TLS, which could happen after the ProducerClient
-// is deleted.
-PerfettoTaskRunner* GetPerfettoTaskRunner() {
-  static base::NoDestructor<PerfettoTaskRunner> task_runner(CreateTaskRunner());
-  return task_runner.get();
-}
-
-}  // namespace
-
-ProducerClient::ProducerClient() {
+// TODO(oysteine): Use a new sequence here once Perfetto handles multi-threading
+// properly.
+ProducerClient::ProducerClient()
+    : perfetto_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -44,48 +29,36 @@ ProducerClient::~ProducerClient() {
 // static
 void ProducerClient::DeleteSoon(
     std::unique_ptr<ProducerClient> producer_client) {
-  GetTaskRunner()->DeleteSoon(FROM_HERE, std::move(producer_client));
+  producer_client->GetTaskRunner()->DeleteSoon(FROM_HERE,
+                                               std::move(producer_client));
 }
 
-// static
 base::SequencedTaskRunner* ProducerClient::GetTaskRunner() {
-  auto* task_runner = GetPerfettoTaskRunner()->task_runner();
-  DCHECK(task_runner);
-  return task_runner;
-}
-
-// static
-void ProducerClient::ResetTaskRunnerForTesting() {
-  GetPerfettoTaskRunner()->ResetTaskRunnerForTesting(CreateTaskRunner());
-}
-
-void ProducerClient::CreateMojoMessagepipes(
-    MessagepipesReadyCallback callback) {
-  auto origin_task_runner = base::SequencedTaskRunnerHandle::Get();
-  DCHECK(origin_task_runner);
-  mojom::ProducerClientPtr producer_client;
-  GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProducerClient::CreateMojoMessagepipesOnSequence,
-                     base::Unretained(this), origin_task_runner,
-                     std::move(callback), mojo::MakeRequest(&producer_client),
-                     std::move(producer_client)));
+  return perfetto_task_runner_.task_runner();
 }
 
 // The Mojo binding should run on the same sequence as the one we get
 // callbacks from Perfetto on, to avoid additional PostTasks.
-void ProducerClient::CreateMojoMessagepipesOnSequence(
-    scoped_refptr<base::SequencedTaskRunner> origin_task_runner,
-    MessagepipesReadyCallback callback,
-    mojom::ProducerClientRequest producer_client_request,
-    mojom::ProducerClientPtr producer_client) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+mojom::ProducerClientPtr ProducerClient::CreateAndBindProducerClient() {
+  DCHECK(!binding_);
+  mojom::ProducerClientPtr producer_client;
 
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProducerClient::BindOnSequence, base::Unretained(this),
+                     mojo::MakeRequest(&producer_client)));
+
+  return producer_client;
+}
+
+mojom::ProducerHostRequest ProducerClient::CreateProducerHostRequest() {
+  return mojo::MakeRequest(&producer_host_);
+}
+
+void ProducerClient::BindOnSequence(mojom::ProducerClientRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   binding_ = std::make_unique<mojo::Binding<mojom::ProducerClient>>(
-      this, std::move(producer_client_request));
-  origin_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(producer_client),
-                                mojo::MakeRequest(&producer_host_)));
+      this, std::move(request));
 }
 
 void ProducerClient::OnTracingStart(
@@ -101,7 +74,7 @@ void ProducerClient::OnTracingStart(
 
     shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateInstance(
         shared_memory_.get(), kShmemBufferPageSize, this,
-        GetPerfettoTaskRunner());
+        &perfetto_task_runner_);
   } else {
     // TODO(oysteine): This is assuming the SMB is the same, currently. Swapping
     // out SharedMemoryBuffers would require more thread synchronization.

@@ -47,7 +47,7 @@ class PerfettoService : public mojom::PerfettoService {
                              mojom::ProducerHostRequest producer_host) override;
 
   perfetto::Service* GetService() const;
-  scoped_refptr<base::SequencedTaskRunner> task_runner() {
+  base::SequencedTaskRunner* task_runner() {
     return perfetto_task_runner_.task_runner();
   }
 

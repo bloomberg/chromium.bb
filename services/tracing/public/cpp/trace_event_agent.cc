@@ -41,14 +41,9 @@ class PerfettoTraceEventAgent : public TraceEventAgent {
     connector->BindInterface(mojom::kServiceName, &perfetto_service);
 
     producer_client_ = std::make_unique<ProducerClient>();
-    producer_client_->CreateMojoMessagepipes(base::BindOnce(
-        [](mojom::PerfettoServicePtr perfetto_service,
-           mojom::ProducerClientPtr producer_client_pipe,
-           mojom::ProducerHostRequest producer_host_pipe) {
-          perfetto_service->ConnectToProducerHost(
-              std::move(producer_client_pipe), std::move(producer_host_pipe));
-        },
-        std::move(perfetto_service)));
+    perfetto_service->ConnectToProducerHost(
+        producer_client_->CreateAndBindProducerClient(),
+        producer_client_->CreateProducerHostRequest());
   }
 
   ~PerfettoTraceEventAgent() override {

@@ -5,7 +5,6 @@
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 
 #include <memory>
-#include <utility>
 
 #include "base/threading/sequenced_task_runner_handle.h"
 
@@ -37,11 +36,6 @@ void PerfettoTaskRunner::AddFileDescriptorWatch(int fd, std::function<void()>) {
 
 void PerfettoTaskRunner::RemoveFileDescriptorWatch(int fd) {
   NOTREACHED();
-}
-
-void PerfettoTaskRunner::ResetTaskRunnerForTesting(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  task_runner_ = std::move(task_runner);
 }
 
 }  // namespace tracing

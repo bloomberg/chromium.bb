@@ -43,13 +43,8 @@ void ProducerHost::OnConnectionError() {
   // Manually reset to prevent any callbacks from the ProducerEndpoint
   // when we're in a half-destructed state.
   producer_endpoint_.reset();
-  // If the ProducerHost is owned by the PerfettoService, let it know
-  // we're disconnected to let this be cleaned up. Tests manage lifespan
-  // themselves.
-  if (connection_error_handler_) {
-    std::move(connection_error_handler_).Run();
-  }
-  // This object *may* be destroyed at this point.
+  std::move(connection_error_handler_).Run();
+  // This object is destroyed at this point.
 }
 
 void ProducerHost::OnConnect() {

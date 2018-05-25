@@ -511,7 +511,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   // Set when asynchronous Flush is in progress.
   OutputCallback flush_output_callback_;
-  scoped_refptr<SequencedTaskRunner> flush_task_runner_;
+  scoped_refptr<SingleThreadTaskRunner> flush_task_runner_;
   ArgumentFilterPredicate argument_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
