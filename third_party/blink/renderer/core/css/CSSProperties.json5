@@ -62,6 +62,7 @@
         "border_image",
         "color",
         "counter",
+        "grid",
         // The legacy template means that regular code generation should not be
         // be performed, and that the property is hard-coded in
         // style_builder_functions.cc.tmpl.
@@ -1821,8 +1822,10 @@
                       "third_party/blink/renderer/core/style/grid_track_size.h"],
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "grid",
+      style_builder_template_args: {
+        type: "Column",
+      },
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1836,8 +1839,10 @@
                       "third_party/blink/renderer/core/style/grid_track_size.h"],
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
-      style_builder_legacy: true,
-      style_builder_template: "legacy",
+      style_builder_template: "grid",
+      style_builder_template_args: {
+        type: "Row",
+      },
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
