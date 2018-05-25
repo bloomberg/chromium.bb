@@ -13,7 +13,7 @@ namespace content {
 
 CookieStoreHost::CookieStoreHost(CookieStoreManager* manager,
                                  const url::Origin& origin)
-    : manager_(manager), origin_(origin.GetURL()) {}
+    : manager_(manager), origin_(origin) {}
 
 CookieStoreHost::~CookieStoreHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
