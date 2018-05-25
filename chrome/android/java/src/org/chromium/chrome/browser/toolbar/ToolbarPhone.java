@@ -50,6 +50,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -360,32 +361,35 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public void onFinishInflate() {
-        super.onFinishInflate();
-        mLocationBar = (LocationBarPhone) findViewById(R.id.location_bar);
+        try (TraceEvent te = TraceEvent.scoped("ToolbarPhone.onFinishInflate")) {
+            super.onFinishInflate();
+            mLocationBar = (LocationBarPhone) findViewById(R.id.location_bar);
 
-        mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
+            mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
-        mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
-        if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
+            mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
+            if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
 
-        mUrlBar = (TextView) findViewById(R.id.url_bar);
+            mUrlBar = (TextView) findViewById(R.id.url_bar);
 
-        mUrlActionContainer = findViewById(R.id.url_action_container);
+            mUrlActionContainer = findViewById(R.id.url_action_container);
 
-        mBrowsingModeViews.add(mLocationBar);
+            mBrowsingModeViews.add(mLocationBar);
 
-        mToolbarBackground = new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
-        mTabSwitcherAnimationBgOverlay =
-                new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
+            mToolbarBackground =
+                    new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
+            mTabSwitcherAnimationBgOverlay =
+                    new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
 
-        initLocationBarBackground();
+            initLocationBarBackground();
 
-        setLayoutTransition(null);
+            setLayoutTransition(null);
 
-        mMenuButtonWrapper.setVisibility(View.VISIBLE);
-        inflateTabSwitchingResources();
+            mMenuButtonWrapper.setVisibility(View.VISIBLE);
+            inflateTabSwitchingResources();
 
-        setWillNotDraw(false);
+            setWillNotDraw(false);
+        }
     }
 
     /**

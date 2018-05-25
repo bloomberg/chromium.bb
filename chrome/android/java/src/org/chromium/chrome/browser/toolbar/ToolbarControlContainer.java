@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
@@ -84,24 +85,30 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     @Override
     public void initWithToolbar(int toolbarLayoutId) {
-        ViewStub toolbarStub = (ViewStub) findViewById(R.id.toolbar_stub);
-        toolbarStub.setLayoutResource(toolbarLayoutId);
-        toolbarStub.inflate();
+        try (TraceEvent te = TraceEvent.scoped("ToolbarControlContainer.initWithToolbar")) {
+            ViewStub toolbarStub = (ViewStub) findViewById(R.id.toolbar_stub);
+            toolbarStub.setLayoutResource(toolbarLayoutId);
+            toolbarStub.inflate();
 
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbarContainer = (ToolbarViewResourceFrameLayout) findViewById(R.id.toolbar_container);
-        mToolbarContainer.setToolbar(mToolbar);
-        mMenuBtn = findViewById(R.id.menu_button);
+            mToolbar = (Toolbar) findViewById(R.id.toolbar);
+            mToolbarContainer =
+                    (ToolbarViewResourceFrameLayout) findViewById(R.id.toolbar_container);
+            mToolbarContainer.setToolbar(mToolbar);
+            mMenuBtn = findViewById(R.id.menu_button);
 
-        if (mToolbar instanceof ToolbarTablet) {
-            // On tablet, draw a fake tab strip and toolbar until the compositor is ready to draw
-            // the real tab strip. (On phone, the toolbar is made entirely of Android views, which
-            // are already initialized.)
-            setBackgroundResource(R.drawable.toolbar_background);
+            if (mToolbar instanceof ToolbarTablet) {
+                // On tablet, draw a fake tab strip and toolbar until the compositor is ready to
+                // draw
+
+                // the real tab strip. (On phone, the toolbar is made entirely of Android views,
+                // which
+                // are already initialized.)
+                setBackgroundResource(R.drawable.toolbar_background);
+            }
+
+            assert mToolbar != null;
+            assert mMenuBtn != null;
         }
-
-        assert mToolbar != null;
-        assert mMenuBtn != null;
     }
 
     @Override
