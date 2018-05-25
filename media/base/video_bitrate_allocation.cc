@@ -51,4 +51,9 @@ int VideoBitrateAllocation::GetSumBps() const {
   return sum;
 }
 
+bool VideoBitrateAllocation::operator==(
+    const VideoBitrateAllocation& other) const {
+  return memcmp(bitrates_, other.bitrates_, sizeof(bitrates_)) == 0;
+}
+
 }  // namespace media

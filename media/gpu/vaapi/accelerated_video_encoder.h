@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/codec_picture.h"
 #include "ui/gfx/geometry/size.h"
@@ -122,8 +123,9 @@ class AcceleratedVideoEncoder {
                           uint32_t initial_framerate) = 0;
 
   // Updates current framerate and/or bitrate to |framerate| in FPS
-  // and |bitrate| in bps.
-  virtual bool UpdateRates(uint32_t bitrate, uint32_t framerate) = 0;
+  // and the specified video bitrate allocation.
+  virtual bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
+                           uint32_t framerate) = 0;
 
   // Returns coded size for the input buffers required to encode, in pixels;
   // typically visible size adjusted to match codec alignment requirements.

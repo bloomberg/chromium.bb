@@ -25,6 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/shared_memory_region.h"
 #include "media/gpu/vaapi/h264_encoder.h"
@@ -571,22 +572,41 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
   VLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
+  VideoBitrateAllocation allocation;
+  allocation.SetBitrate(0, 0, bitrate);
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
           &VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
-          base::Unretained(this), bitrate, framerate));
+          base::Unretained(this), allocation, framerate));
+}
+
+void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
+    const VideoBitrateAllocation& bitrate_allocation,
+    uint32_t framerate) {
+  VLOGF(2) << "bitrate: " << bitrate_allocation.GetSumBps()
+           << " framerate: " << framerate;
+  DCHECK(child_task_runner_->BelongsToCurrentThread());
+
+  encoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
+          base::Unretained(this), bitrate_allocation, framerate));
 }
 
 void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
-    uint32_t bitrate,
+    VideoBitrateAllocation bitrate_allocation,
     uint32_t framerate) {
-  VLOGF(2) << "bitrate: " << bitrate << " framerate: " << framerate;
+  VLOGF(2) << "bitrate: " << bitrate_allocation.GetSumBps()
+           << " framerate: " << framerate;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
-  if (!encoder_->UpdateRates(bitrate, framerate))
-    VLOGF(1) << "Failed to update rates to " << bitrate << " " << framerate;
+  if (!encoder_->UpdateRates(bitrate_allocation, framerate)) {
+    VLOGF(1) << "Failed to update rates to " << bitrate_allocation.GetSumBps()
+             << " " << framerate;
+  }
 }
 
 void VaapiVideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
@@ -938,7 +958,7 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
   seq_param.frame_width_scale = frame_header->horizontal_scale;
   seq_param.frame_height_scale = frame_header->vertical_scale;
   seq_param.error_resilient = 1;
-  seq_param.bits_per_second = encode_params.bitrate_bps;
+  seq_param.bits_per_second = encode_params.bitrate_allocation.GetSumBps();
   seq_param.intra_period = encode_params.kf_period_frames;
 
   VAEncPictureParameterBufferVP8 pic_param = {};
@@ -1035,7 +1055,8 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
       frame_header->quantization_hdr.uv_ac_delta;
 
   VAEncMiscParameterRateControl rate_control_param = {};
-  rate_control_param.bits_per_second = encode_params.bitrate_bps;
+  rate_control_param.bits_per_second =
+      encode_params.bitrate_allocation.GetSumBps();
   rate_control_param.target_percentage = kTargetBitratePercentage;
   rate_control_param.window_size = encode_params.cpb_window_size_ms;
   rate_control_param.initial_qp = encode_params.initial_qp;

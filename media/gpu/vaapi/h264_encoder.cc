@@ -88,7 +88,9 @@ bool H264Encoder::Initialize(const gfx::Size& visible_size,
   mb_height_ = coded_size_.height() / kH264MacroblockSizeInPixels;
 
   profile_ = profile;
-  if (!UpdateRates(initial_bitrate, initial_framerate))
+  VideoBitrateAllocation initial_bitrate_allocation;
+  initial_bitrate_allocation.SetBitrate(0, 0, initial_bitrate);
+  if (!UpdateRates(initial_bitrate_allocation, initial_framerate))
     return false;
 
   UpdateSPS();
@@ -191,9 +193,11 @@ bool H264Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
   return true;
 }
 
-bool H264Encoder::UpdateRates(uint32_t bitrate, uint32_t framerate) {
+bool H264Encoder::UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
+                              uint32_t framerate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  uint32_t bitrate = bitrate_allocation.GetSumBps();
   if (bitrate == 0 || framerate == 0)
     return false;
 
