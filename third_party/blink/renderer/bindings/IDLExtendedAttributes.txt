@@ -64,6 +64,7 @@ ImplementedAs=*
 LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
 LegacyUnenumerableNamedProperties
+LenientSetter
 LenientThis
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
