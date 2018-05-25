@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
@@ -84,6 +85,7 @@
 @end
 
 @implementation ToolbarCoordinator
+@synthesize commandDispatcher = _commandDispatcher;
 @synthesize delegate = _delegate;
 @synthesize browserState = _browserState;
 @synthesize buttonUpdater = _buttonUpdater;
@@ -165,12 +167,17 @@ initWithToolsMenuConfigurationProvider:
   if (self.started)
     return;
 
+  DCHECK(self.commandDispatcher);
+  [self.commandDispatcher startDispatchingToTarget:self
+                                       forProtocol:@protocol(FakeboxFocuser)];
+
   self.started = YES;
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
   self.locationBarCoordinator = [[LocationBarLegacyCoordinator alloc] init];
   self.locationBarCoordinator.browserState = self.browserState;
   self.locationBarCoordinator.dispatcher = self.dispatcher;
+  self.locationBarCoordinator.commandDispatcher = self.commandDispatcher;
   self.locationBarCoordinator.URLLoader = self.URLLoader;
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.webStateList = self.webStateList;
@@ -219,6 +226,8 @@ initWithToolsMenuConfigurationProvider:
   if (!self.started)
     return;
 
+  [self.commandDispatcher stopDispatchingToTarget:self];
+
   [self setToolbarBackgroundToIncognitoNTPColorWithAlpha:0];
   self.started = NO;
   self.delegate = nil;
@@ -233,14 +242,6 @@ initWithToolsMenuConfigurationProvider:
 }
 
 #pragma mark - PrimaryToolbarCoordinator
-
-- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
-  return self.locationBarCoordinator;
-}
-
-- (id<QRScannerResultLoading>)QRScannerResultLoader {
-  return self.locationBarCoordinator;
-}
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
   return self.buttonUpdater;

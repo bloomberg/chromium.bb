@@ -166,7 +166,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   PopupMenuTableViewController* tableViewController =
       [[PopupMenuTableViewController alloc] init];
   tableViewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
+      static_cast<id<ApplicationCommands, BrowserCommands, LoadQueryCommands>>(
+          self.dispatcher);
   tableViewController.baseViewController = self.baseViewController;
 
   BOOL triggerNewIncognitoTabTip = NO;

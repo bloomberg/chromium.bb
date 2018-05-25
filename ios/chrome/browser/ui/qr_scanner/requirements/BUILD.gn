@@ -6,6 +6,5 @@ source_set("requirements") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "qr_scanner_presenting.h",
-    "qr_scanner_result_loading.h",
   ]
 }

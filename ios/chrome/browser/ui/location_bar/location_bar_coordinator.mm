@@ -16,6 +16,8 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
@@ -49,7 +51,8 @@ const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
 const int kLocationAuthorizationStatusCount = 4;
 }  // namespace
 
-@interface LocationBarCoordinator ()<LocationBarDelegate,
+@interface LocationBarCoordinator ()<LoadQueryCommands,
+                                     LocationBarDelegate,
                                      LocationBarViewControllerDelegate,
                                      LocationBarConsumer> {
   // API endpoint for omnibox.
@@ -67,6 +70,7 @@ const int kLocationAuthorizationStatusCount = 4;
 @end
 
 @implementation LocationBarCoordinator
+@synthesize commandDispatcher = _commandDispatcher;
 @synthesize viewController = _viewController;
 @synthesize mediator = _mediator;
 @synthesize browserState = _browserState;
@@ -85,6 +89,14 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)start {
+  DCHECK(self.commandDispatcher);
+
+  [self.commandDispatcher startDispatchingToTarget:self
+                                       forProtocol:@protocol(OmniboxFocuser)];
+  [self.commandDispatcher
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(LoadQueryCommands)];
+
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
   UIColor* textColor =
@@ -142,6 +154,7 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)stop {
+  [self.commandDispatcher stopDispatchingToTarget:self];
   // The popup has to be destroyed before the location bar.
   [self.omniboxPopupCoordinator stop];
   [self.omniboxCoordinator stop];
@@ -164,22 +177,15 @@ const int kLocationAuthorizationStatusCount = 4;
   return [self.omniboxCoordinator isOmniboxFirstResponder];
 }
 
-#pragma mark - VoiceSearchControllerDelegate
+#pragma mark - LoadQueryCommands
 
-- (void)receiveVoiceSearchResult:(NSString*)result {
-  DCHECK(result);
-  [self loadURLForQuery:result];
-}
-
-#pragma mark - QRScannerResultLoading
-
-- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
-  DCHECK(result);
-  if (load) {
-    [self loadURLForQuery:result];
+- (void)loadQuery:(NSString*)query immediately:(BOOL)immediately {
+  DCHECK(query);
+  if (immediately) {
+    [self loadURLForQuery:query];
   } else {
     [self focusOmnibox];
-    [self.omniboxCoordinator insertTextToOmnibox:result];
+    [self.omniboxCoordinator insertTextToOmnibox:query];
   }
 }
 

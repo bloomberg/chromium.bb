@@ -9,11 +9,11 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/ui/commands/load_query_commands.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_alerts.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
-#include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -53,7 +53,7 @@ enum DismissalReason {
 
 @property(nonatomic, readwrite, weak) id<QRScannerPresenting>
     presentationProvider;
-@property(nonatomic, readwrite, weak) id<QRScannerResultLoading> loadProvider;
+@property(nonatomic, readwrite, weak) id<LoadQueryCommands> queryLoader;
 
 // Dismisses the QRScannerViewController and runs |completion| on completion.
 // Logs metrics according to the |reason| for dismissal.
@@ -78,17 +78,17 @@ enum DismissalReason {
 
 @implementation QRScannerViewController
 
-@synthesize loadProvider = _loadProvider;
+@synthesize queryLoader = _queryLoader;
 @synthesize presentationProvider = _presentationProvider;
 
 #pragma mark lifecycle
 
 - (instancetype)
 initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
-                loadProvider:(id<QRScannerResultLoading>)loadProvider {
+                 queryLoader:(id<LoadQueryCommands>)queryLoader {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _loadProvider = loadProvider;
+    _queryLoader = queryLoader;
     _presentationProvider = presentationProvider;
     _cameraController = [CameraController cameraControllerWithDelegate:self];
   }
@@ -289,8 +289,8 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
     DCHECK(_result);
     [self dismissForReason:SCANNED_CODE
             withCompletion:^{
-              [self.loadProvider receiveQRScannerResult:_result
-                                        loadImmediately:_loadResultImmediately];
+              [self.queryLoader loadQuery:_result
+                              immediately:_loadResultImmediately];
             }];
   }
 }
@@ -357,8 +357,7 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
     [_qrScannerView animateScanningResultWithCompletion:^void(void) {
       [self dismissForReason:SCANNED_CODE
               withCompletion:^{
-                [self.loadProvider receiveQRScannerResult:result
-                                          loadImmediately:load];
+                [self.queryLoader loadQuery:result immediately:load];
               }];
     }];
   }

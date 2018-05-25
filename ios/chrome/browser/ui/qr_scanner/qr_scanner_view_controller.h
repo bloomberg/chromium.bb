@@ -9,14 +9,14 @@
 
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
 
+@protocol LoadQueryCommands;
 @protocol QRScannerPresenting;
-@protocol QRScannerResultLoading;
 
 @interface QRScannerViewController : UIViewController<CameraControllerDelegate>
 
-- (instancetype)
-initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
-                loadProvider:(id<QRScannerResultLoading>)loadProvider
+- (instancetype)initWithPresentationProvider:
+                    (id<QRScannerPresenting>)presentationProvider
+                                 queryLoader:(id<LoadQueryCommands>)queryLoader
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)name

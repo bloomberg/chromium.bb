@@ -11,7 +11,6 @@ source_set("voice") {
     "voice_search_bar_owner.h",
     "voice_search_controller.h",
     "voice_search_controller.mm",
-    "voice_search_controller_delegate.h",
     "voice_search_language.h",
     "voice_search_language.mm",
     "voice_search_prefs.cc",

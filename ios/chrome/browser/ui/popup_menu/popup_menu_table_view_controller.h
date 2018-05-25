@@ -11,6 +11,7 @@
 @protocol BrowserCommands;
 @protocol PopupMenuItem;
 @protocol PopupMenuTableViewControllerCommands;
+@protocol LoadQueryCommands;
 
 // TableViewController for the popup menu.
 @interface PopupMenuTableViewController : ChromeTableViewController
@@ -19,7 +20,9 @@
 @property(nonatomic, readonly, strong)
     TableViewModel<TableViewItem<PopupMenuItem>*>* tableViewModel;
 // Dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, LoadQueryCommands>
+        dispatcher;
 // Command handler for this table view.
 @property(nonatomic, weak) id<PopupMenuTableViewControllerCommands>
     commandHandler;
