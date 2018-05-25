@@ -844,9 +844,6 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
         gfx::ConvertRectToPixel(device_scale_factor, damage_rect));
   }
 
-  render_pass->output_rect.Union(
-      gfx::ConvertRectToPixel(device_scale_factor, output_rect));
-
   // Compute the total transformation from post-transform buffer coordinates to
   // target coordinates.
   SkMatrix viewport_to_target_matrix;
