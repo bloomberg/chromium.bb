@@ -35,6 +35,9 @@ MACHINE_GROUP_JSON_FILE = os.path.join(
       path_util.GetChromiumSrcDir(), 'tools', 'perf', 'core',
       'perf_dashboard_machine_group_mapping.json')
 
+JSON_CONTENT_TYPE = 'application/json'
+
+
 def _GetMachineGroup(build_properties):
   machine_group = None
   if build_properties.get('perf_dashboard_machine_group', False):
@@ -169,7 +172,8 @@ def _handle_perf_logs(benchmark_directory_list, extra_links):
   logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Logs')
   logdog_stream = logdog_helper.text(
       logdog_file_name, json.dumps(benchmark_logs_links, sort_keys=True,
-                                   indent=4, separators=(',', ': ')))
+                                   indent=4, separators=(',', ': ')),
+      content_type=JSON_CONTENT_TYPE)
   extra_links['Benchmarks logs'] = logdog_stream
 
 
@@ -268,7 +272,8 @@ def _handle_perf_results(
     logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
     logdog_stream = logdog_helper.text(logdog_file_name,
         json.dumps(logdog_dict, sort_keys=True,
-            indent=4, separators=(',', ': ')))
+                   indent=4, separators=(',', ': ')),
+        content_type=JSON_CONTENT_TYPE)
     if upload_fail:
       logdog_label += ' Upload Failure'
     extra_links[logdog_label] = logdog_stream
