@@ -474,7 +474,7 @@
             {
               "gpu": "1002:6821",
               "os": "Mac-10.13",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -518,7 +518,7 @@
             {
               "gpu": "1002:6821",
               "os": "Mac-10.13",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -559,7 +559,7 @@
             {
               "gpu": "1002:6821",
               "os": "Mac-10.13",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
