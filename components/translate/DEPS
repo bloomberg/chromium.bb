@@ -12,7 +12,6 @@ include_rules = [
   "+components/variations",
   "+google_apis",
   "+net",
-  "+services/network/public/cpp",
   "+ui",
   "+third_party/metrics_proto",
 

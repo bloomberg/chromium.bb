@@ -168,8 +168,8 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
         base::Bind(&ValidateModel),
         base::Bind(&TranslateRankerImpl::OnModelAvailable,
                    weak_ptr_factory_.GetWeakPtr()),
-        TranslateDownloadManager::GetInstance()->url_loader_factory(),
-        model_path, model_url, kUmaPrefix);
+        TranslateDownloadManager::GetInstance()->request_context(), model_path,
+        model_url, kUmaPrefix);
     // Kick off the initial load from cache.
     model_loader_->NotifyOfRankerActivity();
   }

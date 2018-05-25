@@ -6,15 +6,15 @@
 #include "base/memory/weak_ptr.h"
 #include "components/assist_ranker/binary_classifier_predictor.h"
 #include "components/assist_ranker/ranker_model_loader_impl.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace assist_ranker {
 
 AssistRankerServiceImpl::AssistRankerServiceImpl(
     base::FilePath base_path,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)),
+    net::URLRequestContextGetter* url_request_context_getter)
+    : url_request_context_getter_(url_request_context_getter),
       base_path_(std::move(base_path)) {}
 
 AssistRankerServiceImpl::~AssistRankerServiceImpl() {}
@@ -35,7 +35,7 @@ AssistRankerServiceImpl::FetchBinaryClassifierPredictor(
   DVLOG(1) << "Initializing predictor: " << model_name;
   std::unique_ptr<BinaryClassifierPredictor> predictor =
       BinaryClassifierPredictor::Create(config, GetModelPath(model_name),
-                                        url_loader_factory_);
+                                        url_request_context_getter_.get());
   base::WeakPtr<BinaryClassifierPredictor> weak_ptr =
       base::AsWeakPtr(predictor.get());
   predictor_map_[model_name] = std::move(predictor);
