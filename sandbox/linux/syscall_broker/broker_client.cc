@@ -159,7 +159,9 @@ int BrokerClient::Rmdir(const char* path) const {
   return PathOnlySyscall(COMMAND_RMDIR, path);
 }
 
-int BrokerClient::Stat(const char* pathname, struct stat* sb) const {
+int BrokerClient::Stat(const char* pathname,
+                       bool follow_links,
+                       struct stat* sb) const {
   if (!pathname || !sb)
     return -EFAULT;
 
@@ -168,10 +170,13 @@ int BrokerClient::Stat(const char* pathname, struct stat* sb) const {
                          pathname, nullptr)) {
     return -broker_permission_list_.denied_errno();
   }
-  return StatFamilySyscall(COMMAND_STAT, pathname, sb, sizeof(*sb));
+  return StatFamilySyscall(COMMAND_STAT, pathname, follow_links, sb,
+                           sizeof(*sb));
 }
 
-int BrokerClient::Stat64(const char* pathname, struct stat64* sb) const {
+int BrokerClient::Stat64(const char* pathname,
+                         bool follow_links,
+                         struct stat64* sb) const {
   if (!pathname || !sb)
     return -EFAULT;
 
@@ -180,7 +185,8 @@ int BrokerClient::Stat64(const char* pathname, struct stat64* sb) const {
                          pathname, nullptr)) {
     return -broker_permission_list_.denied_errno();
   }
-  return StatFamilySyscall(COMMAND_STAT64, pathname, sb, sizeof(*sb));
+  return StatFamilySyscall(COMMAND_STAT64, pathname, follow_links, sb,
+                           sizeof(*sb));
 }
 
 int BrokerClient::Unlink(const char* path) const {
@@ -294,11 +300,13 @@ int BrokerClient::PathAndFlagsSyscallReturningFD(BrokerCommand syscall_type,
 // This function needs to be async signal safe.
 int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
                                     const char* pathname,
+                                    bool follow_links,
                                     void* result_ptr,
                                     size_t expected_result_size) const {
   BrokerSimpleMessage message;
   RAW_CHECK(message.AddIntToMessage(syscall_type));
   RAW_CHECK(message.AddStringToMessage(pathname));
+  RAW_CHECK(message.AddIntToMessage(static_cast<int>(follow_links)));
 
   int returned_fd = -1;
   BrokerSimpleMessage reply;
