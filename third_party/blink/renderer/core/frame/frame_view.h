@@ -7,9 +7,10 @@
 
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
-#include "third_party/blink/renderer/core/frame/intrinsic_sizing_info.h"
 
 namespace blink {
+
+struct IntrinsicSizingInfo;
 
 class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
