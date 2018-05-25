@@ -756,6 +756,12 @@ class CORE_EXPORT Document : public ContainerNode,
                                                         const LayoutPoint&,
                                                         const WebMouseEvent&);
 
+  void SetHadKeyboardEvent(bool had_keyboard_event) {
+    had_keyboard_event_ = had_keyboard_event;
+  }
+  bool HadKeyboardEvent() const { return had_keyboard_event_; }
+  void SetLastFocusType(WebFocusType last_focus_type);
+  WebFocusType LastFocusType() const { return last_focus_type_; }
   bool SetFocusedElement(Element*, const FocusParams&);
   void ClearFocusedElement();
   Element* FocusedElement() const { return focused_element_.Get(); }
@@ -1610,6 +1616,8 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskHandle execute_scripts_waiting_for_resources_task_handle_;
 
   bool has_autofocused_;
+  WebFocusType last_focus_type_;
+  bool had_keyboard_event_;
   TaskRunnerTimer<Document> clear_focused_element_timer_;
   Member<Element> autofocus_element_;
   Member<Element> focused_element_;

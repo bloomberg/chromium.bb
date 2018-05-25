@@ -2472,7 +2472,29 @@ void Node::DefaultEventHandler(Event* event) {
   }
 }
 
-void Node::WillCallDefaultEventHandler(const Event&) {}
+void Node::WillCallDefaultEventHandler(const Event& event) {
+  if (!IsFocused() || GetDocument().LastFocusType() != kWebFocusTypeMouse ||
+      GetDocument().HadKeyboardEvent()) {
+    return;
+  }
+  if (!event.IsKeyboardEvent() || event.type() != EventTypeNames::keydown) {
+    if (event.IsUIEvent())
+      GetDocument().SetHadKeyboardEvent(false);
+    return;
+  }
+
+  bool old_should_have_focus_appearance = ShouldHaveFocusAppearance();
+
+  GetDocument().SetHadKeyboardEvent(true);
+
+  // Changes to HadKeyboardEvent may affect ShouldHaveFocusAppearance() and
+  // LayoutTheme::IsFocused().
+  // Inform LayoutTheme if ShouldHaveFocusAppearance() changes.
+  if (old_should_have_focus_appearance != ShouldHaveFocusAppearance() &&
+      GetLayoutObject()) {
+    GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
+  }
+}
 
 bool Node::HasActivationBehavior() const {
   return false;
@@ -2569,10 +2591,6 @@ void Node::SetHasFocusWithin(bool flag) {
   GetDocument().UserActionElements().SetHasFocusWithin(this, flag);
 }
 
-void Node::SetWasFocusedByMouse(bool flag) {
-  GetDocument().UserActionElements().SetWasFocusedByMouse(this, flag);
-}
-
 void Node::SetActive(bool flag) {
   GetDocument().UserActionElements().SetActive(this, flag);
 }
@@ -2613,11 +2631,6 @@ bool Node::IsUserActionElementFocused() const {
 bool Node::IsUserActionElementHasFocusWithin() const {
   DCHECK(IsUserActionElement());
   return GetDocument().UserActionElements().HasFocusWithin(this);
-}
-
-bool Node::IsUserActionElementWasFocusedByMouse() const {
-  DCHECK(IsUserActionElement());
-  return GetDocument().UserActionElements().WasFocusedByMouse(this);
 }
 
 void Node::SetCustomElementState(CustomElementState new_state) {

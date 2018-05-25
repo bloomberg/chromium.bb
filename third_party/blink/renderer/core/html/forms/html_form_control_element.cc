@@ -409,30 +409,13 @@ bool HTMLFormControlElement::IsKeyboardFocusable() const {
   return IsFocusable();
 }
 
-bool HTMLFormControlElement::ShouldShowFocusRingOnMouseFocus() const {
+bool HTMLFormControlElement::MayTriggerVirtualKeyboard() const {
   return false;
 }
 
 bool HTMLFormControlElement::ShouldHaveFocusAppearance() const {
-  return !WasFocusedByMouse() || ShouldShowFocusRingOnMouseFocus();
-}
-
-void HTMLFormControlElement::WillCallDefaultEventHandler(const Event& event) {
-  if (!WasFocusedByMouse())
-    return;
-  if (!event.IsKeyboardEvent() || event.type() != EventTypeNames::keydown)
-    return;
-
-  bool old_should_have_focus_appearance = ShouldHaveFocusAppearance();
-  SetWasFocusedByMouse(false);
-
-  // Changes to WasFocusedByMouse may affect ShouldHaveFocusAppearance() and
-  // LayoutTheme::IsFocused(). Inform LayoutTheme if
-  // ShouldHaveFocusAppearance() changes.
-  if (old_should_have_focus_appearance != ShouldHaveFocusAppearance() &&
-      GetLayoutObject()) {
-    GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
-  }
+  return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
+         GetDocument().HadKeyboardEvent() || MayTriggerVirtualKeyboard();
 }
 
 int HTMLFormControlElement::tabIndex() const {

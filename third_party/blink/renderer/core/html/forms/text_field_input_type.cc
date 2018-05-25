@@ -129,7 +129,7 @@ SpinButtonElement* TextFieldInputType::GetSpinButtonElement() const {
           ShadowElementNames::SpinButton()));
 }
 
-bool TextFieldInputType::ShouldShowFocusRingOnMouseFocus() const {
+bool TextFieldInputType::MayTriggerVirtualKeyboard() const {
   return true;
 }
 

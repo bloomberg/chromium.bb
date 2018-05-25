@@ -80,7 +80,7 @@ class TextFieldInputType : public InputType,
  private:
   InputTypeView* CreateView() override;
   ValueMode GetValueMode() const override;
-  bool ShouldShowFocusRingOnMouseFocus() const final;
+  bool MayTriggerVirtualKeyboard() const final;
   bool IsTextField() const final;
   bool ValueMissing(const String&) const override;
   void HandleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) override;

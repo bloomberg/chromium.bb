@@ -242,7 +242,7 @@ bool HTMLTextAreaElement::IsKeyboardFocusable() const {
   return IsFocusable();
 }
 
-bool HTMLTextAreaElement::ShouldShowFocusRingOnMouseFocus() const {
+bool HTMLTextAreaElement::MayTriggerVirtualKeyboard() const {
   return true;
 }
 

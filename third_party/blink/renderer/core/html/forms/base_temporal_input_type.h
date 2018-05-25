@@ -101,7 +101,7 @@ class BaseTemporalInputType : public InputType {
   String LocalizeValue(const String&) const override;
   bool SupportsReadOnly() const override;
   bool ShouldRespectListAttribute() override;
-  bool ShouldShowFocusRingOnMouseFocus() const override;
+  bool MayTriggerVirtualKeyboard() const override;
 };
 
 }  // namespace blink

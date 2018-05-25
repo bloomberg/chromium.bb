@@ -163,7 +163,8 @@ bool SVGAElement::SupportsFocus() const {
 }
 
 bool SVGAElement::ShouldHaveFocusAppearance() const {
-  return !WasFocusedByMouse() || SVGGraphicsElement::SupportsFocus();
+  return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
+         SVGGraphicsElement::SupportsFocus();
 }
 
 bool SVGAElement::IsURLAttribute(const Attribute& attribute) const {
