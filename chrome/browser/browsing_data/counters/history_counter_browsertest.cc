@@ -36,8 +36,8 @@ class HistoryCounterTest : public InProcessBrowserTest {
     time_ = base::Time::Now();
     history_service_ = HistoryServiceFactory::GetForProfileWithoutCreating(
         browser()->profile());
-    fake_web_history_service_.reset(new history::FakeWebHistoryService(
-        browser()->profile()->GetRequestContext()));
+    fake_web_history_service_ =
+        std::make_unique<history::FakeWebHistoryService>();
 
     SetHistoryDeletionPref(true);
     SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);

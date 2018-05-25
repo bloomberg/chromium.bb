@@ -36,8 +36,8 @@ class SyncAwareCounterTest : public SyncTest {
   ~SyncAwareCounterTest() override {}
 
   void SetUpOnMainThread() override {
-    fake_web_history_service_.reset(new history::FakeWebHistoryService(
-        browser()->profile()->GetRequestContext()));
+    fake_web_history_service_ =
+        std::make_unique<history::FakeWebHistoryService>();
     run_loop_.reset(new base::RunLoop());
   }
 

@@ -63,8 +63,7 @@ class HistoryNoticeUtilsTest : public ::testing::Test {
 
   void SetUp() override {
     sync_service_.reset(new TestSyncService());
-    history_service_.reset(new history::FakeWebHistoryService(
-        url_request_context_));
+    history_service_ = std::make_unique<history::FakeWebHistoryService>();
     history_service_->SetupFakeResponse(true /* success */, net::HTTP_OK);
   }
 

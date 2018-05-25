@@ -29,8 +29,7 @@ namespace history {
 // TODO(msramek): This class might need its own set of tests.
 class FakeWebHistoryService : public WebHistoryService {
  public:
-  FakeWebHistoryService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+  FakeWebHistoryService();
   ~FakeWebHistoryService() override;
 
   // Sets up the behavior of the fake response returned when calling

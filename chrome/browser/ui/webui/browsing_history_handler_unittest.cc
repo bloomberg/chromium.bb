@@ -143,11 +143,8 @@ class BrowsingHistoryHandlerTest : public ::testing::Test {
 
   static std::unique_ptr<KeyedService> BuildFakeWebHistoryService(
       content::BrowserContext* context) {
-    Profile* profile = static_cast<TestingProfile*>(context);
-
     std::unique_ptr<history::FakeWebHistoryService> service =
-        std::make_unique<history::FakeWebHistoryService>(
-            profile->GetRequestContext());
+        std::make_unique<history::FakeWebHistoryService>();
     service->SetupFakeResponse(true /* success */, net::HTTP_OK);
     return std::move(service);
   }

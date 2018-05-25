@@ -11,7 +11,8 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/sync_service.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace {
 // Returns true if the user is signed in and full history sync is enabled,
@@ -51,7 +52,8 @@ KeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
 
   return new history::WebHistoryService(
       IdentityManagerFactory::GetForProfile(profile),
-      profile->GetRequestContext());
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 WebHistoryServiceFactory::WebHistoryServiceFactory()
