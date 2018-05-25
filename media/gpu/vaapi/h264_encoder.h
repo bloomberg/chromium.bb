@@ -99,7 +99,8 @@ class H264Encoder : public AcceleratedVideoEncoder {
                   VideoCodecProfile profile,
                   uint32_t initial_bitrate,
                   uint32_t initial_framerate) override;
-  bool UpdateRates(uint32_t bitrate, uint32_t framerate) override;
+  bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
+                   uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;
   size_t GetBitstreamBufferSize() const override;
   size_t GetMaxNumOfRefFrames() const override;

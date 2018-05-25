@@ -67,4 +67,17 @@ TEST(VideoBitrateAllocationTest, ValidatesSumWhenOverwriting) {
   EXPECT_EQ(std::numeric_limits<int>::max() - 1, allocation.GetSumBps());
 }
 
+TEST(VideoBitrateAllocationTest, CanCopyAndCompare) {
+  VideoBitrateAllocation allocation;
+  EXPECT_TRUE(allocation.SetBitrate(0, 0, 1000));
+  EXPECT_TRUE(allocation.SetBitrate(
+      VideoBitrateAllocation::kMaxSpatialLayers - 1,
+      VideoBitrateAllocation::kMaxTemporalLayers - 1, 2000));
+
+  VideoBitrateAllocation copy = allocation;
+  EXPECT_EQ(copy, allocation);
+  copy.SetBitrate(0, 0, 0);
+  EXPECT_NE(copy, allocation);
+}
+
 }  // namespace media

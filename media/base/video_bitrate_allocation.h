@@ -33,9 +33,13 @@ class MEDIA_EXPORT VideoBitrateAllocation {
   // Sum of all bitrates.
   int32_t GetSumBps() const;
 
+  bool operator==(const VideoBitrateAllocation& other) const;
+  inline bool operator!=(const VideoBitrateAllocation& other) const {
+    return !(*this == other);
+  }
+
  private:
   int bitrates_[kMaxSpatialLayers][kMaxTemporalLayers];
-  DISALLOW_COPY_AND_ASSIGN(VideoBitrateAllocation);
 };
 
 }  // namespace media

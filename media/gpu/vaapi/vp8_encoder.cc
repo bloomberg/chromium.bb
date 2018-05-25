@@ -25,7 +25,6 @@ const int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
 
 VP8Encoder::EncodeParams::EncodeParams()
     : kf_period_frames(kKFPeriod),
-      bitrate_bps(0),
       framerate(0),
       cpb_window_size_ms(kCPBWindowSizeMs),
       cpb_size_bits(0),
@@ -67,7 +66,9 @@ bool VP8Encoder::Initialize(const gfx::Size& visible_size,
 
   Reset();
 
-  return UpdateRates(initial_bitrate, initial_framerate);
+  VideoBitrateAllocation initial_bitrate_allocation;
+  initial_bitrate_allocation.SetBitrate(0, 0, initial_bitrate);
+  return UpdateRates(initial_bitrate_allocation, initial_framerate);
 }
 
 gfx::Size VP8Encoder::GetCodedSize() const {
@@ -118,22 +119,24 @@ bool VP8Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
   return true;
 }
 
-bool VP8Encoder::UpdateRates(uint32_t bitrate, uint32_t framerate) {
+bool VP8Encoder::UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
+                             uint32_t framerate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (bitrate == 0 || framerate == 0)
+  if (bitrate_allocation.GetSumBps() == 0 || framerate == 0)
     return false;
 
-  if (current_params_.bitrate_bps == bitrate &&
+  if (current_params_.bitrate_allocation == bitrate_allocation &&
       current_params_.framerate == framerate) {
     return true;
   }
 
-  current_params_.bitrate_bps = bitrate;
+  current_params_.bitrate_allocation = bitrate_allocation;
   current_params_.framerate = framerate;
 
   current_params_.cpb_size_bits =
-      current_params_.bitrate_bps * current_params_.cpb_window_size_ms / 1000;
+      current_params_.bitrate_allocation.GetSumBps() *
+      current_params_.cpb_window_size_ms / 1000;
 
   return true;
 }

@@ -44,6 +44,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
+  void RequestEncodingParametersChange(
+      const VideoBitrateAllocation& bitrate_allocation,
+      uint32_t framerate) override;
   void Destroy() override;
   void Flush(FlushCallback flush_callback) override;
 
@@ -80,8 +83,10 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
-  void RequestEncodingParametersChangeTask(uint32_t bitrate,
-                                           uint32_t framerate);
+  void RequestEncodingParametersChangeTask(
+      VideoBitrateAllocation bitrate_allocation,
+      uint32_t framerate);
+
   void DestroyTask();
   void FlushTask();
 

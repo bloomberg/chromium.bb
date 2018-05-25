@@ -25,9 +25,9 @@ void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
 }
 
 void VideoEncodeAccelerator::RequestEncodingParametersChange(
-    const VideoBitrateAllocation& bitrate,
+    const VideoBitrateAllocation& bitrate_allocation,
     uint32_t framerate) {
-  RequestEncodingParametersChange(bitrate.GetSumBps(), framerate);
+  RequestEncodingParametersChange(bitrate_allocation.GetSumBps(), framerate);
 }
 
 }  // namespace media
