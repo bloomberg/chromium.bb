@@ -74,8 +74,8 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
 
 // Shows and closes the widget for KeyboardShortcutViewer.
 TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
-  // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
   EXPECT_TRUE(widget);
 
   // Cleaning up.
@@ -84,8 +84,8 @@ TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
 
 // KeyboardShortcutViewer window should be centered in screen.
 TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
-  // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
   EXPECT_TRUE(widget);
 
   gfx::Rect root_window_bounds =
@@ -105,8 +105,8 @@ TEST_F(KeyboardShortcutViewTest, CenterWindowInScreen) {
 
 // Test that the number of side tabs equals to the number of categories.
 TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
-  // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
 
   int category_number = 0;
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
@@ -126,8 +126,8 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
 
 // Test that the top line in two views should be center aligned.
 TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
-  // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
 
   for (const auto& item_view : GetShortcutViews()) {
     DCHECK(item_view->child_count() == 2);
@@ -151,8 +151,8 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
 
 // Test that the focus is on search box when window inits and exits search mode.
 TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
-  // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
 
   // Case 1: when window creates. The focus should be on search box.
   EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
@@ -188,12 +188,30 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
 
 // Test that the window can be closed by accelerator.
 TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
-  // Showing the widget.
-  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
   EXPECT_FALSE(widget->IsClosed());
 
   ui::test::EventGenerator& event_generator = GetEventGenerator();
   event_generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(widget->IsClosed());
+}
+
+// Test that the window can be activated or closed by toggling.
+TEST_F(KeyboardShortcutViewTest, ToggleWindow) {
+  // Show the widget.
+  views::Widget* widget = KeyboardShortcutView::Toggle(CurrentContext());
+  EXPECT_FALSE(widget->IsClosed());
+
+  // Call |Toggle()| to activate the inactive widget.
+  EXPECT_TRUE(widget->IsActive());
+  widget->Deactivate();
+  EXPECT_FALSE(widget->IsActive());
+  KeyboardShortcutView::Toggle(CurrentContext());
+  EXPECT_TRUE(widget->IsActive());
+
+  // Call |Toggle()| to close the active widget.
+  KeyboardShortcutView::Toggle(CurrentContext());
   EXPECT_TRUE(widget->IsClosed());
 }
 

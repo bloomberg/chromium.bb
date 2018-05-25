@@ -30,7 +30,7 @@ void ShortcutViewerApplication::OnStart() {
   DCHECK(ui::InputDeviceManager::HasInstance());
   if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete()) {
     // TODO(crbug.com/841020): Place the new app window on the correct display.
-    KeyboardShortcutView::Show(nullptr);
+    KeyboardShortcutView::Toggle(nullptr);
   } else {
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
   }
@@ -39,7 +39,7 @@ void ShortcutViewerApplication::OnStart() {
 void ShortcutViewerApplication::OnDeviceListsComplete() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   // TODO(crbug.com/841020): Place the new app window on the correct display.
-  KeyboardShortcutView::Show(nullptr);
+  KeyboardShortcutView::Toggle(nullptr);
 }
 
 }  // namespace keyboard_shortcut_viewer

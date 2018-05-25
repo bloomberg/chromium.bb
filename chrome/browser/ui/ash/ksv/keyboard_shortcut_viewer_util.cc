@@ -22,7 +22,7 @@ void ShowKeyboardShortcutViewer() {
     connector->StartService(shortcut_viewer::mojom::kServiceName);
   } else {
     // TODO(https://crbug.com/833673): Remove the dependency on aura::Window.
-    keyboard_shortcut_viewer::KeyboardShortcutView::Show(
+    keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(
         ash::Shell::HasInstance() ? ash::Shell::GetRootWindowForNewWindows()
                                   : nullptr);
   }
