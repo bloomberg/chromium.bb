@@ -28,6 +28,18 @@
         'start_setup_page',
         'setup_succeeded_page',
         'setup_failed_page',
+        'ui_mode',
+      ],
+      'includes' :
+          ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+
+    {
+      'target_name' : 'multidevice_setup_dialog',
+      'dependencies' : [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        'multidevice_setup',
+        'ui_mode',
       ],
       'includes' :
           ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -55,6 +67,15 @@
       'target_name' : 'start_setup_page',
       'dependencies' : [
         'ui_page_container_behavior',
+      ],
+      'includes' :
+          ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+
+    {
+      'target_name' : 'ui_mode',
+      'dependencies' : [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes' :
           ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
