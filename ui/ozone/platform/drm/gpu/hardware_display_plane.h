@@ -14,24 +14,19 @@
 
 #include "base/macros.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/gpu/drm_device.h"
 
 namespace ui {
-
-class DrmDevice;
 
 class HardwareDisplayPlane {
  public:
   enum Type { kDummy, kPrimary, kOverlay, kCursor };
 
-  HardwareDisplayPlane(uint32_t plane_id, uint32_t possible_crtcs);
+  HardwareDisplayPlane(uint32_t id);
 
   virtual ~HardwareDisplayPlane();
 
-  bool Initialize(DrmDevice* drm,
-                  const std::vector<uint32_t>& formats,
-                  const std::vector<drm_format_modifier>& format_info,
-                  bool is_dummy,
-                  bool test_only);
+  virtual bool Initialize(DrmDevice* drm);
 
   bool IsSupportedFormat(uint32_t format);
 
@@ -42,7 +37,7 @@ class HardwareDisplayPlane {
   bool in_use() const { return in_use_; }
   void set_in_use(bool in_use) { in_use_ = in_use; }
 
-  uint32_t plane_id() const { return plane_id_; }
+  uint32_t id() const { return id_; }
 
   Type type() const { return type_; }
   void set_type(const Type type) { type_ = type; }
@@ -53,18 +48,41 @@ class HardwareDisplayPlane {
   const std::vector<uint32_t>& supported_formats() const;
 
  protected:
-  virtual bool InitializeProperties(
-      DrmDevice* drm,
-      const ScopedDrmObjectPropertyPtr& plane_props);
+  struct Properties {
+    // These properties are mandatory on DRM atomic. On legacy they may or may
+    // not be present.
+    DrmDevice::Property crtc_id;
+    DrmDevice::Property crtc_x;
+    DrmDevice::Property crtc_y;
+    DrmDevice::Property crtc_w;
+    DrmDevice::Property crtc_h;
+    DrmDevice::Property fb_id;
+    DrmDevice::Property src_x;
+    DrmDevice::Property src_y;
+    DrmDevice::Property src_w;
+    DrmDevice::Property src_h;
+    DrmDevice::Property type;
 
-  uint32_t plane_id_ = 0;
-  uint32_t possible_crtcs_ = 0;
+    // Optional properties.
+    DrmDevice::Property rotation;
+    DrmDevice::Property in_formats;
+    DrmDevice::Property in_fence_fd;
+  };
+
+  uint32_t id_;
+  uint32_t crtc_mask_ = 0;
+
+  Properties properties_ = {};
+
   uint32_t owning_crtc_ = 0;
   uint32_t last_used_format_ = 0;
   bool in_use_ = false;
   Type type_ = kPrimary;
   std::vector<uint32_t> supported_formats_;
   std::vector<drm_format_modifier> supported_format_modifiers_;
+
+ private:
+  void InitializeProperties(DrmDevice* drm);
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlane);
 };

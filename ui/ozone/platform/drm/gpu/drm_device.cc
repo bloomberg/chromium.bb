@@ -393,6 +393,17 @@ ScopedDrmFramebufferPtr DrmDevice::GetFramebuffer(uint32_t framebuffer) {
       drmModeGetFB(file_.GetPlatformFile(), framebuffer));
 }
 
+ScopedDrmPlanePtr DrmDevice::GetPlane(uint32_t plane_id) {
+  DCHECK(file_.IsValid());
+  return ScopedDrmPlanePtr(drmModeGetPlane(file_.GetPlatformFile(), plane_id));
+}
+
+ScopedDrmPlaneResPtr DrmDevice::GetPlaneResources() {
+  DCHECK(file_.IsValid());
+  return ScopedDrmPlaneResPtr(
+      drmModeGetPlaneResources(file_.GetPlatformFile()));
+}
+
 ScopedDrmPropertyPtr DrmDevice::GetProperty(drmModeConnector* connector,
                                             const char* name) {
   TRACE_EVENT2("drm", "DrmDevice::GetProperty", "connector",
@@ -425,6 +436,12 @@ bool DrmDevice::SetProperty(uint32_t connector_id,
 bool DrmDevice::GetCapability(uint64_t capability, uint64_t* value) {
   DCHECK(file_.IsValid());
   return !drmGetCap(file_.GetPlatformFile(), capability, value);
+}
+
+ScopedDrmPropertyBlobPtr DrmDevice::GetPropertyBlob(uint32_t property_id) {
+  DCHECK(file_.IsValid());
+  return ScopedDrmPropertyBlobPtr(
+      drmModeGetPropertyBlob(file_.GetPlatformFile(), property_id));
 }
 
 ScopedDrmPropertyBlobPtr DrmDevice::GetPropertyBlob(drmModeConnector* connector,
