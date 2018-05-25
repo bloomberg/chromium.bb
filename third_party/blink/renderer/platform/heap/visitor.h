@@ -208,8 +208,6 @@ class PLATFORM_EXPORT Visitor {
   }
 
   // Cross-component tracing interface.
-  // TODO(mlippautz): Add required Trace methods to delegate to the subgraph
-  // relevant for wrapper tracing.
 
   template <typename T>
   void Trace(const TraceWrapperMember<T>& t) {
@@ -232,6 +230,16 @@ class PLATFORM_EXPORT Visitor {
           TraceDescriptorFor(t));
     Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
           TraceWrapperDescriptorFor(t));
+  }
+
+  void Trace(DOMWrapperMap<ScriptWrappable>* wrapper_map,
+             const ScriptWrappable* key) {
+    Visit(wrapper_map, key);
+  }
+
+  template <typename V8Type>
+  void Trace(const TraceWrapperV8Reference<V8Type>& v8reference) {
+    Visit(v8reference.template Cast<v8::Value>());
   }
 
   // Dynamic visitor interface.
