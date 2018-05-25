@@ -74,6 +74,7 @@ void OnSignedExchangeReceivedOnUI(
     scoped_refptr<network::ResourceResponse> outer_response,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     base::Optional<SignedExchangeHeader> header,
+    scoped_refptr<net::X509Certificate> certificate,
     base::Optional<net::SSLInfo> ssl_info,
     std::vector<std::string> error_messages) {
   FrameTreeNode* frame_tree_node =
@@ -82,7 +83,7 @@ void OnSignedExchangeReceivedOnUI(
     return;
   RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
       frame_tree_node, devtools_navigation_token, outer_request_url,
-      outer_response->head, header, ssl_info, error_messages);
+      outer_response->head, header, certificate, ssl_info, error_messages);
 }
 
 }  // namespace
@@ -162,6 +163,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
 
 void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
     const base::Optional<SignedExchangeHeader>& header,
+    const scoped_refptr<net::X509Certificate>& certificate,
     const net::SSLInfo* ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!devtools_enabled_)
@@ -178,7 +180,7 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&OnSignedExchangeReceivedOnUI, frame_tree_node_id_getter_,
                      outer_request_url_, resource_response->DeepCopy(),
-                     devtools_navigation_token_, header,
+                     devtools_navigation_token_, header, certificate,
                      std::move(ssl_info_opt), std::move(error_messages_)));
 }
 

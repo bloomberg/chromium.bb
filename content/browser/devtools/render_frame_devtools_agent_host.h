@@ -42,6 +42,7 @@ class CompositorFrameMetadata;
 
 namespace net {
 class SSLInfo;
+class X509Certificate;
 }
 
 namespace content {
@@ -102,6 +103,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response,
       const base::Optional<SignedExchangeHeader>& header,
+      const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,
       const std::vector<std::string>& error_messages);
   static void OnSignedExchangeCertificateRequestSent(

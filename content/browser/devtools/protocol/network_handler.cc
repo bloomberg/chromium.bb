@@ -53,6 +53,8 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_sct_to_string.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
@@ -1661,6 +1663,7 @@ void NetworkHandler::OnSignedExchangeReceived(
     const GURL& outer_request_url,
     const network::ResourceResponseHead& outer_response,
     const base::Optional<SignedExchangeHeader>& header,
+    const scoped_refptr<net::X509Certificate>& certificate,
     const base::Optional<net::SSLInfo>& ssl_info,
     const std::vector<std::string>& error_messages) {
   if (!enabled_)
@@ -1678,14 +1681,31 @@ void NetworkHandler::OnSignedExchangeReceived(
     const SignedExchangeHeaderParser::Signature& sig = header->signature();
     std::unique_ptr<Array<Network::SignedExchangeSignature>> signatures =
         Array<Network::SignedExchangeSignature>::create();
-    signatures->addItem(Network::SignedExchangeSignature::Create()
-                            .SetLabel(sig.label)
-                            .SetIntegrity(sig.integrity)
-                            .SetCertUrl(sig.cert_url.spec())
-                            .SetValidityUrl(sig.validity_url.spec())
-                            .SetDate(sig.date)
-                            .SetExpires(sig.expires)
-                            .Build());
+    std::unique_ptr<Network::SignedExchangeSignature> signature =
+        Network::SignedExchangeSignature::Create()
+            .SetLabel(sig.label)
+            .SetIntegrity(sig.integrity)
+            .SetCertUrl(sig.cert_url.spec())
+            .SetValidityUrl(sig.validity_url.spec())
+            .SetDate(sig.date)
+            .SetExpires(sig.expires)
+            .Build();
+    if (certificate) {
+      std::unique_ptr<Array<String>> encoded_certificates =
+          Array<String>::create();
+      std::string encoded;
+      base::Base64Encode(
+          net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
+          &encoded);
+      encoded_certificates->addItem(std::move(encoded));
+      for (const auto& cert : certificate->intermediate_buffers()) {
+        base::Base64Encode(
+            net::x509_util::CryptoBufferAsStringPiece(cert.get()), &encoded);
+        encoded_certificates->addItem(std::move(encoded));
+      }
+      signature->SetCertificates(std::move(encoded_certificates));
+    }
+    signatures->addItem(std::move(signature));
 
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()

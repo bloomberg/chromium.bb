@@ -23,6 +23,7 @@ class UnguessableToken;
 
 namespace net {
 class SSLInfo;
+class X509Certificate;
 }  // namespace net
 
 namespace network {
@@ -68,6 +69,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
 
   void OnSignedExchangeReceived(
       const base::Optional<SignedExchangeHeader>& header,
+      const scoped_refptr<net::X509Certificate>& certificate,
       const net::SSLInfo* ssl_info);
 
  private:
