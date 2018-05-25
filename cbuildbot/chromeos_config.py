@@ -2810,6 +2810,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     (None,            'eve',           'soraka'),        # poppy (KBL)
     (None,            None,            'kevin-arcnext'), # gru + arcnext
     (None,            None,            'caroline-arcnext'), # arcnext
+    ('nyan_blaze',    None,            None),            # Add for Skylab test
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
