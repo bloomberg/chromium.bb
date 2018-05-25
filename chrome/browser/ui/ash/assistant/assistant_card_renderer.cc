@@ -11,7 +11,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -37,18 +36,11 @@ class AssistantCard : public content::WebContentsDelegate,
                 ash::mojom::AssistantCardParamsPtr params,
                 ash::mojom::AssistantCardRenderer::RenderCallback callback)
       : assistant_card_renderer_(assistant_card_renderer) {
-    const user_manager::User* user =
-        user_manager::UserManager::Get()->FindUser(account_id);
-
-    if (!user) {
-      LOG(WARNING) << "Unable to retrieve user for account_id.";
-      return;
-    }
-
-    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    Profile* profile =
+        chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
 
     if (!profile) {
-      LOG(WARNING) << "Unable to retrieve profile for user.";
+      LOG(WARNING) << "Unable to retrieve profile for account_id.";
       return;
     }
 

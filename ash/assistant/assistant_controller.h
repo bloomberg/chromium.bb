@@ -14,6 +14,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/interfaces/assistant_image_downloader.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -73,6 +74,13 @@ class AssistantController
   // Releases resources for any card uniquely identified in |id_token_list|.
   void ReleaseCards(const std::vector<base::UnguessableToken>& id_tokens);
 
+  // Downloads the image found at the specified |url|. On completion, the
+  // supplied |callback| will be run with the downloaded image. If the download
+  // attempt is unsuccessful, a NULL image is returned.
+  void DownloadImage(
+      const GURL& url,
+      mojom::AssistantImageDownloader::DownloadCallback callback);
+
   // Invoke to modify the Assistant interaction state.
   void StartInteraction();
   void StopInteraction();
@@ -119,6 +127,8 @@ class AssistantController
       chromeos::assistant::mojom::AssistantPtr assistant) override;
   void SetAssistantCardRenderer(
       mojom::AssistantCardRendererPtr assistant_card_renderer) override;
+  void SetAssistantImageDownloader(
+      mojom::AssistantImageDownloaderPtr assistant_image_downloader) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
   void OnCardPressed(const GURL& url) override;
@@ -131,6 +141,7 @@ class AssistantController
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
   mojom::AssistantCardRendererPtr assistant_card_renderer_;
+  mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
 
   std::unique_ptr<AssistantBubble> assistant_bubble_;
 

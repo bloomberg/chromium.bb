@@ -20,6 +20,7 @@ mojom("interfaces_internal") {
     "ash_message_center_controller.mojom",
     "assistant_card_renderer.mojom",
     "assistant_controller.mojom",
+    "assistant_image_downloader.mojom",
     "cast_config.mojom",
     "constants.mojom",
     "cros_display_config.mojom",

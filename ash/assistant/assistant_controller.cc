@@ -77,6 +77,11 @@ void AssistantController::SetAssistantCardRenderer(
   assistant_card_renderer_ = std::move(assistant_card_renderer);
 }
 
+void AssistantController::SetAssistantImageDownloader(
+    mojom::AssistantImageDownloaderPtr assistant_image_downloader) {
+  assistant_image_downloader_ = std::move(assistant_image_downloader);
+}
+
 void AssistantController::RequestScreenshot(
     const gfx::Rect& rect,
     RequestScreenshotCallback callback) {
@@ -110,7 +115,6 @@ void AssistantController::RenderCard(
   }
 
   AccountId account_id = user_session->user_info->account_id;
-
   assistant_card_renderer_->Render(account_id, id_token, std::move(params),
                                    std::move(callback));
 }
@@ -124,6 +128,23 @@ void AssistantController::ReleaseCards(
     const std::vector<base::UnguessableToken>& id_tokens) {
   DCHECK(assistant_card_renderer_);
   assistant_card_renderer_->ReleaseAll(id_tokens);
+}
+
+void AssistantController::DownloadImage(
+    const GURL& url,
+    mojom::AssistantImageDownloader::DownloadCallback callback) {
+  DCHECK(assistant_image_downloader_);
+
+  const mojom::UserSession* user_session =
+      Shell::Get()->session_controller()->GetUserSession(0);
+
+  if (!user_session) {
+    LOG(WARNING) << "Unable to retrieve active user session.";
+    return;
+  }
+
+  AccountId account_id = user_session->user_info->account_id;
+  assistant_image_downloader_->Download(account_id, url, std::move(callback));
 }
 
 void AssistantController::AddInteractionModelObserver(

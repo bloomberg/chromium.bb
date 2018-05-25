@@ -148,6 +148,10 @@ class ProfileHelper
   // Callback can be empty. Not thread-safe.
   void ClearSigninProfile(const base::Closure& on_clear_callback);
 
+  // Returns profile of the user associated with |account_id| if it is created
+  // and fully initialized. Otherwise, returns NULL.
+  Profile* GetProfileByAccountId(const AccountId& account_id);
+
   // Returns profile of the |user| if it is created and fully initialized.
   // Otherwise, returns NULL.
   Profile* GetProfileByUser(const user_manager::User* user);

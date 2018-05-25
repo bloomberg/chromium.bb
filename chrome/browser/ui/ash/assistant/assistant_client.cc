@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/ash/assistant/assistant_card_renderer.h"
+#include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -40,6 +41,7 @@ AssistantClient::~AssistantClient() {
 void AssistantClient::MaybeInit(service_manager::Connector* connector) {
   if (initialized_)
     return;
+
   initialized_ = true;
   connector->BindInterface(chromeos::assistant::mojom::kServiceName,
                            &assistant_connection_);
@@ -55,7 +57,9 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
   assistant_connection_->Init(std::move(client_ptr), std::move(context_ptr),
                               std::move(audio_input_ptr));
 
-  assistant_card_renderer_.reset(new AssistantCardRenderer(connector));
+  assistant_card_renderer_ = std::make_unique<AssistantCardRenderer>(connector);
+  assistant_image_downloader_ =
+      std::make_unique<AssistantImageDownloader>(connector);
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {
