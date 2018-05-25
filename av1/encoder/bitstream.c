@@ -2310,7 +2310,7 @@ static int get_refresh_mask(AV1_COMP *cpi) {
 
 static INLINE int find_identical_tile(
     const int tile_row, const int tile_col,
-    TileBufferEnc (*const tile_buffers)[1024]) {
+    TileBufferEnc (*const tile_buffers)[MAX_TILE_COLS]) {
   const MV32 candidate_offset[1] = { { 1, 0 } };
   const uint8_t *const cur_tile_data =
       tile_buffers[tile_row][tile_col].data + 4;
