@@ -566,6 +566,7 @@ source_set("unit_tests") {
     "event_router_unittest.cc",
     "extension_api_frame_id_map_unittest.cc",
     "extension_creator_filter_unittest.cc",
+    "extension_function_histogram_value_unittest.cc",
     "extension_icon_image_unittest.cc",
     "extension_pref_value_map_unittest.cc",
     "extension_registrar_unittest.cc",
@@ -671,4 +672,9 @@ source_set("unit_tests") {
       "//extensions/shell:app_shell_lib",
     ]
   }
+
+  data = [
+    "//extensions/browser/extension_function_histogram_value.h",
+    "//tools/metrics/histograms/enums.xml",
+  ]
 }
