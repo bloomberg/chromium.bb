@@ -677,6 +677,10 @@ void CopyConstraintSet(const MediaTrackConstraintSet& constraints_in,
     CopyBooleanConstraint(constraints_in.echoCancellation(), naked_treatment,
                           constraint_buffer.echo_cancellation);
   }
+  if (constraints_in.hasEchoCancellationType()) {
+    CopyStringConstraint(constraints_in.echoCancellationType(), naked_treatment,
+                         constraint_buffer.echo_cancellation_type);
+  }
   if (constraints_in.hasAutoGainControl()) {
     CopyBooleanConstraint(constraints_in.autoGainControl(), naked_treatment,
                           constraint_buffer.goog_auto_gain_control);
