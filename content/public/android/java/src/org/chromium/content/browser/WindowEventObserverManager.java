@@ -105,8 +105,7 @@ public final class WindowEventObserverManager implements DisplayAndroidObserver 
         onDIPScaleChanged(display.getDipScale());
     }
 
-    // package-private for ContentViewCoreImpl.destroy()
-    void removeDisplayAndroidObserver() {
+    private void removeDisplayAndroidObserver() {
         if (mWindowAndroid != null) mWindowAndroid.getDisplay().removeObserver(this);
     }
 

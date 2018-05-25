@@ -54,8 +54,8 @@ public class ContentShellShellManagementTest {
                         .getVisibleUrl());
 
         Assert.assertNotSame(previousActiveShell, activity.getActiveShell());
+        Assert.assertNull(previousActiveShell.getWebContents());
         Assert.assertTrue(previousActiveShell.isDestroyed());
-        Assert.assertFalse(previousActiveShell.getContentViewCore().isAlive());
     }
 
 }

@@ -95,12 +95,6 @@ public interface ContentViewCore {
     void destroy();
 
     /**
-     * Returns true initially, false after destroy() has been called.
-     * It is illegal to call any other method after destroy().
-     */
-    boolean isAlive();
-
-    /**
      * @see View#onAttachedToWindow()
      */
     void onAttachedToWindow();

@@ -156,19 +156,14 @@ public class ContentViewCoreImpl implements ContentViewCore {
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
-        getImeAdapter().reset();
+        // This is called to fix crash. See https://crbug.com/803244
+        // TODO(jinsukkim): Use an observer to let the manager handle it on its own.
         getGestureListenerManager().reset();
-        hidePopupsAndPreserveSelection();
-        WindowEventObserverManager.from(mWebContents).removeDisplayAndroidObserver();
+        mWebContents.destroyContentsInternal();
         mWebContents = null;
         mNativeContentViewCore = 0;
 
         // See warning in javadoc before adding more clean up code here.
-    }
-
-    @Override
-    public boolean isAlive() {
-        return mNativeContentViewCore != 0;
     }
 
     private void hidePopupsAndClearSelection() {
