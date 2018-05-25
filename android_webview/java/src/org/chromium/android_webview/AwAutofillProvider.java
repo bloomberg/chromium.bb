@@ -218,21 +218,26 @@ public class AwAutofillProvider extends AutofillProvider {
     private long mNativeAutofillProvider;
     private AwAutofillUMA mAutofillUMA;
     private AwAutofillManager.InputUIObserver mInputUIObserver;
+    private long mAutofillTriggeredTimeMillis;
 
     public AwAutofillProvider(Context context, ViewGroup containerView) {
-        this(containerView, new AwAutofillManager(context));
+        this(containerView, new AwAutofillManager(context), context);
     }
 
     @VisibleForTesting
-    public AwAutofillProvider(ViewGroup containerView, AwAutofillManager manager) {
+    public AwAutofillProvider(ViewGroup containerView, AwAutofillManager manager, Context context) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         mAutofillManager = manager;
         mContainerView = containerView;
-        mAutofillUMA = new AwAutofillUMA();
+        mAutofillUMA = new AwAutofillUMA(context);
         mInputUIObserver = new AwAutofillManager.InputUIObserver() {
             @Override
             public void onInputUIShown() {
-                mAutofillUMA.onSuggestionDisplayed();
+                // Not need to report suggestion window displayed if there is no live autofill
+                // session.
+                if (mRequest == null) return;
+                mAutofillUMA.onSuggestionDisplayed(
+                        System.currentTimeMillis() - mAutofillTriggeredTimeMillis);
             }
         };
         mAutofillManager.addInputUIObserver(mInputUIObserver);
@@ -290,6 +295,7 @@ public class AwAutofillProvider extends AutofillProvider {
         int virtualId = mRequest.getVirtualId((short) focus);
         mAutofillManager.notifyVirtualViewEntered(mContainerView, virtualId, absBound);
         mAutofillUMA.onSessionStarted(mAutofillManager.isDisabled());
+        mAutofillTriggeredTimeMillis = System.currentTimeMillis();
     }
 
     @Override
@@ -303,7 +309,7 @@ public class AwAutofillProvider extends AutofillProvider {
             onFocusChangedImpl(true, index, x, y, width, height, true /*causedByValueChange*/);
         } else {
             // Currently there is no api to notify both value and position
-            // change, before the API is availabe, we still need to call
+            // change, before the API is available, we still need to call
             // notifyVirtualViewEntered() to tell current coordinates because
             // the position could be changed.
             int virtualId = mRequest.getVirtualId(sIndex);
@@ -382,9 +388,13 @@ public class AwAutofillProvider extends AutofillProvider {
 
             mAutofillManager.notifyVirtualViewEntered(
                     mContainerView, mRequest.getVirtualId((short) focusField), absBound);
-            // The focus field value might not sync with platform's
-            // AutofillManager, just notify it value changed.
-            if (!causedByValueChange) notifyVirtualValueChanged(focusField);
+
+            if (!causedByValueChange) {
+                // The focus field value might not sync with platform's
+                // AutofillManager, just notify it value changed.
+                notifyVirtualValueChanged(focusField);
+                mAutofillTriggeredTimeMillis = System.currentTimeMillis();
+            }
             mRequest.setFocusField(new FocusField((short) focusField, absBound));
         } else {
             if (prev == null) return;

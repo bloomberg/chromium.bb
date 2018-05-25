@@ -4,8 +4,12 @@
 
 package org.chromium.android_webview;
 
+import android.content.Context;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.autofill.SubmissionSource;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * The class for WebView autofill UMA.
@@ -13,6 +17,10 @@ import org.chromium.components.autofill.SubmissionSource;
 public class AwAutofillUMA {
     // Records whether the Autofill service is enabled or not.
     public static final String UMA_AUTOFILL_WEBVIEW_ENABLED = "Autofill.WebView.Enabled";
+
+    // Records whether the Autofill provider is created by activity context or not.
+    public static final String UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT =
+            "Autofill.WebView.CreatedByActivityContext";
 
     // Records what happened in an autofill session.
     public static final String UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION =
@@ -58,6 +66,16 @@ public class AwAutofillUMA {
     public static final String UMA_AUTOFILL_WEBVIEW_SUGGESTION_TIME =
             "Autofill.WebView.SuggestionTime";
 
+    // The expected time range of time is from 10ms to 2 seconds, and 50 buckets is sufficient.
+    private static final long MIN_TIME_MILLIS = 10;
+    private static final long MAX_TIME_MILLIS = TimeUnit.SECONDS.toMillis(2);
+    private static final int NUM_OF_BUCKETS = 50;
+
+    private static void recordTimesHistogram(String name, long durationMillis) {
+        RecordHistogram.recordCustomTimesHistogram(name, durationMillis, MIN_TIME_MILLIS,
+                MAX_TIME_MILLIS, TimeUnit.MILLISECONDS, NUM_OF_BUCKETS);
+    }
+
     private static class SessionRecorder {
         public static final int EVENT_VIRTUAL_STRUCTURE_PROVIDED = 0x1 << 0;
         public static final int EVENT_SUGGESTION_DISPLAYED = 0x1 << 1;
@@ -65,6 +83,8 @@ public class AwAutofillUMA {
         public static final int EVENT_USER_CHANGED_FIELD_VALUE = 0x1 << 3;
         public static final int EVENT_FORM_SUBMITTED = 0x1 << 4;
         public static final int EVENT_USER_CHANGED_AUTOFILLED_FIELD = 0x1 << 5;
+
+        private Long mSuggestionTimeMillis;
 
         public void record(int event) {
             // Not record any event until we get EVENT_VIRTUAL_STRUCTURE_PROVIDED which makes the
@@ -82,6 +102,13 @@ public class AwAutofillUMA {
             mState |= event;
         }
 
+        public void setSuggestionTimeMillis(long suggestionTimeMillis) {
+            // Only record first suggestion.
+            if (mSuggestionTimeMillis == null) {
+                mSuggestionTimeMillis = Long.valueOf(suggestionTimeMillis);
+            }
+        }
+
         public void recordHistogram() {
             RecordHistogram.recordEnumeratedHistogram(UMA_AUTOFILL_WEBVIEW_AUTOFILL_SESSION,
                     toUMAAutofillSessionValue(), AUTOFILL_SESSION_HISTOGRAM_COUNT);
@@ -89,6 +116,9 @@ public class AwAutofillUMA {
             if (mUserChangedAutofilledField != null) {
                 RecordHistogram.recordBooleanHistogram(
                         UMA_AUTOFILL_USER_CHANGED_AUTOFILLED_FIELD, mUserChangedAutofilledField);
+            }
+            if (mSuggestionTimeMillis != null) {
+                recordTimesHistogram(UMA_AUTOFILL_WEBVIEW_SUGGESTION_TIME, mSuggestionTimeMillis);
             }
         }
 
@@ -147,6 +177,11 @@ public class AwAutofillUMA {
     private SessionRecorder mRecorder;
     private Boolean mAutofillDisabled;
 
+    public AwAutofillUMA(Context context) {
+        RecordHistogram.recordBooleanHistogram(UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT,
+                AwContents.activityFromContext(context) != null);
+    }
+
     public void onFormSubmitted(int submissionSource) {
         if (mRecorder != null) mRecorder.record(SessionRecorder.EVENT_FORM_SUBMITTED);
         recordSession();
@@ -170,8 +205,11 @@ public class AwAutofillUMA {
         if (mRecorder != null) mRecorder.record(SessionRecorder.EVENT_VIRTUAL_STRUCTURE_PROVIDED);
     }
 
-    public void onSuggestionDisplayed() {
-        if (mRecorder != null) mRecorder.record(SessionRecorder.EVENT_SUGGESTION_DISPLAYED);
+    public void onSuggestionDisplayed(long suggestionTimeMillis) {
+        if (mRecorder != null) {
+            mRecorder.record(SessionRecorder.EVENT_SUGGESTION_DISPLAYED);
+            mRecorder.setSuggestionTimeMillis(suggestionTimeMillis);
+        }
     }
 
     public void onAutofill() {
