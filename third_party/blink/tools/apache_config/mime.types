@@ -85,6 +85,7 @@ application/sgml
 application/sgml-open-catalog
 application/sieve
 application/signed-exchange;v=b0	htxg
+application/signed-exchange;v=b1	sxg
 application/slate
 application/smil		smi smil
 application/srgs		gram

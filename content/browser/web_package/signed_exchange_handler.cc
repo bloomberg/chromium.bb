@@ -89,10 +89,10 @@ SignedExchangeHandler::SignedExchangeHandler(
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::SignedExchangeHandler");
 
-  // Currently, only 'v=b0' is supported.
   if (!SignedExchangeHeaderParser::GetVersionParamFromContentType(content_type,
                                                                   &version_) ||
-      version_ != SignedExchangeVersion::kB0) {
+      (version_ != SignedExchangeVersion::kB0 &&
+       version_ != SignedExchangeVersion::kB1)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
                                   weak_factory_.GetWeakPtr(),
@@ -101,7 +101,7 @@ SignedExchangeHandler::SignedExchangeHandler(
         devtools_proxy_.get(), "SignedExchangeHandler::SignedExchangeHandler",
         base::StringPrintf("Unsupported version of the content type. Currentry "
                            "content type must be "
-                           "\"application/signed-exchange;v=b0\". But the "
+                           "\"application/signed-exchange;v={b0,b1}\". But the "
                            "response content type was \"%s\"",
                            content_type.c_str()));
     return;
@@ -305,13 +305,10 @@ void SignedExchangeHandler::OnCertReceived(
   net::CertVerifier* cert_verifier = g_cert_verifier_for_testing
                                          ? g_cert_verifier_for_testing
                                          : request_context->cert_verifier();
-  // TODO(https://crbug.com/815024): Get the OCSP response from the
-  // “status_request” extension of the main-certificate, and check the lifetime
-  // (nextUpdate - thisUpdate) is less than 7 days.
   int result = cert_verifier->Verify(
       net::CertVerifier::RequestParams(
           unverified_cert_chain_->cert(), header_->request_url().host(),
-          config.GetCertVerifyFlags(), std::string() /* ocsp_response */,
+          config.GetCertVerifyFlags(), unverified_cert_chain_->ocsp(),
           net::CertificateList()),
       net::SSLConfigService::GetCRLSet().get(), &cert_verify_result_,
       base::BindRepeating(&SignedExchangeHandler::OnCertVerifyComplete,
@@ -326,6 +323,27 @@ void SignedExchangeHandler::OnCertReceived(
                    "SignedExchangeHandler::OnCertReceived");
 }
 
+bool SignedExchangeHandler::CheckOCSPStatus(
+    const net::OCSPVerifyResult& ocsp_result) {
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // Step 6.3 Validate that main-certificate has an ocsp property (Section 3.3)
+  // with a valid OCSP response whose lifetime (nextUpdate - thisUpdate) is less
+  // than 7 days ([RFC6960]). [spec text]
+  //
+  // OCSP verification is done in CertVerifier::Verify(), so we just check the
+  // result here.
+
+  // The b0 implementation checkpoint has no OCSP check.
+  if (version_ == SignedExchangeVersion::kB0)
+    return true;
+
+  if (ocsp_result.response_status != net::OCSPVerifyResult::PROVIDED ||
+      ocsp_result.revocation_status != net::OCSPRevocationStatus::GOOD)
+    return false;
+
+  return true;
+}
+
 void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::OnCertVerifyComplete");
@@ -336,6 +354,17 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
         base::StringPrintf("Certificate verification error: %s",
                            net::ErrorToShortString(result).c_str()));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
+    return;
+  }
+
+  if (!CheckOCSPStatus(cert_verify_result_.ocsp_result)) {
+    signed_exchange_utils::ReportErrorAndEndTraceEvent(
+        devtools_proxy_.get(), "SignedExchangeHandler::OnCertVerifyComplete",
+        base::StringPrintf(
+            "OCSP check failed. response status: %d, revocation status: %d",
+            cert_verify_result_.ocsp_result.response_status,
+            cert_verify_result_.ocsp_result.revocation_status));
+    RunErrorCallback(static_cast<net::Error>(net::ERR_FAILED));
     return;
   }
 
