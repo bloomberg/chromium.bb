@@ -4459,8 +4459,14 @@ void Document::HoveredElementDetached(Element& element) {
   if (element != hover_element_)
     return;
 
-  hover_element_->UpdateDistributionForUnknownReasons();
-  hover_element_ = SkipDisplayNoneAncestors(&element);
+  // While in detaching, we shouldn't use FlatTreeTraversal if slot assignemnt
+  // is dirty because it might triger assignement recalc. hover_element_ will be
+  // updated after recalc assignment is calculated (and re-layout is done).
+  if (element.IsSlotAssignmentOrLegacyDistributionDirty()) {
+    hover_element_ = nullptr;
+  } else {
+    hover_element_ = SkipDisplayNoneAncestors(&element);
+  }
 
   // If the mouse cursor is not visible, do not clear existing
   // hover effects on the ancestors of |element| and do not invoke

@@ -1419,6 +1419,9 @@ class CORE_EXPORT Document : public ContainerNode,
   SlotAssignmentEngine& GetSlotAssignmentEngine();
 
 #if DCHECK_IS_ON()
+  unsigned& SlotAssignmentRecalcForbiddenRecursionDepth() {
+    return slot_assignment_recalc_forbidden_recursion_depth_;
+  }
   bool IsSlotAssignmentRecalcForbidden() {
     return slot_assignment_recalc_forbidden_recursion_depth_ > 0;
   }
