@@ -332,6 +332,11 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupPositionMetrics) {
                            static_cast<int>(ListItemPosition::kOnlyItem), 1);
 
   tester.ExpectTotalCount(kClickThroughPosition, 4);
+
+  // Requests to show popups not on the list should do nothing.
+  EXPECT_FALSE(base::ContainsValue(ids, 5));
+  popup_blocker->ShowBlockedPopup(5, disposition);
+  tester.ExpectTotalCount(kClickThroughPosition, 4);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
