@@ -30,12 +30,12 @@ class TestClientConnectionParametersFactory {
   ClientConnectionParameters Create(const std::string& feature);
 
   // Returns the FakeConnectionDelegate* associated with the
-  // mojom::ConnectionDelegatePtr which resides in
-  // |client_connection_parameters|. If this function is passed a
-  // ClientConnectionParameters that was not created by this factory, nullptr is
-  // returned.
+  // mojom::ConnectionDelegatePtr which resides in the
+  // ClientConnectionParameters object with the provided ID. If this function is
+  // passed an ID corresponding to a ClientConnectionParameters object that was
+  // not created by this factory, nullptr is returned.
   FakeConnectionDelegate* GetDelegateForParameters(
-      const ClientConnectionParameters& client_connection_parameters);
+      const base::UnguessableToken& client_connection_parameters_id);
 
  private:
   friend class base::NoDestructor<TestClientConnectionParametersFactory>;
