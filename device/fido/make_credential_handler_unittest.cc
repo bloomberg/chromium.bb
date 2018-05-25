@@ -27,10 +27,6 @@ namespace device {
 
 namespace {
 
-constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
-constexpr uint8_t kUserId[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "acme.com";
-
 using TestMakeCredentialRequestCallback = test::StatusAndValueCallbackReceiver<
     FidoReturnCode,
     base::Optional<AuthenticatorMakeCredentialResponse>>;
@@ -45,15 +41,15 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
 
   std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
     ForgeNextHidDiscovery();
-    PublicKeyCredentialRpEntity rp(kRpId);
+    PublicKeyCredentialRpEntity rp(test_data::kRelyingPartyId);
     PublicKeyCredentialUserEntity user(
-        fido_parsing_utils::Materialize(kUserId));
+        fido_parsing_utils::Materialize(test_data::kUserId));
     PublicKeyCredentialParams credential_params(
         std::vector<PublicKeyCredentialParams::CredentialInfo>(1));
 
     auto request_parameter = CtapMakeCredentialRequest(
-        fido_parsing_utils::Materialize(kClientDataHash), std::move(rp),
-        std::move(user), std::move(credential_params));
+        fido_parsing_utils::Materialize(test_data::kClientDataHash),
+        std::move(rp), std::move(user), std::move(credential_params));
 
     return std::make_unique<MakeCredentialRequestHandler>(
         nullptr,

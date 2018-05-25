@@ -27,10 +27,6 @@ namespace device {
 
 namespace {
 
-constexpr uint8_t kClientDataHash[] = {0x01, 0x02, 0x03};
-constexpr uint8_t kUserId[] = {0x01, 0x02, 0x03};
-constexpr char kRpId[] = "acme.com";
-
 using TestMakeCredentialTaskCallback =
     ::device::test::StatusAndValueCallbackReceiver<
         CtapDeviceResponseCode,
@@ -46,14 +42,14 @@ class FidoMakeCredentialTaskTest : public testing::Test {
 
   std::unique_ptr<MakeCredentialTask> CreateMakeCredentialTask(
       FidoDevice* device) {
-    PublicKeyCredentialRpEntity rp(kRpId);
+    PublicKeyCredentialRpEntity rp(test_data::kRelyingPartyId);
     PublicKeyCredentialUserEntity user(
-        fido_parsing_utils::Materialize(kUserId));
+        fido_parsing_utils::Materialize(test_data::kUserId));
     return std::make_unique<MakeCredentialTask>(
         device,
         CtapMakeCredentialRequest(
-            fido_parsing_utils::Materialize(kClientDataHash), std::move(rp),
-            std::move(user),
+            fido_parsing_utils::Materialize(test_data::kClientDataHash),
+            std::move(rp), std::move(user),
             PublicKeyCredentialParams(
                 std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
         AuthenticatorSelectionCriteria(), callback_receiver_.callback());
@@ -63,14 +59,14 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   CreateMakeCredentialTaskWithAuthenticatorSelectionCriteria(
       FidoDevice* device,
       AuthenticatorSelectionCriteria criteria) {
-    PublicKeyCredentialRpEntity rp(kRpId);
+    PublicKeyCredentialRpEntity rp(test_data::kRelyingPartyId);
     PublicKeyCredentialUserEntity user(
-        fido_parsing_utils::Materialize(kUserId));
+        fido_parsing_utils::Materialize(test_data::kUserId));
     return std::make_unique<MakeCredentialTask>(
         device,
         CtapMakeCredentialRequest(
-            fido_parsing_utils::Materialize(kClientDataHash), std::move(rp),
-            std::move(user),
+            fido_parsing_utils::Materialize(test_data::kClientDataHash),
+            std::move(rp), std::move(user),
             PublicKeyCredentialParams(
                 std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
         std::move(criteria), callback_receiver_.callback());
