@@ -3662,10 +3662,14 @@ domain Network
     properties
       # Signed exchange signature label.
       string label
+      # The hex string of signed exchange signature.
+      string signature
       # Signed exchange signature integrity.
       string integrity
       # Signed exchange signature cert Url.
       optional string certUrl
+      # The hex string of signed exchange signature cert sha256.
+      optional string certSha256
       # Signed exchange signature validity Url.
       string validityUrl
       # Signed exchange signature date.
