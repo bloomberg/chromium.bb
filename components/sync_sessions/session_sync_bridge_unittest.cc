@@ -32,6 +32,7 @@
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
+#include "components/sync_sessions/tab_node_pool.h"
 #include "components/sync_sessions/test_matchers.h"
 #include "components/sync_sessions/test_synced_window_delegates_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -519,8 +520,10 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   const int kTabNodeId2 = 1;
 
   AddWindow(kWindowId);
-  AddTab(kWindowId, "http://foo.com/", kTabIdBeforeRestore1);
-  AddTab(kWindowId, "http://bar.com/", kTabIdBeforeRestore2);
+  TestSyncedTabDelegate* tab1 =
+      AddTab(kWindowId, "http://foo.com/", kTabIdBeforeRestore1);
+  TestSyncedTabDelegate* tab2 =
+      AddTab(kWindowId, "http://bar.com/", kTabIdBeforeRestore2);
 
   const std::string header_storage_key =
       SessionStore::GetHeaderStorageKey(kLocalSessionTag);
@@ -531,6 +534,9 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
 
   InitializeBridge();
   StartSyncing();
+
+  ASSERT_THAT(tab1->GetSyncId(), Eq(kTabNodeId1));
+  ASSERT_THAT(tab2->GetSyncId(), Eq(kTabNodeId2));
 
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(
@@ -548,11 +554,11 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   ShutdownBridge();
 
   // Override tabs with placeholder tab delegates.
-  ResetWindows();
   PlaceholderTabDelegate placeholder_tab1(
-      SessionID::FromSerializedValue(kTabIdAfterRestore1), kTabNodeId1);
+      SessionID::FromSerializedValue(kTabIdAfterRestore1), tab1->GetSyncId());
   PlaceholderTabDelegate placeholder_tab2(
-      SessionID::FromSerializedValue(kTabIdAfterRestore2), kTabNodeId2);
+      SessionID::FromSerializedValue(kTabIdAfterRestore2), tab2->GetSyncId());
+  ResetWindows();
   TestSyncedWindowDelegate* window = AddWindow(kWindowId);
   window->OverrideTabAt(0, &placeholder_tab1);
   window->OverrideTabAt(1, &placeholder_tab2);
@@ -582,6 +588,9 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
   InitializeBridge();
   StartSyncing();
 
+  EXPECT_THAT(placeholder_tab1.GetSyncId(), Eq(kTabNodeId1));
+  EXPECT_THAT(placeholder_tab2.GetSyncId(), Eq(kTabNodeId2));
+
   EXPECT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(
                   MatchesHeader(kLocalSessionTag, {kWindowId},
@@ -609,6 +618,74 @@ TEST_F(SessionSyncBridgeTest, ShouldUpdateIdsDuringRestore) {
                        EntityDataHasSpecifics(MatchesTab(
                            kLocalSessionTag, kWindowId, kTabIdAfterRestore2,
                            kTabNodeId2, {"http://bar.com/"})))));
+}
+
+TEST_F(SessionSyncBridgeTest,
+       ShouldIgnoreUnsyncablePlaceholderTabDuringRestore) {
+  const int kWindowId = 1000001;
+  const int kTabIdBeforeRestore1 = 1000002;
+  const int kTabIdBeforeRestore2 = 1000003;
+  const int kTabIdAfterRestore1 = 1000004;
+  const int kTabIdAfterRestore2 = 1000005;
+  // Zero is the first assigned tab node ID.
+  const int kTabNodeId1 = 0;
+
+  AddWindow(kWindowId);
+  TestSyncedTabDelegate* tab1 =
+      AddTab(kWindowId, "http://foo.com/", kTabIdBeforeRestore1);
+  // Tab 2 is unsyncable because of the URL scheme.
+  TestSyncedTabDelegate* tab2 =
+      AddTab(kWindowId, "about:blank", kTabIdBeforeRestore2);
+
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
+  const std::string tab_storage_key1 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId1);
+
+  InitializeBridge();
+  StartSyncing();
+
+  ASSERT_THAT(tab1->GetSyncId(), Eq(kTabNodeId1));
+  ASSERT_THAT(tab2->GetSyncId(), Eq(TabNodePool::kInvalidTabNodeID));
+
+  ASSERT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(header_storage_key, EntityDataHasSpecifics(MatchesHeader(
+                                               kLocalSessionTag, {kWindowId},
+                                               {kTabIdBeforeRestore1}))),
+                  Pair(tab_storage_key1,
+                       EntityDataHasSpecifics(MatchesTab(
+                           kLocalSessionTag, kWindowId, kTabIdBeforeRestore1,
+                           kTabNodeId1, {"http://foo.com/"})))));
+
+  ShutdownBridge();
+
+  // Override tabs with placeholder tab delegates.
+  PlaceholderTabDelegate placeholder_tab1(
+      SessionID::FromSerializedValue(kTabIdAfterRestore1), tab1->GetSyncId());
+  PlaceholderTabDelegate placeholder_tab2(
+      SessionID::FromSerializedValue(kTabIdAfterRestore2), tab2->GetSyncId());
+  ResetWindows();
+  TestSyncedWindowDelegate* window = AddWindow(kWindowId);
+  window->OverrideTabAt(0, &placeholder_tab1);
+  window->OverrideTabAt(1, &placeholder_tab2);
+
+  // Start the bridge again.
+  InitializeBridge();
+  StartSyncing();
+
+  EXPECT_THAT(placeholder_tab1.GetSyncId(), Eq(kTabNodeId1));
+  EXPECT_THAT(placeholder_tab2.GetSyncId(), Eq(TabNodePool::kInvalidTabNodeID));
+
+  EXPECT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(header_storage_key, EntityDataHasSpecifics(MatchesHeader(
+                                               kLocalSessionTag, {kWindowId},
+                                               {kTabIdAfterRestore1}))),
+                  Pair(tab_storage_key1,
+                       EntityDataHasSpecifics(MatchesTab(
+                           kLocalSessionTag, kWindowId, kTabIdAfterRestore1,
+                           kTabNodeId1, {"http://foo.com/"})))));
 }
 
 // Ensure that tabbed windows from a previous session are preserved if no
@@ -854,6 +931,51 @@ TEST_F(SessionSyncBridgeTest, ShouldHonorUnknownSyncIdsFromDelegate) {
                                                     {"http://foo.com/"})))));
 }
 
+// Ensure that unsyncable tabs are ignored even if the delegate reports a sync
+// ID (because the tab used to be syncable).
+TEST_F(SessionSyncBridgeTest,
+       ShouldHonorUnknownSyncIdsFromDelegateWithUnsyncableTab) {
+  const int kWindowId = 1000001;
+  const int kTabId = 1000002;
+  const int kTabNodeId = 0;
+
+  AddWindow(kWindowId);
+  AddTab(kWindowId, "about:blank", kTabId)->SetSyncId(kTabNodeId);
+
+  InitializeBridge();
+
+  EXPECT_CALL(mock_processor(),
+              Put(_,
+                  EntityDataHasSpecifics(
+                      MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId})),
+                  _));
+
+  StartSyncing();
+
+  // As a regression test for crbug.com/846480, we verify that restarting the
+  // bridge without tabbed windows doesn't crash or issue more calls to Put().
+  // This is only problematic because, in the current implementation and as
+  // reflected in the assertion below, the unsyncable tab is still stored in
+  // the local model.
+  ASSERT_THAT(GetAllData(),
+              UnorderedElementsAre(
+                  Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, {kWindowId}, {kTabId}))),
+                  Pair(_, EntityDataHasSpecifics(
+                              MatchesTab(kLocalSessionTag, kWindowId, kTabId,
+                                         kTabNodeId, /*urls=*/{})))));
+
+  ShutdownBridge();
+  ResetWindows();
+  InitializeBridge();
+  StartSyncing();
+  EXPECT_THAT(
+      GetAllData(),
+      ElementsAre(Pair(_, EntityDataHasSpecifics(MatchesHeader(
+                              kLocalSessionTag, /*window_ids=*/SizeIs(1),
+                              /*tab_ids=*/SizeIs(1))))));
+}
+
 TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   const int kWindowId = 1000001;
   const int kTabId = 1000002;
@@ -914,6 +1036,42 @@ TEST_F(SessionSyncBridgeTest, ShouldMergeForeignSession) {
               ElementsAre(MatchesSyncedSession(
                   kForeignSessionTag,
                   {{kForeignWindowId, std::vector<int>{kForeignTabId}}})));
+}
+
+TEST_F(SessionSyncBridgeTest, ShouldNotExposeForeignHeaderWithoutTabs) {
+  const std::string kForeignSessionTag = "foreignsessiontag";
+  const int kForeignWindowId = 2000001;
+  const int kForeignTabId = 2000002;
+
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  InitializeBridge();
+
+  const sync_pb::SessionSpecifics foreign_header =
+      CreateHeaderSpecificsWithOneTab(kForeignSessionTag, kForeignWindowId,
+                                      kForeignTabId);
+  const std::string foreign_header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+
+  EXPECT_CALL(
+      mock_processor(),
+      Put(_, EntityDataHasSpecifics(MatchesHeader(kLocalSessionTag, _, _)), _));
+
+  StartSyncing({foreign_header});
+  ASSERT_THAT(GetData(foreign_header_storage_key), NotNull());
+
+  std::vector<const SyncedSession*> foreign_sessions;
+  EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
+
+  // Restart bridge to verify the state doesn't change.
+  ShutdownBridge();
+  InitializeBridge();
+  StartSyncing();
+  ASSERT_THAT(GetData(foreign_header_storage_key), NotNull());
+
+  EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
+      &foreign_sessions));
 }
 
 // Regression test for crbug.com/837517: Ensure that the bridge doesn't crash

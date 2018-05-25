@@ -211,7 +211,12 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
       for (auto& tab : win_iter.second->wrapped_window.tabs) {
         int sync_id = session_tracker_->LookupTabNodeFromTabId(
             current_session_tag_, tab->tab_id);
-        DCHECK_NE(sync_id, TabNodePool::kInvalidTabNodeID);
+        // In rare cases, the local model could contain a tab that doesn't
+        // have a sync ID, if the restored header referenced a tab ID but the
+        // tab entity didn't exist (e.g. was unsyncable).
+        if (sync_id == TabNodePool::kInvalidTabNodeID) {
+          continue;
+        }
 
         DVLOG(1) << "Rewriting tab node " << sync_id << " with tab id "
                  << tab->tab_id.id();
