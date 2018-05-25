@@ -345,6 +345,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kMainThreadTaskQueueControl:
     case TaskType::kCompositorThreadTaskQueueDefault:
     case TaskType::kWorkerThreadTaskQueueDefault:
+    case TaskType::kWorkerThreadTaskQueueV8:
     case TaskType::kCount:
       NOTREACHED();
       break;

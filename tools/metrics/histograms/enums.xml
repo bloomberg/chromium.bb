@@ -39274,6 +39274,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="44" label="InternalIntersectionObserver"/>
   <int value="45" label="CompositorThreadTaskQueueDefault"/>
   <int value="46" label="WorkerThreadTaskQueueDefault"/>
+  <int value="47" label="WorkerThreadTaskQueueV8"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

@@ -41,12 +41,6 @@ NonMainThreadScheduler* NonMainThreadScheduler::Current() {
 
 void NonMainThreadScheduler::Init() {
   InitImpl();
-
-  // DefaultTaskQueue() is a virtual function, so it can't be called in the
-  // constructor. Also, DefaultTaskQueue() checks if InitImpl() is called.
-  // Therefore, v8_task_runner_ needs to be initialized here.
-  v8_task_runner_ = TaskQueueWithTaskType::Create(
-      DefaultTaskQueue(), TaskType::kMainThreadTaskQueueV8);
 }
 
 scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
@@ -75,11 +69,6 @@ void NonMainThreadScheduler::PostNonNestableIdleTask(
   IdleTaskRunner()->PostNonNestableIdleTask(
       location,
       base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-NonMainThreadScheduler::V8TaskRunner() {
-  return v8_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

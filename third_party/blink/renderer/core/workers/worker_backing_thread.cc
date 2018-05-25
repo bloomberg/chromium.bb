@@ -77,7 +77,7 @@ void WorkerBackingThread::InitializeOnBackingThread(
 
   DCHECK(!isolate_);
   isolate_ = V8PerIsolateData::Initialize(
-      backing_thread_->PlatformThread().GetTaskRunner(),
+      backing_thread_->PlatformThread().Scheduler()->V8TaskRunner(),
       V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot);
   AddWorkerIsolate(isolate_);
   V8Initializer::InitializeWorker(isolate_);

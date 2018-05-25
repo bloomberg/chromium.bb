@@ -66,6 +66,12 @@ CompositorThreadScheduler::IdleTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
+CompositorThreadScheduler::V8TaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 CompositorThreadScheduler::IPCTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }

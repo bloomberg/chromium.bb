@@ -114,6 +114,12 @@ WorkerThreadScheduler::IdleTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
+WorkerThreadScheduler::V8TaskRunner() {
+  DCHECK(initialized_);
+  return v8_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThreadScheduler::IPCTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
@@ -164,6 +170,9 @@ scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::DefaultTaskQueue() {
 void WorkerThreadScheduler::InitImpl() {
   initialized_ = true;
   idle_helper_.EnableLongIdlePeriod();
+
+  v8_task_runner_ = TaskQueueWithTaskType::Create(
+      DefaultTaskQueue(), TaskType::kWorkerThreadTaskQueueV8);
 }
 
 void WorkerThreadScheduler::OnTaskCompleted(

@@ -45,6 +45,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   // WebThreadScheduler implementation:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -109,6 +110,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   bool initialized_;
   base::TimeTicks thread_start_time_;
   scoped_refptr<WorkerTaskQueue> control_task_queue_;
+  scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   FrameScheduler::ThrottlingState throttling_state_;
 
   WorkerMetricsHelper worker_metrics_helper_;

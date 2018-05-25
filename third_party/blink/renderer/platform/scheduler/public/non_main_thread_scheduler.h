@@ -21,7 +21,6 @@
 
 namespace blink {
 namespace scheduler {
-class TaskQueueWithTaskType;
 class WorkerSchedulerProxy;
 class WorkerScheduler;
 class TaskQueueThrottler;
@@ -72,7 +71,6 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
                     WebThread::IdleTask task) override;
   void PostNonNestableIdleTask(const base::Location& location,
                                WebThread::IdleTask task) override;
-  scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
@@ -132,7 +130,6 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
 
  private:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
-  scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadScheduler);
 };
