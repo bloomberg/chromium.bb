@@ -58,6 +58,8 @@ SPECIAL_TOKENS = [
     'V8',
 ]
 
+_SPECIAL_TOKENS_WITH_NUMBERS = [token for token in SPECIAL_TOKENS if re.search(r'[0-9]', token)]
+
 # Applying _TOKEN_PATTERNS repeatedly should capture any sequence of a-z, A-Z,
 # 0-9.
 _TOKEN_PATTERNS = [
@@ -89,7 +91,16 @@ def tokenize_name(name):
         A list of token strings.
 
     """
-    return _TOKEN_RE.findall(name)
+
+    # In case |name| is written in lowerCamelCase, we try to match special
+    # tokens that contains numbers ignoring cases only at the first step.
+    tokens = []
+    match = re.search(r'^(' + '|'.join(_SPECIAL_TOKENS_WITH_NUMBERS) + r')', name, re.IGNORECASE)
+    if match:
+        tokens.append(match.group(0))
+        name = name[match.end(0):]
+
+    return tokens + _TOKEN_RE.findall(name)
 
 
 class NameStyleConverter(object):
