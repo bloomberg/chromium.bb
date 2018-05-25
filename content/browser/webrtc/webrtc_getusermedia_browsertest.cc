@@ -539,8 +539,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
+// Flaky: crbug.com/846582.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       TestGetUserMediaAspectRatio16To9) {
+                       DISABLED_TestGetUserMediaAspectRatio16To9) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
