@@ -18,14 +18,6 @@ Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
 Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
 Bug(none) http/tests/security/powerfulFeatureRestrictions/old-powerful-features-on-insecure-origin.html [ Pass Timeout ]
 
-# Cross-Origin Read Blocking is not implemented.
-crbug.com/792546 http/tests/inspector-protocol/network/block_cross_site_document_load.js [ Failure ]
-crbug.com/792546 external/wpt/fetch/corb/img-mime-types-coverage.tentative.sub.html [ Failure ]
-crbug.com/792546 external/wpt/fetch/corb/img-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/792546 external/wpt/fetch/corb/preload-image-png-mislabeled-as-html-nosniff.tentative.sub.html [ Failure ]
-crbug.com/792546 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
-
-
 # Only passes with Network Servce enabled (unfortunately this expectation still
 # allows Timeout from the top-level exctations though).
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass ]

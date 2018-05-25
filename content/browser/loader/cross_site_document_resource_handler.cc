@@ -535,9 +535,16 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
 
 bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     const network::ResourceResponse& response) {
+  // Give embedder a chance to skip document blocking for this response.
+  const char* initiator_scheme_exception =
+      GetContentClient()
+          ->browser()
+          ->GetInitatorSchemeBypassingDocumentBlocking();
+
+  // Delegate most decisions to CrossOriginReadBlocking::ResponseAnalyzer.
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
-          *request(), response);
+          *request(), response, initiator_scheme_exception);
   if (analyzer_->should_allow())
     return false;
 
@@ -566,16 +573,6 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info || info->GetChildID() == -1)
     return false;
-
-  // Give embedder a chance to skip document blocking for this response.
-  const char* initiator_scheme_exception =
-      GetContentClient()
-          ->browser()
-          ->GetInitatorSchemeBypassingDocumentBlocking();
-  if (initiator_scheme_exception && request()->initiator().has_value() &&
-      request()->initiator()->scheme() == initiator_scheme_exception) {
-    return false;
-  }
 
   // Don't block plugin requests with universal access (e.g., Flash).  Such
   // requests are made without CORS, and thus dont have an Origin request

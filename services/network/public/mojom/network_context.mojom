@@ -265,7 +265,6 @@ struct URLLoaderFactoryParams {
   uint32 process_id = kInvalidProcessId;
 
   // Cross-origin read blocking (CORB) configuration.
-  // TODO(lukasza): https://crbug.com/792546: Actually use the settings below.
   bool is_corb_enabled = true;
   string corb_excluded_initiator_scheme;
 };

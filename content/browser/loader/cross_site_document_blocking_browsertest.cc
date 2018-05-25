@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -32,6 +33,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,6 +42,7 @@ namespace content {
 
 using testing::Not;
 using testing::HasSubstr;
+using Action = network::CrossOriginReadBlocking::Action;
 
 namespace {
 
@@ -83,6 +86,14 @@ void InspectHistograms(const base::HistogramTester& histograms,
                        const HistogramExpectations& expectations,
                        const std::string& resource_name,
                        ResourceType resource_type) {
+  // //services/network doesn't have access to content::ResourceType and
+  // therefore cannot log some XSDB UMAs.
+  bool is_restricted_uma_expected = false;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    is_restricted_uma_expected = true;
+    FetchHistogramsFromChildProcesses();
+  }
+
   std::string bucket;
   if (base::MatchPattern(resource_name, "*.html")) {
     bucket = "HTML";
@@ -103,16 +114,23 @@ void InspectHistograms(const base::HistogramTester& histograms,
   std::string base = "SiteIsolation.XSD.Browser";
   expected_counts[base + ".Action"] = 2;
   if ((base::MatchPattern(resource_name, "*prefixed*") || bucket == "Others") &&
-      (0 != (expectations & kShouldBeBlocked))) {
+      (0 != (expectations & kShouldBeBlocked)) && !is_restricted_uma_expected) {
     expected_counts[base + ".BlockedForParserBreaker"] = 1;
   }
   if (0 != (expectations & kShouldBeSniffed))
     expected_counts[base + ".BytesReadForSniffing"] = 1;
-  if (0 != (expectations & kShouldBeBlocked)) {
+  if (0 != (expectations & kShouldBeBlocked && !is_restricted_uma_expected)) {
     expected_counts[base + ".Blocked"] = 1;
     expected_counts[base + ".Blocked." + bucket] = 1;
+  }
+  if (0 != (expectations & kShouldBeBlocked)) {
     expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
-    if (0 != (expectations & kShouldHaveContentLength))
+    bool should_have_content_length =
+        0 != (expectations & kShouldHaveContentLength);
+    histograms.ExpectBucketCount(base + ".Blocked.ContentLength.WasAvailable",
+                                 should_have_content_length, 1);
+
+    if (should_have_content_length)
       expected_counts[base + ".Blocked.ContentLength.ValueIfAvailable"] = 1;
   }
 
@@ -124,7 +142,7 @@ void InspectHistograms(const base::HistogramTester& histograms,
       << ", expectations=" << expectations;
 
   // Determine if the bucket for the resource type (XHR) was incremented.
-  if (0 != (expectations & kShouldBeBlocked)) {
+  if (0 != (expectations & kShouldBeBlocked) && !is_restricted_uma_expected) {
     EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
                 testing::ElementsAre(base::Bucket(resource_type, 1)))
         << "The wrong Blocked bucket was incremented.";
@@ -132,6 +150,26 @@ void InspectHistograms(const base::HistogramTester& histograms,
                 testing::ElementsAre(base::Bucket(resource_type, 1)))
         << "The wrong Blocked bucket was incremented.";
   }
+
+  // SiteIsolation.XSD.Browser.Action should always include kResponseStarted.
+  histograms.ExpectBucketCount(base + ".Action",
+                               static_cast<int>(Action::kResponseStarted), 1);
+
+  // Second value in SiteIsolation.XSD.Browser.Action depends on |expectations|.
+  Action expected_action = static_cast<Action>(-1);
+  if (expectations & kShouldBeBlocked) {
+    if (expectations & kShouldBeSniffed)
+      expected_action = Action::kBlockedAfterSniffing;
+    else
+      expected_action = Action::kBlockedWithoutSniffing;
+  } else {
+    if (expectations & kShouldBeSniffed)
+      expected_action = Action::kAllowedAfterSniffing;
+    else
+      expected_action = Action::kAllowedWithoutSniffing;
+  }
+  histograms.ExpectBucketCount(base + ".Action",
+                               static_cast<int>(expected_action), 1);
 }
 
 // Helper for intercepting a resource request to the given URL and capturing the
@@ -417,7 +455,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
   //   jsonp.* - JSONP (i.e., script) mislabeled as a document.
   //   img.*   - Contents that won't match the document label.
   //   valid.* - Correctly labeled responses of non-document types.
-  const char* sniff_allowed_resources[] = {"js.html",
+  const char* sniff_allowed_resources[] = {"html-prefix.txt",
+                                           "js.html",
                                            "comment_js.html",
                                            "js.xml",
                                            "js.json",

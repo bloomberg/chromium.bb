@@ -22,6 +22,7 @@
 #include "net/http/http_raw_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -119,6 +120,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
+  void BlockResponseForCorb();
 
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
@@ -154,6 +156,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // finished.
   scoped_refptr<ResourceResponse> response_;
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
+
+  // Sniffing state.
+  std::unique_ptr<CrossOriginReadBlocking::ResponseAnalyzer> corb_analyzer_;
+  bool did_corb_block_response_ = false;
+  bool is_more_corb_sniffing_needed_ = false;
+  bool is_more_mime_sniffing_needed_ = false;
 
   std::unique_ptr<ResourceScheduler::ScheduledResourceRequest>
       resource_scheduler_request_handle_;

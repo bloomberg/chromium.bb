@@ -48,18 +48,16 @@
 # Cross-origin request to file:// URL should be blocked. crbug.com/759230
 -BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
 
-# Cross-origin read blocking (CORB) needs to be implemented in the network
-# service.
-# https://crbug.com/786505 (cross site document blocking)
-# https://crbug.com/792546 (cross site document blocking in network service)
--CrossSiteDocumentBlockingBaseTest.BlockDocumentsByDefault
--CrossSiteDocumentBlockingTest.BlockDocuments
+# https://crbug.com/846341: CORB: Preserve test coverage for blocking response
+# headers in the NetworkService world.
 -CrossSiteDocumentBlockingTest.BlockHeaders
--CrossSiteDocumentBlockingTest.BlockRequestFromErrorPage
+
+# https://crbug.com/846352: CORB/NetworkService: Remove
+# CrossSiteDocumentResourceHandler while preserving test coverage - the tests
+# below can be probably removed altogether once NetworkService ships and the
+# CrossSiteDocumentResourceHandler is removed.  See the bug for details.
 -CrossSiteDocumentBlockingIsolatedOriginTest.BlockDocumentsFromIsolatedOrigin
--CrossSiteDocumentBlockingTest.RangeRequest
 -CrossSiteDocumentBlockingServiceWorkerTest.NoNetwork
--CrossSiteDocumentBlockingServiceWorkerTest.NetworkToServiceWorkerResponse
 
 # Flakes on Android.
 # https://crbug.com/827318
