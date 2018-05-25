@@ -250,6 +250,16 @@ interface VRSubmitFrameClient {
 // Provides a communication channel from the renderer to the browser-side host
 // of a (device/) VrDisplayImpl.
 interface VRDisplayHost {
+  // Request to initialize a session in the browser process. The return value
+  // indicates if the session was successfully initialized or not. This method
+  // must be called before RequestPresent and the magic window provider
+  // methods.
+  // TODO(https://crbug.com/842042): Call VRDisplayHost::RequestSession() from
+  // WebVR.
+  // TODO(https://crbug.com/842025): Refactor VR device interfaces to better
+  // reflect WebXR.
+  RequestSession() => (bool success);
+
   // The returned transport_options is marked optional: it's null for
   // a failure result but must be non-null for a success result.
   RequestPresent(VRSubmitFrameClient client,
@@ -258,6 +268,7 @@ interface VRDisplayHost {
                  bool triggered_by_displayactive) => (
                      bool success,
                      VRDisplayFrameTransportOptions? transport_options);
+
   ExitPresent();
 };
 

@@ -12,6 +12,8 @@
 
 namespace device {
 
+class VRDisplayImpl;
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class VrViewerType {
@@ -60,6 +62,9 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void SetMagicWindowEnabled(bool enabled) = 0;
   virtual void ExitPresent() = 0;
+  virtual void RequestSession(
+      VRDisplayImpl* display,
+      mojom::VRDisplayHost::RequestSessionCallback callback) = 0;
   virtual void RequestPresent(
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,

@@ -25,13 +25,16 @@ function xr_session_promise_test(
               // Run the test with each set of sessionOptions from the array one
               // at a time.
               function nextSessionTest(i) {
+                // Check if it's time to break the loop.
                 if (i == sessionOptions.length) {
                   if (sessionOptions.length == 0) {
                     reject('No option for the session. Test Did not run.');
                   } else {
                     resolve();
                   }
+                  return;
                 }
+
                 // Perform the session request in a user gesture.
                 runWithUserGesture(() => {
                   let nextOptions = sessionOptions[i];
@@ -41,21 +44,14 @@ function xr_session_promise_test(
                         testSession = session;
                         return func(session, t);
                       })
-                      .then(() => {
-                        // Wrap in a try in case the session was ended in the
-                        // test itself.
-                        try {
-                          // If there's another test to run after this one make
-                          // sure to end the session so that we don't
-                          // accidentally try to have, for example, two
-                          // exclusive sessions at once.
-                          if (i < sessionOptions.length - 1) {
-                            testSession.end();
-                          }
-                        } finally {
-                          nextSessionTest(++i);
-                        }
-                      })
+                      .then(
+                          () => {// End the session. Silence any errors
+                                 // generated if the session was already ended.
+                                 // TODO(offenwanger): This throw error when a
+                                 // session is already ended is not defined by
+                                 // the spec.
+                                 testSession.end().catch(() => {})})
+                      .then(() => nextSessionTest(++i))
                       .catch((err) => {
                         let optionsString = '{';
                         let firstOption = true;

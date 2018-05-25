@@ -33,6 +33,15 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
 
 VRDisplayImpl::~VRDisplayImpl() = default;
 
+void VRDisplayImpl::RequestSession(
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  if (!CanStartNewSession()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  device_->RequestSession(this, std::move(callback));
+}
+
 // Gets a pose for magic window sessions.
 void VRDisplayImpl::GetPose(GetPoseCallback callback) {
   if (!device_->IsAccessAllowed(this)) {
@@ -63,6 +72,10 @@ void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
   }
 
   device_->GetMagicWindowFrameData(frame_size, rotation, std::move(callback));
+}
+
+bool VRDisplayImpl::CanStartNewSession() {
+  return device_->IsAccessAllowed(this) && InFocusedFrame();
 }
 
 void VRDisplayImpl::SetListeningForActivate(bool listening) {
