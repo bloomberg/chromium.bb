@@ -18,7 +18,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -151,7 +151,7 @@ class NET_EXPORT ProxyResolutionService
   int ResolveProxy(const GURL& url,
                    const std::string& method,
                    ProxyInfo* results,
-                   const CompletionCallback& callback,
+                   CompletionOnceCallback callback,
                    Request** request,
                    ProxyDelegate* proxy_delegate,
                    const NetLogWithSource& net_log);
@@ -354,7 +354,7 @@ class NET_EXPORT ProxyResolutionService
   int ResolveProxyHelper(const GURL& url,
                          const std::string& method,
                          ProxyInfo* results,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          Request** request,
                          ProxyDelegate* proxy_delegate,
                          const NetLogWithSource& net_log);

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
@@ -56,7 +57,7 @@ class NET_EXPORT ProxyResolverV8Tracing {
   // |*request|.
   virtual void GetProxyForURL(const GURL& url,
                               ProxyInfo* results,
-                              const CompletionCallback& callback,
+                              CompletionOnceCallback callback,
                               std::unique_ptr<ProxyResolver::Request>* request,
                               std::unique_ptr<Bindings> bindings) = 0;
 };
@@ -75,7 +76,7 @@ class NET_EXPORT ProxyResolverV8TracingFactory {
       const scoped_refptr<PacFileData>& pac_script,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
       std::unique_ptr<ProxyResolverV8Tracing>* resolver,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       std::unique_ptr<ProxyResolverFactory::Request>* request) = 0;
 
   static std::unique_ptr<ProxyResolverV8TracingFactory> Create();

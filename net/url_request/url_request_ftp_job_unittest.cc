@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
 #include "net/base/proxy_server.h"
@@ -47,7 +48,7 @@ class MockProxyResolverFactory : public ProxyResolverFactory {
 
   int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                           std::unique_ptr<ProxyResolver>* resolver,
-                          const CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override {
     EXPECT_FALSE(resolver_);
     std::unique_ptr<MockAsyncProxyResolver> owned_resolver(

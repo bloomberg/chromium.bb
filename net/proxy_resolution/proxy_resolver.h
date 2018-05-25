@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/pac_file_data.h"
@@ -45,7 +45,7 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   // |*request| is written to. Call request_.reset() to cancel the request
   virtual int GetProxyForURL(const GURL& url,
                              ProxyInfo* results,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback callback,
                              std::unique_ptr<Request>* request,
                              const NetLogWithSource& net_log) = 0;
 

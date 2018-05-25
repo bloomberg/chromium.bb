@@ -61,7 +61,7 @@ class TestProxyResolver : public net::ProxyResolver {
   // net::ProxyResolver:
   int GetProxyForURL(const GURL& url,
                      net::ProxyInfo* results,
-                     const net::CompletionCallback& callback,
+                     net::CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const net::NetLogWithSource& net_log) override {
     CHECK(network_task_runner_->BelongsToCurrentThread());
@@ -70,7 +70,7 @@ class TestProxyResolver : public net::ProxyResolver {
       return result_;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, result_));
+        FROM_HERE, base::BindOnce(std::move(callback), result_));
     return net::ERR_IO_PENDING;
   }
 
@@ -103,7 +103,7 @@ class TestProxyResolverFactory : public net::ProxyResolverFactory {
   // net::ProxyResolverFactory:
   int CreateProxyResolver(const scoped_refptr<net::PacFileData>& pac_script,
                           std::unique_ptr<net::ProxyResolver>* resolver,
-                          const net::CompletionCallback& callback,
+                          net::CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override {
     *resolver = std::make_unique<net::ForwardingProxyResolver>(resolver_);
     return net::OK;

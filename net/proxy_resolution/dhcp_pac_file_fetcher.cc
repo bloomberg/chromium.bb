@@ -22,7 +22,7 @@ DoNothingDhcpPacFileFetcher::~DoNothingDhcpPacFileFetcher() = default;
 
 int DoNothingDhcpPacFileFetcher::Fetch(
     base::string16* utf16_text,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag traffic_annotation) {
   return ERR_NOT_IMPLEMENTED;

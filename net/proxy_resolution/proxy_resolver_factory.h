@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/pac_file_data.h"
 
@@ -40,7 +40,7 @@ class NET_EXPORT ProxyResolverFactory {
   // the ProxyResolverFactory is deleted.
   virtual int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                                   std::unique_ptr<ProxyResolver>* resolver,
-                                  const net::CompletionCallback& callback,
+                                  CompletionOnceCallback callback,
                                   std::unique_ptr<Request>* request) = 0;
 
   // The PAC script backend can be specified to the ProxyResolverFactory either

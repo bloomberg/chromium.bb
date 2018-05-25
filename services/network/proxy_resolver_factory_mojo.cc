@@ -123,7 +123,7 @@ class ProxyResolverMojo : public net::ProxyResolver {
   // ProxyResolver implementation:
   int GetProxyForURL(const GURL& url,
                      net::ProxyInfo* results,
-                     const net::CompletionCallback& callback,
+                     net::CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const net::NetLogWithSource& net_log) override;
 
@@ -154,7 +154,7 @@ class ProxyResolverMojo::Job
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
       net::ProxyInfo* results,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::NetLogWithSource& net_log);
   ~Job() override;
 
@@ -173,7 +173,7 @@ class ProxyResolverMojo::Job
 
   const GURL url_;
   net::ProxyInfo* results_;
-  net::CompletionCallback callback_;
+  net::CompletionOnceCallback callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   mojo::Binding<proxy_resolver::mojom::ProxyResolverRequestClient> binding_;
@@ -184,7 +184,7 @@ class ProxyResolverMojo::Job
 ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
                             const GURL& url,
                             net::ProxyInfo* results,
-                            const net::CompletionCallback& callback,
+                            net::CompletionOnceCallback callback,
                             const net::NetLogWithSource& net_log)
     : ClientMixin<proxy_resolver::mojom::ProxyResolverRequestClient>(
           resolver->host_resolver_,
@@ -193,7 +193,7 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
           net_log),
       url_(url),
       results_(results),
-      callback_(callback),
+      callback_(std::move(callback)),
       binding_(this) {
   proxy_resolver::mojom::ProxyResolverRequestClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
@@ -217,9 +217,9 @@ void ProxyResolverMojo::Job::OnConnectionError() {
 
 void ProxyResolverMojo::Job::CompleteRequest(int result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  net::CompletionCallback callback = base::ResetAndReturn(&callback_);
+  net::CompletionOnceCallback callback = std::move(callback_);
   binding_.Close();
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void ProxyResolverMojo::Job::ReportResult(int32_t error,
@@ -262,7 +262,7 @@ void ProxyResolverMojo::OnConnectionError() {
 
 int ProxyResolverMojo::GetProxyForURL(const GURL& url,
                                       net::ProxyInfo* results,
-                                      const net::CompletionCallback& callback,
+                                      net::CompletionOnceCallback callback,
                                       std::unique_ptr<Request>* request,
                                       const net::NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -270,7 +270,8 @@ int ProxyResolverMojo::GetProxyForURL(const GURL& url,
   if (!mojo_proxy_resolver_ptr_)
     return net::ERR_PAC_SCRIPT_TERMINATED;
 
-  *request = std::make_unique<Job>(this, url, results, callback, net_log);
+  *request =
+      std::make_unique<Job>(this, url, results, std::move(callback), net_log);
 
   return net::ERR_IO_PENDING;
 }
@@ -290,7 +291,7 @@ class ProxyResolverFactoryMojo::Job
   Job(ProxyResolverFactoryMojo* factory,
       const scoped_refptr<net::PacFileData>& pac_script,
       std::unique_ptr<net::ProxyResolver>* resolver,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       std::unique_ptr<net::ProxyResolverErrorObserver> error_observer)
       : ClientMixin<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>(
             factory->host_resolver_,
@@ -299,7 +300,7 @@ class ProxyResolverFactoryMojo::Job
             net::NetLogWithSource()),
         factory_(factory),
         resolver_(resolver),
-        callback_(callback),
+        callback_(std::move(callback)),
         binding_(this),
         error_observer_(std::move(error_observer)) {
     proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client;
@@ -326,12 +327,12 @@ class ProxyResolverFactoryMojo::Job
           std::move(resolver_ptr_), factory_->host_resolver_,
           std::move(error_observer_), factory_->net_log_));
     }
-    callback_.Run(error);
+    std::move(callback_).Run(error);
   }
 
   ProxyResolverFactoryMojo* const factory_;
   std::unique_ptr<net::ProxyResolver>* resolver_;
-  const net::CompletionCallback callback_;
+  net::CompletionOnceCallback callback_;
   proxy_resolver::mojom::ProxyResolverPtr resolver_ptr_;
   mojo::Binding<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
       binding_;
@@ -356,7 +357,7 @@ ProxyResolverFactoryMojo::~ProxyResolverFactoryMojo() = default;
 int ProxyResolverFactoryMojo::CreateProxyResolver(
     const scoped_refptr<net::PacFileData>& pac_script,
     std::unique_ptr<net::ProxyResolver>* resolver,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     std::unique_ptr<net::ProxyResolverFactory::Request>* request) {
   DCHECK(resolver);
   DCHECK(request);
@@ -364,7 +365,7 @@ int ProxyResolverFactoryMojo::CreateProxyResolver(
       pac_script->utf16().empty()) {
     return net::ERR_PAC_SCRIPT_FAILED;
   }
-  request->reset(new Job(this, pac_script, resolver, callback,
+  request->reset(new Job(this, pac_script, resolver, std::move(callback),
                          error_observer_factory_.is_null()
                              ? nullptr
                              : error_observer_factory_.Run()));

@@ -101,12 +101,12 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // Called from origin thread.
   void StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
                              std::unique_ptr<ProxyResolverV8>* resolver,
-                             const CompletionCallback& callback);
+                             CompletionOnceCallback callback);
 
   // Called from origin thread.
   void StartGetProxyForURL(const GURL& url,
                            ProxyInfo* results,
-                           const CompletionCallback& callback);
+                           CompletionOnceCallback callback);
 
   // Called from origin thread.
   void Cancel();
@@ -134,7 +134,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void CheckIsOnWorkerThread() const;
   void CheckIsOnOriginThread() const;
 
-  void SetCallback(const CompletionCallback& callback);
+  void SetCallback(CompletionOnceCallback callback);
   void ReleaseCallback();
 
   ProxyResolverV8* v8_resolver();
@@ -145,8 +145,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void NotifyCaller(int result);
   void NotifyCallerOnOriginLoop(int result);
 
-  void Start(Operation op, bool blocking_dns,
-             const CompletionCallback& callback);
+  void Start(Operation op, bool blocking_dns, CompletionOnceCallback callback);
 
   void ExecuteBlocking();
   void ExecuteNonBlocking();
@@ -215,7 +214,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   // The callback to run (on the origin thread) when the Job finishes.
   // Should only be accessed from origin thread.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   // Flag to indicate whether the request has been cancelled.
   base::CancellationFlag cancelled_;
@@ -312,7 +311,7 @@ class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing {
   // ProxyResolverV8Tracing overrides.
   void GetProxyForURL(const GURL& url,
                       ProxyInfo* results,
-                      const CompletionCallback& callback,
+                      CompletionOnceCallback callback,
                       std::unique_ptr<ProxyResolver::Request>* request,
                       std::unique_ptr<Bindings> bindings) override;
 
@@ -354,7 +353,7 @@ Job::Job(const Job::Params* params,
 
 void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
                                 std::unique_ptr<ProxyResolverV8>* resolver,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   resolver_out_ = resolver;
@@ -364,18 +363,18 @@ void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
   // advantage to using non-blocking mode here. That is because the
   // parent ProxyResolutionService can't submit any ProxyResolve requests until
   // initialization has completed successfully!
-  Start(CREATE_V8_RESOLVER, true /*blocking*/, callback);
+  Start(CREATE_V8_RESOLVER, true /*blocking*/, std::move(callback));
 }
 
 void Job::StartGetProxyForURL(const GURL& url,
                               ProxyInfo* results,
-                              const CompletionCallback& callback) {
+                              CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   url_ = url;
   user_results_ = results;
 
-  Start(GET_PROXY_FOR_URL, false /*non-blocking*/, callback);
+  Start(GET_PROXY_FOR_URL, false /*non-blocking*/, std::move(callback));
 }
 
 void Job::Cancel() {
@@ -440,16 +439,15 @@ void Job::CheckIsOnOriginThread() const {
   DCHECK(origin_runner_->BelongsToCurrentThread());
 }
 
-void Job::SetCallback(const CompletionCallback& callback) {
+void Job::SetCallback(CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
   DCHECK(callback_.is_null());
   (*params_->num_outstanding_callbacks)++;
-  callback_ = callback;
+  callback_ = std::move(callback);
 }
 
 void Job::ReleaseCallback() {
   CheckIsOnOriginThread();
-  DCHECK(!callback_.is_null());
   CHECK_GT(*params_->num_outstanding_callbacks, 0);
   (*params_->num_outstanding_callbacks)--;
   callback_.Reset();
@@ -497,9 +495,9 @@ void Job::NotifyCallerOnOriginLoop(int result) {
     *user_results_ = results_;
   }
 
-  CompletionCallback callback = callback_;
+  CompletionOnceCallback callback = std::move(callback_);
   ReleaseCallback();
-  callback.Run(result);
+  std::move(callback).Run(result);
 
   bindings_.reset();
   owned_self_reference_ = NULL;
@@ -507,12 +505,12 @@ void Job::NotifyCallerOnOriginLoop(int result) {
 
 void Job::Start(Operation op,
                 bool blocking_dns,
-                const CompletionCallback& callback) {
+                CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   operation_ = op;
   blocking_dns_ = blocking_dns;
-  SetCallback(callback);
+  SetCallback(std::move(callback));
 
   owned_self_reference_ = this;
 
@@ -964,7 +962,7 @@ LoadState ProxyResolverV8TracingImpl::RequestImpl::GetLoadState() {
 void ProxyResolverV8TracingImpl::GetProxyForURL(
     const GURL& url,
     ProxyInfo* results,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<ProxyResolver::Request>* request,
     std::unique_ptr<Bindings> bindings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -974,7 +972,7 @@ void ProxyResolverV8TracingImpl::GetProxyForURL(
 
   request->reset(new RequestImpl(job));
 
-  job->StartGetProxyForURL(url, results, callback);
+  job->StartGetProxyForURL(url, results, std::move(callback));
 }
 
 
@@ -987,7 +985,7 @@ class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
       const scoped_refptr<PacFileData>& pac_script,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
       std::unique_ptr<ProxyResolverV8Tracing>* resolver,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       std::unique_ptr<ProxyResolverFactory::Request>* request) override;
 
  private:
@@ -1007,11 +1005,11 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
             std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
             const scoped_refptr<PacFileData>& pac_script,
             std::unique_ptr<ProxyResolverV8Tracing>* resolver_out,
-            const CompletionCallback& callback)
+            CompletionOnceCallback callback)
       : factory_(factory),
         thread_(new base::Thread("Proxy Resolver")),
         resolver_out_(resolver_out),
-        callback_(callback),
+        callback_(std::move(callback)),
         num_outstanding_callbacks_(0) {
     // Start up the thread.
     base::Thread::Options options;
@@ -1058,7 +1056,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
     factory_->RemoveJob(this);
     factory_ = nullptr;
     create_resolver_job_ = nullptr;
-    callback_.Run(error);
+    std::move(callback_).Run(error);
   }
 
   void StopWorkerThread() {
@@ -1073,7 +1071,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
   scoped_refptr<Job> create_resolver_job_;
   std::unique_ptr<ProxyResolverV8> v8_resolver_;
   std::unique_ptr<ProxyResolverV8Tracing>* resolver_out_;
-  const CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   int num_outstanding_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateJob);
@@ -1092,10 +1090,10 @@ void ProxyResolverV8TracingFactoryImpl::CreateProxyResolverV8Tracing(
     const scoped_refptr<PacFileData>& pac_script,
     std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
     std::unique_ptr<ProxyResolverV8Tracing>* resolver,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     std::unique_ptr<ProxyResolverFactory::Request>* request) {
-  std::unique_ptr<CreateJob> job(
-      new CreateJob(this, std::move(bindings), pac_script, resolver, callback));
+  std::unique_ptr<CreateJob> job(new CreateJob(
+      this, std::move(bindings), pac_script, resolver, std::move(callback)));
   jobs_.insert(job.get());
   *request = std::move(job);
 }

@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
@@ -43,7 +44,7 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcherWin
 
   // DhcpPacFileFetcher implementation.
   int Fetch(base::string16* utf16_text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
             const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
@@ -167,7 +168,7 @@ class NET_EXPORT_PRIVATE DhcpPacFileFetcherWin
   int num_pending_fetchers_;
 
   // Lets our client know we're done. Not valid in states START or DONE.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   // The NetLog to use for the current Fetch().
   NetLogWithSource net_log_;

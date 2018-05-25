@@ -11,6 +11,7 @@
 #include <set>
 
 #include "base/memory/ref_counted.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 
@@ -57,7 +58,7 @@ class NET_EXPORT_PRIVATE MultiThreadedProxyResolverFactory
 
   int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                           std::unique_ptr<ProxyResolver>* resolver,
-                          const CompletionCallback& callback,
+                          CompletionOnceCallback callback,
                           std::unique_ptr<Request>* request) override;
 
  private:

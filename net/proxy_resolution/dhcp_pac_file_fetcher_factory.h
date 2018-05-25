@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -67,7 +68,7 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   // PacFileFetcher methods:
   int Fetch(const GURL& url,
             base::string16* text,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag traffic_annotation) override;
   void Cancel() override;
   URLRequestContext* GetRequestContext() const override;
@@ -131,7 +132,7 @@ class NET_EXPORT PacFileFetcherImpl : public PacFileFetcher,
   int cur_request_id_;
 
   // Callback to invoke on completion of the fetch.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   // Holds the error condition that was hit on the current request, or OK.
   int result_code_;
