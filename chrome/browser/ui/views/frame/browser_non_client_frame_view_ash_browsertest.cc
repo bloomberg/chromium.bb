@@ -35,7 +35,6 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -432,26 +431,28 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Restore icon for size button in maximized window state. Compare by name
   // because the address may not be the same for different build targets in the
   // component build.
-  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
-            *test.size_button()->icon_definition_for_test()->name);
+  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
+               test.size_button()->icon_definition_for_test()->name);
   widget->Minimize();
 
   // When entering tablet mode in minimized window state, size button should not
   // get updated.
-  TabletModeClient::Get()->OnTabletModeToggled(true);
-  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
-            *test.size_button()->icon_definition_for_test()->name);
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      true);
+  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
+               test.size_button()->icon_definition_for_test()->name);
   // When leaving tablet mode in minimized window state, size button should not
   // get updated.
-  TabletModeClient::Get()->OnTabletModeToggled(false);
-  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
-            *test.size_button()->icon_definition_for_test()->name);
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      false);
+  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
+               test.size_button()->icon_definition_for_test()->name);
 
   // When unminimizing in non-tablet mode, size button should match with
   // maximized window state, which is restore icon.
   ::wm::Unminimize(widget->GetNativeWindow());
-  EXPECT_EQ(*ash::kWindowControlRestoreIcon.name,
-            *test.size_button()->icon_definition_for_test()->name);
+  EXPECT_STREQ(ash::kWindowControlRestoreIcon.name,
+               test.size_button()->icon_definition_for_test()->name);
 }
 
 // Regression test for https://crbug.com/839955
