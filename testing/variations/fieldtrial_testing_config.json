@@ -1129,6 +1129,28 @@
             ]
         }
     ],
+    "DelayRequestsOnMultiplexedConnections": [
+        {
+            "platforms": [
+                "android",
+                "win",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "MaxEffectiveConnectionType": "3G"
+                    },
+                    "enable_features": [
+                        "DelayRequestsOnMultiplexedConnections"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopIOSPromotion": [
         {
             "platforms": [
