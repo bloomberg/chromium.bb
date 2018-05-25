@@ -180,6 +180,7 @@ PASS oldChildWindow.performance.navigation.redirectCount is newChildWindow.perfo
 PASS oldChildWindow.performance.navigation.type is newChildWindow.performance.navigation.type
 PASS oldChildWindow.performance.oneventtimingbufferfull is newChildWindow.performance.oneventtimingbufferfull
 PASS oldChildWindow.performance.onresourcetimingbufferfull is newChildWindow.performance.onresourcetimingbufferfull
+PASS oldChildWindow.performance.shouldYield is newChildWindow.performance.shouldYield
 PASS oldChildWindow.performance.timing.connectEnd is newChildWindow.performance.timing.connectEnd
 PASS oldChildWindow.performance.timing.connectStart is newChildWindow.performance.timing.connectStart
 PASS oldChildWindow.performance.timing.domComplete is newChildWindow.performance.timing.domComplete

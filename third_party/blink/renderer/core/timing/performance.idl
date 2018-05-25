@@ -80,5 +80,8 @@ interface Performance : EventTarget {
     // https://groups.google.com/a/chromium.org/d/msg/blink-dev/g5YRCGpC9vs/b4OJz71NmPwJ
     [Exposed=Window, Measure] readonly attribute MemoryInfo memory;
 
+    // TODO(npm): This is an experimental attribute with no current plan to standardize. Remove once experiment has concluded. Only exposed to Window because we do not consider worker threads to contain high priority work.
+    [Exposed=Window, RuntimeEnabled=ExperimentalShouldYield] readonly attribute boolean shouldYield;
+
     serializer = {attribute};
 };

@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 static const double kLongTaskObserverThreshold = 0.05;
 
@@ -137,6 +139,13 @@ PerformanceNavigation* WindowPerformance::navigation() const {
 
 MemoryInfo* WindowPerformance::memory() const {
   return MemoryInfo::Create();
+}
+
+bool WindowPerformance::shouldYield() const {
+  return Platform::Current()
+      ->CurrentThread()
+      ->Scheduler()
+      ->ShouldYieldForHighPriorityWork();
 }
 
 PerformanceNavigationTiming*
