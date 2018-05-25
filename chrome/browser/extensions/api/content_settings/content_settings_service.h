@@ -48,7 +48,6 @@ class ContentSettingsService : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<ContentSettingsService>;
 
   // BrowserContextKeyedAPI implementation.
-  static const bool kServiceRedirectedInIncognito = true;
   static const char* service_name() { return "ContentSettingsService"; }
 
   scoped_refptr<ContentSettingsStore> content_settings_store_;
