@@ -179,11 +179,6 @@ VideoPlaneController::VideoPlaneController(
 
 VideoPlaneController::~VideoPlaneController() {}
 
-void VideoPlaneController::SetGeometryGfx(const gfx::RectF& display_rect,
-                                          gfx::OverlayTransform transform) {
-  SetGeometry(display_rect, transform);
-}
-
 void VideoPlaneController::SetGeometry(const gfx::RectF& gfx_display_rect,
                                        gfx::OverlayTransform gfx_transform) {
   const RectF display_rect(gfx_display_rect.x(), gfx_display_rect.y(),

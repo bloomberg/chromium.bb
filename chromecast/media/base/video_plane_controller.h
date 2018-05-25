@@ -42,10 +42,6 @@ class VideoPlaneController {
   // Sets the video plane geometry in *graphics plane coordinates*. If there is
   // no change to video plane parameters from the last call to this method, it
   // is a no-op.
-  // TODO(dnicoara): DEPRECATED, Remove once all users are updated.
-  void SetGeometryGfx(const gfx::RectF& display_rect,
-                      gfx::OverlayTransform transform);
-
   void SetGeometry(const gfx::RectF& display_rect,
                    gfx::OverlayTransform transform);
 
