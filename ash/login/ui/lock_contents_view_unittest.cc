@@ -27,11 +27,15 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 
 using ::testing::_;
@@ -1305,6 +1309,58 @@ TEST_F(LockContentsViewUnitTest, OnUnlockAllowedForUserChanged) {
   EXPECT_TRUE(password_view->visible());
   EXPECT_TRUE(pin_view->visible());
   EXPECT_FALSE(disabled_auth_message->visible());
+}
+
+class LockContentsViewPowerManagerUnitTest
+    : public LockContentsViewKeyboardUnitTest {
+ public:
+  void SetUp() override {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
+        std::make_unique<chromeos::FakePowerManagerClient>());
+
+    LockContentsViewKeyboardUnitTest::SetUp();
+  }
+};
+
+// Ensures that a PowerManagerClient::Observer is added on LockScreen::Show()
+// and removed on LockScreen::Destroy().
+TEST_F(LockContentsViewPowerManagerUnitTest,
+       LockScreenManagesPowerManagerObserver) {
+  ASSERT_NO_FATAL_FAILURE(ShowLockScreen());
+  LockContentsView* contents =
+      LockScreen::TestApi(LockScreen::Get()).contents_view();
+  EXPECT_TRUE(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->HasObserver(
+          contents));
+
+  LockScreen::Get()->Destroy();
+  // Wait for LockScreen to be fully destroyed
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->HasObserver(
+          contents));
+}
+
+// Verifies that the password box for the active user is cleared if a suspend
+// event is received.
+TEST_F(LockContentsViewKeyboardUnitTest, PasswordClearedOnSuspend) {
+  ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
+  LoadUsers(1);
+
+  LockScreen::TestApi lock_screen = LockScreen::TestApi(LockScreen::Get());
+  LockContentsView* contents = lock_screen.contents_view();
+  LoginPasswordView* password_view = LockContentsView::TestApi(contents)
+                                         .primary_big_view()
+                                         ->auth_user()
+                                         ->password_view();
+  views::Textfield* textfield =
+      LoginPasswordView::TestApi(password_view).textfield();
+
+  textfield->SetText(base::ASCIIToUTF16("some_password"));
+  // Suspend clears password.
+  EXPECT_FALSE(textfield->text().empty());
+  contents->SuspendImminent(power_manager::SuspendImminent_Reason_LID_CLOSED);
+  EXPECT_TRUE(textfield->text().empty());
 }
 
 }  // namespace ash

@@ -35,6 +35,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user_type.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -299,6 +300,8 @@ LockContentsView::LockContentsView(
 
   OnLockScreenNoteStateChanged(initial_note_action_state);
   Shell::Get()->AddShellObserver(this);
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
+      this);
 }
 
 LockContentsView::~LockContentsView() {
@@ -315,6 +318,8 @@ LockContentsView::~LockContentsView() {
   }
   Shell::Get()->RemoveShellObserver(this);
   keyboard_observer_.RemoveAll();
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+      this);
 }
 
 void LockContentsView::Layout() {
@@ -777,6 +782,13 @@ void LockContentsView::OnStateChanged(
       state == keyboard::KeyboardControllerState::HIDDEN) {
     LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
   }
+}
+
+void LockContentsView::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  LoginAuthUserView* auth_user = CurrentBigUserView()->auth_user();
+  if (auth_user)
+    auth_user->password_view()->Clear();
 }
 
 void LockContentsView::FocusNextWidget(bool reverse) {
