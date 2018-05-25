@@ -50,6 +50,7 @@ const char kDMToken[] = "fake-dm-token";
 const char kDeviceDMToken[] = "fake-device-dm-token";
 const char kMachineCertificate[] = "fake-machine-certificate";
 const char kEnrollmentCertificate[] = "fake-enrollment-certificate";
+const char kEnrollmentId[] = "fake-enrollment-id";
 const char kRequisition[] = "fake-requisition";
 const char kStateKey[] = "fake-state-key";
 const char kPayload[] = "input_payload";
@@ -180,6 +181,8 @@ class CloudPolicyClientTest : public testing::Test {
     upload_enrollment_certificate_request_.mutable_cert_upload_request()
         ->set_certificate_type(
             em::DeviceCertUploadRequest::ENTERPRISE_ENROLLMENT_CERTIFICATE);
+    upload_enrollment_id_request_.mutable_cert_upload_request()
+        ->set_enrollment_id(kEnrollmentId);
     upload_certificate_response_.mutable_cert_upload_response();
 
     upload_status_request_.mutable_device_status_report_request();
@@ -468,6 +471,7 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementRequest unregistration_request_;
   em::DeviceManagementRequest upload_machine_certificate_request_;
   em::DeviceManagementRequest upload_enrollment_certificate_request_;
+  em::DeviceManagementRequest upload_enrollment_id_request_;
   em::DeviceManagementRequest upload_status_request_;
   em::DeviceManagementRequest chrome_desktop_report_request_;
   em::DeviceManagementRequest remote_command_request_;
@@ -975,6 +979,18 @@ TEST_F(CloudPolicyClientTest, UploadCertificateFailure) {
       base::Unretained(&callback_observer_));
   client_->UploadEnterpriseMachineCertificate(kMachineCertificate, callback);
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, UploadEnterpriseEnrollmentId) {
+  Register();
+
+  ExpectUploadCertificate(upload_enrollment_id_request_);
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback =
+      base::BindRepeating(&MockStatusCallbackObserver::OnCallbackComplete,
+                          base::Unretained(&callback_observer_));
+  client_->UploadEnterpriseEnrollmentId(kEnrollmentId, callback);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
 TEST_F(CloudPolicyClientTest, UploadStatus) {

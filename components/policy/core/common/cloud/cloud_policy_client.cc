@@ -413,6 +413,29 @@ void CloudPolicyClient::UploadEnterpriseEnrollmentCertificate(
       em::DeviceCertUploadRequest::ENTERPRISE_ENROLLMENT_CERTIFICATE, callback);
 }
 
+void CloudPolicyClient::UploadEnterpriseEnrollmentId(
+    const std::string& enrollment_id,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE,
+                          GetRequestContext()));
+  request_job->SetDMToken(dm_token_);
+  request_job->SetClientID(client_id_);
+
+  em::DeviceManagementRequest* request = request_job->GetRequest();
+  em::DeviceCertUploadRequest* upload_request =
+      request->mutable_cert_upload_request();
+  upload_request->set_enrollment_id(enrollment_id);
+
+  const DeviceManagementRequestJob::Callback job_callback = base::BindRepeating(
+      &CloudPolicyClient::OnCertificateUploadCompleted,
+      weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback);
+
+  request_jobs_.push_back(std::move(request_job));
+  request_jobs_.back()->Start(job_callback);
+}
+
 void CloudPolicyClient::UploadDeviceStatus(
     const em::DeviceStatusReportRequest* device_status,
     const em::SessionStatusReportRequest* session_status,

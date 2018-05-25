@@ -59,15 +59,25 @@ class EnrollmentPolicyObserver : public DeviceSettingsService::Observer {
   // Gets an enrollment certificate.
   void GetEnrollmentCertificate();
 
-  // Uploads an enrollment certificate to the policy server.
-  void UploadCertificate(const std::string& pem_certificate_chain);
+  // Gets an enrollment identifier directly.
+  void GetEnrollmentId();
 
-  // Called when a certificate upload operation completes.  On success, |status|
-  // will be true.
-  void OnUploadComplete(bool status);
+  // Handles an enrollment identifer obtained directly.
+  void HandleEnrollmentId(const std::string& enrollment_id);
+
+  // Reschedule an attempt to get an enrollment identifier directly.
+  void RescheduleGetEnrollmentId();
 
   // Handles a failure to get a certificate.
   void HandleGetCertificateFailure(AttestationStatus status);
+
+  // Uploads an enrollment certificate to the policy server.
+  void UploadCertificate(const std::string& pem_certificate_chain);
+
+  // Called when a certificate or enrollment identifier upload operation
+  // completes. On success, |status| will be true. The string |what| is
+  // used in logging.
+  void OnUploadComplete(const std::string& what, bool status);
 
   DeviceSettingsService* device_settings_service_;
   policy::CloudPolicyClient* policy_client_;
