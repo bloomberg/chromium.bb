@@ -373,7 +373,12 @@ void ManagePasswordsUIController::OnNopeUpdateClicked() {
 void ManagePasswordsUIController::NeverSavePassword() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
   NeverSavePasswordInternal();
-  // The state stays the same.
+  ClearPopUpFlagForBubble();
+  if (passwords_data_.GetCurrentForms().empty())
+    passwords_data_.OnInactive();
+  else
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnPasswordsRevealed() {
