@@ -482,7 +482,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     tarball_relpath = 'workspace.tar.bz2'
     tarball_path = os.path.join(self.archive_path, tarball_relpath)
     cros_build_lib.CreateTarball(tarball_path, workspace,
-                                 compression=cros_build_lib.COMP_BZIP2)
+                                 compression=cros_build_lib.COMP_BZIP2,
+                                 ignore_failed_read=True)
     self._Upload(tarball_relpath, 'moblabvm workspace')
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)

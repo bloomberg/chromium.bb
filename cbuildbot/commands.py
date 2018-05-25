@@ -815,7 +815,7 @@ def BuildAndArchiveTestResultsTarball(src_dir, buildroot):
   chroot = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   cros_build_lib.CreateTarball(
       target, src_dir, compression=cros_build_lib.COMP_GZIP,
-      chroot=chroot)
+      chroot=chroot, ignore_failed_read=True)
   return os.path.basename(target)
 
 
@@ -2327,7 +2327,7 @@ def BuildAutotestControlFilesTarball(buildroot, cwd, tarball_dir):
                                        exclude_dirs=['autotest/test_suites'])
   control_files_tarball = os.path.join(tarball_dir, 'control_files.tar')
   BuildTarball(buildroot, control_files, control_files_tarball, cwd=cwd,
-               compressed=False)
+               compressed=False, ignore_failed_read=True)
   return control_files_tarball
 
 
@@ -2345,7 +2345,7 @@ def BuildAutotestPackagesTarball(buildroot, cwd, tarball_dir):
   input_list = ['autotest/packages']
   packages_tarball = os.path.join(tarball_dir, 'autotest_packages.tar')
   BuildTarball(buildroot, input_list, packages_tarball, cwd=cwd,
-               compressed=False)
+               compressed=False, ignore_failed_read=True)
   return packages_tarball
 
 
@@ -2362,7 +2362,7 @@ def BuildAutotestTestSuitesTarball(buildroot, cwd, tarball_dir):
   """
   test_suites_tarball = os.path.join(tarball_dir, 'test_suites.tar.bz2')
   BuildTarball(buildroot, ['autotest/test_suites'], test_suites_tarball,
-               cwd=cwd)
+               cwd=cwd, ignore_failed_read=True)
   return test_suites_tarball
 
 
@@ -2388,7 +2388,7 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
 
   tarball = os.path.join(tarball_dir, AUTOTEST_SERVER_PACKAGE)
   BuildTarball(buildroot=buildroot, input_list=autotest_files + tast_files,
-               tarball_output=tarball, cwd=cwd,
+               tarball_output=tarball, cwd=cwd, ignore_failed_read=True,
                extra_args=transforms, error_code_ok=True)
   return tarball
 
@@ -2487,7 +2487,8 @@ def BuildUnitTestTarball(buildroot, board, tarball_dir):
       buildroot, 'chroot', 'build', board, constants.UNITTEST_PKG_PATH))
   # UnitTest binaries are already compressed so just create a tar file.
   BuildTarball(buildroot, ['.'], tarball_path, cwd=cwd,
-               compressed=False, error_code_ok=True)
+               compressed=False, ignore_failed_read=True,
+               error_code_ok=True)
   return tarball
 
 
@@ -2577,7 +2578,8 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
     extra_env = {'XZ_OPT': '-1'}
     cros_build_lib.CreateTarball(
         os.path.join(archive_dir, filename), image_dir,
-        inputs=inputs, compression=compress_type, extra_env=extra_env)
+        inputs=inputs, compression=compress_type,
+        ignore_failed_read=True, extra_env=extra_env)
   elif archive == 'zip':
     cros_build_lib.RunCommand(
         ['zip', os.path.join(archive_dir, filename), '-r'] + inputs,
@@ -2659,8 +2661,9 @@ def BuildEbuildLogsTarball(buildroot, board, archive_dir):
   tarball_output = os.path.join(archive_dir, 'ebuild_logs.tar.xz')
   chroot = os.path.join(buildroot, 'chroot')
 
-  cros_build_lib.CreateTarball(tarball_output, cwd=logs_path, chroot=chroot,
-                               inputs=tarball_paths)
+  cros_build_lib.CreateTarball(tarball_output, cwd=logs_path,
+                               chroot=chroot, inputs=tarball_paths,
+                               ignore_failed_read=True)
   return os.path.basename(tarball_output)
 
 
@@ -2687,7 +2690,8 @@ def BuildGceTarball(archive_dir, image_dir, image):
 
     cros_build_lib.CreateTarball(
         output_file, tempdir, inputs=['disk.raw'],
-        compression=cros_build_lib.COMP_GZIP, extra_args=['--dereference'])
+        compression=cros_build_lib.COMP_GZIP,
+        ignore_failed_read=True, extra_args=['--dereference'])
     return os.path.basename(output_file)
 
 
