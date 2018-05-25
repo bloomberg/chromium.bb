@@ -706,24 +706,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
     EXPECT_TRUE(original_prerender_page);
   }
 
-  // Goes back to the page that was active before the prerender was swapped
-  // in. This must be called when the prerendered page is the current page
-  // in the active tab.
-  void GoBackToPageBeforePrerender() {
-    WebContents* tab = GetActiveWebContents();
-    ASSERT_TRUE(tab);
-    EXPECT_FALSE(tab->IsLoading());
-    TestNavigationObserver back_nav_observer(tab);
-    chrome::GoBack(current_browser(), WindowOpenDisposition::CURRENT_TAB);
-    back_nav_observer.Wait();
-    bool js_result;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        tab,
-        "window.domAutomationController.send(DidBackToOriginalPagePass())",
-        &js_result));
-    EXPECT_TRUE(js_result);
-  }
-
   void DisableJavascriptCalls() {
     call_javascript_ = false;
   }
@@ -2573,16 +2555,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
   NavigateToURLWithDisposition(url, WindowOpenDisposition::CURRENT_TAB, false);
   agent->DetachClient(&client);
-}
-
-// Validate that the sessionStorage namespace remains the same when swapping
-// in a prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
-  set_loader_path("/prerender/prerender_loader_with_session_storage.html");
-  PrerenderTestURL(GetCrossDomainTestUrl("prerender/prerender_page.html"),
-                   FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-  GoBackToPageBeforePrerender();
 }
 
 // Checks that the referrer policy is used when prerendering.
