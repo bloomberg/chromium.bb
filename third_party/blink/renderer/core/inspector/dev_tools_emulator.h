@@ -17,10 +17,8 @@
 
 namespace blink {
 
-class IntPoint;
 class IntRect;
 class TransformationMatrix;
-class WebInputEvent;
 class WebViewImpl;
 
 class CORE_EXPORT DevToolsEmulator final
@@ -53,7 +51,6 @@ class CORE_EXPORT DevToolsEmulator final
   void ResetViewport();
   bool ResizeIsDeviceSizeChange();
   void SetTouchEventEmulationEnabled(bool, int max_touch_points);
-  bool HandleInputEvent(const WebInputEvent&);
   void SetScriptExecutionDisabled(bool);
 
   // Notify the DevToolsEmulator about a scroll or scale change of the main
@@ -112,8 +109,6 @@ class CORE_EXPORT DevToolsEmulator final
   bool double_tap_to_zoom_enabled_;
   bool original_device_supports_touch_;
   int original_max_touch_points_;
-  std::unique_ptr<IntPoint> last_pinch_anchor_css_;
-  std::unique_ptr<IntPoint> last_pinch_anchor_dip_;
 
   bool embedder_script_enabled_;
   bool script_execution_disabled_;
