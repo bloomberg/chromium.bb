@@ -178,14 +178,15 @@ function setInputElementAngularValue_(value, input) {
   }
   angular_element.val(value);
   var angular_model = angular_element.data && angular_element.data('ngModel');
-  if (!angular_model) {
+  var angular_scope = angular_element.scope();
+  if (!angular_model || !angular_scope) {
     return;
   }
   angular_element.injector().invoke([
     '$parse',
     function(parse) {
       var setter = parse(angular_model);
-      setter.assign(angular_element.scope(), value);
+      setter.assign(angular_scope, value);
     }
   ]);
 }
