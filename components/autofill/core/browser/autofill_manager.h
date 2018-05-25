@@ -635,6 +635,9 @@ class AutofillManager : public AutofillHandler,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, CreditCardSubmittedFormEvents);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            CreditCardCheckoutFlowUserActions);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
+                           LogHiddenRepresentationalFieldSkipDecision);
+
   FRIEND_TEST_ALL_PREFIXES(
       AutofillMetricsTest,
       CreditCardSubmittedWithoutSelectingSuggestionsNoCard);

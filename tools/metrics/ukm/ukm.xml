@@ -161,6 +161,67 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Autofill.HiddenRepresentationalFieldSkipDecision">
+  <owner>parastoog@chromium.org</owner>
+  <summary>
+    Recorded while trying to fill or preview a hidden or a representational
+    field.
+  </summary>
+  <metric name="FieldOverallType">
+    <summary>
+      Field's overall |ServerFieldType|. See |AutofillField.GetStorableType()|.
+    </summary>
+  </metric>
+  <metric name="FieldSignature">
+    <summary>
+      The signature of the field. This is the hash identifier used to denote
+      this field for query and voting purposes. See
+      components/autofill/core/common/signatures_util.cc for more details.
+    </summary>
+  </metric>
+  <metric name="FieldTypeGroup">
+    <summary>
+      Field's |FieldTypeGroup|. See |AutofillType.group()|.
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form. This is the hash identifier used to denote this
+      form for query and voting purposes. See
+      components/autofill/core/common/signatures_util.cc for more details.
+    </summary>
+  </metric>
+  <metric name="HeuristicType">
+    <summary>
+      Field's |ServerFieldType| based on heuristics. See
+      |AutofillField.heuristic_type()|.
+    </summary>
+  </metric>
+  <metric name="HtmlFieldMode">
+    <summary>
+      Whether the field's autocomplete hint specified 'billing' or 'shipping'.
+      See |AutofillField.html_mode()|.
+    </summary>
+  </metric>
+  <metric name="HtmlFieldType">
+    <summary>
+      Field's autocomplete field type hint. See |AutofillField.html_type()|.
+    </summary>
+  </metric>
+  <metric name="IsSkipped">
+    <summary>
+      True if the field was skipped while filling or previewing the form,
+      because it was hidden or representational, but not a 'select' one.
+    </summary>
+  </metric>
+  <metric name="ServerType">
+    <summary>
+      Field's |ServerFieldType| returned by server. See
+      |AutofillField.server_type()|.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.FormSubmitted">
   <owner>jiahuiguo@google.com</owner>
   <summary>
