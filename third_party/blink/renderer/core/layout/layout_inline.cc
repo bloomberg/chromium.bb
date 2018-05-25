@@ -1360,7 +1360,7 @@ LayoutSize LayoutInline::OffsetFromContainer(
 PaintLayerType LayoutInline::LayerTypeRequired() const {
   return IsInFlowPositioned() || CreatesGroup() ||
                  Style()->ShouldCompositeForCurrentAnimations() ||
-                 Style()->ContainsPaint()
+                 ShouldApplyPaintContainment()
              ? kNormalPaintLayer
              : kNoPaintLayer;
 }

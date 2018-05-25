@@ -22,7 +22,7 @@ static void CheckIsClippingStackingContextAndContainer(
     LayoutBoxModelObject& obj) {
   EXPECT_TRUE(obj.CanContainFixedPositionObjects());
   EXPECT_TRUE(obj.HasClipRelatedProperty());
-  EXPECT_TRUE(obj.Style()->ContainsPaint());
+  EXPECT_TRUE(obj.ShouldApplyPaintContainment());
 
   // TODO(leviw): Ideally, we wouldn't require a paint layer to handle the
   // clipping and stacking performed by paint containment.
@@ -50,12 +50,10 @@ TEST_F(PaintContainmentTest, InlinePaintContainment) {
       "<div><span id='test' style='contain: paint'>Foo</span></div>");
   Element* span = GetDocument().getElementById(AtomicString("test"));
   DCHECK(span);
-  // The inline should have been coerced into a block in StyleAdjuster.
+  // Paint containment shouldn't apply to non-atomic inlines.
   LayoutObject* obj = span->GetLayoutObject();
   DCHECK(obj);
-  DCHECK(obj->IsLayoutBlock());
-  LayoutBlock& layout_block = ToLayoutBlock(*obj);
-  CheckIsClippingStackingContextAndContainer(layout_block);
+  EXPECT_FALSE(obj->IsLayoutBlock());
 }
 
 TEST_F(PaintContainmentTest, SvgWithContainmentShouldNotCrash) {

@@ -1523,9 +1523,10 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
   // If we have clipping, then we can't have any spillout.
   // TODO(pdr): Why is this optimization not valid for the effective root?
   if (!RootScrollerUtil::IsEffective(*this)) {
-    LayoutRect overflow_box = (HasOverflowClip() || Style()->ContainsPaint())
-                                  ? BorderBoxRect()
-                                  : VisualOverflowRect();
+    LayoutRect overflow_box =
+        (HasOverflowClip() || ShouldApplyPaintContainment())
+            ? BorderBoxRect()
+            : VisualOverflowRect();
     FlipForWritingMode(overflow_box);
     LayoutPoint adjusted_location = accumulated_offset + Location();
     overflow_box.MoveBy(adjusted_location);
@@ -6031,7 +6032,7 @@ LayoutRect LayoutBox::DebugRect() const {
 }
 
 bool LayoutBox::ShouldClipOverflow() const {
-  return HasOverflowClip() || StyleRef().ContainsPaint() || HasControlClip();
+  return HasOverflowClip() || ShouldApplyPaintContainment() || HasControlClip();
 }
 
 void LayoutBox::MutableForPainting::
