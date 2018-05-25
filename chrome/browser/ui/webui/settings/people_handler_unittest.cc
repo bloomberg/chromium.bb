@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -31,7 +32,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -43,6 +44,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
@@ -64,6 +66,7 @@ MATCHER_P(ModelTypeSetMatches, value, "") {
 }
 
 const char kTestUser[] = "chrome.p13n.test@gmail.com";
+const char kTestGaiaID[] = "123456789";
 const char kTestCallbackId[] = "test-callback-id";
 
 // Returns a ModelTypeSet with all user selectable types set.
@@ -201,7 +204,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     mock_signin_ = SigninManagerFactory::GetForProfile(profile());
     std::string username = GetTestUser();
     if (!username.empty())
-      mock_signin_->SetAuthenticatedAccountInfo(username, username);
+      mock_signin_->SetAuthenticatedAccountInfo(kTestGaiaID, username);
 
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -763,11 +766,17 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 
   SetupInitializedProfileSyncService();
-  mock_signin_->SetAuthenticatedAccountInfo(kTestUser, kTestUser);
-  FakeAuthStatusProvider provider(
-      SigninErrorControllerFactory::GetForProfile(profile()));
-  provider.SetAuthError(kTestUser, error_);
-  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
+  mock_signin_->SetAuthenticatedAccountInfo(kTestGaiaID, kTestUser);
+  std::string account_id = mock_signin_->GetAuthenticatedAccountId();
+
+  // TODO(https://crbug.com/836212): Do not use the delegate directly, because
+  // it is internal API.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  token_service->UpdateCredentials(account_id, "refresh_token");
+  token_service->GetDelegate()->UpdateAuthError(account_id, error_);
+
+  EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
