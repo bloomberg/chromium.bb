@@ -13,6 +13,12 @@
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
+namespace network {
+namespace mojom {
+class URLLoaderFactoryParams;
+}
+}  // namespace network
+
 namespace content {
 
 // A centralized place for making policy decisions about out-of-process iframes,
@@ -35,6 +41,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   };
   static CrossSiteDocumentBlockingEnabledState
   IsCrossSiteDocumentBlockingEnabled();
+
+  // Populates CORB-related (Cross-Origin Read Blocking related) parts of the
+  // URLLoaderFactoryParams depending on the current Site Isolation policy.
+  static void PopulateURLLoaderFactoryParamsPtrForCORB(
+      network::mojom::URLLoaderFactoryParams* params);
 
   // Returns true if third-party subframes of a page should be kept in a
   // different process from the main frame.

@@ -24,6 +24,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/loader_util.h"
@@ -39,6 +40,9 @@ namespace network {
 
 namespace {
 constexpr size_t kDefaultAllocationSize = 512 * 1024;
+
+// Cannot use 0, because this means "default" in mojo::edk::Core::CreateDataPipe
+constexpr size_t kBlockedBodyAllocationSize = 1;
 
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
@@ -585,8 +589,30 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
       base::Bind(&URLLoader::OnResponseBodyStreamReady,
                  base::Unretained(this)));
 
-  if (!(options_ & mojom::kURLLoadOptionSniffMimeType) ||
-      !ShouldSniffContent(url_request_.get(), response_.get()))
+  // Figure out if we need to sniff (for MIME type detection or for CORB).
+  if (factory_params_->is_corb_enabled) {
+    CrossOriginReadBlocking::LogAction(
+        CrossOriginReadBlocking::Action::kResponseStarted);
+
+    corb_analyzer_ =
+        std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
+            *url_request_, *response_,
+            factory_params_->corb_excluded_initiator_scheme);
+    is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
+    if (corb_analyzer_->should_block()) {
+      DCHECK(!is_more_corb_sniffing_needed_);
+      corb_analyzer_->LogBlockedResponse();
+      BlockResponseForCorb();
+    } else if (corb_analyzer_->should_allow()) {
+      DCHECK(!is_more_corb_sniffing_needed_);
+      corb_analyzer_->LogAllowedResponse();
+    }
+  }
+  if ((options_ & mojom::kURLLoadOptionSniffMimeType) &&
+      ShouldSniffContent(url_request_.get(), response_.get())) {
+    is_more_mime_sniffing_needed_ = true;
+  }
+  if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_)
     SendResponseToClient();
 
   // Start reading...
@@ -643,6 +669,7 @@ void URLLoader::ReadMore() {
 }
 
 void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
+  size_t new_data_offset = pending_write_buffer_offset_;
   if (num_bytes > 0) {
     pending_write_buffer_offset_ += num_bytes;
 
@@ -664,18 +691,47 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
 
   bool complete_read = true;
   if (consumer_handle_.is_valid()) {
-    const std::string& type_hint = response_->head.mime_type;
-    std::string new_type;
-    bool made_final_decision = net::SniffMimeType(
-        pending_write_->buffer(), pending_write_buffer_offset_,
-        url_request_->url(), type_hint,
-        net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
-    // SniffMimeType() returns false if there is not enough data to determine
-    // the mime type. However, even if it returns false, it returns a new type
-    // that is probably better than the current one.
-    response_->head.mime_type.assign(new_type);
+    // Limit sniffing to the first net::kMaxBytesToSniff.
+    size_t data_length = pending_write_buffer_offset_;
+    if (data_length > net::kMaxBytesToSniff)
+      data_length = net::kMaxBytesToSniff;
+    base::StringPiece data(pending_write_->buffer(), data_length);
 
-    if (made_final_decision) {
+    if (is_more_mime_sniffing_needed_) {
+      const std::string& type_hint = response_->head.mime_type;
+      std::string new_type;
+      is_more_mime_sniffing_needed_ = !net::SniffMimeType(
+          data.data(), data.size(), url_request_->url(), type_hint,
+          net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
+      // SniffMimeType() returns false if there is not enough data to determine
+      // the mime type. However, even if it returns false, it returns a new type
+      // that is probably better than the current one.
+      response_->head.mime_type.assign(new_type);
+    }
+
+    if (is_more_corb_sniffing_needed_) {
+      corb_analyzer_->SniffResponseBody(data, new_data_offset);
+      if (corb_analyzer_->should_block()) {
+        corb_analyzer_->LogBlockedResponse();
+        is_more_corb_sniffing_needed_ = false;
+        BlockResponseForCorb();
+      } else if (corb_analyzer_->should_allow()) {
+        corb_analyzer_->LogAllowedResponse();
+        is_more_corb_sniffing_needed_ = false;
+      }
+    }
+
+    if (num_bytes <= 0 ||
+        pending_write_buffer_offset_ >= net::kMaxBytesToSniff) {
+      is_more_mime_sniffing_needed_ = false;
+
+      if (is_more_corb_sniffing_needed_) {
+        corb_analyzer_->LogAllowedResponse();
+        is_more_corb_sniffing_needed_ = false;
+      }
+    }
+
+    if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
       SendResponseToClient();
     } else {
       complete_read = false;
@@ -741,22 +797,32 @@ void URLLoader::NotifyCompleted(int error_code) {
     SendResponseToClient();
 
   URLLoaderCompletionStatus status;
-  status.error_code = error_code;
-  if (error_code == net::ERR_QUIC_PROTOCOL_ERROR) {
-    net::NetErrorDetails details;
-    url_request_->PopulateNetErrorDetails(&details);
-    status.extended_error_code = details.quic_connection_error;
-  }
-  status.exists_in_cache = url_request_->response_info().was_cached;
-  status.completion_time = base::TimeTicks::Now();
-  status.encoded_data_length = url_request_->GetTotalReceivedBytes();
-  status.encoded_body_length = url_request_->GetRawBodyBytes();
-  status.decoded_body_length = total_written_bytes_;
+  if (did_corb_block_response_) {
+    // CORB responses are reported as a success.
+    status.error_code = net::OK;
+    status.completion_time = base::TimeTicks::Now();
+    status.encoded_data_length = 0;
+    status.encoded_body_length = 0;
+    status.decoded_body_length = 0;
+    status.blocked_cross_site_document = true;
+  } else {
+    status.error_code = error_code;
+    if (error_code == net::ERR_QUIC_PROTOCOL_ERROR) {
+      net::NetErrorDetails details;
+      url_request_->PopulateNetErrorDetails(&details);
+      status.extended_error_code = details.quic_connection_error;
+    }
+    status.exists_in_cache = url_request_->response_info().was_cached;
+    status.completion_time = base::TimeTicks::Now();
+    status.encoded_data_length = url_request_->GetTotalReceivedBytes();
+    status.encoded_body_length = url_request_->GetRawBodyBytes();
+    status.decoded_body_length = total_written_bytes_;
 
-  if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
-      net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
-      !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
-    status.ssl_info = url_request_->ssl_info();
+    if ((options_ & mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
+        net::IsCertStatusError(url_request_->ssl_info().cert_status) &&
+        !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
+      status.ssl_info = url_request_->ssl_info();
+    }
   }
 
   if (network_usage_accumulator_) {
@@ -888,6 +954,25 @@ void URLLoader::RecordBodyReadFromNetBeforePausedIfNeeded() {
                << "body_read_before_paused_: " << body_read_before_paused_;
     }
   }
+}
+
+void URLLoader::BlockResponseForCorb() {
+  // TODO(lukasza): Need to make sure that the cache is still populated in the
+  // prefetch case (e.g. the CrossSiteDocumentResourceHandler implementation of
+  // CORB would detach rather than cancelling).
+  url_request_->Cancel();
+
+  // Remember that blocking happened (so that we can report success, rather than
+  // cancellation status to the URLLoaderClient).
+  did_corb_block_response_ = true;
+
+  // Block the headers.
+  CrossOriginReadBlocking::SanitizeBlockedResponse(response_);
+
+  // Block the response body.
+  mojo::DataPipe data_pipe(kBlockedBodyAllocationSize);
+  data_pipe.producer_handle.reset();  // No bytes in the blocked body.
+  consumer_handle_ = std::move(data_pipe.consumer_handle);
 }
 
 }  // namespace network

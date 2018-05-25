@@ -20,6 +20,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -64,6 +65,34 @@ SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled() {
   }
 
   return XSDB_DISABLED;
+}
+
+// static
+void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
+    network::mojom::URLLoaderFactoryParams* params) {
+  switch (IsCrossSiteDocumentBlockingEnabled()) {
+    case SiteIsolationPolicy::XSDB_ENABLED_UNCONDITIONALLY:
+      params->is_corb_enabled = true;
+      break;
+    case SiteIsolationPolicy::XSDB_ENABLED_IF_ISOLATED: {
+      // TODO(lukasza): Take isolate-origins into account as well.
+      params->is_corb_enabled = UseDedicatedProcessesForAllSites();
+      break;
+    }
+    case SiteIsolationPolicy::XSDB_DISABLED:
+      params->is_corb_enabled = false;
+      break;
+  }
+
+  if (!params->is_corb_enabled)
+    return;
+
+  const char* initiator_scheme_exception =
+      GetContentClient()
+          ->browser()
+          ->GetInitatorSchemeBypassingDocumentBlocking();
+  if (initiator_scheme_exception)
+    params->corb_excluded_initiator_scheme = initiator_scheme_exception;
 }
 
 // static
