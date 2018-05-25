@@ -677,7 +677,7 @@ TEST_F(DiskCacheBackendTest, MemCacheMemoryDump) {
   BackendBasics();
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
-  base::trace_event::ProcessMemoryDump pmd(nullptr, args);
+  base::trace_event::ProcessMemoryDump pmd(args);
   base::trace_event::MemoryAllocatorDump* parent =
       pmd.CreateAllocatorDump("net/url_request_context/main/0x123/http_cache");
 
@@ -704,7 +704,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheMemoryDump) {
   BackendBasics();
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
-  base::trace_event::ProcessMemoryDump pmd(nullptr, args);
+  base::trace_event::ProcessMemoryDump pmd(args);
   base::trace_event::MemoryAllocatorDump* parent =
       pmd.CreateAllocatorDump("net/url_request_context/main/0x123/http_cache");
 
@@ -728,7 +728,7 @@ TEST_F(DiskCacheBackendTest, BlockFileCacheMemoryDump) {
   BackendBasics();
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
-  base::trace_event::ProcessMemoryDump pmd(nullptr, args);
+  base::trace_event::ProcessMemoryDump pmd(args);
   base::trace_event::MemoryAllocatorDump* parent =
       pmd.CreateAllocatorDump("net/url_request_context/main/0x123/http_cache");
 

@@ -10607,8 +10607,7 @@ TEST_P(HttpCacheMemoryDumpTest, DumpMemoryStats) {
 
   base::trace_event::MemoryDumpArgs dump_args = {GetParam()};
   auto process_memory_dump =
-      std::make_unique<base::trace_event::ProcessMemoryDump>(nullptr,
-                                                             dump_args);
+      std::make_unique<base::trace_event::ProcessMemoryDump>(dump_args);
   base::trace_event::MemoryAllocatorDump* parent_dump =
       process_memory_dump->CreateAllocatorDump(
           "net/url_request_context/main/0x123");
