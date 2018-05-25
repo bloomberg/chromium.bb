@@ -19,10 +19,6 @@ NativePixmapDmaBuf::NativePixmapDmaBuf(const gfx::Size& size,
 
 NativePixmapDmaBuf::~NativePixmapDmaBuf() {}
 
-void* NativePixmapDmaBuf::GetEGLClientBuffer() const {
-  return nullptr;
-}
-
 bool NativePixmapDmaBuf::AreDmaBufFdsValid() const {
   if (fds_.empty())
     return false;

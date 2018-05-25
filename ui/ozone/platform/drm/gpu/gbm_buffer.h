@@ -107,7 +107,6 @@ class GbmPixmap : public gfx::NativePixmap {
             const scoped_refptr<GbmBuffer>& buffer);
 
   // NativePixmap:
-  void* GetEGLClientBuffer() const override;
   bool AreDmaBufFdsValid() const override;
   size_t GetDmaBufFdCount() const override;
   int GetDmaBufFd(size_t plane) const override;

@@ -28,7 +28,6 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
                      const gfx::NativePixmapHandle& handle);
 
   // NativePixmap:
-  void* GetEGLClientBuffer() const override;
   bool AreDmaBufFdsValid() const override;
   size_t GetDmaBufFdCount() const override;
   int GetDmaBufFd(size_t plane) const override;

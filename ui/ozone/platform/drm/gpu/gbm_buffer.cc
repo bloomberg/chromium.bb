@@ -327,10 +327,6 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
 GbmPixmap::~GbmPixmap() {
 }
 
-void* GbmPixmap::GetEGLClientBuffer() const {
-  return nullptr;
-}
-
 bool GbmPixmap::AreDmaBufFdsValid() const {
   return buffer_->AreFdsValid();
 }
