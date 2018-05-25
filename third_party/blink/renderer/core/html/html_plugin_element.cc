@@ -26,6 +26,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/child_frame_disconnector.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -146,10 +147,9 @@ void HTMLPlugInElement::SetFocused(bool focused, WebFocusType focus_type) {
 
 bool HTMLPlugInElement::RequestObjectInternal(
     const PluginParameters& plugin_params) {
+  DCHECK(!ContentFrame());
+  DCHECK(!ProtocolIsJavaScript(url_));
   if (url_.IsEmpty() && service_type_.IsEmpty())
-    return false;
-
-  if (ProtocolIsJavaScript(url_))
     return false;
 
   KURL completed_url =
@@ -296,6 +296,20 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   WebPluginContainerImpl* plugin = OwnedPlugin();
   if (plugin && context.performing_reattach) {
     SetPersistedPlugin(ToWebPluginContainerImpl(ReleaseEmbeddedContentView()));
+  } else if (ContentFrame() && !UseFallbackContent()) {
+    // In case the element is going to show fallback content, leave the content
+    // frame attached (but kill the FrameView below). Note: this is almost
+    // certainly buggy.
+
+    // TODO(ekaramad, dcheng): There is an inconsistency here between Firefox
+    // and Chrome. In Chrome, <object data="abc"></object> will attempt to load
+    // abc as a frame. The URL won't resolve, so load failure is reported. This
+    // should cause the fallback content to be rendered--in the case of
+    // <object>, the fallback content should be the children of <object>,
+    // ignoring leading <param> children. Very likely, leaving the content frame
+    // attached here is a bug (https://crbug.com/846442)
+    ChildFrameDisconnector(*this).Disconnect(
+        ChildFrameDisconnector::kRootAndDescendants);
   } else {
     // Clear the plugin; will trigger disposal of it with Oilpan.
     SetEmbeddedContentView(nullptr);
@@ -531,10 +545,7 @@ LayoutEmbeddedObject* HTMLPlugInElement::GetLayoutEmbeddedObject() const {
 // We don't use m_url, as it may not be the final URL that the object loads,
 // depending on <param> values.
 bool HTMLPlugInElement::AllowedToLoadFrameURL(const String& url) {
-  KURL complete_url = GetDocument().CompleteURL(url);
-  return !(ContentFrame() && complete_url.ProtocolIsJavaScript() &&
-           !GetDocument().GetSecurityOrigin()->CanAccess(
-               ContentFrame()->GetSecurityContext()->GetSecurityOrigin()));
+  return !GetDocument().CompleteURL(url).ProtocolIsJavaScript();
 }
 
 bool HTMLPlugInElement::RequestObject(const PluginParameters& plugin_params) {
