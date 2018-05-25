@@ -104,34 +104,6 @@ Blocking messages from http://127.0.0.1:8000/devtools/console/resources/log-sour
   >console-filter-test.js:31 innerGroup
 [Violation] Violation message text
 
-Running: removeURL1Filter
-console-filter-test.js:14 0topGroup
-console-filter-test.js:14 2topGroup
-console-filter-test.js:14 4topGroup
-console-filter-test.js:14 6topGroup
-console-filter-test.js:14 8topGroup
->console-filter-test.js:24 outerGroup
-  console-filter-test.js:14 10outerGroup
-  console-filter-test.js:14 12outerGroup
-  console-filter-test.js:14 14outerGroup
-  console-filter-test.js:14 16outerGroup
-  console-filter-test.js:14 18outerGroup
-  >console-filter-test.js:31 innerGroup
-    console-filter-test.js:14 20innerGroup
-    console-filter-test.js:14 22innerGroup
-    console-filter-test.js:14 24innerGroup
-    console-filter-test.js:14 26innerGroup
-    console-filter-test.js:14 28innerGroup
-console-filter-test.js:43 Hello 1
-console-filter-test.js:44 Hello 2
-console-filter-test.js:46 end
-[Violation] Violation message text
-
-Running: restoreURL1Filter
->console-filter-test.js:24 outerGroup
-  >console-filter-test.js:31 innerGroup
-[Violation] Violation message text
-
 Running: removeAllFilters
 console-filter-test.js:14 0topGroup
 log-source.js:3 1topGroup

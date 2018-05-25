@@ -97,18 +97,9 @@
       dumpVisibleMessages();
       next();
     },
-    function removeURL1Filter(next) {
-      Console.ConsoleView.instance()._filter.removeMessageURLFilter(url1);
-      dumpVisibleMessages();
-      next();
-    },
-    function restoreURL1Filter(next) {
-      Console.ConsoleView.instance()._filter.addMessageURLFilter(url1);
-      dumpVisibleMessages();
-      next();
-    },
     function removeAllFilters(next) {
-      Console.ConsoleView.instance()._filter.removeMessageURLFilter();
+      Console.ConsoleView.instance()._filter._textFilterUI.setValue('');
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
