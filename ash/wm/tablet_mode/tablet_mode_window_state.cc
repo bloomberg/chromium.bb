@@ -221,19 +221,15 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       return;
     case wm::WM_EVENT_SHOW_INACTIVE:
       return;
-    case wm::WM_EVENT_SET_BOUNDS: {
-      gfx::Rect bounds_in_parent =
-          (static_cast<const wm::SetBoundsEvent*>(event))->requested_bounds();
-      if (bounds_in_parent.IsEmpty())
-        return;
-
-      if (window_state->is_dragged()) {
-        window_state->SetBoundsDirect(bounds_in_parent);
-      } else if (current_state_type_ == mojom::WindowStateType::MAXIMIZED) {
+    case wm::WM_EVENT_SET_BOUNDS:
+      if (current_state_type_ == mojom::WindowStateType::MAXIMIZED) {
         // Having a maximized window, it could have been created with an empty
         // size and the caller should get his size upon leaving the maximized
         // mode. As such we set the restore bounds to the requested bounds.
-        window_state->SetRestoreBoundsInParent(bounds_in_parent);
+        gfx::Rect bounds_in_parent =
+            (static_cast<const wm::SetBoundsEvent*>(event))->requested_bounds();
+        if (!bounds_in_parent.IsEmpty())
+          window_state->SetRestoreBoundsInParent(bounds_in_parent);
       } else if (current_state_type_ != mojom::WindowStateType::MINIMIZED &&
                  current_state_type_ != mojom::WindowStateType::FULLSCREEN &&
                  current_state_type_ != mojom::WindowStateType::PINNED &&
@@ -243,6 +239,8 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
                  current_state_type_ != mojom::WindowStateType::RIGHT_SNAPPED) {
         // In all other cases (except for minimized windows) we respect the
         // requested bounds and center it to a fully visible area on the screen.
+        gfx::Rect bounds_in_parent =
+            (static_cast<const wm::SetBoundsEvent*>(event))->requested_bounds();
         bounds_in_parent = GetCenteredBounds(bounds_in_parent, window_state);
         if (bounds_in_parent != window_state->window()->bounds()) {
           if (window_state->window()->IsVisible())
@@ -252,7 +250,6 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
         }
       }
       break;
-    }
     case wm::WM_EVENT_ADDED_TO_WORKSPACE:
       if (current_state_type_ != mojom::WindowStateType::MAXIMIZED &&
           current_state_type_ != mojom::WindowStateType::FULLSCREEN &&

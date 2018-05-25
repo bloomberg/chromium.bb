@@ -332,7 +332,6 @@
 -WorkspaceLayoutManagerTest.KeepMinimumVisibilityInDisplays
 
 # TODO: Needs CursorManager. http://crbug.com/631103
--SplitViewTabDraggingTest.LockCursor
 -WorkspaceWindowResizerTest.MouseMoveWithTouchDrag
 
 # Keep alphabetized. See comment at top of file.

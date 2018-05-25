@@ -21,18 +21,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDisplayMoveWindowAccels;
 // https://crbug.com/709824.
 ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 
-// Enables dragging one or more tabs out of a browser window in tablet mode.
-// TODO(xdai): Remove this after the feature is launched.
-// https://crbug.com/823769.
-ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
-
 // Enables the keyboard shortcut viewer.
 // TODO(wutao): Remove this after the feature is fully launched.
 // https://crbug.com/755448.
 ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewer;
-
-// Enables notifications on the lock screen.
-ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
 // Enables the new overview animations.
 // TODO(wutao): Remove this after the feature is fully launched.
@@ -57,6 +49,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTapVisualizerApp;
 
 // Enables trilinear filtering.
 ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
+
+// Enables notifications on the lock screen.
+ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
 ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 

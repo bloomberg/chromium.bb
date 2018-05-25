@@ -2806,11 +2806,6 @@ const char kEnableDisplayZoomSettingDescription[] =
     "Allows the user to modify the display size or zoom via the chrome display "
     "settings page.";
 
-const char kEnableDragTabsInTabletModeName[] =
-    "Enable dragging tabs in tablet mode";
-const char kEnableDragTabsInTabletModeDescription[] =
-    "Allows the user to drag the tabs out of a browser window in tablet mode.";
-
 const char kEnableEhvInputName[] =
     "Emoji, handwriting and voice input on opt-in IME menu";
 const char kEnableEhvInputDescription[] =

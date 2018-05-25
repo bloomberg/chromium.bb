@@ -26854,7 +26854,6 @@ from previous Chrome versions.
       label="DisplayPersistenceToggleInPermissionPrompts:disabled"/>
   <int value="-1536293422" label="SharedArrayBuffer:enabled"/>
   <int value="-1536242739" label="security-chip"/>
-  <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
   <int value="-1517418368"
@@ -27335,7 +27334,6 @@ from previous Chrome versions.
   <int value="-475049740" label="disable-vr-shell"/>
   <int value="-474806100" label="DataReductionProxyMainMenu:enabled"/>
   <int value="-474322576" label="disable-quick-unlock-pin"/>
-  <int value="-473087416" label="DragTabsInTabletMode:enabled"/>
   <int value="-472013317" label="WebRTC-H264WithOpenH264FFmpeg:disabled"/>
   <int value="-471405972" label="ViewsProfileChooser:disabled"/>
   <int value="-471085510" label="MultiDeviceApi:enabled"/>
