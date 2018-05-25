@@ -903,7 +903,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   LayoutRect rect = LayoutRect(PixelSnappedIntRect(border_rect));
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
       location_in_container.Intersects(rect)) {
-    Node* node = text_fragment.GetNode();
+    Node* node = ToNGPhysicalTextFragment(text_fragment).TextSourceNode();
     if (!result.InnerNode() && node) {
       LayoutPoint point =
           location_in_container.Point() - ToLayoutSize(accumulated_offset) -

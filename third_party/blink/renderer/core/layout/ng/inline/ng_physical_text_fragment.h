@@ -136,6 +136,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // pseudo-element, ...) instead of from a DOM text node.
   bool IsAnonymousText() const;
 
+  // Returns the node in DOM tree where the text originates, or nullptr if the
+  // text is generated. This allows us to get the text node for first-letter
+  // fragments, whereas GetNode() returns nullptr.
+  Node* TextSourceNode() const;
+
   // Returns the text offset in the fragment placed closest to the given point.
   unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
 
