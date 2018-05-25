@@ -116,18 +116,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
 
-    @VisibleForTesting
-    public static final String[] PREFS_TO_SAVE = {
-        PREFERENCE_SYNC_EVERYTHING,
-        PREFERENCE_SYNC_AUTOFILL,
-        PREFERENCE_SYNC_BOOKMARKS,
-        PREFERENCE_SYNC_OMNIBOX,
-        PREFERENCE_SYNC_PASSWORDS,
-        PREFERENCE_SYNC_RECENT_TABS,
-        PREFERENCE_SYNC_SETTINGS,
-        PREFERENCE_PAYMENTS_INTEGRATION
-    };
-
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
 
     private SwitchPreference mSyncEverything;
@@ -267,16 +255,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
             if (pref == preference) return true;
         }
         return false;
-    }
-
-    /**
-     * Returns the sync action bar switch to enable/disable sync.
-     *
-     * @return the mActionBarSwitch
-     */
-    @VisibleForTesting
-    public ChromeSwitchPreference getSyncSwitchPreference() {
-        return mSyncSwitchPreference;
     }
 
     @Override
