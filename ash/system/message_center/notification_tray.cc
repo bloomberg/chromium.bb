@@ -649,6 +649,15 @@ void NotificationTray::ShowBubble(bool show_by_click) {
     message_center_ui_controller_->ShowMessageCenterBubble(show_by_click);
 }
 
+void NotificationTray::ActivateBubble() {
+  views::TrayBubbleView* bubble_view = GetBubbleView();
+  // If the bubble is in the process of closing, do not try to activate it.
+  if (bubble_view->GetWidget()->IsClosed())
+    return;
+  bubble_view->set_can_activate(true);
+  bubble_view->GetWidget()->Activate();
+}
+
 views::TrayBubbleView* NotificationTray::GetBubbleView() {
   return message_center_bubble_ ? message_center_bubble_->bubble_view()
                                 : nullptr;
