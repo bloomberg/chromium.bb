@@ -152,6 +152,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
@@ -263,6 +264,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #include "ios/web/public/web_thread.h"
@@ -720,6 +722,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // The webState of the active tab.
 @property(nonatomic, readonly) web::WebState* currentWebState;
+
+// Whether the browser container should be the full bounds of self.view.
+@property(nonatomic, readonly) BOOL usesFullscreenContainer;
+// Whether the safe area insets should be used to adjust the viewport.
+@property(nonatomic, readonly) BOOL usesSafeInsetsForViewportAdjustments;
 
 // BVC initialization
 // ------------------
@@ -1354,9 +1361,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (CGFloat)headerOffset {
-  if ([self canShowTabStrip])
-    return StatusBarHeight();
-  return 0.0;
+  return [self canShowTabStrip] ? StatusBarHeight() : 0.0;
 }
 
 - (CGFloat)headerHeight {
@@ -1365,6 +1370,23 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (web::WebState*)currentWebState {
   return [[_model currentTab] webState];
+}
+
+- (BOOL)usesFullscreenContainer {
+  return base::FeatureList::IsEnabled(
+             web::features::kBrowserContainerFullscreen) ||
+         self.usesSafeInsetsForViewportAdjustments;
+}
+
+- (BOOL)usesSafeInsetsForViewportAdjustments {
+  // The WKWebView viewport is only updatable via the safe area in iOS 11.
+  if (@available(iOS 11, *)) {
+    fullscreen::features::ViewportAdjustmentExperiment viewportExperiment =
+        fullscreen::features::GetActiveViewportExperiment();
+    return viewportExperiment ==
+           fullscreen::features::ViewportAdjustmentExperiment::SAFE_AREA;
+  }
+  return NO;
 }
 
 #pragma mark - Public methods
@@ -1630,8 +1652,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 // Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
   CGRect initialViewsRect = self.view.bounds;
-  if (!base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen)) {
+  if (!self.usesFullscreenContainer) {
     initialViewsRect.origin.y += StatusBarHeight();
     initialViewsRect.size.height -= StatusBarHeight();
   }
@@ -1646,6 +1667,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   UIViewController* containerViewController =
       _browserContainerCoordinator.viewController;
   [self addChildViewController:containerViewController];
+
   self.contentArea.frame = initialViewsRect;
   self.typingShield = [[UIButton alloc] initWithFrame:initialViewsRect];
   self.typingShield.autoresizingMask = initialViewAutoresizing;
@@ -1812,7 +1834,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
   [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
-  if (self.currentWebState) {
+  if (!self.usesSafeInsetsForViewportAdjustments && self.currentWebState) {
     UIEdgeInsets contentPadding =
         self.currentWebState->GetWebViewProxy().contentInset;
     contentPadding.bottom = AlignValueToPixel(
@@ -2401,8 +2423,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
   CGRect contentFrame = self.contentArea.frame;
-  if (!base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen)) {
+  if (!self.usesFullscreenContainer) {
     CGFloat marginWithHeader = StatusBarHeight();
     contentFrame.size.height = CGRectGetMaxY(contentFrame) - marginWithHeader;
     contentFrame.origin.y = marginWithHeader;
@@ -2560,8 +2581,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [nativeController toolbarHeight] > 0.0 && ![self canShowTabStrip]) {
     // On iPhone, don't add any header height for ToolbarOwner native
     // controllers when they're displaying their own toolbar.
-    if (base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen))
+    if (self.usesFullscreenContainer)
       return StatusBarHeight();
     return 0;
   }
@@ -2574,12 +2594,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       height += CGRectGetHeight([header.view frame]) - header.inset;
     }
   }
+
   CGFloat statusBarOffset = 0;
-  if (!base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen)) {
+  if (!self.usesFullscreenContainer) {
     statusBarOffset = StatusBarHeight();
   }
-
   return height - statusBarOffset;
 }
 
@@ -2611,8 +2630,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Changing the origin here is unnecessary, it's set in page_animation_util.
   if (!fullScreen) {
     frame.size.height -= self.headerHeight;
-  } else if (base::FeatureList::IsEnabled(
-                 web::features::kBrowserContainerFullscreen)) {
+  } else if (self.usesFullscreenContainer) {
     frame.size.height -= StatusBarHeight();
   }
 
@@ -3851,9 +3869,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (CGFloat)overscrollHeaderHeight {
-  if (base::FeatureList::IsEnabled(web::features::kBrowserContainerFullscreen))
-    return self.headerHeight;
-  return self.headerHeight + StatusBarHeight();
+  return self.headerHeight +
+         (self.usesFullscreenContainer ? 0 : StatusBarHeight());
 }
 
 #pragma mark - CRWNativeContentProvider methods
@@ -3982,8 +3999,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (IsUIRefreshPhase1Enabled() && tab &&
       tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
       ![self canShowTabStrip]) {
-    if (base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen))
+    if (self.usesFullscreenContainer)
       return 0;
     // Also subtract the top safe area so the view will appear as full screen.
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
@@ -4015,8 +4031,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (IsUIRefreshPhase1Enabled()) {
     toolbarHeightFullscreen = kToolbarHeightFullscreen;
   }
-  if (base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen)) {
+  if (self.usesFullscreenContainer) {
     toolbarHeightFullscreen += StatusBarHeight();
   }
   return MAX(0, self.headerHeight - toolbarHeightFullscreen);
@@ -4027,7 +4042,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)updateForFullscreenProgress:(CGFloat)progress {
   [self updateHeadersForFullscreenProgress:progress];
   [self updateFootersForFullscreenProgress:progress];
-  [self updateContentViewPaddingForFullscreenProgress:progress];
+  [self updateBrowserViewportForFullscreenProgress:progress];
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
@@ -4048,7 +4063,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     CGPoint contentOffset = scrollProxy.contentOffset;
     if (contentOffset.y - scrollProxy.contentInset.top <
         webProxy.contentInset.top) {
-      [self updateContentViewPaddingForFullscreenProgress:finalProgress];
+      [self updateBrowserViewportForFullscreenProgress:finalProgress];
       contentOffset.y = -scrollProxy.contentInset.top;
       scrollProxy.contentOffset = contentOffset;
     }
@@ -4066,7 +4081,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // animator to trigger a rerender in the page's new viewport.
   __weak FullscreenAnimator* weakAnimator = animator;
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    [weakSelf updateContentViewPaddingForFullscreenProgress:
+    [weakSelf updateBrowserViewportForFullscreenProgress:
                   [weakAnimator progressForAnimatingPosition:finalPosition]];
   }];
 }
@@ -4076,7 +4091,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [animator addAnimations:^{
     [self updateHeadersForFullscreenProgress:finalProgress];
     [self updateFootersForFullscreenProgress:finalProgress];
-    [self updateContentViewPaddingForFullscreenProgress:finalProgress];
+    [self updateBrowserViewportForFullscreenProgress:finalProgress];
   }];
 }
 
@@ -4135,21 +4150,53 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+// Updates the browser container view such that its viewport is the space
+// between the primary and secondary toolbars.
+- (void)updateBrowserViewportForFullscreenProgress:(CGFloat)progress {
+  if (!self.currentWebState)
+    return;
+
+  // Calculate the heights of the toolbars for |progress|.  |-toolbarHeight|
+  // returns the height of the toolbar extending below this view controller's
+  // safe area, so the unsafe top height must be added.
+  CGFloat top = AlignValueToPixel(
+      self.headerHeight + (progress - 1.0) * [self nonFullscreenToolbarHeight]);
+  CGFloat bottom =
+      AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
+
+  if (self.usesSafeInsetsForViewportAdjustments) {
+    [self updateBrowserSafeAreaForTopToolbarHeight:top
+                               bottomToolbarHeight:bottom];
+  } else {
+    [self updateContentPaddingForTopToolbarHeight:top
+                              bottomToolbarHeight:bottom];
+  }
+}
+
+// Updates the web view's viewport by changing the safe area insets.
+- (void)updateBrowserSafeAreaForTopToolbarHeight:(CGFloat)topToolbarHeight
+                             bottomToolbarHeight:(CGFloat)bottomToolbarHeight {
+  UIViewController* containerViewController =
+      _browserContainerCoordinator.viewController;
+  if (@available(iOS 11, *)) {
+    containerViewController.additionalSafeAreaInsets = UIEdgeInsetsMake(
+        topToolbarHeight - self.view.safeAreaInsets.top, 0, 0, 0);
+  }
+}
+
 // Updates the padding of the web view proxy. This either resets the frame of
 // the WKWebView or the contentInsets of the WKWebView's UIScrollView, depending
 // on the the proxy's |shouldUseViewContentInset| property.
-- (void)updateContentViewPaddingForFullscreenProgress:(CGFloat)progress {
-  if (self.currentWebState) {
-    UIEdgeInsets contentPadding =
-        self.currentWebState->GetWebViewProxy().contentInset;
-    CGFloat toolbarHeightFullscreen =
-        self.headerHeight - [self nonFullscreenToolbarHeight];
-    contentPadding.top = AlignValueToPixel(
-        toolbarHeightFullscreen + progress * [self nonFullscreenToolbarHeight]);
-    contentPadding.bottom =
-        AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
-    self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
-  }
+- (void)updateContentPaddingForTopToolbarHeight:(CGFloat)topToolbarHeight
+                            bottomToolbarHeight:(CGFloat)bottomToolbarHeight {
+  if (!self.currentWebState)
+    return;
+
+  id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
+  UIEdgeInsets contentPadding = webViewProxy.contentInset;
+  contentPadding.top = topToolbarHeight;
+  contentPadding.bottom = bottomToolbarHeight;
+  webViewProxy.contentInset = contentPadding;
 }
 
 - (CGFloat)currentHeaderOffset {
@@ -5199,8 +5246,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
           // Restore content area frame, which was resized to fullscreen for
           // NTP opening animation.
           CGRect contentAreaFrame = self.view.bounds;
-          if (!base::FeatureList::IsEnabled(
-                  web::features::kBrowserContainerFullscreen)) {
+          if (!self.usesFullscreenContainer) {
             contentAreaFrame.origin.y += StatusBarHeight();
             contentAreaFrame.size.height -= StatusBarHeight();
           }
@@ -5224,8 +5270,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
           [self snapshotEdgeInsetsForWebState:topTab.webState]);
     } else {
       imageFrame = [topTab.webState->GetView() bounds];
-      if (base::FeatureList::IsEnabled(
-              web::features::kBrowserContainerFullscreen)) {
+      if (self.usesFullscreenContainer) {
         imageFrame.origin.y += StatusBarHeight();
         imageFrame.size.height -= StatusBarHeight();
       }
