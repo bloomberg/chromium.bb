@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/app_window_interactive_uitest.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -516,8 +517,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowHiddenKeepAliveTest, StaysHidden) {
 
   for (auto* browser : *BrowserList::GetInstance())
     browser->window()->Close();
-  // This will time out if the command above does not terminate Chrome.
-  content::RunMessageLoop();
+
+  RunUntilBrowserProcessQuits();
 }
 
 // A window that is created hidden but shown soon after should keep Chrome

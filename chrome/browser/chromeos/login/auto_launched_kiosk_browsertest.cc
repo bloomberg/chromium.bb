@@ -454,7 +454,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
 
     // Wait until the app terminates if it is still running.
     if (!app_window_registry->GetAppWindowsForApp(app_id).empty())
-      base::RunLoop().Run();
+      RunUntilBrowserProcessQuits();
     return true;
   }
 

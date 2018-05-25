@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -137,10 +138,21 @@ void ShowFirstRunDialog(Profile* profile) {
 
   scoped_refptr<FirstRunShowBridge> bridge(new FirstRunShowBridge(self));
   base::RunLoop run_loop;
+
+  // Swap-out the BrowserProcessImpl's quit-closure with the one for our
+  // modal RunLoop, so that it can be exit either by the dialog being closed,
+  // or in response to SIGTERM being handled.
+  base::OnceClosure browser_quit_closure =
+      static_cast<BrowserProcessImpl*>(g_browser_process)
+          ->SwapQuitClosure(run_loop.QuitClosure());
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get(),
                             run_loop.QuitClosure()));
   run_loop.Run();
+
+  static_cast<BrowserProcessImpl*>(g_browser_process)
+      ->SwapQuitClosure(std::move(browser_quit_closure));
 }
 
 - (void)show {

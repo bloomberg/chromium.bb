@@ -310,6 +310,23 @@ void BrowserProcessImpl::Init() {
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
 }
 
+#if !defined(OS_ANDROID)
+void BrowserProcessImpl::SetQuitClosure(base::OnceClosure quit_closure) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!quit_closure_);
+  quit_closure_ = std::move(quit_closure);
+}
+#endif
+
+#if defined(OS_MACOSX)
+base::OnceClosure BrowserProcessImpl::SwapQuitClosure(
+    base::OnceClosure quit_closure) {
+  DCHECK(quit_closure);
+  std::swap(quit_closure, quit_closure_);
+  return quit_closure;
+}
+#endif
+
 BrowserProcessImpl::~BrowserProcessImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1369,6 +1386,7 @@ void BrowserProcessImpl::Unpin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   release_last_reference_callstack_ = base::debug::StackTrace();
 
+  DCHECK(!shutting_down_);
   shutting_down_ = true;
 #if BUILDFLAG(ENABLE_PRINTING)
   // Wait for the pending print jobs to finish. Don't do this later, since
@@ -1391,9 +1409,10 @@ void BrowserProcessImpl::Unpin() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 
 #if !defined(OS_ANDROID)
+  std::move(quit_closure_).Run();
+
   chrome::ShutdownIfNeeded();
 #endif  // !defined(OS_ANDROID)
 }

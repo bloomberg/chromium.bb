@@ -83,6 +83,20 @@ class BrowserProcessImpl : public BrowserProcess,
   // Called to complete initialization.
   void Init();
 
+#if !defined(OS_ANDROID)
+  // Called by ChromeBrowserMainParts to provide a closure that will quit the
+  // browser main message-loop.
+  void SetQuitClosure(base::OnceClosure quit_closure);
+#endif
+
+#if defined(OS_MACOSX)
+  // TODO(https://crbug.com/845966): Replaces the current |quit_closure_| and
+  // returns it. Used by the Cocoa first-run dialog to swap-out the RunLoop set
+  // by ChromeBrowserMainParts' for one that will cause the first-run dialog's
+  // modal RunLoop to exit.
+  base::OnceClosure SwapQuitClosure(base::OnceClosure quit_closure);
+#endif
+
   // Called before the browser threads are created.
   void PreCreateThreads(const base::CommandLine& command_line);
 
@@ -375,6 +389,11 @@ class BrowserProcessImpl : public BrowserProcess,
       shell_integration::UNKNOWN_DEFAULT;
 
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
+
+#if !defined(OS_ANDROID)
+  // Called to signal the process' main message loop to exit.
+  base::OnceClosure quit_closure_;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 
