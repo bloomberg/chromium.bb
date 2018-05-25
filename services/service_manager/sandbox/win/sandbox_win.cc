@@ -39,6 +39,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container_profile.h"
+#include "sandbox/win/src/job.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
@@ -52,6 +53,8 @@ namespace service_manager {
 namespace {
 
 sandbox::BrokerServices* g_broker_services = NULL;
+
+HANDLE g_job_object_handle = NULL;
 
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
 // when they are loaded in the renderer. Note: at runtime we generate short
@@ -827,6 +830,20 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
           service_manager::switches::kNoSandbox)) {
     base::LaunchOptions options;
     options.handles_to_inherit = handles_to_inherit;
+    if (sandbox_type == SANDBOX_TYPE_NETWORK) {
+      // Launch the process in a job to ensure that the network process doesn't
+      // outlive the browser. This could happen if there is a lot of I/O on
+      // process shutdown, in which case TerminateProcess would fail.
+      // https://crbug.com/820996
+      if (!g_job_object_handle) {
+        sandbox::Job job_obj;
+        DWORD result = job_obj.Init(sandbox::JOB_UNPROTECTED, nullptr, 0, 0);
+        if (result != ERROR_SUCCESS)
+          return sandbox::SBOX_ERROR_GENERIC;
+        g_job_object_handle = job_obj.Take().Take();
+      }
+      options.job_handle = g_job_object_handle;
+    }
     *process = base::LaunchProcess(*cmd_line, options);
     return sandbox::SBOX_ALL_OK;
   }
