@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
 import javax.annotation.Nullable;
@@ -52,6 +53,9 @@ import javax.annotation.Nullable;
  */
 public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected static final int BACKGROUND_TRANSITION_DURATION_MS = 400;
+
+    private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
+    private static final String NTP_BUTTON_VARIATION_PARAM_NAME = "variation";
 
     private Invalidator mInvalidator;
 
@@ -951,4 +955,13 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * it.
      */
     public void setTabModelSelector(TabModelSelector selector) {}
+
+    /**
+     * Gets the variation of the NTP button based on finch config.
+     * @return The NTP button variation.
+     */
+    public static String getNTPButtonVariation() {
+        return VariationsAssociatedData.getVariationParamValue(
+                NTP_BUTTON_TRIAL_NAME, NTP_BUTTON_VARIATION_PARAM_NAME);
+    }
 }

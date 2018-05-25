@@ -11,7 +11,6 @@ import android.support.annotation.PluralsRes;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -19,7 +18,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
 import org.chromium.chrome.browser.infobar.IPHInfoBarSupport;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -29,10 +27,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -784,14 +782,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         ChromeTabbedActivity activity = (ChromeTabbedActivity) getCurrentTab().getActivity();
         Profile profile = mIsIncognito ? Profile.getLastUsedProfile().getOffTheRecordProfile()
                                        : Profile.getLastUsedProfile().getOriginalProfile();
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-
-        tracker.addOnInitializedCallback((Callback<Boolean>) success
-                -> activity.maybeShowAppMenuTextBubble(tracker,
-                        FeatureConstants.DOWNLOAD_INFOBAR_DOWNLOAD_CONTINUING_FEATURE,
-                        R.id.downloads_menu_id,
-                        R.string.iph_download_infobar_download_continuing_text,
-                        R.string.iph_download_infobar_download_continuing_text));
+        ToolbarButtonInProductHelpController.maybeShowDownloadContinuingIPH(activity, profile);
     }
 
     @Nullable
