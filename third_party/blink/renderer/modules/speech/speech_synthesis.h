@@ -95,6 +95,10 @@ class MODULES_EXPORT SpeechSynthesis final
   // Returns the utterance at the front of the queue.
   SpeechSynthesisUtterance* CurrentSpeechUtterance() const;
 
+  // Gets a timestamp in millis that is safe to expose to the web.
+  // Returns false if it cannot get a timestamp.
+  bool GetElapsedTimeMillis(double* millis);
+
   Member<PlatformSpeechSynthesizer> platform_speech_synthesizer_;
   HeapVector<Member<SpeechSynthesisVoice>> voice_list_;
   HeapDeque<Member<SpeechSynthesisUtterance>> utterance_queue_;

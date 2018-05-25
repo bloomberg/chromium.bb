@@ -26,9 +26,10 @@
 #include "third_party/blink/renderer/modules/speech/speech_synthesis.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_event.h"
 #include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -88,7 +89,11 @@ void SpeechSynthesis::StartSpeakingImmediately() {
   SpeechSynthesisUtterance* utterance = CurrentSpeechUtterance();
   DCHECK(utterance);
 
-  utterance->SetStartTime(CurrentTimeTicksInSeconds());
+  double millis;
+  if (!GetElapsedTimeMillis(&millis))
+    return;
+
+  utterance->SetStartTime(millis / 1000.0);
   is_paused_ = false;
   platform_speech_synthesizer_->Speak(utterance->PlatformUtterance());
 }
@@ -126,11 +131,11 @@ void SpeechSynthesis::FireEvent(const AtomicString& type,
                                 SpeechSynthesisUtterance* utterance,
                                 unsigned long char_index,
                                 const String& name) {
-  if (!GetExecutionContext())
+  double millis;
+  if (!GetElapsedTimeMillis(&millis))
     return;
 
-  double elapsed_time_millis =
-      (CurrentTimeTicksInSeconds() - utterance->StartTime()) * 1000.0;
+  double elapsed_time_millis = millis - utterance->StartTime() * 1000.0;
   utterance->DispatchEvent(SpeechSynthesisEvent::Create(
       type, utterance, char_index, elapsed_time_millis, name));
 }
@@ -241,6 +246,20 @@ void SpeechSynthesis::Trace(blink::Visitor* visitor) {
   PlatformSpeechSynthesizerClient::Trace(visitor);
   ContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
+}
+
+bool SpeechSynthesis::GetElapsedTimeMillis(double* millis) {
+  if (!GetExecutionContext())
+    return false;
+  Document* delegate_document = ToDocument(GetExecutionContext());
+  if (!delegate_document || delegate_document->IsStopped())
+    return false;
+  LocalDOMWindow* delegate_dom_window = delegate_document->domWindow();
+  if (!delegate_dom_window)
+    return false;
+
+  *millis = DOMWindowPerformance::performance(*delegate_dom_window)->now();
+  return true;
 }
 
 }  // namespace blink
