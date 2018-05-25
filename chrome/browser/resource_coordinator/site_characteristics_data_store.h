@@ -11,14 +11,15 @@
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace resource_coordinator {
 
 // Pure virtual interface for a site characteristics data store.
-class SiteCharacteristicsDataStore {
+class SiteCharacteristicsDataStore : public KeyedService {
  public:
   SiteCharacteristicsDataStore() = default;
-  virtual ~SiteCharacteristicsDataStore() {}
+  ~SiteCharacteristicsDataStore() override {}
 
   // Returns a SiteCharacteristicsDataReader for the given origin.
   virtual std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
@@ -27,6 +28,10 @@ class SiteCharacteristicsDataStore {
   // Returns a SiteCharacteristicsDataWriter for the given origin.
   virtual std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
       const std::string& origin_str) = 0;
+
+  // Indicate if the SiteCharacteristicsDataWriter served by this data store
+  // actually persist informations.
+  virtual bool IsRecordingForTesting() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SiteCharacteristicsDataStore);

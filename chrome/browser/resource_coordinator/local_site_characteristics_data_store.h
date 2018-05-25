@@ -25,8 +25,8 @@ class LocalSiteCharacteristicsDatabase;
 // Implementation of a SiteCharacteristicsDataStore that use the local site
 // characteristics database as a backend.
 //
-// TODO(sebmarchand): Expose a method to receive a dummy writer that doesn't
-// record anything, for use in incognito sessions.
+// This class should never be used for off the record profiles, the
+// LocalSiteCharacteristicsNonRecordingDataStore class should be used instead.
 class LocalSiteCharacteristicsDataStore
     : public SiteCharacteristicsDataStore,
       public internal::LocalSiteCharacteristicsDataImpl::OnDestroyDelegate,
@@ -41,9 +41,9 @@ class LocalSiteCharacteristicsDataStore
   // SiteCharacteristicDataStore:
   std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
       const std::string& origin_str) override;
-
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
       const std::string& origin_str) override;
+  bool IsRecordingForTesting() override;
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {
     return origin_data_map_;
@@ -75,6 +75,8 @@ class LocalSiteCharacteristicsDataStore
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
 
   // Map a serialized origin to a LocalSiteCharacteristicDataInternal
   // pointer.
