@@ -1832,6 +1832,7 @@ crbug.com/736308 virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirec
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Pass Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/response/response-cancel-stream.html [ Pass Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/http-cache/status.html [ Pass Timeout ]
+crbug.com/846497 virtual/outofblink-cors/external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Pass Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/688486 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Timeout Failure Pass ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/foreign-fetch-basics.https.html [ Timeout ]
