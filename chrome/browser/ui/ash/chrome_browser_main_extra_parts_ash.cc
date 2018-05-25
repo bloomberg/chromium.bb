@@ -15,9 +15,14 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
+#include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
@@ -50,6 +55,9 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -128,7 +136,8 @@ class ChromeLauncherControllerInitializer
 
 }  // namespace internal
 
-ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {}
+ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
+    : notification_observer_(std::make_unique<NotificationObserver>()) {}
 
 ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {}
 
@@ -308,3 +317,46 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // ash::Shell is so destroy |tablet_mode_client_| after ash::Shell.
   tablet_mode_client_.reset();
 }
+
+class ChromeBrowserMainExtraPartsAsh::NotificationObserver
+    : public content::NotificationObserver {
+ public:
+  NotificationObserver() {
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+                   content::NotificationService::AllSources());
+  }
+  ~NotificationObserver() override = default;
+
+  // content::NotificationObserver
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    switch (type) {
+      case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
+        Profile* profile = content::Details<Profile>(details).ptr();
+        if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+            !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
+            !profile->IsGuestSession() && !profile->IsSupervised()) {
+          // Start the error notifier services to show auth/sync notifications.
+          SigninErrorNotifierFactory::GetForProfile(profile);
+          SyncErrorNotifierFactory::GetForProfile(profile);
+        }
+        // Do not use chrome::NOTIFICATION_PROFILE_ADDED because the
+        // profile is not fully initialized by user_manager.  Use
+        // chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED instead.
+        if (ChromeLauncherController::instance()) {
+          ChromeLauncherController::instance()->OnUserProfileReadyToSwitch(
+              profile);
+        }
+        break;
+      }
+      default:
+        NOTREACHED() << "Unexpected notification " << type;
+    }
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationObserver);
+};

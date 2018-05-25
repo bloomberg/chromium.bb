@@ -11,15 +11,12 @@
 #include "ash/shell_delegate.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace keyboard {
 class KeyboardUI;
 }
 
-class ChromeShellDelegate : public ash::ShellDelegate,
-                            public content::NotificationObserver {
+class ChromeShellDelegate : public ash::ShellDelegate {
  public:
   ChromeShellDelegate();
   ~ChromeShellDelegate() override;
@@ -36,16 +33,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void OpenKeyboardShortcutHelpPage() const override;
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient() override;
 
-  // content::NotificationObserver override:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
  private:
-  void PlatformInit();
-
-  content::NotificationRegistrar registrar_;
-
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
