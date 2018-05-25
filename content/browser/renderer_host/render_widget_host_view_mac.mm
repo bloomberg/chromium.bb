@@ -146,6 +146,11 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
       weak_factory_(this) {
+  display_only_using_parent_ui_layer_ = !features::IsViewsBrowserCocoa();
+  // TODO(ccameron): This path breaks content_shell because content_shell does
+  // not display using ui::Views, even when !features::IsViewsBrowserCocoa.
+  display_only_using_parent_ui_layer_ = false;
+
   // The NSView is on the other side of |ns_view_bridge_|.
   ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(this);
 
@@ -204,8 +209,8 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
-  if (parent_ui_layer)
-    display_only_using_parent_ui_layer_ = true;
+  if (!display_only_using_parent_ui_layer_)
+    return;
   if (browser_compositor_)
     browser_compositor_->SetParentUiLayer(parent_ui_layer);
 }

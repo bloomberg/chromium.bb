@@ -347,6 +347,10 @@ void BrowserCompositorMac::SynchronizeVisualProperties(
                                           new_size_in_pixels);
     dfh_size_pixels_ = new_size_in_pixels;
     root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
+    if (recyclable_compositor_) {
+      recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
+                                            dfh_display_.device_scale_factor());
+    }
     GetDelegatedFrameHost()->EmbedSurface(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         dfh_size_dip_, GetDeadlinePolicy());
