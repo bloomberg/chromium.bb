@@ -111,7 +111,7 @@ static void JNI_GamepadList_SetGamepadData(
   }
 
   pad.connected = true;
-  pad.timestamp = timestamp;
+  pad.timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
 
   std::vector<float> axes;
   base::android::JavaFloatArrayToFloatVector(env, jaxes, &axes);

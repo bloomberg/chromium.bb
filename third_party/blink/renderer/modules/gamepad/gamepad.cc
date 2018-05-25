@@ -31,7 +31,7 @@ namespace blink {
 
 Gamepad::Gamepad()
     : index_(0),
-      timestamp_(0),
+      timestamp_(0.0),
       display_id_(0),
       is_axis_data_dirty_(true),
       is_button_data_dirty_(true) {}
