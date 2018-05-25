@@ -607,8 +607,6 @@ void LocalFrameView::SetFrameRect(const IntRect& unclamped_frame_rect) {
 
   FrameRectsChanged();
 
-  UpdateParentScrollableAreaSet();
-
   if (auto* layout_view = GetLayoutView())
     layout_view->SetMayNeedPaintInvalidation();
 
@@ -788,17 +786,7 @@ void LocalFrameView::AdjustViewSize() {
     return;
 
   DCHECK_EQ(frame_->View(), this);
-
-  const IntRect rect = layout_view->DocumentRect();
-  const IntSize& size = rect.Size();
-
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    const IntPoint origin(-rect.X(), -rect.Y());
-    if (ScrollOrigin() != origin)
-      SetScrollOrigin(origin);
-  }
-
-  SetLayoutOverflowSize(size);
+  SetLayoutOverflowSize(layout_view->DocumentRect().Size());
 }
 
 void LocalFrameView::AdjustViewSizeAndLayout() {
@@ -1241,8 +1229,6 @@ void LocalFrameView::UpdateLayout() {
       IntSize old_size(Size());
 
       PerformLayout(in_subtree_layout);
-
-      UpdateParentScrollableAreaSet();
 
       IntSize new_size(Size());
       if (old_size != new_size) {
@@ -2699,23 +2685,6 @@ LocalFrameView::ScrollingReasons LocalFrameView::GetScrollingReasons() const {
   return kScrollable;
 }
 
-void LocalFrameView::UpdateParentScrollableAreaSet() {
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
-  // That ensures that only inner frames are cached.
-  LocalFrameView* parent_frame_view = ParentFrameView();
-  if (!parent_frame_view)
-    return;
-
-  if (!IsScrollable()) {
-    parent_frame_view->RemoveScrollableArea(this);
-    return;
-  }
-
-  parent_frame_view->AddScrollableArea(this);
-}
-
 bool LocalFrameView::ShouldSuspendScrollAnimations() const {
   return !frame_->GetDocument()->LoadEventFinished();
 }
@@ -4123,7 +4092,6 @@ void LocalFrameView::AttachToLayout() {
   CHECK(parent_);
   if (parent_->IsVisible())
     SetParentVisible(true);
-  UpdateParentScrollableAreaSet();
   SetupRenderThrottling();
   subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
 
@@ -5048,7 +5016,6 @@ void LocalFrameView::Show() {
       GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
     }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
-    UpdateParentScrollableAreaSet();
     if (IsParentVisible()) {
       ForAllChildViewsAndPlugins(
           [](EmbeddedContentView& embedded_content_view) {
@@ -5072,7 +5039,6 @@ void LocalFrameView::Hide() {
       GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
     }
     SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
-    UpdateParentScrollableAreaSet();
   }
 }
 
