@@ -184,6 +184,7 @@ enum class TaskType : unsigned {
   kMainThreadTaskQueueControl = 43,
   kCompositorThreadTaskQueueDefault = 45,
   kWorkerThreadTaskQueueDefault = 46,
+  kWorkerThreadTaskQueueV8 = 47,
 
   ///////////////////////////////////////
   // The following task types are DEPRECATED! Use kInternal* instead.
@@ -193,7 +194,7 @@ enum class TaskType : unsigned {
   // should be very limited.
   kUnthrottled = 25,
 
-  kCount = 47,
+  kCount = 48,
 };
 
 }  // namespace blink
