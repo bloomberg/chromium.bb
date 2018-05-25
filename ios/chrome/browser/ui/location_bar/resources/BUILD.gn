@@ -66,3 +66,12 @@ imageset("location_bar_voice") {
     "location_bar_voice.imageset/location_bar_voice@3x.png",
   ]
 }
+
+imageset("location_bar_offline") {
+  sources = [
+    "location_bar_offline.imageset/Contents.json",
+    "location_bar_offline.imageset/location_bar_offline.png",
+    "location_bar_offline.imageset/location_bar_offline@2x.png",
+    "location_bar_offline.imageset/location_bar_offline@3x.png",
+  ]
+}

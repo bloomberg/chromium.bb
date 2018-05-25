@@ -28,6 +28,7 @@ source_set("location_bar") {
   ]
   deps = [
     ":constants",
+    "resources:location_bar_offline",
     "resources:location_bar_share",
     "resources:location_bar_voice",
     "//base",
