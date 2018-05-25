@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -427,7 +426,7 @@ public class VrShellImpl
         if (mTab != null) {
             initializeTabForVR();
             mTab.addObserver(mTabObserver);
-            mTab.updateBrowserControlsState(BrowserControlsState.HIDDEN, true);
+            mTab.updateBrowserControlsState(BrowserControlsState.HIDDEN, false);
         }
         mTabObserver.onContentChanged(mTab);
     }
@@ -730,7 +729,7 @@ public class VrShellImpl
                 View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
-            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+            mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
         }
 
         mContentVirtualDisplay.destroy();
@@ -739,18 +738,6 @@ public class VrShellImpl
 
         if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().setProgressBarEnabled(true);
-        }
-
-        // Since VSync was paused, control heights may not have been propagated. If we request to
-        // show the controls before the old values have propagated we'll end up with the old values
-        // (ie. the controls hidden). The values will have propagated with the next frame received
-        // from the compositor, so we can tell the controls to show at that point.
-        if (mActivity.getCompositorViewHolder() != null
-                && mActivity.getCompositorViewHolder().getCompositorView() != null) {
-            mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
-                ChromeFullscreenManager manager = mActivity.getFullscreenManager();
-                manager.getBrowserVisibilityDelegate().showControlsTransient();
-            });
         }
 
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
