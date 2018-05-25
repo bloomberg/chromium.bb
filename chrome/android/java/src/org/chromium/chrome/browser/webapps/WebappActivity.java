@@ -31,6 +31,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -585,12 +586,13 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     private void initializeWebappData() {
-        if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
-            enterImmersiveMode();
+        try (TraceEvent te = TraceEvent.scoped("WebappActivity.initializeWebappData")) {
+            if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
+                enterImmersiveMode();
+            }
+            ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+            mSplashController.showSplashScreen(getActivityType(), contentView, mWebappInfo);
         }
-
-        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-        mSplashController.showSplashScreen(getActivityType(), contentView, mWebappInfo);
     }
 
     protected void updateStorage(WebappDataStorage storage) {

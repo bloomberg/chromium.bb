@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.CallSuper;
 import android.util.DisplayMetrics;
@@ -46,6 +45,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -348,69 +348,75 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @SuppressLint("NewApi")
     @Override
     public void postInflationStartup() {
-        super.postInflationStartup();
+        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.postInflationStartup")) {
+            super.postInflationStartup();
 
-        Intent intent = getIntent();
-        if (intent != null && getSavedInstanceState() == null) {
-            VrShellDelegate.maybeHandleVrIntentPreNative(this, intent);
-        }
-
-        mSnackbarManager = new SnackbarManager(this, null);
-        mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
-
-        mAssistStatusHandler = createAssistStatusHandler();
-        if (mAssistStatusHandler != null) {
-            if (mTabModelSelector != null) {
-                mAssistStatusHandler.setTabModelSelector(mTabModelSelector);
+            Intent intent = getIntent();
+            if (intent != null && getSavedInstanceState() == null) {
+                VrShellDelegate.maybeHandleVrIntentPreNative(this, intent);
             }
-            mAssistStatusHandler.updateAssistState();
-        }
 
-        // This check is only applicable for JB since in KK svelte was supported from the start.
-        // See https://crbug.com/826460 for context.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            // If a user had ALLOW_LOW_END_DEVICE_UI explicitly set to false then we manually
-            // override SysUtils.isLowEndDevice() with a switch so that they continue to see the
-            // normal UI. This is only the case for grandfathered-in svelte users. We no longer do
-            // so for newer users.
-            if (!ChromePreferenceManager.getInstance().getAllowLowEndDeviceUi()) {
-                CommandLine.getInstance().appendSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
+            mSnackbarManager = new SnackbarManager(this, null);
+            mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
+
+            mAssistStatusHandler = createAssistStatusHandler();
+            if (mAssistStatusHandler != null) {
+                if (mTabModelSelector != null) {
+                    mAssistStatusHandler.setTabModelSelector(mTabModelSelector);
+                }
+                mAssistStatusHandler.updateAssistState();
             }
+
+            // This check is only applicable for JB since in KK svelte was supported from the start.
+            // See https://crbug.com/826460 for context.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                // If a user had ALLOW_LOW_END_DEVICE_UI explicitly set to false then we manually
+                // override SysUtils.isLowEndDevice() with a switch so that they continue to see the
+                // normal UI. This is only the case for grandfathered-in svelte users. We no longer
+                // do
+
+                // so for newer users.
+                if (!ChromePreferenceManager.getInstance().getAllowLowEndDeviceUi()) {
+                    CommandLine.getInstance().appendSwitch(
+                            BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
+                }
+            }
+
+            AccessibilityManager manager = (AccessibilityManager) getBaseContext().getSystemService(
+                    Context.ACCESSIBILITY_SERVICE);
+            manager.addAccessibilityStateChangeListener(this);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mTouchExplorationStateChangeListener = enabled -> checkAccessibility();
+                manager.addTouchExplorationStateChangeListener(
+                        mTouchExplorationStateChangeListener);
+            }
+
+            // Make the activity listen to policy change events
+            CombinedPolicyProvider.get().addPolicyChangeListener(this);
+            mDidAddPolicyChangeListener = true;
+
+            // Set up the animation placeholder to be the SurfaceView. This disables the
+            // SurfaceView's 'hole' clipping during animations that are notified to the window.
+            getWindowAndroid().setAnimationPlaceholderView(
+                    mCompositorViewHolder.getCompositorView());
+
+            mManualFillingController = new ManualFillingCoordinator(getWindowAndroid(),
+                    findViewById(R.id.keyboard_accessory_stub),
+                    findViewById(R.id.keyboard_accessory_sheet_stub));
+
+            initializeToolbar();
+            initializeTabModels();
+            if (!isFinishing() && getFullscreenManager() != null) {
+                getFullscreenManager().initialize(
+                        (ControlContainer) findViewById(R.id.control_container),
+                        getTabModelSelector(), getControlContainerHeightResource());
+            }
+
+            ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
+
+            mModalDialogManager = createModalDialogManager();
+            mPageViewTimer = new PageViewTimer(mTabModelSelector);
         }
-
-        AccessibilityManager manager = (AccessibilityManager)
-                getBaseContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
-        manager.addAccessibilityStateChangeListener(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mTouchExplorationStateChangeListener = enabled -> checkAccessibility();
-            manager.addTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
-        }
-
-        // Make the activity listen to policy change events
-        CombinedPolicyProvider.get().addPolicyChangeListener(this);
-        mDidAddPolicyChangeListener = true;
-
-        // Set up the animation placeholder to be the SurfaceView. This disables the
-        // SurfaceView's 'hole' clipping during animations that are notified to the window.
-        getWindowAndroid().setAnimationPlaceholderView(mCompositorViewHolder.getCompositorView());
-
-        mManualFillingController = new ManualFillingCoordinator(getWindowAndroid(),
-                findViewById(R.id.keyboard_accessory_stub),
-                findViewById(R.id.keyboard_accessory_sheet_stub));
-
-        initializeToolbar();
-        initializeTabModels();
-        if (!isFinishing() && getFullscreenManager() != null) {
-            getFullscreenManager().initialize(
-                    (ControlContainer) findViewById(R.id.control_container),
-                    getTabModelSelector(),
-                    getControlContainerHeightResource());
-        }
-
-        ((BottomContainer) findViewById(R.id.bottom_container)).initialize(mFullscreenManager);
-
-        mModalDialogManager = createModalDialogManager();
-        mPageViewTimer = new PageViewTimer(mTabModelSelector);
     }
 
     @Override
@@ -437,71 +443,75 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     protected final void setContentView() {
         final long begin = SystemClock.elapsedRealtime();
-        TraceEvent.begin("onCreate->setContentView()");
+        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.setContentView")) {
+            SelectionPopupController.setShouldGetReadbackViewFromWindowAndroid();
 
-        SelectionPopupController.setShouldGetReadbackViewFromWindowAndroid();
+            enableHardwareAcceleration();
+            setLowEndTheme();
+            int controlContainerLayoutId = getControlContainerLayoutId();
+            WarmupManager warmupManager = WarmupManager.getInstance();
+            if (warmupManager.hasViewHierarchyWithToolbar(controlContainerLayoutId)) {
+                View placeHolderView = new View(this);
+                setContentView(placeHolderView);
+                ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
+                warmupManager.transferViewHierarchyTo(contentParent);
+                contentParent.removeView(placeHolderView);
+            } else {
+                warmupManager.clearViewHierarchy();
 
-        enableHardwareAcceleration();
-        setLowEndTheme();
-        int controlContainerLayoutId = getControlContainerLayoutId();
-        WarmupManager warmupManager = WarmupManager.getInstance();
-        if (warmupManager.hasViewHierarchyWithToolbar(controlContainerLayoutId)) {
-            View placeHolderView = new View(this);
-            setContentView(placeHolderView);
-            ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
-            warmupManager.transferViewHierarchyTo(contentParent);
-            contentParent.removeView(placeHolderView);
-        } else {
-            warmupManager.clearViewHierarchy();
+                // Allow disk access for the content view and toolbar container setup.
+                // On certain android devices this setup sequence results in disk writes outside
+                // of our control, so we have to disable StrictMode to work. See
+                // https://crbug.com/639352.
+                try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+                    TraceEvent.begin("setContentView(R.layout.main)");
+                    setContentView(R.layout.main);
+                    TraceEvent.end("setContentView(R.layout.main)");
+                    if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
+                        ViewStub toolbarContainerStub =
+                                ((ViewStub) findViewById(R.id.control_container_stub));
 
-            // Allow disk access for the content view and toolbar container setup.
-            // On certain android devices this setup sequence results in disk writes outside
-            // of our control, so we have to disable StrictMode to work. See crbug.com/639352.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-            try {
-                setContentView(R.layout.main);
-                if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
-                    ViewStub toolbarContainerStub =
-                            ((ViewStub) findViewById(R.id.control_container_stub));
+                        toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
+                        TraceEvent.begin("toolbarContainerStub.inflate");
+                        toolbarContainerStub.inflate();
+                        TraceEvent.end("toolbarContainerStub.inflate");
+                    }
 
-                    toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
-                    toolbarContainerStub.inflate();
+                    // It cannot be assumed that the result of toolbarContainerStub.inflate() will
+                    // be
+
+                    // the control container since it may be wrapped in another view.
+                    ControlContainer controlContainer =
+                            (ControlContainer) findViewById(R.id.control_container);
+
+                    // Inflate the correct toolbar layout for the device.
+                    int toolbarLayoutId = getToolbarLayoutId();
+                    if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
+                        controlContainer.initWithToolbar(toolbarLayoutId);
+                    }
                 }
-
-                // It cannot be assumed that the result of toolbarContainerStub.inflate() will be
-                // the control container since it may be wrapped in another view.
-                ControlContainer controlContainer =
-                        (ControlContainer) findViewById(R.id.control_container);
-
-                // Inflate the correct toolbar layout for the device.
-                int toolbarLayoutId = getToolbarLayoutId();
-                if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
-                    controlContainer.initWithToolbar(toolbarLayoutId);
-                }
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
             }
+            mInflateInitialLayoutDurationMs = SystemClock.elapsedRealtime() - begin;
+            // Set the status bar color to black by default. This is an optimization for
+            // Chrome not to draw under status and navigation bars when we use the default
+            // black status bar
+            setStatusBarColor(null, Color.BLACK);
+
+            ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
+            mCompositorViewHolder =
+                    (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
+            mCompositorViewHolder.setRootView(rootView);
+
+            // Setting fitsSystemWindows to false ensures that the root view doesn't consume the
+            // insets.
+            rootView.setFitsSystemWindows(false);
+
+            // Add a custom view right after the root view that stores the insets to access later.
+            // ContentViewCore needs the insets to determine the portion of the screen obscured by
+            // non-content displaying things such as the OSK.
+            mInsetObserverView = InsetObserverView.create(this);
+            rootView.addView(mInsetObserverView, 0);
         }
-        TraceEvent.end("onCreate->setContentView()");
-        mInflateInitialLayoutDurationMs = SystemClock.elapsedRealtime() - begin;
-
-        // Set the status bar color to black by default. This is an optimization for
-        // Chrome not to draw under status and navigation bars when we use the default
-        // black status bar
-        setStatusBarColor(null, Color.BLACK);
-
-        ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
-        mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
-        mCompositorViewHolder.setRootView(rootView);
-
-        // Setting fitsSystemWindows to false ensures that the root view doesn't consume the insets.
-        rootView.setFitsSystemWindows(false);
-
-        // Add a custom view right after the root view that stores the insets to access later.
-        // ContentViewCore needs the insets to determine the portion of the screen obscured by
-        // non-content displaying things such as the OSK.
-        mInsetObserverView = InsetObserverView.create(this);
-        rootView.addView(mInsetObserverView, 0);
     }
 
     @Override
@@ -514,41 +524,43 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * {@link Toolbar}. Extending classes can override this call to avoid creating the toolbar.
      */
     protected void initializeToolbar() {
-        final View controlContainer = findViewById(R.id.control_container);
-        assert controlContainer != null;
-        ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
-        mAppMenuPropertiesDelegate = createAppMenuPropertiesDelegate();
-        mAppMenuHandler = sAppMenuHandlerFactory.get(this, mAppMenuPropertiesDelegate,
-                getAppMenuLayoutId());
-        Callback<Boolean> urlFocusChangedCallback = hasFocus -> onOmniboxFocusChanged(hasFocus);
-        mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
-                mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
-                urlFocusChangedCallback);
-        mFindToolbarManager = new FindToolbarManager(
-                this, mToolbarManager.getActionModeController().getActionModeCallback());
-        mAppMenuHandler.addObserver(new AppMenuObserver() {
-            @Override
-            public void onMenuVisibilityChanged(boolean isVisible) {
-                if (isVisible && !isInOverviewMode()) {
-                    // The app menu badge should be removed the first time the menu is opened.
-                    if (mToolbarManager.getToolbar().isShowingAppMenuUpdateBadge()) {
-                        mToolbarManager.getToolbar().removeAppMenuUpdateBadge(true);
-                        mCompositorViewHolder.requestRender();
+        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.initializeToolbar")) {
+            final View controlContainer = findViewById(R.id.control_container);
+            assert controlContainer != null;
+            ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
+            mAppMenuPropertiesDelegate = createAppMenuPropertiesDelegate();
+            mAppMenuHandler = sAppMenuHandlerFactory.get(
+                    this, mAppMenuPropertiesDelegate, getAppMenuLayoutId());
+            Callback<Boolean> urlFocusChangedCallback = hasFocus -> onOmniboxFocusChanged(hasFocus);
+            mToolbarManager = new ToolbarManager(this, toolbarContainer, mAppMenuHandler,
+                    mAppMenuPropertiesDelegate, getCompositorViewHolder().getInvalidator(),
+                    urlFocusChangedCallback);
+            mFindToolbarManager = new FindToolbarManager(
+                    this, mToolbarManager.getActionModeController().getActionModeCallback());
+            mAppMenuHandler.addObserver(new AppMenuObserver() {
+                @Override
+                public void onMenuVisibilityChanged(boolean isVisible) {
+                    if (isVisible && !isInOverviewMode()) {
+                        // The app menu badge should be removed the first time the menu is opened.
+                        if (mToolbarManager.getToolbar().isShowingAppMenuUpdateBadge()) {
+                            mToolbarManager.getToolbar().removeAppMenuUpdateBadge(true);
+                            mCompositorViewHolder.requestRender();
+                        }
+                    }
+                    if (!isVisible) {
+                        mAppMenuPropertiesDelegate.onMenuDismissed();
+                        MenuItem updateMenuItem = mAppMenuHandler.getAppMenu().getMenu().findItem(
+                                R.id.update_menu_id);
+                        if (updateMenuItem != null && updateMenuItem.isVisible()) {
+                            UpdateMenuItemHelper.getInstance().onMenuDismissed();
+                        }
                     }
                 }
-                if (!isVisible) {
-                    mAppMenuPropertiesDelegate.onMenuDismissed();
-                    MenuItem updateMenuItem = mAppMenuHandler.getAppMenu().getMenu().findItem(
-                            R.id.update_menu_id);
-                    if (updateMenuItem != null && updateMenuItem.isVisible()) {
-                        UpdateMenuItemHelper.getInstance().onMenuDismissed();
-                    }
-                }
-            }
 
-            @Override
-            public void onMenuHighlightChanged(boolean highlighting) {}
-        });
+                @Override
+                public void onMenuHighlightChanged(boolean highlighting) {}
+            });
+        }
     }
 
     /**
