@@ -4461,6 +4461,18 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
   return 1;
 }
 
+// Function to decide if we can skip the global motion parameter computation
+// for a particular ref frame
+static INLINE int skip_gm_frame(AV1_COMMON *const cm, int ref_frame) {
+  if ((ref_frame == LAST3_FRAME || ref_frame == LAST2_FRAME) &&
+      cm->global_motion[GOLDEN_FRAME].wmtype != IDENTITY) {
+    return get_relative_dist(
+               cm, cm->cur_frame->ref_frame_offset[ref_frame - LAST_FRAME],
+               cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <= 0;
+  }
+  return 0;
+}
+
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -4652,7 +4664,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     };
     int num_refs_using_gm = 0;
 
-    for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+    for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
       ref_buf[frame] = get_ref_frame_buffer(cpi, frame);
       int pframe;
       cm->global_motion[frame] = default_warp_params;
@@ -4660,16 +4672,17 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           cm->prev_frame ? &cm->prev_frame->global_motion[frame]
                          : &default_warp_params;
       // check for duplicate buffer
-      for (pframe = LAST_FRAME; pframe < frame; ++pframe) {
+      for (pframe = ALTREF_FRAME; pframe > frame; --pframe) {
         if (ref_buf[frame] == ref_buf[pframe]) break;
       }
-      if (pframe < frame) {
+      if (pframe > frame) {
         memcpy(&cm->global_motion[frame], &cm->global_motion[pframe],
                sizeof(WarpedMotionParams));
       } else if (ref_buf[frame] &&
                  ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
                  ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
-                 do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame)) {
+                 do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
+                 !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
         TransformationType model;
         const int64_t ref_frame_error =
             av1_frame_error(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,

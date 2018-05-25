@@ -422,6 +422,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->model_based_prune_tx_search_level = 0;
   sf->model_based_post_interp_filter_breakout = 0;
   sf->reduce_inter_modes = 0;
+  sf->selective_ref_gm = 1;
   sf->adaptive_motion_search = 0;
   sf->adaptive_pred_interp_filter = 0;
   sf->adaptive_mode_search = 0;
