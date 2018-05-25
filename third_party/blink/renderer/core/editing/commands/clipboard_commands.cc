@@ -223,6 +223,20 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
   if (!frame.GetEditor().CanCopy())
     return true;
 
+  Document* const document = frame.GetDocument();
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // A 'copy' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (HTMLImageElement* image_element =
+          ImageElementFromImageDocument(document)) {
+    WriteImageNodeToClipboard(*image_element, document->title());
+    return true;
+  }
+
   // Since copy is a read-only operation it succeeds anytime a selection
   // is *visible*. In contrast to cut or paste, the selection does not
   // need to be focused - being visible is enough.
@@ -230,22 +244,10 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
       frame.Selection().IsHidden())
     return true;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'copy' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
   if (EnclosingTextControl(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start())) {
     SystemClipboard::GetInstance().WritePlainText(
         frame.SelectedTextForClipboard(), GetSmartReplaceOption(frame));
-    return true;
-  }
-  const Document* const document = frame.GetDocument();
-  if (HTMLImageElement* image_element =
-          ImageElementFromImageDocument(document)) {
-    WriteImageNodeToClipboard(*image_element, document->title());
     return true;
   }
   WriteSelectionToClipboard(frame);

@@ -11005,6 +11005,34 @@ TEST_F(WebFrameTest, ImageDocumentLoadFinishTime) {
   EXPECT_EQ(loader->GetTiming().ResponseEnd(), resource->LoadFinishTime());
 }
 
+TEST_F(WebFrameTest, CopyImageDocument) {
+  // After loading an image document, we should be able to copy it directly.
+
+  RegisterMockedHttpURLLoadWithMimeType("white-1x1.png", "image/png");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "white-1x1.png");
+  WebViewImpl* web_view = web_view_helper.GetWebView();
+  WebLocalFrameImpl* web_frame = web_view->MainFrameImpl();
+  Document* document = web_frame->GetFrame()->GetDocument();
+
+  ASSERT_TRUE(document);
+  EXPECT_TRUE(document->IsImageDocument());
+  EXPECT_TRUE(SystemClipboard::GetInstance().ReadAvailableTypes().IsEmpty());
+
+  bool result = web_frame->ExecuteCommand("Copy");
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(result);
+
+  Vector<String> types = SystemClipboard::GetInstance().ReadAvailableTypes();
+  EXPECT_EQ(2u, types.size());
+  EXPECT_EQ("text/html", types[0]);
+  EXPECT_EQ("image/png", types[1]);
+
+  // Clear clipboard data
+  SystemClipboard::GetInstance().WritePlainText("");
+}
+
 class CallbackOrderingWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
