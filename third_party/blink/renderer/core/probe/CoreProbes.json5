@@ -87,7 +87,10 @@
     },
     InspectorEmulationAgent: {
       probes: [
+        "applyAcceptLanguageOverride",
+        "applyUserAgentOverride",
         "frameStartedLoading",
+        "willSendRequest",
       ]
     },
     InspectorLayerTreeAgent: {
@@ -103,7 +106,6 @@
     },
     InspectorNetworkAgent: {
       probes: [
-        "applyUserAgentOverride",
         "didBlockRequest",
         "didChangeResourcePriority",
         "didCloseWebSocket",

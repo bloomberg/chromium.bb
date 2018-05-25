@@ -335,6 +335,10 @@ void RenderFrameDevToolsAgentHost::ApplyOverrides(
     network->ApplyOverrides(&headers, &begin_params->skip_service_worker,
                             &disable_cache);
   }
+
+  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host))
+    emulation->ApplyOverrides(&headers);
+
   if (disable_cache) {
     begin_params->load_flags &=
         ~(net::LOAD_VALIDATE_CACHE | net::LOAD_SKIP_CACHE_VALIDATION |

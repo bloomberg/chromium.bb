@@ -153,7 +153,6 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   void WillDestroyResource(Resource*);
 
-  void ApplyUserAgentOverride(String* user_agent);
   void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
   void FrameClearedScheduledNavigation(LocalFrame*);
   void FrameScheduledClientNavigation(LocalFrame*);
@@ -188,7 +187,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                             Maybe<int> resource_buffer_size,
                             Maybe<int> max_post_data_size) override;
   protocol::Response disable() override;
-  protocol::Response setUserAgentOverride(const String&) override;
   protocol::Response setExtraHTTPHeaders(
       std::unique_ptr<protocol::Network::Headers>) override;
   void getResponseBody(const String& request_id,

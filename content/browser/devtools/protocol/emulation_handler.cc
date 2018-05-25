@@ -8,6 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -15,6 +16,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/url_constants.h"
 #include "device/geolocation/public/cpp/geoposition.h"
+#include "net/http/http_util.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -64,6 +66,13 @@ EmulationHandler::EmulationHandler()
 EmulationHandler::~EmulationHandler() {
 }
 
+// static
+std::vector<EmulationHandler*> EmulationHandler::ForAgentHost(
+    DevToolsAgentHostImpl* host) {
+  return DevToolsSession::HandlersForAgentHost<EmulationHandler>(
+      host, Emulation::Metainfo::domainName);
+}
+
 void EmulationHandler::SetRenderer(int process_host_id,
                                    RenderFrameHostImpl* frame_host) {
   if (host_ == frame_host)
@@ -84,6 +93,7 @@ Response EmulationHandler::Disable() {
     touch_emulation_enabled_ = false;
     UpdateTouchEventEmulationState();
   }
+  user_agent_ = std::string();
   device_emulation_enabled_ = false;
   UpdateDeviceEmulationState();
   return Response::OK();
@@ -304,6 +314,23 @@ Response EmulationHandler::SetVisibleSize(int width, int height) {
   return Response::OK();
 }
 
+Response EmulationHandler::SetUserAgentOverride(
+    const std::string& user_agent,
+    Maybe<std::string> accept_language,
+    Maybe<std::string> platform) {
+  if (!user_agent.empty() && !net::HttpUtil::IsValidHeaderValue(user_agent))
+    return Response::InvalidParams("Invalid characters found in userAgent");
+  std::string accept_lang = accept_language.fromMaybe(std::string());
+  if (!accept_lang.empty() && !net::HttpUtil::IsValidHeaderValue(accept_lang)) {
+    return Response::InvalidParams(
+        "Invalid characters found in acceptLanguage");
+  }
+
+  user_agent_ = user_agent;
+  accept_language_ = accept_lang;
+  return Response::FallThrough();
+}
+
 blink::WebDeviceEmulationParams EmulationHandler::GetDeviceEmulationParams() {
   return device_emulation_params_;
 }
@@ -359,6 +386,15 @@ void EmulationHandler::UpdateDeviceEmulationState() {
   } else {
     host_->GetRenderWidgetHost()->Send(new ViewMsg_DisableDeviceEmulation(
         host_->GetRenderWidgetHost()->GetRoutingID()));
+  }
+}
+
+void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {
+  if (!user_agent_.empty())
+    headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);
+  if (!accept_language_.empty()) {
+    headers->SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
+                       accept_language_);
   }
 }
 

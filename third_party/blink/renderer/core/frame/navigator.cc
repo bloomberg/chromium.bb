@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 
@@ -90,6 +91,8 @@ Vector<String> Navigator::languages() {
     accept_languages =
         GetFrame()->GetPage()->GetChromeClient().AcceptLanguages();
   }
+
+  probe::applyAcceptLanguageOverride(GetFrame(), &accept_languages);
 
   Vector<String> languages;
   accept_languages.Split(',', languages);

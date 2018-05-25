@@ -102,7 +102,6 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
       std::unique_ptr<SetCookiesCallback> callback) override;
 
-  Response SetUserAgentOverride(const std::string& user_agent) override;
   Response SetExtraHTTPHeaders(
       std::unique_ptr<Network::Headers> headers) override;
   Response CanEmulateNetworkConditions(bool* result) override;
@@ -207,7 +206,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   StoragePartition* storage_partition_;
   RenderFrameHostImpl* host_;
   bool enabled_;
-  std::string user_agent_;
   std::vector<std::pair<std::string, std::string>> extra_headers_;
   std::unique_ptr<InterceptionHandle> interception_handle_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> url_loader_interceptor_;

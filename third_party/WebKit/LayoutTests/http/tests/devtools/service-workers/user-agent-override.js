@@ -48,32 +48,24 @@
   TestRunner.addResult('Enable emulation and set User-Agent override');
   SDK.multitargetNetworkManager.setUserAgentOverride(userAgentString);
 
-  ApplicationTestRunner.registerServiceWorker(scriptURL, scope)
-      .then(waitForTarget)
-      .then(ApplicationTestRunner.postToServiceWorker.bind(ApplicationTestRunner, scope, 'message'))
-      .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
-      .then(function(msg) {
-        TestRunner.addResult('Overriden user agent: ' + msg.messageText);
-        TestRunner.addResult('Disable emulation');
-        SDK.multitargetNetworkManager.setUserAgentOverride('');
-        return ApplicationTestRunner.unregisterServiceWorker(scope);
-      })
-      .then(function() {
-        return ApplicationTestRunner.registerServiceWorker(scriptURL + '?2', scope);
-      })
-      .then(waitForTarget)
-      .then(ApplicationTestRunner.postToServiceWorker.bind(ApplicationTestRunner, scope, 'message'))
-      .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
-      .then(function(msg) {
-        TestRunner.addResult('User agent without override is correct: ' + (msg.messageText != userAgentString));
-        return ApplicationTestRunner.unregisterServiceWorker(scope);
-      })
-      .then(function() {
-        TestRunner.addResult('Test complete');
-        TestRunner.completeTest();
-      })
-      .catch(function(err) {
-        console.log(err);
-        TestRunner.completeTest();
-      });
+  await ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
+  await waitForTarget();
+  await ApplicationTestRunner.postToServiceWorker(scope, 'message');
+  let msg = await waitForConsoleMessage(/HTTP_USER_AGENT/);
+
+  TestRunner.addResult('Overriden user agent: ' + msg.messageText);
+  TestRunner.addResult('Disable emulation');
+  SDK.multitargetNetworkManager.setUserAgentOverride('');
+
+  await ApplicationTestRunner.unregisterServiceWorker(scope);
+  await ApplicationTestRunner.registerServiceWorker(scriptURL + '?2', scope);
+  await waitForTarget();
+  await ApplicationTestRunner.postToServiceWorker(scope, 'message');
+  msg = await waitForConsoleMessage(/HTTP_USER_AGENT/);
+
+  TestRunner.addResult('User agent without override is correct: ' + (msg.messageText != userAgentString));
+  ApplicationTestRunner.unregisterServiceWorker(scope);
+
+  TestRunner.addResult('Test complete');
+  TestRunner.completeTest();
 })();
