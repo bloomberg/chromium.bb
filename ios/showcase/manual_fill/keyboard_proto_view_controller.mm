@@ -42,7 +42,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 @interface KeyboardProtoViewController ()
 
 // The last recorded active field identifier, used to interact with the web
-// view (i.e. add CSS focus to the element).
+// view (i.e. overwrite the input of the field).
 @property(nonatomic, strong) NSString* activeFieldID;
 
 @end
@@ -56,9 +56,8 @@ UIView* GetFirstResponderSubview(UIView* view) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  WKWebViewConfiguration* configuration = [[WKWebViewConfiguration alloc] init];
   _webView = [[WKWebView alloc] initWithFrame:self.view.bounds
-                                configuration:configuration];
+                                configuration:[self webViewConfiguration]];
   [self.view addSubview:self.webView];
   self.webView.translatesAutoresizingMaskIntoConstraints = NO;
   manualfill::AddSameConstraints(self.webView, self.view);
@@ -67,8 +66,8 @@ UIView* GetFirstResponderSubview(UIView* view) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  NSURL* sigupURL = [NSURL URLWithString:@"https://appleid.apple.com/account"];
-  NSURLRequest* request = [NSURLRequest requestWithURL:sigupURL];
+  NSURL* signupURL = [NSURL URLWithString:@"https://appleid.apple.com/account"];
+  NSURLRequest* request = [NSURLRequest requestWithURL:signupURL];
   [self.webView loadRequest:request];
 }
 
@@ -82,7 +81,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 - (void)updateActiveFieldID {
   __weak KeyboardProtoViewController* weakSelf = self;
-  NSString* javaScriptQuery = @"document.activeElement.id";
+  NSString* javaScriptQuery = @"__gCrWeb.manualfill.activeElementId()";
   [self.webView evaluateJavaScript:javaScriptQuery
                  completionHandler:^(id result, NSError* error) {
                    NSLog(@"result: %@", [result description]);
@@ -92,9 +91,11 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 
 - (void)fillLastSelectedFieldWithString:(NSString*)string {
-  if ([self.lastFirstResponder conformsToProtocol:@protocol(UIKeyInput)]) {
-    [(id<UIKeyInput>)self.lastFirstResponder insertText:string];
-  }
+  NSString* javaScriptQuery =
+      [NSString stringWithFormat:
+                    @"__gCrWeb.manualfill.setValueForElementId(\"%@\", \"%@\")",
+                    string, self.activeFieldID];
+  [self.webView evaluateJavaScript:javaScriptQuery completionHandler:nil];
 }
 
 - (void)callFocusOnLastActiveField {
@@ -102,6 +103,59 @@ UIView* GetFirstResponderSubview(UIView* view) {
       [NSString stringWithFormat:@"document.getElementById(\"%@\").focus()",
                                  self.activeFieldID];
   [self.webView evaluateJavaScript:javaScriptQuery completionHandler:nil];
+}
+
+#pragma mark JS Injection
+
+// Returns an NSString with the contents of the files passed. It is assumed the
+// files are of type ".js" and they are in the main bundle.
+- (NSString*)joinedJSFilesWithFilenames:(NSArray<NSString*>*)filenames {
+  NSMutableString* fullScript = [NSMutableString string];
+  for (NSString* filename in filenames) {
+    NSString* path =
+        [[NSBundle mainBundle] pathForResource:filename ofType:@"js"];
+    NSData* scriptData = [[NSData alloc] initWithContentsOfFile:path];
+    NSString* scriptString =
+        [[NSString alloc] initWithData:scriptData
+                              encoding:NSUTF8StringEncoding];
+    [fullScript appendFormat:@"%@\n", scriptString];
+  }
+  return fullScript;
+}
+
+- (NSString*)earlyJSStringMainFrame {
+  NSArray* filenames = @[
+    @"main_frame_web_bundle", @"chrome_bundle_main_frame",
+    @"manualfill_controller"
+  ];
+  return [self joinedJSFilesWithFilenames:filenames];
+}
+
+- (NSString*)earlyJSStringAllFrames {
+  NSArray* filenames = @[
+    @"all_frames_web_bundle",
+    @"chrome_bundle_all_frames",
+  ];
+  return [self joinedJSFilesWithFilenames:filenames];
+}
+
+// Returns a WKWebViewConfiguration with early scripts for the main frame and
+// for all frames.
+- (WKWebViewConfiguration*)webViewConfiguration {
+  WKWebViewConfiguration* configuration = [[WKWebViewConfiguration alloc] init];
+  WKUserScript* userScriptAllFrames = [[WKUserScript alloc]
+        initWithSource:[self earlyJSStringAllFrames]
+         injectionTime:WKUserScriptInjectionTimeAtDocumentStart
+      forMainFrameOnly:NO];
+  [configuration.userContentController addUserScript:userScriptAllFrames];
+
+  WKUserScript* userScriptMainFrame = [[WKUserScript alloc]
+        initWithSource:[self earlyJSStringMainFrame]
+         injectionTime:WKUserScriptInjectionTimeAtDocumentStart
+      forMainFrameOnly:YES];
+  [configuration.userContentController addUserScript:userScriptMainFrame];
+
+  return configuration;
 }
 
 @end

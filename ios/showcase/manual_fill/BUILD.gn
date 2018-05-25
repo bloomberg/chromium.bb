@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
+
 source_set("manual_fill") {
   sources = [
     "ipad_keyboard_proto_view_controller.h",
@@ -18,7 +20,10 @@ source_set("manual_fill") {
     "password_picker_view_controller.mm",
   ]
   deps = [
+    ":injected_js",
     "//base",
+    "//ios/chrome/browser/web:chrome_bundle_all_frames",
+    "//ios/chrome/browser/web:chrome_bundle_main_frame",
     "//ios/showcase/common",
     "//third_party/material_design_icons:ic_account_circle",
     "//third_party/material_design_icons:ic_credit_card",
@@ -31,4 +36,15 @@ source_set("manual_fill") {
     "WebKit.framework",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+js_compile_checked("injected_js") {
+  visibility = [ ":manual_fill" ]
+  sources = [
+    "resources/manualfill_controller.js",
+  ]
+  js_modules = [
+    "//components/autofill/ios/fill/resources/form.js",
+    "//components/autofill/ios/fill/resources/fill.js",
+  ]
 }
