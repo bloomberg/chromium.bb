@@ -20,8 +20,6 @@ namespace ash {
 
 namespace {
 
-constexpr float kDotsScale = 1.0f;
-
 int64_t TimeTicksToMs(const base::TimeTicks& timestamp) {
   return (timestamp - base::TimeTicks()).InMilliseconds();
 }
@@ -41,8 +39,23 @@ LogoView::~LogoView() {
   state_animator_.StopAnimator();
 }
 
-void LogoView::SwitchStateTo(StateModel::State state, bool animate) {
-  state_animator_.SwitchStateTo(state, !animate);
+void LogoView::SetState(BaseLogoView::State state, bool animate) {
+  StateModel::State animator_state;
+  switch (state) {
+    case BaseLogoView::State::kUndefined:
+      animator_state = StateModel::State::kUndefined;
+      break;
+    case BaseLogoView::State::kMic:
+      animator_state = StateModel::State::kMic;
+      break;
+    case BaseLogoView::State::kMicFab:
+      animator_state = StateModel::State::kMicFab;
+      break;
+    case BaseLogoView::State::kListening:
+      animator_state = StateModel::State::kListening;
+      break;
+  }
+  state_animator_.SwitchStateTo(animator_state, !animate);
 }
 
 int64_t LogoView::StartTimer() {
@@ -106,7 +119,7 @@ void LogoView::DrawMicPart(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   const float progress = dot->GetMicMorph();
   mic_part_shape_.Reset();
   mic_part_shape_.ToMicPart(progress, dot->dot_color());
-  mic_part_shape_.Transform(x, y, kDotsScale);
+  mic_part_shape_.Transform(x, y, dots_scale_);
   DrawShape(canvas, &mic_part_shape_, dot->color());
 }
 
@@ -125,7 +138,7 @@ void LogoView::DrawShape(gfx::Canvas* canvas, Shape* shape, SkColor color) {
 }
 
 void LogoView::DrawLine(gfx::Canvas* canvas, Dot* dot, float x, float y) {
-  const float stroke_width = dot->GetSize() * kDotsScale;
+  const float stroke_width = dot->GetSize() * dots_scale_;
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(dot->color());
@@ -134,9 +147,9 @@ void LogoView::DrawLine(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   paint_flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
 
   const float line_length = dot->GetLineLength();
-  const float line_x = x * kDotsScale;
-  const float line_top_y = (y - line_length) * kDotsScale;
-  const float line_bottom_y = (y + line_length) * kDotsScale;
+  const float line_x = x * dots_scale_;
+  const float line_top_y = (y - line_length) * dots_scale_;
+  const float line_bottom_y = (y + line_length) * dots_scale_;
   canvas->DrawLine(gfx::PointF(line_x, line_top_y),
                    gfx::PointF(line_x, line_bottom_y), paint_flags);
 }
@@ -147,8 +160,8 @@ void LogoView::DrawCircle(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(dot->color());
   paint_flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(x * kDotsScale, y * kDotsScale),
-                     radius * kDotsScale, paint_flags);
+  canvas->DrawCircle(gfx::PointF(x * dots_scale_, y * dots_scale_),
+                     radius * dots_scale_, paint_flags);
 }
 
 void LogoView::OnPaint(gfx::Canvas* canvas) {
@@ -162,6 +175,20 @@ void LogoView::OnPaint(gfx::Canvas* canvas) {
   canvas->Translate(gfx::Vector2d(offset_x, offset_y));
   DrawDots(canvas);
   canvas->Restore();
+}
+
+void LogoView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  gfx::Rect content_bounds(GetContentsBounds());
+  if (content_bounds.IsEmpty())
+    return;
+
+  // Sets a scale such that an object of the specified width and height will
+  // fill the view while keeping the aspect ratio if drawn at that scale.
+  constexpr float kDefaultWidth = 28.0f;
+  constexpr float kDefaultHeight = 25.0f;
+  const float x_scale = content_bounds.width() / kDefaultWidth;
+  const float y_scale = content_bounds.height() / kDefaultHeight;
+  dots_scale_ = std::fmin(x_scale, y_scale);
 }
 
 void LogoView::VisibilityChanged(views::View* starting_from, bool is_visible) {

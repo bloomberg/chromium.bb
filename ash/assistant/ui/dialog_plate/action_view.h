@@ -17,7 +17,7 @@ namespace ash {
 
 class ActionView;
 class AssistantController;
-class StubLogoView;
+class BaseLogoView;
 
 // Listener which receives notification of action view events.
 class ActionViewListener {
@@ -49,13 +49,16 @@ class ActionView : public views::View,
 
  private:
   void InitLayout();
-  void UpdateState();
+
+  // If |animate| is false, there is no exit animation of current state and
+  // enter animation of the next state of the LogoView.
+  void UpdateState(bool animate);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
   ActionViewListener* listener_;
 
   views::ImageView* keyboard_action_view_;  // Owned by view hierarchy.
-  StubLogoView* voice_action_view_;         // Owned by view hierarchy.
+  BaseLogoView* voice_action_view_;         // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(ActionView);
 };

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/ui/dialog_plate/stub_logo_view.h"
+#include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -28,9 +28,9 @@ ActionView::ActionView(AssistantController* assistant_controller,
     : assistant_controller_(assistant_controller),
       listener_(listener),
       keyboard_action_view_(new views::ImageView()),
-      voice_action_view_(new StubLogoView()) {
+      voice_action_view_(BaseLogoView::Create()) {
   InitLayout();
-  UpdateState();
+  UpdateState(/*animate=*/false);
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // ActionView belongs so is guaranteed to outlive it.
@@ -58,7 +58,6 @@ void ActionView::InitLayout() {
   AddChildView(keyboard_action_view_);
 
   // Voice action.
-  voice_action_view_->SetImageSize(size);
   voice_action_view_->SetPreferredSize(size);
   AddChildView(voice_action_view_);
 }
@@ -80,14 +79,14 @@ bool ActionView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void ActionView::OnInputModalityChanged(InputModality input_modality) {
-  UpdateState();
+  UpdateState(/*animate=*/false);
 }
 
 void ActionView::OnMicStateChanged(MicState mic_state) {
-  UpdateState();
+  UpdateState(/*animate=*/true);
 }
 
-void ActionView::UpdateState() {
+void ActionView::UpdateState(bool animate) {
   const AssistantInteractionModel* interaction_model =
       assistant_controller_->interaction_model();
 
@@ -103,14 +102,18 @@ void ActionView::UpdateState() {
     return;
   }
 
+  BaseLogoView::State mic_state;
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
-      voice_action_view_->SetState(StubLogoView::State::kMic);
+      // Do not animate when the first time showing the LogoView in kMic state.
+      // Only animate when changing from kListening or kUserSpeaks states.
+      mic_state = BaseLogoView::State::kMicFab;
       break;
     case MicState::kOpen:
-      voice_action_view_->SetState(StubLogoView::State::kListening);
+      mic_state = BaseLogoView::State::kListening;
       break;
   }
+  voice_action_view_->SetState(mic_state, animate);
 
   keyboard_action_view_->SetVisible(false);
   voice_action_view_->SetVisible(true);

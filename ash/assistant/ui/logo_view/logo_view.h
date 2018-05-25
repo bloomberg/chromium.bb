@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/assistant/ui/logo_view/shape/mic_part_shape.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -17,7 +18,6 @@
 #include "chromeos/assistant/internal/logo_view/state_model.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_animation_observer.h"
-#include "ui/views/view.h"
 
 namespace chromeos {
 namespace assistant {
@@ -43,7 +43,7 @@ class Shape;
 
 // Displays the GLIF (Google Logo and Identity Family). It displays the dots and
 // the google logo. It does not display the Super G.
-class LogoView : public views::View,
+class LogoView : public BaseLogoView,
                  public chromeos::assistant::StateAnimatorTimerDelegate,
                  public ui::CompositorAnimationObserver {
  public:
@@ -55,13 +55,12 @@ class LogoView : public views::View,
   LogoView();
   ~LogoView() override;
 
+  // BaseLogoView:
+  void SetState(State state, bool animate) override;
+
   // chromeos::assistant::StateAnimatorTimerDelegate:
   int64_t StartTimer() override;
   void StopTimer() override;
-
-  // Switch to different LogoView state. If |animate| is false, no
-  // exit animation of current state and enter animation of the next state.
-  void SwitchStateTo(StateModel::State state, bool animate);
 
  private:
   // ui::CompositorAnimationObserver:
@@ -80,6 +79,7 @@ class LogoView : public views::View,
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   Logo logo_;
@@ -91,6 +91,8 @@ class LogoView : public views::View,
   StateAnimator state_animator_;
 
   ui::Compositor* animating_compositor_ = nullptr;
+
+  float dots_scale_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(LogoView);
 };
