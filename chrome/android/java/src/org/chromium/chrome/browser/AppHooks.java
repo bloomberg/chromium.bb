@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -271,9 +272,7 @@ public abstract class AppHooks {
      * @param intent The {@link Intent} to fire to start the service.
      */
     public void startForegroundService(Intent intent) {
-        // TODO(crbug.com/758280): Remove this whole method once the downstream override is gone and
-        // all overrides have been ported over.
-        ContextUtils.startForegroundService(ContextUtils.getApplicationContext(), intent);
+        ContextCompat.startForegroundService(ContextUtils.getApplicationContext(), intent);
     }
 
     /**
