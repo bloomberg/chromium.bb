@@ -587,7 +587,6 @@ crbug.com/591099 fast/block/margin-collapse/webkit-margin-collapse-container.htm
 crbug.com/591099 fast/block/margin-collapse/webkit-margin-collapse-separate-position.html [ Failure ]
 crbug.com/591099 fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Failure ]
 crbug.com/591099 fast/block/over-constrained-auto-margin.html [ Failure ]
-crbug.com/591099 fast/block/positioning/abspos-auto-left-and-width-change-parent-margin-left.html [ Crash ]
 crbug.com/591099 fast/block/positioning/child-of-fixed-pos-after-movement.html [ Crash ]
 crbug.com/591099 fast/block/positioning/complex-positioned-movement-inline-ancestor.html [ Failure ]
 crbug.com/591099 fast/block/positioning/fixed-in-abs-height-change.html [ Crash ]

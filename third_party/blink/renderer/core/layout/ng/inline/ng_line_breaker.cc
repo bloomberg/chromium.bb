@@ -380,7 +380,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   scoped_refptr<ShapeResult> shape_result =
       breaker.ShapeLine(item_result->start_offset, available_width,
                         offset_ == line_info->StartOffset(), &result);
-  DCHECK_GT(shape_result->NumCharacters(), 0u);
+  DCHECK_EQ(shape_result->NumCharacters(),
+            result.break_offset - item_result->start_offset);
   if (result.is_hyphenated) {
     AppendHyphen(item, line_info);
     // TODO(kojii): Implement when adding a hyphen caused overflow.
