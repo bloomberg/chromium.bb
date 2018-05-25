@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/printing/print_preview_test.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -94,7 +95,14 @@ TEST_F(PrintPreviewDialogControllerUnitTest, GetOrCreatePreviewDialog) {
 // Tests multiple print preview dialogs exist in the same browser for different
 // initiators. If a preview dialog already exists for an initiator, that
 // initiator gets focused.
-TEST_F(PrintPreviewDialogControllerUnitTest, MultiplePreviewDialogs) {
+//
+// Flaky on Mac. https://crbug.com/845844
+#if defined(OS_MACOSX)
+#define MAYBE_MultiplePreviewDialogs DISABLED_MultiplePreviewDialogs
+#else
+#define MAYBE_MultiplePreviewDialogs MultiplePreviewDialogs
+#endif
+TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
   // Lets start with one window and two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
