@@ -31,6 +31,14 @@
 
     --cr-icon-ripple-margin: calc(var(--cr-icon-ripple-padding) * -1);
 
+    /* Common properties for WebUI pages. */
+    --cr-page-host: {
+      color: var(--primary-text-color);
+      line-height: 154%; /* Apply 20px default line-height to all text. */
+      overflow: hidden;  /* Prevent double scroll bar bugs. */
+      user-select: text;
+    };
+
     --cr-paper-icon-button-margin: {
       /* Shift button so ripple overlaps the end of the row. */
       -webkit-margin-end: var(--cr-icon-ripple-margin);
