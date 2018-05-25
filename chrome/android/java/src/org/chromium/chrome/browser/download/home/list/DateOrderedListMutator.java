@@ -29,7 +29,7 @@ import java.util.List;
  *   tracking the current position across both as iterating (see {@link #onItemsRemoved(Collection)}
  *   for an example since that is close to doing what we want - minus the contains() call).
  */
-public class DateOrderedListMutator implements OfflineItemFilterObserver {
+class DateOrderedListMutator implements OfflineItemFilterObserver {
     private static final int INVALID_INDEX = -1;
 
     private final DateOrderedListModel mModel;
