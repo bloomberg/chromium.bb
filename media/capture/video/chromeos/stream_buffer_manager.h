@@ -235,10 +235,10 @@ class CAPTURE_EXPORT StreamBufferManager final
     std::vector<std::unique_ptr<gfx::GpuMemoryBuffer>> buffers;
     // The free buffers of this stream.  The queue stores indices into the
     // |buffers| vector.
-    std::queue<size_t> free_buffers;
+    std::queue<uint64_t> free_buffers;
     // The buffers that are registered to the HAL, which can be used as the
     // output buffers for capture requests.
-    std::queue<size_t> registered_buffers;
+    std::queue<uint64_t> registered_buffers;
     // The pointers to the pending capture results that have unsubmitted result
     // buffers.
     std::map<uint32_t, CaptureResult*> capture_results_with_buffer;
