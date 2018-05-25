@@ -14,6 +14,7 @@
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_memory_metrics_reporter.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -60,6 +61,7 @@ ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
   }
 
   TabLoadTracker::Get()->StartTracking(web_contents);
+  TabMemoryMetricsReporter::Get()->StartReporting(TabLoadTracker::Get());
 }
 
 ResourceCoordinatorTabHelper::~ResourceCoordinatorTabHelper() = default;
