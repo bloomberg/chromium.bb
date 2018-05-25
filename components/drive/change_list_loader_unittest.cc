@@ -197,58 +197,6 @@ TEST_F(ChangeListLoaderTest, Load) {
             metadata_->GetResourceEntryByPath(file_path, &entry));
 }
 
-TEST_F(ChangeListLoaderTest, LoadWithTeamDriveEnabled) {
-  constexpr char kTeamDriveId1[] = "the1stTeamDriveId";
-  constexpr char kTeamDriveName1[] = "The First Team Drive";
-  constexpr char kTeamDriveId2[] = "the2ndTeamDriveId";
-  constexpr char kTeamDriveName2[] = "The Seconcd Team Drive";
-  constexpr char kTeamDriveId3[] = "the3rdTeamDriveId";
-  constexpr char kTeamDriveName3[] = "The Third Team Drive";
-  SetUpForTeamDrives();
-  EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  drive_service_->set_default_max_results(2);
-  drive_service_->AddTeamDrive(kTeamDriveId1, kTeamDriveName1);
-  drive_service_->AddTeamDrive(kTeamDriveId2, kTeamDriveName2);
-  drive_service_->AddTeamDrive(kTeamDriveId3, kTeamDriveName3);
-
-  // Start initial load.
-  TestChangeListLoaderObserver observer(change_list_loader_.get());
-
-  EXPECT_EQ(0, drive_service_->about_resource_load_count());
-
-  FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadIfNeeded(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  EXPECT_TRUE(change_list_loader_->IsRefreshing());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  std::string start_page_token;
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
-  EXPECT_FALSE(start_page_token.empty());
-  EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
-  EXPECT_EQ(1, drive_service_->file_list_load_count());
-  EXPECT_EQ(1, drive_service_->about_resource_load_count());
-  EXPECT_EQ(1, observer.initial_load_complete_count());
-  EXPECT_EQ(1, observer.load_from_server_complete_count());
-  EXPECT_TRUE(observer.changed_files().empty());
-
-  ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(
-                util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName1),
-                &entry));
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(
-                util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName2),
-                &entry));
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(
-                util::GetDriveTeamDrivesRootPath().AppendASCII(kTeamDriveName3),
-                &entry));
-}
-
 TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   // Prepare metadata.
   FileError error = FILE_ERROR_FAILED;
