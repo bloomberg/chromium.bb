@@ -27,6 +27,7 @@ class LocalSiteCharacteristicsNonRecordingDataStore
       const std::string& origin_str) override;
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
       const std::string& origin_str) override;
+  bool IsRecordingForTesting() override;
 
  private:
   // The data store to use to create the readers served by this data store. E.g.

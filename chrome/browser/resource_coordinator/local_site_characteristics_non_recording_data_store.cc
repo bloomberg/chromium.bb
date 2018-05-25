@@ -35,4 +35,8 @@ LocalSiteCharacteristicsNonRecordingDataStore::GetWriterForOrigin(
   return base::WrapUnique(writer);
 }
 
+bool LocalSiteCharacteristicsNonRecordingDataStore::IsRecordingForTesting() {
+  return false;
+}
+
 }  // namespace resource_coordinator
