@@ -112,7 +112,7 @@ NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
 void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
   // This may be called when we do not have a parent ui::Layer (e.g, when tab
   // capturing a background layer). Do not update the NSView in this case.
-  if (display_only_using_parent_ui_layer_)
+  if (display_using_parent_ui_layer_)
     return;
 
   // Set the background color for the root layer from the frame that just
@@ -146,6 +146,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
       weak_factory_(this) {
+  // All WebContents in MacViews browser will be directly embedded in an
+  // external ui::Compositor. Popup windows are the one exception.
+  display_using_parent_ui_layer_ = !features::IsViewsBrowserCocoa();
+
   // The NSView is on the other side of |ns_view_bridge_|.
   ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(this);
 
@@ -204,8 +208,8 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
-  if (parent_ui_layer)
-    display_only_using_parent_ui_layer_ = true;
+  if (!display_using_parent_ui_layer_)
+    return;
   if (browser_compositor_)
     browser_compositor_->SetParentUiLayer(parent_ui_layer);
 }
@@ -256,7 +260,9 @@ void RenderWidgetHostViewMac::InitAsChild(
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
-  // This path is used by the time/date picker.
+  // This path is used by the time/date picker. It does not have a parent
+  // WebContentsViewCocoa, and so its NSView must display its content.
+  display_using_parent_ui_layer_ = false;
   ns_view_bridge_->InitAsPopup(pos, popup_type_);
 }
 
@@ -939,7 +945,7 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
 
 bool RenderWidgetHostViewMac::ShouldContinueToPauseForFrame() {
   // Only pause for frames when drawing through a separate ui::Compositor.
-  if (display_only_using_parent_ui_layer_)
+  if (display_using_parent_ui_layer_)
     return false;
 
   return browser_compositor_->ShouldContinueToPauseForFrame();
@@ -995,7 +1001,7 @@ bool RenderWidgetHostViewMac::RequestRepaintForTesting() {
 }
 
 gfx::Vector2d RenderWidgetHostViewMac::GetOffsetFromRootSurface() {
-  if (display_only_using_parent_ui_layer_)
+  if (display_using_parent_ui_layer_)
     return view_bounds_in_window_dip_.OffsetFromOrigin();
   return gfx::Vector2d();
 }
@@ -1242,7 +1248,7 @@ base::Optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() const {
 void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
   // If displaying via a ui::Layer, leave the background color of the NSView
   // as transparent (it is to be used for input handling only).
-  if (display_only_using_parent_ui_layer_)
+  if (display_using_parent_ui_layer_)
     return;
 
   if (color == background_layer_color_)
