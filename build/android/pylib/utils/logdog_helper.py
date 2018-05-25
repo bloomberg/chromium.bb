@@ -19,18 +19,20 @@ from libs.logdog import bootstrap # pylint: disable=import-error
 @decorators.NoRaiseException(default_return_value='',
                              exception_message=('Ignore this exception. '
                                                 'crbug.com/675666'))
-def text(name, data):
+def text(name, data, content_type=None):
   """Uploads text to logdog.
 
   Args:
     name: Name of the logdog stream.
     data: String with data you want to upload.
+    content_type: The optional content type of the stream. If None, a
+      default content type will be chosen.
 
   Returns:
     Link to view uploaded text in logdog viewer.
   """
   logging.info('Writing text to logdog stream, %s', name)
-  with get_logdog_client().text(name) as stream:
+  with get_logdog_client().text(name, content_type=content_type) as stream:
     stream.write(data)
     return stream.get_viewer_url()
 
