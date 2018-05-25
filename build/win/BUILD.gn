@@ -21,6 +21,7 @@ if (is_win) {
     script = "//build/win/copy_cdb_to_output.py"
     inputs = [
       script,
+      "//build/vs_toolchain.py",
     ]
     outputs = [
       "$root_out_dir/cdb/cdb.exe",
