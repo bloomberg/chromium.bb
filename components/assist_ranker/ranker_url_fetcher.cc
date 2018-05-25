@@ -9,8 +9,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace assist_ranker {
 
@@ -28,7 +29,7 @@ RankerURLFetcher::~RankerURLFetcher() {}
 bool RankerURLFetcher::Request(
     const GURL& url,
     const RankerURLFetcher::Callback& callback,
-    net::URLRequestContextGetter* request_context_getter) {
+    network::mojom::URLLoaderFactory* url_loader_factory) {
   // This function is not supposed to be called if the previous operation is not
   // finished.
   if (state_ == REQUESTING) {
@@ -44,7 +45,7 @@ bool RankerURLFetcher::Request(
   url_ = url;
   callback_ = callback;
 
-  if (request_context_getter == nullptr)
+  if (url_loader_factory == nullptr)
     return false;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -73,38 +74,37 @@ bool RankerURLFetcher::Request(
           policy_exception_justification:
             "Not implemented, considered not necessary as no user data is sent."
         })");
-  // Create and initialize the URL fetcher.
-  fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
-                                     traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(),
-      data_use_measurement::DataUseUserData::MACHINE_INTELLIGENCE);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(request_context_getter);
-
-  // Set retry parameter for HTTP status code 5xx. This doesn't work against
-  // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
-  fetcher_->SetMaxRetriesOn5xx(max_retry_on_5xx_);
-  fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::MACHINE_INTELLIGENCE
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  if (max_retry_on_5xx_ > 0) {
+    simple_url_loader_->SetRetryOptions(max_retry_on_5xx_,
+                                        network::SimpleURLLoader::RETRY_ON_5XX);
+  }
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory,
+      base::BindOnce(&RankerURLFetcher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 
   return true;
 }
 
-void RankerURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(fetcher_.get() == source);
-
+void RankerURLFetcher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   std::string data;
-  if (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-      source->GetResponseCode() == net::HTTP_OK) {
+  if (response_body) {
     state_ = COMPLETED;
-    source->GetResponseAsString(&data);
+    data = std::move(*response_body);
   } else {
     state_ = FAILED;
   }
-
-  // Transfer URLFetcher's ownership before invoking a callback.
-  std::unique_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
+  simple_url_loader_.reset();
   callback_.Run(state_ == COMPLETED, data);
 }
 
