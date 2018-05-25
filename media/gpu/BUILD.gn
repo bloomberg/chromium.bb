@@ -181,6 +181,8 @@ component("gpu") {
       "android/content_video_view_overlay_allocator.h",
       "android/device_info.cc",
       "android/device_info.h",
+      "android/image_reader_gl_owner.cc",
+      "android/image_reader_gl_owner.h",
       "android/media_codec_video_decoder.cc",
       "android/media_codec_video_decoder.h",
       "android/promotion_hint_aggregator.h",
@@ -200,11 +202,13 @@ component("gpu") {
       "android/video_frame_factory_impl.cc",
       "android/video_frame_factory_impl.h",
     ]
+    libs += [ "android" ]
     deps += [
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
       "//third_party/libyuv",
+      "//ui/gl:gl_jni_headers",
     ]
 
     # TODO(crbug.com/789435): This is needed for AVDA to access the CDM
@@ -441,6 +445,7 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/content_video_view_overlay_allocator_unittest.cc",
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
+      "android/image_reader_gl_owner_unittest.cc",
       "android/media_codec_video_decoder_unittest.cc",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",

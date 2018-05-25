@@ -16,12 +16,14 @@ namespace media {
 
 struct FrameAvailableEvent;
 
+// This class wraps the Surface Texture usage. It is used to create a surface
+// texture attached to a new texture of the current platform GL context. The
+// surface handle of the SurfaceTexture is attached to the decoded media
+// frames. Media frames can update the attached surface handle with image data.
+// This class helps to update the attached texture using that image data
+// present in the surface.
 class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
  public:
-  // Creates a GL texture using the current platform GL context and returns a
-  // new SurfaceTextureGLOwner attached to it. Returns null on failure.
-  static scoped_refptr<TextureOwner> Create();
-
   GLuint GetTextureId() const override;
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
@@ -35,16 +37,16 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   void WaitForFrameAvailable() override;
 
  private:
+  friend class TextureOwner;
+
   SurfaceTextureGLOwner(GLuint texture_id);
   ~SurfaceTextureGLOwner() override;
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
   GLuint texture_id_;
-
   // The context and surface that were used to create |texture_id_|.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
-
   // When SetReleaseTimeToNow() was last called. i.e., when the last
   // codec buffer was released to this surface. Or null if
   // IgnorePendingRelease() or WaitForFrameAvailable() have been called since.
@@ -52,7 +54,6 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   scoped_refptr<FrameAvailableEvent> frame_available_event_;
 
   THREAD_CHECKER(thread_checker_);
-
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);
 };
 

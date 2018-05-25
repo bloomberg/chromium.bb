@@ -30003,6 +30003,14 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="Generic"/>
 </enum>
 
+<enum name="MediaStatus">
+  <int value="-30002" label="AMEDIA_IMGREADER_MAX_IMAGES_ACQUIRED"/>
+  <int value="-30001" label="AMEDIA_IMGREADER_NO_BUFFER_AVAILABLE"/>
+  <int value="-10004" label="AMEDIA_ERROR_INVALID_PARAMETER"/>
+  <int value="-10000" label="AMEDIA_ERROR_UNKNOWN"/>
+  <int value="0" label="AMEDIA_OK"/>
+</enum>
+
 <enum name="MediaStreamRequestResult">
   <int value="0" label="OK"/>
   <int value="1" label="Permission Denied"/>

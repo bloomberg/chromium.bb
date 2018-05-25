@@ -29,6 +29,7 @@ class MEDIA_GPU_EXPORT AndroidImageReader {
   // Naming convention of all the below functions are chosen to exactly match
   // the function names in the NDK.
   void AImage_delete(AImage* image);
+  void AImage_deleteAsync(AImage* image, int releaseFenceFd);
   media_status_t AImage_getHardwareBuffer(const AImage* image,
                                           AHardwareBuffer** buffer);
   media_status_t AImage_getWidth(const AImage* image, int32_t* width);
@@ -57,6 +58,7 @@ class MEDIA_GPU_EXPORT AndroidImageReader {
 
   bool is_supported_;
   pAImage_delete AImage_delete_;
+  pAImage_deleteAsync AImage_deleteAsync_;
   pAImage_getHardwareBuffer AImage_getHardwareBuffer_;
   pAImage_getWidth AImage_getWidth_;
   pAImage_getHeight AImage_getHeight_;

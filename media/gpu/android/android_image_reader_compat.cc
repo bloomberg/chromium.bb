@@ -59,6 +59,7 @@ bool AndroidImageReader::LoadFunctions() {
   }
 
   LOAD_FUNCTION(libmediandk, AImage_delete);
+  LOAD_FUNCTION(libmediandk, AImage_deleteAsync);
   LOAD_FUNCTION(libmediandk, AImage_getHardwareBuffer);
   LOAD_FUNCTION(libmediandk, AImage_getWidth);
   LOAD_FUNCTION(libmediandk, AImage_getHeight);
@@ -81,6 +82,10 @@ bool AndroidImageReader::LoadFunctions() {
 
 void AndroidImageReader::AImage_delete(AImage* image) {
   AImage_delete_(image);
+}
+
+void AndroidImageReader::AImage_deleteAsync(AImage* image, int releaseFenceFd) {
+  AImage_deleteAsync_(image, releaseFenceFd);
 }
 
 media_status_t AndroidImageReader::AImage_getHardwareBuffer(

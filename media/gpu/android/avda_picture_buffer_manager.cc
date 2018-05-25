@@ -53,7 +53,7 @@ bool AVDAPictureBufferManager::Initialize(
 
   if (!surface_bundle->overlay) {
     // Create the texture owner.
-    texture_owner_ = SurfaceTextureGLOwner::Create();
+    texture_owner_ = TextureOwner::Create();
     if (!texture_owner_)
       return false;
 
