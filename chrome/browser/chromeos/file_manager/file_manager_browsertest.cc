@@ -60,9 +60,15 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
 
+    // TODO(noel): describe this.
     if (ShouldEnableLegacyEventDispatch()) {
       command_line->AppendSwitchASCII("disable-blink-features",
                                       "TrustedEventsDefaultAction");
+    }
+
+    // Default mode is clamshell: force Ash into tablet mode if requested.
+    if (GetParam().GetTabletMode()) {
+      command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
     }
   }
 
@@ -79,6 +85,7 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   }
 
  private:
+  // TODO(noel): remove this and use a bool TestCase<> paramater instead.
   bool ShouldEnableLegacyEventDispatch() {
     const std::string test_case_name = GetTestCaseName();
     // crbug.com/482121 crbug.com/480491
@@ -109,6 +116,9 @@ std::string PostTestCaseName(const ::testing::TestParamInfo<TestCase>& test) {
   else if (mode == IN_INCOGNITO)
     name.append("_Incognito");
 
+  if (test.param.GetTabletMode())
+    name.append("_TabletMode");
+
   return name;
 }
 
@@ -117,9 +127,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("fileDisplayDownloads"),
                       TestCase("fileDisplayDownloads").InGuestMode(),
+                      TestCase("fileDisplayDownloads").TabletMode(),
                       TestCase("fileDisplayDrive"),
-                      TestCase("fileDisplayUsb"),
+                      TestCase("fileDisplayDrive").TabletMode(),
                       TestCase("fileDisplayMtp"),
+                      TestCase("fileDisplayUsb"),
                       TestCase("fileSearch"),
                       TestCase("fileSearchCaseInsensitive"),
                       TestCase("fileSearchNotFound")));

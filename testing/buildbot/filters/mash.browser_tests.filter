@@ -355,6 +355,8 @@
 -FileDialog/FilesAppBrowserTest.Test/openFileDialogEscapeDrive
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads_GuestMode
+-FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads_TabletMode
+-FileDisplay/FilesAppBrowserTest.Test/fileDisplayDrive_TabletMode
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayMtp
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayUsb
 -FileDisplay/FilesAppBrowserTest.Test/fileSearch
