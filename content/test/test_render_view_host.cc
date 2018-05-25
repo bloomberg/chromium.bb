@@ -175,9 +175,8 @@ void TestRenderWidgetHostView::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list) {
   did_swap_compositor_frame_ = true;
-  uint32_t frame_token = frame.metadata.frame_token;
-  if (frame_token)
-    OnFrameTokenChanged(frame_token);
+  if (frame.metadata.send_frame_token_to_embedder)
+    OnFrameTokenChanged(frame.metadata.frame_token);
 }
 
 void TestRenderWidgetHostView::TakeFallbackContentFrom(

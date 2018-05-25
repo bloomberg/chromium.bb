@@ -37,7 +37,8 @@ TEST(SurfaceTest, PresentationCallback) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
-            .SetPresentationToken(1)
+            .SetFrameToken(1)
+            .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -50,7 +51,8 @@ TEST(SurfaceTest, PresentationCallback) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
-            .SetPresentationToken(2)
+            .SetFrameToken(2)
+            .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(client, DidDiscardCompositorFrame(1)).Times(1);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);

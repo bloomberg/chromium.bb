@@ -278,6 +278,7 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   CompositorFrame compositor_frame = CompositorFrameBuilder()
                                          .AddDefaultRenderPass()
                                          .SetFrameToken(frame_token1)
+                                         .SetSendFrameTokenToEmbedder(true)
                                          .SetActivationDependencies({child_id1})
                                          .Build();
   support->SubmitCompositorFrame(parent_id1.local_surface_id(),

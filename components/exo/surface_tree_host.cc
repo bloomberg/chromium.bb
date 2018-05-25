@@ -278,7 +278,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
     // If overflow happens, we increase it again.
     if (!++presentation_token_)
       ++presentation_token_;
-    frame.metadata.presentation_token = presentation_token_;
+    frame.metadata.frame_token = presentation_token_;
+    frame.metadata.request_presentation_feedback = true;
     DCHECK_EQ(active_presentation_callbacks_.count(presentation_token_), 0u);
     active_presentation_callbacks_[presentation_token_] =
         std::move(presentation_callbacks_);

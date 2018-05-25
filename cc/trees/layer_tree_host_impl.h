@@ -1067,9 +1067,7 @@ class CC_EXPORT LayerTreeHostImpl
   // request_presentation_time() set.
   base::flat_map<uint32_t, int> presentation_token_to_frame_;
 
-  // If non-zero identifies the presentation-token added to the last CF. Reset
-  // to zero when no more presentation tokens are in flight.
-  uint32_t last_presentation_token_ = 0u;
+  uint32_t next_frame_token_ = 1u;
 
   viz::LocalSurfaceId last_draw_local_surface_id_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;

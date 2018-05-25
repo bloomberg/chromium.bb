@@ -14089,30 +14089,8 @@ TEST_F(LayerTreeHostImplTest, WhiteListedTouchActionTest4) {
   WhiteListedTouchActionTestHelper(2.654f, 0.678f);
 }
 
-// Test implementation of a SwapPromise which will always attempt to increment
-// the frame token during WillSwap.
-class FrameTokenAdvancingSwapPromise : public SwapPromise {
- public:
-  FrameTokenAdvancingSwapPromise() {}
-  ~FrameTokenAdvancingSwapPromise() override {}
-
-  void DidActivate() override {}
-  void WillSwap(viz::CompositorFrameMetadata* metadata,
-                FrameTokenAllocator* frame_token_allocator) override {
-    frame_token_allocator->GetOrAllocateFrameToken();
-  }
-  void DidSwap() override {}
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    return SwapPromise::DidNotSwapAction::BREAK_PROMISE;
-  }
-  int64_t TraceId() const override { return 42; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrameTokenAdvancingSwapPromise);
-};
-
 // Test implementation of RenderFrameMetadataObserver which can optionally
-// increment the frame token during OnRenderFrameSubmission.
+// request the frame-token to be sent to the embedder during frame submission.
 class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
  public:
   explicit TestRenderFrameMetadataObserver(bool increment_counter)
@@ -14123,10 +14101,12 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
       FrameTokenAllocator* frame_token_allocator) override {
     frame_token_allocator_ = frame_token_allocator;
   }
-  void OnRenderFrameSubmission(RenderFrameMetadata metadata) override {
+  void OnRenderFrameSubmission(
+      const RenderFrameMetadata& render_frame_metadata,
+      viz::CompositorFrameMetadata* compositor_frame_metadata) override {
     if (increment_counter_)
-      frame_token_allocator_->GetOrAllocateFrameToken();
-    last_metadata_ = metadata;
+      compositor_frame_metadata->send_frame_token_to_embedder = true;
+    last_metadata_ = render_frame_metadata;
   }
 
   const base::Optional<RenderFrameMetadata>& last_metadata() const {
@@ -14140,99 +14120,6 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameMetadataObserver);
 };
-
-// Tests that SwapPromises and RenderFrameMetadataObservers can increment the
-// frame token when frames are being drawn. Furthermore verifies that when there
-// are multiple attempts to increment the frame token during the same draw, that
-// the token only ever increments by one.
-TEST_F(LayerTreeHostImplTest, FrameTokenAllocation) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  host_impl_->SetViewportSize(gfx::Size(50, 50));
-
-  uint32_t expected_frame_token = 0u;
-  auto* fake_layer_tree_frame_sink =
-      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
-
-  // No SwapPromise or RenderFrameMetadataObserver
-  {
-    DrawFrame();
-    const viz::CompositorFrameMetadata& metadata =
-        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-    // With no token advancing we should receive the default of 0.
-    EXPECT_EQ(expected_frame_token, metadata.frame_token);
-  }
-
-  // Just a SwapPromise no RenderFrameMetataObsever
-  {
-    std::vector<std::unique_ptr<SwapPromise>> promises;
-    promises.push_back(std::make_unique<FrameTokenAdvancingSwapPromise>());
-    host_impl_->active_tree()->PassSwapPromises(std::move(promises));
-
-    host_impl_->SetViewportDamage(gfx::Rect(10, 10));
-    DrawFrame();
-    const viz::CompositorFrameMetadata& metadata =
-        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-    // SwapPromise should advance the token count by one.
-    EXPECT_EQ(++expected_frame_token, metadata.frame_token);
-  }
-
-  // Just a RenderFrameMetadataObserver which does not advance the counter.
-  {
-    host_impl_->SetRenderFrameObserver(
-        std::make_unique<TestRenderFrameMetadataObserver>(false));
-    host_impl_->SetViewportDamage(gfx::Rect(10, 10));
-    DrawFrame();
-
-    const viz::CompositorFrameMetadata& metadata =
-        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-    // With no token advancing we should receive the default of 0.
-    EXPECT_EQ(0u, metadata.frame_token);
-  }
-
-  // A SwapPromise which advances, and a RenderFrameMetadataObserver which does
-  // not advance the counter.
-  {
-    std::vector<std::unique_ptr<SwapPromise>> promises;
-    promises.push_back(std::make_unique<FrameTokenAdvancingSwapPromise>());
-    host_impl_->active_tree()->PassSwapPromises(std::move(promises));
-
-    host_impl_->SetViewportDamage(gfx::Rect(10, 10));
-    DrawFrame();
-    const viz::CompositorFrameMetadata& metadata =
-        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-    // SwapPromise should advance the token count by one.
-    EXPECT_EQ(++expected_frame_token, metadata.frame_token);
-  }
-
-  // Both a SwapPromise and a RenderFrameMetadataObserver which try to advance
-  // the counter.
-  {
-    std::vector<std::unique_ptr<SwapPromise>> promises;
-    promises.push_back(std::make_unique<FrameTokenAdvancingSwapPromise>());
-    host_impl_->active_tree()->PassSwapPromises(std::move(promises));
-
-    host_impl_->SetRenderFrameObserver(
-        std::make_unique<TestRenderFrameMetadataObserver>(true));
-    host_impl_->SetViewportDamage(gfx::Rect(10, 10));
-    DrawFrame();
-    const viz::CompositorFrameMetadata& metadata =
-        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-    // Even with both sources trying to advance the frame token, it should
-    // only increment by one.
-    EXPECT_EQ(++expected_frame_token, metadata.frame_token);
-  }
-
-  // Just a RenderFrameMetadataObserver which advances the counter
-  {
-    host_impl_->SetViewportDamage(gfx::Rect(10, 10));
-    DrawFrame();
-    const viz::CompositorFrameMetadata& metadata =
-        fake_layer_tree_frame_sink->last_sent_frame()->metadata;
-    // The RenderFrameMetadataObserver should advance the counter by one.
-    EXPECT_EQ(++expected_frame_token, metadata.frame_token);
-  }
-}
 
 TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToRenderFrameMetadata) {
   const int root_layer_id = 1;

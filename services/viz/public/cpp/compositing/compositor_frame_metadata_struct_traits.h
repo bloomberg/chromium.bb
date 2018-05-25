@@ -129,9 +129,14 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.frame_token;
   }
 
-  static uint32_t presentation_token(
+  static bool send_frame_token_to_embedder(
       const viz::CompositorFrameMetadata& metadata) {
-    return metadata.presentation_token;
+    return metadata.send_frame_token_to_embedder;
+  }
+
+  static bool request_presentation_feedback(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.request_presentation_feedback;
   }
 
   static bool Read(viz::mojom::CompositorFrameMetadataDataView data,

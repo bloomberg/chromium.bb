@@ -60,7 +60,8 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& SetDeadline(const FrameDeadline& deadline);
   CompositorFrameBuilder& SetFrameToken(uint32_t frame_token);
   CompositorFrameBuilder& SetContentSourceId(uint32_t content_source_id);
-  CompositorFrameBuilder& SetPresentationToken(uint32_t presentation_token);
+  CompositorFrameBuilder& SetSendFrameTokenToEmbedder(bool send);
+  CompositorFrameBuilder& SetRequestPresentationFeedback(bool request);
 
  private:
   CompositorFrame MakeInitCompositorFrame() const;

@@ -37,7 +37,9 @@ class RenderFrameMetadataObserverImpl
   // cc::RenderFrameMetadataObserver:
   void BindToCurrentThread(
       cc::FrameTokenAllocator* frame_token_allocator) override;
-  void OnRenderFrameSubmission(cc::RenderFrameMetadata metadata) override;
+  void OnRenderFrameSubmission(
+      const cc::RenderFrameMetadata& render_frame_metadata,
+      viz::CompositorFrameMetadata* compositor_frame_metadata) override;
 
   // mojom::RenderFrameMetadataObserver:
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;

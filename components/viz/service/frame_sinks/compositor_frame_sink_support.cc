@@ -129,9 +129,11 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface->active_referenced_surfaces());
   UpdateSurfaceReferences(surface->surface_id().local_surface_id(),
                           *surface->active_referenced_surfaces());
-  uint32_t frame_token = surface->GetActiveFrame().metadata.frame_token;
-  if (frame_token)
-    frame_sink_manager_->OnFrameTokenChanged(frame_sink_id_, frame_token);
+  const auto& metadata = surface->GetActiveFrame().metadata;
+  if (metadata.send_frame_token_to_embedder) {
+    frame_sink_manager_->OnFrameTokenChanged(frame_sink_id_,
+                                             metadata.frame_token);
+  }
 }
 
 void CompositorFrameSinkSupport::OnSurfaceDiscarded(Surface* surface) {
@@ -295,6 +297,8 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     return COPY_OUTPUT_REQUESTS_NOT_ALLOWED;
   }
 
+  // TODO(crbug.com/846739): It should be possible to use
+  // |frame.metadata.frame_token| instead of maintaining a |last_frame_index_|.
   uint64_t frame_index = ++last_frame_index_;
   ++ack_pending_count_;
 
@@ -348,9 +352,9 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
           TransferableResource::ReturnResources(frame.resource_list);
       ReturnResources(resources);
       DidReceiveCompositorFrameAck();
-      if (frame.metadata.presentation_token) {
-        DidPresentCompositorFrame(frame.metadata.presentation_token,
-                                  base::TimeTicks(), base::TimeDelta(), 0);
+      if (frame.metadata.request_presentation_feedback) {
+        DidPresentCompositorFrame(frame.metadata.frame_token, base::TimeTicks(),
+                                  base::TimeDelta(), 0);
       }
       return SURFACE_INVARIANTS_VIOLATION;
     }
@@ -372,10 +376,10 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
                      weak_factory_.GetWeakPtr()),
       base::BindRepeating(&CompositorFrameSinkSupport::OnAggregatedDamage,
                           weak_factory_.GetWeakPtr()),
-      frame.metadata.presentation_token
+      frame.metadata.request_presentation_feedback
           ? base::BindOnce(
                 &CompositorFrameSinkSupport::DidPresentCompositorFrame,
-                weak_factory_.GetWeakPtr(), frame.metadata.presentation_token)
+                weak_factory_.GetWeakPtr(), frame.metadata.frame_token)
           : Surface::PresentedCallback());
   if (!result) {
     TRACE_EVENT_INSTANT0("viz", "QueueFrame failed", TRACE_EVENT_SCOPE_THREAD);
