@@ -501,48 +501,4 @@ void DevToolsEmulator::SetScriptExecutionDisabled(
       script_execution_disabled_ ? false : embedder_script_enabled_);
 }
 
-bool DevToolsEmulator::HandleInputEvent(const WebInputEvent& input_event) {
-  Page* page = web_view_->GetPage();
-  if (!page)
-    return false;
-
-  if (!touch_event_emulation_enabled_ ||
-      !WebInputEvent::IsPinchGestureEventType(input_event.GetType())) {
-    return false;
-  }
-
-  // FIXME: This workaround is required for touch emulation on Mac, where
-  // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
-  // TODO(lukasza): https://crbug.com/734201: Add OOPIF support.
-  LocalFrameView* frame_view = page->DeprecatedLocalMainFrame()->View();
-  WebGestureEvent scaled_event = TransformWebGestureEvent(
-      frame_view, static_cast<const WebGestureEvent&>(input_event));
-  float page_scale_factor = page->PageScaleFactor();
-  if (scaled_event.GetType() == WebInputEvent::kGesturePinchBegin) {
-    WebFloatPoint gesture_position = scaled_event.PositionInRootFrame();
-    last_pinch_anchor_css_ = std::make_unique<IntPoint>(
-        RoundedIntPoint(gesture_position + frame_view->GetScrollOffset()));
-    last_pinch_anchor_dip_ =
-        std::make_unique<IntPoint>(FlooredIntPoint(gesture_position));
-    last_pinch_anchor_dip_->Scale(page_scale_factor, page_scale_factor);
-  }
-  if (scaled_event.GetType() == WebInputEvent::kGesturePinchUpdate &&
-      last_pinch_anchor_css_) {
-    float new_page_scale_factor = page_scale_factor * scaled_event.PinchScale();
-    IntPoint anchor_css(*last_pinch_anchor_dip_.get());
-    anchor_css.Scale(1.f / new_page_scale_factor, 1.f / new_page_scale_factor);
-    web_view_->SetPageScaleFactor(new_page_scale_factor);
-    // TODO(lukasza): https://crbug.com/734201: Add OOPIF support.
-    if (web_view_->MainFrame()->IsWebLocalFrame()) {
-      web_view_->MainFrame()->ToWebLocalFrame()->SetScrollOffset(
-          ToIntSize(*last_pinch_anchor_css_.get() - ToIntSize(anchor_css)));
-    }
-  }
-  if (scaled_event.GetType() == WebInputEvent::kGesturePinchEnd) {
-    last_pinch_anchor_css_.reset();
-    last_pinch_anchor_dip_.reset();
-  }
-  return true;
-}
-
 }  // namespace blink

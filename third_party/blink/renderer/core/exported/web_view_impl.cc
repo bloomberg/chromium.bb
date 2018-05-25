@@ -1969,9 +1969,6 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
       input_event.GetType() != WebInputEvent::kPointerCancel)
     return WebInputEventResult::kHandledSuppressed;
 
-  if (dev_tools_emulator_->HandleInputEvent(input_event))
-    return WebInputEventResult::kHandledSuppressed;
-
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl()) {
     if (devtools->HandleInputEvent(input_event))
       return WebInputEventResult::kHandledSuppressed;
