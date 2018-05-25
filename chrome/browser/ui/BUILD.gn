@@ -694,6 +694,8 @@ split_static_library("ui") {
     "profile_error_dialog.h",
     "protocol_dialog_delegate.h",
     "proximity_auth/proximity_auth_error_bubble.h",
+    "recently_audible_helper.cc",
+    "recently_audible_helper.h",
     "screen_capture_notification_ui.h",
     "search_engines/edit_search_engine_controller.cc",
     "search_engines/edit_search_engine_controller.h",
