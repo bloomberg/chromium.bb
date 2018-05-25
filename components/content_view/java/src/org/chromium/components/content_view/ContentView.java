@@ -86,10 +86,8 @@ public class ContentView
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
-        // TODO(jinsukkim): Make it possible to check WebContents directly rather than doing it
-        //     via examining the availiability of ContentViewCore;
-        return getContentViewCore() != null ? WebContentsAccessibility.fromWebContents(mWebContents)
-                                            : null;
+        return !mWebContents.isDestroyed() ? WebContentsAccessibility.fromWebContents(mWebContents)
+                                           : null;
     }
 
     @Override
@@ -210,8 +208,8 @@ public class ContentView
     }
 
     private ContentViewCore getContentViewCore() {
-        ContentViewCore cvc = ContentViewCore.fromWebContents(mWebContents);
-        return cvc != null && cvc.isAlive() ? cvc : null;
+        if (mWebContents.isDestroyed()) return null;
+        return ContentViewCore.fromWebContents(mWebContents);
     }
 
     private EventForwarder getEventForwarder() {

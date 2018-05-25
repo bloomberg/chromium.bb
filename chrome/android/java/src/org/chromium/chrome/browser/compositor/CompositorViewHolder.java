@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.EventForwarder;
@@ -416,11 +415,6 @@ public class CompositorViewHolder extends FrameLayout
     private View getContentView() {
         Tab tab = getCurrentTab();
         return tab != null ? tab.getContentView() : null;
-    }
-
-    private ContentViewCore getActiveContent() {
-        Tab tab = getCurrentTab();
-        return tab != null ? tab.getContentViewCore() : null;
     }
 
     private WebContents getWebContents() {
@@ -842,7 +836,7 @@ public class CompositorViewHolder extends FrameLayout
 
     private void updateContentOverlayVisibility(boolean show) {
         if (mView == null) return;
-        ContentViewCore content = getActiveContent();
+        WebContents webContents = getWebContents();
         if (show) {
             if (mView.getParent() != this) {
                 // During tab creation, we temporarily add the new tab's view to a FrameLayout to
@@ -850,8 +844,8 @@ public class CompositorViewHolder extends FrameLayout
                 // Therefore we should remove the view from that temporary FrameLayout here.
                 UiUtils.removeViewFromParent(mView);
 
-                if (content != null) {
-                    assert content.isAlive();
+                if (webContents != null) {
+                    assert !webContents.isDestroyed();
                     getContentView().setVisibility(View.VISIBLE);
                     if (mFullscreenManager != null) mFullscreenManager.updateViewportSize();
                 }
@@ -870,8 +864,8 @@ public class CompositorViewHolder extends FrameLayout
                 setFocusable(true);
                 setFocusableInTouchMode(true);
 
-                if (content != null) {
-                    if (content.isAlive()) getContentView().setVisibility(View.INVISIBLE);
+                if (webContents != null && !webContents.isDestroyed()) {
+                    getContentView().setVisibility(View.INVISIBLE);
                 }
                 removeView(mView);
             }

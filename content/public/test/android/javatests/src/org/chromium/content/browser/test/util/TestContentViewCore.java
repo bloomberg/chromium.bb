@@ -24,11 +24,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void destroy() {}
 
     @Override
-    public boolean isAlive() {
-        return false;
-    }
-
-    @Override
     public void onAttachedToWindow() {}
 
     @Override
