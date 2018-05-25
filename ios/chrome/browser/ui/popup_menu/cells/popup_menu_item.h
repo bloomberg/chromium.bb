@@ -30,7 +30,6 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionHistory,
   PopupMenuActionSettings,
   PopupMenuActionCloseTab,
-  PopupMenuActionCloseAllIncognitoTabs,
   PopupMenuActionNavigate,
   PopupMenuActionPasteAndGo,
   PopupMenuActionVoiceSearch,

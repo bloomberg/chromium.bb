@@ -276,10 +276,6 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       base::RecordAction(UserMetricsAction("MobileMenuCloseTab"));
       [self.dispatcher closeCurrentTab];
       break;
-    case PopupMenuActionCloseAllIncognitoTabs:
-      base::RecordAction(UserMetricsAction("MobileMenuCloseAllIncognitoTabs"));
-      [self.dispatcher closeAllIncognitoTabs];
-      break;
     case PopupMenuActionNavigate:
       // No metrics for this item.
       [self.commandHandler navigateToPageForItem:item];
