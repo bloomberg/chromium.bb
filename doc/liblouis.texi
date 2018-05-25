@@ -3104,8 +3104,7 @@ The function returns 1 if no errors were encountered@footnote{When the
 output buffer is not big enough, @code{lou_translateString} returns a
 partial translation that is more or less accurate up until the
 returned @code{inlen}/@code{outlen}, and treats it as a successful
-translation, i.e.@: also returns 1.} and 0 if a complete translation
-could not be done.
+translation, i.e.@: also returns 1.} and 0 otherwise.
 
 @node lou_translate
 @section lou_translate
