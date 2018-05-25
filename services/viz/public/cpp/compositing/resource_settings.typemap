@@ -8,7 +8,7 @@ traits_headers = [
   "//services/viz/public/cpp/compositing/resource_settings_struct_traits.h",
 ]
 deps = [
-  "//cc",
+  "//components/viz/common",
   "//ui/gfx/mojo",
 ]
 sources = [

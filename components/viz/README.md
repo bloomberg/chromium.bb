@@ -71,7 +71,10 @@ clients directly, and by service implementations.
 
 ### client <a name="directory-structure-client"></a>
 Client library for accessing Viz services. May be used from privileged (eg
-browser) or unprivileged (eg renderer) processes.
+browser) or unprivileged (eg renderer) processes. The client library should
+remain agnostic about *how* to communicate with viz (in other words should not
+use mojo bindings), as some viz clients use mojo but others use it in-process
+or via other IPC mechanisms.
 
 | Can depend on: |
 |:---------------|

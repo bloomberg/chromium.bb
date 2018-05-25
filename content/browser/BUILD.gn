@@ -39,6 +39,7 @@ jumbo_source_set("browser") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc/animation",
+    "//cc/mojo_embedder",
     "//cc/paint",
     "//components/cbor",
     "//components/discardable_memory/common",

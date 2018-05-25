@@ -13,7 +13,7 @@ enum BeginFrameArgsType {
   BEGIN_FRAME_ARGS_TYPE_MAX
 };
 
-// See cc/output/begin_frame_args.h.
+// See components/viz/common/frame_sinks/begin_frame_args.h.
 struct BeginFrameArgs {
   mojo_base.mojom.TimeTicks frame_time;
   mojo_base.mojom.TimeTicks deadline;
@@ -25,7 +25,7 @@ struct BeginFrameArgs {
   bool animate_only;
 };
 
-// See cc/output/begin_frame_args.h.
+// See components/viz/common/frame_sinks/begin_frame_args.h.
 struct BeginFrameAck {
   uint64 source_id;
   uint64 sequence_number;
