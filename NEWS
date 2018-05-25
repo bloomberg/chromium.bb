@@ -8,6 +8,7 @@ issues]].
 
 ** Bug fixes
 - Fix a buffer overflow in table parsing thanks to Samuel Thibault.
+  Fixes CVE-2018-11410.
 
 ** Braille table improvements
 - Fix some forward- and back-translation errors in Unified French Grade
