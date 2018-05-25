@@ -9,8 +9,8 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#import "ios/web_view/internal/autofill/autofill_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -28,7 +28,7 @@ class CWVAutofillProfileTest : public PlatformTest {
   CWVAutofillProfileTest() {
     l10n_util::OverrideLocaleWithCocoaLocale();
     ui::ResourceBundle::InitSharedInstanceWithLocale(
-        base::SysNSStringToUTF8(testing::kLocale), /*delegate=*/nullptr,
+        l10n_util::GetLocaleOverride(), /*delegate=*/nullptr,
         ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
@@ -39,48 +39,61 @@ class CWVAutofillProfileTest : public PlatformTest {
 
 // Tests CWVAutofillProfile initialization.
 TEST_F(CWVAutofillProfileTest, Initialization) {
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   CWVAutofillProfile* cwv_profile =
-      [[CWVAutofillProfile alloc] initWithProfile:testing::CreateTestProfile()];
-
-  EXPECT_NSEQ(testing::kName, cwv_profile.name);
-  EXPECT_NSEQ(testing::kCompany, cwv_profile.company);
-  EXPECT_NSEQ(testing::kAddress1, cwv_profile.address1);
-  EXPECT_NSEQ(testing::kAddress2, cwv_profile.address2);
-  EXPECT_NSEQ(testing::kCity, cwv_profile.city);
-  EXPECT_NSEQ(testing::kState, cwv_profile.state);
-  EXPECT_NSEQ(testing::kZipcode, cwv_profile.zipcode);
-  EXPECT_NSEQ(testing::kCountry, cwv_profile.country);
-  EXPECT_NSEQ(testing::kPhone, cwv_profile.phone);
-  EXPECT_NSEQ(testing::kEmail, cwv_profile.email);
+      [[CWVAutofillProfile alloc] initWithProfile:profile];
+  EXPECT_EQ(profile, *cwv_profile.internalProfile);
 }
 
 // Tests CWVAutofillProfile updates properties.
 TEST_F(CWVAutofillProfileTest, ModifyProperties) {
-  autofill::AutofillProfile profile(base::SysNSStringToUTF8(testing::kGuid),
-                                    base::SysNSStringToUTF8(testing::kOrigin));
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   CWVAutofillProfile* cwv_profile =
       [[CWVAutofillProfile alloc] initWithProfile:profile];
-  cwv_profile.name = testing::kName;
-  cwv_profile.company = testing::kCompany;
-  cwv_profile.address1 = testing::kAddress1;
-  cwv_profile.address2 = testing::kAddress2;
-  cwv_profile.city = testing::kCity;
-  cwv_profile.state = testing::kState;
-  cwv_profile.zipcode = testing::kZipcode;
-  cwv_profile.country = testing::kCountry;
-  cwv_profile.phone = testing::kPhone;
-  cwv_profile.email = testing::kEmail;
 
-  EXPECT_NSEQ(testing::kName, cwv_profile.name);
-  EXPECT_NSEQ(testing::kCompany, cwv_profile.company);
-  EXPECT_NSEQ(testing::kAddress1, cwv_profile.address1);
-  EXPECT_NSEQ(testing::kAddress2, cwv_profile.address2);
-  EXPECT_NSEQ(testing::kCity, cwv_profile.city);
-  EXPECT_NSEQ(testing::kState, cwv_profile.state);
-  EXPECT_NSEQ(testing::kZipcode, cwv_profile.zipcode);
-  EXPECT_NSEQ(testing::kCountry, cwv_profile.country);
-  EXPECT_NSEQ(testing::kPhone, cwv_profile.phone);
-  EXPECT_NSEQ(testing::kEmail, cwv_profile.email);
+  std::string locale = l10n_util::GetLocaleOverride();
+  autofill::AutofillProfile new_profile = autofill::test::GetFullProfile2();
+  NSString* new_name = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::NAME_FULL, locale));
+  NSString* new_company = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::COMPANY_NAME, locale));
+  NSString* new_address1 = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::ADDRESS_HOME_LINE1, locale));
+  NSString* new_address2 = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::ADDRESS_HOME_LINE2, locale));
+  NSString* new_city = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::ADDRESS_HOME_CITY, locale));
+  NSString* new_state = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::ADDRESS_HOME_STATE, locale));
+  NSString* new_zipcode = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::ADDRESS_HOME_ZIP, locale));
+  NSString* new_country = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::ADDRESS_HOME_COUNTRY, locale));
+  NSString* new_phone = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, locale));
+  NSString* new_email = base::SysUTF16ToNSString(
+      new_profile.GetInfo(autofill::EMAIL_ADDRESS, locale));
+  cwv_profile.name = new_name;
+  cwv_profile.company = new_company;
+  cwv_profile.address1 = new_address1;
+  cwv_profile.address2 = new_address2;
+  cwv_profile.city = new_city;
+  cwv_profile.state = new_state;
+  cwv_profile.zipcode = new_zipcode;
+  cwv_profile.country = new_country;
+  cwv_profile.phone = new_phone;
+  cwv_profile.email = new_email;
+
+  EXPECT_NSEQ(new_name, cwv_profile.name);
+  EXPECT_NSEQ(new_company, cwv_profile.company);
+  EXPECT_NSEQ(new_address1, cwv_profile.address1);
+  EXPECT_NSEQ(new_address2, cwv_profile.address2);
+  EXPECT_NSEQ(new_city, cwv_profile.city);
+  EXPECT_NSEQ(new_state, cwv_profile.state);
+  EXPECT_NSEQ(new_zipcode, cwv_profile.zipcode);
+  EXPECT_NSEQ(new_country, cwv_profile.country);
+  EXPECT_NSEQ(new_phone, cwv_profile.phone);
+  EXPECT_NSEQ(new_email, cwv_profile.email);
 }
 
 }  // namespace ios_web_view

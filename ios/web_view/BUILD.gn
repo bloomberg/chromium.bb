@@ -318,8 +318,6 @@ ios_web_view_test_sources = [
 test("ios_web_view_unittests") {
   testonly = true
   sources = [
-    "internal/autofill/autofill_test_util.h",
-    "internal/autofill/autofill_test_util.mm",
     "internal/autofill/cwv_autofill_controller_unittest.mm",
     "internal/autofill/cwv_autofill_profile_unittest.mm",
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
@@ -338,6 +336,7 @@ test("ios_web_view_unittests") {
   deps = [
     "test:test_support",
     "//base/test:run_all_unittests",
+    "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser:test_support",
     "//ios/testing:ios_test_support",
     "//ios/web/public/test",
