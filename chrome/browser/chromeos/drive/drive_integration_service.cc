@@ -510,6 +510,12 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
       callback));
 }
 
+drivefs::mojom::DriveFs* DriveIntegrationService::GetDriveFsInterface() const {
+  if (!drivefs_holder_)
+    return nullptr;
+  return drivefs_holder_->drivefs_host()->GetDriveFsInterface();
+}
+
 void DriveIntegrationService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
     FileError error) {

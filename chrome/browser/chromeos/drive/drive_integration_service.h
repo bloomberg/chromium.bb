@@ -28,6 +28,12 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace drivefs {
+namespace mojom {
+class DriveFs;
+}  // namespace mojom
+}  // namespace drivefs
+
 namespace drive {
 
 class DebugInfoCollector;
@@ -125,6 +131,10 @@ class DriveIntegrationService : public KeyedService,
   // |callback| is called with false. |callback| must not be null.
   void ClearCacheAndRemountFileSystem(
       const base::Callback<void(bool)>& callback);
+
+  // Returns the mojo interface to the DriveFs daemon if it is enabled and
+  // connected.
+  drivefs::mojom::DriveFs* GetDriveFsInterface() const;
 
  private:
   enum State {

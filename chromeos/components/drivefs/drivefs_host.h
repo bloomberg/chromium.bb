@@ -88,6 +88,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   // |IsMounted()| returns true.
   const base::FilePath& GetMountPath() const;
 
+  mojom::DriveFs* GetDriveFsInterface() const;
+
  private:
   class MountState;
 

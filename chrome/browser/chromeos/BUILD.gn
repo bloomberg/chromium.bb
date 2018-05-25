@@ -73,6 +73,7 @@ source_set("chromeos") {
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos:login_manager_proto",
     "//chromeos/components/drivefs",
+    "//chromeos/components/drivefs/mojom",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/tether",
