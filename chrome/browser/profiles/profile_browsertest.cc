@@ -52,8 +52,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/net_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
@@ -168,58 +166,6 @@ void SpinThreads() {
   // This prevents HistoryBackend from accessing its databases after the
   // directory that contains them has been deleted.
   base::TaskScheduler::GetInstance()->FlushForTesting();
-}
-
-// Sends an HttpResponse for requests for "/" that result in sending an HPKP
-// report.  Ignores other paths to avoid catching the subsequent favicon
-// request.
-std::unique_ptr<net::test_server::HttpResponse> SendReportHttpResponse(
-    const GURL& report_url,
-    const net::test_server::HttpRequest& request) {
-  if (request.relative_url == "/") {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response(
-        new net::test_server::BasicHttpResponse());
-    std::string header_value = base::StringPrintf(
-        "max-age=50000;"
-        "pin-sha256=\"9999999999999999999999999999999999999999999=\";"
-        "pin-sha256=\"9999999999999999999999999999999999999999998=\";"
-        "report-uri=\"%s\"",
-        report_url.spec().c_str());
-    response->AddCustomHeader("Public-Key-Pins-Report-Only", header_value);
-    return std::move(response);
-  }
-
-  return nullptr;
-}
-
-// Runs |quit_callback| on the UI thread once a URL request has been seen.
-// If |hung_response| is true, returns a request that hangs.
-std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
-    const base::Closure& quit_closure,
-    bool hung_response,
-    const net::test_server::HttpRequest& request) {
-  // Basic sanity checks on the request.
-  EXPECT_EQ("/", request.relative_url);
-  EXPECT_EQ("POST", request.method_string);
-  base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value = json_reader.ReadToValue(request.content);
-  EXPECT_TRUE(value);
-
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   quit_closure);
-
-  if (hung_response)
-    return std::make_unique<net::test_server::HungResponse>();
-  return nullptr;
-}
-
-// Disables logic to ignore HPKP.  Must be run on IO thread.
-void DisablePinningBypass(
-    const scoped_refptr<net::URLRequestContextGetter>& getter) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  getter->GetURLRequestContext()
-      ->transport_security_state()
-      ->SetEnablePublicKeyPinningBypassForLocalTrustAnchors(false);
 }
 
 }  // namespace
@@ -816,73 +762,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
     profile_impl->GetMediaCacheParameters(&cache_path, &size);
     EXPECT_EQ(temp_disk_cache_dir.GetPath().Append(profile_name), cache_path);
   }
-}
-
-// Test case where an HPKP report is sent.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReport) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &DisablePinningBypass,
-          base::WrapRefCounted(browser()->profile()->GetRequestContext())));
-
-  base::RunLoop wait_for_report_loop;
-  // Server that HPKP reports are sent to.
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&WaitForRequest, wait_for_report_loop.QuitClosure(), false));
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Server that sends an HPKP report when its root document is fetched.
-  net::EmbeddedTestServer hpkp_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  hpkp_test_server.SetSSLConfig(
-      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-  hpkp_test_server.RegisterRequestHandler(
-      base::Bind(&SendReportHttpResponse, embedded_test_server()->base_url()));
-  ASSERT_TRUE(hpkp_test_server.Start());
-
-  // To send a report, must use a non-numeric host name for the original
-  // request.  This must not match the host name of the server that reports are
-  // sent to.
-  ui_test_utils::NavigateToURL(browser(),
-                               hpkp_test_server.GetURL("localhost", "/"));
-  wait_for_report_loop.Run();
-
-  // Shut down the test server, to make it unlikely this will end up in the same
-  // situation as the next test, though it's still theoretically possible.
-  ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-}
-
-// Test case where an HPKP report is sent, and the server hasn't replied by the
-// time the profile is torn down.  Test will crash if the URLRequestContext is
-// torn down before the request is torn down.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SendHPKPReportServerHangs) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &DisablePinningBypass,
-          base::WrapRefCounted(browser()->profile()->GetRequestContext())));
-
-  base::RunLoop wait_for_report_loop;
-  // Server that HPKP reports are sent to.  Have to use a class member to make
-  // sure that the test server outlives the IO thread.
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&WaitForRequest, wait_for_report_loop.QuitClosure(), true));
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Server that sends an  HPKP report when its root document is fetched.
-  net::EmbeddedTestServer hpkp_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  hpkp_test_server.SetSSLConfig(
-      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-  hpkp_test_server.RegisterRequestHandler(
-      base::Bind(&SendReportHttpResponse, embedded_test_server()->base_url()));
-  ASSERT_TRUE(hpkp_test_server.Start());
-
-  // To send a report, must use a non-numeric host name for the original
-  // request.  This must not match the host name of the server that reports are
-  // sent to.
-  ui_test_utils::NavigateToURL(browser(),
-                               hpkp_test_server.GetURL("localhost", "/"));
-  wait_for_report_loop.Run();
 }
 
 // Verifies the last selected directory has a default value.
