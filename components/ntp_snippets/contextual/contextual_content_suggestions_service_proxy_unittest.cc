@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
@@ -23,8 +24,8 @@ namespace contextual_suggestions {
 
 namespace {
 
-static const std::string kTestPeekText("Test peek test");
-static const std::string kValidFromUrl = "http://some.url";
+static constexpr char kTestPeekText[] = "Test peek test";
+static constexpr char kValidFromUrl[] = "http://some.url";
 
 class FakeContextualContentSuggestionsService
     : public ContextualContentSuggestionsService {
@@ -47,14 +48,13 @@ class FakeContextualContentSuggestionsService
   FetchClustersCallback clusters_callback_;
 };
 
-}  // namespace
-
 FakeContextualContentSuggestionsService::
     FakeContextualContentSuggestionsService()
     : ContextualContentSuggestionsService(nullptr, nullptr, nullptr, nullptr) {}
 
 FakeContextualContentSuggestionsService::
     ~FakeContextualContentSuggestionsService() {}
+}  // namespace
 
 class ContextualContentSuggestionsServiceProxyTest : public testing::Test {
  public:
@@ -83,7 +83,9 @@ TEST_F(ContextualContentSuggestionsServiceProxyTest,
 
   proxy()->FetchContextualSuggestions(GURL(kValidFromUrl),
                                       mock_cluster_callback.ToOnceCallback());
-  service()->RunClustersCallback(ContextualSuggestionsResult());
+  service()->RunClustersCallback(ContextualSuggestionsResult(
+      kTestPeekText, std::vector<Cluster>(), PeekConditions()));
+
   EXPECT_TRUE(mock_cluster_callback.has_run);
 }
 

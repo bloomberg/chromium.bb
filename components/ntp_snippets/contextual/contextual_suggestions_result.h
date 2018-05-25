@@ -7,6 +7,10 @@
 
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace contextual_suggestions {
 
 // Encapsulates conditions under which to show or "peek" the contextual
@@ -36,6 +40,8 @@ struct Cluster {
   Cluster(Cluster&&) noexcept;
   ~Cluster();
 
+  Cluster& operator=(const Cluster&);
+
   std::string title;
   std::vector<ContextualSuggestion> suggestions;
 };
@@ -43,7 +49,7 @@ struct Cluster {
 // Allows concise construction of a cluster.
 class ClusterBuilder {
  public:
-  ClusterBuilder(const std::string& title);
+  explicit ClusterBuilder(const std::string& title);
 
   // Allow copying for ease of validation when testing.
   ClusterBuilder(const ClusterBuilder& other);
@@ -66,6 +72,7 @@ struct ContextualSuggestionsResult {
   ~ContextualSuggestionsResult();
 
   ContextualSuggestionsResult& operator=(ContextualSuggestionsResult&&);
+  ContextualSuggestionsResult& operator=(const ContextualSuggestionsResult&);
 
   std::vector<Cluster> clusters;
   std::string peek_text;
