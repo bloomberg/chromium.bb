@@ -117,36 +117,36 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
 
 
 def _handle_perf_json_test_results(
-    benchmark_directory_list, test_results_list):
+    benchmark_directory_map, test_results_list):
   benchmark_enabled_map = {}
-  for directory in benchmark_directory_list:
-    # Obtain the test name we are running
-    benchmark_name = _get_benchmark_name(directory)
-    is_ref = '.reference' in benchmark_name
-    enabled = True
-    with open(join(directory, 'test_results.json')) as json_data:
-      json_results = json.load(json_data)
-      if not json_results:
-        # Output is null meaning the test didn't produce any results.
-        # Want to output an error and continue loading the rest of the
-        # test results.
-        print 'No results produced for %s, skipping upload' % directory
-        continue
-      if json_results.get('version') == 3:
-        # Non-telemetry tests don't have written json results but
-        # if they are executing then they are enabled and will generate
-        # chartjson results.
-        if not bool(json_results.get('tests')):
-          enabled = False
-      if not is_ref:
-        # We don't need to upload reference build data to the
-        # flakiness dashboard since we don't monitor the ref build
-        test_results_list.append(json_results)
-    if not enabled:
-      # We don't upload disabled benchmarks or tests that are run
-      # as a smoke test
-      print 'Benchmark %s disabled' % benchmark_name
-    benchmark_enabled_map[benchmark_name] = enabled
+  for benchmark_name, directories in benchmark_directory_map.iteritems():
+    for directory in directories:
+      # Obtain the test name we are running
+      is_ref = '.reference' in benchmark_name
+      enabled = True
+      with open(join(directory, 'test_results.json')) as json_data:
+        json_results = json.load(json_data)
+        if not json_results:
+          # Output is null meaning the test didn't produce any results.
+          # Want to output an error and continue loading the rest of the
+          # test results.
+          print 'No results produced for %s, skipping upload' % directory
+          continue
+        if json_results.get('version') == 3:
+          # Non-telemetry tests don't have written json results but
+          # if they are executing then they are enabled and will generate
+          # chartjson results.
+          if not bool(json_results.get('tests')):
+            enabled = False
+        if not is_ref:
+          # We don't need to upload reference build data to the
+          # flakiness dashboard since we don't monitor the ref build
+          test_results_list.append(json_results)
+      if not enabled:
+        # We don't upload disabled benchmarks or tests that are run
+        # as a smoke test
+        print 'Benchmark %s disabled' % benchmark_name
+      benchmark_enabled_map[benchmark_name] = enabled
 
   return benchmark_enabled_map
 
@@ -155,19 +155,21 @@ def _generate_unique_logdog_filename(name_prefix):
   return name_prefix + '_' + str(uuid.uuid4())
 
 
-def _handle_perf_logs(benchmark_directory_list, extra_links):
+def _handle_perf_logs(benchmark_directory_map, extra_links):
   """ Upload benchmark logs to logdog and add a page entry for them. """
 
   benchmark_logs_links = {}
 
-  for directory in benchmark_directory_list:
-    # Obtain the test name we are running
-    benchmark_name = _get_benchmark_name(directory)
-    with open(join(directory, 'benchmark_log.txt')) as f:
-      uploaded_link = logdog_helper.text(
-          name=_generate_unique_logdog_filename(benchmark_name),
-          data=f.read())
-      benchmark_logs_links[benchmark_name] = uploaded_link
+  for benchmark_name, directories in benchmark_directory_map.iteritems():
+    for directory in directories:
+      with open(join(directory, 'benchmark_log.txt')) as f:
+        uploaded_link = logdog_helper.text(
+            name=_generate_unique_logdog_filename(benchmark_name),
+            data=f.read())
+        if benchmark_name in benchmark_logs_links.keys():
+          benchmark_logs_links[benchmark_name].append(uploaded_link)
+        else:
+          benchmark_logs_links[benchmark_name] = [uploaded_link]
 
   logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Logs')
   logdog_stream = logdog_helper.text(
@@ -210,6 +212,16 @@ def _process_perf_results(output_json, configuration_name,
       for f in listdir(join(task_output_dir, directory))
     ]
 
+  # Now create a map of benchmark name to the list of directories
+  # the lists were written to.
+  benchmark_directory_map = {}
+  for directory in benchmark_directory_list:
+    benchmark_name = _get_benchmark_name(directory)
+    if benchmark_name in benchmark_directory_map.keys():
+      benchmark_directory_map[benchmark_name].append(directory)
+    else:
+      benchmark_directory_map[benchmark_name] = [directory]
+
   test_results_list = []
 
   build_properties = json.loads(build_properties)
@@ -221,16 +233,16 @@ def _process_perf_results(output_json, configuration_name,
 
   # First, upload all the benchmark logs to logdog and add a page entry for
   # those links in extra_links.
-  _handle_perf_logs(benchmark_directory_list, extra_links)
+  _handle_perf_logs(benchmark_directory_map, extra_links)
 
   # Then try to obtain the list of json test results to merge
   # and determine the status of each benchmark.
   benchmark_enabled_map = _handle_perf_json_test_results(
-      benchmark_directory_list, test_results_list)
+      benchmark_directory_map, test_results_list)
 
   if not smoke_test_mode:
     return_code = _handle_perf_results(
-        benchmark_enabled_map, benchmark_directory_list,
+        benchmark_enabled_map, benchmark_directory_map,
         configuration_name, build_properties, service_account_file, extra_links)
 
   # Finally, merge all test results json, add the extra links and write out to
@@ -238,9 +250,43 @@ def _process_perf_results(output_json, configuration_name,
   _merge_json_output(output_json, test_results_list, extra_links)
   return return_code
 
+def _merge_chartjson_results(chartjson_dicts):
+  merged_results = chartjson_dicts[0]
+  for chartjson_dict in chartjson_dicts[1:]:
+    for key in chartjson_dict:
+      if key == 'charts':
+        for add_key in chartjson_dict[key]:
+          merged_results[key][add_key] = chartjson_dict[key][add_key]
+  return merged_results
+
+def _merge_histogram_results(histogram_lists):
+  merged_results = []
+  for histogram_list in histogram_lists:
+    merged_results += histogram_list
+
+  return merged_results
+
+def _merge_perf_results(results_filename, directories):
+  collected_results = []
+  for directory in directories:
+    filename = join(directory, 'perf_results.json')
+    with open(filename) as pf:
+      collected_results.append(json.load(pf))
+
+  # Assuming that multiple shards will only be chartjson or histogram set
+  # Non-telemetry benchmarks only ever run on one shard
+  merged_results = []
+  if isinstance(collected_results[0], dict):
+    merged_results = _merge_chartjson_results(collected_results)
+  elif isinstance(collected_results[0], list):
+    merged_results =_merge_histogram_results(collected_results)
+
+  with open(results_filename, 'w') as rf:
+    json.dump(merged_results, rf)
+
 
 def _handle_perf_results(
-    benchmark_enabled_map, benchmark_directory_list, configuration_name,
+    benchmark_enabled_map, benchmark_directory_map, configuration_name,
     build_properties, service_account_file, extra_links):
   """
     Upload perf results to the perf dashboard.
@@ -259,14 +305,27 @@ def _handle_perf_results(
     logdog_label = 'Results Dashboard'
     upload_fail = False
     with oauth_api.with_access_token(service_account_file) as oauth_file:
-      for directory in benchmark_directory_list:
-        benchmark_name = _get_benchmark_name(directory)
+      for benchmark_name, directories in benchmark_directory_map.iteritems():
         if not benchmark_enabled_map[benchmark_name]:
           continue
+        # There are potentially multiple directores with results, re-write and
+        # merge them if necessary
+        results_filename = None
+        if len(directories) > 1:
+          merge_perf_dir = os.path.join(
+              os.path.abspath(tmpfile_dir), benchmark_name)
+          if not os.path.exists(merge_perf_dir):
+            os.makedirs(merge_perf_dir)
+          results_filename = os.path.join(
+              merge_perf_dir, 'merged_perf_results.json')
+          _merge_perf_results(results_filename, directories)
+        else:
+          # It was only written to one shard, use that shards data
+          results_filename = join(directories[0], 'perf_results.json')
         print 'Uploading perf results from %s benchmark' % benchmark_name
         upload_fail = _upload_and_write_perf_data_to_logfile(
-            benchmark_name, directory, configuration_name, build_properties,
-            oauth_file, tmpfile_dir, logdog_dict,
+            benchmark_name, results_filename, configuration_name,
+            build_properties, oauth_file, tmpfile_dir, logdog_dict,
             ('.reference' in benchmark_name))
 
     logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
@@ -284,7 +343,7 @@ def _handle_perf_results(
     shutil.rmtree(tmpfile_dir)
 
 
-def _upload_and_write_perf_data_to_logfile(benchmark_name, directory,
+def _upload_and_write_perf_data_to_logfile(benchmark_name, results_file,
     configuration_name, build_properties, oauth_file,
     tmpfile_dir, logdog_dict, is_ref):
   upload_failure = False
@@ -293,7 +352,7 @@ def _upload_and_write_perf_data_to_logfile(benchmark_name, directory,
 
   # upload results and write perf results to logdog file
   upload_failure = _upload_perf_results(
-    join(directory, 'perf_results.json'),
+    results_file,
     benchmark_name, configuration_name, build_properties,
     oauth_file, tmpfile_dir, output_json_file)
 
