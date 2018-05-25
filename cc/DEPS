@@ -1,5 +1,6 @@
 include_rules = [
   "+components/ukm/test_ukm_recorder.h",
+  "+components/viz/client",
   "+components/viz/common",
   "+gpu/GLES2",
   "+gpu/command_buffer/client/context_support.h",
@@ -31,6 +32,10 @@ include_rules = [
   "+ui/latency/latency_info.h",
   "+ui/gfx",
   "+ui/gl",
+
+  # Do not use mojo bindings in cc/. This library should be agnostic about how
+  # to communicate with viz.
+  "-mojo/public/cpp/bindings",
 ]
 
 specific_include_rules = {

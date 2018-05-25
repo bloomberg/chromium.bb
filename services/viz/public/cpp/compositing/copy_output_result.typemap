@@ -7,8 +7,7 @@ public_headers = [ "//components/viz/common/frame_sinks/copy_output_result.h" ]
 traits_headers = [
   "//services/viz/public/cpp/compositing/copy_output_result_struct_traits.h",
 ]
-public_deps = [
-  "//cc",
+deps = [
   "//components/viz/common",
 ]
 sources = [

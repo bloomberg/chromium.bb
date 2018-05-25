@@ -24,7 +24,7 @@ enum ResourceFormat {
   R16_EXT,
 };
 
-// See cc/resources/transferable_resource.h.
+// See components/viz/common/resources/transferable_resource.h.
 struct TransferableResource {
   uint32 id;
   ResourceFormat format;

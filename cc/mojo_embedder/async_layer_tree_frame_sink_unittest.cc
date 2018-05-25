@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 
 #include <memory>
 
@@ -19,13 +19,14 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace viz {
+namespace cc {
+namespace mojo_embedder {
 namespace {
 
 // Used to track the thread DidLoseLayerTreeFrameSink() is called on (and quit
 // a RunLoop).
 class ThreadTrackingLayerTreeFrameSinkClient
-    : public cc::FakeLayerTreeFrameSinkClient {
+    : public FakeLayerTreeFrameSinkClient {
  public:
   ThreadTrackingLayerTreeFrameSinkClient(
       base::PlatformThreadId* called_thread_id,
@@ -33,10 +34,10 @@ class ThreadTrackingLayerTreeFrameSinkClient
       : called_thread_id_(called_thread_id), run_loop_(run_loop) {}
   ~ThreadTrackingLayerTreeFrameSinkClient() override = default;
 
-  // cc::FakeLayerTreeFrameSinkClient:
+  // FakeLayerTreeFrameSinkClient:
   void DidLoseLayerTreeFrameSink() override {
     EXPECT_FALSE(did_lose_layer_tree_frame_sink_called());
-    cc::FakeLayerTreeFrameSinkClient::DidLoseLayerTreeFrameSink();
+    FakeLayerTreeFrameSinkClient::DidLoseLayerTreeFrameSink();
     *called_thread_id_ = base::PlatformThread::CurrentId();
     run_loop_->Quit();
   }
@@ -48,31 +49,32 @@ class ThreadTrackingLayerTreeFrameSinkClient
   DISALLOW_COPY_AND_ASSIGN(ThreadTrackingLayerTreeFrameSinkClient);
 };
 
-TEST(ClientLayerTreeFrameSinkTest,
+TEST(AsyncLayerTreeFrameSinkTest,
      DidLoseLayerTreeFrameSinkCalledOnConnectionError) {
   base::Thread bg_thread("BG Thread");
   bg_thread.Start();
 
-  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-  TestGpuMemoryBufferManager test_gpu_memory_buffer_manager;
+  scoped_refptr<viz::TestContextProvider> provider =
+      viz::TestContextProvider::Create();
+  viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager;
 
-  mojom::CompositorFrameSinkPtrInfo sink_info;
-  mojom::CompositorFrameSinkRequest sink_request =
+  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
+  viz::mojom::CompositorFrameSinkRequest sink_request =
       mojo::MakeRequest(&sink_info);
-  mojom::CompositorFrameSinkClientPtr client;
-  mojom::CompositorFrameSinkClientRequest client_request =
+  viz::mojom::CompositorFrameSinkClientPtr client;
+  viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
 
-  ClientLayerTreeFrameSink::InitParams init_params;
+  AsyncLayerTreeFrameSink::InitParams init_params;
   init_params.compositor_task_runner = bg_thread.task_runner();
   init_params.gpu_memory_buffer_manager = &test_gpu_memory_buffer_manager;
   init_params.pipes.compositor_frame_sink_info = std::move(sink_info);
   init_params.pipes.client_request = std::move(client_request);
   init_params.local_surface_id_provider =
-      std::make_unique<DefaultLocalSurfaceIdProvider>();
+      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   init_params.enable_surface_synchronization = true;
-  ClientLayerTreeFrameSink layer_tree_frame_sink(std::move(provider), nullptr,
-                                                 &init_params);
+  AsyncLayerTreeFrameSink layer_tree_frame_sink(std::move(provider), nullptr,
+                                                &init_params);
 
   base::PlatformThreadId called_thread_id = base::kInvalidThreadId;
   base::RunLoop close_run_loop;
@@ -80,7 +82,7 @@ TEST(ClientLayerTreeFrameSinkTest,
                                                            &close_run_loop);
 
   auto bind_in_background =
-      [](ClientLayerTreeFrameSink* layer_tree_frame_sink,
+      [](AsyncLayerTreeFrameSink* layer_tree_frame_sink,
          ThreadTrackingLayerTreeFrameSinkClient* frame_sink_client) {
         layer_tree_frame_sink->BindToClient(frame_sink_client);
       };
@@ -91,7 +93,7 @@ TEST(ClientLayerTreeFrameSinkTest,
   // Closes the pipe, which should trigger calling DidLoseLayerTreeFrameSink()
   // (and quitting the RunLoop). There is no need to wait for BindToClient()
   // to complete as mojo::Binding error callbacks are processed asynchronously.
-  sink_request = mojom::CompositorFrameSinkRequest();
+  sink_request = viz::mojom::CompositorFrameSinkRequest();
   close_run_loop.Run();
 
   EXPECT_NE(base::kInvalidThreadId, called_thread_id);
@@ -99,12 +101,11 @@ TEST(ClientLayerTreeFrameSinkTest,
 
   // DetachFromClient() has to be called on the background thread.
   base::RunLoop detach_run_loop;
-  auto detach_in_background =
-      [](ClientLayerTreeFrameSink* layer_tree_frame_sink,
-         base::RunLoop* detach_run_loop) {
-        layer_tree_frame_sink->DetachFromClient();
-        detach_run_loop->Quit();
-      };
+  auto detach_in_background = [](AsyncLayerTreeFrameSink* layer_tree_frame_sink,
+                                 base::RunLoop* detach_run_loop) {
+    layer_tree_frame_sink->DetachFromClient();
+    detach_run_loop->Quit();
+  };
   bg_thread.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(detach_in_background,
                                 base::Unretained(&layer_tree_frame_sink),
@@ -113,4 +114,5 @@ TEST(ClientLayerTreeFrameSinkTest,
 }
 
 }  // namespace
-}  // namespace viz
+}  // namespace mojo_embedder
+}  // namespace cc

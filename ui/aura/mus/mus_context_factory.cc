@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "cc/base/switches.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "services/ui/public/cpp/gpu/gpu.h"

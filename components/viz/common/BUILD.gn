@@ -166,7 +166,6 @@ viz_component("common") {
     "//gpu/command_buffer/client:raster_interface",
     "//gpu/vulkan:buildflags",
     "//mojo/public/cpp/bindings",
-    "//skia",
     "//third_party/libyuv",
     "//ui/gfx",
     "//ui/gfx:color_space",
@@ -200,6 +199,7 @@ viz_component("common") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
     "//mojo/public/cpp/bindings",
+    "//skia",
   ]
 }
 

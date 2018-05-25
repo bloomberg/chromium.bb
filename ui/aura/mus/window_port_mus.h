@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -27,12 +27,14 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
-namespace gfx {
-class Insets;
+namespace cc {
+namespace mojo_embedder {
+class AsyncLayerTreeFrameSink;
+}
 }
 
-namespace viz {
-class ClientLayerTreeFrameSink;
+namespace gfx {
+class Insets;
 }
 
 namespace aura {
@@ -98,7 +100,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                        uint32_t flags,
                        ui::mojom::WindowTree::EmbedCallback callback);
 
-  std::unique_ptr<viz::ClientLayerTreeFrameSink> RequestLayerTreeFrameSink(
+  std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
+  RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 

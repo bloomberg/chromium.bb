@@ -11,14 +11,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {

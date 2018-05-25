@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/base/switches.h",
+  "+cc/mojo_embedder/async_layer_tree_frame_sink.h",
   "+cc/trees/layer_tree_frame_sink_client.h",
   "+cc/trees/layer_tree_frame_sink.h",
   "+cc/scheduler/begin_frame_source.h",

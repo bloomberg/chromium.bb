@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/client/aura_constants.h"
@@ -110,7 +111,7 @@ void WindowPortMus::EmbedUsingToken(
                                        std::move(callback));
 }
 
-std::unique_ptr<viz::ClientLayerTreeFrameSink>
+std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
 WindowPortMus::RequestLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
@@ -121,7 +122,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
 
-  viz::ClientLayerTreeFrameSink::InitParams params;
+  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
@@ -131,9 +132,10 @@ WindowPortMus::RequestLayerTreeFrameSink(
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
 
-  auto layer_tree_frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
-      std::move(context_provider), nullptr /* worker_context_provider */,
-      &params);
+  auto layer_tree_frame_sink =
+      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+          std::move(context_provider), nullptr /* worker_context_provider */,
+          &params);
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
   return layer_tree_frame_sink;

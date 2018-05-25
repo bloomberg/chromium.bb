@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
-#include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -513,7 +513,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       std::move(root_params));
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
-  viz::ClientLayerTreeFrameSink::InitParams params;
+  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = compositor->task_runner();
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
@@ -533,7 +533,7 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
     worker_context = worker_context_provider_;
   }
   compositor->SetLayerTreeFrameSink(
-      std::make_unique<viz::ClientLayerTreeFrameSink>(
+      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(compositor_context), std::move(worker_context), &params));
 
 #if defined(OS_WIN)

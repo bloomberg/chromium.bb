@@ -4,7 +4,7 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
-#include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/local/layer_tree_frame_sink_local.h"
 #include "ui/aura/mus/client_surface_embedder.h"
@@ -49,7 +49,8 @@ TEST_F(WindowPortMusTest,
   auto mus_frame_sink = GetFrameSinkFor(&window);
   ASSERT_TRUE(mus_frame_sink);
   auto frame_sink_local_surface_id =
-      static_cast<viz::ClientLayerTreeFrameSink*>(mus_frame_sink.get())
+      static_cast<cc::mojo_embedder::AsyncLayerTreeFrameSink*>(
+          mus_frame_sink.get())
           ->local_surface_id();
   EXPECT_TRUE(frame_sink_local_surface_id.is_valid());
   EXPECT_EQ(frame_sink_local_surface_id, local_surface_id);

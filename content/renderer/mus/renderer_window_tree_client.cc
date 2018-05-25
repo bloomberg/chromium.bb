@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "cc/base/switches.h"
-#include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
@@ -133,7 +133,7 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   viz::mojom::CompositorFrameSinkClientPtr client;
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&client);
-  viz::ClientLayerTreeFrameSink::InitParams params;
+  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
@@ -145,9 +145,10 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             true /* should_ask_for_child_region */);
   }
-  auto frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
-      std::move(context_provider), nullptr /* worker_context_provider */,
-      &params);
+  auto frame_sink =
+      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+          std::move(context_provider), nullptr /* worker_context_provider */,
+          &params);
   tree_->AttachCompositorFrameSink(root_window_id_, std::move(sink_request),
                                    std::move(client));
   callback.Run(std::move(frame_sink));

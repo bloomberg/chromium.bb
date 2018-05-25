@@ -42,6 +42,7 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/base/switches.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -49,7 +50,6 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
-#include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
@@ -171,7 +171,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
-
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -1994,7 +1993,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  viz::ClientLayerTreeFrameSink::InitParams params;
+  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = compositor_task_runner_;
   params.enable_surface_synchronization =
       features::IsSurfaceSynchronizationEnabled();
@@ -2055,7 +2054,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         routing_id, std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
-    callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
+    callback.Run(std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
         nullptr, nullptr, &params));
     return;
   }
@@ -2147,7 +2146,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       routing_id, std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer_ptr));
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
-  callback.Run(std::make_unique<viz::ClientLayerTreeFrameSink>(
+  callback.Run(std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
       std::move(context_provider), std::move(worker_context_provider),
       &params));
 }

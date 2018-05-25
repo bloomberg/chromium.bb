@@ -23,7 +23,7 @@ traits_headers = [
   "//ui/latency/mojo/latency_info_struct_traits.h",
 ]
 public_deps = [
-  "//cc",
+  "//components/viz/common",
   "//gpu/ipc/common:interfaces",
   "//services/viz/public/interfaces",
   "//skia/public/interfaces",

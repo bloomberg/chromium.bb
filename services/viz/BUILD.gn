@@ -25,7 +25,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//cc",
     "//components/viz/service",
     "//components/viz/service/main",
     "//mojo/public/cpp/system",

@@ -6,8 +6,6 @@ import("//components/viz/viz.gni")
 
 viz_component("client") {
   sources = [
-    "client_layer_tree_frame_sink.cc",
-    "client_layer_tree_frame_sink.h",
     "frame_eviction_manager.cc",
     "frame_eviction_manager.h",
     "frame_evictor.cc",
@@ -23,17 +21,16 @@ viz_component("client") {
 
   public_deps = [
     "//base",
-    "//cc",
     "//components/viz/common",
-    "//mojo/public/cpp/bindings",
-    "//services/viz/public/interfaces",
+  ]
+  deps = [
+    "//cc/base",
   ]
 }
 
 viz_source_set("unit_tests") {
   testonly = true
   sources = [
-    "client_layer_tree_frame_sink_unittest.cc",
     "hit_test_data_provider_draw_quad_unittest.cc",
   ]
 
@@ -41,7 +38,6 @@ viz_source_set("unit_tests") {
     ":client",
     "//base",
     "//base/test:test_support",
-    "//cc:test_support",
     "//components/viz/client",
     "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings",

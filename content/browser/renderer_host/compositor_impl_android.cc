@@ -34,11 +34,11 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/frame_eviction_manager.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
@@ -1227,7 +1227,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       std::move(root_params));
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
-  viz::ClientLayerTreeFrameSink::InitParams params;
+  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = task_runner;
   params.gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                          ->gpu_channel_establish_factory()
@@ -1240,8 +1240,9 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
           /*should_ask_for_child_region=*/false);
-  auto layer_tree_frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
-      std::move(context_provider), nullptr, &params);
+  auto layer_tree_frame_sink =
+      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+          std::move(context_provider), nullptr, &params);
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   CompositorDependencies::Get().display_private->SetDisplayVisible(true);
 }
