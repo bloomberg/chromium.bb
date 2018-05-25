@@ -434,7 +434,12 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void OverlayWindowViews::OnNativeWidgetMove() {
-  current_bounds_ = GetBounds();
+  // If the sizes are the same, |this| was moved. Otherwise, this can be also
+  // called when the window resizes. Let OnNativeWidgetSizeChanged() handle
+  // all resizing.
+  if (GetBounds().size() == current_bounds_.size())
+    current_bounds_ = GetBounds();
+  views::Widget::OnNativeWidgetMove();
 }
 
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
