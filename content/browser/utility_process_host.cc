@@ -374,22 +374,4 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
                                 client_, exit_code));
 }
 
-void UtilityProcessHost::NotifyAndDelete(int error_code) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&UtilityProcessHost::NotifyLaunchFailedAndDelete,
-                     weak_ptr_factory_.GetWeakPtr(), error_code));
-}
-
-// static
-void UtilityProcessHost::NotifyLaunchFailedAndDelete(
-    base::WeakPtr<UtilityProcessHost> host,
-    int error_code) {
-  if (!host)
-    return;
-
-  host->OnProcessLaunchFailed(error_code);
-  delete host.get();
-}
-
 }  // namespace content

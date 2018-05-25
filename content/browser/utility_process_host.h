@@ -113,14 +113,6 @@ class CONTENT_EXPORT UtilityProcessHost
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
 
-  // Cleans up |this| as a result of a failed Start().
-  void NotifyAndDelete(int error_code);
-
-  // Notifies the client that the launch failed and deletes |host|.
-  static void NotifyLaunchFailedAndDelete(
-      base::WeakPtr<UtilityProcessHost> host,
-      int error_code);
-
   // Pointer to our client interface used for progress notifications.
   scoped_refptr<UtilityProcessHostClient> client_;
 
