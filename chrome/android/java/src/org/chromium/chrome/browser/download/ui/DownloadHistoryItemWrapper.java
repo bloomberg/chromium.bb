@@ -405,7 +405,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             mBackendProvider.getDownloadDelegate().removeDownload(
                     getId(), isOffTheRecord(), hasBeenExternallyRemoved());
             mBackendProvider.getThumbnailProvider().removeThumbnailsFromDisk(getId());
-            return true;
+            return false;
         }
 
         @Override
