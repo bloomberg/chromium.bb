@@ -23,6 +23,7 @@ Polymer({
 
     /**
      * Available languages.
+     * @type {Array<{language: string, code: string, voice: TtsHandlerVoice}>}
      */
     languagesToVoices: {
       type: Array,
@@ -156,9 +157,10 @@ Polymer({
       result[voice.languageCode].voices.push(voice);
       languageCodeMap[voice.fullLanguageCode] = voice.languageCode;
     });
+    this.updateLangToVoicePrefs_(result);
     this.set('languagesToVoices', Object.values(result));
     this.set('allVoices', voices);
-    this.setDefaultPreviewVoiceForLocale_(languageCodeMap);
+    this.setDefaultPreviewVoiceForLocale_(voices, languageCodeMap);
   },
 
   /**
@@ -205,30 +207,101 @@ Polymer({
   },
 
   /**
+   * Updates the preferences given the current list of voices.
+   * @param {Object<string, {language: string, code: string,
+   *     voices: Array<TtsHandlerVoice>}>} langToVoices
+   * @private
+   */
+  updateLangToVoicePrefs_: function(langToVoices) {
+    if (langToVoices.length == 0)
+      return;
+    let allCodes = new Set(
+        Object.keys(this.prefs.settings['tts']['lang_to_voice_name'].value));
+    for (let code in langToVoices) {
+      // Remove from allCodes, to track what we've found a default for.
+      allCodes.delete(code);
+      let voices = langToVoices[code].voices;
+      let defaultVoiceForLang =
+          this.prefs.settings['tts']['lang_to_voice_name'].value[code];
+      if (!defaultVoiceForLang || defaultVoiceForLang === '') {
+        // Initialize prefs that have no value
+        this.set(
+            'prefs.settings.tts.lang_to_voice_name.value.' + code,
+            this.getBestVoiceForLocale_(voices));
+        continue;
+      }
+      // See if the set voice ID is in the voices list, in which case we are
+      // done checking this language.
+      if (voices.some(voice => voice.id === defaultVoiceForLang))
+        continue;
+      // Change prefs that point to voices that no longer exist.
+      this.set(
+          'prefs.settings.tts.lang_to_voice_name.value.' + code,
+          this.getBestVoiceForLocale_(voices));
+    }
+    // If there are any items left in allCodes, they are for languages that are
+    // no longer covered by the UI. We could now delete them from the
+    // lang_to_voice_name pref.
+    for (let code of allCodes) {
+      this.set('prefs.settings.tts.lang_to_voice_name.value.' + code, '');
+    }
+  },
+
+  /**
    * Sets the voice to show in the preview drop-down as default, based on the
    * current locale and voice preferences.
+   * @param {Array<TtsHandlerVoice>} allVoices
    * @param {Object<string, string>} languageCodeMap Mapping from language code
    *     to simple language code without locale.
    * @private
    */
-  setDefaultPreviewVoiceForLocale_: function(languageCodeMap) {
-    if (!this.allVoices)
+  setDefaultPreviewVoiceForLocale_: function(allVoices, languageCodeMap) {
+    if (!allVoices || allVoices.length == 0)
       return;
+
+    // Force a synchronous render so that we can set the default.
+    this.$.previewVoiceOptions.render();
+
+    // Set something if nothing exists. This useful for new users where
+    // sometimes browserProxy.getProspectiveUILanguage() does not complete the
+    // callback.
+    if (!this.defaultPreviewVoice)
+      this.set('defaultPreviewVoice', this.getBestVoiceForLocale_(allVoices));
 
     let browserProxy = settings.LanguagesBrowserProxyImpl.getInstance();
     browserProxy.getProspectiveUILanguage().then(prospectiveUILanguage => {
-      if (!prospectiveUILanguage)
-        return;
-      let code = languageCodeMap[prospectiveUILanguage];
-      if (!code)
-        return;
-      let result = this.prefs.settings['tts']['lang_to_voice_name'].value[code];
-      if (!result)
-        return;
-      // Force a synchronous render so that we can set the default.
-      this.$.previewVoiceOptions.render();
+      let result;
+      if (prospectiveUILanguage && prospectiveUILanguage != '' &&
+          languageCodeMap[prospectiveUILanguage]) {
+        let code = languageCodeMap[prospectiveUILanguage];
+        // First try the pref value.
+        result = this.prefs.settings['tts']['lang_to_voice_name'].value[code];
+      }
+      if (!result) {
+        // If it's not a pref value yet, or the prospectiveUILanguage was
+        // missing, try using the voice score.
+        result = this.getBestVoiceForLocale_(allVoices);
+      }
       this.set('defaultPreviewVoice', result);
     });
+  },
+
+  /**
+   * Gets the best voice for the app locale.
+   * @param {Array<TtsHandlerVoice>} voices Voices to search through.
+   * @return {string} The ID of the best matching voice in the array.
+   * @private
+   */
+  getBestVoiceForLocale_: function(voices) {
+    let bestScore = -1;
+    let bestVoice = '';
+    voices.forEach((voice) => {
+      if (voice.languageScore > bestScore) {
+        bestScore = voice.languageScore;
+        bestVoice = voice.id;
+      }
+    });
+    return bestVoice;
   },
 
   /** @private */
