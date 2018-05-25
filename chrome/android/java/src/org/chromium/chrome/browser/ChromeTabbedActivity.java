@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -38,7 +37,6 @@ import android.widget.FrameLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -122,15 +120,14 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -143,7 +140,6 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
-import org.chromium.ui.widget.ViewRectProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -577,13 +573,7 @@ public class ChromeTabbedActivity
             }
 
             if (!isShowingPromo) {
-                final Tracker tracker =
-                        TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                tracker.addOnInitializedCallback((Callback<Boolean>) success
-                        -> maybeShowAppMenuTextBubble(tracker,
-                                FeatureConstants.DOWNLOAD_HOME_FEATURE, R.id.downloads_menu_id,
-                                R.string.iph_download_home_text,
-                                R.string.iph_download_home_accessibility_text));
+                ToolbarButtonInProductHelpController.maybeShowColdStartIPH(this);
             }
 
             super.finishNativeInitialization();
@@ -869,49 +859,6 @@ public class ChromeTabbedActivity
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeUI");
         }
-    }
-
-    /**
-     * Shows an IPH text bubble that points to the app menu. If |highlightMenuItemId| is non-null,
-     * the corresponding menu item will be highlighted upon opening the app menu.
-     * @param tracker The feature engagement tracker
-     * @param featureName The name of the feature for which in-product help will be shown.
-     * @param highlightMenuItemId The menu item which should be highlighted when menu is opened.
-     * @param stringId The string resource corresponding to the message in the bubble.
-     * @param accessibilityStringId The string resource for the message in accessibility mode.
-     */
-    public void maybeShowAppMenuTextBubble(final Tracker tracker, String featureName,
-            Integer highlightMenuItemId, @StringRes int stringId,
-            @StringRes int accessibilityStringId) {
-        // Don't show the IPH if we're in the process of destroying the activity.
-        if (isActivityDestroyed()) return;
-
-        if (!tracker.shouldTriggerHelpUI(featureName)) return;
-
-        View anchorView = getToolbarManager().getMenuButton();
-        ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
-        TextBubble textBubble =
-                new TextBubble(this, anchorView, stringId, accessibilityStringId, rectProvider);
-        textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
-            tracker.dismissed(featureName);
-            turnOffHighlightForAppMenuTextBubble();
-        }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
-
-        turnOnHighlightForAppMenuTextBubble(highlightMenuItemId);
-
-        int yInsetPx =
-                getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
-        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
-        textBubble.show();
-    }
-
-    private void turnOnHighlightForAppMenuTextBubble(@Nullable Integer highlightMenuItemId) {
-        getAppMenuHandler().setMenuHighlight(highlightMenuItemId);
-    }
-
-    private void turnOffHighlightForAppMenuTextBubble() {
-        getAppMenuHandler().setMenuHighlight(null);
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {

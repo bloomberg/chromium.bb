@@ -3319,6 +3319,24 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       <message name="IDS_IPH_DOWNLOAD_INFOBAR_DOWNLOADS_ARE_FASTER_TEXT" desc="The in-product-help message on the download InfoBar to inform that downloads are now faster than before.">
         Chrome now downloads files faster
       </message>
+      <message name="IDS_IPH_NTP_BUTTON_TEXT_HOME_TEXT" desc="The in-product-help message to tap on the home button to navigate to the new tab page on the current tab.">
+        Tap to load the new tab page and view suggested articles
+      </message>
+      <message name="IDS_IPH_NTP_BUTTON_TEXT_HOME_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility message to tap on the home button to navigate to the new tab page on the current tab.">
+        Tap the home button to load the new tab page and view suggested articles
+      </message>
+      <message name="IDS_IPH_NTP_BUTTON_TEXT_NEWS_FEED_TEXT" desc="The in-product-help message to tap on the home button to navigate to the new tab page on the current tab.">
+        Tap to view articles selected specifically for you
+      </message>
+      <message name="IDS_IPH_NTP_BUTTON_TEXT_NEWS_FEED_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility message to tap on the home button to navigate to the new tab page on the current tab.">
+        Tap the home button to view articles selected specifically for you
+      </message>
+      <message name="IDS_IPH_NTP_BUTTON_TEXT_CHROME_TEXT" desc="The in-product-help message to tap on the home button to navigate to the new tab page on the current tab.">
+        Tap to get to the new tab page in your current tab
+      </message>
+      <message name="IDS_IPH_NTP_BUTTON_TEXT_CHROME_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility message to tap on the home button to navigate to the new tab page on the current tab.">
+        Tap the home button to get to the new tab page in your current tab
+      </message>
 
       <!-- Launcher Shortcuts -->
       <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">
