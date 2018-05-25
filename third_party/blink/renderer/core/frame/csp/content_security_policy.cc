@@ -1843,6 +1843,10 @@ bool ContentSecurityPolicy::ShouldBypassContentSecurityPolicy(
 // static
 bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
                                            const String& context_required_csp) {
+  // we don't allow any newline characters in the CSP attributes
+  if (attr.Contains('\n') || attr.Contains('\r'))
+    return false;
+
   ContentSecurityPolicy* attr_policy = ContentSecurityPolicy::Create();
   attr_policy->AddPolicyFromHeaderValue(attr,
                                         kContentSecurityPolicyHeaderTypeEnforce,
