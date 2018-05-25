@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/window_properties.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/shell_state_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,6 +34,25 @@ class WindowSizerAshTest : public ash::AshTestBase {
     params.skip_window_init_for_testing = true;
     return std::make_unique<Browser>(params);
   }
+
+  // Similar to WindowSizerTestUtil::GetWindowBounds() but takes an existing
+  // |display_id| instead of creating a TestScreen and new displays.
+  void GetWindowBounds(const Browser* browser,
+                       const gfx::Rect& passed_in,
+                       int64_t display_id,
+                       gfx::Rect* out_bounds) {
+    auto state_provider = std::make_unique<TestStateProvider>();
+    state_provider->SetPersistentState(gfx::Rect(), gfx::Rect(),
+                                       ui::SHOW_STATE_DEFAULT, true);
+    shell_state_client_.SetDisplayIdForNewWindows(display_id);
+
+    ui::WindowShowState ignored;
+    WindowSizer sizer(std::move(state_provider), browser);
+    sizer.DetermineWindowBoundsAndShowState(passed_in, out_bounds, &ignored);
+  }
+
+ protected:
+  ShellStateClient shell_state_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowSizerAshTest);
@@ -439,10 +457,11 @@ TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
 // Test the placement of newly created windows on multiple dislays.
 TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
-  gfx::Rect primary_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  gfx::Rect secondary_bounds =
-      display_manager()->GetSecondaryDisplay().bounds();
+  display::Display primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display second_display = display_manager()->GetSecondaryDisplay();
+  gfx::Rect primary_bounds = primary_display.bounds();
+  gfx::Rect secondary_bounds = second_display.bounds();
 
   std::unique_ptr<TestingProfile> profile(new TestingProfile());
 
@@ -476,9 +495,8 @@ TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
   // First new window should be in the primary.
   {
     gfx::Rect window_bounds;
-    util::GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds, gfx::Rect(),
-                          secondary_bounds, PERSISTED, new_browser.get(),
-                          gfx::Rect(), &window_bounds);
+    GetWindowBounds(new_browser.get(), gfx::Rect(), primary_display.id(),
+                    &window_bounds);
     // TODO(oshima): Use exact bounds when the window_sizer_ash is
     // moved to ash and changed to include the result from
     // RearrangeVisibleWindowOnShow.
@@ -488,9 +506,6 @@ TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
   // Move the window to the right side of the secondary display and create a new
   // window. It should be opened then on the secondary display.
   {
-    display::Display second_display =
-        display::Screen::GetScreen()->GetDisplayNearestPoint(
-            gfx::Point(1600 + 100, 10));
     browser_window->GetNativeWindow()->SetBoundsInScreen(
         gfx::Rect(secondary_bounds.CenterPoint().x() - 100, 10, 200, 200),
         second_display);
@@ -499,11 +514,8 @@ TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
     EXPECT_NE(ash::Shell::GetPrimaryRootWindow(),
               ash::Shell::GetRootWindowForNewWindows());
     gfx::Rect window_bounds;
-    ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
-    util::GetWindowBoundsAndShowState(
-        p1600x1200, p1600x1200, secondary_bounds, gfx::Rect(), secondary_bounds,
-        ui::SHOW_STATE_DEFAULT, ui::SHOW_STATE_DEFAULT, PERSISTED,
-        new_browser.get(), gfx::Rect(), 1u, &window_bounds, &out_show_state);
+    GetWindowBounds(new_browser.get(), gfx::Rect(), second_display.id(),
+                    &window_bounds);
     // TODO(oshima): Use exact bounds when the window_sizer_ash is
     // moved to ash and changed to include the result from
     // RearrangeVisibleWindowOnShow.
@@ -519,9 +531,8 @@ TEST_F(WindowSizerAshTest, PlaceNewWindowsOnMultipleDisplays) {
               ash::Shell::GetRootWindowForNewWindows());
 
     gfx::Rect window_bounds;
-    util::GetWindowBounds(p1600x1200, p1600x1200, secondary_bounds, gfx::Rect(),
-                          secondary_bounds, PERSISTED, new_browser.get(),
-                          gfx::Rect(), &window_bounds);
+    GetWindowBounds(new_browser.get(), gfx::Rect(), primary_display.id(),
+                    &window_bounds);
     // TODO(oshima): Use exact bounds when the window_sizer_ash is
     // moved to ash and changed to include the result from
     // RearrangeVisibleWindowOnShow.
@@ -679,10 +690,8 @@ TEST_F(WindowSizerAshTest, DefaultStateBecomesMaximized) {
 // Test that the target root window is used as the destination of
 // the non browser window. This differ from PersistedBoundsCase
 // in that this uses real ash shell implementations + StateProvider
-// TargetDisplayProvider, rather than mocks.
+// rather than mocks.
 TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
-  if (!ash_util::ShouldOpenAshOnStartup())
-    return;
   UpdateDisplay("500x500,600x600");
 
   // By default windows are placed on the primary display.
@@ -697,7 +706,8 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   {
     // When the second display is active new windows are placed there.
     aura::Window* second_root = ash::Shell::GetAllRootWindows()[1];
-    ash::ScopedRootWindowForNewWindows tmp(second_root);
+    int64_t second_display_id = display_manager()->GetSecondaryDisplay().id();
+    shell_state_client_.SetDisplayIdForNewWindows(second_display_id);
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     WindowSizer::GetBrowserWindowBoundsAndShowState(

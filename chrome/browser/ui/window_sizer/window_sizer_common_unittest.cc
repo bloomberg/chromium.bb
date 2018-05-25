@@ -197,10 +197,8 @@ void WindowSizerTestUtil::GetWindowBoundsAndShowState(
     sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
-  std::unique_ptr<WindowSizer::TargetDisplayProvider> tdp(
-      new WindowSizer::DefaultTargetDisplayProvider);
 
-  WindowSizer sizer(std::move(sp), std::move(tdp), &test_screen, browser);
+  WindowSizer sizer(std::move(sp), &test_screen, browser);
   sizer.DetermineWindowBoundsAndShowState(passed_in,
                                           out_bounds,
                                           out_show_state);
@@ -221,10 +219,8 @@ ui::WindowShowState WindowSizerTestUtil::GetWindowShowState(
     sp->SetPersistentState(bounds, display_config, show_state_persisted, true);
   if (source == LAST_ACTIVE || source == BOTH)
     sp->SetLastActiveState(bounds, show_state_last, true);
-  std::unique_ptr<WindowSizer::TargetDisplayProvider> tdp(
-      new WindowSizer::DefaultTargetDisplayProvider);
 
-  WindowSizer sizer(std::move(sp), std::move(tdp), &test_screen, browser);
+  WindowSizer sizer(std::move(sp), &test_screen, browser);
 
   ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
   gfx::Rect out_bounds;

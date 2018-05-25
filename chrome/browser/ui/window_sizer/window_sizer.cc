@@ -22,12 +22,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_switches.h"  // nogncheck
-#include "ash/shell.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#endif
-
 namespace {
 
 // Minimum height of the visible part of a window.
@@ -141,45 +135,21 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
 }  // namespace
 
-WindowSizer::DefaultTargetDisplayProvider::DefaultTargetDisplayProvider() =
-    default;
-WindowSizer::DefaultTargetDisplayProvider::~DefaultTargetDisplayProvider() =
-    default;
-
-display::Display WindowSizer::DefaultTargetDisplayProvider::GetTargetDisplay(
-    const display::Screen* screen,
-    const gfx::Rect& bounds) const {
-#if defined(OS_CHROMEOS)
-  // Use the target display on ash.
-  if (ash_util::ShouldOpenAshOnStartup()) {
-    aura::Window* target = ash::Shell::GetRootWindowForNewWindows();
-    return screen->GetDisplayNearestWindow(target);
-  }
-#endif
-  // Find the size of the work area of the monitor that intersects the bounds
-  // of the anchor window.
-  return screen->GetDisplayMatching(bounds);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
 WindowSizer::WindowSizer(
     std::unique_ptr<StateProvider> state_provider,
-    std::unique_ptr<TargetDisplayProvider> target_display_provider,
     const Browser* browser)
     : WindowSizer(std::move(state_provider),
-                  std::move(target_display_provider),
                   display::Screen::GetScreen(),
                   browser) {}
 
 WindowSizer::WindowSizer(
     std::unique_ptr<StateProvider> state_provider,
-    std::unique_ptr<TargetDisplayProvider> target_display_provider,
     display::Screen* screen,
     const Browser* browser)
     : state_provider_(std::move(state_provider)),
-      target_display_provider_(std::move(target_display_provider)),
       screen_(screen),
       browser_(browser) {
   DCHECK(screen_);
@@ -196,10 +166,7 @@ void WindowSizer::GetBrowserWindowBoundsAndShowState(
     ui::WindowShowState* show_state) {
   std::unique_ptr<StateProvider> state_provider(
       new DefaultStateProvider(app_name, browser));
-  std::unique_ptr<TargetDisplayProvider> target_display_provider(
-      new DefaultTargetDisplayProvider);
-  const WindowSizer sizer(std::move(state_provider),
-                          std::move(target_display_provider), browser);
+  const WindowSizer sizer(std::move(state_provider), browser);
   sizer.DetermineWindowBoundsAndShowState(specified_bounds,
                                           window_bounds,
                                           show_state);
@@ -392,7 +359,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
 }
 
 display::Display WindowSizer::GetTargetDisplay(const gfx::Rect& bounds) const {
-  return target_display_provider_->GetTargetDisplay(screen_, bounds);
+  return GetDisplayForNewWindow(screen_, bounds);
 }
 
 ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
@@ -414,3 +381,12 @@ ui::WindowShowState WindowSizer::GetWindowDefaultShowState() const {
 
   return browser_->initial_show_state();
 }
+
+#if !defined(OS_CHROMEOS)
+// Chrome OS has an implementation in //chrome/browser/ui/ash.
+// static
+display::Display WindowSizer::GetDisplayForNewWindow(display::Screen* screen,
+                                                     const gfx::Rect& bounds) {
+  return screen->GetDisplayMatching(bounds);
+}
+#endif  // defined(OS_CHROMEOS)

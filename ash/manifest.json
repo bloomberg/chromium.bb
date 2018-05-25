@@ -31,6 +31,7 @@
           "ash.mojom.ProcessCreationTimeRecorder",
           "ash.mojom.SessionController",
           "ash.mojom.ShelfController",
+          "ash.mojom.ShellState",
           "ash.mojom.ShutdownController",
           "ash.mojom.SplitViewController",
           "ash.mojom.SystemTray",

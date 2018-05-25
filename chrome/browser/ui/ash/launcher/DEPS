@@ -12,9 +12,4 @@ specific_include_rules = {
     "+ash/shell.h",
     "+ash/strings/grit/ash_strings.h",
   ],
-  # https://crbug.com/768908
-  "extension_launcher_context_menu\.cc": [
-    "+ash/scoped_root_window_for_new_windows.h",
-    "+ash/shell.h",
-  ],
 }
