@@ -26,7 +26,7 @@
 
   Object.keys(results.audits).sort().forEach(auditName => {
     var audit = results.audits[auditName];
-    TestRunner.addResult(`${audit.id}: ${Boolean(audit.rawValue)}`);
+    TestRunner.addResult(`${audit.name}: ${Boolean(audit.rawValue)}`);
   });
 
   TestRunner.completeTest();
