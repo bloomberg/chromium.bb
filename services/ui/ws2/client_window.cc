@@ -115,7 +115,7 @@ class ClientWindowEventHandler : public ui::EventHandler {
     auto* owning = client_window_->owning_window_service_client();
     auto* embedded = client_window_->embedded_window_service_client();
     WindowServiceClient* target_client = nullptr;
-    if (owning && owning->intercepts_events()) {
+    if (client_window_->DoesOwnerInterceptEvents()) {
       // A client that intercepts events, always gets the event regardless of
       // focus/capture.
       target_client = owning;
@@ -369,6 +369,10 @@ void ClientWindow::SetClientArea(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+bool ClientWindow::DoesOwnerInterceptEvents() const {
+  return embedding_ && embedding_->embedding_client_intercepts_events();
+}
+
 void ClientWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
   embedding_ = std::move(embedding);
 }
@@ -377,11 +381,6 @@ bool ClientWindow::HasNonClientArea() const {
   return owning_window_service_client_ &&
          owning_window_service_client_->IsTopLevel(window_) &&
          (!client_area_.IsEmpty() || !additional_client_areas_.empty());
-}
-
-bool ClientWindow::DoesOwnerInterceptEvents() const {
-  return HasEmbedding() && owning_window_service_client_ &&
-         owning_window_service_client_->intercepts_events();
 }
 
 bool ClientWindow::IsTopLevel() const {

@@ -32,9 +32,7 @@ struct EmbeddingHelper;
 // Helper to setup state needed for WindowService tests.
 class WindowServiceTestSetup {
  public:
-  // See |WindowServiceClient::intercepts_events| for details on
-  // |intercepts_events|.
-  explicit WindowServiceTestSetup(bool intercepts_events = false);
+  WindowServiceTestSetup();
   ~WindowServiceTestSetup();
 
   // |flags| mirrors that from mojom::WindowTree::Embed(), see it for details.

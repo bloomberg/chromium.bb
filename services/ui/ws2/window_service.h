@@ -66,8 +66,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Creates a new WindowServiceClient, caller must call one of the Init()
   // functions on the returned object.
   std::unique_ptr<WindowServiceClient> CreateWindowServiceClient(
-      mojom::WindowTreeClient* window_tree_client,
-      bool intercepts_events);
+      mojom::WindowTreeClient* window_tree_client);
 
   // Sets the window frame metrics.
   void SetFrameDecorationValues(const gfx::Insets& client_area_insets,

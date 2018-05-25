@@ -49,12 +49,11 @@ ClientWindow* WindowService::GetClientWindowForWindowCreateIfNecessary(
 }
 
 std::unique_ptr<WindowServiceClient> WindowService::CreateWindowServiceClient(
-    mojom::WindowTreeClient* window_tree_client,
-    bool intercepts_events) {
+    mojom::WindowTreeClient* window_tree_client) {
   const ClientSpecificId client_id = next_client_id_++;
   CHECK_NE(0u, next_client_id_);
-  return std::make_unique<WindowServiceClient>(
-      this, client_id, window_tree_client, intercepts_events);
+  return std::make_unique<WindowServiceClient>(this, client_id,
+                                               window_tree_client);
 }
 
 void WindowService::SetFrameDecorationValues(

@@ -33,7 +33,7 @@ class TestFocusRules : public wm::BaseFocusRules {
 
 }  // namespace
 
-WindowServiceTestSetup::WindowServiceTestSetup(bool intercepts_events)
+WindowServiceTestSetup::WindowServiceTestSetup()
     // FocusController takes ownership of TestFocusRules.
     : focus_controller_(new TestFocusRules()) {
   if (gl::GetGLImplementation() == gl::kGLImplementationNone)
@@ -52,8 +52,8 @@ WindowServiceTestSetup::WindowServiceTestSetup(bool intercepts_events)
   aura::client::SetFocusClient(root(), focus_controller());
   delegate_.set_top_level_parent(aura_test_helper_.root_window());
 
-  window_service_client_ = service_->CreateWindowServiceClient(
-      &window_tree_client_, intercepts_events);
+  window_service_client_ =
+      service_->CreateWindowServiceClient(&window_tree_client_);
   window_service_client_->InitFromFactory();
   client_test_helper_ = std::make_unique<WindowServiceClientTestHelper>(
       window_service_client_.get());

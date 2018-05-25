@@ -50,12 +50,10 @@ class Client {
     window_->Init(LAYER_NOT_DRAWN);
     window_->set_owned_by_parent(false);
     root->AddChild(window_.get());
-    const bool intercepts_events = false;
     binding_ = std::make_unique<ws2::WindowServiceClientBinding>();
     mojom::WindowTreeClient* tree_client = tree_client_ptr.get();
     binding_->InitForEmbed(
-        window_service, std::move(tree_client_ptr), tree_client,
-        intercepts_events, window_.get(),
+        window_service, std::move(tree_client_ptr), tree_client, window_.get(),
         base::BindOnce(&Client::OnConnectionLost, base::Unretained(this)));
   }
 
