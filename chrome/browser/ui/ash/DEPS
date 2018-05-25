@@ -60,7 +60,11 @@ specific_include_rules = {
   ],
   # https://crbug.com/665064
   "chrome_shell_delegate.*": [
-    "+ash",
+    # https://crbug.com/756054
+    "+ash/accessibility/accessibility_delegate.h",
+    # https://crbug.com/557397
+    "+ash/screenshot_delegate.h",
+    "+ash/shell_delegate.h",
   ],
   # https://crbug.com/672277
   "session_util\.cc": [
