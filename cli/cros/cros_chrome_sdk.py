@@ -15,17 +15,18 @@ import glob
 import json
 import os
 
+from chromite.cbuildbot import archive_lib
 from chromite.cli import command
 from chromite.lib import cache
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
-from chromite.cbuildbot import archive_lib
-from chromite.lib import config_lib
-from chromite.lib import constants
+from chromite.lib import retry_util
 from gn_helpers import gn_helpers
 
 
@@ -475,8 +476,9 @@ class ChromeSDKCommand(command.CliCommand):
   """
 
   # Note, this URL is not accessible outside of corp.
-  _GOMA_URL = ('https://clients5.google.com/cxx-compiler-service/'
-               'download/goma_ctl.py')
+  _GOMA_DOWNLOAD_URL = ('https://clients5.google.com/cxx-compiler-service/'
+                        'download/downloadurl')
+  _GOMA_TGZ = 'goma-goobuntu.tgz'
 
   _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
   _HOST_BINUTILS_DIR = 'third_party/binutils/Linux_x64/Release/bin/'
@@ -506,7 +508,6 @@ class ChromeSDKCommand(command.CliCommand):
   SDK_GOMA_DIR_ENV = 'SDK_GOMA_DIR'
 
   GOMACC_PORT_CMD = ['./gomacc', 'port']
-  FETCH_GOMA_CMD = ['wget', _GOMA_URL]
 
   # Override base class property to use cache related commandline options.
   use_caching_options = True
@@ -1068,20 +1069,28 @@ class ChromeSDKCommand(command.CliCommand):
         Log('Installing Goma.', silent=self.silent)
         with osutils.TempDir() as tempdir:
           goma_dir = os.path.join(tempdir, 'goma')
-          os.mkdir(goma_dir)
-          result = cros_build_lib.DebugRunCommand(
-              self.FETCH_GOMA_CMD, cwd=goma_dir, error_code_ok=True)
-          if result.returncode:
-            raise GomaError('Failed to fetch Goma')
-         # Update to latest version of goma. We choose the outside-chroot
-         # version ('goobuntu') over the chroot version ('chromeos') by
-         # supplying input='1' to the following prompt:
-         #
-         # What is your platform?
-         #  1. Goobuntu  2. Precise (32bit)  3. Lucid (32bit)  4. Debian
-         #  5. Chrome OS  6. MacOS ? -->
-          cros_build_lib.DebugRunCommand(
-              ['python2', 'goma_ctl.py', 'update'], cwd=goma_dir, input='1\n')
+          osutils.SafeMakedirs(goma_dir)
+          with osutils.ChdirContext(tempdir):
+            result = retry_util.RunCurl([self._GOMA_DOWNLOAD_URL],
+                                        stdout_to_pipe=True)
+            if result.returncode:
+              raise GomaError('Failed to fetch Goma Download URL')
+            download_url = result.output.strip()
+            result = retry_util.RunCurl(
+                ['%s/%s' % (download_url, self._GOMA_TGZ),
+                 '--output', self._GOMA_TGZ])
+            if result.returncode:
+              raise GomaError('Failed to fetch Goma')
+            result = cros_build_lib.DebugRunCommand(
+                ['tar', 'xf', self._GOMA_TGZ,
+                 '--strip=1', '-C', goma_dir])
+            if result.returncode:
+              raise GomaError('Failed to extract Goma')
+            result = cros_build_lib.DebugRunCommand(
+              [os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
+              extra_env={'PLATFORM': 'goobuntu'})
+            if result.returncode:
+              raise GomaError('Failed to install Goma')
           ref.SetDefault(goma_dir)
       goma_dir = ref.path
 
@@ -1089,7 +1098,7 @@ class ChromeSDKCommand(command.CliCommand):
     if self.options.start_goma:
       Log('Starting Goma.', silent=self.silent)
       cros_build_lib.DebugRunCommand(
-          ['python2', 'goma_ctl.py', 'ensure_start'], cwd=goma_dir)
+          [os.path.join(goma_dir, 'goma_ctl.py'), 'ensure_start'])
       port = self._GomaPort(goma_dir)
       Log('Goma is started on port %s', port, silent=self.silent)
       if not port:

@@ -32,10 +32,10 @@ class MockChromeSDKCommand(command_unittest.MockCommand):
   TARGET = 'chromite.cli.cros.cros_chrome_sdk.ChromeSDKCommand'
   TARGET_CLASS = cros_chrome_sdk.ChromeSDKCommand
   COMMAND = 'chrome-sdk'
-  ATTRS = (('_GOMA_URL', '_SetupEnvironment') +
+  ATTRS = (('_GOMA_DOWNLOAD_URL', '_SetupEnvironment') +
            command_unittest.MockCommand.ATTRS)
 
-  _GOMA_URL = 'Invalid URL'
+  _GOMA_DOWNLOAD_URL = 'Invalid URL'
 
   def __init__(self, *args, **kwargs):
     command_unittest.MockCommand.__init__(self, *args, **kwargs)
