@@ -3219,9 +3219,12 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 // This test verifies that when the CompositorFrameSink changes, the old
 // resources are not returned.
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   viz::FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -3523,9 +3526,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -3583,9 +3589,12 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 // then the fallback is dropped.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackWhenHidden) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3612,9 +3621,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // This test verifies that the primary SurfaceId is populated on resize and
 // the fallback SurfaceId is populated on SubmitCompositorFrame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
@@ -3677,9 +3689,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // the current surface) does not crash,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        CompositorFrameSinkChange) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -3711,9 +3726,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // RenderWidgetHostViewAuraTest.DiscardDelegatedFrame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DiscardDelegatedFrames) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   view_->InitAsChild(nullptr);
 
@@ -3850,9 +3868,12 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   view_->InitAsChild(nullptr);
 
@@ -3923,9 +3944,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 // Test that changing the memory pressure should delete saved frames. This test
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   view_->InitAsChild(nullptr);
 
@@ -4027,9 +4051,12 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
 // SwapCompositorFrame and OnDidNotProduceFrame IPCs through DelegatedFrameHost
 // and its CompositorFrameSinkSupport.
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
@@ -6130,9 +6157,12 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
 // SubmitCompositorFrame becomes the active hit test region in the
 // viz::HitTestManager.
 TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
-  // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
+  // https://crbug.com/844469
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
     return;
+  }
 
   gfx::Rect view_rect(0, 0, 100, 100);
   gfx::Size frame_size = view_rect.size();
