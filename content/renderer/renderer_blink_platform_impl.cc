@@ -414,7 +414,7 @@ blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
 }
 
 blink::WebCookieJar* RendererBlinkPlatformImpl::CookieJar() {
-  NOTREACHED() << "Use WebFrameClient::cookieJar() instead!";
+  NOTREACHED() << "Use WebLocalFrameClient::cookieJar() instead!";
   return nullptr;
 }
 

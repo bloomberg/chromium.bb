@@ -158,7 +158,7 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
-  WebFrameClient* client = web_frame->Client();
+  WebLocalFrameClient* client = web_frame->Client();
   DCHECK(client);
   ProvidePushControllerTo(frame, client->PushClient());
   ProvideUserMediaTo(frame, UserMediaClient::Create(client->UserMediaClient()));
@@ -240,7 +240,7 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
 }
 
 std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
-    WebFrameClient* web_frame_client,
+    WebLocalFrameClient* web_frame_client,
     HTMLMediaElement& html_media_element,
     const WebMediaPlayerSource& source,
     WebMediaPlayerClient* media_player_client,

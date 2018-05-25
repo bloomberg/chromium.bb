@@ -78,7 +78,7 @@
 // detachChildren() (virtually) calls Frame::detach(), which again calls
 // LocalFrameClient::detached(). This triggers WebFrame to clear its reference
 // to LocalFrame. LocalFrameClient::detached() also notifies the embedder via
-// WebFrameClient that the frame is detached. Most embedders will invoke
+// WebLocalFrameClient that the frame is detached. Most embedders will invoke
 // close() on the WebFrame at this point, triggering its deletion unless
 // something else is still retaining a reference.
 //
@@ -113,11 +113,11 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_icon_url.h"
 #include "third_party/blink/public/web/web_input_element.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -1644,7 +1644,7 @@ WebString WebLocalFrameImpl::GetLayerTreeAsTextForTesting(
 
 WebLocalFrame* WebLocalFrame::CreateMainFrame(
     WebView* web_view,
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
     WebFrame* opener,
     const WebString& name,
@@ -1654,7 +1654,7 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
     WebRemoteFrame* old_web_frame,
     WebSandboxFlags flags,
@@ -1665,7 +1665,7 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
 
 WebLocalFrameImpl* WebLocalFrameImpl::Create(
     WebTreeScopeType scope,
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     WebFrame* opener) {
   WebLocalFrameImpl* frame =
@@ -1676,7 +1676,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::Create(
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebView* web_view,
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
     WebFrame* opener,
     const WebString& name,
@@ -1694,7 +1694,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     WebRemoteFrame* old_web_frame,
     WebSandboxFlags flags,
@@ -1739,7 +1739,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry) {
   WebLocalFrameImpl* frame =
       new WebLocalFrameImpl(scope, client, interface_registry);
@@ -1749,7 +1749,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
 
 WebLocalFrameImpl::WebLocalFrameImpl(
     WebTreeScopeType scope,
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebLocalFrame(scope),
       client_(client),
@@ -1768,7 +1768,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
 
 WebLocalFrameImpl::WebLocalFrameImpl(
     WebRemoteFrame* old_web_frame,
-    WebFrameClient* client,
+    WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebLocalFrameImpl(old_web_frame->InShadowTree()
                             ? WebTreeScopeType::kShadow

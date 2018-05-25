@@ -41,7 +41,7 @@ class WebDocumentLoader;
 class WebDocument;
 class WebDoubleSize;
 class WebDOMEvent;
-class WebFrameClient;
+class WebLocalFrameClient;
 class WebFrameWidget;
 class WebInputMethodController;
 class WebPerformance;
@@ -72,13 +72,13 @@ class WebLocalFrame : public WebFrame {
  public:
   // Creates a main local frame for the WebView. Can only be invoked when no
   // main frame exists yet. Call Close() to release the returned frame.
-  // WebFrameClient may not be null.
+  // WebLocalFrameClient may not be null.
   // TODO(dcheng): The argument order should be more consistent with
   // CreateLocalChild() and CreateRemoteChild() in WebRemoteFrame... but it's so
   // painful...
   BLINK_EXPORT static WebLocalFrame* CreateMainFrame(
       WebView*,
-      WebFrameClient*,
+      WebLocalFrameClient*,
       blink::InterfaceRegistry*,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
@@ -102,7 +102,7 @@ class WebLocalFrame : public WebFrame {
   // Otherwise, if the load should not commit, call Detach() to discard the
   // frame.
   BLINK_EXPORT static WebLocalFrame* CreateProvisional(
-      WebFrameClient*,
+      WebLocalFrameClient*,
       blink::InterfaceRegistry*,
       WebRemoteFrame*,
       WebSandboxFlags,
@@ -112,7 +112,7 @@ class WebLocalFrame : public WebFrame {
   // create frames, the returned frame should be freed by calling Close() when
   // it's no longer needed.
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
-                                          WebFrameClient*,
+                                          WebLocalFrameClient*,
                                           blink::InterfaceRegistry*) = 0;
 
   // Returns the WebFrame associated with the current V8 context. This
@@ -129,7 +129,7 @@ class WebLocalFrame : public WebFrame {
   // the given element is not a frame, iframe or if the frame is empty.
   BLINK_EXPORT static WebLocalFrame* FromFrameOwnerElement(const WebElement&);
 
-  virtual WebFrameClient* Client() const = 0;
+  virtual WebLocalFrameClient* Client() const = 0;
 
   // Initialization ---------------------------------------------------------
 

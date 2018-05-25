@@ -16,7 +16,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -1042,7 +1042,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   WebMouseEvent mouse_up_event(mouse_down_event);
   mouse_up_event.SetType(WebInputEvent::kMouseUp);
 
-  WebFrameClient* old_client = WebView()->MainFrameImpl()->Client();
+  WebLocalFrameClient* old_client = WebView()->MainFrameImpl()->Client();
   VisualViewportMockWebFrameClient mock_web_frame_client;
   EXPECT_CALL(mock_web_frame_client,
               ShowContextMenu(ContextMenuAtLocation(
@@ -1085,7 +1085,7 @@ TEST_P(VisualViewportTest, TestClientNotifiedOfScrollEvents) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
 
-  WebFrameClient* old_client = WebView()->MainFrameImpl()->Client();
+  WebLocalFrameClient* old_client = WebView()->MainFrameImpl()->Client();
   VisualViewportMockWebFrameClient mock_web_frame_client;
   WebView()->MainFrameImpl()->SetClient(&mock_web_frame_client);
 

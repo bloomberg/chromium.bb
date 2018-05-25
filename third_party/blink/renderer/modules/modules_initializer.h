@@ -34,7 +34,7 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
                                  InspectedFrames*,
                                  Page*) const override;
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
-      WebFrameClient*,
+      WebLocalFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*,

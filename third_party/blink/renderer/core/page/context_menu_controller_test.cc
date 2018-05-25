@@ -116,7 +116,7 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
                        (rect->top() + rect->bottom()) / 2);
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
-  // Context menu info are sent to the WebFrameClient.
+  // Context menu info are sent to the WebLocalFrameClient.
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
@@ -170,7 +170,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
                        (rect->top() + rect->bottom()) / 2);
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
-  // Context menu info are sent to the WebFrameClient.
+  // Context menu info are sent to the WebLocalFrameClient.
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
@@ -224,7 +224,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
                        (rect->top() + rect->bottom()) / 2);
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
-  // Context menu info are sent to the WebFrameClient.
+  // Context menu info are sent to the WebLocalFrameClient.
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);

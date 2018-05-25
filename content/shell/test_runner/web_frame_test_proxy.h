@@ -17,8 +17,8 @@
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 
 namespace test_runner {
 
@@ -40,7 +40,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
  protected:
   WebFrameTestProxyBase();
   ~WebFrameTestProxyBase();
-  blink::WebFrameClient* test_client() { return test_client_.get(); }
+  blink::WebLocalFrameClient* test_client() { return test_client_.get(); }
 
  private:
   std::unique_ptr<WebFrameTestClient> test_client_;
@@ -59,7 +59,7 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
 
   virtual ~WebFrameTestProxy() {}
 
-  // WebFrameClient implementation.
+  // WebLocalFrameClient implementation.
   blink::WebPlugin* CreatePlugin(
       const blink::WebPluginParams& params) override {
     blink::WebPlugin* plugin = test_client()->CreatePlugin(params);
@@ -231,7 +231,7 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
   }
 
   blink::WebNavigationPolicy DecidePolicyForNavigation(
-      const blink::WebFrameClient::NavigationPolicyInfo& info) override {
+      const blink::WebLocalFrameClient::NavigationPolicyInfo& info) override {
     blink::WebNavigationPolicy policy =
         test_client()->DecidePolicyForNavigation(info);
     if (policy == blink::kWebNavigationPolicyIgnore)

@@ -32,7 +32,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
@@ -303,8 +303,9 @@ Frame::Frame(FrameClient* client,
 }
 
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
-                   WebFrameClient::DetachType::kRemove);
-STATIC_ASSERT_ENUM(FrameDetachType::kSwap, WebFrameClient::DetachType::kSwap);
+                   WebLocalFrameClient::DetachType::kRemove);
+STATIC_ASSERT_ENUM(FrameDetachType::kSwap,
+                   WebLocalFrameClient::DetachType::kSwap);
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
                    WebRemoteFrameClient::DetachType::kRemove);
 STATIC_ASSERT_ENUM(FrameDetachType::kSwap,

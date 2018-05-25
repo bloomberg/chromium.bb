@@ -1206,8 +1206,9 @@ void RenderViewImpl::OnForceRedraw(const ui::LatencyInfo& latency_info) {
 
 // blink::WebViewClient ------------------------------------------------------
 
-// TODO(csharrison): Migrate this method to WebFrameClient / RenderFrameImpl, as
-// it is now serviced by a mojo interface scoped to the opener frame.
+// TODO(csharrison): Migrate this method to WebLocalFrameClient /
+// RenderFrameImpl, as it is now serviced by a mojo interface scoped to the
+// opener frame.
 WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                                     const WebURLRequest& request,
                                     const WebWindowFeatures& features,
@@ -1686,7 +1687,8 @@ blink::WebWidgetClient* RenderViewImpl::WidgetClient() {
   return static_cast<RenderWidget*>(this);
 }
 
-// blink::WebFrameClient -----------------------------------------------------
+// blink::WebLocalFrameClient
+// -----------------------------------------------------
 
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {

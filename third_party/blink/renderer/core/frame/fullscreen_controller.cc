@@ -32,8 +32,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -50,7 +50,7 @@ namespace blink {
 
 namespace {
 
-WebFrameClient& GetWebFrameClient(LocalFrame& frame) {
+WebLocalFrameClient& GetWebFrameClient(LocalFrame& frame) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   DCHECK(web_frame);
   DCHECK(web_frame->Client());

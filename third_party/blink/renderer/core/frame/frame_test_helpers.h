@@ -43,9 +43,9 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_history_item.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -280,10 +280,10 @@ class WebViewHelper {
   DISALLOW_COPY_AND_ASSIGN(WebViewHelper);
 };
 
-// Minimal implementation of WebFrameClient needed for unit tests that load
+// Minimal implementation of WebLocalFrameClient needed for unit tests that load
 // frames. Tests that load frames and need further specialization of
-// WebFrameClient behavior should subclass this.
-class TestWebFrameClient : public WebFrameClient {
+// WebLocalFrameClient behavior should subclass this.
+class TestWebFrameClient : public WebLocalFrameClient {
  public:
   TestWebFrameClient();
   ~TestWebFrameClient() override = default;
@@ -298,7 +298,7 @@ class TestWebFrameClient : public WebFrameClient {
   // Note: only needed for local roots.
   void BindWidgetClient(std::unique_ptr<TestWebWidgetClient>);
 
-  // WebFrameClient:
+  // WebLocalFrameClient:
   void FrameDetached(DetachType) override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType,
@@ -339,7 +339,7 @@ class TestWebFrameClient : public WebFrameClient {
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that
 // load remote frames. Tests that load frames and need further specialization
-// of WebFrameClient behavior should subclass this.
+// of WebLocalFrameClient behavior should subclass this.
 class TestWebRemoteFrameClient : public WebRemoteFrameClient {
  public:
   TestWebRemoteFrameClient();

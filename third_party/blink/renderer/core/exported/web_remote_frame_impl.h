@@ -48,7 +48,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                   const WebString& name,
                                   WebSandboxFlags,
-                                  WebFrameClient*,
+                                  WebLocalFrameClient*,
                                   blink::InterfaceRegistry*,
                                   WebFrame* previous_sibling,
                                   const ParsedFeaturePolicy&,

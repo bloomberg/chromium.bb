@@ -7,7 +7,7 @@
 
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/web/web_document_loader.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -36,7 +36,7 @@ class WebSettings;
 // core/exported are gone (now depending on core/exported/WebViewImpl.h in
 // *.cpp).
 // TODO(kinuko): Make this go away (https://crbug.com/538751).
-class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
+class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
  public:
   class CORE_EXPORT Client : public WebDevToolsAgentImpl::WorkerClient {
    public:
@@ -67,14 +67,14 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   void SetContentSecurityPolicyAndReferrerPolicy(ContentSecurityPolicy*,
                                                  String referrer_policy);
 
-  // WebFrameClient overrides.
+  // WebLocalFrameClient overrides.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
-  // Note: usually WebFrameClient implementations override WebFrameClient to
-  // call Close() on the corresponding WebLocalFrame. Shadow pages are set up a
-  // bit differently and clear the WebFrameClient pointer before shutting down,
-  // so the shadow page must also manually call Close() on the corresponding
-  // frame and its widget.
+  // Note: usually WebLocalFrameClient implementations override
+  // WebLocalFrameClient to call Close() on the corresponding WebLocalFrame.
+  // Shadow pages are set up a bit differently and clear the WebLocalFrameClient
+  // pointer before shutting down, so the shadow page must also manually call
+  // Close() on the corresponding frame and its widget.
   void DidFinishDocumentLoad() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   base::UnguessableToken GetDevToolsFrameToken() override;

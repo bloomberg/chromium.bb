@@ -121,7 +121,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT void RemoveInsertedStyleSheet(const WebStyleSheetKey&,
                                              CSSOrigin = kAuthorOrigin);
 
-  // Arranges to call WebFrameClient::didMatchCSS(frame(), ...) when one of
+  // Arranges to call WebLocalFrameClient::didMatchCSS(frame(), ...) when one of
   // the selectors matches or stops matching an element in this document.
   // Each call to this method overrides any previous calls.
   BLINK_EXPORT void WatchCSSSelectors(const WebVector<WebString>& selectors);

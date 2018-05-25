@@ -61,11 +61,11 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -4946,7 +4946,7 @@ TEST_F(WebViewTest, SetZoomLevelWhilePluginFocused) {
   class PluginCreatingWebFrameClient
       : public FrameTestHelpers::TestWebFrameClient {
    public:
-    // WebFrameClient overrides:
+    // WebLocalFrameClient overrides:
     WebPlugin* CreatePlugin(const WebPluginParams& params) override {
       return new FakeWebPlugin(params);
     }
@@ -4997,7 +4997,7 @@ TEST_F(WebViewTest, DetachPluginInLayout) {
   class PluginCreatingWebFrameClient
       : public FrameTestHelpers::TestWebFrameClient {
    public:
-    // WebFrameClient overrides:
+    // WebLocalFrameClient overrides:
     WebPlugin* CreatePlugin(const WebPluginParams& params) override {
       return new ScriptInDestroyPlugin(Frame(), params);
     }
@@ -5194,7 +5194,7 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
    public:
     MockClockAdvancingWebFrameClient(WTF::ScopedMockClock* mock_clock)
         : mock_clock_(mock_clock) {}
-    // WebFrameClient overrides:
+    // WebLocalFrameClient overrides:
     void DidAddMessageToConsole(const WebConsoleMessage& message,
                                 const WebString& source_name,
                                 unsigned source_line,

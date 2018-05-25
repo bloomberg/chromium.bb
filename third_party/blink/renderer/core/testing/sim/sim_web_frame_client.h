@@ -15,7 +15,7 @@ class SimWebFrameClient final : public FrameTestHelpers::TestWebFrameClient {
  public:
   explicit SimWebFrameClient(SimTest&);
 
-  // WebFrameClient overrides:
+  // WebLocalFrameClient overrides:
   void DidAddMessageToConsole(const WebConsoleMessage&,
                               const WebString& source_name,
                               unsigned source_line,

@@ -15,7 +15,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/blink.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_view_client.h"
 
@@ -147,7 +147,7 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // A helper that handles interaction from WebViewPlugin's internal WebView.
   class WebViewHelper : public blink::WebViewClient,
-                        public blink::WebFrameClient {
+                        public blink::WebLocalFrameClient {
    public:
     WebViewHelper(WebViewPlugin* plugin,
                   const content::WebPreferences& preferences);
@@ -178,7 +178,7 @@ class WebViewPlugin : public blink::WebPlugin,
     std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
         override;
 
-    // WebFrameClient methods:
+    // WebLocalFrameClient methods:
     void DidClearWindowObject() override;
     void FrameDetached(DetachType) override;
 

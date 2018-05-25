@@ -53,8 +53,8 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "url/gurl.h"
@@ -664,7 +664,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   base::Thread media_thread_;
 
   // Blink state.
-  blink::WebFrameClient web_frame_client_;
+  blink::WebLocalFrameClient web_frame_client_;
   blink::WebView* web_view_;
   blink::WebLocalFrame* web_local_frame_;
 

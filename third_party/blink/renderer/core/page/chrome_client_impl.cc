@@ -43,8 +43,8 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_input_element.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_popup_menu_info.h"
@@ -576,7 +576,7 @@ void ChromeClientImpl::OpenFileChooser(
     LocalFrame* frame,
     scoped_refptr<FileChooser> file_chooser) {
   NotifyPopupOpeningObservers();
-  WebFrameClient* client = WebLocalFrameImpl::FromFrame(frame)->Client();
+  WebLocalFrameClient* client = WebLocalFrameImpl::FromFrame(frame)->Client();
   if (!client)
     return;
 

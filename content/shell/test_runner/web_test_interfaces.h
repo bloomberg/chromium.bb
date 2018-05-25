@@ -12,7 +12,7 @@
 #include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
-class WebFrameClient;
+class WebLocalFrameClient;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebRTCPeerConnectionHandler;
@@ -68,7 +68,7 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   TestInterfaces* GetTestInterfaces();
 
-  // Creates a WebFrameClient implementation providing test behavior (i.e.
+  // Creates a WebLocalFrameClient implementation providing test behavior (i.e.
   // forwarding javascript console output to the test harness).  The caller
   // should guarantee that the returned object won't be used beyond the lifetime
   // of WebTestInterfaces and/or the lifetime of |web_view_test_proxy_base|.

@@ -44,7 +44,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -209,7 +209,7 @@ class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 
       return new TestPlugin(params, this);
     }
-    return WebFrameClient::CreatePlugin(params);
+    return WebLocalFrameClient::CreatePlugin(params);
   }
 
  public:

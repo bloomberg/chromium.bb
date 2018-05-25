@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
-service_manager::InterfaceProvider* WebFrameClient::GetInterfaceProvider() {
+service_manager::InterfaceProvider*
+WebLocalFrameClient::GetInterfaceProvider() {
   static service_manager::InterfaceProvider* interface_provider = []() {
     auto* interface_provider = new service_manager::InterfaceProvider();
     service_manager::mojom::InterfaceProviderPtr provider;

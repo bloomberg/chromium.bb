@@ -49,7 +49,7 @@ class Page;
 class PictureInPictureController;
 class Settings;
 class ShadowRoot;
-class WebFrameClient;
+class WebLocalFrameClient;
 class WebLayerTreeView;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -103,7 +103,7 @@ class CORE_EXPORT CoreInitializer {
                                               const Settings&) const = 0;
 
   virtual std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
-      WebFrameClient*,
+      WebLocalFrameClient*,
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*,

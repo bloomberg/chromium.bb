@@ -494,7 +494,7 @@ base::TimeTicks SanitizeNavigationTiming(
 }
 
 CommonNavigationParams MakeCommonNavigationParams(
-    const blink::WebFrameClient::NavigationPolicyInfo& info,
+    const blink::WebLocalFrameClient::NavigationPolicyInfo& info,
     int load_flags) {
   Referrer referrer(
       GURL(info.url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
@@ -3228,7 +3228,8 @@ void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
 #endif
 }
 
-// blink::WebFrameClient implementation ----------------------------------------
+// blink::WebLocalFrameClient implementation
+// ----------------------------------------
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
     const blink::WebPluginParams& params) {

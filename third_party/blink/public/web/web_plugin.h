@@ -222,7 +222,7 @@ class WebPlugin {
   // Start a new search.  The plugin should search for a little bit at a time so
   // that it doesn't block the thread in case of a large document.  The results,
   // along with the find's identifier, should be sent asynchronously to
-  // WebFrameClient's reportFindInPage* methods.
+  // WebLocalFrameClient's reportFindInPage* methods.
   // Returns true if the search started, or false if the plugin doesn't support
   // search.
   virtual bool StartFind(const WebString& search_text,

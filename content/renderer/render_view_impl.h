@@ -474,12 +474,14 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) override;
 
-  // Old WebFrameClient implementations ----------------------------------------
+  // Old WebLocalFrameClient implementations
+  // ----------------------------------------
 
-  // RenderViewImpl used to be a WebFrameClient, but now RenderFrameImpl is the
-  // WebFrameClient. However, many implementations of WebFrameClient methods
-  // still live here and are called from RenderFrameImpl. These implementations
-  // are to be moved to RenderFrameImpl <http://crbug.com/361761>.
+  // RenderViewImpl used to be a WebLocalFrameClient, but now RenderFrameImpl is
+  // the WebLocalFrameClient. However, many implementations of
+  // WebLocalFrameClient methods still live here and are called from
+  // RenderFrameImpl. These implementations are to be moved to RenderFrameImpl
+  // <http://crbug.com/361761>.
 
   static Referrer GetReferrerFromRequest(
       blink::WebFrame* frame,

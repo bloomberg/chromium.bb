@@ -35,7 +35,7 @@ function iframeLoaded(frameID)
         if (++frameID == testCodes.length) {
             if (window.testRunner) {
                 // Before finishing the test, we have to allow the callstack to
-                // unwind - this enables dumping of pending WebFrameClient
+                // unwind - this enables dumping of pending WebLocalFrameClient
                 // callbacks (i.e. didFinishLoad and/or didHandleOnloadEvents).
                 window.setTimeout(function() {
                     testRunner.notifyDone();
