@@ -51,7 +51,6 @@ MediaElementEventQueue::~MediaElementEventQueue() = default;
 void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
   visitor->Trace(pending_events_);
-  EventQueue::Trace(visitor);
 }
 
 bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
@@ -73,24 +72,6 @@ bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
     timer_.StartOneShot(TimeDelta(), from_here);
 
   return true;
-}
-
-bool MediaElementEventQueue::CancelEvent(Event* event) {
-  bool found = pending_events_.Contains(event);
-
-  if (found) {
-    EventTarget* target = event->target() ? event->target() : owner_.Get();
-    probe::AsyncTaskCanceled(target->GetExecutionContext(), event);
-    pending_events_.EraseAt(pending_events_.Find(event));
-    TRACE_EVENT_ASYNC_END2("event", "MediaElementEventQueue:enqueueEvent",
-                           event, "type", event->type().Ascii(), "status",
-                           "cancelled");
-  }
-
-  if (pending_events_.IsEmpty())
-    timer_.Stop();
-
-  return found;
 }
 
 void MediaElementEventQueue::TimerFired(TimerBase*) {
