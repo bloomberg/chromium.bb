@@ -197,14 +197,7 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
         static_cast<UtilityProcessHost*>(it.GetDelegate());
     if (utility_process->sandbox_type() ==
         service_manager::SANDBOX_TYPE_NETWORK) {
-      // Even though the TerminateAll call above tries to kill all child
-      // processes, that will fail sometimes (e.g. on Windows if there's pending
-      // I/O). Once the network service is sandboxed this will be taken care of,
-      // since the sandbox ensures child processes are terminated. Until then,
-      // wait on the network process for a bit. This is done so that:
-      // 1) when Chrome quits, we ensure that cookies & cache are flushed
-      // 2) tests aren't killed by swarming because of child processes that
-      //    outlive the parent process.
+      // This ensures that cookies and cache are flushed to disk on shutdown.
       // https://crbug.com/841001
       const int kMaxSecondsToWaitForNetworkProcess = 10;
       ChildProcessHostImpl* child_process =
