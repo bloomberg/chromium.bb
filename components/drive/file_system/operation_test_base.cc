@@ -132,7 +132,8 @@ void OperationTestBase::SetUp() {
   change_list_loader_.reset(new internal::ChangeListLoader(
       logger_.get(), blocking_task_runner_.get(), metadata_.get(),
       scheduler_.get(), root_folder_id_loader_.get(),
-      start_page_token_loader_.get(), loader_controller_.get()));
+      start_page_token_loader_.get(), loader_controller_.get(),
+      util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath()));
   change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));
   content::RunAllTasksUntilIdle();

@@ -33,12 +33,13 @@ DefaultCorpusChangeListLoader::DefaultCorpusChangeListLoader(
   change_list_loader_ = std::make_unique<ChangeListLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
       root_folder_id_loader_.get(), start_page_token_loader_.get(),
-      loader_controller_);
+      loader_controller_, util::kTeamDriveIdDefaultCorpus,
+      util::GetDriveMyDriveRootPath());
 
   directory_loader_ = std::make_unique<DirectoryLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
       root_folder_id_loader_.get(), start_page_token_loader_.get(),
-      loader_controller_);
+      loader_controller_, util::GetDriveMyDriveRootPath());
 }
 
 DefaultCorpusChangeListLoader::~DefaultCorpusChangeListLoader() = default;

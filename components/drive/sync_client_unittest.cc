@@ -148,7 +148,8 @@ class SyncClientTest : public testing::Test {
     change_list_loader_.reset(new ChangeListLoader(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
         metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
-        start_page_token_loader_.get(), loader_controller_.get()));
+        start_page_token_loader_.get(), loader_controller_.get(),
+        util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
     sync_client_.reset(

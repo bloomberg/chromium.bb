@@ -113,7 +113,9 @@ class ChangeList {
 // updates the resource metadata stored locally.
 class ChangeListProcessor {
  public:
-  ChangeListProcessor(ResourceMetadata* resource_metadata,
+  ChangeListProcessor(const std::string& team_drive_id,
+                      const base::FilePath& root_entry_path,
+                      ResourceMetadata* resource_metadata,
                       base::CancellationFlag* in_shutdown);
   ~ChangeListProcessor();
 
@@ -124,6 +126,10 @@ class ChangeListProcessor {
   // it is full resource lists (false) or change lists (true).
   //
   // Must be run on the same task runner as |resource_metadata_| uses.
+  // |start_page_token| is the start page token used to retrieve the change
+  // list.
+  // |root_resource_id| is the resource id to lookup the root folder of the
+  // changeslists in resource metadata.
   FileError ApplyUserChangeList(
       const std::string& start_page_token,
       const std::string& root_resource_id,
@@ -185,6 +191,8 @@ class ChangeListProcessor {
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;
   std::unique_ptr<FileChange> changed_files_;
+  const std::string team_drive_id_;
+  const base::FilePath& root_entry_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeListProcessor);
 };

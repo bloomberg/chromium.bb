@@ -109,7 +109,8 @@ class DirectoryLoaderTest : public testing::Test {
     directory_loader_.reset(new DirectoryLoader(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
         metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
-        start_page_token_loader_.get(), loader_controller_.get()));
+        start_page_token_loader_.get(), loader_controller_.get(),
+        util::GetDriveMyDriveRootPath()));
   }
 
   // Adds a new file to the root directory of the service.
