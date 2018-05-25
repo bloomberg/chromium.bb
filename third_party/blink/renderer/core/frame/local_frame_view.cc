@@ -1476,12 +1476,6 @@ void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
                                StyleChangeReason::kStyleSheetChange));
 }
 
-bool LocalFrameView::ContentsInCompositedLayer() const {
-  auto* layout_view = this->GetLayoutView();
-  return layout_view &&
-         layout_view->GetCompositingState() == kPaintsIntoOwnBacking;
-}
-
 void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {
   DCHECK(!background_attachment_fixed_objects_.Contains(object));
 
@@ -1732,47 +1726,6 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
       fast_path_allowed = false;
   }
   return fast_path_allowed;
-}
-
-bool LocalFrameView::ScrollContentsFastPath(const IntSize& scroll_delta) {
-  if (!ContentsInCompositedLayer())
-    return false;
-
-  InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutView());
-
-  if (!viewport_constrained_objects_ ||
-      viewport_constrained_objects_->IsEmpty()) {
-    probe::didChangeViewport(frame_.Get());
-    return true;
-  }
-
-  if (!InvalidateViewportConstrainedObjects())
-    return false;
-
-  probe::didChangeViewport(frame_.Get());
-  return true;
-}
-
-void LocalFrameView::ScrollContentsSlowPath() {
-  TRACE_EVENT0("blink", "LocalFrameView::scrollContentsSlowPath");
-  // We need full invalidation during slow scrolling. For slimming paint, full
-  // invalidation of the LayoutView is not enough. We also need to invalidate
-  // all of the objects.
-  // FIXME: Find out what are enough to invalidate in slow path scrolling.
-  // crbug.com/451090#9.
-  auto* layout_view = GetLayoutView();
-  DCHECK(layout_view);
-  if (ContentsInCompositedLayer()) {
-    layout_view->Layer()->GetCompositedLayerMapping()->SetContentsNeedDisplay();
-  } else {
-    layout_view
-        ->SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-  }
-
-  if (ContentsInCompositedLayer()) {
-    IntRect update_rect = VisibleContentRect();
-    layout_view->InvalidatePaintRectangle(LayoutRect(update_rect));
-  }
 }
 
 void LocalFrameView::RestoreScrollbar() {
@@ -4461,30 +4414,6 @@ void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {
     root_layer_did_scroll_ = false;
     FrameRectsChanged();
   }
-}
-
-void LocalFrameView::ScrollContentsIfNeeded() {
-  if (pending_scroll_delta_.IsZero())
-    return;
-  ScrollOffset scroll_delta = pending_scroll_delta_;
-  pending_scroll_delta_ = ScrollOffset();
-  // FIXME: Change scrollContents() to take DoubleSize. crbug.com/414283.
-  ScrollContents(FlooredIntSize(scroll_delta));
-}
-
-void LocalFrameView::ScrollContents(const IntSize& scroll_delta) {
-  ChromeClient* client = GetChromeClient();
-  if (!client)
-    return;
-
-  TRACE_EVENT0("blink", "LocalFrameView::scrollContents");
-
-  if (!ScrollContentsFastPath(-scroll_delta))
-    ScrollContentsSlowPath();
-
-  // This call will move children with native FrameViews (plugins) and
-  // invalidate them as well.
-  FrameRectsChanged();
 }
 
 FloatPoint LocalFrameView::ContentsToFrame(
