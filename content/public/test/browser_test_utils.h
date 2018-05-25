@@ -715,6 +715,9 @@ class RenderFrameSubmissionObserver
   explicit RenderFrameSubmissionObserver(WebContents* web_contents);
   ~RenderFrameSubmissionObserver() override;
 
+  // Resets the current |render_frame_count|;
+  void ResetCounter() { render_frame_count_ = 0; }
+
   // Blocks the browser ui thread until the next OnRenderFrameSubmission.
   void WaitForAnyFrameSubmission();
 
