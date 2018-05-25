@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_footer_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
@@ -285,7 +286,8 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       break;
     case PopupMenuActionPasteAndGo:
       base::RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
-      // TODO(crbug.com/821560):Implement this.
+      [self.dispatcher loadQuery:[UIPasteboard generalPasteboard].string
+                     immediately:YES];
       break;
     case PopupMenuActionVoiceSearch:
       base::RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));

@@ -14,8 +14,7 @@ VoiceSearchController::VoiceSearchController() {}
 
 VoiceSearchController::~VoiceSearchController() {}
 
-void VoiceSearchController::SetDelegate(
-    id<VoiceSearchControllerDelegate> delegate) {}
+void VoiceSearchController::SetDispatcher(id<LoadQueryCommands> dispatcher) {}
 
 void VoiceSearchController::PrepareToAppear() {}
 

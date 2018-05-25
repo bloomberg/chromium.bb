@@ -9,7 +9,6 @@
 
 @class CommandDispatcher;
 @protocol QRScannerPresenting;
-@protocol QRScannerResultLoading;
 
 // QRScannerLegacyCoordinator presents the public interface for the QR scanner
 // feature.
@@ -21,7 +20,6 @@
 // Requirements.
 @property(nonatomic, readwrite, weak) id<QRScannerPresenting>
     presentationProvider;
-@property(nonatomic, readwrite, weak) id<QRScannerResultLoading> loadProvider;
 
 // Removes references to any weak objects that this coordinator holds pointers
 // to.

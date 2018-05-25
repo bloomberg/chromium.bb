@@ -249,7 +249,6 @@
 #import "ios/public/provider/chrome/browser/voice/voice_search_bar.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_bar_owner.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/features.h"
@@ -1582,7 +1581,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
   if (_voiceSearchController)
-    _voiceSearchController->SetDelegate(nil);
+    _voiceSearchController->SetDispatcher(nil);
   [_rateThisAppDialog setDelegate:nil];
   [_model closeAllTabs];
   [_paymentRequestManager setActiveWebState:nullptr];
@@ -1781,7 +1780,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _browserContainerCoordinator = nil;
     self.typingShield = nil;
     if (_voiceSearchController)
-      _voiceSearchController->SetDelegate(nil);
+      _voiceSearchController->SetDispatcher(nil);
     _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
     _toolbarCoordinator = nil;
@@ -2069,6 +2068,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     topToolbarCoordinator.URLLoader = self;
     topToolbarCoordinator.webStateList = [_model webStateList];
     topToolbarCoordinator.dispatcher = self.dispatcher;
+    topToolbarCoordinator.commandDispatcher = _dispatcher;
     [topToolbarCoordinator start];
 
     SecondaryToolbarCoordinator* bottomToolbarCoordinator = [
@@ -2091,6 +2091,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _toolbarCoordinator.webStateList = [_model webStateList];
     _toolbarCoordinator.delegate = self;
     _toolbarCoordinator.URLLoader = self;
+    _toolbarCoordinator.commandDispatcher = _dispatcher;
     self.primaryToolbarCoordinator = _toolbarCoordinator;
     self.toolbarInterface = _toolbarCoordinator;
 
@@ -2103,15 +2104,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.sideSwipeController.secondaryToolbarSnapshotProvider =
       self.secondaryToolbarCoordinator;
 
-  [_dispatcher
-      startDispatchingToTarget:self.primaryToolbarCoordinator.omniboxFocuser
-                   forProtocol:@protocol(OmniboxFocuser)];
-  [_dispatcher startDispatchingToTarget:self.primaryToolbarCoordinator
-                            forProtocol:@protocol(FakeboxFocuser)];
   [self updateBroadcastState];
   if (_voiceSearchController)
-    _voiceSearchController->SetDelegate(
-        [self.primaryToolbarCoordinator voiceSearchDelegate]);
+    _voiceSearchController->SetDispatcher(
+        static_cast<id<LoadQueryCommands>>(_dispatcher));
 
   if (IsIPadIdiom()) {
     self.tabStripCoordinator =
@@ -2282,8 +2278,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _qrScannerCoordinator =
       [[QRScannerLegacyCoordinator alloc] initWithBaseViewController:self];
   _qrScannerCoordinator.dispatcher = _dispatcher;
-  _qrScannerCoordinator.loadProvider =
-      [self.primaryToolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
 
   // DownloadManagerCoordinator is already created.
@@ -3200,8 +3194,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
     if (provider) {
       _voiceSearchController =
           provider->CreateVoiceSearchController(_browserState);
-      _voiceSearchController->SetDelegate(
-          [self.primaryToolbarCoordinator voiceSearchDelegate]);
+      if (self.primaryToolbarCoordinator) {
+        _voiceSearchController->SetDispatcher(
+            static_cast<id<LoadQueryCommands>>(_dispatcher));
+      }
     }
   }
 }

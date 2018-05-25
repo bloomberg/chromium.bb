@@ -16,6 +16,8 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_legacy_consumer.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_legacy_mediator.h"
@@ -48,7 +50,8 @@ const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
 const int kLocationAuthorizationStatusCount = 4;
 }  // namespace
 
-@interface LocationBarLegacyCoordinator ()<LocationBarLegacyConsumer,
+@interface LocationBarLegacyCoordinator ()<LoadQueryCommands,
+                                           LocationBarLegacyConsumer,
                                            LocationBarDelegate> {
   std::unique_ptr<LocationBarControllerImpl> _locationBarController;
 }
@@ -64,6 +67,7 @@ const int kLocationAuthorizationStatusCount = 4;
 @end
 
 @implementation LocationBarLegacyCoordinator
+@synthesize commandDispatcher = _commandDispatcher;
 @synthesize locationBarView = _locationBarView;
 @synthesize mediator = _mediator;
 @synthesize keyboardDelegate = _keyboardDelegate;
@@ -82,6 +86,14 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)start {
+  DCHECK(self.commandDispatcher);
+
+  [self.commandDispatcher startDispatchingToTarget:self
+                                       forProtocol:@protocol(OmniboxFocuser)];
+  [self.commandDispatcher
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(LoadQueryCommands)];
+
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
   UIColor* textColor =
@@ -188,25 +200,18 @@ const int kLocationAuthorizationStatusCount = 4;
   [self cancelOmniboxEdit];
 }
 
-#pragma mark - VoiceSearchControllerDelegate
+#pragma mark - LoadQueryCommands
 
-- (void)receiveVoiceSearchResult:(NSString*)result {
-  DCHECK(result);
-  [self loadURLForQuery:result];
-}
-
-#pragma mark - QRScannerResultLoading
-
-- (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
-  DCHECK(result);
-  if (load) {
-    [self loadURLForQuery:result];
+- (void)loadQuery:(NSString*)query immediately:(BOOL)immediately {
+  DCHECK(query);
+  if (immediately) {
+    [self loadURLForQuery:query];
   } else {
     [self focusOmnibox];
-    [self.locationBarView.textField insertTextWhileEditing:result];
+    [self.locationBarView.textField insertTextWhileEditing:query];
     // The call to |setText| shouldn't be needed, but without it the "Go" button
     // of the keyboard is disabled.
-    [self.locationBarView.textField setText:result];
+    [self.locationBarView.textField setText:query];
     // Notify the accessibility system to start reading the new contents of the
     // Omnibox.
     UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,

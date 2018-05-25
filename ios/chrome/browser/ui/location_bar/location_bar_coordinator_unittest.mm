@@ -8,6 +8,7 @@
 
 #include "components/toolbar/test_toolbar_model.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -74,6 +75,7 @@ class LocationBarLegacyCoordinatorTest : public PlatformTest {
     coordinator_.browserState = browser_state_.get();
     coordinator_.webStateList = &web_state_list_;
     coordinator_.delegate = delegate_;
+    coordinator_.commandDispatcher = [[CommandDispatcher alloc] init];
   }
 
   web::TestWebThreadBundle web_thread_bundle_;

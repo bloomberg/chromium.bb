@@ -9,9 +9,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
-#include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -26,10 +24,10 @@ class WebStateList;
 
 @protocol LocationBarGenericCoordinator<NSObject,
                                         LocationBarURLLoader,
-                                        OmniboxFocuser,
-                                        VoiceSearchControllerDelegate,
-                                        QRScannerResultLoading>
+                                        OmniboxFocuser>
 
+// Command dispatcher.
+@property(nonatomic, strong) CommandDispatcher* commandDispatcher;
 // View containing the omnibox.
 @property(nonatomic, strong, readonly) UIView* view;
 // Weak reference to ChromeBrowserState;

@@ -55,6 +55,7 @@
 @implementation PrimaryToolbarCoordinator
 
 @dynamic viewController;
+@synthesize commandDispatcher = _commandDispatcher;
 @synthesize delegate = _delegate;
 @synthesize locationBarCoordinator = _locationBarCoordinator;
 @synthesize orchestrator = _orchestrator;
@@ -63,6 +64,11 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
+  DCHECK(self.commandDispatcher);
+
+  [self.commandDispatcher startDispatchingToTarget:self
+                                       forProtocol:@protocol(FakeboxFocuser)];
+
   self.viewController = [[PrimaryToolbarViewController alloc] init];
   self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
   self.viewController.dispatcher = self.dispatcher;
@@ -84,18 +90,11 @@
 
 - (void)stop {
   [super stop];
+  [self.commandDispatcher stopDispatchingToTarget:self];
   [self.locationBarCoordinator stop];
 }
 
 #pragma mark - PrimaryToolbarCoordinator
-
-- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
-  return self.locationBarCoordinator;
-}
-
-- (id<QRScannerResultLoading>)QRScannerResultLoader {
-  return self.locationBarCoordinator;
-}
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
   return self.viewController;
@@ -201,6 +200,7 @@
   self.locationBarCoordinator.browserState = self.browserState;
   self.locationBarCoordinator.dispatcher =
       base::mac::ObjCCastStrict<CommandDispatcher>(self.dispatcher);
+  self.locationBarCoordinator.commandDispatcher = self.commandDispatcher;
   self.locationBarCoordinator.URLLoader = self.URLLoader;
   self.locationBarCoordinator.delegate = self.delegate;
   self.locationBarCoordinator.webStateList = self.webStateList;

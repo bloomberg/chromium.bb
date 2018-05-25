@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 
+@protocol LoadQueryCommands;
 @class Tab;
 @class UIViewController;
-@protocol VoiceSearchControllerDelegate;
 
 // TODO(crbug.com/607204): Convert to Objective-C class.
 class VoiceSearchController
@@ -17,8 +17,8 @@ class VoiceSearchController
  public:
   VoiceSearchController();
 
-  // Sets the delegate for this object.
-  virtual void SetDelegate(id<VoiceSearchControllerDelegate> delegate);
+  // Sets the dispatcher for this object.
+  virtual void SetDispatcher(id<LoadQueryCommands> dispatcher);
 
   // Preloads views and view controllers needed for the voice search UI.
   virtual void PrepareToAppear();
