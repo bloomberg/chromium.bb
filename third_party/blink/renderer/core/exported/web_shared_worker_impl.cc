@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/exported/web_shared_worker_impl.h"
 
 #include <memory>
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -76,12 +75,9 @@
 namespace blink {
 
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
-    : shadow_page_(std::make_unique<WorkerShadowPage>(this)),
-      worker_inspector_proxy_(WorkerInspectorProxy::Create()),
+    : worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       client_(client),
       creation_address_space_(mojom::IPAddressSpace::kPublic),
-      parent_execution_context_task_runners_(
-          ParentExecutionContextTaskRunners::Create()),
       weak_ptr_factory_(this) {
   DCHECK(IsMainThread());
 }
@@ -153,7 +149,7 @@ void WebSharedWorkerImpl::ResumeStartup() {
   is_paused_on_start_ = false;
   if (is_paused_on_start) {
     // We'll continue in OnShadowPageInitialized().
-    shadow_page_->Initialize(url_, std::move(loader_factory_));
+    shadow_page_->Initialize(url_);
   }
 }
 
@@ -216,7 +212,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
     WebContentSecurityPolicyType policy_type,
     mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& devtools_worker_token,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
   DCHECK(IsMainThread());
@@ -229,18 +224,18 @@ void WebSharedWorkerImpl::StartWorkerContext(
   pending_interface_provider_.set_handle(std::move(interface_provider));
 
   devtools_worker_token_ = devtools_worker_token;
+  shadow_page_ = std::make_unique<WorkerShadowPage>(this);
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.
   client_->WorkerReadyForInspection();
   if (pause_worker_context_on_start_) {
     is_paused_on_start_ = true;
-    loader_factory_ = std::move(loader_factory);
     return;
   }
 
   // We'll continue in OnShadowPageInitialized().
-  shadow_page_->Initialize(url_, std::move(loader_factory));
+  shadow_page_->Initialize(url_);
 }
 
 void WebSharedWorkerImpl::DidReceiveScriptLoaderResponse() {
@@ -342,8 +337,16 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
           std::move(pending_interface_provider_));
   String source_code = main_script_loader_->SourceText();
 
-  reporting_proxy_ = new SharedWorkerReportingProxy(
-      this, parent_execution_context_task_runners_);
+  // SharedWorker can sometimes run tasks that are initiated by/associated with
+  // a document's frame but these documents can be from a different process. So
+  // we intentionally populate the task runners with default task runners of the
+  // main thread. Note that |m_document| should not be used as it's a dummy
+  // document for loading that doesn't represent the frame of any associated
+  // document.
+  ParentExecutionContextTaskRunners* task_runners =
+      ParentExecutionContextTaskRunners::Create();
+
+  reporting_proxy_ = new SharedWorkerReportingProxy(this, task_runners);
   worker_thread_ = std::make_unique<SharedWorkerThread>(
       name_, ThreadableLoadingContext::Create(*document), *reporting_proxy_);
   probe::scriptImported(document, main_script_loader_->Identifier(),
@@ -357,7 +360,7 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   GetWorkerThread()->Start(
       std::move(global_scope_creation_params), thread_startup_data,
       worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
-      parent_execution_context_task_runners_);
+      task_runners);
   worker_inspector_proxy_->WorkerThreadCreated(document, GetWorkerThread(),
                                                url_);
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
@@ -380,11 +383,6 @@ void WebSharedWorkerImpl::BindDevToolsAgent(
     mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
   shadow_page_->BindDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
       std::move(devtools_agent_request)));
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> WebSharedWorkerImpl::GetTaskRunner(
-    TaskType task_type) {
-  return parent_execution_context_task_runners_->Get(task_type);
 }
 
 std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(
