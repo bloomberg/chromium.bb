@@ -140,6 +140,8 @@ OverlayWindowViews::OverlayWindowViews(
 
   Init(params);
   SetUpViews();
+
+  is_initialized_ = true;
 }
 
 OverlayWindowViews::~OverlayWindowViews() = default;
@@ -273,9 +275,7 @@ void OverlayWindowViews::SetUpViews() {
   play_pause_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
 
   // Don't show the controls until the mouse hovers over the window.
-  GetControlsBackgroundLayer()->SetVisible(false);
-  GetCloseControlsLayer()->SetVisible(false);
-  GetPlayPauseControlsLayer()->SetVisible(false);
+  UpdateControlsVisibility(false);
 }
 
 void OverlayWindowViews::UpdateCurrentSizeWithAspectRatio(gfx::Size new_size) {
@@ -305,6 +305,12 @@ void OverlayWindowViews::UpdateCurrentSizeWithAspectRatio(gfx::Size new_size) {
           media::ScaleSizeToFitWithinTarget(natural_size_, new_size));
     }
   }
+}
+
+void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
+  GetControlsBackgroundLayer()->SetVisible(is_visible);
+  GetCloseControlsLayer()->SetVisible(is_visible);
+  GetPlayPauseControlsLayer()->SetVisible(is_visible);
 }
 
 bool OverlayWindowViews::IsActive() const {
@@ -392,21 +398,50 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
+void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->type() != ui::ET_KEY_RELEASED)
+    return;
+
+  if (event->key_code() == ui::VKEY_TAB) {
+    // Switch the control that is currently focused. When the window
+    // is focused, |focused_control_button_| resets to CONTROL_PLAY_PAUSE.
+    if (focused_control_button_ == CONTROL_PLAY_PAUSE)
+      focused_control_button_ = CONTROL_CLOSE;
+    else
+      focused_control_button_ = CONTROL_PLAY_PAUSE;
+
+    // The controls may be hidden after the window is already in focus, e.g.
+    // mouse exits the window space. If they are already shown, this is a
+    // no-op.
+    UpdateControlsVisibility(true);
+
+    event->SetHandled();
+  } else if (event->key_code() == ui::VKEY_RETURN) {
+    if (focused_control_button_ == CONTROL_PLAY_PAUSE) {
+      // Retrieve expected active state based on what command was sent in
+      // TogglePlayPause() since the IPC message may not have been propogated
+      // the media player yet.
+      bool is_active = controller_->TogglePlayPause();
+      play_pause_controls_view_->SetToggled(is_active);
+    } else /* CONTROL_CLOSE */ {
+      controller_->Close();
+    }
+
+    event->SetHandled();
+  }
+}
+
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
-  // TODO(apacible): Handle tab focusing and touch screen events.
+  // TODO(apacible): Handle touch screen events.
   // http://crbug.com/836389
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
     case ui::ET_MOUSE_ENTERED:
-      GetControlsBackgroundLayer()->SetVisible(true);
-      GetCloseControlsLayer()->SetVisible(true);
-      GetPlayPauseControlsLayer()->SetVisible(true);
+      UpdateControlsVisibility(true);
       break;
 
     case ui::ET_MOUSE_EXITED:
-      GetControlsBackgroundLayer()->SetVisible(false);
-      GetCloseControlsLayer()->SetVisible(false);
-      GetPlayPauseControlsLayer()->SetVisible(false);
+      UpdateControlsVisibility(false);
       break;
 
     case ui::ET_MOUSE_RELEASED:
@@ -431,6 +466,29 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
     default:
       break;
   }
+}
+
+void OverlayWindowViews::OnNativeFocus() {
+  // Show the controls when the window takes focus. This is used for tab and
+  // touch interactions. If initialisation happens after the window takes
+  // focus, any tabbing or touch gesture will show the controls.
+  if (is_initialized_)
+    UpdateControlsVisibility(true);
+
+  // Reset the first focused control to the play/pause button. This will
+  // always be called before key events can be handled.
+  focused_control_button_ = CONTROL_PLAY_PAUSE;
+  views::Widget::OnNativeFocus();
+}
+
+void OverlayWindowViews::OnNativeBlur() {
+  // Controls should be hidden when there is no more focus on the window. This
+  // is used for tabbing and touch interactions. For mouse interactions, the
+  // window cannot be blurred before the ui::ET_MOUSE_EXITED event is handled.
+  if (is_initialized_)
+    UpdateControlsVisibility(false);
+
+  views::Widget::OnNativeBlur();
 }
 
 void OverlayWindowViews::OnNativeWidgetMove() {
