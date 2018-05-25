@@ -10,15 +10,18 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
-#include "net/server/http_server_request_info.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/server/http_server_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const int kBufferSize = 100 * 1024 * 1024;  // 100 MB
@@ -92,7 +95,7 @@ void TestHttpServer::OnConnect(int connection_id) {
 
 void TestHttpServer::OnWebSocketRequest(
     int connection_id,
-    const net::HttpServerRequestInfo& info) {
+    const network::server::HttpServerRequestInfo& info) {
   WebSocketRequestAction action;
   {
     base::AutoLock lock(action_lock_);
@@ -145,26 +148,53 @@ void TestHttpServer::OnClose(int connection_id) {
 
 void TestHttpServer::StartOnServerThread(bool* success,
                                          base::WaitableEvent* event) {
-  std::unique_ptr<net::ServerSocket> server_socket(
-      new net::TCPServerSocket(NULL, net::NetLogSource()));
-  server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-  server_.reset(new net::HttpServer(std::move(server_socket), this));
+  network_service_ = network::NetworkService::CreateForTesting();
 
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  // Use a fixed proxy config, to avoid dependencies on local network
+  // configuration.
+  context_params->initial_proxy_config =
+      net::ProxyConfigWithAnnotation::CreateDirect();
+
+  network_context_ = std::make_unique<network::NetworkContext>(
+      network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+      std::move(context_params));
+
+  int net_error = net::ERR_FAILED;
   net::IPEndPoint address;
-  int error = server_->GetLocalAddress(&address);
-  EXPECT_EQ(net::OK, error);
-  if (error == net::OK) {
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  network::mojom::TCPServerSocketPtr server_socket;
+  network_context_ptr_->CreateTCPServerSocket(
+      net::IPEndPoint(net::IPAddress::IPv6Localhost(), 0), 1 /* backlog */,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+      mojo::MakeRequest(&server_socket),
+      base::BindLambdaForTesting(
+          [&](int result, const base::Optional<net::IPEndPoint>& local_addr) {
+            net_error = result;
+            address = local_addr.value();
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  EXPECT_EQ(net::OK, net_error);
+
+  server_ = std::make_unique<network::server::HttpServer>(
+      std::move(server_socket), this);
+
+  if (net_error == net::OK) {
     base::AutoLock lock(url_lock_);
-    web_socket_url_ = GURL(base::StringPrintf("ws://127.0.0.1:%d",
-                                              address.port()));
+    web_socket_url_ = GURL(base::StringPrintf("ws://[::1]:%d", address.port()));
   } else {
-    server_.reset(NULL);
+    server_.reset(nullptr);
   }
   *success = server_.get();
   event->Signal();
 }
 
 void TestHttpServer::StopOnServerThread(base::WaitableEvent* event) {
-  server_.reset(NULL);
+  server_ = nullptr;
+  network_context_ptr_.reset();
+  network_context_ = nullptr;
+  network_service_ = nullptr;
   event->Signal();
 }
