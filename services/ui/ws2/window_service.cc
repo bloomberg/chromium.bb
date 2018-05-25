@@ -101,8 +101,9 @@ void WindowService::OnBindInterface(
 }
 
 void WindowService::BindClipboardRequest(mojom::ClipboardRequest request) {
-  // TODO: https://crbug.com/839591.
-  NOTIMPLEMENTED();
+  if (!clipboard_)
+    clipboard_ = std::make_unique<clipboard::ClipboardImpl>();
+  clipboard_->AddBinding(std::move(request));
 }
 
 void WindowService::BindScreenProviderRequest(
