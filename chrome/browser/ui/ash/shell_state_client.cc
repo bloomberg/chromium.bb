@@ -63,8 +63,8 @@ void ShellStateClient::BindAndAddClient() {
 }
 
 // static
-display::Display WindowSizer::GetDisplayForNewWindow(display::Screen* screen,
-                                                     const gfx::Rect& bounds) {
+display::Display WindowSizer::GetDisplayForNewWindow(const gfx::Rect& bounds) {
+  display::Screen* screen = display::Screen::GetScreen();
   // May be null in unit tests.
   if (g_shell_state_client) {
     // Prefer the display where the user last activated any window.

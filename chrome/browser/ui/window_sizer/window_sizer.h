@@ -113,11 +113,6 @@ class WindowSizer {
   WindowSizer(std::unique_ptr<StateProvider> state_provider,
               const Browser* browser);
 
-  // As above, but uses the supplied |screen|. Used only for testing.
-  WindowSizer(std::unique_ptr<StateProvider> state_provider,
-              display::Screen* screen,
-              const Browser* browser);
-
   virtual ~WindowSizer();
 
   // The edge of the screen to check for out-of-bounds.
@@ -157,11 +152,6 @@ class WindowSizer {
                                         const gfx::Rect& saved_work_area,
                                         gfx::Rect* bounds) const;
 
-  // Determine the target display for a new window based on
-  // |bounds|. On ash environment, this returns the display containing
-  // ash's the target root window.
-  display::Display GetTargetDisplay(const gfx::Rect& bounds) const;
-
 #if defined(OS_CHROMEOS)
   // Ash specific logic for window placement. Returns true if |bounds| and
   // |show_state| have been fully determined, otherwise returns false (but
@@ -189,12 +179,11 @@ class WindowSizer {
 
   // Returns the target display for a new window with |bounds| in screen
   // coordinates.
-  static display::Display GetDisplayForNewWindow(display::Screen* screen,
-                                                 const gfx::Rect& bounds);
+  static display::Display GetDisplayForNewWindow(
+      const gfx::Rect& bounds = gfx::Rect());
 
   // Providers for persistent storage and monitor metrics.
   std::unique_ptr<StateProvider> state_provider_;
-  display::Screen* screen_;  // not owned.
 
   // Note that this browser handle might be NULL.
   const Browser* const browser_;
