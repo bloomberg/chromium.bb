@@ -57,7 +57,7 @@ class StylePropertyShorthand {
 };
 
 {% for property in properties %}
-const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand();
+const StylePropertyShorthand& {{property.name.to_lower_camel_case()}}Shorthand();
 {% endfor %}
 
 const StylePropertyShorthand& animationShorthandForParsing();

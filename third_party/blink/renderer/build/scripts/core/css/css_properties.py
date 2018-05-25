@@ -6,7 +6,6 @@
 import json5_generator
 from name_utilities import (
     upper_camel_case,
-    lower_camel_case,
     enum_value_name,
     enum_for_css_property,
     enum_for_css_property_alias
@@ -170,7 +169,6 @@ class CSSProperties(object):
             updated_alias['enum_value'] = aliased_property['enum_value'] + \
                 self._alias_offset
             updated_alias['upper_camel_name'] = upper_camel_case(alias['name'].original)
-            updated_alias['lower_camel_name'] = lower_camel_case(alias['name'].original)
             self._aliases[i] = updated_alias
 
     def expand_parameters(self, property_):
@@ -182,7 +180,6 @@ class CSSProperties(object):
         name = property_['name'].original
         property_['property_id'] = enum_for_css_property(name)
         property_['upper_camel_name'] = upper_camel_case(name)
-        property_['lower_camel_name'] = lower_camel_case(name)
         property_['is_internal'] = name.startswith('-internal-')
         method_name = property_['name_for_methods']
         if not method_name:

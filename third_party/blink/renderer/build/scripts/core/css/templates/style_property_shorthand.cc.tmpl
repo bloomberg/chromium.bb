@@ -31,18 +31,18 @@
 namespace blink {
 {% for property in properties %}
 
-const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand() {
-  static const CSSProperty* {{property.lower_camel_name}}Properties[] = {
+const StylePropertyShorthand& {{property.name.to_lower_camel_case()}}Shorthand() {
+  static const CSSProperty* {{property.name.to_lower_camel_case()}}Properties[] = {
     {% for longhand_id in property.longhand_property_ids %}
     &Get{{longhand_id}}(),
     {% endfor %}
   };
 
-  static StylePropertyShorthand {{property.lower_camel_name}}Longhands(
+  static StylePropertyShorthand {{property.name.to_lower_camel_case()}}Longhands(
     {{property.property_id}},
-    {{property.lower_camel_name}}Properties,
-    arraysize({{property.lower_camel_name}}Properties));
-  return {{property.lower_camel_name}}Longhands;
+    {{property.name.to_lower_camel_case()}}Properties,
+    arraysize({{property.name.to_lower_camel_case()}}Properties));
+  return {{property.name.to_lower_camel_case()}}Longhands;
 }
 {% endfor %}
 
@@ -68,7 +68,7 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   switch (propertyID) {
     {% for property in properties %}
     case {{property.property_id}}:
-      return {{property.lower_camel_name}}Shorthand();
+      return {{property.name.to_lower_camel_case()}}Shorthand();
     {% endfor %}
     default: {
       return emptyShorthand;
@@ -83,7 +83,7 @@ void getMatchingShorthandsForLonghand(
   {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {
       {% for shorthand in shorthands %}
-      result->UncheckedAppend({{shorthand.lower_camel_name}}Shorthand());
+      result->UncheckedAppend({{shorthand.name.to_lower_camel_case()}}Shorthand());
       {% endfor %}
       break;
     }
