@@ -194,7 +194,7 @@ void WallpaperControllerClient::SetCustomWallpaper(
 
 void WallpaperControllerClient::SetOnlineWallpaperIfExists(
     const AccountId& account_id,
-    const GURL& url,
+    const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode,
     ash::mojom::WallpaperController::SetOnlineWallpaperIfExistsCallback
@@ -210,7 +210,7 @@ void WallpaperControllerClient::SetOnlineWallpaperIfExists(
 void WallpaperControllerClient::SetOnlineWallpaperFromData(
     const AccountId& account_id,
     const std::string& image_data,
-    const GURL& url,
+    const std::string& url,
     ash::WallpaperLayout layout,
     bool preview_mode) {
   ash::mojom::WallpaperUserInfoPtr user_info =

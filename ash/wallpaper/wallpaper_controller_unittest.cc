@@ -85,8 +85,8 @@ const AccountId account_id_2 = AccountId::FromUserEmail(kUser2);
 const std::string wallpaper_files_id_2 = GetDummyFileId(account_id_2);
 const std::string file_name_2 = GetDummyFileName(account_id_2);
 
-const GURL kDummyUrl = GURL("https://best_wallpaper/1");
-const GURL kDummyUrl2 = GURL("https://best_wallpaper/2");
+const std::string kDummyUrl = "https://best_wallpaper/1";
+const std::string kDummyUrl2 = "https://best_wallpaper/2";
 
 const base::FilePath user_data_dir =
     base::FilePath(FILE_PATH_LITERAL("user_data"));
@@ -495,7 +495,7 @@ class WallpaperControllerTest : public AshTestBase {
   // tests (the connector for the mojo service manager is null).
   void SetOnlineWallpaperFromImage(const AccountId& account_id,
                                    const gfx::ImageSkia& image,
-                                   const GURL& url,
+                                   const std::string& url,
                                    WallpaperLayout layout,
                                    bool save_file,
                                    bool preview_mode) {
@@ -945,8 +945,8 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
   // Verify that there's no offline wallpaper available in the beginning.
   std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   controller_->GetOfflineWallpaperList(base::BindLambdaForTesting(
-      [&run_loop](const std::vector<std::string>& file_names) {
-        EXPECT_TRUE(file_names.empty());
+      [&run_loop](const std::vector<std::string>& url_list) {
+        EXPECT_TRUE(url_list.empty());
         run_loop->Quit();
       }));
   run_loop->Run();
@@ -975,7 +975,7 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
   WallpaperInfo wallpaper_info;
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
                                                 false /*is_ephemeral=*/));
-  WallpaperInfo expected_wallpaper_info(kDummyUrl.spec(), layout, ONLINE,
+  WallpaperInfo expected_wallpaper_info(kDummyUrl, layout, ONLINE,
                                         base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
 
@@ -1007,9 +1007,9 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
   // file name should not contain the small wallpaper suffix.
   run_loop.reset(new base::RunLoop());
   controller_->GetOfflineWallpaperList(base::BindLambdaForTesting(
-      [&run_loop](const std::vector<std::string>& file_names) {
-        EXPECT_EQ(1U, file_names.size());
-        EXPECT_EQ(kDummyUrl.ExtractFileName(), file_names[0]);
+      [&run_loop](const std::vector<std::string>& url_list) {
+        EXPECT_EQ(1U, url_list.size());
+        EXPECT_EQ(GURL(kDummyUrl).ExtractFileName(), url_list[0]);
         run_loop->Quit();
       }));
   run_loop->Run();
@@ -1025,7 +1025,7 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
                                                 false /*is_ephemeral=*/));
-  WallpaperInfo expected_wallpaper_info_2(kDummyUrl2.spec(), layout, ONLINE,
+  WallpaperInfo expected_wallpaper_info_2(kDummyUrl2, layout, ONLINE,
                                           base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, expected_wallpaper_info_2);
 }
@@ -1686,7 +1686,7 @@ TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id_1, &wallpaper_info,
                                                 false /*is_ephemeral=*/));
   WallpaperInfo expected_online_wallpaper_info(
-      kDummyUrl.spec(), layout, ONLINE, base::Time::Now().LocalMidnight());
+      kDummyUrl, layout, ONLINE, base::Time::Now().LocalMidnight());
   EXPECT_EQ(wallpaper_info, expected_online_wallpaper_info);
 
   // Now change the layout of the online wallpaper. Verify that it's a no-op.
@@ -2030,7 +2030,7 @@ TEST_F(WallpaperControllerTest, ConfirmPreviewWallpaper) {
   EXPECT_EQ(online_wallpaper_color, GetWallpaperColor());
   // Verify that the user wallpaper info is now updated to the online wallpaper
   // info.
-  WallpaperInfo online_wallpaper_info(kDummyUrl.spec(), layout, ONLINE,
+  WallpaperInfo online_wallpaper_info(kDummyUrl, layout, ONLINE,
                                       base::Time::Now().LocalMidnight());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(
       account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
@@ -2211,7 +2211,7 @@ TEST_F(WallpaperControllerTest, WallpaperSyncedDuringPreview) {
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
   // However, the user wallpaper info should already be updated to the new info.
-  WallpaperInfo synced_online_wallpaper_info(kDummyUrl2.spec(), layout, ONLINE,
+  WallpaperInfo synced_online_wallpaper_info(kDummyUrl2, layout, ONLINE,
                                              base::Time::Now().LocalMidnight());
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(
       account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));

@@ -340,8 +340,7 @@ WallpaperPrivateSetWallpaperIfExistsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   WallpaperControllerClient::Get()->SetOnlineWallpaperIfExists(
-      GetUserFromBrowserContext(browser_context())->GetAccountId(),
-      GURL(params->url),
+      GetUserFromBrowserContext(browser_context())->GetAccountId(), params->url,
       wallpaper_api_util::GetLayoutEnum(
           wallpaper_base::ToString(params->layout)),
       params->preview_mode,
@@ -379,7 +378,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateSetWallpaperFunction::Run() {
   WallpaperControllerClient::Get()->SetOnlineWallpaperFromData(
       GetUserFromBrowserContext(browser_context())->GetAccountId(),
       std::string(params->wallpaper.begin(), params->wallpaper.end()),
-      GURL(params->url),
+      params->url,
       wallpaper_api_util::GetLayoutEnum(
           wallpaper_base::ToString(params->layout)),
       params->preview_mode);
@@ -642,9 +641,9 @@ WallpaperPrivateGetOfflineWallpaperListFunction::Run() {
 }
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::
-    OnOfflineWallpaperListReturned(const std::vector<std::string>& file_names) {
+    OnOfflineWallpaperListReturned(const std::vector<std::string>& url_list) {
   auto results = std::make_unique<base::ListValue>();
-  results->AppendStrings(file_names);
+  results->AppendStrings(url_list);
   Respond(OneArgument(std::move(results)));
 }
 
