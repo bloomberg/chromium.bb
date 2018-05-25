@@ -1263,7 +1263,8 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       m.assert_called_once_with(self._buildroot, ['autotest'],
                                 os.path.join(self._tarball_dir,
                                              'autotest.tar.bz2'),
-                                cwd=self._cwd, error_code_ok=True)
+                                cwd=self._cwd, error_code_ok=True,
+                                ignore_failed_read=True)
 
   def testBuildAutotestPackagesTarball(self):
     """Tests that generating the autotest packages tarball is correct."""
@@ -1314,8 +1315,9 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
                                                self._tarball_dir)
 
     tar_mock.assert_called_once_with(
-        self._buildroot, expected_files,
-        os.path.join(self._tarball_dir, commands.AUTOTEST_SERVER_PACKAGE),
+        buildroot=self._buildroot, input_list=expected_files,
+        tarball_output=os.path.join(self._tarball_dir,
+                                    commands.AUTOTEST_SERVER_PACKAGE),
         cwd=self._cwd, extra_args=mock.ANY, error_code_ok=True)
 
   def testBuildStrippedPackagesArchive(self):

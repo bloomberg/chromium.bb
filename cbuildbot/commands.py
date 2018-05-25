@@ -1865,7 +1865,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
   compression = cros_build_lib.CompressionExtToType(debug_tarball)
   cros_build_lib.CreateTarball(
       debug_tarball, board_dir, sudo=True, compression=compression,
-      inputs=inputs, extra_args=extra_args)
+      inputs=inputs, ignore_failed_read=True, extra_args=extra_args)
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tarball])
@@ -2254,7 +2254,8 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
 
 
 def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
-                 compressed=True, **kwargs):
+                 compressed=True, extra_args=None,
+                 ignore_failed_read=False, **kwargs):
   """Tars and zips files and directories from input_list to tarball_output.
 
   Args:
@@ -2263,6 +2264,8 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
     tarball_output: Path of output tar archive file.
     cwd: Current working directory when tar command is executed.
     compressed: Whether or not the tarball should be compressed with pbzip2.
+    extra_args: Arguments to be attached to tar execution.
+    ignore_failed_read: disabling error for low-priority tar exceptions.
     **kwargs: Keyword arguments to pass to CreateTarball.
 
   Returns:
@@ -2274,8 +2277,10 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
     compressor = cros_build_lib.COMP_BZIP2
     chroot = os.path.join(buildroot, 'chroot')
   return cros_build_lib.CreateTarball(
-      tarball_output, cwd, compression=compressor, chroot=chroot,
-      inputs=input_list, **kwargs)
+      target=tarball_output, cwd=cwd, sudo=False,
+      compression=compressor, chroot=chroot,
+      inputs=input_list, ignore_failed_read=ignore_failed_read,
+      extra_args=extra_args, **kwargs)
 
 
 def FindFilesWithPattern(pattern, target='./', cwd=os.curdir, exclude_dirs=()):
@@ -2382,7 +2387,8 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
       _GetTastServerFilesAndTarTransforms(os.path.join(buildroot, 'chroot'))
 
   tarball = os.path.join(tarball_dir, AUTOTEST_SERVER_PACKAGE)
-  BuildTarball(buildroot, autotest_files + tast_files, tarball, cwd=cwd,
+  BuildTarball(buildroot=buildroot, input_list=autotest_files + tast_files,
+               tarball_output=tarball, cwd=cwd,
                extra_args=transforms, error_code_ok=True)
   return tarball
 
@@ -2453,8 +2459,10 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
   cwd = os.path.abspath(os.path.join(buildroot, 'chroot', 'build', board,
                                      constants.AUTOTEST_BUILD_PATH, '..'))
+  # Enabling ignore_failed_read
+  # to mitigate crbug.com/547055
   result = BuildTarball(buildroot, ['autotest'], tarball, cwd=cwd,
-                        error_code_ok=True)
+                        ignore_failed_read=True, error_code_ok=True)
 
   # Emerging the autotest package to the factory test image while this is
   # running modifies the timestamp on /build/autotest/server by
