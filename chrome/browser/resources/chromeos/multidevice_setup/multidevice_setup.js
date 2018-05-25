@@ -15,6 +15,13 @@ cr.define('multidevice_setup', function() {
 
     properties: {
       /**
+       * Indicates whether UI was opened during OOBE flow or afterward.
+       *
+       * @type {!multidevice_setup.UiMode}
+       */
+      uiMode: Number,
+
+      /**
        * Element name of the currently visible page.
        *
        * @private {!PageName}
@@ -22,7 +29,7 @@ cr.define('multidevice_setup', function() {
       visiblePageName_: {
         type: String,
         value: PageName.START,
-        // This notification is for testing purporses only
+        // For testing purporses only
         notify: true,
       },
 
@@ -74,7 +81,7 @@ cr.define('multidevice_setup', function() {
 
     /** @private */
     onBackwardNavigationRequested_: function() {
-      this.closeUi_();
+      this.exitSetupFlow_();
     },
 
     /** @private */
@@ -82,22 +89,32 @@ cr.define('multidevice_setup', function() {
       switch (this.visiblePageName_) {
         case PageName.FAILURE:
           this.visiblePageName_ = PageName.START;
-          break;
+          return;
         case PageName.SUCCESS:
-          this.closeUi_();
-          break;
+          this.exitSetupFlow_();
+          return;
         case PageName.START:
-          this.attemptToSetHost_();
-          break;
+          switch (this.uiMode) {
+            case multidevice_setup.UiMode.OOBE:
+              this.mojoService_.setBetterTogetherHostInBackground(
+                  this.selectedPublicKey_);
+              this.exitSetupFlow_();
+              return;
+            case multidevice_setup.UiMode.POST_OOBE:
+              this.attemptToSetHostPostOobe_();
+              return;
+          }
       }
     },
 
-    /** @private */
-    closeUi_: function() {
-      // TODO(jordynass): Implement closing UI.
-      console.log('Closing WebUI');
-      // This method is just for testing that the method was called.
-      this.fire('ui-closed');
+    /**
+     * Notifies observers that the setup flow has completed.
+     *
+     * @private
+     */
+    exitSetupFlow_: function() {
+      console.log('Exiting Setup Flow');
+      this.fire('setup-exited');
     },
 
     /**
@@ -107,7 +124,8 @@ cr.define('multidevice_setup', function() {
      *
      * @private
      */
-    attemptToSetHost_: function() {
+    attemptToSetHostPostOobe_: function() {
+      assert(this.uiMode == multidevice_setup.UiMode.POST_OOBE);
       this.mojoService_.setBetterTogetherHost(this.selectedPublicKey_)
           .then((responseParams) => {
             if (responseParams['responseCode'] ==
@@ -129,7 +147,7 @@ cr.define('multidevice_setup', function() {
      */
     // TODO(jordynass): Once mojo API is complete, make this into a real
     // multidevice setup mojo service object and annotate it with that type.
-    mojoService_: multidevice_setup.FakeMojoService,
+    mojoService_: new multidevice_setup.FakeMojoService(),
   });
 
   return {

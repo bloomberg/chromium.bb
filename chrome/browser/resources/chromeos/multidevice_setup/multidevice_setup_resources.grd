@@ -35,6 +35,9 @@
                  flattenhtml="true"
                  allowexternalscript="true"
                  type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_JS"
+                 file="multidevice_setup_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_HTML"
                  file="multidevice_setup.html"
                  type="chrome_html" />
@@ -61,6 +64,12 @@
                  type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_START_SETUP_PAGE_JS"
                  file="start_setup_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_UI_MODE_HTML"
+                 file="ui_mode.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_UI_MODE_JS"
+                 file="ui_mode.js"
                  type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_UI_PAGE_CONTAINER_BEHAVIOR_HTML"
                  file="ui_page_container_behavior.html"

@@ -12,12 +12,14 @@ cr.define('multidevice_setup', function() {
     ERROR_NETWORK_REQUEST_FAILED: 3,
   };
 
-  const FakeMojoService = {
-    responseCode: SetBetterTogetherHostResponseCode.SUCCESS,
+  class FakeMojoService {
+    constructor() {
+      this.deviceCount = 2;
+      this.responseCode = SetBetterTogetherHostResponseCode.SUCCESS;
+      this.settingHostInBackground = false;
+    }
 
-    deviceCount: 2,
-
-    getEligibleBetterTogetherHosts: function() {
+    getEligibleBetterTogetherHosts() {
       const deviceNames = ['Pixel', 'Pixel XL', 'Nexus 5', 'Nexus 6P'];
       let devices = [];
       for (let i = 0; i < this.deviceCount; i++) {
@@ -27,9 +29,9 @@ cr.define('multidevice_setup', function() {
       return new Promise(function(resolve, reject) {
         resolve({devices: devices});
       });
-    },
+    }
 
-    setBetterTogetherHost: function(publicKey) {
+    setBetterTogetherHost(publicKey) {
       if (this.responseCode == SetBetterTogetherHostResponseCode.SUCCESS) {
         console.log('Calling SetBetterTogetherHost on device ' + publicKey);
       } else {
@@ -38,17 +40,14 @@ cr.define('multidevice_setup', function() {
       return new Promise((resolve, reject) => {
         resolve({responseCode: this.responseCode});
       });
-    },
+    }
 
-    /**
-     * Utility function for resetting fake service to simulate working service
-     * for user with 2 potential hosts.
-     */
-    reset: function() {
-      this.deviceCount = 2;
-      this.responseCode = SetBetterTogetherHostResponseCode.SUCCESS;
-    },
-  };
+    setBetterTogetherHostInBackground(publicKey) {
+      console.log('Setting host in background on device ' + publicKey);
+      // For testing purposes only:
+      this.settingHostInBackground = true;
+    }
+  }
 
   return {
     SetBetterTogetherHostResponseCode: SetBetterTogetherHostResponseCode,
