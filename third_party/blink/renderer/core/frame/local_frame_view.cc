@@ -871,17 +871,6 @@ bool LocalFrameView::ShouldScrollOnMainThread() const {
   return ScrollableArea::ShouldScrollOnMainThread();
 }
 
-bool LocalFrameView::IsEnclosedInCompositingLayer() const {
-  // FIXME: It's a bug that compositing state isn't always up to date when this
-  // is called. crbug.com/366314
-  DisableCompositingQueryAsserts disabler;
-
-  auto* frame_owner_layout_object = frame_->OwnerLayoutObject();
-  return frame_owner_layout_object &&
-         frame_owner_layout_object->EnclosingLayer()
-             ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-}
-
 void LocalFrameView::CountObjectsNeedingLayout(unsigned& needs_layout_objects,
                                                unsigned& total_objects,
                                                bool& is_subtree) {
@@ -1982,53 +1971,6 @@ void LocalFrameView::DidScrollTimerFired(TimerBase*) {
     frame_->GetDocument()->Fetcher()->UpdateAllImageResourcePriorities();
 
   GetFrame().Loader().SaveScrollAnchor();
-}
-
-void LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded() {
-  // Nothing to do after scrolling if there are no fixed position elements.
-  if (!HasViewportConstrainedObjects())
-    return;
-
-  // Update sticky position objects which are stuck to the viewport. In order to
-  // correctly compute the sticky position offsets the layers must be visited
-  // top-down, so start at the 'root' sticky elements and recurse downwards.
-  for (auto* const viewport_constrained_object :
-       *viewport_constrained_objects_) {
-    LayoutObject* layout_object = viewport_constrained_object;
-    if (layout_object->Style()->GetPosition() != EPosition::kSticky)
-      continue;
-
-    PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
-
-    // This method can be called during layout at which point the ancestor
-    // overflow layer may not be set yet. We can safely skip such cases as we
-    // will revisit this method during compositing inputs update.
-    if (!layer->AncestorOverflowLayer())
-      continue;
-
-    const StickyConstraintsMap& constraints_map =
-        layer->AncestorOverflowLayer()
-            ->GetScrollableArea()
-            ->GetStickyConstraintsMap();
-    if (constraints_map.Contains(layer) &&
-        !constraints_map.at(layer).HasAncestorStickyElement()) {
-      // TODO(skobes): Resolve circular dependency between scroll offset and
-      // compositing state, and remove this disabler. https://crbug.com/420741
-      DisableCompositingQueryAsserts disabler;
-      layer->UpdateLayerPositionsAfterOverflowScroll();
-      layout_object->SetMayNeedPaintInvalidationSubtree();
-      SetNeedsUpdateGeometries();
-    }
-  }
-
-  // If there fixed position elements, scrolling may cause compositing layers to
-  // change.  Update LocalFrameView and layer positions after scrolling, but
-  // only if we're not inside of layout.
-  if (!nested_layout_count_) {
-    UpdateGeometriesIfNeeded();
-    if (auto* layout_view = this->GetLayoutView())
-      layout_view->Layer()->SetNeedsCompositingInputsUpdate();
-  }
 }
 
 static CompositedSelection ComputeCompositedSelection(LocalFrame& frame) {

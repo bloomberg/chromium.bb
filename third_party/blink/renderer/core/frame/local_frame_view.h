@@ -222,8 +222,6 @@ class CORE_EXPORT LocalFrameView final
   void RecalcOverflowAfterStyleChange();
   void UpdateCountersAfterStyleChange();
 
-  bool IsEnclosedInCompositingLayer() const;
-
   void Dispose() override;
   void DetachScrollbars();
   void RecalculateCustomScrollbarStyle();
@@ -1046,8 +1044,6 @@ class CORE_EXPORT LocalFrameView final
 
   bool ProcessUrlFragmentHelper(const String&, UrlFragmentBehavior);
   void DidScrollTimerFired(TimerBase*);
-
-  void UpdateLayersAndCompositingAfterScrollIfNeeded();
 
   void UpdateCompositedSelectionIfNeeded();
   void SetNeedsCompositingUpdate(CompositingUpdateType);
