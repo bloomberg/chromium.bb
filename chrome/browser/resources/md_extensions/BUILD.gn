@@ -129,7 +129,10 @@ js_library("error_page") {
     "//ui/webui/resources/js/cr/ui:focus_outline_manager",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
-  externs_list = [ "$externs_path/developer_private.js" ]
+  externs_list = [
+    "$externs_path/developer_private.js",
+    "$externs_path/metrics_private.js",
+  ]
 }
 
 js_library("install_warnings_dialog") {

@@ -125,6 +125,7 @@ cr.define('extensions', function() {
     onViewEnterStart_: function() {
       Polymer.RenderStatus.afterNextRender(
           this, () => cr.ui.focusWithoutInk(this.$.closeButton));
+      chrome.metricsPrivate.recordUserAction('Options_ViewExtensionErrors');
     },
 
     /**
