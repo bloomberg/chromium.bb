@@ -80,7 +80,7 @@ def CheckChangeWasUploaded(input_api, output_api):
 
 ### Content checks
 
-def CheckAuthorizedAuthor(input_api, output_api):
+def CheckAuthorizedAuthor(input_api, output_api, bot_whitelist=None):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
   """
@@ -93,6 +93,11 @@ def CheckAuthorizedAuthor(input_api, output_api):
   if not author:
     input_api.logging.info('No author, skipping AUTHOR check')
     return []
+
+  # This is used for CLs created by trusted robot accounts.
+  if bot_whitelist and author in bot_whitelist:
+    return []
+
   authors_path = input_api.os_path.join(
       input_api.PresubmitLocalPath(), 'AUTHORS')
   valid_authors = (
