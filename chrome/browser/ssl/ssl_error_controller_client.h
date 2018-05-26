@@ -20,10 +20,10 @@ class SSLErrorControllerClient
   // Actions recorded on recurrent error interstitials. This enum is
   // histogrammed, so do not add, reorder, or remove values. Exposed for
   // testing.
-  enum RecurrentErrorActions {
-    RECURRENT_ERROR_ACTION_SHOW = 0,
-    RECURRENT_ERROR_ACTION_PROCEED,
-    RECURRENT_ERROR_ACTION_MAX
+  enum class RecurrentErrorAction {
+    kShow,
+    kProceed,
+    kMaxValue = kProceed,
   };
 
   SSLErrorControllerClient(

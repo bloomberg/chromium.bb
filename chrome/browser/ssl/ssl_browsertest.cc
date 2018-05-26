@@ -7944,7 +7944,7 @@ IN_PROC_BROWSER_TEST_P(RecurrentInterstitialBrowserTest,
     histograms.ExpectBucketCount(kRecurrentInterstitialHistogram, true, 1);
     histograms.ExpectUniqueSample(
         kRecurrentInterstitialActionHistogram,
-        SSLErrorControllerClient::RECURRENT_ERROR_ACTION_SHOW, 1);
+        SSLErrorControllerClient::RecurrentErrorAction::kShow, 1);
 
     // Proceed through the interstitial and observe that the histogram is
     // recorded correctly.
@@ -7963,7 +7963,7 @@ IN_PROC_BROWSER_TEST_P(RecurrentInterstitialBrowserTest,
     nav_observer.Wait();
     histograms.ExpectBucketCount(
         kRecurrentInterstitialActionHistogram,
-        SSLErrorControllerClient::RECURRENT_ERROR_ACTION_PROCEED, 1);
+        SSLErrorControllerClient::RecurrentErrorAction::kProceed, 1);
   }
 }
 
