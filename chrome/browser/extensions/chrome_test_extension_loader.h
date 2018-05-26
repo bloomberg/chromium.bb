@@ -22,10 +22,9 @@ namespace content {
 class BrowserContext;
 }
 
-class ExtensionService;
-
 namespace extensions {
 class ExtensionRegistry;
+class ExtensionService;
 class ExtensionSystem;
 
 // A test class to help with loading packed or unpacked extensions. Designed to

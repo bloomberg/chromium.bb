@@ -20,8 +20,6 @@
 #error "Extensions must be enabled"
 #endif
 
-class ExtensionService;
-
 namespace content {
 class BrowserContext;
 }
@@ -31,6 +29,7 @@ namespace extensions {
 class AppSorting;
 class ContentVerifier;
 class Extension;
+class ExtensionService;
 class ExtensionSet;
 class InfoMap;
 class ManagementPolicy;

@@ -9,12 +9,11 @@
 
 #include "base/files/file_path.h"
 
-class ExtensionService;
-
 namespace extensions {
 
 class ExtensionPrefs;
 class ExtensionRegistry;
+class ExtensionService;
 struct ExtensionInfo;
 
 // Loads installed extensions from the prefs.

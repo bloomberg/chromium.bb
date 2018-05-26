@@ -18,7 +18,7 @@ class Extension;
 // Implemention of ExtensionServiceInterface with default
 // implementations for methods that add failures.  You should subclass
 // this and override the methods you care about.
-class TestExtensionService : public ExtensionServiceInterface {
+class TestExtensionService : public extensions::ExtensionServiceInterface {
  public:
   ~TestExtensionService() override;
 

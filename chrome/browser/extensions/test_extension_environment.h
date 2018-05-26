@@ -17,7 +17,6 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
-class ExtensionService;
 class TestingProfile;
 
 namespace base {
@@ -33,6 +32,7 @@ namespace extensions {
 
 class Extension;
 class ExtensionPrefs;
+class ExtensionService;
 class TestExtensionSystem;
 
 // This class provides a minimal environment in which to create

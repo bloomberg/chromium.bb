@@ -7,9 +7,8 @@
 
 #include "extensions/browser/zipfile_installer.h"
 
-class ExtensionService;
-
 namespace extensions {
+class ExtensionService;
 
 // Creates a ZipFileInstaller::DoneCallback that when passed to
 // ZipFileInstaller::Create() causes the unzipped extension to be loaded with

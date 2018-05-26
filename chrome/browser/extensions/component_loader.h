@@ -21,13 +21,13 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
-class ExtensionServiceInterface;
 class PrefService;
 class Profile;
 
 namespace extensions {
 
 class Extension;
+class ExtensionServiceInterface;
 
 // For registering, loading, and unloading component extensions.
 class ComponentLoader {

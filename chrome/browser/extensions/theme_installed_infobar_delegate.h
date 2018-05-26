@@ -13,9 +13,12 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_id.h"
 
-class ExtensionService;
 class InfoBarService;
 class ThemeService;
+
+namespace extensions {
+class ExtensionService;
+}
 
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
@@ -25,7 +28,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   // Creates a theme installed infobar and delegate and adds the infobar to
   // |infobar_service|, replacing any previous theme infobar.
   static void Create(InfoBarService* infobar_service,
-                     ExtensionService* extension_service,
+                     extensions::ExtensionService* extension_service,
                      ThemeService* theme_service,
                      const std::string& theme_name,
                      const std::string& theme_id,
@@ -33,7 +36,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                      bool previous_using_system_theme);
 
  private:
-  ThemeInstalledInfoBarDelegate(ExtensionService* extension_service,
+  ThemeInstalledInfoBarDelegate(extensions::ExtensionService* extension_service,
                                 ThemeService* theme_service,
                                 const std::string& theme_name,
                                 const std::string& theme_id,
@@ -55,7 +58,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  ExtensionService* extension_service_;
+  extensions::ExtensionService* extension_service_;
   ThemeService* theme_service_;
 
   // Name of theme that's just been installed.
