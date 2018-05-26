@@ -4,7 +4,11 @@
 
 #include "content/public/test/url_loader_interceptor.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
@@ -14,10 +18,29 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_util.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
+
+namespace {
+
+base::FilePath GetDataFilePath(const std::string& relative_path) {
+  base::FilePath root_path;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+  return root_path.AppendASCII(relative_path);
+}
+
+// Returns the contents of the given filename relative to the root source
+// directory.
+static std::string ReadFile(const std::string& relative_path) {
+  std::string contents;
+  CHECK(base::ReadFileToString(GetDataFilePath(relative_path), &contents));
+  return contents;
+}
+
+}  // namespace
 
 class URLLoaderInterceptor::Interceptor
     : public network::mojom::URLLoaderFactory {
@@ -263,6 +286,29 @@ void URLLoaderInterceptor::WriteResponse(
   status.decoded_body_length = body.size();
   status.error_code = net::OK;
   client->OnComplete(status);
+}
+
+void URLLoaderInterceptor::WriteResponse(
+    const std::string& relative_path,
+    network::mojom::URLLoaderClient* client,
+    const std::string* headers) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  std::string headers_str;
+  if (headers) {
+    headers_str = *headers;
+  } else {
+    std::string headers_path =
+        relative_path + "." + net::test_server::kMockHttpHeadersExtension;
+    if (base::PathExists(GetDataFilePath(headers_path))) {
+      headers_str = ReadFile(headers_path);
+    } else {
+      headers_str = "HTTP/1.0 200 OK\nContent-type: " +
+                    net::test_server::GetContentType(
+                        base::FilePath().AppendASCII(relative_path)) +
+                    "\n\n";
+    }
+  }
+  WriteResponse(headers_str, ReadFile(relative_path), client);
 }
 
 void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(

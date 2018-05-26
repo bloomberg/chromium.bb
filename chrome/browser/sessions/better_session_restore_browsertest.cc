@@ -112,10 +112,6 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     test_files_.push_back("session_storage.html");
     test_files_.push_back("subdomain_cookies.html");
 
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_file_dir_));
-    test_file_dir_ =
-        test_file_dir_.AppendASCII("chrome/test/data").AppendASCII(test_path_);
-
     // We are adding a URLLoaderInterceptor here, instead of in
     // SetUpOnMainThread(), because during a session restore the restored tab
     // comes up before SetUpOnMainThread().  Note that at this point, we do not
@@ -128,13 +124,12 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
               for (auto& it : test_files_) {
                 std::string file = path_prefix + it;
                 if (path == file) {
-                  base::ScopedAllowBlockingForTesting allow_io;
-                  base::FilePath file_path = test_file_dir_.AppendASCII(it);
-                  std::string contents;
-                  CHECK(base::ReadFileToString(file_path, &contents));
-
+                  std::string relative_path(
+                      "chrome/test/data/session_restore/");
+                  relative_path += it;
+                  std::string headers(kTestHeaders);
                   content::URLLoaderInterceptor::WriteResponse(
-                      kTestHeaders, contents, params->client.get());
+                      relative_path, params->client.get(), &headers);
 
                   return true;
                 }
@@ -339,7 +334,6 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   std::string last_upload_bytes_;
   const std::string fake_server_address_;
   std::vector<std::string> test_files_;
-  base::FilePath test_file_dir_;
   const std::string test_path_;
   const base::string16 title_pass_;
   const base::string16 title_storing_;

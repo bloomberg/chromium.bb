@@ -41,15 +41,13 @@ namespace {
 
 const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
 
-const char* kMockHeaderFileSuffix = ".mock-http-headers";
-
 class NavigationFailureObserver : public WebContentsObserver {
  public:
   explicit NavigationFailureObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
   ~NavigationFailureObserver() override = default;
 
-  void DidStartNavigation(content::NavigationHandle* handle) override {
+  void DidStartNavigation(NavigationHandle* handle) override {
     auto throttle = std::make_unique<TestNavigationThrottle>(handle);
     throttle->SetCallback(
         TestNavigationThrottle::WILL_FAIL_REQUEST,
@@ -115,7 +113,7 @@ class WebPackageRequestHandlerBrowserTest
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       if (!interceptor_) {
         interceptor_ =
-            std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+            std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
                 &WebPackageRequestHandlerBrowserTest::OnInterceptCallback,
                 base::Unretained(this)));
       }
@@ -130,25 +128,6 @@ class WebPackageRequestHandlerBrowserTest
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
  private:
-  static std::string ReadFile(const std::string& data_path) {
-    base::ScopedAllowBlockingForTesting allow_io;
-    base::FilePath root_path;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
-    std::string contents;
-    CHECK(base::ReadFileToString(root_path.AppendASCII(data_path), &contents));
-    return contents;
-  }
-
-  static std::string ReadHeaderFile(const std::string& data_path) {
-    std::string header_file_relative_path = data_path + kMockHeaderFileSuffix;
-    base::ScopedAllowBlockingForTesting allow_io;
-    base::FilePath root_path;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
-    if (!base::PathExists(root_path.AppendASCII(header_file_relative_path)))
-      return "HTTP/1.0 200 OK\n";
-    return ReadFile(header_file_relative_path);
-  }
-
   static void InstallMockInterceptors(const GURL& url,
                                       const std::string& data_path) {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -159,14 +138,12 @@ class WebPackageRequestHandlerBrowserTest
                  root_path.AppendASCII(data_path)));
   }
 
-  bool OnInterceptCallback(
-      content::URLLoaderInterceptor::RequestParams* params) {
+  bool OnInterceptCallback(URLLoaderInterceptor::RequestParams* params) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     const auto it = interceptor_data_path_map_.find(params->url_request.url);
     if (it == interceptor_data_path_map_.end())
       return false;
-    content::URLLoaderInterceptor::WriteResponse(
-        ReadHeaderFile(it->second), ReadFile(it->second), params->client.get());
+    URLLoaderInterceptor::WriteResponse(it->second, params->client.get());
     return true;
   }
 
@@ -174,7 +151,7 @@ class WebPackageRequestHandlerBrowserTest
 
   base::test::ScopedFeatureList feature_list_;
 
-  std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
+  std::unique_ptr<URLLoaderInterceptor> interceptor_;
   std::map<GURL, std::string> interceptor_data_path_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPackageRequestHandlerBrowserTest);
@@ -255,7 +232,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
   EXPECT_TRUE(failure_observer.did_fail());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
 IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
@@ -271,7 +248,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, CertNotFound) {
   EXPECT_TRUE(failure_observer.did_fail());
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
 INSTANTIATE_TEST_CASE_P(WebPackageRequestHandlerBrowserTest,

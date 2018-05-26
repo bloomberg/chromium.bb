@@ -24,6 +24,17 @@ namespace net {
 namespace test_server {
 struct HttpRequest;
 
+// The extension that is used to find a file containing mock headers to use
+// for a test file. For example, a test data directory can have:
+//   foo.html
+//   foo.html.mock-http-headers
+// When the test server serves foo.html, if it finds foo.html.mock-http-headers
+// it will use the contents of that file for the headers.
+extern const char kMockHttpHeadersExtension[];
+
+// Returns the Content-Type header value for a path based on its extension.
+std::string GetContentType(const base::FilePath& path);
+
 // This file is only meant for compatibility with testserver.py. No
 // additional handlers should be added here that don't affect multiple
 // distinct tests.
