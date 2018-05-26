@@ -893,6 +893,7 @@ test("content_browsertests") {
     "//components/discardable_memory/service",
     "//components/network_session_configurator/common",
     "//components/payments/mojom",
+    "//components/services/leveldb/public/cpp:cpp",
     "//components/url_formatter:url_formatter",
     "//components/viz/test:test_support",
     "//content:resources",

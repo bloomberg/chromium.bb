@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ipc/ipc_channel.h"
@@ -97,6 +98,13 @@ class Shell : public WebContentsDelegate,
       const GURL& url,
       const scoped_refptr<SiteInstance>& site_instance,
       const gfx::Size& initial_size);
+
+  static Shell* CreateNewWindowWithSessionStorageNamespace(
+      BrowserContext* browser_context,
+      const GURL& url,
+      const scoped_refptr<SiteInstance>& site_instance,
+      const gfx::Size& initial_size,
+      scoped_refptr<SessionStorageNamespace> session_storage_namespace);
 
   // Returns the Shell object corresponding to the given RenderViewHost.
   static Shell* FromRenderViewHost(RenderViewHost* rvh);

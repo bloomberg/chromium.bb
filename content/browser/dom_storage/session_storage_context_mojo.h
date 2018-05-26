@@ -116,6 +116,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
                            const url::Origin& origin);
 
  private:
+  friend class DOMStorageBrowserTest;
+
   // Object deletion is done through |ShutdownAndDelete()|.
   ~SessionStorageContextMojo() override;
 

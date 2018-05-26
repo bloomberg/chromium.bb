@@ -5,18 +5,25 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
+#include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
+#include "content/browser/dom_storage/session_storage_context_mojo.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -24,9 +31,14 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_launcher.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
+
+constexpr const char kTestSessionStorageId[] =
+    "574d2d70-24ca-4d8c-ae23-c7e1e39d07be";
 
 // This browser test is aimed towards exercising the DOMStorage system
 // from end-to-end.
@@ -74,12 +86,21 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     loop.Run();
   }
 
-  LocalStorageContextMojo* context() {
+  DOMStorageContextWrapper* context_wrapper() {
     return static_cast<DOMStorageContextWrapper*>(
-               BrowserContext::GetDefaultStoragePartition(
-                   shell()->web_contents()->GetBrowserContext())
-                   ->GetDOMStorageContext())
-        ->mojo_state_;
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext())
+            ->GetDOMStorageContext());
+  }
+
+  base::SequencedTaskRunner* mojo_task_runner() {
+    return context_wrapper()->mojo_task_runner();
+  }
+
+  LocalStorageContextMojo* context() { return context_wrapper()->mojo_state_; }
+
+  SessionStorageContextMojo* session_storage_context() {
+    return context_wrapper()->mojo_session_state_;
   }
 
   base::FilePath legacy_localstorage_path() {
@@ -88,14 +109,19 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
 
   void EnsureConnected() {
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &LocalStorageContextMojo::RunWhenConnected,
-            base::Unretained(context()),
-            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                           base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
-                           run_loop.QuitClosure())));
+    mojo_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LocalStorageContextMojo::RunWhenConnected,
+                       base::Unretained(context()), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void EnsureSessionStorageConnected() {
+    base::RunLoop run_loop;
+    mojo_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&SessionStorageContextMojo::RunWhenConnected,
+                                  base::Unretained(session_storage_context()),
+                                  run_loop.QuitClosure()));
     run_loop.Run();
   }
 };
@@ -192,6 +218,80 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_FALSE(base::PathExists(db_path));
   }
+}
+
+class DOMStorageMigrationBrowserTest : public DOMStorageBrowserTest {
+ public:
+  DOMStorageMigrationBrowserTest() : DOMStorageBrowserTest() {
+    if (IsPreTest())
+      feature_list_.InitAndDisableFeature(features::kMojoSessionStorage);
+    else
+      feature_list_.InitAndEnableFeature(features::kMojoSessionStorage);
+  }
+
+  void SessionStorageTest(const GURL& test_url) {
+    // The test page will perform tests then navigate to either
+    // a #pass or #fail ref.
+    context_wrapper()->SetSaveSessionStorageOnDisk();
+    scoped_refptr<SessionStorageNamespaceImpl> ss_namespace =
+        SessionStorageNamespaceImpl::Create(context_wrapper(),
+                                            kTestSessionStorageId);
+    ss_namespace->SetShouldPersist(true);
+    Shell* the_browser = Shell::CreateNewWindowWithSessionStorageNamespace(
+        ShellContentBrowserClient::Get()->browser_context(),
+        GURL(url::kAboutBlankURL), nullptr, gfx::Size(),
+        std::move(ss_namespace));
+    NavigateToURLBlockUntilNavigationsComplete(the_browser, test_url, 2);
+    context_wrapper()->Flush();
+    std::string result =
+        the_browser->web_contents()->GetLastCommittedURL().ref();
+    if (result != "pass") {
+      std::string js_result;
+      ASSERT_TRUE(ExecuteScriptAndExtractString(
+          the_browser, "window.domAutomationController.send(getLog())",
+          &js_result));
+      FAIL() << "Failed: " << js_result;
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, PRE_DataMigrates) {
+  SessionStorageTest(
+      GetTestUrl("dom_storage", "store_session_storage_data.html"));
+}
+
+// http://crbug.com/654704 PRE_ tests aren't supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_DataMigrates DISABLED_DataMigrates
+#else
+#define MAYBE_DataMigrates DataMigrates
+#endif
+IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, MAYBE_DataMigrates) {
+  EXPECT_TRUE(session_storage_context());
+  EnsureSessionStorageConnected();
+  SessionStorageTest(
+      GetTestUrl("dom_storage", "verify_session_storage_data.html"));
+
+  // Check that we migrated from v0 (no version) to v1.
+  base::RunLoop loop;
+  leveldb::mojom::LevelDBDatabase* database =
+      session_storage_context()->DatabaseForTesting();
+  mojo_task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        database->Get(
+            leveldb::StringPieceToUint8Vector("version"),
+            base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError error,
+                                           const std::vector<uint8_t>& value) {
+              EXPECT_EQ(leveldb::mojom::DatabaseError::OK, error);
+              EXPECT_EQ(base::StringPiece("1"),
+                        leveldb::Uint8VectorToStringPiece(value));
+              loop.Quit();
+            }));
+      }));
+  loop.Run();
 }
 
 }  // namespace content

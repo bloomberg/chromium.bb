@@ -34,7 +34,7 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
   // If there is an existing SessionStorageNamespaceImpl with the given id in
   // the DOMStorageContextWrapper, this will return that object. Otherwise this
   // constructs a SessionStorageNamespaceImpl and assigns |namespace_id| to it.
-  static scoped_refptr<SessionStorageNamespaceImpl> Create(
+  CONTENT_EXPORT static scoped_refptr<SessionStorageNamespaceImpl> Create(
       scoped_refptr<DOMStorageContextWrapper> context,
       std::string namespace_id);
 
