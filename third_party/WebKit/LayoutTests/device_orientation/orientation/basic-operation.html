@@ -14,8 +14,7 @@ sensor_test(async sensor => {
   const orientationData = generateOrientationData(1.1, 2.2, 3.3, false);
 
   setMockOrientationData(sensor, orientationData);
-  let event = await createEventListenerPromise('deviceorientation');
-  checkOrientation(event, orientationData);
+  return waitForOrientation(orientationData);
 }, 'Tests basic operation of deviceorientation event using mock data.');
 </script>
 </body>
