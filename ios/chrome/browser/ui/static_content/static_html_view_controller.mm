@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -242,10 +243,9 @@
   // if they are issued by the main frame.
   if (loader_ && fromMainFrame) {
     dispatch_async(dispatch_get_main_queue(), ^{
-      [loader_ loadURL:net::GURLWithNSURL([request URL])
-                   referrer:referrer_
-                 transition:ui::PAGE_TRANSITION_LINK
-          rendererInitiated:YES];
+      web::NavigationManager::WebLoadParams params(
+          net::GURLWithNSURL([request URL]));
+      [loader_ loadURLWithParams:params];
     });
   }
   return NO;

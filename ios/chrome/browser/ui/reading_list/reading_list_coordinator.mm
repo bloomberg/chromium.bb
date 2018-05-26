@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -254,15 +255,13 @@ readingListCollectionViewController:
 
   [readingListCollectionViewController willBeDismissed];
 
+  web::NavigationManager::WebLoadParams params(entry->URL());
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   // Use a referrer with a specific URL to signal that this entry should not be
   // taken into account for the Most Visited tiles.
-  const web::Referrer referrer(GURL(kReadingListReferrerURL),
-                               web::ReferrerPolicyDefault);
-
-  [self.URLLoader loadURL:entry->URL()
-                 referrer:referrer
-               transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-        rendererInitiated:NO];
+  params.referrer =
+      web::Referrer(GURL(kReadingListReferrerURL), web::ReferrerPolicyDefault);
+  [self.URLLoader loadURLWithParams:params];
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_READING_LIST_ENTRY);
 

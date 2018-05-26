@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -376,10 +377,10 @@ enum CellType {
 - (void)openTabWithURL:(const GURL&)url {
   if (url.is_valid()) {
     [self dismissRecentTabsModal];
-    [_loader loadURL:url
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_TYPED
-        rendererInitiated:NO];
+
+    web::NavigationManager::WebLoadParams params(url);
+    params.transition_type = ui::PAGE_TRANSITION_TYPED;
+    [_loader loadURLWithParams:params];
   }
 }
 

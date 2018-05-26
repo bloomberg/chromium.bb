@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
 #include "url/gurl.h"
 
@@ -236,10 +237,9 @@ const int kLocationAuthorizationStatusCount = 4;
     // |loadURL|?  It doesn't seem to be causing major problems.  If we call
     // cancel before load, then any prerendered pages get destroyed before the
     // call to load.
-    [self.URLLoader loadURL:url
-                   referrer:web::Referrer()
-                 transition:transition
-          rendererInitiated:NO];
+    web::NavigationManager::WebLoadParams params(url);
+    params.transition_type = transition;
+    [self.URLLoader loadURLWithParams:params];
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -309,12 +309,10 @@ const int kLocationAuthorizationStatusCount = 4;
     // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
     // transition type is so that query-in-the-omnibox is triggered for the
     // URL.
-    ui::PageTransition transition = ui::PageTransitionFromInt(
+    web::NavigationManager::WebLoadParams params(searchURL);
+    params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    [self.URLLoader loadURL:GURL(searchURL)
-                   referrer:web::Referrer()
-                 transition:transition
-          rendererInitiated:NO];
+    [self.URLLoader loadURLWithParams:params];
   }
 }
 

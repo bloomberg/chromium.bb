@@ -3658,10 +3658,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
       Record(ACTION_OPEN_IMAGE, isImage, isLink);
-      [weakSelf loadURL:imageUrl
-                   referrer:referrer
-                 transition:ui::PAGE_TRANSITION_LINK
-          rendererInitiated:YES];
+      web::NavigationManager::WebLoadParams params(imageUrl);
+      [weakSelf loadURLWithParams:params];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Open Image In New Tab.
@@ -4297,17 +4295,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - UrlLoader (Public)
 
-- (void)loadURL:(const GURL&)url
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated {
+- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
   [[OmniboxGeolocationController sharedInstance]
-      locationBarDidSubmitURL:url
-                   transition:transition
+      locationBarDidSubmitURL:params.url
+                   transition:params.transition_type
                  browserState:_browserState];
 
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
-  if (transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
+  if (params.transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
     BOOL isExpectingVoiceSearch = NO;
     web::WebState* webState = [_model currentTab].webState;
     if (webState) {
@@ -4315,14 +4310,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
           VoiceSearchNavigationTabHelper::FromWebState(webState)
               ->IsExpectingVoiceSearch();
     }
-    new_tab_page_uma::RecordActionFromOmnibox(_browserState, url, transition,
+    new_tab_page_uma::RecordActionFromOmnibox(_browserState, params.url,
+                                              params.transition_type,
                                               isExpectingVoiceSearch);
   }
 
   // NOTE: This check for the Crash Host URL is here to avoid the URL from
   // ending up in the history causing the app to crash at every subsequent
   // restart.
-  if (url.host() == kChromeUIBrowserCrashHost) {
+  if (params.url.host() == kChromeUIBrowserCrashHost) {
     [self induceBrowserCrash];
     // In debug the app can continue working even after the CHECK. Adding a
     // return avoids the crash url to be added to the history.
@@ -4330,12 +4326,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   bool typed_or_generated_transition =
-      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
-      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED);
+      PageTransitionCoreTypeIs(params.transition_type,
+                               ui::PAGE_TRANSITION_TYPED) ||
+      PageTransitionCoreTypeIs(params.transition_type,
+                               ui::PAGE_TRANSITION_GENERATED);
 
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(self.browserState);
-  if (prerenderService && prerenderService->HasPrerenderForUrl(url)) {
+  if (prerenderService && prerenderService->HasPrerenderForUrl(params.url)) {
     std::unique_ptr<web::WebState> newWebState =
         prerenderService->ReleasePrerenderContents();
     DCHECK(newWebState);
@@ -4378,15 +4376,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
     }
   }
 
-  GURL urlToLoad = url;
   if (prerenderService) {
     prerenderService->CancelPrerender();
   }
 
   // Some URLs are not allowed while in incognito.  If we are in incognito and
   // load a disallowed URL, instead create a new tab not in the incognito state.
-  if (_isOffTheRecord && !IsURLAllowedInIncognito(url)) {
-    [self webPageOrderedOpen:url
+  if (_isOffTheRecord && !IsURLAllowedInIncognito(params.url)) {
+    [self webPageOrderedOpen:params.url
                     referrer:web::Referrer()
                  inIncognito:NO
                 inBackground:NO
@@ -4402,16 +4399,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // If this is a reload initiated from the omnibox.
   // TODO(crbug.com/730192): Add DCHECK to verify that whenever urlToLood is the
   // same as the old url, the transition type is ui::PAGE_TRANSITION_RELOAD.
-  if (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD)) {
+  if (PageTransitionCoreTypeIs(params.transition_type,
+                               ui::PAGE_TRANSITION_RELOAD)) {
     [[_model currentTab] navigationManager]->Reload(
         web::ReloadType::NORMAL, true /* check_for_repost */);
     return;
   }
 
-  web::NavigationManager::WebLoadParams params(urlToLoad);
-  params.referrer = referrer;
-  params.transition_type = transition;
-  params.is_renderer_initiated = rendererInitiated;
   Tab* currentTab = [_model currentTab];
   DCHECK(currentTab);
   BOOL wasVoiceSearchTab = currentTab.isVoiceSearchResultsTab;
@@ -4992,10 +4986,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)navigateToMemexTabSwitcher {
   // TODO(crbug.com/799601): Delete this once its not needed.
   const GURL memexURL("https://chrome-memex.appspot.com");
-  [self loadURL:memexURL
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_LINK
-      rendererInitiated:NO];
+  web::NavigationManager::WebLoadParams params(memexURL);
+  [self loadURLWithParams:params];
 }
 
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {

@@ -237,15 +237,13 @@ const char kRateThisAppCommand[] = "ratethisapp";
   self.suggestionsService->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_USED);
 
+  web::NavigationManager::WebLoadParams params(suggestionItem.URL);
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
-  const web::Referrer referrer(GURL(kNewTabPageReferrerURL),
-                               web::ReferrerPolicyDefault);
-
-  [self.dispatcher loadURL:suggestionItem.URL
-                  referrer:referrer
-                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-         rendererInitiated:NO];
+  params.referrer =
+      web::Referrer(GURL(kNewTabPageReferrerURL), web::ReferrerPolicyDefault);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [self.dispatcher loadURLWithParams:params];
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];
 }
 
@@ -281,10 +279,9 @@ const char kRateThisAppCommand[] = "ratethisapp";
 
   [self logMostVisitedOpening:mostVisitedItem atIndex:mostVisitedIndex];
 
-  [self.dispatcher loadURL:mostVisitedItem.URL
-                  referrer:web::Referrer()
-                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-         rendererInitiated:NO];
+  web::NavigationManager::WebLoadParams params(mostVisitedItem.URL);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [self.dispatcher loadURLWithParams:params];
 }
 
 - (void)displayContextMenuForSuggestion:(CollectionViewItem*)item
@@ -367,10 +364,9 @@ const char kRateThisAppCommand[] = "ratethisapp";
 }
 
 - (void)handleLearnMoreTapped {
-  [self.dispatcher loadURL:GURL(kNTPHelpURL)
-                  referrer:web::Referrer()
-                transition:ui::PAGE_TRANSITION_LINK
-         rendererInitiated:NO];
+  GURL URL(kNTPHelpURL);
+  web::NavigationManager::WebLoadParams params(URL);
+  [self.dispatcher loadURLWithParams:params];
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_LEARN_MORE];
 }
 

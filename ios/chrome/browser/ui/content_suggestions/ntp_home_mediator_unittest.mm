@@ -253,11 +253,9 @@ TEST_F(NTPHomeMediatorTest, TestOpenPage) {
   id model = OCMClassMock([CollectionViewModel class]);
   OCMStub([suggestions_view_controller_ collectionViewModel]).andReturn(model);
   OCMStub([model itemAtIndexPath:indexPath]).andReturn(item);
-  OCMExpect([[dispatcher_ ignoringNonObjectArgs]
-                loadURL:url
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-      rendererInitiated:NO]);
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  OCMExpect([[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:params]);
 
   // Action.
   [mediator_ openPageForItemAtIndexPath:indexPath];
@@ -274,11 +272,9 @@ TEST_F(NTPHomeMediatorTest, TestOpenMostVisited) {
   ContentSuggestionsMostVisitedItem* item =
       [[ContentSuggestionsMostVisitedItem alloc] initWithType:0];
   item.URL = url;
-  OCMExpect([[dispatcher_ ignoringNonObjectArgs]
-                loadURL:url
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-      rendererInitiated:NO]);
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  OCMExpect([[dispatcher_ ignoringNonObjectArgs] loadURLWithParams:params]);
 
   // Action.
   [mediator_ openMostVisitedItem:item atIndex:0];

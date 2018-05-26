@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -822,16 +823,12 @@ const int kMaxFetchCount = 100;
 
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
-  // Make a copy to make sure the referenced URL doesn't change while we're
-  // opening it.
-  GURL copiedURL(URL);
   new_tab_page_uma::RecordAction(_browserState,
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
+  web::NavigationManager::WebLoadParams params(URL);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    [self.loader loadURL:copiedURL
-                 referrer:web::Referrer()
-               transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-        rendererInitiated:NO];
+    [self.loader loadURLWithParams:params];
   }];
 }
 
