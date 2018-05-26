@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "ui/base/ui_base_features.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
@@ -131,6 +132,12 @@ void PostMediaContextProviderToCallback(
       }),
       base::BindOnce(&ObtainAndSetContextProvider,
                      std::move(set_context_provider_callback)));
+}
+
+// Whether videos should use SurfaceLayers.
+bool VideoSurfaceLayerEnabled() {
+  return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
+         !base::FeatureList::IsEnabled(features::kMash);
 }
 
 }  // namespace
@@ -276,8 +283,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;
-  bool use_surface_layer_for_video =
-      base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo);
+  bool use_surface_layer_for_video = VideoSurfaceLayerEnabled();
   if (use_surface_layer_for_video) {
     // TODO(lethalantidote): Use a separate task_runner. https://crbug/753605.
     video_frame_compositor_task_runner =
