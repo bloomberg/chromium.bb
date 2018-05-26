@@ -15099,6 +15099,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_ViewExtensionErrors">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <description>
+    Extensions WebUI: User clicked or navigated directly to view errors for an
+    extension.
+  </description>
+</action>
+
 <action name="Options_WakeOnWifiDarkConnect_Disable">
   <owner>michaelpg@chromium.org</owner>
   <description>
