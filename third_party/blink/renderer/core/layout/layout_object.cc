@@ -553,13 +553,6 @@ LayoutObject* LayoutObject::PreviousInPreOrder(
   return PreviousInPreOrder();
 }
 
-LayoutObject* LayoutObject::ChildAt(unsigned index) const {
-  LayoutObject* child = SlowFirstChild();
-  for (unsigned i = 0; child && i < index; i++)
-    child = child->NextSibling();
-  return child;
-}
-
 LayoutObject* LayoutObject::LastLeafChild() const {
   LayoutObject* r = SlowLastChild();
   while (r) {
@@ -740,18 +733,6 @@ LayoutBox* LayoutObject::EnclosingBox() const {
   while (curr) {
     if (curr->IsBox())
       return ToLayoutBox(curr);
-    curr = curr->Parent();
-  }
-
-  NOTREACHED();
-  return nullptr;
-}
-
-LayoutBoxModelObject* LayoutObject::EnclosingBoxModelObject() const {
-  LayoutObject* curr = const_cast<LayoutObject*>(this);
-  while (curr) {
-    if (curr->IsBoxModelObject())
-      return ToLayoutBoxModelObject(curr);
     curr = curr->Parent();
   }
 

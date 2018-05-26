@@ -213,9 +213,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
-  LayoutUnit BlockDirectionOffset(const LayoutSize& offset_from_block) const;
-  LayoutUnit InlineDirectionOffset(const LayoutSize& offset_from_block) const;
-
   static LayoutBlock* CreateAnonymousWithParentAndDisplay(
       const LayoutObject*,
       EDisplay = EDisplay::kBlock);
@@ -302,11 +299,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                ? LogicalLeftOffsetForContent()
                : LogicalWidth() - LogicalRightOffsetForContent();
   }
-
-  virtual LayoutUnit LogicalLeftSelectionOffset(const LayoutBlock* root_block,
-                                                LayoutUnit position) const;
-  virtual LayoutUnit LogicalRightSelectionOffset(const LayoutBlock* root_block,
-                                                 LayoutUnit position) const;
 
 #if DCHECK_IS_ON()
   void CheckPositionedObjectsNeedLayout();
