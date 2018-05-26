@@ -863,6 +863,10 @@ const char kUsageTimeLimit[] = "screen_time.limit";
 // Last state of the screen time limit.
 const char kScreenTimeLastState[] = "screen_time.last_state";
 
+// Boolean controlling whether showing Sync Consent during sign-in is enabled.
+// Controlled by policy.
+const char kEnableSyncConsent[] = "sync_consent.enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

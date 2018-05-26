@@ -116,6 +116,12 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
       (user_->GetType() != user_manager::USER_TYPE_REGULAR)) {
     return SyncScreenBehavior::SKIP;
   }
+
+  // Skip if disabled by policy.
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kEnableSyncConsent)) {
+    return SyncScreenBehavior::SKIP;
+  }
+
   // Skip for sync-disabled case.
   const browser_sync::ProfileSyncService* sync_service =
       GetSyncService(profile_);
