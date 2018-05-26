@@ -195,9 +195,15 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
                                  baseline_type_);
       }
 
-      text_builder.SetItem(NGPhysicalTextFragment::kNormalText,
-                           line_info->ItemsData(), &item_result,
-                           box->text_height);
+      if (item.IsSymbolMarker()) {
+        text_builder.SetItem(NGPhysicalTextFragment::kSymbolMarker,
+                             line_info->ItemsData(), &item_result,
+                             box->text_height);
+      } else {
+        text_builder.SetItem(NGPhysicalTextFragment::kNormalText,
+                             line_info->ItemsData(), &item_result,
+                             box->text_height);
+      }
       line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                          item_result.inline_size, item.BidiLevel());
     } else if (item.Type() == NGInlineItem::kControl) {

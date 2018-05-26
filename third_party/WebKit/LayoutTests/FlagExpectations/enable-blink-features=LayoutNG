@@ -73,6 +73,9 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-prct-vrl-in-ht
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-001.xht [ Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-004.xht [ Pass ]
 
+# The position of writing-mode:vertical inline image is different from legacy.
+crbug.com/591099 fast/lists/008-vertical.html [ Failure ]
+
 # New failures are appended below by the script.
 crbug.com/714962 accessibility/adjacent-continuations-cause-assertion-failure.html [ Failure ]
 crbug.com/591099 accessibility/aom-relation-list-properties.html [ Failure ]

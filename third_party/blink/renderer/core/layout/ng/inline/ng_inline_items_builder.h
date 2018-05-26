@@ -107,6 +107,8 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
 
   OffsetMappingBuilder& GetOffsetMappingBuilder() { return mapping_builder_; }
 
+  void SetIsSymbolMarker(bool b);
+
  private:
   Vector<NGInlineItem>* items_;
   StringBuilder text_;

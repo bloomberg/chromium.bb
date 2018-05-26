@@ -34,40 +34,40 @@ layer at (0,0) size 800x312
                         text run at (1,3) width 60: "HERE \x{21E7}"
       LayoutNGBlockFlow {UL} at (0,154) size 784x126
         LayoutNGListItem {LI} at (40,0) size 744x82 [border: (2px solid #0000FF) none]
-          LayoutNGListMarker (anonymous) at (-18,2) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,2) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutNGBlockFlow (anonymous) at (0,2) size 744x20
             LayoutText {#text} at (0,0) size 60x19
               text run at (0,0) width 60: "HERE \x{21E7}"
           LayoutNGBlockFlow {UL} at (0,22) size 744x60
             LayoutNGListItem {LI} at (40,0) size 704x20
-              LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                LayoutText (anonymous) at (0,0) size 10x19
-                  text run at (0,0) width 10: "\x{25E6} "
+              LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                LayoutText (anonymous) at (0,0) size 7x19
+                  text run at (0,0) width 7: "\x{25E6} "
               LayoutText {#text} at (0,0) size 75x19
                 text run at (0,0) width 75: "dummy text"
             LayoutNGListItem {LI} at (40,20) size 704x20
-              LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                LayoutText (anonymous) at (0,0) size 10x19
-                  text run at (0,0) width 10: "\x{25E6} "
+              LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                LayoutText (anonymous) at (0,0) size 7x19
+                  text run at (0,0) width 7: "\x{25E6} "
               LayoutText {#text} at (0,0) size 75x19
                 text run at (0,0) width 75: "dummy text"
             LayoutNGListItem {LI} at (40,40) size 704x20
-              LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                LayoutText (anonymous) at (0,0) size 10x19
-                  text run at (0,0) width 10: "\x{25E6} "
+              LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                LayoutText (anonymous) at (0,0) size 7x19
+                  text run at (0,0) width 7: "\x{25E6} "
               LayoutText {#text} at (0,0) size 75x19
                 text run at (0,0) width 75: "dummy text"
         LayoutNGListItem {LI} at (40,82) size 744x22 [border: (2px solid #0000FF) none]
-          LayoutNGListMarker (anonymous) at (-18,2) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,2) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,2) size 60x19
             text run at (0,2) width 60: "HERE \x{21E7}"
         LayoutNGListItem {LI} at (40,104) size 744x22 [border: (2px solid #0000FF) none]
-          LayoutNGListMarker (anonymous) at (-18,2) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,2) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,2) size 60x19
             text run at (0,2) width 60: "HERE \x{21E7}"

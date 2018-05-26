@@ -41,21 +41,21 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {DIV} at (0,230) size 784x136 [border: (2px solid #008000)]
         LayoutNGBlockFlow {UL} at (2,26) size 780x84
           LayoutNGListItem {LI} at (40,0) size 740x28
-            LayoutNGListMarker (anonymous) at (-22,0) size 14x28
-              LayoutText (anonymous) at (0,0) size 14x27
-                text run at (0,0) width 14: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-22,0) size 9x28
+              LayoutText (anonymous) at (0,0) size 9x27
+                text run at (0,0) width 9: "\x{2022} "
             LayoutText {#text} at (0,0) size 114x27
               text run at (0,0) width 114: "xxxline one"
           LayoutNGListItem {LI} at (40,28) size 740x28
-            LayoutNGListMarker (anonymous) at (-22,0) size 14x28
-              LayoutText (anonymous) at (0,0) size 14x27
-                text run at (0,0) width 14: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-22,0) size 9x28
+              LayoutText (anonymous) at (0,0) size 9x27
+                text run at (0,0) width 9: "\x{2022} "
             LayoutText {#text} at (0,0) size 79x27
               text run at (0,0) width 79: "line two"
           LayoutNGListItem {LI} at (40,56) size 740x28
-            LayoutNGListMarker (anonymous) at (-22,0) size 14x28
-              LayoutText (anonymous) at (0,0) size 14x27
-                text run at (0,0) width 14: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-22,0) size 9x28
+              LayoutText (anonymous) at (0,0) size 9x27
+                text run at (0,0) width 9: "\x{2022} "
             LayoutText {#text} at (0,0) size 92x27
               text run at (0,0) width 92: "line three"
       LayoutBlockFlow {DIV} at (0,376) size 784x136

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -324,6 +325,14 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   if (auto_wrap_) {
     // Try to break inside of this text item.
     BreakText(item_result, item, available_width - line_.position, line_info);
+
+    if (item.IsSymbolMarker()) {
+      LayoutUnit symbol_width =
+          LayoutListMarker::GetWidthOfSymbol(*item.Style());
+      if (symbol_width > 0)
+        item_result->inline_size = symbol_width;
+    }
+
     LayoutUnit next_position = line_.position + item_result->inline_size;
     bool is_overflow = next_position > available_width;
     line_.position = next_position;
@@ -349,6 +358,13 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   // Because the start position may need to reshape, run ShapingLineBreaker
   // with max available width.
   BreakText(item_result, item, LayoutUnit::Max(), line_info);
+
+  if (item.IsSymbolMarker()) {
+    LayoutUnit symbol_width = LayoutListMarker::GetWidthOfSymbol(*item.Style());
+    if (symbol_width > 0)
+      item_result->inline_size = symbol_width;
+  }
+
   DCHECK_EQ(item_result->end_offset, item.EndOffset());
   DCHECK(!item_result->may_break_inside);
   item_result->can_break_after = false;

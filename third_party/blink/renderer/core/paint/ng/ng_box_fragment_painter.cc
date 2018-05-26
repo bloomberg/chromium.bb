@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
@@ -14,10 +15,12 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
+#include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_clipper.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -652,8 +655,29 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
                      DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
   }
 
-  NGTextFragmentPainter text_painter(text_fragment);
-  text_painter.Paint(paint_info, paint_offset);
+  const NGPhysicalTextFragment& physical_text_fragment =
+      ToNGPhysicalTextFragment(text_fragment.PhysicalFragment());
+  if (physical_text_fragment.TextType() ==
+      NGPhysicalTextFragment::kSymbolMarker) {
+    PaintSymbol(text_fragment, paint_info, paint_offset);
+  } else {
+    NGTextFragmentPainter text_painter(text_fragment);
+    text_painter.Paint(paint_info, paint_offset);
+  }
+}
+
+void NGBoxFragmentPainter::PaintSymbol(const NGPaintFragment& fragment,
+                                       const PaintInfo& paint_info,
+                                       const LayoutPoint& paint_offset) {
+  const ComputedStyle& style = fragment.Style();
+  LayoutRect marker_rect = LayoutListMarker::GetRelativeSymbolMarkerRect(
+      style, fragment.Size().width);
+  marker_rect.MoveBy(fragment.Offset().ToLayoutPoint());
+  marker_rect.MoveBy(paint_offset);
+  IntRect rect = PixelSnappedIntRect(marker_rect);
+
+  ListMarkerPainter::PaintSymbol(paint_info, fragment.GetLayoutObject(), style,
+                                 rect);
 }
 
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info,

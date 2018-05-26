@@ -57,7 +57,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       should_create_box_fragment_(false),
       style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
       end_collapse_type_(kNotCollapsible),
-      end_may_collapse_(end_may_collapse) {
+      end_may_collapse_(end_may_collapse),
+      is_symbol_marker_(false) {
   DCHECK_GE(end, start);
   ComputeBoxProperties();
 }
@@ -79,7 +80,8 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       should_create_box_fragment_(other.should_create_box_fragment_),
       style_variant_(other.style_variant_),
       end_collapse_type_(other.end_collapse_type_),
-      end_may_collapse_(other.end_may_collapse_) {
+      end_may_collapse_(other.end_may_collapse_),
+      is_symbol_marker_(other.is_symbol_marker_) {
   DCHECK_GE(end, start);
 }
 

@@ -13,9 +13,9 @@ layer at (0,0) size 800x400
           text run at (0,0) width 169: "Expected results"
       LayoutNGBlockFlow {ul} at (0,315.81) size 784x60
         LayoutNGListItem {li} at (40,0) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 29x19
             text run at (0,0) width 29: "The "
           LayoutInline {code} at (0,0) size 24x16
@@ -24,9 +24,9 @@ layer at (0,0) size 800x400
           LayoutText {#text} at (53,0) size 242x19
             text run at (53,0) width 242: " containing the object appears in green"
         LayoutNGListItem {li} at (40,20) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 29x19
             text run at (0,0) width 29: "The "
           LayoutInline {code} at (0,0) size 48x16
@@ -35,9 +35,9 @@ layer at (0,0) size 800x400
           LayoutText {#text} at (77,0) size 270x19
             text run at (77,0) width 270: " appears in orange. Its height is set at 13em"
         LayoutNGListItem {li} at (40,40) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 171x19
             text run at (0,0) width 171: "The blue line is 13em wide"
 layer at (8,8) size 208x208

@@ -29,59 +29,59 @@ layer at (0,0) size 785x1649 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,144) width 0: " "
       LayoutNGBlockFlow {UL} at (0,227) size 769x60
         LayoutNGListItem {LI} at (40,0) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 62x19
             text run at (0,0) width 62: "This list..."
         LayoutNGListItem {LI} at (40,20) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 113x19
             text run at (0,0) width 113: "...should feature..."
         LayoutNGListItem {LI} at (40,40) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 133x19
             text run at (0,0) width 133: "...discs for each item."
       LayoutNGBlockFlow {UL} at (0,303) size 769x60
         LayoutNGListItem {LI} at (40,0) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{25E6} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{25E6} "
           LayoutText {#text} at (0,0) size 62x19
             text run at (0,0) width 62: "This list..."
         LayoutNGListItem {LI} at (40,20) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{25E6} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{25E6} "
           LayoutText {#text} at (0,0) size 113x19
             text run at (0,0) width 113: "...should feature..."
         LayoutNGListItem {LI} at (40,40) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{25E6} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{25E6} "
           LayoutText {#text} at (0,0) size 142x19
             text run at (0,0) width 142: "...circles for each item."
       LayoutNGBlockFlow {UL} at (0,379) size 769x60
         LayoutNGListItem {LI} at (40,0) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 14x20
-            LayoutText (anonymous) at (0,0) size 14x19
-              text run at (0,0) width 14: "\x{25A0} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{25A0} "
           LayoutText {#text} at (0,0) size 62x19
             text run at (0,0) width 62: "This list..."
         LayoutNGListItem {LI} at (40,20) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 14x20
-            LayoutText (anonymous) at (0,0) size 14x19
-              text run at (0,0) width 14: "\x{25A0} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{25A0} "
           LayoutText {#text} at (0,0) size 113x19
             text run at (0,0) width 113: "...should feature..."
         LayoutNGListItem {LI} at (40,40) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 14x20
-            LayoutText (anonymous) at (0,0) size 14x19
-              text run at (0,0) width 14: "\x{25A0} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{25A0} "
           LayoutText {#text} at (0,0) size 149x19
             text run at (0,0) width 149: "...squares for each item."
       LayoutNGBlockFlow {OL} at (0,455) size 769x60
@@ -203,59 +203,59 @@ layer at (0,0) size 785x1649 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutNGTableCell {TD} at (12,28) size 324x692 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutNGBlockFlow {UL} at (4,4) size 316x60
                 LayoutNGListItem {LI} at (40,0) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 62x19
                     text run at (0,0) width 62: "This list..."
                 LayoutNGListItem {LI} at (40,20) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 113x19
                     text run at (0,0) width 113: "...should feature..."
                 LayoutNGListItem {LI} at (40,40) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 133x19
                     text run at (0,0) width 133: "...discs for each item."
               LayoutNGBlockFlow {UL} at (4,80) size 316x60
                 LayoutNGListItem {LI} at (40,0) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{25E6} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{25E6} "
                   LayoutText {#text} at (0,0) size 62x19
                     text run at (0,0) width 62: "This list..."
                 LayoutNGListItem {LI} at (40,20) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{25E6} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{25E6} "
                   LayoutText {#text} at (0,0) size 113x19
                     text run at (0,0) width 113: "...should feature..."
                 LayoutNGListItem {LI} at (40,40) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{25E6} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{25E6} "
                   LayoutText {#text} at (0,0) size 142x19
                     text run at (0,0) width 142: "...circles for each item."
               LayoutNGBlockFlow {UL} at (4,156) size 316x60
                 LayoutNGListItem {LI} at (40,0) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 14x20
-                    LayoutText (anonymous) at (0,0) size 14x19
-                      text run at (0,0) width 14: "\x{25A0} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{25A0} "
                   LayoutText {#text} at (0,0) size 62x19
                     text run at (0,0) width 62: "This list..."
                 LayoutNGListItem {LI} at (40,20) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 14x20
-                    LayoutText (anonymous) at (0,0) size 14x19
-                      text run at (0,0) width 14: "\x{25A0} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{25A0} "
                   LayoutText {#text} at (0,0) size 113x19
                     text run at (0,0) width 113: "...should feature..."
                 LayoutNGListItem {LI} at (40,40) size 276x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 14x20
-                    LayoutText (anonymous) at (0,0) size 14x19
-                      text run at (0,0) width 14: "\x{25A0} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{25A0} "
                   LayoutText {#text} at (0,0) size 149x19
                     text run at (0,0) width 149: "...squares for each item."
               LayoutNGBlockFlow {OL} at (4,232) size 316x60

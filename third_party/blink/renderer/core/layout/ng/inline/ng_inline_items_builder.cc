@@ -799,6 +799,13 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Exit(
   }
 }
 
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::SetIsSymbolMarker(
+    bool b) {
+  DCHECK(!items_->IsEmpty());
+  items_->back().SetIsSymbolMarker(b);
+}
+
 template class CORE_TEMPLATE_EXPORT
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 template class CORE_TEMPLATE_EXPORT

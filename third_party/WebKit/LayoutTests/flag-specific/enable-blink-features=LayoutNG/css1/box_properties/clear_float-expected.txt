@@ -30,27 +30,27 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,0) width 83: "Top menu"
         LayoutNGBlockFlow {UL} at (24,34.19) size 155.20x80
           LayoutNGListItem {LI} at (0,0) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 35x19
               text run at (0,0) width 35: "green"
           LayoutNGListItem {LI} at (0,20) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 62x19
               text run at (0,0) width 62: "white text"
           LayoutNGListItem {LI} at (0,40) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 94x19
               text run at (0,0) width 94: "0.5em padding"
           LayoutNGListItem {LI} at (0,60) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 87x19
               text run at (0,0) width 87: "0.5em margin"
       LayoutNGBlockFlow (floating) {DIV} at (0,335.38) size 192x125.38 [color=#FFFFFF] [bgcolor=#0000FF]
@@ -59,27 +59,27 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,0) width 112: "Bottom menu"
         LayoutNGBlockFlow {UL} at (24,34.19) size 155.20x80
           LayoutNGListItem {LI} at (0,0) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 106x19
               text run at (0,0) width 106: "blue background"
           LayoutNGListItem {LI} at (0,20) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 62x19
               text run at (0,0) width 62: "white text"
           LayoutNGListItem {LI} at (0,40) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 94x19
               text run at (0,0) width 94: "0.5em padding"
           LayoutNGListItem {LI} at (0,60) size 155.20x20
-            LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-              LayoutText (anonymous) at (0,0) size 10x19
-                text run at (0,0) width 10: "\x{2022} "
+            LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+              LayoutText (anonymous) at (0,0) size 7x19
+                text run at (0,0) width 7: "\x{2022} "
             LayoutText {#text} at (0,0) size 87x19
               text run at (0,0) width 87: "0.5em margin"
       LayoutNGBlockFlow {DIV} at (224,200) size 528x235.88 [bgcolor=#FFFF00]
@@ -115,27 +115,27 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                     text run at (0,0) width 83: "Top menu"
                 LayoutNGBlockFlow {UL} at (24,34.19) size 155.20x80
                   LayoutNGListItem {LI} at (0,0) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 35x19
                       text run at (0,0) width 35: "green"
                   LayoutNGListItem {LI} at (0,20) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 62x19
                       text run at (0,0) width 62: "white text"
                   LayoutNGListItem {LI} at (0,40) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 94x19
                       text run at (0,0) width 94: "0.5em padding"
                   LayoutNGListItem {LI} at (0,60) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 87x19
                       text run at (0,0) width 87: "0.5em margin"
               LayoutNGBlockFlow (floating) {DIV} at (4,139.38) size 192x125.38 [color=#FFFFFF] [bgcolor=#0000FF]
@@ -144,27 +144,27 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                     text run at (0,0) width 112: "Bottom menu"
                 LayoutNGBlockFlow {UL} at (24,34.19) size 155.20x80
                   LayoutNGListItem {LI} at (0,0) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 106x19
                       text run at (0,0) width 106: "blue background"
                   LayoutNGListItem {LI} at (0,20) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 62x19
                       text run at (0,0) width 62: "white text"
                   LayoutNGListItem {LI} at (0,40) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 94x19
                       text run at (0,0) width 94: "0.5em padding"
                   LayoutNGListItem {LI} at (0,60) size 155.20x20
-                    LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                      LayoutText (anonymous) at (0,0) size 10x19
-                        text run at (0,0) width 10: "\x{2022} "
+                    LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                      LayoutText (anonymous) at (0,0) size 7x19
+                        text run at (0,0) width 7: "\x{2022} "
                     LayoutText {#text} at (0,0) size 87x19
                       text run at (0,0) width 87: "0.5em margin"
               LayoutNGBlockFlow {DIV} at (228,4) size 314x335.88 [bgcolor=#FFFF00]

@@ -49,41 +49,41 @@ layer at (0,0) size 785x1023 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                         text run at (2,3) width 151: "Nested single-cell table!"
       LayoutNGBlockFlow {UL} at (0,404) size 769x129
         LayoutNGListItem {LI} at (40,0) size 729x83 [border: (3px solid #000000) none]
-          LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutNGBlockFlow (anonymous) at (0,3) size 729x20
             LayoutText {#text} at (0,0) size 118x19
               text run at (0,0) width 118: "This is a list item..."
           LayoutNGBlockFlow {UL} at (0,23) size 729x60
             LayoutNGListItem {LI} at (40,0) size 689x20
-              LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                LayoutText (anonymous) at (0,0) size 10x19
-                  text run at (0,0) width 10: "\x{25E6} "
+              LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                LayoutText (anonymous) at (0,0) size 7x19
+                  text run at (0,0) width 7: "\x{25E6} "
               LayoutText {#text} at (0,0) size 73x19
                 text run at (0,0) width 73: "...and this..."
             LayoutNGListItem {LI} at (40,20) size 689x20
-              LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                LayoutText (anonymous) at (0,0) size 10x19
-                  text run at (0,0) width 10: "\x{25E6} "
+              LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                LayoutText (anonymous) at (0,0) size 7x19
+                  text run at (0,0) width 7: "\x{25E6} "
               LayoutText {#text} at (0,0) size 115x19
                 text run at (0,0) width 115: "...is a second list..."
             LayoutNGListItem {LI} at (40,40) size 689x20
-              LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                LayoutText (anonymous) at (0,0) size 10x19
-                  text run at (0,0) width 10: "\x{25E6} "
+              LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                LayoutText (anonymous) at (0,0) size 7x19
+                  text run at (0,0) width 7: "\x{25E6} "
               LayoutText {#text} at (0,0) size 176x19
                 text run at (0,0) width 176: "...nested within the list item."
         LayoutNGListItem {LI} at (40,83) size 729x23 [border: (3px solid #000000) none]
-          LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,3) size 158x19
             text run at (0,3) width 158: "This is a second list item."
         LayoutNGListItem {LI} at (40,106) size 729x23 [border: (3px solid #000000) none]
-          LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,3) size 480x19
             text run at (0,3) width 480: "Each list item in this list should have a medium-width black border at its top."
       LayoutTable {TABLE} at (0,549) size 769x458 [border: (1px outset #808080)]
@@ -131,41 +131,41 @@ layer at (0,0) size 785x1023 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                                 text run at (2,3) width 151: "Nested single-cell table!"
               LayoutNGBlockFlow {UL} at (4,278) size 747x129
                 LayoutNGListItem {LI} at (40,0) size 707x83 [border: (3px solid #000000) none]
-                  LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutNGBlockFlow (anonymous) at (0,3) size 707x20
                     LayoutText {#text} at (0,0) size 118x19
                       text run at (0,0) width 118: "This is a list item..."
                   LayoutNGBlockFlow {UL} at (0,23) size 707x60
                     LayoutNGListItem {LI} at (40,0) size 667x20
-                      LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                        LayoutText (anonymous) at (0,0) size 10x19
-                          text run at (0,0) width 10: "\x{25E6} "
+                      LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                        LayoutText (anonymous) at (0,0) size 7x19
+                          text run at (0,0) width 7: "\x{25E6} "
                       LayoutText {#text} at (0,0) size 73x19
                         text run at (0,0) width 73: "...and this..."
                     LayoutNGListItem {LI} at (40,20) size 667x20
-                      LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                        LayoutText (anonymous) at (0,0) size 10x19
-                          text run at (0,0) width 10: "\x{25E6} "
+                      LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                        LayoutText (anonymous) at (0,0) size 7x19
+                          text run at (0,0) width 7: "\x{25E6} "
                       LayoutText {#text} at (0,0) size 115x19
                         text run at (0,0) width 115: "...is a second list..."
                     LayoutNGListItem {LI} at (40,40) size 667x20
-                      LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                        LayoutText (anonymous) at (0,0) size 10x19
-                          text run at (0,0) width 10: "\x{25E6} "
+                      LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                        LayoutText (anonymous) at (0,0) size 7x19
+                          text run at (0,0) width 7: "\x{25E6} "
                       LayoutText {#text} at (0,0) size 176x19
                         text run at (0,0) width 176: "...nested within the list item."
                 LayoutNGListItem {LI} at (40,83) size 707x23 [border: (3px solid #000000) none]
-                  LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,3) size 158x19
                     text run at (0,3) width 158: "This is a second list item."
                 LayoutNGListItem {LI} at (40,106) size 707x23 [border: (3px solid #000000) none]
-                  LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,3) size 480x19
                     text run at (0,3) width 480: "Each list item in this list should have a medium-width black border at its top."
 layer at (8,121) size 769x2 clip at (0,0) size 0x0

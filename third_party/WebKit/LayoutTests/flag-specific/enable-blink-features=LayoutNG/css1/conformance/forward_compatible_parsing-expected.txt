@@ -175,9 +175,9 @@ layer at (0,0) size 785x4321 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,20) width 110: "not the first child."
       LayoutNGBlockFlow {UL} at (0,1639) size 769x40
         LayoutNGListItem {LI} at (40,0) size 729x40
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 690x39
             text run at (0,0) width 690: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
             text run at (0,20) width 228: "CSS2, the selector should not apply."
@@ -385,9 +385,9 @@ layer at (0,0) size 785x4321 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,20) width 124: "is not the first child."
               LayoutNGBlockFlow {UL} at (4,712) size 747x40
                 LayoutNGListItem {LI} at (40,0) size 707x40
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 690x39
                     text run at (0,0) width 690: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
                     text run at (0,20) width 228: "CSS2, the selector should not apply."
