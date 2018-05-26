@@ -2039,7 +2039,7 @@ TEST_F(ImplicitRootScrollerSimTest, NavigateToValidRemainsRootScroller) {
   // the parent.
   SimRequest child_request2("https://example.com/child-next.html", "text/html");
   WebURLRequest request(KURL("https://example.com/child-next.html"));
-  WebView().MainFrameImpl()->FirstChild()->ToWebLocalFrame()->LoadRequest(
+  WebView().MainFrameImpl()->FirstChild()->ToWebLocalFrame()->StartNavigation(
       request);
 
   child_request2.Start();

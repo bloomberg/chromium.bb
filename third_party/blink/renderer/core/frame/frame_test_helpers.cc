@@ -100,11 +100,14 @@ std::unique_ptr<T> CreateDefaultClientIfNeeded(T*& client) {
 }  // namespace
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
-  WebURLRequest url_request(URLTestHelpers::ToKURL(url));
-  if (url_request.Url().ProtocolIs("javascript")) {
-    frame->LoadJavaScriptURL(url_request.Url());
+  WebURL web_url(URLTestHelpers::ToKURL(url));
+  if (web_url.ProtocolIs("javascript")) {
+    frame->LoadJavaScriptURL(web_url);
   } else {
-    frame->LoadRequest(url_request);
+    frame->CommitNavigation(
+        WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
+        blink::WebHistoryItem(), blink::kWebHistoryDifferentDocumentLoad, false,
+        base::UnguessableToken::Create());
   }
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -129,12 +132,12 @@ void LoadHistoryItem(WebLocalFrame* frame,
 }
 
 void ReloadFrame(WebLocalFrame* frame) {
-  frame->Reload(WebFrameLoadType::kReload);
+  frame->StartReload(WebFrameLoadType::kReload);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
 void ReloadFrameBypassingCache(WebLocalFrame* frame) {
-  frame->Reload(WebFrameLoadType::kReloadBypassingCache);
+  frame->StartReload(WebFrameLoadType::kReloadBypassingCache);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

@@ -886,9 +886,9 @@ bool WebFrame::ScriptCanAccess(WebFrame* target) {
       ToCoreFrame(*target), BindingSecurity::ErrorReportOption::kDoNotReport);
 }
 
-void WebLocalFrameImpl::Reload(WebFrameLoadType load_type) {
-  // TODO(clamy): Remove this function once RenderFrame calls load for all
-  // requests.
+void WebLocalFrameImpl::StartReload(WebFrameLoadType load_type) {
+  // TODO(clamy): Remove this function once RenderFrame calls StartNavigation
+  // for all requests.
   DCHECK(GetFrame());
   FrameLoadType frame_load_type = static_cast<FrameLoadType>(load_type);
   DCHECK(IsReloadLoadType(frame_load_type));
@@ -917,7 +917,7 @@ void WebLocalFrameImpl::ReloadLoFiImages() {
   GetFrame()->GetDocument()->Fetcher()->ReloadLoFiImages();
 }
 
-void WebLocalFrameImpl::LoadRequest(const WebURLRequest& request) {
+void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
   // TODO(clamy): Remove this function once RenderFrame calls CommitNavigation
   // for all requests.
   DCHECK(GetFrame());

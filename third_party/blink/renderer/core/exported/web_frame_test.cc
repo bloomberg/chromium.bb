@@ -4460,7 +4460,7 @@ TEST_F(WebFrameTest, ReloadDoesntSetRedirect) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "form.html", &web_frame_client);
 
-  web_view_helper.GetWebView()->MainFrameImpl()->Reload(
+  web_view_helper.GetWebView()->MainFrameImpl()->StartReload(
       WebFrameLoadType::kReloadBypassingCache);
   // start another reload before request is delivered.
   FrameTestHelpers::ReloadFrameBypassingCache(
@@ -4498,7 +4498,7 @@ TEST_F(WebFrameTest, ReloadPreservesState) {
   web_view_helper.GetWebView()->SetPageScaleFactor(kPageScaleFactor);
 
   // Reload the page and end up at the same url. State should not be propagated.
-  web_view_helper.GetWebView()->MainFrameImpl()->Reload(
+  web_view_helper.GetWebView()->MainFrameImpl()->StartReload(
       WebFrameLoadType::kReload);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.GetWebView()->MainFrame());
@@ -4515,7 +4515,7 @@ TEST_F(WebFrameTest, ReloadWhileProvisional) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize();
   WebURLRequest request(ToKURL(base_url_ + "fixed_layout.html"));
-  web_view_helper.GetWebView()->MainFrameImpl()->LoadRequest(request);
+  web_view_helper.GetWebView()->MainFrameImpl()->StartNavigation(request);
   // start reload before first request is delivered.
   FrameTestHelpers::ReloadFrameBypassingCache(
       web_view_helper.GetWebView()->MainFrameImpl());
@@ -7608,13 +7608,15 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick) {
   RegisterMockedHttpURLLoad("fragment_middle_click.html");
   TestNavigationPolicyWebFrameClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "fragment_middle_click.html",
-                                    &client);
+  web_view_helper.Initialize(&client);
+
+  KURL destination = ToKURL(base_url_ + "fragment_middle_click.html");
+  web_view_helper.LocalMainFrame()->StartNavigation(WebURLRequest(destination));
 
   Document* document =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument();
-  KURL destination = document->Url();
+  destination = document->Url();
   destination.SetFragmentIdentifier("test");
 
   MouseEventInit mouse_initializer;
@@ -7673,13 +7675,15 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   TestNewWindowWebViewClient web_view_client;
   TestNewWindowWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "ctrl_click.html",
-                                    &web_frame_client, &web_view_client);
+  web_view_helper.Initialize(&web_frame_client, &web_view_client);
+
+  KURL destination = ToKURL(base_url_ + "ctrl_click.html");
+  web_view_helper.LocalMainFrame()->StartNavigation(WebURLRequest(destination));
 
   LocalFrame* frame =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
   Document* document = frame->GetDocument();
-  KURL destination = ToKURL(base_url_ + "hello_world.html");
+  destination = ToKURL(base_url_ + "hello_world.html");
 
   // ctrl+click event
   MouseEventInit mouse_initializer;
@@ -8289,7 +8293,7 @@ TEST_F(WebFrameTest, CurrentHistoryItem) {
   const FrameLoader& main_frame_loader =
       web_view_helper.LocalMainFrame()->GetFrame()->Loader();
   WebURLRequest request(ToKURL(url));
-  frame->LoadRequest(request);
+  frame->StartNavigation(request);
 
   // Before commit, there is no history item.
   EXPECT_FALSE(main_frame_loader.GetDocumentLoader()->GetHistoryItem());
@@ -12730,7 +12734,7 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
 
   WebLocalFrameImpl* main_frame = web_view_helper_.LocalMainFrame();
   WebURLRequest request(ToKURL(base_url_ + "fallback.html"));
-  main_frame->LoadRequest(request);
+  main_frame->StartNavigation(request);
 
   // Because the child frame will be HandledByClient, the main frame will not
   // finish loading, so FrameTestHelpers::PumpPendingRequestsForFrameToLoad
@@ -12739,7 +12743,7 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
 
   // Overwrite the client-handled child frame navigation with about:blank.
   WebLocalFrame* child = main_frame->FirstChild()->ToWebLocalFrame();
-  child->LoadRequest(WebURLRequest(BlankURL()));
+  child->StartNavigation(WebURLRequest(BlankURL()));
 
   // Failing the original child frame navigation and trying to render fallback
   // content shouldn't crash. It should return NoLoadInProgress. This is so the
