@@ -356,10 +356,9 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
   return handle_scope.Escape(object);
 }
 
-void ScriptController::ExecuteScriptInIsolatedWorld(
+v8::Local<v8::Value> ScriptController::ExecuteScriptInIsolatedWorld(
     int world_id,
-    const HeapVector<ScriptSourceCode>& sources,
-    Vector<v8::Local<v8::Value>>* results) {
+    const ScriptSourceCode& source) {
   DCHECK_GT(world_id, 0);
 
   scoped_refptr<DOMWrapperWorld> world =
@@ -370,30 +369,12 @@ void ScriptController::ExecuteScriptInIsolatedWorld(
   v8::Local<v8::Context> context =
       isolated_world_window_proxy->ContextIfInitialized();
   v8::Context::Scope scope(context);
-  v8::Local<v8::Array> result_array =
-      v8::Array::New(GetIsolate(), sources.size());
 
-  for (size_t i = 0; i < sources.size(); ++i) {
-    v8::Local<v8::Value> evaluation_result =
-        ExecuteScriptAndReturnValue(context, sources[i]);
-    if (evaluation_result.IsEmpty())
-      evaluation_result =
-          v8::Local<v8::Value>::New(GetIsolate(), v8::Undefined(GetIsolate()));
-    bool did_create;
-    if (!result_array->CreateDataProperty(context, i, evaluation_result)
-             .To(&did_create) ||
-        !did_create)
-      return;
-  }
-
-  if (results) {
-    for (size_t i = 0; i < result_array->Length(); ++i) {
-      v8::Local<v8::Value> value;
-      if (!result_array->Get(context, i).ToLocal(&value))
-        return;
-      results->push_back(value);
-    }
-  }
+  v8::Local<v8::Value> evaluation_result =
+      ExecuteScriptAndReturnValue(context, source);
+  if (!evaluation_result.IsEmpty())
+    return evaluation_result;
+  return v8::Local<v8::Value>::New(GetIsolate(), v8::Undefined(GetIsolate()));
 }
 
 scoped_refptr<DOMWrapperWorld>
