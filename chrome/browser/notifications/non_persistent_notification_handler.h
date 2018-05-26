@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NON_PERSISTENT_NOTIFICATION_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/notification_handler.h"
 
 // NotificationHandler implementation for non persistent notifications.
@@ -31,6 +32,18 @@ class NonPersistentNotificationHandler : public NotificationHandler {
   void OpenSettings(Profile* profile, const GURL& origin) override;
 
  private:
+  // Called when the "click" event for non-persistent notification has been
+  // dispatched. The |success| boolean indicates whether the click could be
+  // delivered to the originating document as a JavaScript event.
+  void DidDispatchClickEvent(Profile* profile,
+                             const GURL& origin,
+                             const std::string& notification_id,
+                             base::OnceClosure completed_closure,
+                             bool success);
+
+  base::WeakPtrFactory<NonPersistentNotificationHandler> weak_ptr_factory_{
+      this};
+
   DISALLOW_COPY_AND_ASSIGN(NonPersistentNotificationHandler);
 };
 

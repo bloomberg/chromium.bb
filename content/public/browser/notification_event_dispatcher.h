@@ -26,6 +26,7 @@ class CONTENT_EXPORT NotificationEventDispatcher {
  public:
   static NotificationEventDispatcher* GetInstance();
 
+  using NotificationClickEventCallback = base::OnceCallback<void(bool)>;
   using NotificationDispatchCompleteCallback =
       base::OnceCallback<void(PersistentNotificationStatus)>;
 
@@ -59,7 +60,8 @@ class CONTENT_EXPORT NotificationEventDispatcher {
   virtual void DispatchNonPersistentShowEvent(
       const std::string& notification_id) = 0;
   virtual void DispatchNonPersistentClickEvent(
-      const std::string& notification_id) = 0;
+      const std::string& notification_id,
+      NotificationClickEventCallback callback) = 0;
   virtual void DispatchNonPersistentCloseEvent(
       const std::string& notification_id,
       base::OnceClosure completed_closure) = 0;

@@ -53,7 +53,9 @@ class MockNonPersistentNotificationListener
 
   // NonPersistentNotificationListener interface.
   void OnShow() override {}
-  void OnClick() override {}
+  void OnClick(OnClickCallback completed_closure) override {
+    std::move(completed_closure).Run();
+  }
   void OnClose(OnCloseCallback completed_closure) override {
     std::move(completed_closure).Run();
   }

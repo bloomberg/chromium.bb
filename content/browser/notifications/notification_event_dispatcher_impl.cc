@@ -448,10 +448,15 @@ void NotificationEventDispatcherImpl::DispatchNonPersistentShowEvent(
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
-    const std::string& notification_id) {
-  if (!non_persistent_notification_listeners_.count(notification_id))
+    const std::string& notification_id,
+    NotificationClickEventCallback callback) {
+  if (!non_persistent_notification_listeners_.count(notification_id)) {
+    std::move(callback).Run(false /* success */);
     return;
-  non_persistent_notification_listeners_[notification_id]->OnClick();
+  }
+
+  non_persistent_notification_listeners_[notification_id]->OnClick(
+      base::BindOnce(std::move(callback), true /* success */));
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
