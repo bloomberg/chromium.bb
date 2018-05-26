@@ -61,18 +61,16 @@
         <paper-spinner-lite active></paper-spinner-lite>
       </div>
 
-      <div id="select-app" class="md-select-wrapper"
+      <select id="selectApp" class="md-select"
+          on-change="onSelectedAppChanged_"
+          aria-labelledby="stylusNoteTakingAppLabel"
           hidden$="[[!showApps_(appChoices_, waitingForAndroid_)]]">
-        <select id="menu" class="md-select" on-change="onSelectedAppChanged_"
-            aria-labelledby="stylusNoteTakingAppLabel">
-          <template is="dom-repeat" items="[[appChoices_]]">
-            <option value="[[item.value]]" selected="[[item.preferred]]">
-              [[item.name]]
-            </option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+        <template is="dom-repeat" items="[[appChoices_]]">
+          <option value="[[item.value]]" selected="[[item.preferred]]">
+            [[item.name]]
+          </option>
+        </template>
+      </select>
     </div>
 
     <!-- TODO(scottchen): Make a proper a[href].settings-box with

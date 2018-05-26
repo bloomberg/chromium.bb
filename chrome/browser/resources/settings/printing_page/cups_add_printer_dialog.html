@@ -131,20 +131,17 @@
           <div class="start">
             <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
             <div class="secondary">
-              <div class="md-select-wrapper">
-                <select class="md-select" aria-labelledby="printerProtocol"
-                    value="[[newPrinter.printerProtocol]]"
-                    on-change="onProtocolChange_">
-                  <option value="ipp">$i18n{printerProtocolIpp}</option>
-                  <option value="ipps">$i18n{printerProtocolIpps}</option>
-                  <option value="http">$i18n{printerProtocolHttp}</option>
-                  <option value="https">$i18n{printerProtocolHttps}</option>
-                  <option value="socket">$i18n{printerProtocolAppSocket}
-                  </option>
-                  <option value="lpd">$i18n{printerProtocolLpd}</option>
-                </select>
-                <span class="md-select-underline"></span>
-              </div>
+              <select class="md-select" aria-labelledby="printerProtocol"
+                  value="[[newPrinter.printerProtocol]]"
+                  on-change="onProtocolChange_">
+                <option value="ipp">$i18n{printerProtocolIpp}</option>
+                <option value="ipps">$i18n{printerProtocolIpps}</option>
+                <option value="http">$i18n{printerProtocolHttp}</option>
+                <option value="https">$i18n{printerProtocolHttps}</option>
+                <option value="socket">$i18n{printerProtocolAppSocket}
+                </option>
+                <option value="lpd">$i18n{printerProtocolLpd}</option>
+              </select>
             </div>
           </div>
         </div>

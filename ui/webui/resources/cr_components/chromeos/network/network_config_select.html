@@ -14,16 +14,9 @@
         width: 100%;
       }
 
-      .md-select-wrapper {
-        -webkit-margin-start: calc(var(--md-select-side-padding) * -1);
-      }
-
-      .md-select-underline {
-        -webkit-margin-end: var(--cr-icon-button-margin-start);
-      }
-
       .control-box {
-        -webkit-padding-end: calc(var(--network-control-margin) - 12px);
+        -webkit-padding-end: calc(var(--network-control-margin) +
+            var(--cr-icon-button-margin-start));
         align-items: stretch;
         flex-direction: column;
         justify-content: center;
@@ -32,18 +25,15 @@
 
     <div class="control-box">
       <div id="label">[[label]]</div>
-      <div class="md-select-wrapper">
-        <select class="md-select" disabled="[[disabled]]"
-            value="{{value::change}}" aria-label$="[[label]]">
-          <template is="dom-repeat" items="[[items]]">
-            <option value="[[getItemValue_(item)]]"
-                disabled="[[!getItemEnabled_(item)]]">
-              [[getItemLabel_(item, oncPrefix)]]
-            </option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+      <select class="md-select" disabled="[[disabled]]"
+          value="{{value::change}}" aria-label$="[[label]]">
+        <template is="dom-repeat" items="[[items]]">
+          <option value="[[getItemValue_(item)]]"
+              disabled="[[!getItemEnabled_(item)]]">
+            [[getItemLabel_(item, oncPrefix)]]
+          </option>
+        </template>
+      </select>
     </div>
 
   </template>

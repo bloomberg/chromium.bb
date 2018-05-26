@@ -166,18 +166,15 @@
         </cr-link-row>
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
           <div id="pageZoom" class="start">$i18n{pageZoom}</div>
-          <div class="md-select-wrapper">
-            <select id="zoomLevel" class="md-select" aria-labelledby="pageZoom"
-                on-change="onZoomLevelChange_">
-              <template is="dom-repeat" items="[[pageZoomLevels_]]">
-                <option value="[[item]]"
-                    selected="[[zoomValuesEqual_(item, defaultZoom_)]]">
-                  [[formatZoom_(item)]]%
-                </option>
-              </template>
-            </select>
-            <span class="md-select-underline"></span>
-          </div>
+          <select id="zoomLevel" class="md-select" aria-labelledby="pageZoom"
+              on-change="onZoomLevelChange_">
+            <template is="dom-repeat" items="[[pageZoomLevels_]]">
+              <option value="[[item]]"
+                  selected="[[zoomValuesEqual_(item, defaultZoom_)]]">
+                [[formatZoom_(item)]]%
+              </option>
+            </template>
+          </select>
         </div>
 <if expr="is_macosx">
         <settings-toggle-button pref="{{prefs.webkit.webprefs.tabs_to_links}}"

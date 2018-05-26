@@ -845,7 +845,6 @@ cr.define('device_page_tests', function() {
       suite('power settings', function() {
         let powerPage;
         let powerSourceRow;
-        let powerSourceWrapper;
         let powerSourceSelect;
         let idleSelect;
         let lidClosedToggle;
@@ -862,8 +861,6 @@ cr.define('device_page_tests', function() {
               .then(function(page) {
                 powerPage = page;
                 powerSourceRow = assert(powerPage.$$('#powerSourceRow'));
-                powerSourceWrapper =
-                    assert(powerSourceRow.querySelector('.md-select-wrapper'));
                 powerSourceSelect = assert(powerPage.$$('#powerSource'));
                 assertEquals(
                     1,
@@ -916,7 +913,7 @@ cr.define('device_page_tests', function() {
 
           // Power sources row is visible but dropdown is hidden.
           assertFalse(powerSourceRow.hidden);
-          assertTrue(powerSourceWrapper.hidden);
+          assertTrue(powerSourceSelect.hidden);
 
           // Attach a dual-role USB device.
           const powerSource = {
@@ -928,13 +925,13 @@ cr.define('device_page_tests', function() {
           Polymer.dom.flush();
 
           // "Battery" should be selected.
-          assertFalse(powerSourceWrapper.hidden);
+          assertFalse(powerSourceSelect.hidden);
           assertEquals('', powerSourceSelect.value);
 
           // Select the power source.
           setPowerSources([powerSource], powerSource.id, true);
           Polymer.dom.flush();
-          assertFalse(powerSourceWrapper.hidden);
+          assertFalse(powerSourceSelect.hidden);
           assertEquals(powerSource.id, powerSourceSelect.value);
 
           // Send another power source; the first should still be selected.
@@ -943,7 +940,7 @@ cr.define('device_page_tests', function() {
           setPowerSources(
               [otherPowerSource, powerSource], powerSource.id, true);
           Polymer.dom.flush();
-          assertFalse(powerSourceWrapper.hidden);
+          assertFalse(powerSourceSelect.hidden);
           assertEquals(powerSource.id, powerSourceSelect.value);
         });
 
@@ -1127,7 +1124,6 @@ cr.define('device_page_tests', function() {
       let browserProxy;
       let noAppsDiv;
       let waitingDiv;
-      let selectAppDiv;
 
       // Shorthand for settings.NoteAppLockScreenSupport.
       let LockScreenSupport;
@@ -1144,10 +1140,9 @@ cr.define('device_page_tests', function() {
             .then(function(page) {
               stylusPage = page;
               browserProxy = settings.DevicePageBrowserProxyImpl.getInstance();
-              appSelector = assert(page.$$('#menu'));
+              appSelector = assert(page.$$('#selectApp'));
               noAppsDiv = assert(page.$$('#no-apps'));
               waitingDiv = assert(page.$$('#waiting'));
-              selectAppDiv = assert(page.$$('#select-app'));
               LockScreenSupport = settings.NoteAppLockScreenSupport;
 
               assertEquals(1, browserProxy.requestNoteTakingApps_);
@@ -1292,31 +1287,31 @@ cr.define('device_page_tests', function() {
         browserProxy.setNoteTakingApps([]);
         assert(noAppsDiv.hidden);
         assert(!waitingDiv.hidden);
-        assert(selectAppDiv.hidden);
+        assert(appSelector.hidden);
 
         // Waiting for apps to finish loading.
         browserProxy.setAndroidAppsReceived(true);
         assert(!noAppsDiv.hidden);
         assert(waitingDiv.hidden);
-        assert(selectAppDiv.hidden);
+        assert(appSelector.hidden);
 
         // Apps loaded, show selector.
         browserProxy.addNoteTakingApp(
             entry('n', 'v', false, LockScreenSupport.NOT_SUPPORTED));
         assert(noAppsDiv.hidden);
         assert(waitingDiv.hidden);
-        assert(!selectAppDiv.hidden);
+        assert(!appSelector.hidden);
 
         // Waiting for Android apps again.
         browserProxy.setAndroidAppsReceived(false);
         assert(noAppsDiv.hidden);
         assert(!waitingDiv.hidden);
-        assert(selectAppDiv.hidden);
+        assert(appSelector.hidden);
 
         browserProxy.setAndroidAppsReceived(true);
         assert(noAppsDiv.hidden);
         assert(waitingDiv.hidden);
-        assert(!selectAppDiv.hidden);
+        assert(!appSelector.hidden);
       });
 
       test('enabled-on-lock-screen', function() {

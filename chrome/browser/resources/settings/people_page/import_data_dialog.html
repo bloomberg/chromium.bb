@@ -54,16 +54,13 @@
 
         <div hidden$="[[hasImportStatus_(
               importStatusEnum_.SUCCEEDED, importStatus_)]]">
-          <span class="md-select-wrapper">
-            <select id="browserSelect" class="md-select"
-                aria-label="$i18n{importFromLabel}"
-                on-change="onBrowserProfileSelectionChange_">
-              <template is="dom-repeat" items="[[browserProfiles_]]">
-                <option value="[[item.index]]">[[item.name]]</option>
-              </template>
-            </select>
-            <span class="md-select-underline"></span>
-          </span>
+          <select id="browserSelect" class="md-select"
+              aria-label="$i18n{importFromLabel}"
+              on-change="onBrowserProfileSelectionChange_">
+            <template is="dom-repeat" items="[[browserProfiles_]]">
+              <option value="[[item.index]]">[[item.name]]</option>
+            </template>
+          </select>
           <div class="description">$i18n{importDescription}</div>
           <settings-checkbox
               hidden="[[!selected_.history]]"

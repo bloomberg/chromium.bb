@@ -18,22 +18,20 @@
         <div>[[powerSourceLabel_]]</div>
         <div class="secondary">[[batteryStatus_.statusText]]</div>
       </div>
-      <div class="md-select-wrapper" hidden$="[[!showPowerSourceDropdown_]]">
-        <select id="powerSource" class="md-select"
-            aria-label="$i18n{powerSourceLabel}"
-            on-change="onPowerSourceChange_">
-          <option value="" selected="[[isEqual_('', selectedPowerSourceId_)]]">
-            $i18n{powerSourceBattery}
+      <select id="powerSource" class="md-select"
+          hidden$="[[!showPowerSourceDropdown_]]"
+          aria-label="$i18n{powerSourceLabel}"
+          on-change="onPowerSourceChange_">
+        <option value="" selected="[[isEqual_('', selectedPowerSourceId_)]]">
+          $i18n{powerSourceBattery}
+        </option>
+        <template is="dom-repeat" items="[[powerSources_]]">
+          <option value="[[item.id]]"
+              selected="[[isEqual_(item.id, selectedPowerSourceId_)]]">
+            [[item.description]]
           </option>
-          <template is="dom-repeat" items="[[powerSources_]]">
-            <option value="[[item.id]]"
-                selected="[[isEqual_(item.id, selectedPowerSourceId_)]]">
-              [[item.description]]
-            </option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+        </template>
+      </select>
       <div hidden$="[[showPowerSourceDropdown_]]">
         [[powerSourceName_]]
       </div>
@@ -47,16 +45,13 @@
             icon-aria-label="$i18n{powerIdleLabel}">
         </cr-policy-indicator>
       </template>
-      <div class="md-select-wrapper">
-        <select id="idleSelect" class="md-select"
-            on-change="onIdleSelectChange_" disabled="[[idleControlled_]]"
-            aria-label="$i18n{powerIdleLabel}">
-          <template is="dom-repeat" items="[[idleOptions_]]">
-            <option value="[[item.value]]">[[item.name]]</option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+      <select id="idleSelect" class="md-select"
+          on-change="onIdleSelectChange_" disabled="[[idleControlled_]]"
+          aria-label="$i18n{powerIdleLabel}">
+        <template is="dom-repeat" items="[[idleOptions_]]">
+          <option value="[[item.value]]">[[item.name]]</option>
+        </template>
+      </select>
     </div>
 
     <settings-toggle-button class="continuation" hidden$="[[!hasLid_]]"

@@ -156,7 +156,7 @@ Polymer({
 
   /** @private */
   onSelectedAppChanged_: function() {
-    const app = this.findApp_(this.$.menu.value);
+    const app = this.findApp_(this.$.selectApp.value);
     this.selectedApp_ = app;
 
     if (app && !app.preferred)

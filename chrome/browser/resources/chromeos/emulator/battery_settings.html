@@ -75,14 +75,11 @@
                 <div hidden$="[[isDualRole(item)]]">Source</div>
               </td>
               <td class="control-cell">
-                <div class="md-select-wrapper">
-                  <select class="md-select" disabled$="[[!item.variablePower]]"
-                      on-change="onPowerChanged" value="[[item.power]]">
-                    <option value="high">High</option>
-                    <option value="low">Low</option>
-                  </select>
-                  <span class="md-select-underline"></span>
-                </div>
+                <select class="md-select" disabled$="[[!item.variablePower]]"
+                    on-change="onPowerChanged" value="[[item.power]]">
+                  <option value="high">High</option>
+                  <option value="low">Low</option>
+                </select>
               </td>
           </template>
         </tbody>
