@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="button_bar.html">
 <link rel="import" href="fake_mojo_service.html">
@@ -16,11 +17,11 @@
       :host {
         @apply(--layout-vertical);
         @apply(--layout-start-justified);
-        padding: 60px 64px 32px 64px;
+        padding: 60px 32px 32px 32px;
       }
 
       button-bar {
-        margin-top: 50px;
+        margin-top: 40px;
       }
     </style>
     <iron-pages attr-for-selected="is"
