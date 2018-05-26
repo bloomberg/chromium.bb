@@ -38,11 +38,7 @@ WorkletGlobalScope::WorkletGlobalScope(
       user_agent_(creation_params->user_agent),
       document_security_origin_(creation_params->starter_origin),
       document_secure_context_(creation_params->starter_secure_context),
-      fetch_coordinator_proxy_(
-          WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
-              creation_params->module_responses_map,
-              std::move(document_loading_task_runner),
-              std::move(worklet_loading_task_runner))) {
+      module_responses_map_(creation_params->module_responses_map) {
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.
 
@@ -57,6 +53,15 @@ WorkletGlobalScope::WorkletGlobalScope(
   // workletGlobalScope."
   ApplyContentSecurityPolicyFromVector(
       *creation_params->content_security_policy_parsed_headers);
+  // CSP checks should resolve self based on the 'fetch client settings object'
+  // (i.e., the document's origin), not the 'module map settings object' (i.e.,
+  // the opaque origin of this worklet global scope). The current implementation
+  // doesn't have separate CSP objects for these two contexts. Therefore,
+  // we initialize the worklet global scope's CSP object (which would naively
+  // appear to be a CSP object for the 'module map settings object') entirely
+  // based on state from the document (the origin and CSP headers it passed
+  // here), and use the document's origin for 'self' CSP checks.
+  GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
 
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
@@ -108,13 +113,6 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   FetchModuleScript(module_url_record, destination, credentials_mode, client);
 }
 
-WorkerOrWorkletModuleFetchCoordinatorProxy*
-WorkletGlobalScope::ModuleFetchCoordinatorProxy() const {
-  DCHECK(IsContextThread());
-  DCHECK(fetch_coordinator_proxy_);
-  return fetch_coordinator_proxy_;
-}
-
 KURL WorkletGlobalScope::CompleteURL(const String& url) const {
   // Always return a null URL when passed a null string.
   // TODO(ikilpatrick): Should we change the KURL constructor to have this
@@ -126,7 +124,6 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
 }
 
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetch_coordinator_proxy_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }
 

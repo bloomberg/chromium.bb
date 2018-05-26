@@ -75,8 +75,6 @@ blink_core_sources("workers") {
     "worker_navigator.h",
     "worker_or_worklet_global_scope.cc",
     "worker_or_worklet_global_scope.h",
-    "worker_or_worklet_module_fetch_coordinator_proxy.cc",
-    "worker_or_worklet_module_fetch_coordinator_proxy.h",
     "worker_reporting_proxy.h",
     "worker_settings.cc",
     "worker_settings.h",

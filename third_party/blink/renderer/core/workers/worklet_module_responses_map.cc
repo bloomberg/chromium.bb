@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 
@@ -17,103 +17,48 @@ bool IsValidURL(const KURL& url) {
 
 }  // namespace
 
-class WorkletModuleResponsesMap::Entry final
-    : public GarbageCollectedFinalized<Entry>,
-      public ModuleScriptFetcher::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleResponsesMap::Entry);
+void WorkletModuleResponsesMap::Entry::AddClient(
+    ModuleScriptFetcher::Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner> client_task_runner) {
+  // Clients can be added only while a module script is being fetched.
+  DCHECK_EQ(state_, State::kFetching);
+  clients_.insert(client, client_task_runner);
+}
 
- public:
-  enum class State { kInitial, kFetching, kFetched, kFailed };
+// Implementation of the second half of the custom fetch defined in the
+// "fetch a worklet script" algorithm:
+// https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
+void WorkletModuleResponsesMap::Entry::SetParams(
+    const base::Optional<ModuleScriptCreationParams>& params) {
+  DCHECK_EQ(state_, State::kFetching);
 
-  Entry() = default;
-  ~Entry() = default;
-
-  void Fetch(FetchParameters& fetch_params, ResourceFetcher* fetcher) {
-    AdvanceState(State::kFetching);
-    module_fetcher_ = new DocumentModuleScriptFetcher(fetcher);
-    module_fetcher_->Fetch(fetch_params, this);
-  }
-
-  State GetState() const { return state_; }
-  const ModuleScriptCreationParams& GetParams() const { return *params_; }
-
-  void AddClient(WorkletModuleResponsesMap::Client* client) {
-    // Clients can be added only while a module script is being fetched.
-    DCHECK(state_ == State::kInitial || state_ == State::kFetching);
-    clients_.push_back(client);
-  }
-
-  // Implements ModuleScriptFetcher::Client.
-  //
-  // Implementation of the second half of the custom fetch defined in the
-  // "fetch a worklet script" algorithm:
-  // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
-  void NotifyFetchFinished(
-      const base::Optional<ModuleScriptCreationParams>& params,
-      const HeapVector<Member<ConsoleMessage>>& error_messages) override {
-    // The entry can be disposed of during the resource fetch.
-    if (state_ == State::kFailed)
-      return;
-
-    if (!params) {
-      // TODO(nhiroki): Add |error_messages| to the context's message storage.
-      NotifyFailure();
-      return;
-    }
-
-    AdvanceState(State::kFetched);
+  if (params) {
+    state_ = State::kFetched;
 
     // Step 7: "Let response be the result of fetch when it asynchronously
     // completes."
     // Step 8: "Set the value of the entry in cache whose key is url to
     // response, and asynchronously complete this algorithm with response."
-    params_.emplace(*params);
-    for (WorkletModuleResponsesMap::Client* client : clients_)
-      client->OnFetched(*params);
-    clients_.clear();
-    module_fetcher_.Clear();
-  }
-
-  void NotifyFailure() {
-    AdvanceState(State::kFailed);
-    for (WorkletModuleResponsesMap::Client* client : clients_)
-      client->OnFailed();
-    clients_.clear();
-    module_fetcher_.Clear();
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(module_fetcher_);
-    visitor->Trace(clients_);
-  }
-
- private:
-  void AdvanceState(State new_state) {
-    switch (state_) {
-      case State::kInitial:
-        DCHECK_EQ(new_state, State::kFetching);
-        break;
-      case State::kFetching:
-        DCHECK(new_state == State::kFetched || new_state == State::kFailed);
-        break;
-      case State::kFetched:
-      case State::kFailed:
-        NOTREACHED();
-        break;
+    params_.emplace(params->IsolatedCopy());
+    DCHECK(params_->IsSafeToSendToAnotherThread());
+    for (auto& it : clients_) {
+      PostCrossThreadTask(
+          *it.value, FROM_HERE,
+          CrossThreadBind(&ModuleScriptFetcher::Client::OnFetched, it.key,
+                          *params));
     }
-    state_ = new_state;
+  } else {
+    state_ = State::kFailed;
+    // TODO(nhiroki): Add |error_messages| to the context's message storage.
+    for (auto& it : clients_) {
+      PostCrossThreadTask(
+          *it.value, FROM_HERE,
+          CrossThreadBind(&ModuleScriptFetcher::Client::OnFailed, it.key));
+    }
   }
 
-  State state_ = State::kInitial;
-
-  Member<DocumentModuleScriptFetcher> module_fetcher_;
-
-  base::Optional<ModuleScriptCreationParams> params_;
-  HeapVector<Member<WorkletModuleResponsesMap::Client>> clients_;
-};
-
-WorkletModuleResponsesMap::WorkletModuleResponsesMap(ResourceFetcher* fetcher)
-    : fetcher_(fetcher) {}
+  clients_.clear();
+}
 
 // Implementation of the first half of the custom fetch defined in the
 // "fetch a worklet script" algorithm:
@@ -122,73 +67,78 @@ WorkletModuleResponsesMap::WorkletModuleResponsesMap(ResourceFetcher* fetcher)
 // "To perform the fetch given request, perform the following steps:"
 // Step 1: "Let cache be the moduleResponsesMap."
 // Step 2: "Let url be request's url."
-void WorkletModuleResponsesMap::Fetch(FetchParameters& fetch_params,
-                                      Client* client) {
-  DCHECK(IsMainThread());
-  if (!is_available_ || !IsValidURL(fetch_params.Url())) {
-    client->OnFailed();
-    return;
+bool WorkletModuleResponsesMap::GetEntry(
+    const KURL& url,
+    ModuleScriptFetcher::Client* client,
+    scoped_refptr<base::SingleThreadTaskRunner> client_task_runner) {
+  MutexLocker lock(mutex_);
+  if (!is_available_ || !IsValidURL(url)) {
+    client_task_runner->PostTask(
+        FROM_HERE, WTF::Bind(&ModuleScriptFetcher::Client::OnFailed,
+                             WrapPersistent(client)));
+    return true;
   }
 
-  auto it = entries_.find(fetch_params.Url());
+  auto it = entries_.find(url);
   if (it != entries_.end()) {
-    Entry* entry = it->value;
+    Entry* entry = it->value.get();
     switch (entry->GetState()) {
-      case Entry::State::kInitial:
-        NOTREACHED();
-        return;
       case Entry::State::kFetching:
         // Step 3: "If cache contains an entry with key url whose value is
         // "fetching", wait until that entry's value changes, then proceed to
         // the next step."
-        entry->AddClient(client);
-        return;
+        entry->AddClient(client, client_task_runner);
+        return true;
       case Entry::State::kFetched:
         // Step 4: "If cache contains an entry with key url, asynchronously
         // complete this algorithm with that entry's value, and abort these
         // steps."
-        client->OnFetched(entry->GetParams());
-        return;
+        client_task_runner->PostTask(
+            FROM_HERE, WTF::Bind(&ModuleScriptFetcher::Client::OnFetched,
+                                 WrapPersistent(client), entry->GetParams()));
+        return true;
       case Entry::State::kFailed:
         // Module fetching failed before. Abort following steps.
-        client->OnFailed();
-        return;
+        client_task_runner->PostTask(
+            FROM_HERE, WTF::Bind(&ModuleScriptFetcher::Client::OnFailed,
+                                 WrapPersistent(client)));
+        return true;
     }
     NOTREACHED();
   }
 
   // Step 5: "Create an entry in cache with key url and value "fetching"."
-  Entry* entry = new Entry;
-  entry->AddClient(client);
-  entries_.insert(fetch_params.Url(), entry);
+  std::unique_ptr<Entry> entry = std::make_unique<Entry>();
+  entry->AddClient(client, client_task_runner);
+  entries_.insert(url.Copy(), std::move(entry));
 
   // Step 6: "Fetch request."
   // Running the callback with an empty params will make the fetcher to fallback
   // to regular module loading and Write() will be called once the fetch is
   // complete.
-  entry->Fetch(fetch_params, fetcher_.Get());
+  return false;
 }
 
-void WorkletModuleResponsesMap::Invalidate(const KURL& url) {
-  DCHECK(IsMainThread());
-  DCHECK(IsValidURL(url));
+void WorkletModuleResponsesMap::SetEntryParams(
+    const KURL& url,
+    const base::Optional<ModuleScriptCreationParams>& params) {
+  MutexLocker lock(mutex_);
   if (!is_available_)
     return;
 
   DCHECK(entries_.Contains(url));
-  Entry* entry = entries_.find(url)->value;
-  entry->NotifyFailure();
+  Entry* entry = entries_.find(url)->value.get();
+  entry->SetParams(params);
 }
 
 void WorkletModuleResponsesMap::Dispose() {
+  DCHECK(IsMainThread());
+  MutexLocker lock(mutex_);
   is_available_ = false;
-  for (auto it : entries_) {
+  for (auto& it : entries_) {
     switch (it.value->GetState()) {
-      case Entry::State::kInitial:
-        NOTREACHED();
-        break;
       case Entry::State::kFetching:
-        it.value->NotifyFailure();
+        it.value->SetParams(base::nullopt);
         break;
       case Entry::State::kFetched:
       case Entry::State::kFailed:
@@ -196,11 +146,6 @@ void WorkletModuleResponsesMap::Dispose() {
     }
   }
   entries_.clear();
-}
-
-void WorkletModuleResponsesMap::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetcher_);
-  visitor->Trace(entries_);
 }
 
 }  // namespace blink

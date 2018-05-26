@@ -76,7 +76,6 @@ WorkerFetchContext::~WorkerFetchContext() = default;
 WorkerFetchContext* WorkerFetchContext::Create(
     WorkerOrWorkletGlobalScope& global_scope) {
   DCHECK(global_scope.IsContextThread());
-  DCHECK(!global_scope.IsMainThreadWorkletGlobalScope());
   WorkerClients* worker_clients = global_scope.Clients();
   DCHECK(worker_clients);
   WorkerFetchContextHolder* holder =
@@ -286,6 +285,8 @@ void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
   DCHECK(!user_agent.IsNull());
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
+  FrameLoader::UpgradeInsecureRequest(request, global_scope_);
+
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
 }
@@ -409,6 +410,9 @@ void ProvideWorkerFetchContextToWorker(
     WorkerClients* clients,
     std::unique_ptr<WebWorkerFetchContext> web_context) {
   DCHECK(clients);
+  // web_context should only be nullptr in unit tests.
+  if (!web_context)
+    return;
   WorkerFetchContextHolder::ProvideTo(
       *clients, new WorkerFetchContextHolder(std::move(web_context)));
 }

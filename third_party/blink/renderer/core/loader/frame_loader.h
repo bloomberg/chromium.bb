@@ -247,7 +247,7 @@ class CORE_EXPORT FrameLoader final {
   void Trace(blink::Visitor*);
 
   static void SetReferrerForFrameRequest(FrameLoadRequest&);
-  static void UpgradeInsecureRequest(ResourceRequest&, Document*);
+  static void UpgradeInsecureRequest(ResourceRequest&, ExecutionContext*);
 
   void ClientDroppedNavigation();
 

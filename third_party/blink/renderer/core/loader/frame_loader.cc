@@ -1769,22 +1769,23 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
 
 // static
 void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
-                                         Document* origin_document) {
+                                         ExecutionContext* origin_context) {
   // We always upgrade requests that meet any of the following criteria:
   //  1. Are for subresources.
   //  2. Are for nested frames.
   //  3. Are form submissions.
-  //  4. Whose hosts are contained in the origin_document's upgrade insecure
+  //  4. Whose hosts are contained in the origin_context's upgrade insecure
   //     navigations set.
 
   // This happens for:
   // * Browser initiated main document loading. No upgrade required.
   // * Navigation initiated by a frame in another process. URL should have
   //   already been upgraded in the initiator's process.
-  if (!origin_document)
+  if (!origin_context)
     return;
 
-  if (!(origin_document->GetInsecureRequestPolicy() & kUpgradeInsecureRequests))
+  if (!(origin_context->GetSecurityContext().GetInsecureRequestPolicy() &
+        kUpgradeInsecureRequests))
     return;
 
   // Nested frames are always upgraded on the browser process.
@@ -1801,10 +1802,10 @@ void FrameLoader::UpgradeInsecureRequest(ResourceRequest& resource_request,
           network::mojom::RequestContextFrameType::kNone ||
       resource_request.GetRequestContext() ==
           WebURLRequest::kRequestContextForm ||
-      (!url.Host().IsNull() &&
-       origin_document->InsecureNavigationsToUpgrade()->Contains(
-           url.Host().Impl()->GetHash()))) {
-    UseCounter::Count(origin_document,
+      (!url.Host().IsNull() && origin_context->GetSecurityContext()
+                                   .InsecureNavigationsToUpgrade()
+                                   ->Contains(url.Host().Impl()->GetHash()))) {
+    UseCounter::Count(origin_context,
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
     url.SetProtocol("https");
     if (url.Port() == 80)

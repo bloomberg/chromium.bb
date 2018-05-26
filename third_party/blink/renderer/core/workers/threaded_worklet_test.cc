@@ -97,11 +97,10 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
 
-    // The "script-src 'self'" directive is specified but the Worklet has a
-    // unique opaque origin, so this should not be allowed.
-    EXPECT_FALSE(csp->AllowScriptFromSource(GlobalScope()->Url(), String(),
-                                            IntegrityMetadataSet(),
-                                            kParserInserted));
+    // The "script-src 'self'" directive allows this.
+    EXPECT_TRUE(csp->AllowScriptFromSource(GlobalScope()->Url(), String(),
+                                           IntegrityMetadataSet(),
+                                           kParserInserted));
 
     // The "script-src https://allowed.example.com" should allow this.
     EXPECT_TRUE(csp->AllowScriptFromSource(KURL("https://allowed.example.com"),
@@ -191,8 +190,7 @@ class ThreadedWorkletMessagingProxyForTest
             document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault,
-            new WorkletModuleResponsesMap(document->Fetcher())),
+            kV8CacheOptionsDefault, new WorkletModuleResponsesMap),
         base::nullopt);
   }
 

@@ -68,8 +68,7 @@ class MainThreadWorkletTest : public PageTestBase {
         document->IsSecureContext(), nullptr /* worker_clients */,
         document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
-        kV8CacheOptionsDefault,
-        new WorkletModuleResponsesMap(document->Fetcher()));
+        kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
     global_scope_ = new MainThreadWorkletGlobalScope(
         &GetFrame(), std::move(creation_params), *reporting_proxy_);
   }
@@ -91,9 +90,8 @@ TEST_F(MainThreadWorkletTest, SecurityOrigin) {
 TEST_F(MainThreadWorkletTest, ContentSecurityPolicy) {
   ContentSecurityPolicy* csp = global_scope_->GetContentSecurityPolicy();
 
-  // The "script-src 'self'" directive is specified but the Worklet has a
-  // unique opaque origin, so this should not be allowed.
-  EXPECT_FALSE(csp->AllowScriptFromSource(
+  // The "script-src 'self'" directive allows this.
+  EXPECT_TRUE(csp->AllowScriptFromSource(
       global_scope_->Url(), String(), IntegrityMetadataSet(), kParserInserted));
 
   // The "script-src https://allowed.example.com" should allow this.

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/worklet_modulator_impl.h"
 
-#include "third_party/blink/renderer/core/loader/modulescript/worker_or_worklet_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 
 namespace blink {
@@ -23,9 +23,10 @@ const SecurityOrigin* WorkletModulatorImpl::GetSecurityOriginForFetch() {
 }
 
 ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher() {
-  auto* global_scope = ToWorkletGlobalScope(GetExecutionContext());
-  return new WorkerOrWorkletModuleScriptFetcher(
-      global_scope->ModuleFetchCoordinatorProxy());
+  WorkletGlobalScope* global_scope =
+      ToWorkletGlobalScope(GetExecutionContext());
+  return new WorkletModuleScriptFetcher(global_scope->EnsureFetcher(),
+                                        global_scope->GetModuleResponsesMap());
 }
 
 bool WorkletModulatorImpl::IsDynamicImportForbidden(String* reason) {

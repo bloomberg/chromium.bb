@@ -10,12 +10,15 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_worklet_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
@@ -42,6 +45,13 @@ void ThreadedWorkletMessagingProxy::Initialize(
   Document* document = ToDocument(GetExecutionContext());
   ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
   DCHECK(csp);
+
+  ProvideWorkerFetchContextToWorker(
+      worker_clients,
+      document->GetFrame()->Client()->CreateWorkerFetchContext());
+  ProvideContentSettingsClientToWorker(
+      worker_clients,
+      document->GetFrame()->Client()->CreateWorkerContentSettingsClient());
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
