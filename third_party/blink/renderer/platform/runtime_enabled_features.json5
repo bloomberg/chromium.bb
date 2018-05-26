@@ -661,6 +661,7 @@
     },
     {
       name: "LayoutNGFragmentCaching",
+      implied_by: ["LayoutNG"],
     },
     {
       name: "LazyFrameLoading",
