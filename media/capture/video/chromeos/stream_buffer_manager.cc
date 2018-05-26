@@ -339,7 +339,7 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
 }
 
 void StreamBufferManager::OnRegisteredBuffer(StreamType stream_type,
-                                             size_t buffer_id,
+                                             uint64_t buffer_id,
                                              int32_t result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(stream_context_[stream_type]);

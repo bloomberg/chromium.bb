@@ -138,7 +138,7 @@ class CAPTURE_EXPORT StreamBufferManager final
   // Calls ProcessCaptureRequest if the buffer specified by |buffer_id| is
   // successfully registered.
   void OnRegisteredBuffer(StreamType stream_type,
-                          size_t buffer_id,
+                          uint64_t buffer_id,
                           int32_t result);
 
   // The capture request contains the buffer handles waiting to be filled.
