@@ -27,20 +27,6 @@ from chromite.lib import parallel
 SHEBANG_RE = re.compile(r'^#!\s*([^\s]+)(\s+([^\s]+))?')
 
 
-PYTHON_EXTENSIONS = frozenset(['.py'])
-
-# Note these are defined to keep in line with cpplint.py. Technically, we could
-# include additional ones, but cpplint.py would just filter them out.
-CPP_EXTENSIONS = frozenset(['.cc', '.cpp', '.h'])
-
-
-# These are split into two groups so that we can apply the general shell
-# linter to all shell-like files while still keeping slightly separate rules for
-# ebuild files.
-GENTOO_SHELL_EXTENSIONS = frozenset(['.ebuild', '.eclass', '.bashrc'])
-SHELL_EXTENSIONS = frozenset({'.sh'} | GENTOO_SHELL_EXTENSIONS)
-
-
 def _GetProjectPath(path):
   """Find the absolute path of the git checkout that contains |path|."""
   if git.FindRepoCheckoutRoot(path):
@@ -151,7 +137,7 @@ def _PylintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
-def _ShellFile(path, output_format, debug):
+def _ShellLintFile(path, output_format, debug):
   """Returns result of running lint checks on |path|."""
   # TODO: Try using `checkbashisms`.
   syntax_check = _LinterRunCommand(['bash', '-n', path], debug)
@@ -223,10 +209,25 @@ def _BreakoutDataByLinter(map_to_return, path):
           pylint_list = map_to_return.setdefault(_PylintFile, [])
           pylint_list.append(path)
         elif basename in ('sh', 'dash', 'bash'):
-          shlint_list = map_to_return.setdefault(_ShellFile, [])
+          shlint_list = map_to_return.setdefault(_ShellLintFile, [])
           shlint_list.append(path)
   except IOError as e:
     logging.debug('%s: reading initial data failed: %s', path, e)
+
+
+# These are split into two groups so that we can apply the general shell
+# linter to all shell-like files while still keeping slightly separate rules for
+# ebuild files.
+GENTOO_SHELL_EXTENSIONS = frozenset(['.ebuild', '.eclass', '.bashrc'])
+
+# Map file extensions to a linter function.
+_EXT_TO_LINTER_MAP = {
+    # Note these are defined to keep in line with cpplint.py. Technically, we
+    # could include additional ones, but cpplint.py would just filter them out.
+    frozenset({'.cc', '.cpp', '.h'}): _CpplintFile,
+    frozenset({'.py'}): _PylintFile,
+    frozenset({'.sh'} | GENTOO_SHELL_EXTENSIONS): _ShellLintFile,
+}
 
 
 def _BreakoutFilesByLinter(files):
@@ -234,17 +235,14 @@ def _BreakoutFilesByLinter(files):
   map_to_return = {}
   for f in files:
     extension = os.path.splitext(f)[1]
-    if extension in PYTHON_EXTENSIONS:
-      pylint_list = map_to_return.setdefault(_PylintFile, [])
-      pylint_list.append(f)
-    elif extension in CPP_EXTENSIONS:
-      cpplint_list = map_to_return.setdefault(_CpplintFile, [])
-      cpplint_list.append(f)
-    elif extension in SHELL_EXTENSIONS:
-      shlint_list = map_to_return.setdefault(_ShellFile, [])
-      shlint_list.append(f)
-    elif os.path.isfile(f):
-      _BreakoutDataByLinter(map_to_return, f)
+    for extensions, linter in _EXT_TO_LINTER_MAP.items():
+      if extension in extensions:
+        todo = map_to_return.setdefault(linter, [])
+        todo.append(f)
+        break
+    else:
+      if os.path.isfile(f):
+        _BreakoutDataByLinter(map_to_return, f)
 
   return map_to_return
 
