@@ -1226,6 +1226,7 @@ Bug(none) fast/forms/textarea/textarea-scrolled-mask.html [ Failure ]
 Bug(none) fast/css/sticky/sticky-both-sides-top-left-constrained.html [ Failure ]
 Bug(none) fast/css/sticky/sticky-vertically-overconstrained.html [ Failure ]
 Bug(none) fast/css/sticky/sticky-overflowing.html [ Failure ]
+Bug(none) fast/sub-pixel/save-layer-bounds-should-snap.html [ Failure ]
 
 # Different layer tree about scrolling layer. Some may also have wrong invalidations.
 crbug.com/738613 compositing/iframes/connect-compositing-iframe-delayed.html [ Failure ]

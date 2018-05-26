@@ -451,10 +451,17 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
   else
     EndClips();
 
-  // Apply effects.
   int saved_count = 0;
   size_t save_layer_id = kNotFound;
-  const auto* target_transform = current_transform_;
+
+  // Adjust transform first. Though a non-filter effect itself doesn't depend on
+  // the transform, switching to the target transform before SaveLayer[Alpha]Op
+  // will help the rasterizer optimize a non-filter SaveLayer[Alpha]Op/
+  // DrawRecord/Restore sequence into a single DrawRecord which is much faster.
+  // This also avoids multiple Save/Concat/.../Restore pairs for multiple
+  // consecutive effects in the same transform space, by issuing only one pair
+  // around all of the effects.
+  SwitchToTransform(effect->LocalTransformSpace());
 
   // We always create separate effect nodes for normal effects and filter
   // effects, so we can handle them separately.
@@ -464,10 +471,9 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
                            effect->GetColorFilter() != kColorFilterNone;
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
 
+  // Apply effects.
+  cc_list_.StartPaint();
   if (!has_filter) {
-    cc_list_.StartPaint();
-    // No need to adjust transform for non-filter effects because transform
-    // doesn't matter.
     // TODO(ajuma): This should really be rounding instead of flooring the
     // alpha value, but that breaks slimming paint reftests.
     auto alpha =
@@ -485,22 +491,13 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
           nullptr, alpha, preserve_lcd_text_requests);
     }
     saved_count++;
-    cc_list_.EndPaintOfPairedBegin();
   } else {
-    // Handle filter effect. Adjust transform first.
-    target_transform = effect->LocalTransformSpace();
+    // Handle filter effect.
     FloatPoint filter_origin = effect->PaintOffset();
-    if (current_transform_ != target_transform ||
-        filter_origin != FloatPoint()) {
-      EndTransform();
-      auto matrix = GetSkMatrix(target_transform);
-      matrix.preTranslate(filter_origin.X(), filter_origin.Y());
-      cc_list_.StartPaint();
+    if (filter_origin != FloatPoint()) {
       cc_list_.push<cc::SaveOp>();
-      cc_list_.push<cc::ConcatOp>(matrix);
+      cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
       saved_count++;
-    } else {
-      cc_list_.StartPaint();
     }
 
     // The size parameter is only used to computed the origin of zoom
@@ -510,12 +507,12 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         effect->Filter().AsCcFilterOperations(), empty));
     save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
+    saved_count++;
 
     if (filter_origin != FloatPoint())
       cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
-    cc_list_.EndPaintOfPairedBegin();
-    saved_count++;
   }
+  cc_list_.EndPaintOfPairedBegin();
 
   DCHECK_GT(saved_count, 0);
   DCHECK_LE(saved_count, 2);
@@ -526,8 +523,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
   const ClipPaintPropertyNode* input_clip = current_clip_;
   PushState(StateEntry::kEffect, saved_count);
   effect_bounds_stack_.emplace_back(
-      EffectBoundsInfo{save_layer_id, target_transform});
-  current_transform_ = target_transform;
+      EffectBoundsInfo{save_layer_id, current_transform_});
   current_clip_ = input_clip;
   current_effect_ = effect;
 }
