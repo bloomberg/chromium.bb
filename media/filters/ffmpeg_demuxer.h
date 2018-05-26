@@ -214,8 +214,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Demuxer implementation.
   std::string GetDisplayName() const override;
   void Initialize(DemuxerHost* host,
-                  const PipelineStatusCB& status_cb,
-                  bool enable_text_tracks) override;
+                  const PipelineStatusCB& status_cb) override;
   void AbortPendingReads() override;
   void Stop() override;
   void StartWaitingForSeek(base::TimeDelta seek_time) override;
@@ -369,9 +368,6 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // The Time associated with timestamp 0. Set to a null
   // time if the file doesn't have an association to Time.
   base::Time timeline_offset_;
-
-  // Whether text streams have been enabled for this demuxer.
-  bool text_enabled_;
 
   // Set if we know duration of the audio stream. Used when processing end of
   // stream -- at this moment we definitely know duration.

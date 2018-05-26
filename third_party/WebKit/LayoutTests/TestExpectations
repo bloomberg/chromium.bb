@@ -3770,6 +3770,8 @@ crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/int
 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/removeCue.html [ Failure ]
 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
 
+crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-remove-track-inband.html [ Skip ]
+
 crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-non-snap-to-lines.html [ Failure ]
 
 crbug.com/803951 external/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Failure Timeout ]

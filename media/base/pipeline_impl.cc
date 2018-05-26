@@ -55,7 +55,6 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void Start(StartType start_type,
              Demuxer* demuxer,
              std::unique_ptr<Renderer> renderer,
-             std::unique_ptr<TextRenderer> text_renderer,
              base::WeakPtr<PipelineImpl> weak_pipeline);
   void Stop(const base::Closure& stop_cb);
   void Seek(base::TimeDelta time);
@@ -122,9 +121,6 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnBufferedTimeRangesChanged(const Ranges<base::TimeDelta>& ranges) final;
   void SetDuration(base::TimeDelta duration) final;
   void OnDemuxerError(PipelineStatus error) final;
-  void AddTextStream(DemuxerStream* text_stream,
-                     const TextTrackConfig& config) final;
-  void RemoveTextStream(DemuxerStream* text_stream) final;
 
   // RendererClient implementation.
   void OnError(PipelineStatus error) final;
@@ -137,12 +133,6 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
   void OnDurationChange(base::TimeDelta duration) final;
-
-  // TextRenderer tasks and notifications.
-  void OnTextRendererEnded();
-  void AddTextStreamTask(DemuxerStream* text_stream,
-                         const TextTrackConfig& config);
-  void RemoveTextStreamTask(DemuxerStream* text_stream);
 
   // Common handlers for notifications from renderers and demuxer.
   void OnPipelineError(PipelineStatus error);
@@ -166,7 +156,6 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
 
   base::WeakPtr<PipelineImpl> weak_pipeline_;
   Demuxer* demuxer_;
-  std::unique_ptr<TextRenderer> text_renderer_;
   double playback_rate_;
   float volume_;
   CdmContext* cdm_context_;
@@ -232,7 +221,6 @@ void PipelineImpl::RendererWrapper::Start(
     StartType start_type,
     Demuxer* demuxer,
     std::unique_ptr<Renderer> renderer,
-    std::unique_ptr<TextRenderer> text_renderer,
     base::WeakPtr<PipelineImpl> weak_pipeline) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kCreated || state_ == kStopped)
@@ -245,18 +233,12 @@ void PipelineImpl::RendererWrapper::Start(
 
   DCHECK(!demuxer_);
   DCHECK(!shared_state_.renderer);
-  DCHECK(!text_renderer_);
   DCHECK(!renderer_ended_);
   DCHECK(!text_renderer_ended_);
   demuxer_ = demuxer;
   {
     base::AutoLock auto_lock(shared_state_lock_);
     shared_state_.renderer = std::move(renderer);
-  }
-  text_renderer_ = std::move(text_renderer);
-  if (text_renderer_) {
-    text_renderer_->Initialize(
-        base::Bind(&RendererWrapper::OnTextRendererEnded, weak_this_));
   }
   weak_pipeline_ = weak_pipeline;
 
@@ -300,7 +282,6 @@ void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
   pending_callbacks_.reset();
 
   DestroyRenderer();
-  text_renderer_.reset();
 
   if (demuxer_) {
     demuxer_->Stop();
@@ -346,21 +327,11 @@ void PipelineImpl::RendererWrapper::Seek(base::TimeDelta time) {
   // Abort any reads the renderer may be blocked on.
   demuxer_->AbortPendingReads();
 
-  // Pause.
-  if (text_renderer_) {
-    bound_fns.Push(base::Bind(&TextRenderer::Pause,
-                              base::Unretained(text_renderer_.get())));
-  }
 
   // Flush.
   DCHECK(shared_state_.renderer);
   bound_fns.Push(base::Bind(&Renderer::Flush,
                             base::Unretained(shared_state_.renderer.get())));
-
-  if (text_renderer_) {
-    bound_fns.Push(base::Bind(&TextRenderer::Flush,
-                              base::Unretained(text_renderer_.get())));
-  }
 
   // Seek demuxer.
   bound_fns.Push(
@@ -397,11 +368,6 @@ void PipelineImpl::RendererWrapper::Suspend() {
 
   // Queue the asynchronous actions required to stop playback.
   SerialRunner::Queue fns;
-
-  if (text_renderer_) {
-    fns.Push(base::Bind(&TextRenderer::Pause,
-                        base::Unretained(text_renderer_.get())));
-  }
 
   // No need to flush the renderer since it's going to be destroyed.
   pending_callbacks_ = SerialRunner::Run(
@@ -545,25 +511,6 @@ void PipelineImpl::RendererWrapper::OnDemuxerError(PipelineStatus error) {
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RendererWrapper::OnPipelineError, weak_this_, error));
-}
-
-void PipelineImpl::RendererWrapper::AddTextStream(
-    DemuxerStream* text_stream,
-    const TextTrackConfig& config) {
-  // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
-  // implementations call DemuxerHost on the media thread.
-  media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RendererWrapper::AddTextStreamTask, weak_this_,
-                            text_stream, config));
-}
-
-void PipelineImpl::RendererWrapper::RemoveTextStream(
-    DemuxerStream* text_stream) {
-  // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
-  // implementations call DemuxerHost on the media thread.
-  media_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RendererWrapper::RemoveTextStreamTask, weak_this_,
-                            text_stream));
 }
 
 void PipelineImpl::RendererWrapper::OnError(PipelineStatus error) {
@@ -810,37 +757,6 @@ void PipelineImpl::RendererWrapper::OnDurationChange(base::TimeDelta duration) {
   SetDuration(duration);
 }
 
-void PipelineImpl::RendererWrapper::OnTextRendererEnded() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::TEXT_ENDED));
-
-  if (state_ != kPlaying)
-    return;
-
-  DCHECK(!text_renderer_ended_);
-  text_renderer_ended_ = true;
-  CheckPlaybackEnded();
-}
-
-void PipelineImpl::RendererWrapper::AddTextStreamTask(
-    DemuxerStream* text_stream,
-    const TextTrackConfig& config) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  // TODO(matthewjheaney): fix up text_ended_ when text stream
-  // is added (http://crbug.com/321446).
-  if (text_renderer_)
-    text_renderer_->AddTextStream(text_stream, config);
-}
-
-void PipelineImpl::RendererWrapper::RemoveTextStreamTask(
-    DemuxerStream* text_stream) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  if (text_renderer_)
-    text_renderer_->RemoveTextStream(text_stream);
-}
-
 void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
@@ -882,9 +798,6 @@ void PipelineImpl::RendererWrapper::CheckPlaybackEnded() {
   if (shared_state_.renderer && !renderer_ended_)
     return;
 
-  if (text_renderer_ && text_renderer_->HasTracks() && !text_renderer_ended_)
-    return;
-
   DCHECK_EQ(status_, PIPELINE_OK);
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PipelineImpl::OnEnded, weak_pipeline_));
@@ -923,9 +836,6 @@ void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
     base::AutoLock auto_lock(shared_state_lock_);
     shared_state_.suspend_timestamp = kNoTimestamp;
   }
-
-  if (text_renderer_)
-    text_renderer_->StartPlaying();
 
   shared_state_.renderer->SetPlaybackRate(playback_rate_);
   shared_state_.renderer->SetVolume(volume_);
@@ -967,7 +877,7 @@ void PipelineImpl::RendererWrapper::InitializeDemuxer(
     const PipelineStatusCB& done_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  demuxer_->Initialize(this, done_cb, !!text_renderer_);
+  demuxer_->Initialize(this, done_cb);
 }
 
 void PipelineImpl::RendererWrapper::InitializeRenderer(
@@ -1114,21 +1024,11 @@ void PipelineImpl::Start(StartType start_type,
   last_media_time_ = base::TimeDelta();
   seek_time_ = kNoTimestamp;
 
-  std::unique_ptr<TextRenderer> text_renderer;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInbandTextTracks)) {
-    text_renderer.reset(new TextRenderer(
-        media_task_runner_,
-        BindToCurrentLoop(base::Bind(&PipelineImpl::OnAddTextTrack,
-                                     weak_factory_.GetWeakPtr()))));
-  }
-
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RendererWrapper::Start,
                  base::Unretained(renderer_wrapper_.get()), start_type, demuxer,
-                 base::Passed(&renderer), base::Passed(&text_renderer),
-                 weak_factory_.GetWeakPtr()));
+                 base::Passed(&renderer), weak_factory_.GetWeakPtr()));
 }
 
 void PipelineImpl::Stop() {
@@ -1425,16 +1325,6 @@ void PipelineImpl::OnDurationChange(base::TimeDelta duration) {
 
   DCHECK(client_);
   client_->OnDurationChange();
-}
-
-void PipelineImpl::OnAddTextTrack(const TextTrackConfig& config,
-                                  const AddTextTrackDoneCB& done_cb) {
-  DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsRunning());
-
-  DCHECK(client_);
-  client_->OnAddTextTrack(config, done_cb);
 }
 
 void PipelineImpl::OnWaitingForDecryptionKey() {

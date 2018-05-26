@@ -835,21 +835,6 @@ size_t FFmpegDemuxerStream::MemoryUsage() const {
   return buffer_queue_.data_size();
 }
 
-TextKind FFmpegDemuxerStream::GetTextKind() const {
-  DCHECK_EQ(type_, DemuxerStream::TEXT);
-
-  if (stream_->disposition & AV_DISPOSITION_CAPTIONS)
-    return kTextCaptions;
-
-  if (stream_->disposition & AV_DISPOSITION_DESCRIPTIONS)
-    return kTextDescriptions;
-
-  if (stream_->disposition & AV_DISPOSITION_METADATA)
-    return kTextMetadata;
-
-  return kTextSubtitles;
-}
-
 std::string FFmpegDemuxerStream::GetMetadata(const char* key) const {
   const AVDictionaryEntry* entry =
       av_dict_get(stream_->metadata, key, NULL, 0);
@@ -888,7 +873,6 @@ FFmpegDemuxer::FFmpegDemuxer(
       media_log_(media_log),
       bitrate_(0),
       start_time_(kNoTimestamp),
-      text_enabled_(false),
       duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       media_tracks_updated_cb_(media_tracks_updated_cb),
@@ -916,11 +900,9 @@ std::string FFmpegDemuxer::GetDisplayName() const {
 }
 
 void FFmpegDemuxer::Initialize(DemuxerHost* host,
-                               const PipelineStatusCB& status_cb,
-                               bool enable_text_tracks) {
+                               const PipelineStatusCB& status_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   host_ = host;
-  text_enabled_ = enable_text_tracks;
   weak_this_ = cancel_pending_seek_factory_.GetWeakPtr();
 
   // Give a WeakPtr to BlockingUrlProtocol since we'll need to release it on the
@@ -1104,24 +1086,6 @@ FFmpegDemuxerStream* FFmpegDemuxer::GetFirstEnabledFFmpegStream(
 
 base::TimeDelta FFmpegDemuxer::GetStartTime() const {
   return std::max(start_time_, base::TimeDelta());
-}
-
-void FFmpegDemuxer::AddTextStreams() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  for (const auto& stream : streams_) {
-    if (!stream || stream->type() != DemuxerStream::TEXT)
-      continue;
-
-    TextKind kind = stream->GetTextKind();
-    std::string title = stream->GetMetadata("title");
-    std::string language = stream->GetMetadata("language");
-
-    // TODO: Implement "id" metadata in FFMPEG.
-    // See: http://crbug.com/323183
-    host_->AddTextStream(stream.get(),
-                         TextTrackConfig(kind, title, language, std::string()));
-  }
 }
 
 int64_t FFmpegDemuxer::GetMemoryUsage() const {
@@ -1308,10 +1272,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
 #endif
     } else if (codec_type == AVMEDIA_TYPE_SUBTITLE) {
       detected_text_track_count++;
-      if (codec_id != AV_CODEC_ID_WEBVTT || !text_enabled_) {
-        stream->discard = AVDISCARD_ALL;
-        continue;
-      }
+      stream->discard = AVDISCARD_ALL;
+      continue;
     } else {
       stream->discard = AVDISCARD_ALL;
       continue;
@@ -1435,9 +1397,6 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     status_cb.Run(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
     return;
   }
-
-  if (text_enabled_)
-    AddTextStreams();
 
   if (format_context->duration != kNoFFmpegTimestamp) {
     // If there is a duration value in the container use that to find the

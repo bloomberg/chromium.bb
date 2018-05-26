@@ -36,8 +36,7 @@ std::string MediaUrlDemuxer::GetDisplayName() const {
 }
 
 void MediaUrlDemuxer::Initialize(DemuxerHost* host,
-                                 const PipelineStatusCB& status_cb,
-                                 bool enable_text_tracks) {
+                                 const PipelineStatusCB& status_cb) {
   DVLOG(1) << __func__;
   task_runner_->PostTask(FROM_HERE, base::Bind(status_cb, PIPELINE_OK));
 }

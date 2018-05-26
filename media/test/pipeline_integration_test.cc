@@ -2626,14 +2626,6 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP9A_Odd_WebM) {
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_I420A);
 }
 
-// Verify that VP8 video with inband text track can be played back.
-TEST_F(PipelineIntegrationTest, MAYBE_TEXT(BasicPlayback_VP8_WebVTT_WebM)) {
-  EXPECT_CALL(*this, OnAddTextTrack(_, _));
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8-webvtt.webm"));
-  Play();
-  ASSERT_TRUE(WaitUntilOnEnded());
-}
-
 // Verify that VP9 video with 4:4:4 subsampling can be played back.
 TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-P444.webm"));

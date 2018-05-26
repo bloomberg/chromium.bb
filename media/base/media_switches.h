@@ -67,8 +67,6 @@ MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
 MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];
 MEDIA_EXPORT extern const char kUseFakeJpegDecodeAccelerator[];
 
-MEDIA_EXPORT extern const char kEnableInbandTextTracks[];
-
 MEDIA_EXPORT extern const char kRequireAudioHardwareForTesting[];
 MEDIA_EXPORT extern const char kMuteAudio[];
 
