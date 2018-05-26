@@ -19,7 +19,6 @@
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 
-class ExtensionServiceInterface;
 class GURL;
 
 namespace base {
@@ -29,6 +28,10 @@ class ListValue;
 namespace drive {
 class DriveServiceInterface;
 class DriveUploaderInterface;
+}
+
+namespace extensions {
+class ExtensionServiceInterface;
 }
 
 namespace storage {
@@ -57,7 +60,8 @@ class SyncWorker : public SyncWorkerInterface,
                    public SyncTaskManager::Client {
  public:
   SyncWorker(const base::FilePath& base_dir,
-             const base::WeakPtr<ExtensionServiceInterface>& extension_service,
+             const base::WeakPtr<extensions::ExtensionServiceInterface>&
+                 extension_service,
              leveldb::Env* env_override);
 
   ~SyncWorker() override;
@@ -123,7 +127,8 @@ class SyncWorker : public SyncWorkerInterface,
                      SyncStatusCode status);
   void UpdateRegisteredApps();
   static void QueryAppStatusOnUIThread(
-      const base::WeakPtr<ExtensionServiceInterface>& extension_service_ptr,
+      const base::WeakPtr<extensions::ExtensionServiceInterface>&
+          extension_service_ptr,
       const std::vector<std::string>* app_ids,
       AppStatusMap* status,
       const base::Closure& callback);
@@ -168,7 +173,7 @@ class SyncWorker : public SyncWorkerInterface,
 
   std::unique_ptr<SyncTaskManager> task_manager_;
 
-  base::WeakPtr<ExtensionServiceInterface> extension_service_;
+  base::WeakPtr<extensions::ExtensionServiceInterface> extension_service_;
 
   std::unique_ptr<SyncEngineContext> context_;
   base::ObserverList<Observer> observers_;

@@ -22,7 +22,6 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "net/base/network_change_notifier.h"
 
-class ExtensionServiceInterface;
 class OAuth2TokenService;
 
 namespace base {
@@ -33,6 +32,10 @@ namespace drive {
 class DriveServiceInterface;
 class DriveNotificationManager;
 class DriveUploaderInterface;
+}
+
+namespace extensions {
+class ExtensionServiceInterface;
 }
 
 namespace leveldb {
@@ -160,7 +163,7 @@ class SyncEngine : public RemoteFileSyncService,
              const base::FilePath& sync_file_system_dir,
              TaskLogger* task_logger,
              drive::DriveNotificationManager* notification_manager,
-             ExtensionServiceInterface* extension_service,
+             extensions::ExtensionServiceInterface* extension_service,
              SigninManagerBase* signin_manager,
              OAuth2TokenService* token_service,
              net::URLRequestContextGetter* request_context,
@@ -191,7 +194,7 @@ class SyncEngine : public RemoteFileSyncService,
   // I.e. the owner should declare the dependency explicitly by calling
   // KeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
-  ExtensionServiceInterface* extension_service_;
+  extensions::ExtensionServiceInterface* extension_service_;
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
 

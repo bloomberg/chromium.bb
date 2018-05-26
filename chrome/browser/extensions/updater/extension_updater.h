@@ -29,7 +29,6 @@
 #include "extensions/browser/updater/update_service.h"
 #include "url/gurl.h"
 
-class ExtensionServiceInterface;
 class PrefService;
 class Profile;
 
@@ -37,6 +36,7 @@ namespace extensions {
 
 class ExtensionCache;
 class ExtensionPrefs;
+class ExtensionServiceInterface;
 class ExtensionSet;
 struct ExtensionUpdateCheckParams;
 class ExtensionUpdaterTest;

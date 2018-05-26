@@ -20,7 +20,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
-class ExtensionService;
 class FaviconDownloader;
 struct InstallableData;
 class InstallableManager;
@@ -35,6 +34,7 @@ class WebContents;
 namespace extensions {
 class CrxInstaller;
 class Extension;
+class ExtensionService;
 
 // A helper class for creating bookmark apps from a WebContents.
 class BookmarkAppHelper : public content::NotificationObserver {

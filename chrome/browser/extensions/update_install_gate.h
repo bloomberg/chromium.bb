@@ -8,9 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/install_gate.h"
 
-class ExtensionService;
-
 namespace extensions {
+class ExtensionService;
 
 // Delays an extension update if the old version is not idle.
 class UpdateInstallGate : public InstallGate {

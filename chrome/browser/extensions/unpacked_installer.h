@@ -18,12 +18,12 @@
 #include "extensions/browser/preload_check.h"
 #include "extensions/common/manifest.h"
 
-class ExtensionService;
 class Profile;
 
 namespace extensions {
 
 class Extension;
+class ExtensionService;
 class PreloadCheckGroup;
 
 // Installs and loads an unpacked extension. Because internal state needs to be

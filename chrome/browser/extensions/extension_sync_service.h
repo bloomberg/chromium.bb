@@ -18,11 +18,11 @@
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-class ExtensionService;
 class Profile;
 
 namespace extensions {
 class Extension;
+class ExtensionService;
 class ExtensionSet;
 class ExtensionSyncData;
 }  // namespace extensions
@@ -78,7 +78,7 @@ class ExtensionSyncService : public syncer::SyncableService,
   FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest,
                            HigherPermissionsFromSync);
 
-  ExtensionService* extension_service() const;
+  extensions::ExtensionService* extension_service() const;
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionInstalled(content::BrowserContext* browser_context,

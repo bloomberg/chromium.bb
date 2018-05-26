@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-class ExtensionService;
 class Profile;
 class TestingProfile;
 
@@ -43,6 +42,7 @@ class TestingPrefServiceSyncable;
 namespace extensions {
 
 class ExtensionRegistry;
+class ExtensionService;
 
 // A unittest infrastructure which creates an ExtensionService. Whenever
 // possible, use this instead of creating a browsertest.

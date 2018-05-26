@@ -28,7 +28,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 
-class ExtensionService;
 class ExtensionServiceTest;
 class SkBitmap;
 struct WebApplicationInfo;
@@ -43,6 +42,7 @@ class Connector;
 
 namespace extensions {
 class CrxInstallError;
+class ExtensionService;
 class ExtensionUpdaterTest;
 class PreloadCheckGroup;
 

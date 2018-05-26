@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_UI_H_
 
-class ExtensionService;
-
 namespace extensions {
 
 class Extension;
+class ExtensionService;
 
 // Adds a global error to inform the user that an extension was
 // disabled after upgrading to higher permissions.

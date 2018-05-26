@@ -30,8 +30,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-class ExtensionService;
-
 using content::BrowserThread;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +40,7 @@ AppLauncherPageUI::AppLauncherPageUI(content::WebUI* web_ui)
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_APP_LAUNCHER_TAB_TITLE));
 
   if (!GetProfile()->IsOffTheRecord()) {
-    ExtensionService* service =
+    extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(GetProfile())->extension_service();
     // We should not be launched without an ExtensionService.
     DCHECK(service);

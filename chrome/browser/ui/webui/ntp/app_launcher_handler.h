@@ -24,9 +24,12 @@
 #include "extensions/common/extension.h"
 
 class ExtensionEnableFlow;
-class ExtensionService;
 class PrefChangeRegistrar;
 class Profile;
+
+namespace extensions {
+class ExtensionService;
+}
 
 namespace favicon_base {
 struct FaviconImageResult;
@@ -44,14 +47,13 @@ class AppLauncherHandler
       public content::NotificationObserver,
       public extensions::ExtensionRegistryObserver {
  public:
-  explicit AppLauncherHandler(ExtensionService* extension_service);
+  explicit AppLauncherHandler(extensions::ExtensionService* extension_service);
   ~AppLauncherHandler() override;
 
   // Populate a dictionary with the information from an extension.
-  static void CreateAppInfo(
-      const extensions::Extension* extension,
-      ExtensionService* service,
-      base::DictionaryValue* value);
+  static void CreateAppInfo(const extensions::Extension* extension,
+                            extensions::ExtensionService* service,
+                            base::DictionaryValue* value);
 
   // Registers values (strings etc.) for the page.
   static void GetLocalizedValues(Profile* profile,
@@ -177,7 +179,7 @@ class AppLauncherHandler
 
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.
-  ExtensionService* const extension_service_;
+  extensions::ExtensionService* const extension_service_;
 
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.

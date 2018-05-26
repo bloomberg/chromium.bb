@@ -12,9 +12,9 @@
 #include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
+namespace extensions {
 FORWARD_DECLARE_TEST(ExtensionServiceTest, AddPendingExtensionFromSync);
 
-namespace extensions {
 class Extension;
 
 // A pending extension is an extension that hasn't been installed yet
@@ -93,7 +93,7 @@ class PendingExtensionInfo {
   bool mark_acknowledged_;
   bool remote_install_;
 
-  FRIEND_TEST_ALL_PREFIXES(::ExtensionServiceTest, AddPendingExtensionFromSync);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, AddPendingExtensionFromSync);
 };
 
 }  // namespace extensions

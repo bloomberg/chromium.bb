@@ -29,12 +29,12 @@
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest.h"
 
-class ExtensionService;
 class Profile;
 struct WebApplicationInfo;
 
 namespace extensions {
 class ExtensionCacheFake;
+class ExtensionService;
 class ExtensionSet;
 class ProcessManager;
 
