@@ -9,9 +9,9 @@ layer at (0,0) size 800x108
       LayoutText {#text} at (0,0) size 0x0
     LayoutNGBlockFlow {ul} at (0,52) size 800x20 [color=#FF0000]
       LayoutNGListItem {li} at (40,0) size 760x20 [color=#00FF00]
-        LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-          LayoutText (anonymous) at (0,0) size 10x19
-            text run at (0,0) width 10: "\x{2022} "
+        LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+          LayoutText (anonymous) at (0,0) size 7x19
+            text run at (0,0) width 7: "\x{2022} "
         LayoutText {#text} at (0,0) size 167x19
           text run at (0,0) width 167: "This item should be green."
     LayoutNGBlockFlow (anonymous) at (0,88) size 800x20

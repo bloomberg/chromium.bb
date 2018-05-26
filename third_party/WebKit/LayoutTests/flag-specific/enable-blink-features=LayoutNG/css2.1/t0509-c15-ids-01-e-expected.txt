@@ -13,8 +13,8 @@ layer at (0,0) size 800x120
           text run at (0,0) width 224: " This line should be green. "
       LayoutNGBlockFlow {UL} at (0,68) size 784x20
         LayoutNGListItem {LI} at (40,0) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 163x19
             text run at (0,0) width 163: "This line should be green."

@@ -20,14 +20,22 @@
 
 namespace blink {
 
-static inline void PaintSymbol(GraphicsContext& context,
-                               const Color& color,
-                               const IntRect& marker,
-                               EListStyleType list_style) {
+void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
+                                    const LayoutObject* object,
+                                    const ComputedStyle& style,
+                                    const IntRect& marker) {
+  DCHECK(object);
+  GraphicsContext& context = paint_info.context;
+  Color color(object->ResolveColor(GetCSSPropertyColor()));
+  if (BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
+          object->GetDocument(), style))
+    color = TextPainter::TextColorForWhiteBackground(color);
+  // Apply the color to the list marker text.
+  context.SetFillColor(color);
   context.SetStrokeColor(color);
   context.SetStrokeStyle(kSolidStroke);
   context.SetStrokeThickness(1.0f);
-  switch (list_style) {
+  switch (style.ListStyleType()) {
     case EListStyleType::kDisc:
       context.FillEllipse(marker);
       break;
@@ -101,6 +109,15 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   if (style_category == LayoutListMarker::ListStyleCategory::kNone)
     return;
 
+  if (style_category == LayoutListMarker::ListStyleCategory::kSymbol) {
+    PaintSymbol(paint_info, &layout_list_marker_,
+                layout_list_marker_.StyleRef(), PixelSnappedIntRect(marker));
+    return;
+  }
+
+  if (layout_list_marker_.GetText().IsEmpty())
+    return;
+
   Color color(layout_list_marker_.ResolveColor(GetCSSPropertyColor()));
 
   if (BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
@@ -110,16 +127,6 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
 
   // Apply the color to the list marker text.
   context.SetFillColor(color);
-
-  const EListStyleType list_style =
-      layout_list_marker_.Style()->ListStyleType();
-  if (style_category == LayoutListMarker::ListStyleCategory::kSymbol) {
-    PaintSymbol(context, color, PixelSnappedIntRect(marker), list_style);
-    return;
-  }
-
-  if (layout_list_marker_.GetText().IsEmpty())
-    return;
 
   const Font& font = layout_list_marker_.Style()->GetFont();
   TextRun text_run = ConstructTextRun(font, layout_list_marker_.GetText(),
@@ -162,8 +169,9 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
     text_run.SetText(reversed_text.ToString());
   }
 
-  const UChar suffix = ListMarkerText::Suffix(
-      list_style, layout_list_marker_.ListItem()->Value());
+  const UChar suffix =
+      ListMarkerText::Suffix(layout_list_marker_.Style()->ListStyleType(),
+                             layout_list_marker_.ListItem()->Value());
   UChar suffix_str[2] = {suffix, static_cast<UChar>(' ')};
   TextRun suffix_run =
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),

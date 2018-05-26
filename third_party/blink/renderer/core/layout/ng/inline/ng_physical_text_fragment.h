@@ -46,6 +46,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     // Flow controls are not to be painted. In particular, a tabulation
     // character and a soft-wrap opportunity.
     kFlowControl,
+    kSymbolMarker
     // When adding new values, make sure the bit size of |sub_type_| is large
     // enough to store.
   };

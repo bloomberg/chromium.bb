@@ -45,16 +45,16 @@ layer at (0,0) size 785x1245 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (2,40) width 575: "(light blue). The text has been right-aligned in order to make the right padding easier to see."
       LayoutNGBlockFlow {UL} at (0,503) size 769x80 [bgcolor=#808080]
         LayoutNGListItem {LI} at (40,0) size 704x40
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (7,0) size 697x39
             text run at (7,0) width 697: "The right padding on this unordered list has been set to 25 pixels, which will require some extra text in order to"
             text run at (679,20) width 25: "test."
         LayoutNGListItem {LI} at (40,40) size 704x40 [bgcolor=#FFFFFF]
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (19,0) size 660x39
             text run at (19,0) width 660: "This list item has a right padding of 25 pixels, which will appear to the left of the gray padding of the UL"
             text run at (626,20) width 53: "element."
@@ -101,16 +101,16 @@ layer at (0,0) size 785x1245 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (480,60) width 81: "easier to see."
               LayoutNGBlockFlow {UL} at (4,364) size 747x80 [bgcolor=#808080]
                 LayoutNGListItem {LI} at (40,0) size 682x40
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (1,0) size 681x39
                     text run at (1,0) width 681: "The right padding on this unordered list has been set to 25 pixels, which will require some extra text in order"
                     text run at (641,20) width 41: "to test."
                 LayoutNGListItem {LI} at (40,40) size 682x40 [bgcolor=#FFFFFF]
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (23,0) size 634x39
                     text run at (23,0) width 634: "This list item has a right padding of 25 pixels, which will appear to the left of the gray padding of the"
                     text run at (579,20) width 78: "UL element."

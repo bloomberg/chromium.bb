@@ -57,27 +57,27 @@ layer at (0,0) size 800x2710 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           text run at (0,0) width 203: "This element has a class of zero."
       LayoutNGBlockFlow {UL} at (25,1178) size 734x130 [bgcolor=#00FFFF]
         LayoutNGListItem {LI} at (40,0) size 694x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 375x19
             text run at (0,0) width 375: "This list has a margin of 25px, and a light blue background."
         LayoutNGListItem {LI} at (40,20) size 694x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 264x19
             text run at (0,0) width 264: "Therefore, it ought to have such a margin."
         LayoutNGListItem {LI} at (65,65) size 644x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 543x19
             text run at (0,0) width 543: "This list item has a margin of 25px, which should cause it to be offset in some fashion."
         LayoutNGListItem {LI} at (40,110) size 694x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 294x19
             text run at (0,0) width 294: "This list item has no special styles applied to it."
       LayoutNGBlockFlow {P} at (0,1333) size 784x20 [bgcolor=#C0C0C0]
@@ -139,27 +139,27 @@ layer at (0,0) size 800x2710 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                   text run at (0,0) width 203: "This element has a class of zero."
               LayoutNGBlockFlow {UL} at (29,1012) size 712x130 [bgcolor=#00FFFF]
                 LayoutNGListItem {LI} at (40,0) size 672x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 375x19
                     text run at (0,0) width 375: "This list has a margin of 25px, and a light blue background."
                 LayoutNGListItem {LI} at (40,20) size 672x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 264x19
                     text run at (0,0) width 264: "Therefore, it ought to have such a margin."
                 LayoutNGListItem {LI} at (65,65) size 622x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 543x19
                     text run at (0,0) width 543: "This list item has a margin of 25px, which should cause it to be offset in some fashion."
                 LayoutNGListItem {LI} at (40,110) size 672x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 294x19
                     text run at (0,0) width 294: "This list item has no special styles applied to it."
               LayoutNGBlockFlow {P} at (4,1167) size 762x20 [bgcolor=#C0C0C0]

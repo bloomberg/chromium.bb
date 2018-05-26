@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {UL} at (0,241) size 800x20
         LayoutNGListItem {LI} at (40,0) size 760x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 409x19
             text run at (0,0) width 409: "Abe should appear twice, once inside the div and once outside it."
 selection start: position 0 of child 0 {IMG} of child 1 {DIV} of body

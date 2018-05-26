@@ -14,9 +14,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,0) width 143: "optimum=450"
       LayoutNGBlockFlow {UL} at (0,145.25) size 784x100
         LayoutNGListItem {LI} at (40,0) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=150: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -24,9 +24,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutNGListItem {LI} at (40,20) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=450: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -34,9 +34,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutNGListItem {LI} at (40,40) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=750: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -44,9 +44,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutNGListItem {LI} at (40,60) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 59x19
             text run at (0,0) width 59: "value=0: "
           LayoutBlockFlow {METER} at (59,2.19) size 80x16
@@ -54,9 +54,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutNGListItem {LI} at (40,80) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 83x19
             text run at (0,0) width 83: "value=1000: "
           LayoutBlockFlow {METER} at (83,2.19) size 80x16
@@ -68,9 +68,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,0) width 143: "optimum=150"
       LayoutNGBlockFlow {UL} at (0,312.06) size 784x100
         LayoutNGListItem {LI} at (40,0) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=150: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -78,9 +78,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutNGListItem {LI} at (40,20) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=450: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -88,9 +88,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutNGListItem {LI} at (40,40) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=750: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -98,9 +98,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutNGListItem {LI} at (40,60) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 59x19
             text run at (0,0) width 59: "value=0: "
           LayoutBlockFlow {METER} at (59,2.19) size 80x16
@@ -108,9 +108,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutNGListItem {LI} at (40,80) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 83x19
             text run at (0,0) width 83: "value=1000: "
           LayoutBlockFlow {METER} at (83,2.19) size 80x16
@@ -122,9 +122,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,0) width 143: "optimum=750"
       LayoutNGBlockFlow {UL} at (0,478.88) size 784x100
         LayoutNGListItem {LI} at (40,0) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=150: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -132,9 +132,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutNGListItem {LI} at (40,20) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=450: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -142,9 +142,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutNGListItem {LI} at (40,40) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 75x19
             text run at (0,0) width 75: "value=750: "
           LayoutBlockFlow {METER} at (75,2.19) size 80x16
@@ -152,9 +152,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutNGListItem {LI} at (40,60) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 59x19
             text run at (0,0) width 59: "value=0: "
           LayoutBlockFlow {METER} at (59,2.19) size 80x16
@@ -162,9 +162,9 @@ layer at (0,0) size 800x603 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutNGListItem {LI} at (40,80) size 744x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 83x19
             text run at (0,0) width 83: "value=1000: "
           LayoutBlockFlow {METER} at (83,2.19) size 80x16

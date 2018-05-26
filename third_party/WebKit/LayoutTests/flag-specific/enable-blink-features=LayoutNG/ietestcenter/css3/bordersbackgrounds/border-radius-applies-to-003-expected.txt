@@ -7,6 +7,6 @@ layer at (0,0) size 800x162
         LayoutText {#text} at (0,0) size 355x19
           text run at (0,0) width 355: "Test passes if there is a box with rounded corners below."
       LayoutNGListItem {DIV} at (0,36) size 102x102 [border: (3px solid #008000)]
-        LayoutNGListMarker (anonymous) at (-18,3) size 10x20
-          LayoutText (anonymous) at (0,0) size 10x19
-            text run at (0,0) width 10: "\x{2022} "
+        LayoutNGListMarker (anonymous) at (-18,3) size 7x20
+          LayoutText (anonymous) at (0,0) size 7x19
+            text run at (0,0) width 7: "\x{2022} "

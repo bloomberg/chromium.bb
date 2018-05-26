@@ -138,6 +138,9 @@ class CORE_EXPORT NGInlineItem {
   void AssertOffset(unsigned offset) const;
   void AssertEndOffset(unsigned offset) const;
 
+  bool IsSymbolMarker() const { return is_symbol_marker_; }
+  void SetIsSymbolMarker(bool b) { is_symbol_marker_ = b; }
+
   String ToString() const;
 
  private:
@@ -158,6 +161,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned style_variant_ : 2;
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned end_may_collapse_ : 1;
+  unsigned is_symbol_marker_ : 1;
   friend class NGInlineNode;
 };
 

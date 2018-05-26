@@ -47,9 +47,9 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (472,0) width 0: " "
       LayoutNGBlockFlow {UL} at (0,364) size 769x20
         LayoutNGListItem {LI} at (40,0) size 729x20
-          LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-            LayoutText (anonymous) at (0,0) size 10x19
-              text run at (0,0) width 10: "\x{2022} "
+          LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+            LayoutText (anonymous) at (0,0) size 7x19
+              text run at (0,0) width 7: "\x{2022} "
           LayoutText {#text} at (0,0) size 237x19
             text run at (0,0) width 237: "This sentence should NOT be purple."
       LayoutTable {TABLE} at (0,400) size 422x243 [border: (1px outset #808080)]
@@ -88,9 +88,9 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (360,0) width 0: " "
               LayoutNGBlockFlow {UL} at (4,173) size 400x20
                 LayoutNGListItem {LI} at (40,0) size 360x20
-                  LayoutNGListMarker (anonymous) at (-18,0) size 10x20
-                    LayoutText (anonymous) at (0,0) size 10x19
-                      text run at (0,0) width 10: "\x{2022} "
+                  LayoutNGListMarker (anonymous) at (-18,0) size 7x20
+                    LayoutText (anonymous) at (0,0) size 7x19
+                      text run at (0,0) width 7: "\x{2022} "
                   LayoutText {#text} at (0,0) size 237x19
                     text run at (0,0) width 237: "This sentence should NOT be purple."
 layer at (8,185) size 769x2 clip at (0,0) size 0x0

@@ -166,7 +166,7 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
       text->Append(ListMarkerText::GetText(Style()->ListStyleType(), 0));
       if (format == kWithSuffix)
         text->Append(' ');
-      return kStatic;
+      return kSymbolValue;
     case EListStyleType::kArabicIndic:
     case EListStyleType::kArmenian:
     case EListStyleType::kBengali:
@@ -270,12 +270,12 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
     // Create a LayoutText in it.
     LayoutText* text = nullptr;
     if (child) {
-      if (!child->IsText()) {
-        child->Destroy();
-        child = nullptr;
-      } else {
+      if (child->IsText()) {
         text = ToLayoutText(child);
         text->SetStyle(marker_->MutableStyle());
+      } else {
+        child->Destroy();
+        child = nullptr;
       }
     }
     if (!child) {
@@ -286,4 +286,12 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
     }
   }
 }
+
+LayoutObject* LayoutNGListItem::GetSymbolOfMarker() const {
+  if (marker_type_ != kSymbolValue)
+    return nullptr;
+  DCHECK(marker_);
+  return marker_->SlowFirstChild();
+}
+
 }  // namespace blink

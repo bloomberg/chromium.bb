@@ -19,6 +19,8 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -65,6 +67,14 @@ void CollectInlinesInternal(
     String* previous_text) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
+
+  LayoutObject* symbol = nullptr;
+  if (block->IsLayoutNGListMarker()) {
+    symbol = ToLayoutNGListMarker(block)->GetSymbolOfMarker();
+  } else if (block->IsLayoutNGListItem()) {
+    symbol = ToLayoutNGListItem(block)->GetSymbolOfMarker();
+  }
+
   while (node) {
     if (node->IsText()) {
       LayoutText* layout_text = ToLayoutText(node);
@@ -87,6 +97,10 @@ void CollectInlinesInternal(
         else
           builder->Append(layout_text->GetText(), node->Style(), layout_text);
       }
+
+      if (symbol == layout_text)
+        builder->SetIsSymbolMarker(true);
+
       ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(layout_text);
 
     } else if (node->IsFloating()) {
