@@ -25,7 +25,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
@@ -208,6 +207,31 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   create_params.initial_size = AdjustWindowSize(initial_size);
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
+  Shell* shell =
+      CreateShell(std::move(web_contents), create_params.initial_size);
+  if (!url.is_empty())
+    shell->LoadURL(url);
+  return shell;
+}
+
+Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
+    BrowserContext* browser_context,
+    const GURL& url,
+    const scoped_refptr<SiteInstance>& site_instance,
+    const gfx::Size& initial_size,
+    scoped_refptr<SessionStorageNamespace> session_storage_namespace) {
+  WebContents::CreateParams create_params(browser_context, site_instance);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForcePresentationReceiverForTesting)) {
+    create_params.starting_sandbox_flags =
+        blink::kPresentationReceiverSandboxFlags;
+  }
+  create_params.initial_size = AdjustWindowSize(initial_size);
+  std::map<std::string, scoped_refptr<SessionStorageNamespace>>
+      session_storages;
+  session_storages[""] = session_storage_namespace;
+  std::unique_ptr<WebContents> web_contents =
+      WebContents::CreateWithSessionStorage(create_params, session_storages);
   Shell* shell =
       CreateShell(std::move(web_contents), create_params.initial_size);
   if (!url.is_empty())
