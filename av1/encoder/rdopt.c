@@ -8168,8 +8168,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
                                  int *disable_skip, int mi_row, int mi_col,
-                                 HandleInterModeArgs *args,
-                                 const int64_t ref_best_rd
+                                 HandleInterModeArgs *args, int64_t ref_best_rd
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
                                  ,
                                  InterModeRdVector *inter_mode_rd_vector
@@ -8642,6 +8641,9 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           best_mbmi = *mbmi;
           memcpy(best_blk_skip, x->blk_skip,
                  sizeof(best_blk_skip[0]) * xd->n8_h * xd->n8_w);
+        }
+        if (tmp_rd < ref_best_rd) {
+          ref_best_rd = tmp_rd;
         }
       }
     }
@@ -10080,6 +10082,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           }
         }
       }
+
+      int64_t ref_best_rd = search_state.best_rd;
       {
         RD_STATS rd_stats, rd_stats_y, rd_stats_uv;
         av1_init_rd_stats(&rd_stats);
@@ -10093,14 +10097,17 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         args.single_comp_cost = real_compmode_cost;
         args.ref_frame_cost = ref_frame_cost;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-        this_rd = handle_inter_mode(
-            cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
-            mi_row, mi_col, &args, search_state.best_rd, &inter_mode_rd_vector);
+        this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
+                                    &rd_stats_uv, &disable_skip, mi_row, mi_col,
+                                    &args, ref_best_rd, &inter_mode_rd_vector);
 #else
         this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
                                     &rd_stats_uv, &disable_skip, mi_row, mi_col,
-                                    &args, search_state.best_rd);
+                                    &args, ref_best_rd);
 #endif
+        if (this_rd < ref_best_rd) {
+          ref_best_rd = this_rd;
+        }
 
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -10210,13 +10217,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
             tmp_alt_rd = handle_inter_mode(
                 cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
-                &dummy_disable_skip, mi_row, mi_col, &args,
-                search_state.best_rd, &inter_mode_rd_vector);
+                &dummy_disable_skip, mi_row, mi_col, &args, ref_best_rd,
+                &inter_mode_rd_vector);
 #else
-            tmp_alt_rd =
-                handle_inter_mode(cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y,
-                                  &tmp_rd_stats_uv, &dummy_disable_skip, mi_row,
-                                  mi_col, &args, search_state.best_rd);
+            tmp_alt_rd = handle_inter_mode(
+                cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
+                &dummy_disable_skip, mi_row, mi_col, &args, ref_best_rd);
 #endif
 
             // Prevent pointers from escaping local scope
