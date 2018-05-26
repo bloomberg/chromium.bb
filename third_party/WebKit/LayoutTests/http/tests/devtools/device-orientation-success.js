@@ -26,7 +26,11 @@
       {
           let orientationSensor = new RelativeOrientationSensor();
           orientationSensor.onreading = () =>
-            console.log("quaternion: " + orientationSensor.quaternion);
+            console.log("quaternion: "
+                + orientationSensor.quaternion[0].toFixed(6) + ','
+                + orientationSensor.quaternion[1].toFixed(6) + ','
+                + orientationSensor.quaternion[2].toFixed(6) + ','
+                + orientationSensor.quaternion[3].toFixed(6));
           orientationSensor.start();
       }
   `);
