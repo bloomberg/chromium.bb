@@ -102,3 +102,26 @@ CrElementsCheckboxTest.prototype = {
 TEST_F('CrElementsCheckboxTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsFocusTest}
+ */
+function CrElementsInputTest() {}
+
+CrElementsInputTest.prototype = {
+  __proto__: CrElementsFocusTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_input/cr_input.html',
+
+  /** @override */
+  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_input_test.js',
+  ]),
+};
+
+TEST_F('CrElementsInputTest', 'All', function() {
+  mocha.run();
+});

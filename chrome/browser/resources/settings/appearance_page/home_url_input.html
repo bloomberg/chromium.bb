@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/assert.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="../controls/pref_control_behavior.html">
@@ -12,6 +12,8 @@
     <style>
       :host {
         cursor: auto;
+        display: block;
+        width: 100%;
       }
 
       #outerDiv {
@@ -19,15 +21,20 @@
         display: flex;
         justify-content: space-between;
       }
+
+      cr-input {
+        width: 200px;
+      }
     </style>
     <div id="outerDiv" class="settings-row">
-      <paper-input id="input" value="{{value}}" no-label-float
-          label="$i18n{enterCustomWebAddress}" error-message="$i18n{notValid}"
+      <cr-input id="input" value="{{value}}" error-message="$i18n{notValid}"
+          placeholder="$i18n{enterCustomWebAddress}"
           on-change="onChange_" on-keydown="onKeydown_" on-input="validate_"
-          invalid="{{invalid}}" tabindex$="[[getTabindex_(canTab)]]"
+          invalid="{{invalid}}" tab-index$="[[getTabindex_(canTab)]]"
           disabled="[[isDisabled_(disabled, pref.*)]]"
-          stop-keyboard-event-propagation>
-      </paper-input>
+          on-keyup="stopKeyEventPropagation_"
+          on-keypress="stopKeyEventPropagation_">
+      </cr-input>
       <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]">
         <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
         </cr-policy-pref-indicator>

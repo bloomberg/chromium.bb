@@ -1,0 +1,123 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="../shared_vars_css.html">
+
+<dom-module id="cr-input">
+  <template>
+    <style>
+      :host {
+        --cr-input-error-color: var(--google-red-600);
+        --cr-input-focus-color: var(--google-blue-600);
+        --cr-input-label-font-size: 0.625rem;
+        display: block;
+      }
+
+      :host([disabled]) {
+        opacity: var(--cr-disabled-opacity);
+        pointer-events: none;
+      }
+
+      /* Label styling below. */
+      #label {
+        color: var(--google-grey-700);
+        font-size: var(--cr-input-label-font-size);
+        letter-spacing: 0.4px;
+        line-height: var(--cr-input-label-font-size);
+        margin-top: 8px;
+      }
+
+      :host(:focus-within) #label {
+        color: var(--cr-input-focus-color);
+      }
+
+      :host([invalid]) #label {
+        color: var(--cr-input-error-color);
+      }
+
+      /* Input styling below. */
+      #input-container {
+        border-radius: 4px;
+        margin: var(--cr-input-field-margin, 8px 0);
+        overflow: hidden;
+        position: relative;
+      }
+
+      input {
+        -webkit-appearance: none;
+        background: var(--google-grey-200);
+        border: none;
+        box-sizing: border-box;
+        caret-color: var(--cr-input-focus-color);
+        color: inherit;
+        line-height: inherit;
+        outline: none;
+        padding: 6px 8px;
+        width: 100%;
+      }
+
+      input::placeholder {
+        color: var(--google-grey-700);
+      }
+
+      :host([invalid]) input {
+        caret-color: var(--cr-input-error-color);
+      }
+
+      /* Underline styling below. */
+      #underline {
+        border-bottom: 2px solid var(--cr-input-focus-color);
+        bottom: 0;
+        box-sizing: border-box;
+        left: 0;
+        margin: auto;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        transition: opacity 120ms ease-out, width 0 linear 180ms;
+        width: 0;
+      }
+
+      :host([invalid]) #underline {
+        border-color: var(--cr-input-error-color);
+      }
+
+      :host([invalid]) #underline,
+      :host(:focus-within) #underline {
+        opacity: 1;
+        transition: width 180ms ease-out, opacity 120ms ease-in;
+        width: 100%;
+      }
+
+      /* Error styling below. */
+      #error {
+        /* Defaults to "display: block" and "visibility:hidden" to allocate
+           space for error message, such that the page does not shift when
+           error appears. For cr-inputs that can't be invalid, but are in a
+           form with cr-inputs that can be invalid, this space is also desired
+           in order to have consistent spacing.
+
+           If spacing is not needed, apply "--cr-input-error-display: none". */
+        color: var(--cr-input-error-color);
+        display: var(--cr-input-error-display, block);
+        font-size: var(--cr-input-label-font-size);
+        height: var(--cr-input-label-font-size);
+        line-height: var(--cr-input-label-font-size);
+        margin-bottom: 8px;
+        visibility: hidden;
+      }
+
+      :host([invalid]) #error {
+        visibility: visible;
+      }
+    </style>
+    <div id="label" hidden="[[!label]]">[[label]]</div>
+    <div id="input-container">
+      <input id="input" disabled="[[disabled]]" autofocus="[[autofocus]]"
+          value="{{value::input}}" tabindex$="[[tabIndex]]">
+      <div id="underline"></div>
+    </div>
+    <div id="error">[[errorMessage]]</div>
+  </template>
+  <script src="cr_input.js"></script>
+</dom-module>
