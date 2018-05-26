@@ -5,7 +5,7 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
-  visibility = [ "//components/download/downloader/in_progress:*" ]
+  visibility = [ "//components/download/database:*" ]
 
   sources = [
     "download_entry.proto",

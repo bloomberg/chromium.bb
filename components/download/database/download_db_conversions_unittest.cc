@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/downloader/in_progress/in_progress_conversions.h"
+#include "components/download/database/download_db_conversions.h"
 
 #include "components/download/public/common/download_url_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +18,7 @@ InProgressInfo CreateInProgressInfo() {
   info.target_path = base::FilePath(FILE_PATH_LITERAL("/tmp"));
   info.url_chain.emplace_back("http://foo");
   info.url_chain.emplace_back("http://foo2");
+  info.site_url = GURL("http://foo.com");
   info.end_time = base::Time::NowFromSystemTime().LocalMidnight();
   info.etag = "A";
   info.last_modified = "Wed, 1 Oct 2018 07:00:00 GMT";
@@ -32,7 +33,6 @@ InProgressInfo CreateInProgressInfo() {
   info.metered = true;
   info.received_slices.emplace_back(0, 500, false);
   info.received_slices.emplace_back(5000, 500, false);
-  info.request_origin = "request origin";
   info.bytes_wasted = 1234;
   info.fetch_error_body = true;
   info.request_headers.emplace_back(
@@ -51,13 +51,13 @@ DownloadInfo CreateDownloadInfo() {
 
 }  // namespace
 
-class InProgressConversionsTest : public testing::Test,
-                                  public InProgressConversions {
+class DownloadDBConversionsTest : public testing::Test,
+                                  public DownloadDBConversions {
  public:
-  ~InProgressConversionsTest() override {}
+  ~DownloadDBConversionsTest() override {}
 };
 
-TEST_F(InProgressConversionsTest, DownloadEntry) {
+TEST_F(DownloadDBConversionsTest, DownloadEntry) {
   // Entry with no fields.
   DownloadEntry entry;
   EXPECT_EQ(false, entry.fetch_error_body);
@@ -78,7 +78,7 @@ TEST_F(InProgressConversionsTest, DownloadEntry) {
   EXPECT_EQ(entry, DownloadEntryFromProto(DownloadEntryToProto(entry)));
 }
 
-TEST_F(InProgressConversionsTest, DownloadEntries) {
+TEST_F(DownloadDBConversionsTest, DownloadEntries) {
   // Entries vector with no entries.
   std::vector<DownloadEntry> entries;
   EXPECT_EQ(entries, DownloadEntriesFromProto(DownloadEntriesToProto(entries)));
@@ -99,7 +99,7 @@ TEST_F(InProgressConversionsTest, DownloadEntries) {
   EXPECT_EQ(entries, DownloadEntriesFromProto(DownloadEntriesToProto(entries)));
 }
 
-TEST_F(InProgressConversionsTest, DownloadSource) {
+TEST_F(DownloadDBConversionsTest, DownloadSource) {
   DownloadSource sources[] = {
       DownloadSource::UNKNOWN,       DownloadSource::NAVIGATION,
       DownloadSource::DRAG_AND_DROP, DownloadSource::FROM_RENDERER,
@@ -112,7 +112,7 @@ TEST_F(InProgressConversionsTest, DownloadSource) {
   }
 }
 
-TEST_F(InProgressConversionsTest, HttpRequestHeaders) {
+TEST_F(DownloadDBConversionsTest, HttpRequestHeaders) {
   std::pair<std::string, std::string> header;
   EXPECT_EQ(header,
             HttpRequestHeaderFromProto(HttpRequestHeaderToProto(header)));
@@ -121,7 +121,7 @@ TEST_F(InProgressConversionsTest, HttpRequestHeaders) {
             HttpRequestHeaderFromProto(HttpRequestHeaderToProto(header)));
 }
 
-TEST_F(InProgressConversionsTest, InProgressInfo) {
+TEST_F(DownloadDBConversionsTest, InProgressInfo) {
   // InProgressInfo with no fields.
   InProgressInfo info;
   EXPECT_EQ(false, info.fetch_error_body);
@@ -133,12 +133,12 @@ TEST_F(InProgressConversionsTest, InProgressInfo) {
   EXPECT_EQ(info, InProgressInfoFromProto(InProgressInfoToProto(info)));
 }
 
-TEST_F(InProgressConversionsTest, UkmInfo) {
+TEST_F(DownloadDBConversionsTest, UkmInfo) {
   UkmInfo info(DownloadSource::FROM_RENDERER, 100);
   EXPECT_EQ(info, UkmInfoFromProto(UkmInfoToProto(info)));
 }
 
-TEST_F(InProgressConversionsTest, DownloadInfo) {
+TEST_F(DownloadDBConversionsTest, DownloadInfo) {
   DownloadInfo info;
   EXPECT_EQ(info, DownloadInfoFromProto(DownloadInfoToProto(info)));
 
@@ -146,11 +146,10 @@ TEST_F(InProgressConversionsTest, DownloadInfo) {
   EXPECT_EQ(info, DownloadInfoFromProto(DownloadInfoToProto(info)));
 }
 
-TEST_F(InProgressConversionsTest, DownloadDBEntry) {
+TEST_F(DownloadDBConversionsTest, DownloadDBEntry) {
   DownloadDBEntry entry;
   EXPECT_EQ(entry, DownloadDBEntryFromProto(DownloadDBEntryToProto(entry)));
 
-  entry.id = "abc";
   entry.download_info = CreateDownloadInfo();
   EXPECT_EQ(entry, DownloadDBEntryFromProto(DownloadDBEntryToProto(entry)));
 }

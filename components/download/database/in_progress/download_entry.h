@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_IN_PROGRESS_DOWNLOAD_ENTRY_H_
-#define COMPONENTS_DOWNLOAD_IN_PROGRESS_DOWNLOAD_ENTRY_H_
+#ifndef COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_DOWNLOAD_ENTRY_H_
+#define COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_DOWNLOAD_ENTRY_H_
 
 #include <string>
 
@@ -59,4 +59,4 @@ struct DownloadEntry {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_IN_PROGRESS_DOWNLOAD_ENTRY_H_
+#endif  // COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_DOWNLOAD_ENTRY_H_

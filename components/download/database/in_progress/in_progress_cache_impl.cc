@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/downloader/in_progress/in_progress_cache_impl.h"
+#include "components/download/database/in_progress/in_progress_cache_impl.h"
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -10,7 +10,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/download/downloader/in_progress/in_progress_conversions.h"
+#include "components/download/database/download_db_conversions.h"
 
 namespace download {
 
@@ -20,7 +20,7 @@ const base::FilePath::CharType kDownloadMetadataStoreFilename[] =
 namespace {
 
 // Helper functions for |entries_| related operations.
-int GetIndexFromEntries(const metadata_pb::DownloadEntries& entries,
+int GetIndexFromEntries(const download_pb::DownloadEntries& entries,
                         const std::string& guid) {
   int size_of_entries = entries.entries_size();
   for (int i = 0; i < size_of_entries; i++) {
@@ -30,28 +30,29 @@ int GetIndexFromEntries(const metadata_pb::DownloadEntries& entries,
   return -1;
 }
 
-void AddOrReplaceEntryInEntries(metadata_pb::DownloadEntries& entries,
+void AddOrReplaceEntryInEntries(download_pb::DownloadEntries& entries,
                                 const DownloadEntry& entry) {
-  metadata_pb::DownloadEntry metadata_entry =
-      InProgressConversions::DownloadEntryToProto(entry);
+  download_pb::DownloadEntry metadata_entry =
+      DownloadDBConversions::DownloadEntryToProto(entry);
   int entry_index = GetIndexFromEntries(entries, metadata_entry.guid());
-  metadata_pb::DownloadEntry* entry_ptr =
+  download_pb::DownloadEntry* entry_ptr =
       (entry_index < 0) ? entries.add_entries()
                         : entries.mutable_entries(entry_index);
   *entry_ptr = metadata_entry;
 }
 
 base::Optional<DownloadEntry> GetEntryFromEntries(
-    const metadata_pb::DownloadEntries& entries,
+    const download_pb::DownloadEntries& entries,
     const std::string& guid) {
   int entry_index = GetIndexFromEntries(entries, guid);
   if (entry_index < 0)
     return base::nullopt;
-  return InProgressConversions::DownloadEntryFromProto(
+
+  return DownloadDBConversions::DownloadEntryFromProto(
       entries.entries(entry_index));
 }
 
-void RemoveEntryFromEntries(metadata_pb::DownloadEntries& entries,
+void RemoveEntryFromEntries(download_pb::DownloadEntries& entries,
                             const std::string& guid) {
   int entry_index = GetIndexFromEntries(entries, guid);
   if (entry_index >= 0)
@@ -103,7 +104,7 @@ std::vector<char> ReadEntriesFromFile(base::FilePath file_path) {
   return file_data;
 }
 
-std::string EntriesToString(const metadata_pb::DownloadEntries& entries) {
+std::string EntriesToString(const download_pb::DownloadEntries& entries) {
   std::string entries_string;
   if (!entries.SerializeToString(&entries_string)) {
     // TODO(crbug.com/778425): Have more robust error-handling for serialization

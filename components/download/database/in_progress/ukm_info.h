@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_UKM_INFO_H_
-#define COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_UKM_INFO_H_
+#ifndef COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_UKM_INFO_H_
+#define COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_UKM_INFO_H_
 
 #include <stdint.h>
 
@@ -31,4 +31,4 @@ struct UkmInfo {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_UKM_INFO_H_
+#endif  // COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_UKM_INFO_H_

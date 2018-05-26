@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_DOWNLOAD_DB_ENTRY_H_
-#define COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_DOWNLOAD_DB_ENTRY_H_
+#ifndef COMPONENTS_DOWNLOAD_DATABASE_DOWNLOAD_DB_ENTRY_H_
+#define COMPONENTS_DOWNLOAD_DATABASE_DOWNLOAD_DB_ENTRY_H_
 
 #include <string>
 
 #include "base/optional.h"
-#include "components/download/downloader/in_progress/download_info.h"
+#include "components/download/database/download_info.h"
+#include "components/download/database/download_namespace.h"
 
 namespace download {
 
@@ -21,8 +22,8 @@ struct DownloadDBEntry {
 
   bool operator==(const DownloadDBEntry& other) const;
 
-  // ID of the entry, this should be namespace + GUID of the download.
-  std::string id;
+  // Gets a unique ID for this entry.
+  std::string GetGuid() const;
 
   // Information about a regular download.
   base::Optional<DownloadInfo> download_info;
@@ -30,4 +31,4 @@ struct DownloadDBEntry {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_DOWNLOAD_DB_ENTRY_H_
+#endif  // COMPONENTS_DOWNLOAD_DATABASE_DOWNLOAD_DB_ENTRY_H_
