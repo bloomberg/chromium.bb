@@ -43,6 +43,7 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT bool IsPlayerActive() override;
   CONTENT_EXPORT WebContents* GetInitiatorWebContents() override;
   CONTENT_EXPORT bool TogglePlayPause() override;
+  CONTENT_EXPORT void UpdatePlaybackState(bool is_playing) override;
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;

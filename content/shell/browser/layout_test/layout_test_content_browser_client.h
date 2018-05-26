@@ -54,6 +54,8 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       storage::OptionalQuotaSettingsCallback callback) override;
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
+  std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
+      PictureInPictureWindowController* controller) override;
 
   PlatformNotificationService* GetPlatformNotificationService() override;
 

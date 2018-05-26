@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/login_delegate.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -68,6 +69,37 @@ class WebPackageInternalsImpl : public blink::test::mojom::WebPackageInternals {
   WebPackageContext* web_package_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPackageInternalsImpl);
+};
+
+class TestOverlayWindow : public OverlayWindow {
+ public:
+  TestOverlayWindow() = default;
+  ~TestOverlayWindow() override{};
+
+  static std::unique_ptr<OverlayWindow> Create(
+      PictureInPictureWindowController* controller) {
+    return std::unique_ptr<OverlayWindow>(new TestOverlayWindow());
+  }
+
+  bool IsActive() const override { return false; }
+  void Close() override {}
+  void Show() override {}
+  void Hide() override {}
+  bool IsVisible() const override { return false; }
+  bool IsAlwaysOnTop() const override { return false; }
+  ui::Layer* GetLayer() override { return nullptr; }
+  gfx::Rect GetBounds() const override { return gfx::Rect(); }
+  void UpdateVideoSize(const gfx::Size& natural_size) override {}
+  void UpdatePlayPauseControlsIcon(bool is_playing) override {}
+  ui::Layer* GetVideoLayer() override { return nullptr; }
+  ui::Layer* GetControlsBackgroundLayer() override { return nullptr; }
+  ui::Layer* GetCloseControlsLayer() override { return nullptr; }
+  ui::Layer* GetPlayPauseControlsLayer() override { return nullptr; }
+  gfx::Rect GetCloseControlsBounds() override { return gfx::Rect(); }
+  gfx::Rect GetPlayPauseControlsBounds() override { return gfx::Rect(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
 };
 
 }  // namespace
@@ -219,6 +251,12 @@ void LayoutTestContentBrowserClient::GetQuotaSettings(
   // The 1GB limit is intended to give a large headroom to tests that need to
   // build up a large data set and issue many concurrent reads or writes.
   std::move(callback).Run(storage::GetHardCodedSettings(1024 * 1024 * 1024));
+}
+
+std::unique_ptr<OverlayWindow>
+LayoutTestContentBrowserClient::CreateWindowForPictureInPicture(
+    PictureInPictureWindowController* controller) {
+  return TestOverlayWindow::Create(controller);
 }
 
 bool LayoutTestContentBrowserClient::DoesSiteRequireDedicatedProcess(

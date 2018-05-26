@@ -128,6 +128,14 @@ WebContents* PictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
   return initiator_;
 }
 
+void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
+    bool is_playing) {
+  if (!window_)
+    return;
+
+  window_->UpdatePlayPauseControlsIcon(is_playing);
+}
+
 bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_ && window_->IsActive());
 
