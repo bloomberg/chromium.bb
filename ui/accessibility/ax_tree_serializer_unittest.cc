@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
@@ -341,6 +342,98 @@ TEST_F(AXTreeSerializerTest, DuplicateIdsReturnsErrorAndFlushes) {
   update = AXTreeUpdate();
   serializer_->SerializeChanges(tree1_->GetFromId(7), &update);
   ASSERT_EQ(static_cast<size_t>(5), update.nodes.size());
+}
+
+TEST_F(AXTreeSerializerTest, SerializeOneChangeDeathTest) {
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(1);
+  treedata0_.nodes[0].id = 1;
+
+  treedata1_.root_id = 1;
+  treedata1_.nodes.resize(1);
+  treedata1_.nodes[0].id = 1;
+
+  CreateTreeSerializer();
+
+  // It's not legal to call SerializeOneChange without calling
+  // BeginSerializingChanges first.
+  ASSERT_DEATH_IF_SUPPORTED(
+      { serializer_->SerializeOneChange(tree1_->GetFromId(1)); }, ".*");
+}
+
+TEST_F(AXTreeSerializerTest, DeleteClientSubtreeDeathTest) {
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(1);
+  treedata0_.nodes[0].id = 1;
+
+  treedata1_.root_id = 1;
+  treedata1_.nodes.resize(1);
+  treedata1_.nodes[0].id = 1;
+
+  CreateTreeSerializer();
+
+  // It's not legal to call DeleteClientSubtree in the middle of a
+  // serialization sequence.
+  AXTreeUpdate update;
+  serializer_->BeginSerializingChanges(&update);
+  ASSERT_DEATH_IF_SUPPORTED(
+      { serializer_->DeleteClientSubtree(tree1_->GetFromId(1)); }, ".*");
+}
+
+TEST_F(AXTreeSerializerTest, BeginSerializingChangesTwiceDeathTest) {
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(1);
+  treedata0_.nodes[0].id = 1;
+
+  treedata1_.root_id = 1;
+  treedata1_.nodes.resize(1);
+  treedata1_.nodes[0].id = 1;
+
+  CreateTreeSerializer();
+
+  AXTreeUpdate update;
+  serializer_->BeginSerializingChanges(&update);
+  ASSERT_DEATH_IF_SUPPORTED({ serializer_->BeginSerializingChanges(&update); },
+                            ".*");
+}
+
+TEST_F(AXTreeSerializerTest, SerializationSequence) {
+  // (1 (2 3))
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(3);
+  treedata0_.nodes[0].id = 1;
+  treedata0_.nodes[0].child_ids.push_back(2);
+  treedata0_.nodes[0].child_ids.push_back(3);
+  treedata0_.nodes[1].id = 2;
+  treedata0_.nodes[2].id = 3;
+
+  // (1 (4 2 3))
+  treedata1_.root_id = 1;
+  treedata1_.nodes.resize(4);
+  treedata1_.nodes[0].id = 1;
+  treedata1_.nodes[0].child_ids.push_back(4);
+  treedata1_.nodes[0].child_ids.push_back(2);
+  treedata1_.nodes[0].child_ids.push_back(3);
+  treedata1_.nodes[1].id = 2;
+  treedata1_.nodes[2].id = 3;
+  treedata1_.nodes[3].id = 4;
+
+  CreateTreeSerializer();
+  AXTreeUpdate update;
+  serializer_->BeginSerializingChanges(&update);
+  EXPECT_EQ(0U, update.nodes.size());
+  ASSERT_TRUE(serializer_->SerializeOneChange(tree1_->GetFromId(1)));
+  EXPECT_EQ(2U, update.nodes.size());
+
+  // If we serialize the same node again, nothing should happen.
+  ASSERT_TRUE(serializer_->SerializeOneChange(tree1_->GetFromId(1)));
+  EXPECT_EQ(2U, update.nodes.size());
+
+  // If we serialize a different node, we should get it serialized.
+  ASSERT_TRUE(serializer_->SerializeOneChange(tree1_->GetFromId(2)));
+  EXPECT_EQ(3U, update.nodes.size());
+
+  serializer_->FinishSerializingChanges();
 }
 
 }  // namespace ui
