@@ -50,10 +50,12 @@ class CHROMEOS_EXPORT DhcpPacFileFetcherChromeos
 
  private:
   void ContinueFetch(base::string16* utf16_text,
-                     net::CompletionOnceCallback callback,
                      const net::NetworkTrafficAnnotationTag traffic_annotation,
                      std::string pac_url);
 
+  void OnFetchCompleted(int result);
+
+  net::CompletionOnceCallback callback_;
   std::unique_ptr<net::PacFileFetcher> pac_file_fetcher_;
   scoped_refptr<base::SingleThreadTaskRunner> network_handler_task_runner_;
 
