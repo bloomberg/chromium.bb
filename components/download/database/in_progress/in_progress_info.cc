@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/downloader/in_progress/in_progress_info.h"
+#include "components/download/database/in_progress/in_progress_info.h"
 
 namespace download {
 
@@ -13,7 +13,7 @@ InProgressInfo::InProgressInfo(const InProgressInfo& other) = default;
 InProgressInfo::~InProgressInfo() = default;
 
 bool InProgressInfo::operator==(const InProgressInfo& other) const {
-  return url_chain == other.url_chain &&
+  return url_chain == other.url_chain && site_url == other.site_url &&
          fetch_error_body == other.fetch_error_body &&
          request_headers == other.request_headers && etag == other.etag &&
          last_modified == other.last_modified &&
@@ -25,8 +25,7 @@ bool InProgressInfo::operator==(const InProgressInfo& other) const {
          transient == other.transient && state == other.state &&
          danger_type == other.danger_type &&
          interrupt_reason == other.interrupt_reason && paused == other.paused &&
-         metered == other.metered && request_origin == other.request_origin &&
-         bytes_wasted == other.bytes_wasted;
+         metered == other.metered && bytes_wasted == other.bytes_wasted;
 }
 
 }  // namespace download

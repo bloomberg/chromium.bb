@@ -51,7 +51,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/download/downloader/in_progress/in_progress_cache_impl.h"
+#include "components/download/database/in_progress/in_progress_cache_impl.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/pref_registry/pref_registry_syncable.h"

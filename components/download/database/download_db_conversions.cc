@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/downloader/in_progress/in_progress_conversions.h"
+#include "components/download/database/download_db_conversions.h"
 
 #include <utility>
 #include "base/logging.h"
@@ -10,8 +10,8 @@
 
 namespace download {
 
-DownloadEntry InProgressConversions::DownloadEntryFromProto(
-    const metadata_pb::DownloadEntry& proto) {
+DownloadEntry DownloadDBConversions::DownloadEntryFromProto(
+    const download_pb::DownloadEntry& proto) {
   DownloadEntry entry;
   entry.guid = proto.guid();
   entry.request_origin = proto.request_origin();
@@ -25,9 +25,9 @@ DownloadEntry InProgressConversions::DownloadEntryFromProto(
   return entry;
 }
 
-metadata_pb::DownloadEntry InProgressConversions::DownloadEntryToProto(
+download_pb::DownloadEntry DownloadDBConversions::DownloadEntryToProto(
     const DownloadEntry& entry) {
-  metadata_pb::DownloadEntry proto;
+  download_pb::DownloadEntry proto;
   proto.set_guid(entry.guid);
   proto.set_request_origin(entry.request_origin);
   proto.set_download_source(DownloadSourceToProto(entry.download_source));
@@ -42,28 +42,28 @@ metadata_pb::DownloadEntry InProgressConversions::DownloadEntryToProto(
 }
 
 // static
-DownloadSource InProgressConversions::DownloadSourceFromProto(
-    metadata_pb::DownloadSource download_source) {
+DownloadSource DownloadDBConversions::DownloadSourceFromProto(
+    download_pb::DownloadSource download_source) {
   switch (download_source) {
-    case metadata_pb::DownloadSource::UNKNOWN:
+    case download_pb::DownloadSource::UNKNOWN:
       return DownloadSource::UNKNOWN;
-    case metadata_pb::DownloadSource::NAVIGATION:
+    case download_pb::DownloadSource::NAVIGATION:
       return DownloadSource::NAVIGATION;
-    case metadata_pb::DownloadSource::DRAG_AND_DROP:
+    case download_pb::DownloadSource::DRAG_AND_DROP:
       return DownloadSource::DRAG_AND_DROP;
-    case metadata_pb::DownloadSource::FROM_RENDERER:
+    case download_pb::DownloadSource::FROM_RENDERER:
       return DownloadSource::FROM_RENDERER;
-    case metadata_pb::DownloadSource::EXTENSION_API:
+    case download_pb::DownloadSource::EXTENSION_API:
       return DownloadSource::EXTENSION_API;
-    case metadata_pb::DownloadSource::EXTENSION_INSTALLER:
+    case download_pb::DownloadSource::EXTENSION_INSTALLER:
       return DownloadSource::EXTENSION_INSTALLER;
-    case metadata_pb::DownloadSource::INTERNAL_API:
+    case download_pb::DownloadSource::INTERNAL_API:
       return DownloadSource::INTERNAL_API;
-    case metadata_pb::DownloadSource::WEB_CONTENTS_API:
+    case download_pb::DownloadSource::WEB_CONTENTS_API:
       return DownloadSource::WEB_CONTENTS_API;
-    case metadata_pb::DownloadSource::OFFLINE_PAGE:
+    case download_pb::DownloadSource::OFFLINE_PAGE:
       return DownloadSource::OFFLINE_PAGE;
-    case metadata_pb::DownloadSource::CONTEXT_MENU:
+    case download_pb::DownloadSource::CONTEXT_MENU:
       return DownloadSource::CONTEXT_MENU;
   }
   NOTREACHED();
@@ -71,56 +71,56 @@ DownloadSource InProgressConversions::DownloadSourceFromProto(
 }
 
 // static
-metadata_pb::DownloadSource InProgressConversions::DownloadSourceToProto(
+download_pb::DownloadSource DownloadDBConversions::DownloadSourceToProto(
     DownloadSource download_source) {
   switch (download_source) {
     case DownloadSource::UNKNOWN:
-      return metadata_pb::DownloadSource::UNKNOWN;
+      return download_pb::DownloadSource::UNKNOWN;
     case DownloadSource::NAVIGATION:
-      return metadata_pb::DownloadSource::NAVIGATION;
+      return download_pb::DownloadSource::NAVIGATION;
     case DownloadSource::DRAG_AND_DROP:
-      return metadata_pb::DownloadSource::DRAG_AND_DROP;
+      return download_pb::DownloadSource::DRAG_AND_DROP;
     case DownloadSource::FROM_RENDERER:
-      return metadata_pb::DownloadSource::FROM_RENDERER;
+      return download_pb::DownloadSource::FROM_RENDERER;
     case DownloadSource::EXTENSION_API:
-      return metadata_pb::DownloadSource::EXTENSION_API;
+      return download_pb::DownloadSource::EXTENSION_API;
     case DownloadSource::EXTENSION_INSTALLER:
-      return metadata_pb::DownloadSource::EXTENSION_INSTALLER;
+      return download_pb::DownloadSource::EXTENSION_INSTALLER;
     case DownloadSource::INTERNAL_API:
-      return metadata_pb::DownloadSource::INTERNAL_API;
+      return download_pb::DownloadSource::INTERNAL_API;
     case DownloadSource::WEB_CONTENTS_API:
-      return metadata_pb::DownloadSource::WEB_CONTENTS_API;
+      return download_pb::DownloadSource::WEB_CONTENTS_API;
     case DownloadSource::OFFLINE_PAGE:
-      return metadata_pb::DownloadSource::OFFLINE_PAGE;
+      return download_pb::DownloadSource::OFFLINE_PAGE;
     case DownloadSource::CONTEXT_MENU:
-      return metadata_pb::DownloadSource::CONTEXT_MENU;
+      return download_pb::DownloadSource::CONTEXT_MENU;
   }
   NOTREACHED();
-  return metadata_pb::DownloadSource::UNKNOWN;
+  return download_pb::DownloadSource::UNKNOWN;
 }
 
-std::vector<DownloadEntry> InProgressConversions::DownloadEntriesFromProto(
-    const metadata_pb::DownloadEntries& proto) {
+std::vector<DownloadEntry> DownloadDBConversions::DownloadEntriesFromProto(
+    const download_pb::DownloadEntries& proto) {
   std::vector<DownloadEntry> entries;
   for (int i = 0; i < proto.entries_size(); i++)
     entries.push_back(DownloadEntryFromProto(proto.entries(i)));
   return entries;
 }
 
-metadata_pb::DownloadEntries InProgressConversions::DownloadEntriesToProto(
+download_pb::DownloadEntries DownloadDBConversions::DownloadEntriesToProto(
     const std::vector<DownloadEntry>& entries) {
-  metadata_pb::DownloadEntries proto;
+  download_pb::DownloadEntries proto;
   for (size_t i = 0; i < entries.size(); i++) {
-    metadata_pb::DownloadEntry* proto_entry = proto.add_entries();
+    download_pb::DownloadEntry* proto_entry = proto.add_entries();
     *proto_entry = DownloadEntryToProto(entries[i]);
   }
   return proto;
 }
 
 // static
-metadata_pb::HttpRequestHeader InProgressConversions::HttpRequestHeaderToProto(
+download_pb::HttpRequestHeader DownloadDBConversions::HttpRequestHeaderToProto(
     const std::pair<std::string, std::string>& header) {
-  metadata_pb::HttpRequestHeader proto;
+  download_pb::HttpRequestHeader proto;
   if (header.first.empty())
     return proto;
 
@@ -131,8 +131,8 @@ metadata_pb::HttpRequestHeader InProgressConversions::HttpRequestHeaderToProto(
 
 // static
 std::pair<std::string, std::string>
-InProgressConversions::HttpRequestHeaderFromProto(
-    const metadata_pb::HttpRequestHeader& proto) {
+DownloadDBConversions::HttpRequestHeaderFromProto(
+    const download_pb::HttpRequestHeader& proto) {
   if (proto.key().empty())
     return std::pair<std::string, std::string>();
 
@@ -140,11 +140,12 @@ InProgressConversions::HttpRequestHeaderFromProto(
 }
 
 // static
-metadata_pb::InProgressInfo InProgressConversions::InProgressInfoToProto(
+download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
     const InProgressInfo& in_progress_info) {
-  metadata_pb::InProgressInfo proto;
+  download_pb::InProgressInfo proto;
   for (size_t i = 0; i < in_progress_info.url_chain.size(); ++i)
     proto.add_url_chain(in_progress_info.url_chain[i].spec());
+  proto.set_site_url(in_progress_info.site_url.spec());
   proto.set_fetch_error_body(in_progress_info.fetch_error_body);
   for (const auto& header : in_progress_info.request_headers) {
     auto* proto_header = proto.add_request_headers();
@@ -163,7 +164,7 @@ metadata_pb::InProgressInfo InProgressConversions::InProgressInfoToProto(
   proto.set_end_time(
       in_progress_info.end_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
   for (size_t i = 0; i < in_progress_info.received_slices.size(); ++i) {
-    metadata_pb::ReceivedSlice* slice = proto.add_received_slices();
+    download_pb::ReceivedSlice* slice = proto.add_received_slices();
     slice->set_received_bytes(
         in_progress_info.received_slices[i].received_bytes);
     slice->set_offset(in_progress_info.received_slices[i].offset);
@@ -176,17 +177,17 @@ metadata_pb::InProgressInfo InProgressConversions::InProgressInfoToProto(
   proto.set_interrupt_reason(in_progress_info.interrupt_reason);
   proto.set_paused(in_progress_info.paused);
   proto.set_metered(in_progress_info.metered);
-  proto.set_request_origin(in_progress_info.request_origin);
   proto.set_bytes_wasted(in_progress_info.bytes_wasted);
   return proto;
 }
 
 // static
-InProgressInfo InProgressConversions::InProgressInfoFromProto(
-    const metadata_pb::InProgressInfo& proto) {
+InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
+    const download_pb::InProgressInfo& proto) {
   InProgressInfo info;
   for (const auto& url : proto.url_chain())
     info.url_chain.emplace_back(url);
+  info.site_url = GURL(proto.site_url());
   info.fetch_error_body = proto.fetch_error_body();
   for (const auto& header : proto.request_headers())
     info.request_headers.emplace_back(HttpRequestHeaderFromProto(header));
@@ -216,29 +217,28 @@ InProgressInfo InProgressConversions::InProgressInfoFromProto(
       static_cast<DownloadInterruptReason>(proto.interrupt_reason());
   info.paused = proto.paused();
   info.metered = proto.metered();
-  info.request_origin = proto.request_origin();
   info.bytes_wasted = proto.bytes_wasted();
   return info;
 }
 
-UkmInfo InProgressConversions::UkmInfoFromProto(
-    const metadata_pb::UkmInfo& proto) {
+UkmInfo DownloadDBConversions::UkmInfoFromProto(
+    const download_pb::UkmInfo& proto) {
   UkmInfo info;
   info.download_source = DownloadSourceFromProto(proto.download_source());
   info.ukm_download_id = proto.ukm_download_id();
   return info;
 }
 
-metadata_pb::UkmInfo InProgressConversions::UkmInfoToProto(
+download_pb::UkmInfo DownloadDBConversions::UkmInfoToProto(
     const UkmInfo& info) {
-  metadata_pb::UkmInfo proto;
+  download_pb::UkmInfo proto;
   proto.set_download_source(DownloadSourceToProto(info.download_source));
   proto.set_ukm_download_id(info.ukm_download_id);
   return proto;
 }
 
-DownloadInfo InProgressConversions::DownloadInfoFromProto(
-    const metadata_pb::DownloadInfo& proto) {
+DownloadInfo DownloadDBConversions::DownloadInfoFromProto(
+    const download_pb::DownloadInfo& proto) {
   DownloadInfo info;
   info.guid = proto.guid();
   if (proto.has_ukm_info())
@@ -248,38 +248,36 @@ DownloadInfo InProgressConversions::DownloadInfoFromProto(
   return info;
 }
 
-metadata_pb::DownloadInfo InProgressConversions::DownloadInfoToProto(
+download_pb::DownloadInfo DownloadDBConversions::DownloadInfoToProto(
     const DownloadInfo& info) {
-  metadata_pb::DownloadInfo proto;
+  download_pb::DownloadInfo proto;
   proto.set_guid(info.guid);
   if (info.ukm_info.has_value()) {
-    auto ukm_info = std::make_unique<metadata_pb::UkmInfo>(
+    auto ukm_info = std::make_unique<download_pb::UkmInfo>(
         UkmInfoToProto(info.ukm_info.value()));
     proto.set_allocated_ukm_info(ukm_info.release());
   }
   if (info.in_progress_info.has_value()) {
-    auto in_progress_info = std::make_unique<metadata_pb::InProgressInfo>(
+    auto in_progress_info = std::make_unique<download_pb::InProgressInfo>(
         InProgressInfoToProto(info.in_progress_info.value()));
     proto.set_allocated_in_progress_info(in_progress_info.release());
   }
   return proto;
 }
 
-DownloadDBEntry InProgressConversions::DownloadDBEntryFromProto(
-    const metadata_pb::DownloadDBEntry& proto) {
+DownloadDBEntry DownloadDBConversions::DownloadDBEntryFromProto(
+    const download_pb::DownloadDBEntry& proto) {
   DownloadDBEntry entry;
-  entry.id = proto.id();
   if (proto.has_download_info())
     entry.download_info = DownloadInfoFromProto(proto.download_info());
   return entry;
 }
 
-metadata_pb::DownloadDBEntry InProgressConversions::DownloadDBEntryToProto(
+download_pb::DownloadDBEntry DownloadDBConversions::DownloadDBEntryToProto(
     const DownloadDBEntry& info) {
-  metadata_pb::DownloadDBEntry proto;
-  proto.set_id(info.id);
+  download_pb::DownloadDBEntry proto;
   if (info.download_info.has_value()) {
-    auto download_info = std::make_unique<metadata_pb::DownloadInfo>(
+    auto download_info = std::make_unique<download_pb::DownloadInfo>(
         DownloadInfoToProto(info.download_info.value()));
     proto.set_allocated_download_info(download_info.release());
   }

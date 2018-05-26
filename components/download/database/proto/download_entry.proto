@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package metadata_pb;
+package download_pb;
 
 import "download_source.proto";
 
@@ -47,38 +47,38 @@ message UkmInfo {
 // Information about an in progress download.
 message InProgressInfo {
   repeated string url_chain = 1;
-  optional bool fetch_error_body = 2;
-  repeated HttpRequestHeader request_headers = 3;
-  optional string etag = 4;
-  optional string last_modified = 5;
-  optional int64 total_bytes = 6;
-  optional bytes current_path = 7;  // Serialized pickles to support string16
-  optional bytes target_path = 8;   // Serialized pickles to support string16
-  optional int64 received_bytes = 9;
-  optional int64 end_time = 10;
-  repeated ReceivedSlice received_slices = 11;
-  optional string hash = 12;
-  optional bool transient = 13;
-  optional int32 state = 14;
-  optional int32 danger_type = 15;
-  optional int32 interrupt_reason = 16;
-  optional bool paused = 17;
-  optional bool metered = 18;
-  optional string request_origin = 19;
+  optional string site_url = 2;
+  optional bool fetch_error_body = 3;
+  repeated HttpRequestHeader request_headers = 4;
+  optional string etag = 5;
+  optional string last_modified = 6;
+  optional int64 total_bytes = 7;
+  optional bytes current_path = 8;  // Serialized pickles to support string16
+  optional bytes target_path = 9;   // Serialized pickles to support string16
+  optional int64 received_bytes = 10;
+  optional int64 end_time = 11;
+  repeated ReceivedSlice received_slices = 12;
+  optional string hash = 13;
+  optional bool transient = 14;
+  optional int32 state = 15;
+  optional int32 danger_type = 16;
+  optional int32 interrupt_reason = 17;
+  optional bool paused = 18;
+  optional bool metered = 19;
   optional int64 bytes_wasted = 20;
 }
 
-// Stores various in-progress metadata related to a download.
+// Stores various metadata related to a download.
 // WIP and will replace DownloadEntry.
 message DownloadInfo {
   optional string guid = 1;
-  optional UkmInfo ukm_info = 2;
-  optional InProgressInfo in_progress_info = 3;
+  optional int32 id = 2;
+  optional UkmInfo ukm_info = 3;
+  optional InProgressInfo in_progress_info = 4;
 }
 
 // database entry for download information.
 message DownloadDBEntry {
-  optional string id = 1;
   // Add field for offline page download.
-  oneof entry { DownloadInfo download_info = 2; }
+  oneof entry { DownloadInfo download_info = 1; }
 }

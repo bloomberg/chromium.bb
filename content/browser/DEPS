@@ -3,7 +3,7 @@ include_rules = [
   # See comment in content/DEPS for which components are allowed.
   "+components/discardable_memory/common",
   "+components/discardable_memory/service",
-  "+components/download/downloader/in_progress",
+  "+components/download/database",
   "+components/download/public/common",
   "+components/download/quarantine/quarantine.h",
   "+components/filename_generation",

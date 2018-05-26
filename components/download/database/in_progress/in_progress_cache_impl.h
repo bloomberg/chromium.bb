@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_IN_PROGRESS_CACHE_IMPL_H_
-#define COMPONENTS_DOWNLOAD_IN_PROGRESS_CACHE_IMPL_H_
+#ifndef COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_CACHE_IMPL_H_
+#define COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_CACHE_IMPL_H_
 
 #include <string>
 
@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "components/download/downloader/in_progress/download_entry.h"
-#include "components/download/downloader/in_progress/in_progress_cache.h"
-#include "components/download/downloader/in_progress/proto/download_entry.pb.h"
+#include "components/download/database/in_progress/download_entry.h"
+#include "components/download/database/in_progress/in_progress_cache.h"
+#include "components/download/database/proto/download_entry.pb.h"
 
 namespace download {
 
@@ -46,7 +46,7 @@ class InProgressCacheImpl : public InProgressCache {
   void OnInitialized(base::OnceClosure callback,
                      const std::vector<char>& entries);
 
-  metadata_pb::DownloadEntries entries_;
+  download_pb::DownloadEntries entries_;
   base::FilePath file_path_;
   InitializationStatus initialization_status_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -57,4 +57,4 @@ class InProgressCacheImpl : public InProgressCache {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_IN_PROGRESS_CACHE_IMPL_H_
+#endif  // COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_CACHE_IMPL_H_

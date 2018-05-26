@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package metadata_pb;
+package download_pb;
 
 // This should stay in sync with the download::DownloadSource enum in
 // components/download/public/core/download_source.h.

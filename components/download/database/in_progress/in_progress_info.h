@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_IN_PROGRESS_INFO_H_
-#define COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_IN_PROGRESS_INFO_H_
+#ifndef COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_INFO_H_
+#define COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_INFO_H_
 
 #include <string>
 #include <vector>
@@ -29,6 +29,9 @@ struct InProgressInfo {
 
   // The url chain.
   std::vector<GURL> url_chain;
+
+  // Site url.
+  GURL site_url;
 
   // If the entity body of unsuccessful HTTP response, like HTTP 404, will be
   // downloaded.
@@ -102,4 +105,4 @@ struct InProgressInfo {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_IN_PROGRESS_INFO_H_
+#endif  // COMPONENTS_DOWNLOAD_DATABASE_IN_PROGRESS_IN_PROGRESS_INFO_H_

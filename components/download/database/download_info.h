@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_DOWNLOAD_INFO_H_
-#define COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_DOWNLOAD_INFO_H_
+#ifndef COMPONENTS_DOWNLOAD_DATABASE_DOWNLOAD_INFO_H_
+#define COMPONENTS_DOWNLOAD_DATABASE_DOWNLOAD_INFO_H_
 
 #include <string>
 
 #include "base/optional.h"
-#include "components/download/downloader/in_progress/in_progress_info.h"
-#include "components/download/downloader/in_progress/ukm_info.h"
+#include "components/download/database/in_progress/in_progress_info.h"
+#include "components/download/database/in_progress/ukm_info.h"
 
 namespace download {
 
@@ -34,4 +34,4 @@ struct DownloadInfo {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_DOWNLOADER_IN_PROGRESS_DOWNLOAD_INFO_H_
+#endif  // COMPONENTS_DOWNLOAD_DATABASE_DOWNLOAD_INFO_H_

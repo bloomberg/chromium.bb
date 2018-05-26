@@ -44,7 +44,7 @@ jumbo_source_set("browser") {
     "//components/cbor",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
-    "//components/download/downloader/in_progress",
+    "//components/download/database",
     "//components/download/public/common:public",
     "//components/download/quarantine",
     "//components/filename_generation",
