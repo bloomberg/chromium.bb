@@ -349,6 +349,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return result;
 
+  // TODO(crbug.com/846227): The layer object doesn't have local border box
+  // properties may mean that 1. the object missed paint property update, or
+  // 2. we are painting before PrePaintClean.
+  CHECK_GE(paint_layer_.GetLayoutObject().GetDocument().Lifecycle().GetState(),
+           DocumentLifecycle::LifecycleState::kPrePaintClean);
+  CHECK(paint_layer_.GetLayoutObject()
+            .FirstFragment()
+            .HasLocalBorderBoxProperties());
+
   DCHECK(paint_layer_.IsSelfPaintingLayer() ||
          paint_layer_.HasSelfPaintingLayerDescendant());
   DCHECK(!(paint_flags & kPaintLayerAppliedTransform));
