@@ -35,12 +35,6 @@
         transform: translate3d(0, 0, 0);
       }
 
-      .md-select-wrapper {
-        /* Mitigate for md-select's start padding, to make it look aligned with
-         * other elements on the page. */
-        -webkit-margin-start: calc(-1 * var(--md-select-side-padding));
-      }
-
       .md-select {
         --md-select-width: var(--settings-input-max-width);
       }
@@ -117,19 +111,16 @@
         </template>
         <div id="select-row" class="address-row">
           <div id="select-label">$i18n{addressCountry}</div>
-          <span class="md-select-wrapper">
-            <select class="md-select" aria-labelledby="select-label"
-                value="[[countryCode_]]" on-change="onCountryChange_">
-              <option value=""></option>
-              <template is="dom-repeat" items="[[countries_]]">
-                <option value="[[getCode_(item)]]"
-                    disabled="[[isDivision_(item)]]">
-                  [[getName_(item)]]
-                </option>
-              </template>
-            </select>
-            <span class="md-select-underline"></span>
-          </span>
+          <select class="md-select" aria-labelledby="select-label"
+              value="[[countryCode_]]" on-change="onCountryChange_">
+            <option value=""></option>
+            <template is="dom-repeat" items="[[countries_]]">
+              <option value="[[getCode_(item)]]"
+                  disabled="[[isDivision_(item)]]">
+                [[getName_(item)]]
+              </option>
+            </template>
+          </select>
         </div>
         <div class="address-row">
           <paper-input id="phoneInput" type="text" label="$i18n{addressPhone}"

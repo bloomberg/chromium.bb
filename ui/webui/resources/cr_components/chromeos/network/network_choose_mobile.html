@@ -11,9 +11,9 @@
 <dom-module id="network-choose-mobile">
   <template>
     <style include="network-shared md-select iron-flex paper-button-style">
-      /* Align select with button and scan messages */
+      /* Leave some space between button and select. */
       select {
-        margin-top: 4px;
+        -webkit-margin-start: 8px;
       }
     </style>
     <div class="property-box first two-line">
@@ -25,20 +25,17 @@
           disabled="[[!getEnableScanButton_(networkProperties)]]">
         [[i18n('networkCellularScan')]]
       </paper-button>
-      <div class="md-select-wrapper">
-        <select class="md-select" on-change="onChange_"
-            value="[[selectedMobileNetworkId_]]"
-            disabled="[[!getEnableSelectNetwork_(networkProperties)]]"
-            aria-label="[[i18n('networkChooseMobile')]]">
-          <template is="dom-repeat" items="[[mobileNetworkList_]]">
-            <option value="[[item.NetworkId]]"
-                disabled="[[getMobileNetworkIsDisabled_(item)]]">
-              [[getName_(item)]]
-            </option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+      <select class="md-select" on-change="onChange_"
+          value="[[selectedMobileNetworkId_]]"
+          disabled="[[!getEnableSelectNetwork_(networkProperties)]]"
+          aria-label="[[i18n('networkChooseMobile')]]">
+        <template is="dom-repeat" items="[[mobileNetworkList_]]">
+          <option value="[[item.NetworkId]]"
+              disabled="[[getMobileNetworkIsDisabled_(item)]]">
+            [[getName_(item)]]
+          </option>
+        </template>
+      </select>
     </div>
   </template>
   <script src="network_choose_mobile.js"></script>

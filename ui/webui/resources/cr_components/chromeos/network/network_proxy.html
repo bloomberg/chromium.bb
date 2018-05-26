@@ -36,18 +36,15 @@
     <!-- Proxy type dropdown -->
     <div class="property-box">
       <div class="start">[[i18n('networkProxyConnectionType')]]</div>
-      <div class="md-select-wrapper">
-        <select id="proxyType" class="md-select" on-change="onTypeChange_"
-            value="[[proxy_.Type]]"
-            disabled="[[!isEditable_('Type', networkProperties, editable,
-                useSharedProxies)]]"
-            aria-label="[[i18n('networkProxyConnectionType')]]">
-          <template is="dom-repeat" items="[[proxyTypes_]]">
-            <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+      <select id="proxyType" class="md-select" on-change="onTypeChange_"
+          value="[[proxy_.Type]]"
+          disabled="[[!isEditable_('Type', networkProperties, editable,
+              useSharedProxies)]]"
+          aria-label="[[i18n('networkProxyConnectionType')]]">
+        <template is="dom-repeat" items="[[proxyTypes_]]">
+          <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
+        </template>
+      </select>
     </div>
 
     <!-- Autoconfiguration (PAC) -->

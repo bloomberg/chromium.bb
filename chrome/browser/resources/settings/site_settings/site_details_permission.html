@@ -43,34 +43,31 @@
                 '$i18nPolymer{siteSettingsSourceDrmDisabled}')]]">
           </div>
         </div>
-        <div class="md-select-wrapper">
-          <select id="permission" class="md-select"
-              aria-labelledby="permissionHeader"
-              on-change="onPermissionSelectionChange_"
-              disabled$="[[!isPermissionUserControlled_(site.source, category,
-                                                        site.setting)]]">
-            <option id="default" value$="[[ContentSetting.DEFAULT]]">
-              [[defaultSettingString_(
-                  defaultSetting_,
-                  '$i18nPolymer{siteSettingsActionAskDefault}',
-                  '$i18nPolymer{siteSettingsActionAllowDefault}',
-                  '$i18nPolymer{siteSettingsActionBlockDefault}')]]
-            </option>
-            <option id="allow" value$="[[ContentSetting.ALLOW]]"
-                hidden$="[[!showAllowedSetting_(category)]]">
-              $i18n{siteSettingsActionAllow}
-            </option>
-            <option id="block" value$="[[ContentSetting.BLOCK]]">
-              $i18n{siteSettingsActionBlock}
-            </option>
-            <option id="ask" value$="[[ContentSetting.ASK]]"
-                hidden$="[[!showAskSetting_(category, site.setting,
-                                            site.source)]]">
-              $i18n{siteSettingsActionAsk}
-            </option>
-          </select>
-          <span class="md-select-underline"></span>
-        </div>
+        <select id="permission" class="md-select"
+            aria-labelledby="permissionHeader"
+            on-change="onPermissionSelectionChange_"
+            disabled$="[[!isPermissionUserControlled_(site.source, category,
+                                                      site.setting)]]">
+          <option id="default" value$="[[ContentSetting.DEFAULT]]">
+            [[defaultSettingString_(
+                defaultSetting_,
+                '$i18nPolymer{siteSettingsActionAskDefault}',
+                '$i18nPolymer{siteSettingsActionAllowDefault}',
+                '$i18nPolymer{siteSettingsActionBlockDefault}')]]
+          </option>
+          <option id="allow" value$="[[ContentSetting.ALLOW]]"
+              hidden$="[[!showAllowedSetting_(category)]]">
+            $i18n{siteSettingsActionAllow}
+          </option>
+          <option id="block" value$="[[ContentSetting.BLOCK]]">
+            $i18n{siteSettingsActionBlock}
+          </option>
+          <option id="ask" value$="[[ContentSetting.ASK]]"
+              hidden$="[[!showAskSetting_(category, site.setting,
+                                          site.source)]]">
+            $i18n{siteSettingsActionAsk}
+          </option>
+        </select>
       </div>
     </div>
   </template>

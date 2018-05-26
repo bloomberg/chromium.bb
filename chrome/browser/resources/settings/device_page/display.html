@@ -126,15 +126,13 @@
           <div id="displayScreenTitle" class="start">
             $i18n{displayScreenTitle}
           </div>
-          <div class="md-select-wrapper">
-            <select class="md-select" on-change="updatePrimaryDisplay_"
-                aria-labelledby="displayScreenTitle"
-                value="[[getDisplaySelectMenuIndex_(
-                    selectedDisplay, primaryDisplayId)]]">
-              <option value="0">$i18n{displayScreenPrimary}</option>
-              <option value="1">$i18n{displayScreenExtended}</option>
-            </select>
-            <span class="md-select-underline"></span>
+          <select class="md-select" on-change="updatePrimaryDisplay_"
+              aria-labelledby="displayScreenTitle"
+              value="[[getDisplaySelectMenuIndex_(
+                  selectedDisplay, primaryDisplayId)]]">
+            <option value="0">$i18n{displayScreenPrimary}</option>
+            <option value="1">$i18n{displayScreenExtended}</option>
+          </select>
           </div>
         </div>
       </template>
@@ -195,18 +193,15 @@
           <div id="displayOrientation" class="start text-area">
             $i18n{displayOrientation}
           </div>
-          <div class="md-select-wrapper">
-            <select class="md-select" value="[[selectedDisplay.rotation]]"
-                disabled="[[selectedDisplay.isTabletMode]]"
-                aria-labelledby="displayOrientation"
-                on-change="onOrientationChange_">
-              <option value="0">$i18n{displayOrientationStandard}</option>
-              <option value="90">90</option>
-              <option value="180">180</option>
-              <option value="270">270</option>
-            </select>
-            <span class="md-select-underline"></span>
-          </div>
+          <select class="md-select" value="[[selectedDisplay.rotation]]"
+              disabled="[[selectedDisplay.isTabletMode]]"
+              aria-labelledby="displayOrientation"
+              on-change="onOrientationChange_">
+            <option value="0">$i18n{displayOrientationStandard}</option>
+            <option value="90">90</option>
+            <option value="180">180</option>
+            <option value="270">270</option>
+          </select>
         </div>
       </template>
 

@@ -48,19 +48,11 @@
         flex: 1;
       }
 
-      .command-entry .md-select-wrapper {
-        -webkit-margin-start: var(--cr-section-padding);
-      }
-
-      /* Vertically align with paper-input. */
       .command-entry .md-select {
         /* TODO(scottchen): line-height needs adjustment to fix large fonts,
          * same for paper-input. */
+        -webkit-margin-start: var(--cr-section-padding);
         line-height: 22px;
-        /* Below rules help align md-select and paper-input underline. */
-        margin-top: 3px;
-        padding-bottom: 0;
-        padding-top: 0;
       }
 
       .card-title {
@@ -104,22 +96,19 @@
                     item="[[item.id]]" shortcut="[[command.keybinding]]"
                     command-name="[[command.name]]">
                 </extensions-shortcut-input>
-                <div class="md-select-wrapper">
-                  <!-- Binding "value" to triggerScopeChange_ to trigger update
-                      only after CommandScope_ becomes available. -->
-                  <select class="md-select" on-change="onScopeChanged_"
-                      disabled$="[[computeScopeDisabled_(command)]]"
-                      value="[[
-                          triggerScopeChange_(command.scope, CommandScope_)]]">
-                    <option value$="[[CommandScope_.CHROME]]">
-                      $i18n{shortcutScopeInChrome}
-                    </option>
-                    <option value$="[[CommandScope_.GLOBAL]]">
-                      $i18n{shortcutScopeGlobal}
-                    </option>
-                  </select>
-                  <span class="md-select-underline"></span>
-                </div>
+                <!-- Binding "value" to triggerScopeChange_ to trigger update
+                    only after CommandScope_ becomes available. -->
+                <select class="md-select" on-change="onScopeChanged_"
+                    disabled$="[[computeScopeDisabled_(command)]]"
+                    value="[[
+                        triggerScopeChange_(command.scope, CommandScope_)]]">
+                  <option value$="[[CommandScope_.CHROME]]">
+                    $i18n{shortcutScopeInChrome}
+                  </option>
+                  <option value$="[[CommandScope_.GLOBAL]]">
+                    $i18n{shortcutScopeGlobal}
+                  </option>
+                </select>
               </div>
             </template>
           </div>

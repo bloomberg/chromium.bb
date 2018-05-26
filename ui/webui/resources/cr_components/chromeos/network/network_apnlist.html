@@ -17,16 +17,13 @@
     </style>
     <div class="property-box">
       <div class="start">[[i18n('networkAccessPoint')]]</div>
-      <div class="md-select-wrapper">
-        <select id="selectApn" class="md-select" on-change="onSelectApnChange_"
-            value="[[selectedApn_]]"
-            aria-label="[[i18n('networkAccessPoint')]]">
-          <template is="dom-repeat" items="[[apnSelectList_]]">
-            <option value="[[item.AccessPointName]]">[[apnDesc_(item)]]</option>
-          </template>
-        </select>
-        <span class="md-select-underline"></span>
-      </div>
+      <select id="selectApn" class="md-select" on-change="onSelectApnChange_"
+          value="[[selectedApn_]]"
+          aria-label="[[i18n('networkAccessPoint')]]">
+        <template is="dom-repeat" items="[[apnSelectList_]]">
+          <option value="[[item.AccessPointName]]">[[apnDesc_(item)]]</option>
+        </template>
+      </select>
     </div>
 
     <div class="property-box single-column indented"

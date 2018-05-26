@@ -42,38 +42,35 @@
           <div class="start">
             <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
             <div class="secondary">
-              <div class="md-select-wrapper">
-                <select class="md-select" aria-labelledby="printerProtocol"
-                    value="[[activePrinter.printerProtocol]]"
-                    on-change="onProtocolChange_"
-                    disabled="[[!networkProtocolActive_]]">
-                  <option value="ipp" disabled="[[!networkProtocolActive_]]">
-                    $i18n{printerProtocolIpp}
-                  </option>
-                  <option value="ipps" disabled="[[!networkProtocolActive_]]">
-                    $i18n{printerProtocolIpps}
-                  </option>
-                  <option value="http" disabled="[[!networkProtocolActive_]]">
-                    $i18n{printerProtocolHttp}
-                  </option>
-                  <option value="https" disabled="[[!networkProtocolActive_]]">
-                    $i18n{printerProtocolHttps}
-                  </option>
-                  <option value="socket" disabled="[[!networkProtocolActive_]]">
-                    $i18n{printerProtocolAppSocket}
-                  </option>
-                  <option value="lpd" disabled="[[!networkProtocolActive_]]">
-                    $i18n{printerProtocolLpd}
-                  </option>
-                  <option value="usb" disabled="[[networkProtocolActive_]]">
-                    $i18n{printerProtocolUsb}
-                  </option>
-                  <option value="ippusb" disabled="[[networkProtocolActive_]]">
-                    $i18n{printerProtocolIppUsb}
-                  </option>
-                </select>
-                <span class="md-select-underline"></span>
-              </div>
+              <select class="md-select" aria-labelledby="printerProtocol"
+                  value="[[activePrinter.printerProtocol]]"
+                  on-change="onProtocolChange_"
+                  disabled="[[!networkProtocolActive_]]">
+                <option value="ipp" disabled="[[!networkProtocolActive_]]">
+                  $i18n{printerProtocolIpp}
+                </option>
+                <option value="ipps" disabled="[[!networkProtocolActive_]]">
+                  $i18n{printerProtocolIpps}
+                </option>
+                <option value="http" disabled="[[!networkProtocolActive_]]">
+                  $i18n{printerProtocolHttp}
+                </option>
+                <option value="https" disabled="[[!networkProtocolActive_]]">
+                  $i18n{printerProtocolHttps}
+                </option>
+                <option value="socket" disabled="[[!networkProtocolActive_]]">
+                  $i18n{printerProtocolAppSocket}
+                </option>
+                <option value="lpd" disabled="[[!networkProtocolActive_]]">
+                  $i18n{printerProtocolLpd}
+                </option>
+                <option value="usb" disabled="[[networkProtocolActive_]]">
+                  $i18n{printerProtocolUsb}
+                </option>
+                <option value="ippusb" disabled="[[networkProtocolActive_]]">
+                  $i18n{printerProtocolIppUsb}
+                </option>
+              </select>
             </div>
           </div>
         </div>

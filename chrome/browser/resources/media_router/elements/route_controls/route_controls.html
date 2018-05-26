@@ -86,21 +86,18 @@
           </div>
         </div>
         <div id="mirroring-fullscreen-video-controls"
-             hidden="[[!routeStatus.mirroringExtraData]]">
+            hidden="[[!routeStatus.mirroringExtraData]]">
           [[i18n('fullscreenVideosDropdownTitle')]]
-          <span class="md-select-wrapper">
-            <select class="md-select"
-                    id="mirroring-fullscreen-video-dropdown"
-                    on-change="onFullscreenVideoDropdownChange_">
-                <option value="[[FullscreenVideoOption_.REMOTE_SCREEN]]">
-                  [[i18n('fullscreenVideosRemoteScreen')]]
-                </option>
-                <option value="[[FullscreenVideoOption_.BOTH_SCREENS]]">
-                  [[i18n('fullscreenVideosBothScreens')]]
-                </option>
-            </select>
-            <span class="md-select-underline"></span>
-          </span>
+          <select class="md-select"
+              id="mirroring-fullscreen-video-dropdown"
+              on-change="onFullscreenVideoDropdownChange_">
+            <option value="[[FullscreenVideoOption_.REMOTE_SCREEN]]">
+              [[i18n('fullscreenVideosRemoteScreen')]]
+            </option>
+            <option value="[[FullscreenVideoOption_.BOTH_SCREENS]]">
+              [[i18n('fullscreenVideosBothScreens')]]
+            </option>
+          </select>
         </div>
       </div>
     </div>

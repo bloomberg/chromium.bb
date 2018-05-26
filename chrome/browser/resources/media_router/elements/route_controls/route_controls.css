@@ -102,5 +102,6 @@
 }
 
 #mirroring-fullscreen-video-dropdown {
+  -webkit-margin-start: 8px;
   width: auto;
 }

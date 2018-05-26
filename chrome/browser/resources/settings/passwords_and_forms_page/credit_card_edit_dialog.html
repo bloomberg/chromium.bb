@@ -15,13 +15,7 @@
         width: var(--settings-input-max-width);
       }
 
-      .md-select-wrapper {
-        /* Mitigate for md-select's start padding, to make it look aligned with
-         * other elements on the page. */
-        -webkit-margin-start: calc(-1 * var(--md-select-side-padding));
-      }
-
-      .md-select-wrapper + .md-select-wrapper {
+      .md-select + .md-select {
         -webkit-margin-start: 8px;
       }
 
@@ -61,26 +55,20 @@
             on-input="onCreditCardNameOrNumberChanged_">
         </paper-input>
         <label>$i18n{creditCardExpiration}</label>
-        <span class="md-select-wrapper">
-          <select class="md-select" id="month" value="[[expirationMonth_]]"
-              on-change="onMonthChange_"
-              aria-label="$i18n{creditCardExpirationMonth}">
-            <template is="dom-repeat" items="[[monthList_]]">
-              <option>[[item]]</option>
-            </template>
-          </select>
-          <span class="md-select-underline"></span>
-        </span>
-        <span class="md-select-wrapper">
-          <select class="md-select" id="year" value="[[expirationYear_]]"
-              on-change="onYearChange_"
-              aria-label="$i18n{creditCardExpirationYear}">
-            <template is="dom-repeat" items="[[yearList_]]">
-              <option>[[item]]</option>
-            </template>
-          </select>
-          <span class="md-select-underline"></span>
-        </span>
+        <select class="md-select" id="month" value="[[expirationMonth_]]"
+            on-change="onMonthChange_"
+            aria-label="$i18n{creditCardExpirationMonth}">
+          <template is="dom-repeat" items="[[monthList_]]">
+            <option>[[item]]</option>
+          </template>
+        </select>
+        <select class="md-select" id="year" value="[[expirationYear_]]"
+            on-change="onYearChange_"
+            aria-label="$i18n{creditCardExpirationYear}">
+          <template is="dom-repeat" items="[[yearList_]]">
+            <option>[[item]]</option>
+          </template>
+        </select>
         <span id="expired"
             hidden="[[!checkIfCardExpired_(expirationMonth_, expirationYear_)]]"
             >
