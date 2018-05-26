@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
  * This is the implementation of the C++ counterpart ScreenOrientationProvider.
  */
 @JNINamespace("content")
-public class ScreenOrientationProvider {
+public class ScreenOrientationProviderImpl {
     private static final String TAG = "cr.ScreenOrientation";
     private static ScreenOrientationDelegate sDelegate;
 
@@ -130,7 +130,7 @@ public class ScreenOrientationProvider {
     }
 
     @CalledByNative
-    static boolean isOrientationLockEnabled() {
+    private static boolean isOrientationLockEnabled() {
         return sDelegate == null || sDelegate.canLockOrientation();
     }
 
@@ -138,6 +138,5 @@ public class ScreenOrientationProvider {
         sDelegate = delegate;
     }
 
-    private ScreenOrientationProvider() {
-    }
+    private ScreenOrientationProviderImpl() {}
 }
