@@ -66,15 +66,18 @@ public class DownloadForegroundService extends Service {
     /**
      * Start the foreground service or update it to be pinned to a different notification.
      *
-     * @param newNotificationId The ID of the new notification to pin the service to.
-     * @param newNotification   The new notification to be pinned to the service.
-     * @param oldNotificationId The ID of the original notification that was pinned to the service,
-     *                          can be INVALID_NOTIFICATION_ID if the service is just starting.
-     * @param oldNotification   The original notification the service was pinned to, in case an
-     *                          adjustment needs to be made (in the case it could not be detached).
+     * @param newNotificationId   The ID of the new notification to pin the service to.
+     * @param newNotification     The new notification to be pinned to the service.
+     * @param oldNotificationId   The ID of the original notification that was pinned to the
+     *                            service, can be INVALID_NOTIFICATION_ID if the service is just
+     *                            starting.
+     * @param oldNotification     The original notification the service was pinned to, in case an
+     *                            adjustment needs to be made (in the case it could not be
+     *                            detached).
+     * @param killOldNotification Whether or not to detach or kill the old notification.
      */
     public void startOrUpdateForegroundService(int newNotificationId, Notification newNotification,
-            int oldNotificationId, Notification oldNotification) {
+            int oldNotificationId, Notification oldNotification, boolean killOldNotification) {
         Log.w(TAG,
                 "startOrUpdateForegroundService new: " + newNotificationId
                         + ", old: " + oldNotificationId);
@@ -85,12 +88,15 @@ public class DownloadForegroundService extends Service {
         } else {
             if (getCurrentSdk() >= 24) {
                 // If possible, detach notification so it doesn't get cancelled by accident.
-                stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
+                stopForegroundInternal(killOldNotification ? ServiceCompat.STOP_FOREGROUND_REMOVE
+                                                           : ServiceCompat.STOP_FOREGROUND_DETACH);
                 startForegroundInternal(newNotificationId, newNotification);
             } else {
                 // Otherwise start the foreground and relaunch the originally pinned notification.
                 startForegroundInternal(newNotificationId, newNotification);
-                relaunchOldNotification(oldNotificationId, oldNotification);
+                if (!killOldNotification) {
+                    relaunchOldNotification(oldNotificationId, oldNotification);
+                }
             }
         }
 

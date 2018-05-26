@@ -20,6 +20,7 @@ import com.google.ipc.invalidation.util.Preconditions;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.download.DownloadNotificationService2.DownloadStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,9 +245,12 @@ public class DownloadForegroundServiceManager {
             Notification oldNotification =
                     (downloadUpdate == null) ? null : downloadUpdate.mNotification;
 
+            boolean killOldNotification = downloadUpdate != null
+                    && downloadUpdate.mDownloadStatus == DownloadStatus.CANCELLED;
+
             // Start service and handle notifications.
-            mBoundService.startOrUpdateForegroundService(
-                    notificationId, notification, mPinnedNotificationId, oldNotification);
+            mBoundService.startOrUpdateForegroundService(notificationId, notification,
+                    mPinnedNotificationId, oldNotification, killOldNotification);
 
             // After the service has been started and the notification handled, change stored id.
             mPinnedNotificationId = notificationId;
