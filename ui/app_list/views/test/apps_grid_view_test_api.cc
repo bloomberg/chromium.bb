@@ -5,7 +5,6 @@
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 
 #include "build/build_config.h"
-#include "ui/app_list/paged_view_structure.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/events/event.h"
@@ -41,7 +40,7 @@ gfx::Rect AppsGridViewTestApi::GetItemTileRectOnCurrentPageAt(int row,
                                                               int col) const {
   int slot = row * (view_->cols()) + col;
   return view_->GetExpectedTileBounds(
-      GridIndex(view_->pagination_model()->selected_page(), slot));
+      AppsGridView::Index(view_->pagination_model()->selected_page(), slot));
 }
 
 void AppsGridViewTestApi::PressItemAt(int index) {
@@ -56,22 +55,6 @@ bool AppsGridViewTestApi::HasPendingPageFlip() const {
 
 int AppsGridViewTestApi::TilesPerPage(int page) const {
   return view_->TilesPerPage(page);
-}
-
-views::View* AppsGridViewTestApi::GetViewAtVisualIndex(int page,
-                                                       int slot) const {
-  const std::vector<std::vector<AppListItemView*>>& view_structure =
-      view_->view_structure_.pages();
-  if (page >= static_cast<int>(view_structure.size()) ||
-      slot >= static_cast<int>(view_structure[page].size())) {
-    return nullptr;
-  }
-  return view_structure[page][slot];
-}
-
-gfx::Rect AppsGridViewTestApi::GetItemTileRectAtVisualIndex(int page,
-                                                            int slot) const {
-  return view_->GetExpectedTileBounds(GridIndex(page, slot));
 }
 
 }  // namespace test
