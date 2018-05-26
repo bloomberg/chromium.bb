@@ -22,7 +22,7 @@ class CameraDeviceContext;
 class CameraHalDelegate;
 class StreamBufferManager;
 
-enum class StreamType : int32_t {
+enum class StreamType : uint64_t {
   kPreview = 0,
   kStillCapture = 1,
   kUnknown,
