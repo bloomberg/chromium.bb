@@ -19,6 +19,7 @@ import re
 
 from blinkpy.common.net.buildbot import current_build_link
 from blinkpy.common.net.git_cl import GitCL
+from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
@@ -39,7 +40,7 @@ TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to TBR.
 ROTATIONS_URL = 'https://build.chromium.org/deprecated/chromium/all_rotations.js'
-TBR_FALLBACK = 'qyearsley'
+TBR_FALLBACK = 'robertma'
 
 _log = logging.getLogger(__file__)
 
@@ -528,7 +529,11 @@ class TestImporter(object):
         return username or TBR_FALLBACK
 
     def _fetch_ecosystem_infra_sheriff_username(self):
-        content = self.host.web.get_binary(ROTATIONS_URL)
+        try:
+            content = self.host.web.get_binary(ROTATIONS_URL)
+        except NetworkTimeout:
+            _log.error('Cannot fetch %s', ROTATIONS_URL)
+            return ''
         data = json.loads(content)
         today = datetime.date.fromtimestamp(self.host.time()).isoformat()
         index = data['rotations'].index('ecosystem_infra')
