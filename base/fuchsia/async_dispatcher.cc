@@ -123,7 +123,7 @@ zx_status_t AsyncDispatcher::DispatchOrWaitUntil(zx_time_t deadline) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   zx_port_packet_t packet = {};
-  zx_status_t status = zx_port_wait(port_.get(), deadline, &packet, 1);
+  zx_status_t status = zx_port_wait(port_.get(), deadline, &packet);
   if (status != ZX_OK)
     return status;
 
