@@ -171,15 +171,22 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
     ASSERT_NE(otr_browser1, otr_browser2);
   }
 
+  base::RunLoop run_loop1;
+  BrowserRemovedWaiter removed_waiter1(otr_browser1,
+                                       run_loop1.QuitWhenIdleClosure());
   otr_browser1->window()->Close();
-  base::RunLoop().RunUntilIdle();
+  run_loop1.Run();
   ASSERT_FALSE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser1));
   ASSERT_TRUE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser2));
 
   bool destroyed = false;
   watcher.Watch(otr_profile, &destroyed);
+  base::RunLoop run_loop2;
+  BrowserRemovedWaiter removed_waiter2(otr_browser2,
+                                       run_loop2.QuitWhenIdleClosure());
   otr_browser2->window()->Close();
-  base::RunLoop().RunUntilIdle();
+  run_loop2.Run();
+  ASSERT_FALSE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser2));
   EXPECT_TRUE(destroyed);
 }
 
@@ -196,9 +203,16 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
     auto* otr_browser2 = CreateBrowser(otr_profile);
     ASSERT_NE(otr_browser1, otr_browser2);
 
+    base::RunLoop run_loop1;
+    BrowserRemovedWaiter removed_waiter1(otr_browser1,
+                                         run_loop1.QuitWhenIdleClosure());
+    base::RunLoop run_loop2;
+    BrowserRemovedWaiter removed_waiter2(otr_browser2,
+                                         run_loop2.QuitWhenIdleClosure());
     otr_browser1->window()->Close();
     otr_browser2->window()->Close();
-    base::RunLoop().RunUntilIdle();
+    run_loop1.Run();
+    run_loop2.Run();
     ASSERT_FALSE(
         base::ContainsValue(*BrowserList::GetInstance(), otr_browser1));
     ASSERT_FALSE(
