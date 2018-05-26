@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
-#define CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
+#ifndef CONTENT_COMMON_PLATFORM_NOTIFICATION_PARAM_TRAITS_H_
+#define CONTENT_COMMON_PLATFORM_NOTIFICATION_PARAM_TRAITS_H_
 
 // Messages for platform-native notifications using the Web Notification API.
 
@@ -17,13 +17,10 @@
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 
-#define IPC_MESSAGE_START PlatformNotificationMsgStart
-
 // TODO(https://crbug.com/841329): Delete this legacy IPC code, use a pure
 // mojo struct instead from ServiceWorkerEventDispatcher mojo interface.
-IPC_ENUM_TRAITS_MAX_VALUE(
-    content::PlatformNotificationData::Direction,
-    content::PlatformNotificationData::DIRECTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::PlatformNotificationData::Direction,
+                          content::PlatformNotificationData::DIRECTION_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::PlatformNotificationActionType,
                           content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT)
@@ -54,4 +51,4 @@ IPC_STRUCT_TRAITS_BEGIN(content::PlatformNotificationData)
   IPC_STRUCT_TRAITS_MEMBER(actions)
 IPC_STRUCT_TRAITS_END()
 
-#endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
+#endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_PARAM_TRAITS_H_
