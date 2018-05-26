@@ -97,6 +97,7 @@ PDFViewer.DARK_BACKGROUND_COLOR = '0xFF525659';
 function PDFViewer(browserApi) {
   this.browserApi_ = browserApi;
   this.originalUrl_ = this.browserApi_.getStreamInfo().originalUrl;
+  this.javascript_ = this.browserApi_.getStreamInfo().javascript || 'block';
   this.loadState_ = LoadState.LOADING;
   this.parentWindow_ = null;
   this.parentOrigin_ = null;
@@ -190,6 +191,7 @@ function PDFViewer(browserApi) {
   var backgroundColor = PDFViewer.DARK_BACKGROUND_COLOR;
   this.plugin_.setAttribute('background-color', backgroundColor);
   this.plugin_.setAttribute('top-toolbar-height', topToolbarHeight);
+  this.plugin_.setAttribute('javascript', this.javascript_);
 
   if (this.browserApi_.getStreamInfo().embedded) {
     this.plugin_.setAttribute(
