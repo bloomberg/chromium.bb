@@ -58,6 +58,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
+    self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
+        ['passthrough', 'nvidia'], bug=844349)
 
     # All platforms.
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
@@ -117,6 +119,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/glsl/bugs/' +
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
+
+    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
+        ['intel', 'amd', 'no_angle'], bug=844308)
 
     # Windows only.
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -425,6 +430,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['highsierra', ('nvidia', 0xfe9)], bug=774827)
 
     # Fails on multiple GPU types.
+    self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
+        ['mac'], bug=844311)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
         ['mac'], bug=709351)
     self.Fail('conformance2/rendering/' +

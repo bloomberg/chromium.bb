@@ -399,6 +399,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9', 'passthrough'], bug=2192) # ANGLE bug ID
 
     # Mac failures
+    self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
+        ['mac'], bug=844311)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', 'no_passthrough'], bug=599272)
 
@@ -559,8 +561,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
     self.Fail('conformance/extensions/ext-texture-filter-anisotropic.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
-    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
     self.Fail('conformance/glsl/bugs/' +
         'array-of-struct-with-int-first-position.html',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
@@ -609,8 +609,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/extensions/oes-texture-half-float-with-video.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
         bug=609883)
-    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/bugs/init-array-with-loop.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=784817)
@@ -654,10 +652,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/context/premultiplyalpha-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
-        ['android',
-         ('qualcomm', 'Adreno (TM) 420'),
-         ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/glsl/bugs/qualcomm-crash.html',
