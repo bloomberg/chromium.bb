@@ -105,8 +105,8 @@ public final class DownloadForegroundServiceManagerTest {
     public static class MockDownloadForegroundService extends DownloadForegroundService {
         @Override
         public void startOrUpdateForegroundService(int newNotificationId,
-                Notification newNotification, int oldNotificationId, Notification oldNotification) {
-        }
+                Notification newNotification, int oldNotificationId, Notification oldNotification,
+                boolean killOldNotification) {}
     }
 
     @Before
