@@ -292,11 +292,6 @@ class FakeDemuxerHost : public ::media::DemuxerHost {
   void OnDemuxerError(::media::PipelineStatus error) override {
     LOG(FATAL) << "OnDemuxerError: " << error;
   }
-  void AddTextStream(::media::DemuxerStream* text_stream,
-                     const ::media::TextTrackConfig& config) override {
-  }
-  void RemoveTextStream(::media::DemuxerStream* text_stream) override {
-  }
 };
 
 DemuxResult::DemuxResult() {
@@ -319,8 +314,7 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
                                  base::Bind(&OnEncryptedMediaInitData),
                                  base::Bind(&OnMediaTracksUpdated), &media_log);
   ::media::WaitableMessageLoopEvent init_event;
-  demuxer.Initialize(&fake_demuxer_host, init_event.GetPipelineStatusCB(),
-                     false);
+  demuxer.Initialize(&fake_demuxer_host, init_event.GetPipelineStatusCB());
   init_event.RunAndWaitForStatus(::media::PIPELINE_OK);
 
   auto stream_type =

@@ -134,8 +134,7 @@ class MockDemuxer : public Demuxer {
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
-  MOCK_METHOD3(Initialize,
-               void(DemuxerHost* host, const PipelineStatusCB& cb, bool));
+  MOCK_METHOD2(Initialize, void(DemuxerHost* host, const PipelineStatusCB& cb));
   MOCK_METHOD1(StartWaitingForSeek, void(base::TimeDelta));
   MOCK_METHOD1(CancelPendingSeek, void(base::TimeDelta));
   MOCK_METHOD2(Seek, void(base::TimeDelta time, const PipelineStatusCB& cb));

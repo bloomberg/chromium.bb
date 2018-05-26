@@ -138,8 +138,6 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnMetadata(PipelineMetadata metadata);
   void OnBufferingStateChange(BufferingState state);
   void OnDurationChange(base::TimeDelta duration);
-  void OnAddTextTrack(const TextTrackConfig& config,
-                      const AddTextTrackDoneCB& done_cb);
   void OnWaitingForDecryptionKey();
   void OnAudioConfigChange(const AudioDecoderConfig& config);
   void OnVideoConfigChange(const VideoDecoderConfig& config);

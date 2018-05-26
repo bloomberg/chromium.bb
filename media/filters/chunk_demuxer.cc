@@ -440,7 +440,6 @@ ChunkDemuxer::ChunkDemuxer(
       open_cb_(open_cb),
       progress_cb_(progress_cb),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
-      enable_text_(false),
       media_log_(media_log),
       duration_(kNoTimestamp),
       user_specified_duration_(-1),
@@ -461,8 +460,7 @@ std::string ChunkDemuxer::GetDisplayName() const {
 }
 
 void ChunkDemuxer::Initialize(DemuxerHost* host,
-                              const PipelineStatusCB& init_cb,
-                              bool enable_text_tracks) {
+                              const PipelineStatusCB& init_cb) {
   DVLOG(1) << "Init(), buffering_by_pts_=" << buffering_by_pts_;
 
   base::AutoLock auto_lock(lock_);
@@ -480,7 +478,6 @@ void ChunkDemuxer::Initialize(DemuxerHost* host,
   // has a chance to run. This is because ChunkDemuxer::ReportError_Locked
   // directly calls DemuxerHost::OnDemuxerError: crbug.com/633016.
   init_cb_ = init_cb;
-  enable_text_ = enable_text_tracks;
 
   ChangeState_Locked(INITIALIZING);
 
@@ -656,11 +653,6 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
       media_log_));
 
   SourceBufferState::NewTextTrackCB new_text_track_cb;
-
-  if (enable_text_) {
-    new_text_track_cb = base::Bind(&ChunkDemuxer::OnNewTextTrack,
-                                   base::Unretained(this));
-  }
 
   // TODO(wolenetz): Change these to DCHECKs or switch to returning
   // kReachedIdLimit once less verification in release build is needed. See
@@ -1310,13 +1302,6 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
   stream->SetEnabled(owning_vector->empty(), base::TimeDelta());
   owning_vector->push_back(std::move(stream));
   return owning_vector->back().get();
-}
-
-void ChunkDemuxer::OnNewTextTrack(ChunkDemuxerStream* text_stream,
-                                  const TextTrackConfig& config) {
-  lock_.AssertAcquired();
-  DCHECK_NE(state_, SHUTDOWN);
-  host_->AddTextStream(text_stream, config);
 }
 
 bool ChunkDemuxer::IsValidId(const std::string& source_id) const {

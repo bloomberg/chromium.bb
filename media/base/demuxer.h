@@ -24,7 +24,6 @@
 
 namespace media {
 
-class TextTrackConfig;
 class MediaTracks;
 
 class MEDIA_EXPORT DemuxerHost {
@@ -47,13 +46,6 @@ class MEDIA_EXPORT DemuxerHost {
   // called after an unrecoverable error the provided PipelineStatusCB must be
   // called with an error.
   virtual void OnDemuxerError(PipelineStatus error) = 0;
-
-  // Add |text_stream| to the collection managed by the text renderer.
-  virtual void AddTextStream(DemuxerStream* text_stream,
-                             const TextTrackConfig& config) = 0;
-
-  // Remove |text_stream| from the presentation.
-  virtual void RemoveTextStream(DemuxerStream* text_stream) = 0;
 
  protected:
   virtual ~DemuxerHost();
@@ -92,8 +84,7 @@ class MEDIA_EXPORT Demuxer : public MediaResource {
   // lifetime of the demuxer. Don't delete it!  |status_cb| must only be run
   // after this method has returned.
   virtual void Initialize(DemuxerHost* host,
-                          const PipelineStatusCB& status_cb,
-                          bool enable_text_tracks) = 0;
+                          const PipelineStatusCB& status_cb) = 0;
 
   // Aborts any pending read operations that the demuxer is involved with; any
   // read aborted will be aborted with a status of kAborted. Future reads will

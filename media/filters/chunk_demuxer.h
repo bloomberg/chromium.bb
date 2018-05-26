@@ -200,9 +200,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // |enable_text| Process inband text tracks in the normal way when true,
   //   otherwise ignore them.
-  void Initialize(DemuxerHost* host,
-                  const PipelineStatusCB& init_cb,
-                  bool enable_text_tracks) override;
+  void Initialize(DemuxerHost* host, const PipelineStatusCB& init_cb) override;
   void Stop() override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
   base::Time GetTimelineOffset() const override;
@@ -430,7 +428,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Closure open_cb_;
   base::Closure progress_cb_;
   EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
-  bool enable_text_;
 
   // MediaLog for reporting messages and properties to debug content and engine.
   MediaLog* media_log_;
