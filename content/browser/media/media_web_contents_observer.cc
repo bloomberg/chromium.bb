@@ -12,6 +12,7 @@
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -199,6 +200,13 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
 
   UpdateVideoLock();
 
+  if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
+      pip_player_ == player_id) {
+    content::PictureInPictureWindowController::GetOrCreateForWebContents(
+        web_contents())
+        ->UpdatePlaybackState(false /* is not playing */);
+  }
+
   if (removed_audio || removed_video) {
     // Notify observers the player has been "paused".
     web_contents_impl()->MediaStoppedPlaying(
@@ -241,6 +249,13 @@ void MediaWebContentsObserver::OnMediaPlaying(
   if (!session_controllers_manager_.RequestPlay(
           id, has_audio, is_remote, media_content_type)) {
     return;
+  }
+
+  if (!web_contents()->IsBeingDestroyed() && pip_player_.has_value() &&
+      pip_player_ == id) {
+    content::PictureInPictureWindowController::GetOrCreateForWebContents(
+        web_contents())
+        ->UpdatePlaybackState(true /* is playing */);
   }
 
   // Notify observers of the new player.

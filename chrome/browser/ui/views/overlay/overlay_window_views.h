@@ -39,6 +39,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   ui::Layer* GetLayer() override;
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
+  void UpdatePlayPauseControlsIcon(bool is_playing) override;
   ui::Layer* GetVideoLayer() override;
   ui::Layer* GetControlsBackgroundLayer() override;
   ui::Layer* GetCloseControlsLayer() override;

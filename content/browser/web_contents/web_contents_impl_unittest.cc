@@ -34,6 +34,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -3555,7 +3556,59 @@ class PictureInPictureDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureDelegate);
 };
 
+class TestOverlayWindow : public OverlayWindow {
+ public:
+  TestOverlayWindow() = default;
+  ~TestOverlayWindow() override{};
+
+  static std::unique_ptr<OverlayWindow> Create(
+      PictureInPictureWindowController* controller) {
+    return std::unique_ptr<OverlayWindow>(new TestOverlayWindow());
+  }
+
+  bool IsActive() const override { return false; }
+  void Close() override {}
+  void Show() override {}
+  void Hide() override {}
+  bool IsVisible() const override { return false; }
+  bool IsAlwaysOnTop() const override { return false; }
+  ui::Layer* GetLayer() override { return nullptr; }
+  gfx::Rect GetBounds() const override { return gfx::Rect(); }
+  void UpdateVideoSize(const gfx::Size& natural_size) override {}
+  void UpdatePlayPauseControlsIcon(bool is_playing) override {}
+  ui::Layer* GetVideoLayer() override { return nullptr; }
+  ui::Layer* GetControlsBackgroundLayer() override { return nullptr; }
+  ui::Layer* GetCloseControlsLayer() override { return nullptr; }
+  ui::Layer* GetPlayPauseControlsLayer() override { return nullptr; }
+  gfx::Rect GetCloseControlsBounds() override { return gfx::Rect(); }
+  gfx::Rect GetPlayPauseControlsBounds() override { return gfx::Rect(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
+};
+
+class PictureInPictureTestBrowserClient : public TestContentBrowserClient {
+ public:
+  PictureInPictureTestBrowserClient()
+      : original_browser_client_(SetBrowserClientForTesting(this)) {}
+
+  ~PictureInPictureTestBrowserClient() override {
+    SetBrowserClientForTesting(original_browser_client_);
+  }
+
+  std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
+      PictureInPictureWindowController* controller) override {
+    return TestOverlayWindow::Create(controller);
+  }
+
+ private:
+  ContentBrowserClient* original_browser_client_;
+};
+
 TEST_F(WebContentsImplTest, EnterPictureInPicture) {
+  PictureInPictureTestBrowserClient browser_client;
+  SetBrowserClientForTesting(&browser_client);
+
   const int kPlayerVideoOnlyId = 30; /* arbitrary and used for tests */
 
   PictureInPictureDelegate delegate;

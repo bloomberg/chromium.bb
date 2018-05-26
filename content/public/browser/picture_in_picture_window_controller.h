@@ -44,6 +44,7 @@ class PictureInPictureWindowController {
   virtual void UpdateLayerBounds() = 0;
   virtual bool IsPlayerActive() = 0;
   virtual WebContents* GetInitiatorWebContents() = 0;
+  virtual void UpdatePlaybackState(bool is_playing) = 0;
 
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this

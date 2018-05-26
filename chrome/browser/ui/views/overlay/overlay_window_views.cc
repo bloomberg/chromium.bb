@@ -353,6 +353,10 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
   SetBounds(CalculateAndUpdateBounds());
 }
 
+void OverlayWindowViews::UpdatePlayPauseControlsIcon(bool is_playing) {
+  play_pause_controls_view_->SetToggled(is_playing);
+}
+
 ui::Layer* OverlayWindowViews::GetVideoLayer() {
   return video_view_->layer();
 }
