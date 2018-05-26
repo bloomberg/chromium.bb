@@ -116,6 +116,18 @@ Polymer({
       event.preventDefault();
     else if (event.key == 'Escape')
       this.resetValue_();
+
+    this.stopKeyEventPropagation_(event);
+  },
+
+  /**
+   * This function prevents unwanted change of selection of the containing
+   * paper-radio-group, when the user traverses the input with arrow keys.
+   * @param {!Event} event
+   * @private
+   */
+  stopKeyEventPropagation_: function(e) {
+    e.stopPropagation();
   },
 
   /**
