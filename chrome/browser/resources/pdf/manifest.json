@@ -9,6 +9,7 @@
   "incognito": "split",
   "permissions": [
     "chrome://resources/",
+    "contentSettings",
     "metricsPrivate",
     "resourcesPrivate"
   ],
