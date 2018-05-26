@@ -198,6 +198,13 @@ class WebLocalFrame : public WebFrame {
   // Note: this may lead to the destruction of the frame.
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
 
+  // Start reloading the current document.
+  // Note: StartReload() will be deprecated, use StartNavigation() instead.
+  virtual void StartReload(WebFrameLoadType) = 0;
+
+  // Start navigation to the given URL.
+  virtual void StartNavigation(const WebURLRequest&) = 0;
+
   // Commits a cross-document navigation in the frame. For history navigations,
   // a valid WebHistoryItem should be provided.
   // TODO(dgozman): return mojom::CommitResult.
@@ -730,16 +737,6 @@ class WebLocalFrame : public WebFrame {
   // FIXME: stopLoading does not yet cancel an associated loader!!
   virtual WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) = 0;
-
-  // Reload the current document.
-  // Note: reload() will be deprecated.
-  // Do not use these APIs any more, but use loadRequest() instead.
-  virtual void Reload(WebFrameLoadType) = 0;
-
-  // Load the given URL.
-  // TODO(dgozman): rename to StartNavigation and audit usages. Most of them
-  // actually want to CommitNavigation.
-  virtual void LoadRequest(const WebURLRequest&) = 0;
 
   // Check whether loading has completed based on subframe state, etc.
   virtual void CheckCompleted() = 0;

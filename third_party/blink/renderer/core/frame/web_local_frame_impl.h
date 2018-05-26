@@ -145,10 +145,10 @@ class CORE_EXPORT WebLocalFrameImpl final
       v8::Local<v8::Value> argv[]) override;
   v8::Local<v8::Context> MainWorldScriptContext() const override;
   v8::Local<v8::Object> GlobalProxy() const override;
-  void Reload(WebFrameLoadType) override;
+  void StartReload(WebFrameLoadType) override;
   void ReloadImage(const WebNode&) override;
   void ReloadLoFiImages() override;
-  void LoadRequest(const WebURLRequest&) override;
+  void StartNavigation(const WebURLRequest&) override;
   void CheckCompleted() override;
   void LoadHTMLString(const WebData& html,
                       const WebURL& base_url,

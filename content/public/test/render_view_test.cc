@@ -201,7 +201,7 @@ void RenderViewTest::LoadHTML(const char* html) {
   GURL url(url_string);
   WebURLRequest request(url);
   request.SetCheckForBrowserSideNavigation(false);
-  GetMainFrame()->LoadRequest(request);
+  GetMainFrame()->StartNavigation(request);
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();

@@ -891,7 +891,11 @@ void BlinkTestRunner::OnReset() {
   Reset(true /* for_new_test */);
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
-  main_frame->LoadRequest(WebURLRequest(GURL(url::kAboutBlankURL)));
+  main_frame->CommitNavigation(WebURLRequest(GURL(url::kAboutBlankURL)),
+                               blink::WebFrameLoadType::kStandard,
+                               blink::WebHistoryItem(),
+                               blink::kWebHistoryDifferentDocumentLoad, false,
+                               base::UnguessableToken::Create());
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

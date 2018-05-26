@@ -41,8 +41,10 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_double_size.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -842,9 +844,8 @@ void PrepareFrameAndViewForPrint::CopySelectionIfNeeded(
 void PrepareFrameAndViewForPrint::CopySelection(
     const WebPreferences& preferences) {
   ResizeForPrinting();
-  std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(
-      net::EscapeQueryParamValue(frame()->SelectionAsMarkup().Utf8(), false));
+  std::string html =
+      net::EscapeQueryParamValue(frame()->SelectionAsMarkup().Utf8(), false);
   RestoreSize();
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
@@ -865,8 +866,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
-  blink::WebURLRequest request = blink::WebURLRequest(GURL(url_str));
-  frame()->LoadRequest(request);
+  frame()->LoadHTMLString(blink::WebData(html),
+                          blink::WebURL(GURL(url::kAboutBlankURL)));
 }
 
 bool PrepareFrameAndViewForPrint::AllowsBrokenNullLayerTreeView() const {

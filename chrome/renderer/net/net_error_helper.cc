@@ -439,7 +439,7 @@ void NetErrorHelper::SendTrackingRequest(
 }
 
 void NetErrorHelper::ReloadPage(bool bypass_cache) {
-  render_frame()->GetWebFrame()->Reload(
+  render_frame()->GetWebFrame()->StartReload(
       bypass_cache ? blink::WebFrameLoadType::kReloadBypassingCache
                    : blink::WebFrameLoadType::kReload);
 }
@@ -452,7 +452,7 @@ void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
   blink::WebURLRequest request(page_url);
   request.SetCacheMode(blink::mojom::FetchCacheMode::kOnlyIfCached);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(page_url));
-  web_frame->LoadRequest(request);
+  web_frame->StartNavigation(request);
 }
 
 void NetErrorHelper::DiagnoseError(const GURL& page_url) {
