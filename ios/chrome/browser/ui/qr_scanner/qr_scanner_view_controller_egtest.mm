@@ -420,10 +420,9 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
                                          ui::PageTransition) =
         ^void(LocationBarCoordinator* self, const GURL& url,
               ui::PageTransition transition) {
-          [self.URLLoader loadURL:replacementURL
-                         referrer:web::Referrer()
-                       transition:transition
-                rendererInitiated:NO];
+          web::NavigationManager::WebLoadParams params(replacementURL);
+          params.transition_type = transition;
+          [self.URLLoader loadURLWithParams:params];
           [self cancelOmniboxEdit];
         };
     load_GURL_from_location_bar_swizzler_.reset(
@@ -435,10 +434,9 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
                                          const GURL&, ui::PageTransition) =
         ^void(LocationBarLegacyCoordinator* self, const GURL& url,
               ui::PageTransition transition) {
-          [self.URLLoader loadURL:replacementURL
-                         referrer:web::Referrer()
-                       transition:transition
-                rendererInitiated:NO];
+          web::NavigationManager::WebLoadParams params(replacementURL);
+          params.transition_type = transition;
+          [self.URLLoader loadURLWithParams:params];
           [self cancelOmniboxEdit];
         };
     load_GURL_from_location_bar_swizzler_.reset(

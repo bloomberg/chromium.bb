@@ -44,6 +44,7 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "net/base/mac/url_conversions.h"
@@ -870,16 +871,13 @@ initWithLoader:(id<UrlLoader>)loader
 }
 
 - (void)openURL:(const GURL&)URL {
-  GURL copiedURL(URL);
   new_tab_page_uma::RecordAction(_browserState,
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
+  web::NavigationManager::WebLoadParams params(URL);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [self.delegate historyCollectionViewController:self
                        shouldCloseWithCompletion:^{
-                         [self.URLLoader
-                                       loadURL:copiedURL
-                                      referrer:web::Referrer()
-                                    transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-                             rendererInitiated:NO];
+                         [self.URLLoader loadURLWithParams:params];
                        }];
 }
 

@@ -74,14 +74,8 @@
   [[self scrollView] setDelegate:nil];
 }
 
-- (void)loadURL:(const GURL&)URL
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated {
-  [_loader loadURL:URL
-               referrer:referrer
-             transition:transition
-      rendererInitiated:rendererInitiated];
+- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
+  [_loader loadURLWithParams:params];
 }
 
 - (OverscrollActionsController*)overscrollActionsController {

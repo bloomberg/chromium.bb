@@ -15,6 +15,7 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -267,11 +268,9 @@ const int kLinkColor = 0x03A9F4;
 
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
-  GURL gurl = GetUrlWithLang(GURL(kLearnMoreIncognitoUrl));
-  [_loader loadURL:gurl
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_LINK
-      rendererInitiated:NO];
+  web::NavigationManager::WebLoadParams params(
+      GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
+  [_loader loadURLWithParams:params];
 }
 
 @end

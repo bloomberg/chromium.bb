@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "ui/base/page_transition_types.h"
 
@@ -16,7 +17,6 @@ class GURL;
 
 namespace web {
 class BrowserState;
-struct Referrer;
 }
 
 @class OverscrollActionsController;
@@ -44,10 +44,7 @@ struct Referrer;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Loads a new url.
-- (void)loadURL:(const GURL&)URL
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated;
+- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params;
 
 // The scrollview of the native view.
 - (UIScrollView*)scrollView;

@@ -52,6 +52,7 @@
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1009,10 +1010,9 @@ const CGFloat kShadowRadius = 12.0f;
                                  new_tab_page_uma::ACTION_OPENED_BOOKMARK);
   base::RecordAction(
       base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-  [self.loader loadURL:url
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-      rendererInitiated:NO];
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [self.loader loadURLWithParams:params];
 }
 
 - (void)addNewFolder {

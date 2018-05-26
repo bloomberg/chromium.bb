@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -372,10 +373,9 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
     [_loader loadJavaScriptFromLocationBar:jsToEval];
     return;
   }
-  [_loader loadURL:url
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
-      rendererInitiated:NO];
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [_loader loadURLWithParams:params];
 }
 
 - (void)openURLInNewTab:(const GURL&)url

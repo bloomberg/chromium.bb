@@ -21,12 +21,15 @@ source_set("fakes") {
     "fake_store_kit_launcher.mm",
     "fake_ui_view_controller.h",
     "fake_ui_view_controller.mm",
+    "fake_url_loader.h",
+    "fake_url_loader.mm",
   ]
 
   deps = [
     "//base",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/store_kit",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/presenters",
     "//ios/web/public",

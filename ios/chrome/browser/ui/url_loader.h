@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/strings/string16.h"
-#include "ui/base/page_transition_types.h"
+#import "ios/web/public/navigation_manager.h"
 
 class GURL;
 
@@ -28,11 +28,8 @@ enum OpenPosition {
 
 @protocol UrlLoader<NSObject>
 
-// Load a new url.
-- (void)loadURL:(const GURL&)url
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated;
+// Load a new request.
+- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params;
 
 // Load a new URL on a new page/tab. The |referrer| is optional. The tab will be
 // placed in the model according to |appendTo|.

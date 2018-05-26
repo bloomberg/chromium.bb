@@ -7,7 +7,7 @@
 #include <memory>
 
 #import "ios/chrome/browser/web/error_page_generator.h"
-#include "ios/web/public/referrer.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -25,10 +25,9 @@
 - (void)reload {
   // Because we don't have the original page transition at this point, just
   // use PAGE_TRANSITION_TYPED. We can revisit if this causes problems.
-  [super loadURL:[self url]
-               referrer:web::Referrer()
-             transition:ui::PAGE_TRANSITION_TYPED
-      rendererInitiated:YES];
+  web::NavigationManager::WebLoadParams params([self url]);
+  params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  [self loadURLWithParams:params];
 }
 
 - (id)initWithLoader:(id<UrlLoader>)loader

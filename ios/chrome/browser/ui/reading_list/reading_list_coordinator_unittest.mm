@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/test/fakes/fake_url_loader.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,74 +40,12 @@
 using favicon::PostReply;
 using testing::_;
 
-#pragma mark - UrlLoader
-
-@interface UrlLoaderStub : NSObject<UrlLoader> {
-  GURL _url;
-  web::Referrer _referrer;
-}
-
-@property(nonatomic, readonly) const GURL& url;
-@property(nonatomic, readonly) const web::Referrer& referrer;
-@property(nonatomic, assign) ui::PageTransition transition;
-@property(nonatomic, assign) BOOL rendererInitiated;
-@property(nonatomic, assign) BOOL inIncognito;
-@end
-
-@implementation UrlLoaderStub
-
-@synthesize transition = _transition;
-@synthesize rendererInitiated = _rendererInitiated;
-@synthesize inIncognito = _inIncognito;
-
-- (void)loadURL:(const GURL&)url
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated {
-  _url = url;
-  _referrer = referrer;
-  self.transition = transition;
-  self.rendererInitiated = rendererInitiated;
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  _url = url;
-  _referrer = referrer;
-  self.inIncognito = inIncognito;
-}
-
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-}
-
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-}
-
-- (const GURL&)url {
-  return _url;
-}
-
-- (const web::Referrer&)referrer {
-  return _referrer;
-}
-
-@end
-
 #pragma mark - ReadingListCoordinatorTest
 
 class ReadingListCoordinatorTest : public web::WebTestWithWebState {
  public:
   ReadingListCoordinatorTest() {
-    loader_mock_ = [[UrlLoaderStub alloc] init];
+    url_loader_ = [[FakeURLLoader alloc] init];
 
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
@@ -124,7 +63,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
     coordinator_ = [[ReadingListCoordinator alloc]
         initWithBaseViewController:nil
                       browserState:browser_state_.get()
-                            loader:loader_mock_];
+                            loader:url_loader_];
     coordinator_.mediator = mediator_;
 
     EXPECT_CALL(mock_favicon_service_,
@@ -137,7 +76,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
   ReadingListCoordinator* GetCoordinator() { return coordinator_; }
 
   ReadingListModel* GetReadingListModel() { return reading_list_model_.get(); }
-  UrlLoaderStub* GetLoaderStub() { return loader_mock_; }
+  FakeURLLoader* GetLoader() { return url_loader_; }
 
   ios::ChromeBrowserState* GetBrowserState() { return browser_state_.get(); }
 
@@ -157,7 +96,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
   ReadingListCoordinator* coordinator_;
   ReadingListMediator* mediator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
-  UrlLoaderStub* loader_mock_;
+  FakeURLLoader* url_loader_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
@@ -183,7 +122,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
                                                openItem:item];
 
   // Tests.
-  UrlLoaderStub* loader = GetLoaderStub();
+  FakeURLLoader* loader = GetLoader();
   EXPECT_EQ(url, loader.url);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                                            loader.transition));
@@ -215,7 +154,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItemOffline) {
                                 openItemOfflineInNewTab:item];
 
   // Tests.
-  UrlLoaderStub* loader = GetLoaderStub();
+  FakeURLLoader* loader = GetLoader();
   EXPECT_EQ(offlineURL, loader.url);
   EXPECT_FALSE(loader.inIncognito);
   EXPECT_TRUE(model->GetEntryByURL(url)->IsRead());
@@ -240,7 +179,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
                                               incognito:YES];
 
   // Tests.
-  UrlLoaderStub* loader = GetLoaderStub();
+  FakeURLLoader* loader = GetLoader();
   EXPECT_EQ(url, loader.url);
   EXPECT_TRUE(loader.inIncognito);
 }
