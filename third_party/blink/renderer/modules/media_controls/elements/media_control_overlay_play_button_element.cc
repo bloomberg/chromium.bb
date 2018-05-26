@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -278,6 +279,12 @@ bool MediaControlOverlayPlayButtonElement::ShouldCausePlayPause(
   // Double tap to navigate should only be available on modern controls.
   if (!MediaControlsImpl::IsModern() || !event->IsMouseEvent())
     return true;
+
+  // Double tap to navigate shouldn't be available in immersive mode.
+  if (GetDocument().GetSettings() &&
+      GetDocument().GetSettings()->GetImmersiveModeEnabled()) {
+    return true;
+  }
 
   // If the event doesn't have position data we should just default to
   // play/pause.
