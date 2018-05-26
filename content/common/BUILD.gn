@@ -241,7 +241,7 @@ source_set("common") {
     "pepper_plugin_list.h",
     "pepper_renderer_instance_data.cc",
     "pepper_renderer_instance_data.h",
-    "platform_notification_messages.h",
+    "platform_notification_param_traits.h",
     "plugin_list.cc",
     "plugin_list.h",
     "possibly_associated_interface_ptr.h",

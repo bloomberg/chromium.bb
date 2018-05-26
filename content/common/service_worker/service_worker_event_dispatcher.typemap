@@ -11,7 +11,7 @@ public_headers = [
   "//content/public/common/push_event_payload.h",
 ]
 traits_headers = [
-  "//content/common/platform_notification_messages.h",
+  "//content/common/platform_notification_param_traits.h",
   "//content/common/service_worker/service_worker_messages.h",
 ]
 type_mappings = [
