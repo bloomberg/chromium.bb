@@ -221,4 +221,35 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
   }
 }
 
+TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
+  RuntimeEnabledFeatures::SetEventTimingEnabled(true);
+  EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
+  performance_->AddEventTiming("click", TimeTicksFromSeconds(1.1),
+                               TimeTicksFromSeconds(3.3),
+                               TimeDelta::FromSeconds(6), false);
+  EXPECT_EQ(1, (int)performance_->getEntriesByName("click", "event").size());
+  performance_->clearEventTimings();
+
+  page_holder_->GetFrame()
+      .Loader()
+      .GetDocumentLoader()
+      ->GetTiming()
+      .MarkLoadEventStart();
+  performance_->AddEventTiming("click", TimeTicksFromSeconds(1.1),
+                               TimeTicksFromSeconds(3.3),
+                               TimeDelta::FromSeconds(6), false);
+  EXPECT_EQ(0, (int)performance_->getEntriesByName("click", "event").size());
+  performance_->clearEventTimings();
+
+  EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
+  GetFrame()->PrepareForCommit();
+  EXPECT_FALSE(page_holder_->GetFrame().Loader().GetDocumentLoader());
+  performance_->AddEventTiming("click", TimeTicksFromSeconds(1.1),
+                               TimeTicksFromSeconds(3.3),
+                               TimeDelta::FromSeconds(6), false);
+  EXPECT_EQ(1, (int)performance_->getEntriesByName("click", "event").size());
+  performance_->clearEventTimings();
+
+  RuntimeEnabledFeatures::SetEventTimingEnabled(false);
+}
 }  // namespace blink
