@@ -272,7 +272,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const LayoutObject* stay_within) const;
   LayoutObject* PreviousInPreOrder() const;
   LayoutObject* PreviousInPreOrder(const LayoutObject* stay_within) const;
-  LayoutObject* ChildAt(unsigned) const;
 
   LayoutObject* LastLeafChild() const;
 
@@ -305,7 +304,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Convenience function for getting to the nearest enclosing box of a
   // LayoutObject.
   LayoutBox* EnclosingBox() const;
-  LayoutBoxModelObject* EnclosingBoxModelObject() const;
 
   LayoutBox* EnclosingScrollableBox() const;
 

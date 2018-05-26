@@ -195,11 +195,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return static_cast<RootInlineBox*>(LastLineBox());
   }
 
-  LayoutUnit LogicalLeftSelectionOffset(const LayoutBlock* root_block,
-                                        LayoutUnit position) const override;
-  LayoutUnit LogicalRightSelectionOffset(const LayoutBlock* root_block,
-                                         LayoutUnit position) const override;
-
   RootInlineBox* CreateAndAppendRootInlineBox();
   RootInlineBox* ConstructLine(BidiRunList<BidiRun>&, const LineInfo&);
 

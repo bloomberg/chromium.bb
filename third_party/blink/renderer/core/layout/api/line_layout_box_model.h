@@ -128,10 +128,6 @@ class LineLayoutBoxModel : public LineLayoutItem {
   }
 };
 
-inline LineLayoutBoxModel LineLayoutItem::EnclosingBoxModelObject() const {
-  return LineLayoutBoxModel(GetLayoutObject()->EnclosingBoxModelObject());
-}
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_MODEL_H_

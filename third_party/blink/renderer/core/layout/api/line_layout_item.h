@@ -23,7 +23,6 @@ class HitTestRequest;
 class HitTestLocation;
 class LayoutObject;
 class LineLayoutBox;
-class LineLayoutBoxModel;
 class LineLayoutAPIShim;
 
 static LayoutObject* const kHashTableDeletedValue =
@@ -73,11 +72,6 @@ class LineLayoutItem {
   // Intentionally returns a LineLayoutBox to avoid exposing LayoutBlock
   // to the line layout code.
   LineLayoutBox ContainingBlock() const;
-
-  // Implemented in LineLayoutBoxModel.h
-  // Intentionally returns a LineLayoutBoxModel to avoid exposing
-  // LayoutBoxModelObject to the line layout code.
-  LineLayoutBoxModel EnclosingBoxModelObject() const;
 
   LineLayoutItem Container() const {
     return LineLayoutItem(layout_object_->Container());

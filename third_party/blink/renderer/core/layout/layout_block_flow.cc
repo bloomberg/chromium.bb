@@ -4444,38 +4444,6 @@ void LayoutBlockFlow::MoveChildrenTo(LayoutBoxModelObject* to_box_model_object,
                                        full_remove_insert);
 }
 
-LayoutUnit LayoutBlockFlow::LogicalLeftSelectionOffset(
-    const LayoutBlock* root_block,
-    LayoutUnit position) const {
-  LayoutUnit logical_left =
-      LogicalLeftOffsetForLine(position, kDoNotIndentText);
-  if (logical_left == LogicalLeftOffsetForContent())
-    return LayoutBlock::LogicalLeftSelectionOffset(root_block, position);
-
-  const LayoutBlock* cb = this;
-  while (cb != root_block) {
-    logical_left += cb->LogicalLeft();
-    cb = cb->ContainingBlock();
-  }
-  return logical_left;
-}
-
-LayoutUnit LayoutBlockFlow::LogicalRightSelectionOffset(
-    const LayoutBlock* root_block,
-    LayoutUnit position) const {
-  LayoutUnit logical_right =
-      LogicalRightOffsetForLine(position, kDoNotIndentText);
-  if (logical_right == LogicalRightOffsetForContent())
-    return LayoutBlock::LogicalRightSelectionOffset(root_block, position);
-
-  const LayoutBlock* cb = this;
-  while (cb != root_block) {
-    logical_right += cb->LogicalLeft();
-    cb = cb->ContainingBlock();
-  }
-  return logical_right;
-}
-
 RootInlineBox* LayoutBlockFlow::CreateRootInlineBox() {
   return new RootInlineBox(LineLayoutItem(this));
 }

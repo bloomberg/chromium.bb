@@ -888,38 +888,6 @@ void LayoutBlock::PaintObject(const PaintInfo& paint_info,
   BlockPainter(*this).PaintObject(paint_info, paint_offset);
 }
 
-LayoutUnit LayoutBlock::BlockDirectionOffset(
-    const LayoutSize& offset_from_block) const {
-  return IsHorizontalWritingMode() ? offset_from_block.Height()
-                                   : offset_from_block.Width();
-}
-
-LayoutUnit LayoutBlock::InlineDirectionOffset(
-    const LayoutSize& offset_from_block) const {
-  return IsHorizontalWritingMode() ? offset_from_block.Width()
-                                   : offset_from_block.Height();
-}
-
-LayoutUnit LayoutBlock::LogicalLeftSelectionOffset(
-    const LayoutBlock* root_block,
-    LayoutUnit position) const {
-  // The border can potentially be further extended by our containingBlock().
-  if (root_block != this)
-    return ContainingBlock()->LogicalLeftSelectionOffset(
-        root_block, position + LogicalTop());
-  return LogicalLeftOffsetForContent();
-}
-
-LayoutUnit LayoutBlock::LogicalRightSelectionOffset(
-    const LayoutBlock* root_block,
-    LayoutUnit position) const {
-  // The border can potentially be further extended by our containingBlock().
-  if (root_block != this)
-    return ContainingBlock()->LogicalRightSelectionOffset(
-        root_block, position + LogicalTop());
-  return LogicalRightOffsetForContent();
-}
-
 TrackedLayoutBoxListHashSet* LayoutBlock::PositionedObjectsInternal() const {
   return g_positioned_descendants_map ? g_positioned_descendants_map->at(this)
                                       : nullptr;
