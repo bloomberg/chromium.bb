@@ -338,7 +338,7 @@ int Main(const MainParams& params) {
   int argc = 0;
   const char** argv = nullptr;
 
-#if defined(OS_POSIX)
+#if !defined(OS_WIN)
   // argc/argv are ignored on Windows; see command_line.h for details.
   argc = params.argc;
   argv = params.argv;
@@ -346,7 +346,7 @@ int Main(const MainParams& params) {
 
   base::CommandLine::Init(argc, argv);
 
-#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
   PopulateFDsFromCommandLine();
 #endif
 

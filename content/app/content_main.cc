@@ -12,7 +12,7 @@ namespace content {
 int ContentMain(const ContentMainParams& params) {
   ContentServiceManagerMainDelegate delegate(params);
   service_manager::MainParams main_params(&delegate);
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_ANDROID)
   main_params.argc = params.argc;
   main_params.argv = params.argv;
 #endif
