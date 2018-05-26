@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import functools
+import json
 import multiprocessing
 import os
 import re
@@ -137,6 +138,26 @@ def _PylintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
+def _JsonLintFile(path, _output_format, _debug):
+  """Returns result of running json lint checks on |path|."""
+  result = cros_build_lib.CommandResult('python -mjson.tool "%s"' % path,
+                                        returncode=0)
+
+  # Strip out comments.
+  regex = re.compile(r'^\s*#.*')
+  with open(path) as f:
+    data = ''.join(regex.sub('', line) for line in f)
+
+  # See if it validates.
+  try:
+    json.loads(data)
+  except ValueError as e:
+    result.returncode = 1
+    logging.notice('%s: %s', path, e)
+
+  return result
+
+
 def _ShellLintFile(path, output_format, debug):
   """Returns result of running lint checks on |path|."""
   # TODO: Try using `checkbashisms`.
@@ -225,6 +246,7 @@ _EXT_TO_LINTER_MAP = {
     # Note these are defined to keep in line with cpplint.py. Technically, we
     # could include additional ones, but cpplint.py would just filter them out.
     frozenset({'.cc', '.cpp', '.h'}): _CpplintFile,
+    frozenset({'.json'}): _JsonLintFile,
     frozenset({'.py'}): _PylintFile,
     frozenset({'.sh'} | GENTOO_SHELL_EXTENSIONS): _ShellLintFile,
 }
