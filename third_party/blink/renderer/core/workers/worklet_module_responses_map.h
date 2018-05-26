@@ -7,12 +7,12 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -22,54 +22,76 @@ namespace blink {
 // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
 //
 // This acts as a cache for creation params (including source code) of module
-// scripts, but also performs fetch when needed. The creation params are added
-// and retrieved using Fetch(). If a module script for a given URL has already
-// been fetched, Fetch() returns the cached creation params. Otherwise, Fetch()
-// internally creates DocumentModuleScriptFetcher with thie ResourceFetcher that
-// is given to its ctor. Once the module script is fetched, its creation params
-// are cached and Fetch() returns it.
-//
-// TODO(nhiroki): Rename this to WorkletModuleFetchCoordinator, and revise the
-// class-level comment.
+// scripts. The creation params are added using SetEntryParams(), and retrieved
+// using GetEntry(). If a module script for a given URL has already been
+// fetched, GetEntry() returns the cached creation params. Otherwise, GetEntry()
+// returns false and defers to WorkletModuleScriptFetcher to perform the fetch.
+// Once the module script is fetched, its creation params are cached and
+// GetEntry() returns it. This class is created on the main thread and shared
+// across worklet threads. All access to this class should be mutex-guarded,
+// and any data passed in or read out is copied to ensure that this object's
+// internal state can be safely destructed from the main thread.
 class CORE_EXPORT WorkletModuleResponsesMap
     : public GarbageCollectedFinalized<WorkletModuleResponsesMap> {
  public:
-  // Used for notifying results of Fetch().
-  class CORE_EXPORT Client : public GarbageCollectedMixin {
-   public:
-    virtual ~Client() = default;
-    virtual void OnFetched(const ModuleScriptCreationParams&) = 0;
-    virtual void OnFailed() = 0;
-  };
+  WorkletModuleResponsesMap() = default;
 
-  explicit WorkletModuleResponsesMap(ResourceFetcher*);
+  // If |url| is already fetched, synchronously calls Client::OnFetched().
+  // Otherwise, it's called on the completion of the fetch. See also the
+  // class-level comment.
+  // Called on worklet threads.
+  bool GetEntry(const KURL&,
+                ModuleScriptFetcher::Client*,
+                scoped_refptr<base::SingleThreadTaskRunner> client_task_runner)
+      LOCKS_EXCLUDED(mutex_);
 
-  // Fetches a module script. If the script is already fetched, synchronously
-  // calls Client::OnFetched(). Otherwise, it's called on the completion of the
-  // fetch. See also the class-level comment.
-  void Fetch(FetchParameters&, Client*);
+  // Called on worklet threads.
+  void SetEntryParams(const KURL&,
+                      const base::Optional<ModuleScriptCreationParams>&)
+      LOCKS_EXCLUDED(mutex_);
 
-  // Invalidates an inflight module script fetch, and calls OnFailed() for
-  // waiting clients.
-  void Invalidate(const KURL&);
+  // Called when the associated document is destroyed and clears the map.
+  // Following GetEntry() calls synchronously call Client::OnFailed().
+  // Called on main thread.
+  void Dispose() LOCKS_EXCLUDED(mutex_);
 
-  // Called when the associated document is destroyed. Aborts all waiting
-  // clients and clears the map. Following Fetch() calls are simply ignored.
-  void Dispose();
-
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) {}
 
  private:
-  class Entry;
+  class Entry final {
+   public:
+    enum class State { kFetching, kFetched, kFailed };
+    Entry() = default;
+    ~Entry() = default;
 
-  bool is_available_ = true;
+    State GetState() const { return state_; }
+    ModuleScriptCreationParams GetParams() const {
+      return params_->IsolatedCopy();
+    }
+    void AddClient(
+        ModuleScriptFetcher::Client* client,
+        scoped_refptr<base::SingleThreadTaskRunner> client_task_runner);
+    void SetParams(const base::Optional<ModuleScriptCreationParams>& params);
 
-  Member<ResourceFetcher> fetcher_;
+   private:
+    State state_ = State::kFetching;
+    base::Optional<ModuleScriptCreationParams> params_;
+    HashMap<CrossThreadPersistent<ModuleScriptFetcher::Client>,
+            scoped_refptr<base::SingleThreadTaskRunner>>
+        clients_;
+  };
+
+  // |is_available_| is written to false by the main thread on disposal, and
+  // read by any thread.
+  bool is_available_ GUARDED_BY(mutex_) = true;
 
   // TODO(nhiroki): Keep the insertion order of top-level modules to replay
   // addModule() calls for a newly created global scope.
   // See https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
-  HeapHashMap<KURL, Member<Entry>> entries_;
+  // Can be read/written by any thread.
+  HashMap<KURL, std::unique_ptr<Entry>> entries_ GUARDED_BY(mutex_);
+
+  Mutex mutex_;
 };
 
 }  // namespace blink

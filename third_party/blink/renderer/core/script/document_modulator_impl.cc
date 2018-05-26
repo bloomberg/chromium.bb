@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/document_modulator_impl.h"
 
-#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 
 namespace blink {
 
@@ -15,7 +15,7 @@ ModulatorImplBase* DocumentModulatorImpl::Create(
 }
 
 ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher() {
-  return new DocumentModuleScriptFetcher(fetcher_);
+  return new ModuleScriptFetcher(fetcher_);
 }
 
 void DocumentModulatorImpl::Trace(blink::Visitor* visitor) {

@@ -11,11 +11,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
-#include "third_party/blink/renderer/core/loader/modulescript/worker_or_worklet_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
@@ -106,11 +106,12 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
   ModuleScriptFetcher* CreateModuleScriptFetcher() override {
     auto* execution_context = ExecutionContext::From(script_state_.get());
-    if (execution_context->IsDocument())
-      return new DocumentModuleScriptFetcher(Fetcher());
-    auto* global_scope = ToWorkletGlobalScope(execution_context);
-    return new WorkerOrWorkletModuleScriptFetcher(
-        global_scope->ModuleFetchCoordinatorProxy());
+    if (execution_context->IsWorkletGlobalScope()) {
+      auto* global_scope = ToWorkletGlobalScope(execution_context);
+      return new WorkletModuleScriptFetcher(
+          Fetcher(), global_scope->GetModuleResponsesMap());
+    }
+    return new ModuleScriptFetcher(Fetcher());
   }
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
@@ -147,6 +148,12 @@ class ModuleScriptLoaderTest : public PageTestBase {
   void TestFetchURL(TestModuleScriptLoaderClient*);
 
   ModuleScriptLoaderTestModulator* GetModulator() { return modulator_.Get(); }
+
+  void RunUntilIdle() {
+    base::SingleThreadTaskRunner* runner =
+        GetModulator()->Fetcher()->Context().GetLoadingTaskRunner().get();
+    static_cast<scheduler::FakeTaskRunner*>(runner)->RunUntilIdle();
+  }
 
  protected:
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
@@ -185,7 +192,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault, new WorkletModuleResponsesMap(fetcher));
+      kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
   global_scope_ = new MainThreadWorkletGlobalScope(
       &GetFrame(), std::move(creation_params), *reporting_proxy_);
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
@@ -222,7 +229,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 
   EXPECT_FALSE(client1->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
-  platform_->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(client1->WasNotifyFinished());
   ASSERT_TRUE(client1->GetModuleScript());
@@ -236,7 +243,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 
   EXPECT_FALSE(client2->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
-  platform_->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(client2->WasNotifyFinished());
   ASSERT_TRUE(client2->GetModuleScript());
@@ -273,7 +280,7 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier_OnWorklet) {
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
-  platform_->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(client->WasNotifyFinished());
   ASSERT_TRUE(client->GetModuleScript());
@@ -308,7 +315,7 @@ TEST_F(ModuleScriptLoaderTest, FetchInvalidURL_OnWorklet) {
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish asynchronously.";
-  platform_->RunUntilIdle();
+  RunUntilIdle();
 
   EXPECT_TRUE(client->WasNotifyFinished());
   EXPECT_FALSE(client->GetModuleScript());
@@ -346,12 +353,8 @@ TEST_F(ModuleScriptLoaderTest, FetchURL_OnWorklet) {
 
   EXPECT_FALSE(client->WasNotifyFinished())
       << "ModuleScriptLoader unexpectedly finished synchronously.";
-
-  // Advance until WorkerOrWorkletModuleScriptFetcher finishes looking up a
-  // cache in WorkletModuleResponsesMap and issues a fetch request so that
-  // ServeAsynchronousRequests() can serve for the pending request.
-  platform_->RunUntilIdle();
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  RunUntilIdle();
 
   EXPECT_TRUE(client->WasNotifyFinished());
   EXPECT_TRUE(client->GetModuleScript());

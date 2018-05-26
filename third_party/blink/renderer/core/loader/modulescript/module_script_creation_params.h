@@ -28,6 +28,12 @@ class ModuleScriptCreationParams {
         access_control_status_(access_control_status) {}
   ~ModuleScriptCreationParams() = default;
 
+  ModuleScriptCreationParams IsolatedCopy() const {
+    return ModuleScriptCreationParams(
+        GetResponseUrl().Copy(), GetSourceText().IsolatedCopy(),
+        GetFetchCredentialsMode(), GetAccessControlStatus());
+  }
+
   const KURL& GetResponseUrl() const { return response_url_; };
   const String& GetSourceText() const { return source_text_; }
   network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
@@ -35,6 +41,11 @@ class ModuleScriptCreationParams {
   }
   AccessControlStatus GetAccessControlStatus() const {
     return access_control_status_;
+  }
+
+  bool IsSafeToSendToAnotherThread() const {
+    return response_url_.IsSafeToSendToAnotherThread() &&
+           source_text_.IsSafeToSendToAnotherThread();
   }
 
  private:
@@ -50,9 +61,7 @@ template <>
 struct CrossThreadCopier<ModuleScriptCreationParams> {
   static ModuleScriptCreationParams Copy(
       const ModuleScriptCreationParams& params) {
-    return ModuleScriptCreationParams(
-        params.GetResponseUrl().Copy(), params.GetSourceText().IsolatedCopy(),
-        params.GetFetchCredentialsMode(), params.GetAccessControlStatus());
+    return params.IsolatedCopy();
   }
 };
 

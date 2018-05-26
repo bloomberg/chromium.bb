@@ -97,7 +97,7 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
-  DCHECK(!IsMainThreadWorkletGlobalScope());
+  DCHECK(IsContextThread());
   if (resource_fetcher_)
     return resource_fetcher_;
   WorkerFetchContext* fetch_context = WorkerFetchContext::Create(*this);
@@ -106,7 +106,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   return resource_fetcher_;
 }
 ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
-  DCHECK(!IsMainThreadWorkletGlobalScope());
+  DCHECK(IsContextThread());
   DCHECK(resource_fetcher_);
   return resource_fetcher_;
 }

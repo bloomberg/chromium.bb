@@ -8,8 +8,10 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 
@@ -19,31 +21,38 @@ class ConsoleMessage;
 // classes are expected to fetch a module script for the given FetchParameters
 // and return its client a fetched resource as ModuleScriptCreationParams.
 class CORE_EXPORT ModuleScriptFetcher
-    : public GarbageCollectedFinalized<ModuleScriptFetcher> {
+    : public GarbageCollectedFinalized<ModuleScriptFetcher>,
+      public ResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ModuleScriptFetcher);
+
  public:
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual void NotifyFetchFinished(
         const base::Optional<ModuleScriptCreationParams>&,
         const HeapVector<Member<ConsoleMessage>>& error_messages) = 0;
+    void OnFetched(const base::Optional<ModuleScriptCreationParams>&);
+    void OnFailed();
   };
 
-  ModuleScriptFetcher() = default;
-  virtual ~ModuleScriptFetcher() = default;
+  explicit ModuleScriptFetcher(ResourceFetcher*);
+  ~ModuleScriptFetcher() override = default;
 
   // Takes a non-const reference to FetchParameters because
   // ScriptResource::Fetch() requires it.
-  virtual void Fetch(FetchParameters&, Client*) = 0;
+  virtual void Fetch(FetchParameters&, Client*);
 
-  virtual void Trace(blink::Visitor*);
+  // Implements ResourceClient
+  void NotifyFinished(Resource*) final;
+  String DebugName() const final { return "ModuleScriptFetcher"; }
+
+  void Trace(blink::Visitor*) override;
 
  protected:
-  void NotifyFetchFinished(const base::Optional<ModuleScriptCreationParams>&,
-                           const HeapVector<Member<ConsoleMessage>>&);
-
-  void SetClient(Client*);
+  Member<ResourceFetcher> fetcher_;
 
  private:
+  bool FetchIfLayeredAPI(FetchParameters&);
   Member<Client> client_;
 };
 

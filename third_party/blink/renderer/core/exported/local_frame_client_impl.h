@@ -273,6 +273,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void FrameRectsChanged(const IntRect&) override;
 
+  std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() override;
+  std::unique_ptr<WebContentSettingsClient> CreateWorkerContentSettingsClient()
+      override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

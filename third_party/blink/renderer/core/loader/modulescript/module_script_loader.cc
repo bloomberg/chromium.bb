@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
@@ -185,7 +184,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   }
 
   // Note: "conditions" referred in Step 8 is implemented in
-  // WasModuleLoadSuccessful() in DocumentModuleScriptFetcher.cpp.
+  // WasModuleLoadSuccessful() in module_script_fetcher.cc.
   // Step 8. "If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
   // steps." [spec text]

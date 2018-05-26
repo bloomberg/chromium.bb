@@ -1123,4 +1123,16 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
+std::unique_ptr<WebWorkerFetchContext>
+LocalFrameClientImpl::CreateWorkerFetchContext() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->CreateWorkerFetchContext();
+}
+
+std::unique_ptr<WebContentSettingsClient>
+LocalFrameClientImpl::CreateWorkerContentSettingsClient() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->CreateWorkerContentSettingsClient();
+}
+
 }  // namespace blink

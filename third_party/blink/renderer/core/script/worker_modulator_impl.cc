@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/script/worker_modulator_impl.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -23,7 +23,7 @@ WorkerModulatorImpl::WorkerModulatorImpl(
 
 ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher() {
   ToWorkerGlobalScope(GetExecutionContext())->EnsureFetcher();
-  return new DocumentModuleScriptFetcher(GetExecutionContext()->Fetcher());
+  return new ModuleScriptFetcher(GetExecutionContext()->Fetcher());
 }
 
 bool WorkerModulatorImpl::IsDynamicImportForbidden(String* reason) {

@@ -8,7 +8,7 @@
 #include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
-#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -17,21 +17,22 @@
 namespace blink {
 
 class ClientImpl final : public GarbageCollectedFinalized<ClientImpl>,
-                         public WorkletModuleResponsesMap::Client {
+                         public ModuleScriptFetcher::Client {
   USING_GARBAGE_COLLECTED_MIXIN(ClientImpl);
 
  public:
   enum class Result { kInitial, kOK, kFailed };
 
-  void OnFetched(const ModuleScriptCreationParams& params) override {
+  void NotifyFetchFinished(
+      const base::Optional<ModuleScriptCreationParams>& params,
+      const HeapVector<Member<ConsoleMessage>>&) override {
     ASSERT_EQ(Result::kInitial, result_);
-    result_ = Result::kOK;
-    params_.emplace(params);
-  }
-
-  void OnFailed() override {
-    ASSERT_EQ(Result::kInitial, result_);
-    result_ = Result::kFailed;
+    if (params) {
+      result_ = Result::kOK;
+      params_.emplace(*params);
+    } else {
+      result_ = Result::kFailed;
+    }
   }
 
   Result GetResult() const { return result_; }

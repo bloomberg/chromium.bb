@@ -35,12 +35,14 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -399,6 +401,16 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual Frame* FindFrame(const AtomicString& name) const = 0;
 
   virtual void FrameRectsChanged(const IntRect&) {}
+
+  // Returns a new WebWorkerFetchContext for a dedicated worker or worklet.
+  virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
+    return nullptr;
+  }
+
+  virtual std::unique_ptr<WebContentSettingsClient>
+  CreateWorkerContentSettingsClient() {
+    return nullptr;
+  }
 };
 
 }  // namespace blink
