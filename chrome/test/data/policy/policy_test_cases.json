@@ -3731,7 +3731,7 @@
   "EnableSyncConsent": {
     "os": ["chromeos"],
     "test_policy": { "EnableSyncConsent": false },
-    "pref_mappings": []
+    "pref_mappings": [{ "pref": "sync_consent.enabled" }]
   },
 
 

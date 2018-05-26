@@ -448,6 +448,9 @@ void Preferences::RegisterProfilePrefs(
       prefs::kTextToSpeechVolume,
       blink::SpeechSynthesisConstants::kDefaultTextToSpeechVolume,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+
+  // By default showing Sync Consent is set to true. It can changed by policy.
+  registry->RegisterBooleanPref(prefs::kEnableSyncConsent, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
