@@ -24,6 +24,7 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -62,6 +63,8 @@ constexpr int kNotificationVibrationPattern[] = {100, 200, 300};
 constexpr double kNotificationTimestamp = 621046800000.;
 
 const char kTestFileName[] = "notifications/platform_notification_service.html";
+const char kTestNotificationOrigin[] = "https://example.com/";
+const char kTestNotificationId[] = "random#notification-id";
 
 }  // namespace
 
@@ -830,6 +833,47 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // The list of displayed notification Ids should have been updated.
   ASSERT_EQ(1u, notification_ids.size());
   ASSERT_EQ(notification_ids[0], first_id);
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       OrphanedNonPersistentNotificationCreatesForegroundTab) {
+  // Verifies that activating a non-persistent notification that no longer has
+  // any event listeners attached (e.g. because the tab closed) creates a new
+  // foreground tab.
+
+  Profile* profile = browser()->profile();
+
+  NotificationDisplayServiceImpl* display_service =
+      NotificationDisplayServiceImpl::GetForProfile(profile);
+  ASSERT_TRUE(display_service);
+
+  NotificationHandler* handler = display_service->GetNotificationHandler(
+      NotificationHandler::Type::WEB_NON_PERSISTENT);
+  ASSERT_TRUE(handler);
+
+  // There should be one open tab for the current |browser()|.
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+  content::WebContents* original_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Signal an activation for a notification that's never been shown.
+  {
+    base::RunLoop run_loop;
+    handler->OnClick(profile, GURL(kTestNotificationOrigin),
+                     kTestNotificationId, base::nullopt /* action_index */,
+                     base::nullopt /* reply */, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // A second tab should've been created and have been brought to the foreground
+  // for the notification's test origin.
+  ASSERT_EQ(browser()->tab_strip_model()->count(), 2);
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_NE(active_web_contents, original_web_contents);
+  EXPECT_EQ(active_web_contents->GetVisibleURL(),
+            GURL(kTestNotificationOrigin));
 }
 
 // Mac OS X exclusively uses native notifications, so the decision on whether to

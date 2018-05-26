@@ -40,7 +40,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/value_builder.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 using content::NotificationResources;
 using content::PlatformNotificationData;

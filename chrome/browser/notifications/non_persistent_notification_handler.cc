@@ -4,11 +4,20 @@
 
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/nullable_string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
-#include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "ui/base/page_transition_types.h"
+#endif  // !defined(OS_ANDROID)
 
 NonPersistentNotificationHandler::NonPersistentNotificationHandler() = default;
 NonPersistentNotificationHandler::~NonPersistentNotificationHandler() = default;
@@ -44,10 +53,39 @@ void NonPersistentNotificationHandler::OnClick(
   DCHECK(!reply.has_value());
 
   content::NotificationEventDispatcher::GetInstance()
-      ->DispatchNonPersistentClickEvent(notification_id);
+      ->DispatchNonPersistentClickEvent(
+          notification_id,
+          base::BindOnce(
+              &NonPersistentNotificationHandler::DidDispatchClickEvent,
+              weak_ptr_factory_.GetWeakPtr(), profile, origin, notification_id,
+              std::move(completed_closure)));
+}
 
-  // TODO(crbug.com/787459): Implement event acknowledgements once
-  // non-persistent notifications have updated to use Mojo instead of IPC.
+void NonPersistentNotificationHandler::DidDispatchClickEvent(
+    Profile* profile,
+    const GURL& origin,
+    const std::string& notification_id,
+    base::OnceClosure completed_closure,
+    bool success) {
+#if !defined(OS_ANDROID)
+  // Non-persistent notifications are able to outlive the document that created
+  // them. In such cases the JavaScript event handler might not be available
+  // when the notification is interacted with. Launch a new tab for the
+  // notification's |origin| instead, and close the activated notification. Not
+  // applicable to Android as non-persistent notifications are not available.
+  if (!success) {
+    NavigateParams params(profile, origin, ui::PAGE_TRANSITION_LINK);
+
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    Navigate(&params);
+
+    // Close the |notification_id| as the user has explicitly acknowledged it.
+    PlatformNotificationServiceImpl::GetInstance()->CloseNotification(
+        profile, notification_id);
+  }
+#endif  // !defined(OS_ANDROID)
+
   std::move(completed_closure).Run();
 }
 

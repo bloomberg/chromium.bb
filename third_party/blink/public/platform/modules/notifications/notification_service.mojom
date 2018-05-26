@@ -13,7 +13,7 @@ interface NonPersistentNotificationListener {
   OnShow();
 
   // Called when the notification was clicked upon.
-  OnClick();
+  OnClick() => ();
 
   // Called when the notification was closed; either programatically, or by the
   // developer calling Notification.close().

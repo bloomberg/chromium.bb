@@ -41,7 +41,8 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
   void DispatchNonPersistentShowEvent(
       const std::string& notification_id) override;
   void DispatchNonPersistentClickEvent(
-      const std::string& notification_id) override;
+      const std::string& notification_id,
+      NotificationClickEventCallback callback) override;
   void DispatchNonPersistentCloseEvent(
       const std::string& notification_id,
       base::OnceClosure completed_closure) override;

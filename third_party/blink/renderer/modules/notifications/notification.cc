@@ -228,7 +228,7 @@ void Notification::OnShow() {
   DispatchEvent(Event::Create(EventTypeNames::show));
 }
 
-void Notification::OnClick() {
+void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
   Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -236,6 +236,8 @@ void Notification::OnClick() {
                                   UserGestureToken::kNewGesture);
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(Event::Create(EventTypeNames::click));
+
+  std::move(completed_closure).Run();
 }
 
 void Notification::OnClose(OnCloseCallback completed_closure) {

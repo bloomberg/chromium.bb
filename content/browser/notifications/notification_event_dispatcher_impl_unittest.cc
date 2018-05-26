@@ -50,7 +50,10 @@ class TestNotificationListener
 
   // blink::mojom::NonPersistentNotificationListener implementation.
   void OnShow() override { on_show_count_++; }
-  void OnClick() override { on_click_count_++; }
+  void OnClick(OnClickCallback completed_closure) override {
+    on_click_count_++;
+    std::move(completed_closure).Run();
+  }
   void OnClose(OnCloseCallback completed_closure) override {
     on_close_count_++;
     std::move(completed_closure).Run();
@@ -144,14 +147,16 @@ TEST_F(NotificationEventDispatcherImplTest,
   dispatcher_->RegisterNonPersistentNotificationListener(
       kSomeOtherUniqueId, other_listener->GetPtr().PassInterface());
 
-  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId);
+  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId,
+                                               base::DoNothing());
 
   WaitForMojoTasksToComplete();
 
   EXPECT_EQ(listener->on_click_count(), 1);
   EXPECT_EQ(other_listener->on_click_count(), 0);
 
-  dispatcher_->DispatchNonPersistentClickEvent(kSomeOtherUniqueId);
+  dispatcher_->DispatchNonPersistentClickEvent(kSomeOtherUniqueId,
+                                               base::DoNothing());
 
   WaitForMojoTasksToComplete();
 
@@ -192,7 +197,8 @@ TEST_F(NotificationEventDispatcherImplTest,
       kPrimaryUniqueId, listener->GetPtr().PassInterface());
 
   dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
-  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId);
+  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId,
+                                               base::DoNothing());
   dispatcher_->DispatchNonPersistentCloseEvent(kPrimaryUniqueId,
                                                base::DoNothing());
 
@@ -203,7 +209,8 @@ TEST_F(NotificationEventDispatcherImplTest,
   EXPECT_EQ(listener->on_close_count(), 1);
 
   // Should not be counted as the notification was already closed.
-  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId);
+  dispatcher_->DispatchNonPersistentClickEvent(kPrimaryUniqueId,
+                                               base::DoNothing());
 
   WaitForMojoTasksToComplete();
 

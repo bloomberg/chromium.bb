@@ -129,7 +129,7 @@ void MockPlatformNotificationService::SimulateClick(
         << "Action buttons are only supported for "
            "persistent notifications";
     NotificationEventDispatcher::GetInstance()->DispatchNonPersistentClickEvent(
-        notification_id);
+        notification_id, base::DoNothing() /* callback */);
   }
 }
 
