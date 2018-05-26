@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/surface_layer.h"
 #include "cc/paint/filter_operations.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
@@ -113,10 +112,9 @@ gfx::Size ContentLayer::ComputeSize(int id) const {
   gfx::Size size;
 
   scoped_refptr<cc::Layer> live_layer = tab_content_manager_->GetLiveLayer(id);
-  cc::SurfaceLayer* surface_layer =
-      static_cast<cc::SurfaceLayer*>(GetDrawsContentLeaf(live_layer));
-  if (surface_layer)
-    size.SetToMax(surface_layer->bounds());
+  cc::Layer* leaf_that_draws = GetDrawsContentLeaf(live_layer);
+  if (leaf_that_draws)
+    size.SetToMax(leaf_that_draws->bounds());
 
   scoped_refptr<ThumbnailLayer> static_layer =
       tab_content_manager_->GetStaticLayer(id);
