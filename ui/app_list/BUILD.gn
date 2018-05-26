@@ -15,8 +15,6 @@ component("app_list") {
     "app_list_util.cc",
     "app_list_util.h",
     "app_list_view_delegate.h",
-    "paged_view_structure.cc",
-    "paged_view_structure.h",
     "pagination_controller.cc",
     "pagination_controller.h",
     "pagination_model.cc",

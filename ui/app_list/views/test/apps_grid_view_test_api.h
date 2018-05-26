@@ -38,10 +38,6 @@ class AppsGridViewTestApi {
 
   int TilesPerPage(int page) const;
 
-  views::View* GetViewAtVisualIndex(int page, int slot) const;
-
-  gfx::Rect GetItemTileRectAtVisualIndex(int page, int slot) const;
-
  private:
   AppsGridView* view_;
 

@@ -122,7 +122,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
   AppListItemView* GetItemViewAtPointInGrid(AppsGridView* grid_view,
                                             const gfx::Point& point) {
     const views::ViewModelT<AppListItemView>* view_model =
-        grid_view->view_model();
+        grid_view->view_model_for_test();
     for (int i = 0; i < view_model->view_size(); ++i) {
       views::View* view = view_model->view_at(i);
       if (view->bounds().Contains(point)) {
@@ -182,11 +182,11 @@ class AppListMainViewTest : public views::ViewsTestBase {
   AppsGridView* FolderGridView() { return FolderView()->items_grid_view(); }
 
   const views::ViewModelT<AppListItemView>* RootViewModel() {
-    return RootGridView()->view_model();
+    return RootGridView()->view_model_for_test();
   }
 
   const views::ViewModelT<AppListItemView>* FolderViewModel() {
-    return FolderGridView()->view_model();
+    return FolderGridView()->view_model_for_test();
   }
 
   AppListItemView* CreateAndOpenSingleItemFolder() {
