@@ -11,6 +11,7 @@ from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import CLStatus
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
+from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.common.system.executive_mock import MockCall
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.common.system.log_testing import LoggingTestCase
@@ -370,6 +371,18 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
         self.assertLog([
             'INFO: No sheriff today.\n'
+        ])
+
+    def test_tbr_reviewer_rotations_url_unavailable(self):
+        def raise_exception(*_):
+            raise NetworkTimeout
+
+        host = MockHost()
+        host.web.get_binary = raise_exception
+        importer = TestImporter(host)
+        self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
+        self.assertLog([
+            'ERROR: Cannot fetch %s\n' % ROTATIONS_URL
         ])
 
     def test_tbr_reviewer(self):
