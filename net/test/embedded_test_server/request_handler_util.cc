@@ -15,7 +15,9 @@
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "net/http/http_byte_range.h"
@@ -25,7 +27,7 @@
 
 namespace net {
 namespace test_server {
-namespace {
+const char kMockHttpHeadersExtension[] = "mock-http-headers";
 
 std::string GetContentType(const base::FilePath& path) {
   if (path.MatchesExtension(FILE_PATH_LITERAL(".crx")))
@@ -64,8 +66,6 @@ std::string GetContentType(const base::FilePath& path) {
   }
   return "";
 }
-
-}  // namespace
 
 bool ShouldHandle(const HttpRequest& request, const std::string& path_prefix) {
   GURL url = request.GetURL();
@@ -189,8 +189,15 @@ std::unique_ptr<HttpResponse> HandleFileRequest(
     }
   }
 
-  base::FilePath headers_path(
-      file_path.AddExtension(FILE_PATH_LITERAL("mock-http-headers")));
+  base::FilePath::StringPieceType mock_headers_extension;
+#if defined(OS_WIN)
+  base::string16 temp = base::ASCIIToUTF16(kMockHttpHeadersExtension);
+  mock_headers_extension = temp;
+#else
+  mock_headers_extension = kMockHttpHeadersExtension;
+#endif
+
+  base::FilePath headers_path(file_path.AddExtension(mock_headers_extension));
 
   if (base::PathExists(headers_path)) {
     std::string headers_contents;

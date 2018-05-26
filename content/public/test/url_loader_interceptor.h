@@ -75,9 +75,21 @@ class URLLoaderInterceptor {
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.
+  // Writes the given response body and header to |client|.
   static void WriteResponse(const std::string& headers,
                             const std::string& body,
                             network::mojom::URLLoaderClient* client);
+
+  // Reads the given path, relative to the root source directory, and writes it
+  // to |client|. For headers:
+  //   1) if |headers| is specified, it's used
+  //   2) otherwise if an adjoining file that ends in .mock-http-headers is
+  //      found, its contents will be used
+  //   3) otherwise a simple 200 response will be used, with a Content-Type
+  //      guessed from the file extension
+  static void WriteResponse(const std::string& relative_path,
+                            network::mojom::URLLoaderClient* client,
+                            const std::string* headers = nullptr);
 
  private:
   class BrowserProcessWrapper;
