@@ -58,7 +58,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
-import org.chromium.content_public.browser.ScreenOrientationDelegateManager;
+import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.widget.UiWidgetFactory;
@@ -1477,7 +1477,7 @@ public class VrShellDelegate
         if (mActivity.getCompositorViewHolder() != null) {
             mActivity.getCompositorViewHolder().onEnterVr();
         }
-        ScreenOrientationDelegateManager.setOrientationDelegate(this);
+        ScreenOrientationProvider.setOrientationDelegate(this);
 
         // Set correct orientation.
         if (mRestoreOrientation == null) {
@@ -1491,7 +1491,7 @@ public class VrShellDelegate
     }
 
     private void restoreWindowMode() {
-        ScreenOrientationDelegateManager.setOrientationDelegate(null);
+        ScreenOrientationProvider.setOrientationDelegate(null);
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Restore orientation.

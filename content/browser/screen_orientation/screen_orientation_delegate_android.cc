@@ -6,7 +6,7 @@
 
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
-#include "jni/ScreenOrientationProvider_jni.h"
+#include "jni/ScreenOrientationProviderImpl_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -29,7 +29,7 @@ void ScreenOrientationDelegateAndroid::Lock(
     WebContents* web_contents,
     blink::WebScreenOrientationLockType lock_orientation) {
   gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
-  Java_ScreenOrientationProvider_lockOrientation(
+  Java_ScreenOrientationProviderImpl_lockOrientation(
       base::android::AttachCurrentThread(),
       window ? window->GetJavaObject() : nullptr,
       lock_orientation);
@@ -39,13 +39,13 @@ bool ScreenOrientationDelegateAndroid::ScreenOrientationProviderSupported() {
   // TODO(MLamouri): Consider moving isOrientationLockEnabled to a separate
   // function, so reported error messages can differentiate between the device
   // never supporting orientation or currently not support orientation.
-  return Java_ScreenOrientationProvider_isOrientationLockEnabled(
+  return Java_ScreenOrientationProviderImpl_isOrientationLockEnabled(
       base::android::AttachCurrentThread());
 }
 
 void ScreenOrientationDelegateAndroid::Unlock(WebContents* web_contents) {
   gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
-  Java_ScreenOrientationProvider_unlockOrientation(
+  Java_ScreenOrientationProviderImpl_unlockOrientation(
       base::android::AttachCurrentThread(),
       window ? window->GetJavaObject() : nullptr);
 }
