@@ -95,8 +95,6 @@ class HEADLESS_EXPORT Domain {
 
   {# Generate methods for each command. #}
   {% for command in domain.commands %}
-    {# Skip redirected commands. #}
-    {% if "redirect" in command %}{% continue %}{% endif %}
     {# Skip experimental commands. #}
     {% if command.experimental %}{% continue %}{% endif %}
 {{ command_decl(command) }}
