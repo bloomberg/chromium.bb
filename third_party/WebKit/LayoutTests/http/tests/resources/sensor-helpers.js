@@ -397,12 +397,52 @@ async function setMockSensorDataForType(sensor, sensorType, mockDataArray) {
   });
 }
 
-// Returns a promise that will be resolved with the next event fired of the
-// given type. The event listener will be removed once the promise resolves.
-function createEventListenerPromise(event, targetWindow = window) {
+// Returns a promise that will be resolved when an event equal to the given
+// event is fired.
+function waitForEvent(expectedEvent, targetWindow = window) {
+  let stringify = thing => {
+    if (thing instanceof Object && thing.constructor !== Object) {
+      let str = '{';
+      for (let key of Object.keys(Object.getPrototypeOf(thing))) {
+        str += JSON.stringify(key) + ': ' + stringify(thing[key]) + ', ';
+      }
+      return str + '}';
+    } else if (thing instanceof Number) {
+      return thing.toFixed(6);
+    }
+    return JSON.stringify(thing);
+  };
+
   return new Promise((resolve, reject) => {
-    let wrapper = new CallbackWrapper(resolve, reject);
-    targetWindow.addEventListener(event, wrapper.callback, {once: true});
+    let events = [];
+    let timeoutId = null;
+
+    let expectedEventString = stringify(expectedEvent);
+    function listener(event) {
+      let eventString = stringify(event);
+      if (eventString === expectedEventString) {
+        targetWindow.clearTimeout(timeoutId);
+        targetWindow.removeEventListener(expectedEvent.type, listener);
+        resolve();
+      } else {
+        events.push(eventString);
+      }
+    }
+    targetWindow.addEventListener(expectedEvent.type, listener);
+
+    timeoutId = targetWindow.setTimeout(() => {
+      targetWindow.removeEventListener(expectedEvent.type, listener);
+      let errorMessage = 'Timeout waiting for expected event: ' + expectedEventString;
+      if (events.length == 0) {
+        errorMessage += ', no events were fired';
+      } else {
+        errorMessage += ', received events: '
+        for (let event of events) {
+          errorMessage += event + ', ';
+        }
+      }
+      reject(errorMessage);
+    }, 500);
   });
 }
 
