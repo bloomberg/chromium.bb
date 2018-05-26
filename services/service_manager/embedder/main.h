@@ -18,7 +18,7 @@ struct SERVICE_MANAGER_EMBEDDER_EXPORT MainParams {
 
   MainDelegate* const delegate;
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_ANDROID)
   int argc = 0;
   const char** argv = nullptr;
 #endif
