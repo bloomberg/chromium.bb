@@ -684,12 +684,9 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
-  HeapVector<ScriptSourceCode> sources;
-  sources.push_back(source_in);
-
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, sources, nullptr);
+  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(world_id,
+                                                                 source_in);
 }
 
 v8::Local<v8::Value>
@@ -700,17 +697,8 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
-  HeapVector<ScriptSourceCode> sources;
-  sources.push_back(source_in);
-
-  Vector<v8::Local<v8::Value>> script_results;
-  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      world_id, sources, &script_results);
-
-  if (script_results.size() != 1)
-    return v8::Local<v8::Value>();
-
-  return v8::Local<v8::Value>::New(ToIsolate(GetFrame()), script_results[0]);
+  return GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
+      world_id, source_in);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(

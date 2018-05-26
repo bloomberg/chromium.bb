@@ -20,13 +20,11 @@ void TransformDocumentToXMLTreeView(Document& document) {
       GetDataResourceAsASCIIString("DocumentXMLTreeViewer.js");
   String css_string = GetDataResourceAsASCIIString("DocumentXMLTreeViewer.css");
 
-  HeapVector<ScriptSourceCode> sources;
-  sources.push_back(
-      ScriptSourceCode(script_string, ScriptSourceLocationType::kInternal));
   v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
 
   document.GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
-      IsolatedWorldId::kDocumentXMLTreeViewerWorldId, sources, nullptr);
+      IsolatedWorldId::kDocumentXMLTreeViewerWorldId,
+      ScriptSourceCode(script_string, ScriptSourceLocationType::kInternal));
 
   Element* element = document.getElementById("xml-viewer-style");
   if (element) {
