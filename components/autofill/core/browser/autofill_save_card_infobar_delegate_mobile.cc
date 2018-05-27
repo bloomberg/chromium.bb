@@ -37,7 +37,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       pref_service_(pref_service),
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
-      card_label_(card.ObfuscatedLastFourDigits()),
+      card_label_(card.NetworkAndLastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {
   if (legal_message) {
     if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
@@ -48,9 +48,6 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
               prefs::kAutofillAcceptSaveCreditCardPromptState));
       return;
     }
-  }
-  if (IsGooglePayBrandingEnabled()) {
-    card_label_ = card.NetworkAndLastFourDigits();
   }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
