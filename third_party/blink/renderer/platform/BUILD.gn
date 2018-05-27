@@ -359,7 +359,7 @@ jumbo_component("platform") {
     "audio/cpu/x86/vector_math_impl.h",
     "audio/cpu/x86/vector_math_sse.cc",
     "audio/cpu/x86/vector_math_sse.h",
-    "audio/cpu/x86/vector_math_x8_6.h",
+    "audio/cpu/x86/vector_math_x86.h",
     "audio/denormal_disabler.h",
     "audio/direct_convolver.cc",
     "audio/direct_convolver.h",

@@ -38,7 +38,7 @@
 #elif HAVE_MIPS_MSA_INTRINSICS
 #include "third_party/blink/renderer/platform/audio/cpu/mips/vector_math_msa.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
-#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_x8_6.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_x86.h"
 #else
 #include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
 #endif
