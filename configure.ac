@@ -264,10 +264,17 @@ if test x$enable_rdp_compositor = xyes; then
     [],
     [PKG_CHECK_MODULES(RDP_COMPOSITOR, [freerdp >= 1.1.0],[])]
   )
-
   SAVED_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="$CPPFLAGS $RDP_COMPOSITOR_CFLAGS"
+
   AC_CHECK_HEADERS([freerdp/version.h])
+  AC_CHECK_MEMBER([SURFACE_BITS_COMMAND.bmp],
+	[AC_DEFINE([HAVE_SURFACE_BITS_BMP], [1], [SURFACE_BITS_CMD has bmp field])],
+	[],
+	[[#include <freerdp/update.h>]]
+  )
+
+
   CPPFLAGS="$SAVED_CPPFLAGS"
 fi
 
