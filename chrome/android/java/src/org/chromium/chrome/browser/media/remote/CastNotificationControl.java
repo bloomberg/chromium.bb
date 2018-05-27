@@ -282,7 +282,8 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
 
         String url = tab.getUrl();
         try {
-            return UrlFormatter.formatUrlForSecurityDisplay(new URI(url), true);
+            URI uri = new URI(url);
+            return UrlFormatter.formatUrlForSecurityDisplay(url);
         } catch (URISyntaxException | UnsatisfiedLinkError e) {
             // UnstatisfiedLinkError can only happen in tests as the natives are not initialized
             // yet.

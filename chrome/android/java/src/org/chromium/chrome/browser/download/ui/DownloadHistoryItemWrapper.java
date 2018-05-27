@@ -157,7 +157,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
     /** @return String to display for the hostname. */
     public final String getDisplayHostname() {
-        return UrlFormatter.formatUrlForSecurityDisplay(getUrl(), false);
+        return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(getUrl());
     }
 
     /** @return String to display for the file. */

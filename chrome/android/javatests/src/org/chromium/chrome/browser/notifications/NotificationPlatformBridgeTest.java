@@ -255,8 +255,8 @@ public class NotificationPlatformBridgeTest {
 
         Notification notification =
                 mNotificationTestRule.showAndGetNotification("MyNotification", "{ body: 'Hello' }");
-        String expectedOrigin = UrlFormatter.formatUrlForSecurityDisplay(
-                mNotificationTestRule.getOrigin(), false /* showScheme */);
+        String expectedOrigin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                mNotificationTestRule.getOrigin());
 
         // Validate the contents of the notification.
         Assert.assertEquals("MyNotification", NotificationTestUtil.getExtraTitle(notification));

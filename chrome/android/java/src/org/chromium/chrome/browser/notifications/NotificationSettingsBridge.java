@@ -92,7 +92,7 @@ public class NotificationSettingsBridge {
 
         public NotificationChannel toChannel() {
             NotificationChannel channel = new NotificationChannel(mId,
-                    UrlFormatter.formatUrlForSecurityDisplay(mOrigin, false /* showScheme */),
+                    UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mOrigin),
                     mStatus == NotificationChannelStatus.BLOCKED
                             ? NotificationManager.IMPORTANCE_NONE
                             : NotificationManager.IMPORTANCE_DEFAULT);

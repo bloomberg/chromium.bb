@@ -254,7 +254,7 @@ public class TrustedCdnPublisherUrlTest {
         String otherTestUrl = mWebServer.setResponse("/other.html", PAGE_WITH_TITLE, null);
         mCustomTabActivityTestRule.loadUrl(otherTestUrl);
 
-        verifyUrl(UrlFormatter.formatUrlForSecurityDisplay(otherTestUrl, false));
+        verifyUrl(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(otherTestUrl));
         // TODO(bauerb): The security icon is updated via an animation. Find a way to reliably
         // disable animations and verify the icon.
     }
@@ -359,7 +359,7 @@ public class TrustedCdnPublisherUrlTest {
         // succeed, but not show a publisher URL.
         String testUrl = mWebServer.getResponseUrl("/test.html");
         mCustomTabActivityTestRule.loadUrl(testUrl);
-        verifyUrl(UrlFormatter.formatUrlForSecurityDisplay(testUrl, false));
+        verifyUrl(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(testUrl));
         verifySecurityIcon(R.drawable.offline_pin_round);
     }
 
@@ -387,7 +387,7 @@ public class TrustedCdnPublisherUrlTest {
 
         final String expectedUrl;
         if (expectedPublisher == null) {
-            expectedUrl = UrlFormatter.formatUrlForSecurityDisplay(testUrl, false);
+            expectedUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(testUrl);
         } else {
             expectedUrl =
                     String.format(Locale.US, "From %s – delivered by Google", expectedPublisher);

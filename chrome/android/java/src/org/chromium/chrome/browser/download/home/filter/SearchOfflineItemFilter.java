@@ -56,6 +56,6 @@ public class SearchOfflineItemFilter extends OfflineItemFilter {
     /** Visible to allow tests to avoid calls to native. */
     @VisibleForTesting
     protected String formatUrl(String url) {
-        return UrlFormatter.formatUrlForSecurityDisplay(url, false);
+        return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url);
     }
 }
