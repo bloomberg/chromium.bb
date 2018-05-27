@@ -15,8 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.browser.BrowserStartupController;
-
+import org.chromium.content_public.browser.BrowserStartupController;
 
 /**
  * TestRule that adds support for loading and dealing with native libraries.

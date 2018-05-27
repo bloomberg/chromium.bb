@@ -17,6 +17,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 
 /**
  * Test of BrowserStartupController
@@ -25,8 +26,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 public class BrowserStartupControllerTest {
     private TestBrowserStartupController mController;
 
-    private static class TestBrowserStartupController extends BrowserStartupController {
-
+    private static class TestBrowserStartupController extends BrowserStartupControllerImpl {
         private int mStartupResult;
         private boolean mLibraryLoadSucceeds;
         private int mInitializedCounter = 0;
@@ -55,7 +55,7 @@ public class BrowserStartupControllerTest {
                 @Override
                 public void run() {
                     if (mStartupCompleteCalled) return;
-                    BrowserStartupController.browserStartupComplete(mStartupResult);
+                    BrowserStartupControllerImpl.browserStartupComplete(mStartupResult);
                 }
             });
             return mStartupResult;
@@ -65,7 +65,7 @@ public class BrowserStartupControllerTest {
         void flushStartupTasks() {
             assert mInitializedCounter > 0;
             if (mStartupCompleteCalled) return;
-            BrowserStartupController.browserStartupComplete(mStartupResult);
+            BrowserStartupControllerImpl.browserStartupComplete(mStartupResult);
         }
 
         private int initializedCounter() {
@@ -73,7 +73,7 @@ public class BrowserStartupControllerTest {
         }
     }
 
-    private static class TestStartupCallback implements BrowserStartupController.StartupCallback {
+    private static class TestStartupCallback implements StartupCallback {
         private boolean mWasSuccess;
         private boolean mWasFailure;
         private boolean mHasStartupResult;
@@ -99,13 +99,13 @@ public class BrowserStartupControllerTest {
         // Setting the static singleton instance field enables more correct testing, since it is
         // is possible to call {@link BrowserStartupController#browserStartupComplete(int)} instead
         // of {@link BrowserStartupController#executeEnqueuedCallbacks(int, boolean)} directly.
-        BrowserStartupController.overrideInstanceForTest(mController);
+        BrowserStartupControllerImpl.overrideInstanceForTest(mController);
     }
 
     @Test
     @SmallTest
     public void testSingleAsynchronousStartupRequest() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_SUCCESS;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_SUCCESS;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback = new TestStartupCallback();
 
@@ -134,7 +134,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testMultipleAsynchronousStartupRequests() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_SUCCESS;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_SUCCESS;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback1 = new TestStartupCallback();
         final TestStartupCallback callback2 = new TestStartupCallback();
@@ -185,7 +185,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testConsecutiveAsynchronousStartupRequests() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_SUCCESS;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_SUCCESS;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback1 = new TestStartupCallback();
         final TestStartupCallback callback2 = new TestStartupCallback();
@@ -252,7 +252,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testSingleFailedAsynchronousStartupRequest() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_FAILURE;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_FAILURE;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback = new TestStartupCallback();
 
@@ -281,7 +281,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testConsecutiveFailedAsynchronousStartupRequests() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_FAILURE;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_FAILURE;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback1 = new TestStartupCallback();
         final TestStartupCallback callback2 = new TestStartupCallback();
@@ -348,7 +348,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testSingleSynchronousRequest() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_SUCCESS;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_SUCCESS;
         mController.mLibraryLoadSucceeds = true;
         // Kick off the synchronous startup.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -369,7 +369,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testAsyncThenSyncRequests() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_SUCCESS;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_SUCCESS;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback = new TestStartupCallback();
 
@@ -403,7 +403,7 @@ public class BrowserStartupControllerTest {
     @Test
     @SmallTest
     public void testSyncThenAsyncRequests() {
-        mController.mStartupResult = BrowserStartupController.STARTUP_SUCCESS;
+        mController.mStartupResult = BrowserStartupControllerImpl.STARTUP_SUCCESS;
         mController.mLibraryLoadSucceeds = true;
         final TestStartupCallback callback = new TestStartupCallback();
 

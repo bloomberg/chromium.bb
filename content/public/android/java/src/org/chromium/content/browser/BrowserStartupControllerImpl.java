@@ -20,34 +20,18 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
+import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class controls how C++ browser main loop is started and ensures it happens only once.
- *
- * It supports kicking off the startup sequence in an asynchronous way. Startup can be called as
- * many times as needed (for instance, multiple activities for the same application), but the
- * browser process will still only be initialized once. All requests to start the browser will
- * always get their callback executed; if the browser process has already been started, the callback
- * is called immediately, else it is called when initialization is complete.
- *
- * All communication with this class must happen on the main thread.
- *
+ * Implementation of {@link BrowserStartupController}.
  * This is a singleton, and stores a reference to the application context.
  */
 @JNINamespace("content")
-public class BrowserStartupController {
-
-    /**
-     * This provides the interface to the callbacks for successful or failed startup
-     */
-    public interface StartupCallback {
-        void onSuccess();
-        void onFailure();
-    }
-
+public class BrowserStartupControllerImpl implements BrowserStartupController {
     private static final String TAG = "cr.BrowserStartup";
 
     // Helper constants for {@link #executeEnqueuedCallbacks(int, boolean)}.
@@ -56,7 +40,7 @@ public class BrowserStartupController {
     @VisibleForTesting
     static final int STARTUP_FAILURE = 1;
 
-    private static BrowserStartupController sInstance;
+    private static BrowserStartupControllerImpl sInstance;
 
     private static boolean sShouldStartGpuProcessOnBrowserStartup;
 
@@ -101,7 +85,7 @@ public class BrowserStartupController {
 
     private TracingControllerAndroid mTracingController;
 
-    BrowserStartupController(int libraryProcessType) {
+    BrowserStartupControllerImpl(int libraryProcessType) {
         mAsyncStartupCallbacks = new ArrayList<>();
         mLibraryProcessType = libraryProcessType;
         ThreadUtils.postOnUiThread(new Runnable() {
@@ -139,28 +123,18 @@ public class BrowserStartupController {
         if (sInstance == null) {
             assert LibraryProcessType.PROCESS_BROWSER == libraryProcessType
                     || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType;
-            sInstance = new BrowserStartupController(libraryProcessType);
+            sInstance = new BrowserStartupControllerImpl(libraryProcessType);
         }
         assert sInstance.mLibraryProcessType == libraryProcessType : "Wrong process type";
         return sInstance;
     }
 
     @VisibleForTesting
-    public static BrowserStartupController overrideInstanceForTest(
-            BrowserStartupController controller) {
-        sInstance = controller;
-        return sInstance;
+    public static void overrideInstanceForTest(BrowserStartupController controller) {
+        sInstance = (BrowserStartupControllerImpl) controller;
     }
 
-    /**
-     * Start the browser process asynchronously. This will set up a queue of UI thread tasks to
-     * initialize the browser process.
-     * <p/>
-     * Note that this can only be called on the UI thread.
-     *
-     * @param startGpuProcess Whether to start the GPU process if it is not started.
-     * @param callback the callback to be called when browser startup is complete.
-     */
+    @Override
     public void startBrowserProcessesAsync(boolean startGpuProcess, final StartupCallback callback)
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
@@ -194,17 +168,7 @@ public class BrowserStartupController {
         }
     }
 
-    /**
-     * Start the browser process synchronously. If the browser is already being started
-     * asynchronously then complete startup synchronously
-     *
-     * <p/>
-     * Note that this can only be called on the UI thread.
-     *
-     * @param singleProcess true iff the browser should run single-process, ie. keep renderers in
-     *                      the browser process
-     * @throws ProcessInitException
-     */
+    @Override
     public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {
         // If already started skip to checking the result
         if (!mStartupDone) {
@@ -247,14 +211,13 @@ public class BrowserStartupController {
         nativeFlushStartupTasks();
     }
 
-    /**
-     * @return Whether the browser process completed successfully.
-     */
+    @Override
     public boolean isStartupSuccessfullyCompleted() {
         ThreadUtils.assertOnUiThread();
         return mStartupDone && mStartupSuccess;
     }
 
+    @Override
     public void addStartupCompletedObserver(StartupCallback callback) {
         ThreadUtils.assertOnUiThread();
         if (mStartupDone) {
@@ -304,9 +267,8 @@ public class BrowserStartupController {
     }
 
     @VisibleForTesting
-    void prepareToStartBrowserProcess(
-            final boolean singleProcess, final Runnable completionCallback)
-                    throws ProcessInitException {
+    void prepareToStartBrowserProcess(final boolean singleProcess,
+            final Runnable completionCallback) throws ProcessInitException {
         Log.i(TAG, "Initializing chromium process, singleProcess=%b", singleProcess);
 
         // This strictmode exception is to cover the case where the browser process is being started
@@ -352,6 +314,7 @@ public class BrowserStartupController {
     /**
      * Initialization needed for tests. Mainly used by content browsertests.
      */
+    @Override
     public void initChromiumBrowserProcessForTests() {
         ResourceExtractor resourceExtractor = ResourceExtractor.get();
         resourceExtractor.startExtractingResources();
