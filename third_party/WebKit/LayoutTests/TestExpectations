@@ -3849,12 +3849,8 @@ crbug.com/766357 virtual/threaded/fast/scroll-behavior/wheel-and-touch-scroll-us
 # ====== Random order flaky tests end here ======
 
 # ====== Tests from enabling .any.js/.worker.js tests begin here ======
-crbug.com/709227 external/wpt/console/console-count-label-conversion.any.html [ Failure ]
-crbug.com/709227 external/wpt/console/console-count-label-conversion.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.worker.html [ Failure ]
-crbug.com/709227 external/wpt/console/console-timeline-timelineEnd-historical.any.html [ Failure ]
-crbug.com/709227 external/wpt/console/console-timeline-timelineEnd-historical.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/browsers/history/the-location-interface/per-global.window.html [ Failure ]
 crbug.com/709227 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-errorevent.worker.html [ Failure ]
@@ -3877,8 +3873,6 @@ crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attribu
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.percent.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.trailingjunk.worker.html [ Failure ]
 crbug.com/709227 external/wpt/user-timing/invoke_with_timing_attributes.worker.html [ Failure ]
-crbug.com/839947 external/wpt/console/console-counting-label-conversion.any.html [ Failure ]
-crbug.com/839947 external/wpt/console/console-counting-label-conversion.any.worker.html [ Failure ]
 
 # Timeouts
 crbug.com/709227 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Timeout ]
