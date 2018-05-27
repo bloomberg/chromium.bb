@@ -798,34 +798,45 @@ main(int argc, char *argv[]) {
 
 		if (event.type != YAML_SCALAR_EVENT) yaml_error(YAML_SCALAR_EVENT, &event);
 
-		int direction = DIRECTION_DEFAULT;
-		int hyphenation = HYPHENATION_DEFAULT;
-		if (!strcmp((const char *)event.data.scalar.value, "flags")) {
-			yaml_event_delete(&event);
-			read_flags(&parser, &direction, &hyphenation);
+		int haveRunTests=0;
+		while (1) {
+			int direction = DIRECTION_DEFAULT;
+			int hyphenation = HYPHENATION_DEFAULT;
+			if (!strcmp((const char *)event.data.scalar.value, "flags")) {
+				yaml_event_delete(&event);
+				read_flags(&parser, &direction, &hyphenation);
 
-			if (!yaml_parser_parse(&parser, &event) ||
-					(event.type != YAML_SCALAR_EVENT) ||
-					strcmp((const char *)event.data.scalar.value, "tests")) {
-				simple_error("tests expected", &parser, &event);
+				if (!yaml_parser_parse(&parser, &event) ||
+						(event.type != YAML_SCALAR_EVENT) ||
+						strcmp((const char *)event.data.scalar.value, "tests")) {
+					simple_error("tests expected", &parser, &event);
+				}
+				yaml_event_delete(&event);
+				read_tests(&parser, tables, direction, hyphenation);
+				haveRunTests = 1;
+
+			} else if (!strcmp((const char *)event.data.scalar.value, "tests")) {
+				yaml_event_delete(&event);
+				read_tests(&parser, tables, direction, hyphenation);
+				haveRunTests = 1;
+			} else {
+				if (haveRunTests) {
+
+					break;
+				} else{
+					simple_error("flags or tests expected", &parser, &event);
+				}
 			}
-			yaml_event_delete(&event);
-			read_tests(&parser, tables, direction, hyphenation);
-
-		} else if (!strcmp((const char *)event.data.scalar.value, "tests")) {
-			yaml_event_delete(&event);
-			read_tests(&parser, tables, direction, hyphenation);
-		} else {
-			simple_error("flags or tests expected", &parser, &event);
+			if (!yaml_parser_parse(&parser, &event))
+				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+						"Expected table or %s (actual %s)",
+						event_names[YAML_MAPPING_END_EVENT], event_names[event.type]);
+		if (event.type != YAML_SCALAR_EVENT) break;
 		}
 
 		char **p = tables;
 		while (*p) free(*(p++));
 
-		if (!yaml_parser_parse(&parser, &event))
-			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
-					"Expected table or %s (actual %s)",
-					event_names[YAML_MAPPING_END_EVENT], event_names[event.type]);
 	}
 	if (event.type != YAML_MAPPING_END_EVENT) yaml_error(YAML_MAPPING_END_EVENT, &event);
 	yaml_event_delete(&event);
