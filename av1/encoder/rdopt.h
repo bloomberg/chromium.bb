@@ -131,6 +131,7 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 void av1_inter_mode_data_init();
+void av1_inter_mode_data_fit(int rdmult);
 #endif
 
 #ifdef __cplusplus

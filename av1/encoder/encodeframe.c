@@ -3750,6 +3750,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                           pc_root, NULL);
       }
     }
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+    av1_inter_mode_data_fit(x->rdmult);
+#endif
   }
 }
 
