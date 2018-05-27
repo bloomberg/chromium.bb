@@ -267,7 +267,7 @@
     },
     {
       name: "CSSInBodyDoesNotBlockPaint",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSIndependentTransformProperties",
