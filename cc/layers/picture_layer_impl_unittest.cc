@@ -38,7 +38,6 @@
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/test/begin_frame_args_test.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"

@@ -28,7 +28,6 @@ class GrContextForGLES2Interface;
 }
 
 namespace viz {
-class TestWebGraphicsContext3D;
 class TestGLES2Interface;
 
 class TestContextProvider
@@ -40,14 +39,6 @@ class TestContextProvider
   // Creates a worker context provider that can be used on any thread. This is
   // equivalent to: Create(); BindToCurrentThread().
   static scoped_refptr<TestContextProvider> CreateWorker();
-  static scoped_refptr<TestContextProvider> Create(
-      std::unique_ptr<TestWebGraphicsContext3D> context);
-  static scoped_refptr<TestContextProvider> Create(
-      std::unique_ptr<TestWebGraphicsContext3D> context,
-      std::unique_ptr<TestContextSupport> support);
-  static scoped_refptr<TestContextProvider> CreateWorker(
-      std::unique_ptr<TestWebGraphicsContext3D> context,
-      std::unique_ptr<TestContextSupport> support);
   static scoped_refptr<TestContextProvider> CreateWorker(
       std::unique_ptr<TestContextSupport> support);
   static scoped_refptr<TestContextProvider> Create(
@@ -58,7 +49,6 @@ class TestContextProvider
   explicit TestContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
-      std::unique_ptr<TestWebGraphicsContext3D> context,
       bool support_locking);
 
   // ContextProvider / RasterContextProvider implementation.
@@ -76,15 +66,12 @@ class TestContextProvider
   void AddObserver(ContextLostObserver* obs) override;
   void RemoveObserver(ContextLostObserver* obs) override;
 
-  TestWebGraphicsContext3D* TestContext3d();
-
-  // This returns the TestWebGraphicsContext3D but is valid to call
+  TestGLES2Interface* TestContextGL();
+  // This returns the TestGLES2Interface but is valid to call
   // before the context is bound to a thread. This is needed to set up
-  // state on the test context before binding. Don't call
-  // InitializeOnCurrentThread on the context returned from this method.
-  TestWebGraphicsContext3D* UnboundTestContext3d();
+  // state on the test interface before binding.
+  TestGLES2Interface* UnboundTestContextGL() { return context_gl_.get(); }
 
-  TestGLES2Interface* TestContextGL() { return context_gl_.get(); }
   TestContextSupport* support() { return support_.get(); }
 
  protected:
@@ -104,7 +91,6 @@ class TestContextProvider
   }
 
   std::unique_ptr<TestContextSupport> support_;
-  std::unique_ptr<TestWebGraphicsContext3D> context3d_;
   std::unique_ptr<TestGLES2Interface> context_gl_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;

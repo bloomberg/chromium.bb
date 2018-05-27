@@ -38,7 +38,7 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/test/test_context_provider.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1387,7 +1387,7 @@ TEST_F(ScaledScrollbarLayerTestResourceCreation, ScaledResourceUpload) {
       viz::TestContextProvider::Create();
   // Keep the max texture size reasonable so we don't OOM on low end devices
   // (crbug.com/642333).
-  context->UnboundTestContext3d()->set_max_texture_size(512);
+  context->UnboundTestContextGL()->set_max_texture_size(512);
   context->BindToCurrentThread();
   int max_texture_size = 0;
   context->ContextGL()->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);

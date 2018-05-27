@@ -67,7 +67,6 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -4005,7 +4004,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     auto* context = static_cast<viz::TestContextProvider*>(
                         impl->layer_tree_frame_sink()->context_provider())
-                        ->TestContext3d();
+                        ->TestContextGL();
 
     int frame = impl->active_tree()->source_frame_number();
     switch (frame) {
@@ -6051,16 +6050,16 @@ class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
       scoped_refptr<viz::RasterContextProvider> ignored_worker_context_provider)
       override {
     auto context_provider = viz::TestContextProvider::Create();
-    context_provider->UnboundTestContext3d()->SetMaxSamples(4);
-    context_provider->UnboundTestContext3d()
-        ->set_support_multisample_compatibility(false);
-    context_provider->UnboundTestContext3d()->set_gpu_rasterization(true);
+    viz::TestGLES2Interface* gl = context_provider->UnboundTestContextGL();
+    gl->SetMaxSamples(4);
+    gl->set_support_multisample_compatibility(false);
+    gl->set_gpu_rasterization(true);
     auto worker_context_provider = viz::TestContextProvider::CreateWorker();
-    worker_context_provider->UnboundTestContext3d()->SetMaxSamples(4);
-    worker_context_provider->UnboundTestContext3d()
-        ->set_support_multisample_compatibility(false);
-    worker_context_provider->UnboundTestContext3d()->set_gpu_rasterization(
-        true);
+    viz::TestGLES2Interface* worker_gl =
+        worker_context_provider->UnboundTestContextGL();
+    worker_gl->SetMaxSamples(4);
+    worker_gl->set_support_multisample_compatibility(false);
+    worker_gl->set_gpu_rasterization(true);
     return LayerTreeHostTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate, std::move(context_provider),
         std::move(worker_context_provider));
@@ -6906,11 +6905,11 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
       override {
     scoped_refptr<viz::TestContextProvider> display_context_provider =
         viz::TestContextProvider::Create();
-    viz::TestWebGraphicsContext3D* context3d =
-        display_context_provider->UnboundTestContext3d();
-    context3d->set_support_sync_query(true);
+    viz::TestGLES2Interface* gl =
+        display_context_provider->UnboundTestContextGL();
+    gl->set_support_sync_query(true);
 #if defined(OS_MACOSX)
-    context3d->set_support_texture_rectangle(true);
+    gl->set_support_texture_rectangle(true);
 #endif
     display_context_provider->BindToCurrentThread();
     return LayerTreeTest::CreateDisplayOutputSurfaceOnThread(

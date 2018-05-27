@@ -77,7 +77,6 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -100,7 +99,6 @@ using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::_;
 using media::VideoFrame;
-using viz::TestWebGraphicsContext3D;
 
 namespace cc {
 namespace {
@@ -1068,18 +1066,10 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRootLayer) {
             status.main_thread_scrolling_reasons);
 }
 
-class LostGLES2Interface : public viz::TestGLES2Interface {
- public:
-  LostGLES2Interface() = default;
-
-  void InitializeTestContext() override {
-    LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                        GL_INNOCENT_CONTEXT_RESET_ARB);
-  }
-};
-
 TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
-  auto gl_owned = std::make_unique<LostGLES2Interface>();
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  gl_owned->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                GL_INNOCENT_CONTEXT_RESET_ARB);
 
   // Initialization will fail.
   EXPECT_FALSE(
@@ -9882,7 +9872,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   // in a texture mailbox.
   ASSERT_TRUE(helper.unprocessed_result);
   EXPECT_FALSE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());
+  EXPECT_EQ(1u, context_provider->TestContextGL()->NumTextures());
 
   host_impl_->ReleaseLayerTreeFrameSink();
   host_impl_ = nullptr;
@@ -9890,7 +9880,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   // The texture release callback that was given to the CopyOutputResult has
   // been canceled, and the texture deleted.
   EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(0u, context_provider->TestContext3d()->NumTextures());
+  EXPECT_EQ(0u, context_provider->TestContextGL()->NumTextures());
 
   // When resetting the CopyOutputResult, it will run its texture release
   // callback. This should not cause a crash, etc.
@@ -13228,12 +13218,12 @@ class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
     settings.gpu_rasterization_msaa_sample_count = 4;
     auto frame_sink =
         FakeLayerTreeFrameSink::Builder()
-            .AllContexts(&TestWebGraphicsContext3D::SetMaxSamples,
+            .AllContexts(&viz::TestGLES2Interface::SetMaxSamples,
                          settings.gpu_rasterization_msaa_sample_count)
-            .AllContexts(&TestWebGraphicsContext3D::set_msaa_is_slow,
+            .AllContexts(&viz::TestGLES2Interface::set_msaa_is_slow,
                          msaa_is_slow)
-            .AllContexts(&TestWebGraphicsContext3D::set_gpu_rasterization, true)
-            .AllContexts(&TestWebGraphicsContext3D::set_avoid_stencil_buffers,
+            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
+            .AllContexts(&viz::TestGLES2Interface::set_avoid_stencil_buffers,
                          avoid_stencil_buffers)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
@@ -13289,12 +13279,12 @@ class MsaaCompatibilityLayerTreeHostImplTest : public LayerTreeHostImplTest {
     settings.gpu_rasterization_msaa_sample_count = 4;
     auto frame_sink =
         FakeLayerTreeFrameSink::Builder()
-            .AllContexts(&TestWebGraphicsContext3D::SetMaxSamples,
+            .AllContexts(&viz::TestGLES2Interface::SetMaxSamples,
                          settings.gpu_rasterization_msaa_sample_count)
-            .AllContexts(&TestWebGraphicsContext3D::
-                             set_support_multisample_compatibility,
-                         support_multisample_compatibility)
-            .AllContexts(&TestWebGraphicsContext3D::set_gpu_rasterization, true)
+            .AllContexts(
+                &viz::TestGLES2Interface::set_support_multisample_compatibility,
+                support_multisample_compatibility)
+            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
   }

@@ -85,7 +85,7 @@ class FakeRenderWidgetCompositorDelegate
 
     auto context_provider = viz::TestContextProvider::Create();
     if (num_failures_since_last_success_ < num_failures_before_success_) {
-      context_provider->UnboundTestContext3d()->loseContextCHROMIUM(
+      context_provider->UnboundTestContextGL()->LoseContextCHROMIUM(
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
     callback.Run(

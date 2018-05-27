@@ -14,7 +14,6 @@
 #include "cc/test/fake_resource_provider.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -564,7 +563,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   EXPECT_EQ((GLenum)GL_TEXTURE_2D,
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(1u, resources.release_callbacks.size());
-  EXPECT_EQ(0, gl_->TextureCreationCount());
+  EXPECT_EQ(1, gl_->TextureCreationCount());
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_TextureQuad) {
@@ -727,9 +726,6 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
   EXPECT_EQ((GLenum)GL_TEXTURE_RECTANGLE_ARB,
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(gfx::BufferFormat::RGBA_8888, resources.resources[0].buffer_format);
-  // When TestWebGraphicsContext3D is used, createAndConsumeTextureCHROMIUM will
-  // call createTexture. But this is incorrect, so when this is converted to
-  // TestGLES2Interface, GenTextures will not being called.
   EXPECT_EQ(0, gl_->TextureCreationCount());
 }
 

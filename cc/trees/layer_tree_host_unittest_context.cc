@@ -37,7 +37,6 @@
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/media.h"

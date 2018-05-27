@@ -33,7 +33,6 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -349,8 +348,8 @@ TEST_P(RasterBufferProviderTest, FailedMapResource) {
   if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_BITMAP)
     return;
 
-  viz::TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
-  context3d->set_times_map_buffer_chromium_succeeds(0);
+  viz::TestGLES2Interface* gl = context_provider_->TestContextGL();
+  gl->set_times_map_buffer_chromium_succeeds(0);
   AppendTask(0u);
   ScheduleTasks();
 
@@ -478,9 +477,8 @@ TEST_P(RasterBufferProviderTest, WaitOnSyncTokenAfterReschedulingTask) {
   {
     viz::ContextProvider::ScopedContextLock context_lock(
         worker_context_provider_.get());
-    viz::TestWebGraphicsContext3D* context3d =
-        worker_context_provider_->TestContext3d();
-    EXPECT_TRUE(context3d->last_waited_sync_token().HasData());
+    viz::TestGLES2Interface* gl = worker_context_provider_->TestContextGL();
+    EXPECT_TRUE(gl->last_waited_sync_token().HasData());
   }
 
   lock.Release();

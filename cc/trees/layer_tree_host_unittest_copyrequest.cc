@@ -16,8 +16,8 @@
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
@@ -855,7 +855,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
     // releasing the copy output request should cause the texture in the request
     // to be destroyed by the compositor, so we should have 1 less by now.
     EXPECT_EQ(num_textures_after_readback_ - 1,
-              display_context_provider_->TestContext3d()->NumTextures());
+              display_context_provider_->TestContextGL()->NumTextures());
 
     // Drop the reference to the context provider on the compositor thread.
     display_context_provider_ = nullptr;
@@ -869,7 +869,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
         // been allocated.
         EXPECT_FALSE(result_);
         num_textures_without_readback_ =
-            display_context_provider_->TestContext3d()->NumTextures();
+            display_context_provider_->TestContextGL()->NumTextures();
 
         // Request a copy of the layer. This will use another texture.
         MainThreadTaskRunner()->PostTask(
@@ -886,7 +886,7 @@ class LayerTreeHostCopyRequestTestDeleteTexture
       case 2:
         // We did a readback, so there will be a readback texture around now.
         num_textures_after_readback_ =
-            display_context_provider_->TestContext3d()->NumTextures();
+            display_context_provider_->TestContextGL()->NumTextures();
         EXPECT_LT(num_textures_without_readback_, num_textures_after_readback_);
 
         // Now destroy the CopyOutputResult, releasing the texture inside back
@@ -981,14 +981,14 @@ class LayerTreeHostCopyRequestTestCountTextures
         // The first frame has been drawn, so textures for drawing have been
         // allocated.
         num_textures_without_readback_ =
-            display_context_provider_->TestContext3d()->NumTextures();
+            display_context_provider_->TestContextGL()->NumTextures();
         break;
       case 1:
         // We did a readback, so there will be a readback texture around now.
         num_textures_with_readback_ =
-            display_context_provider_->TestContext3d()->NumTextures();
+            display_context_provider_->TestContextGL()->NumTextures();
         waited_sync_token_after_readback_ =
-            display_context_provider_->TestContext3d()
+            display_context_provider_->TestContextGL()
                 ->last_waited_sync_token();
 
         // End the test after main thread has a chance to hear about the

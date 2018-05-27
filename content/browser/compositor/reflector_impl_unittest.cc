@@ -14,7 +14,6 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "components/viz/test/test_context_provider.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
