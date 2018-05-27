@@ -47,6 +47,11 @@ const char kInitialEnrollmentIdHash[] = "\x30\x18\xb7\x0f\x76\x09\xc5\xc7";
 
 const int kInitialEnrollmentIdHashLength = 8;
 
+// This is modulus power value used in initial enrollment to detect that the
+// server is outdated and does not support initial enrollment. See the
+// |DetectOutdatedServer| test case.
+const int kInitialEnrollmentModulusPowerOutdatedServer = 14;
+
 using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::SaveArg;
@@ -93,7 +98,8 @@ class AutoEnrollmentClientImplTest
           AutoEnrollmentClientImpl::FactoryImpl().CreateForInitialEnrollment(
               progress_callback, service_.get(), local_state_,
               url_request_context_getter, kSerialNumber, kBrandCode,
-              power_initial, power_limit);
+              power_initial, power_limit,
+              kInitialEnrollmentModulusPowerOutdatedServer);
     }
   }
 
@@ -398,6 +404,31 @@ TEST_P(AutoEnrollmentClientImplTest, AskForTooMuch) {
   EXPECT_FALSE(HasServerBackedState());
 }
 
+TEST_P(AutoEnrollmentClientImplTest, DetectOutdatedServer) {
+  CreateClient(0, kInitialEnrollmentModulusPowerOutdatedServer + 1);
+  InSequence sequence;
+  ServerWillReply(1 << kInitialEnrollmentModulusPowerOutdatedServer, false,
+                  false);
+
+  if (GetParam() == AutoEnrollmentProtocol::kInitialEnrollment) {
+    // For initial enrollment, a modulus power higher or equal to
+    // |kInitialEnrollmentModulusPowerOutdatedServer| means that the client will
+    // detect the server as outdated and will skip enrollment.
+    client()->Start();
+    EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+    EXPECT_TRUE(HasCachedDecision());
+    EXPECT_FALSE(HasServerBackedState());
+  } else {
+    // For FRE, such a detection does not exist. The client will do the second
+    // round and upload bits of its device identifier hash.
+    ServerWillReply(-1, false, false);
+    client()->Start();
+    EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+    EXPECT_TRUE(HasCachedDecision());
+    EXPECT_FALSE(HasServerBackedState());
+  }
+}
+
 TEST_P(AutoEnrollmentClientImplTest, AskNonPowerOf2) {
   InSequence sequence;
   ServerWillReply(100, false, false);
@@ -540,6 +571,12 @@ TEST_P(AutoEnrollmentClientImplTest, ManyBitsUploaded) {
 }
 
 TEST_P(AutoEnrollmentClientImplTest, MoreThan32BitsUploaded) {
+  // Skip for initial enrollment, because the outdated server detection would
+  // kick in when more than |kInitialEnrollmentModulusPowerOutdatedServer| bits
+  // are requested.
+  if (GetParam() == AutoEnrollmentProtocol::kInitialEnrollment)
+    return;
+
   CreateClient(10, 37);
   InSequence sequence;
   ServerWillReply(INT64_C(1) << 37, false, false);

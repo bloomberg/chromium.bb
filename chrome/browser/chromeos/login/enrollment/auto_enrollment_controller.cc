@@ -31,6 +31,16 @@ namespace {
 // enrollment check.
 const int kInitialEnrollmentModulusPowerLimit = 6;
 
+// If the modulus requested by the server is higher or equal to
+// |1<<kInitialEnrollmentModulusPowerOutdatedServer|, assume that the server
+// does not know initial enrollment yet.
+// This is currently set to |14|, the server was requesting |16| for FRE on
+// 2018-05-25.
+// TODO(pmarko): Remove this mechanism when the server version supporting
+// Initial Enrollment has been in production for a while
+// (https://crbug.com/846645).
+const int kInitialEnrollmentModulusPowerOutdatedServer = 14;
+
 // Maximum time to wait before forcing a decision.  Note that download time for
 // state key buckets can be non-negligible, especially on 2G connections.
 const int kSafeguardTimeoutSeconds = 90;
@@ -142,7 +152,7 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (!command_line->HasSwitch(switches::kEnterpriseEnableInitialEnrollment))
-    return false;
+    return IsOfficialChrome();
 
   std::string command_line_mode = command_line->GetSwitchValueASCII(
       switches::kEnterpriseEnableInitialEnrollment);
@@ -476,7 +486,8 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
                           weak_ptr_factory_.GetWeakPtr()),
       service, g_browser_process->local_state(),
       g_browser_process->system_request_context(), serial_number,
-      rlz_brand_code, power_initial, power_limit);
+      rlz_brand_code, power_initial, power_limit,
+      kInitialEnrollmentModulusPowerOutdatedServer);
 
   VLOG(1) << "Starting auto-enrollment client for Initial Enrollment.";
   client_->Start();

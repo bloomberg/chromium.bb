@@ -51,7 +51,8 @@ class FakeAutoEnrollmentClient : public AutoEnrollmentClient {
         const std::string& device_serial_number,
         const std::string& device_brand_code,
         int power_initial,
-        int power_limit) override;
+        int power_limit,
+        int power_outdated_server_detect) override;
 
    private:
     base::RepeatingCallback<void(FakeAutoEnrollmentClient*)>

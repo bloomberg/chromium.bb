@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -71,7 +72,8 @@ class AutoEnrollmentClientImpl
         const std::string& device_serial_number,
         const std::string& device_brand_code,
         int power_initial,
-        int power_limit) override;
+        int power_limit,
+        int power_outdated_server_detect) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FactoryImpl);
@@ -108,6 +110,7 @@ class AutoEnrollmentClientImpl
           state_download_message_processor,
       int power_initial,
       int power_limit,
+      base::Optional<int> power_outdated_server_detect,
       std::string uma_suffix);
 
   // Tries to load the result of a previous execution of the protocol from
@@ -182,6 +185,11 @@ class AutoEnrollmentClientImpl
   // Power of the maximum power-of-2 modulus that this client will accept from
   // a retry response from the server.
   int power_limit_;
+
+  // If set and the modulus requested by the server is higher than
+  // |1<<power_outdated_server_detect|, this client will assume that the server
+  // is outdated.
+  base::Optional<int> power_outdated_server_detect_;
 
   // Number of requests for a different modulus received from the server.
   // Used to determine if the server keeps asking for different moduli.
