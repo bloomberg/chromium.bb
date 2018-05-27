@@ -35,8 +35,8 @@ import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAc
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationOptOut;
 import org.chromium.chrome.browser.preferences.NotificationsPreferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.BrowserStartupController.StartupCallback;
+import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 
 import java.util.Collection;
 import java.util.Collections;

@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.crash.browser.CrashDumpManager;
-import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
@@ -62,7 +62,7 @@ import java.util.Locale;
 public class ChromeBrowserInitializer {
     private static final String TAG = "BrowserInitializer";
     private static ChromeBrowserInitializer sChromeBrowserInitializer;
-
+    private static BrowserStartupController sBrowserStartupController;
     private final Handler mHandler;
     private final ChromeApplication mApplication;
     private final Locale mInitialLocale = Locale.getDefault();
@@ -337,8 +337,7 @@ public class ChromeBrowserInitializer {
             BrowserStartupController.StartupCallback callback) throws ProcessInitException {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesAsync(startGpuProcess, callback);
+            getBrowserStartupController().startBrowserProcessesAsync(startGpuProcess, callback);
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
         }
@@ -352,12 +351,19 @@ public class ChromeBrowserInitializer {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
             StrictMode.setThreadPolicy(oldPolicy);
             LibraryLoader.getInstance().asyncPrefetchLibrariesToMemory();
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
+            getBrowserStartupController().startBrowserProcessesSync(false);
             GoogleServicesManager.get(mApplication);
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesSync");
         }
+    }
+
+    private BrowserStartupController getBrowserStartupController() {
+        if (sBrowserStartupController == null) {
+            sBrowserStartupController =
+                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
+        }
+        return sBrowserStartupController;
     }
 
     public static void initNetworkChangeNotifier(Context context) {
@@ -422,5 +428,13 @@ public class ChromeBrowserInitializer {
      */
     public static void setForTesting(ChromeBrowserInitializer initializer) {
         sChromeBrowserInitializer = initializer;
+    }
+
+    /**
+     * Set {@link BrowserStartupController) to use for unit testing.
+     * @param controller The (dummy or mocked) {@link BrowserStartupController) instance.
+     */
+    public static void setBrowserStartupControllerForTesting(BrowserStartupController controller) {
+        sBrowserStartupController = controller;
     }
 }

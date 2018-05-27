@@ -10,7 +10,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "ppapi/buildflags/buildflags.h"
 
-#include "jni/BrowserStartupController_jni.h"
+#include "jni/BrowserStartupControllerImpl_jni.h"
 
 using base::android::JavaParamRef;
 
@@ -18,16 +18,16 @@ namespace content {
 
 void BrowserStartupComplete(int result) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BrowserStartupController_browserStartupComplete(env, result);
+  Java_BrowserStartupControllerImpl_browserStartupComplete(env, result);
 }
 
 bool ShouldStartGpuProcessOnBrowserStartup() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_BrowserStartupController_shouldStartGpuProcessOnBrowserStartup(
+  return Java_BrowserStartupControllerImpl_shouldStartGpuProcessOnBrowserStartup(
       env);
 }
 
-static void JNI_BrowserStartupController_SetCommandLineFlags(
+static void JNI_BrowserStartupControllerImpl_SetCommandLineFlags(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     jboolean single_process,
@@ -39,7 +39,7 @@ static void JNI_BrowserStartupController_SetCommandLineFlags(
   SetContentCommandLineFlags(static_cast<bool>(single_process), plugin_str);
 }
 
-static jboolean JNI_BrowserStartupController_IsOfficialBuild(
+static jboolean JNI_BrowserStartupControllerImpl_IsOfficialBuild(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if defined(OFFICIAL_BUILD)
@@ -49,7 +49,7 @@ static jboolean JNI_BrowserStartupController_IsOfficialBuild(
 #endif
 }
 
-static jboolean JNI_BrowserStartupController_IsPluginEnabled(
+static jboolean JNI_BrowserStartupControllerImpl_IsPluginEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -59,7 +59,7 @@ static jboolean JNI_BrowserStartupController_IsPluginEnabled(
 #endif
 }
 
-static void JNI_BrowserStartupController_FlushStartupTasks(
+static void JNI_BrowserStartupControllerImpl_FlushStartupTasks(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
   BrowserMainLoop::GetInstance()->SynchronouslyFlushStartupTasks();

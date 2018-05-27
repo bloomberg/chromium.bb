@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.BrowserParts;
@@ -17,7 +18,7 @@ import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
 import org.chromium.components.background_task_scheduler.TaskParameters;
-import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -187,7 +188,11 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
 
     /** Whether the native part of the browser is loaded. */
     private boolean isNativeLoaded() {
-        return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isStartupSuccessfullyCompleted();
+        return getBrowserStartupController().isStartupSuccessfullyCompleted();
+    }
+
+    @VisibleForTesting
+    protected BrowserStartupController getBrowserStartupController() {
+        return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
     }
 }

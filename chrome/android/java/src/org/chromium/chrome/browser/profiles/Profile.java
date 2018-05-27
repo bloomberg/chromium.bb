@@ -8,7 +8,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
-import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content_public.browser.BrowserStartupController;
 
 /**
  * Wrapper that allows passing a Profile reference around in the Java layer.

@@ -11,7 +11,7 @@ import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.native_test.NativeBrowserTestActivity;
 import org.chromium.ui.base.ActivityWindowAndroid;
