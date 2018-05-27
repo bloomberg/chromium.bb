@@ -43,6 +43,15 @@ const char version_etc_copyright[] =
 
 #define AUTHORS "Christian Egli"
 
+#define DIRECTION_FORWARD 0
+#define DIRECTION_BACKWARD 1
+#define DIRECTION_BOTH 2
+#define DIRECTION_DEFAULT DIRECTION_FORWARD
+
+#define HYPHENATION_OFF 0
+#define HYPHENATION_ON 1
+#define HYPHENATION_DEFAULT HYPHENATION_OFF
+
 static void
 print_help(void) {
 	printf("\
@@ -189,8 +198,8 @@ read_flags(yaml_parser_t *parser, int *direction, int *hyphenation) {
 	yaml_event_t event;
 	int parse_error = 1;
 
-	*direction = 0;
-	*hyphenation = 0;
+	*direction = DIRECTION_DEFAULT;
+	*hyphenation = HYPHENATION_DEFAULT;
 
 	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_MAPPING_START_EVENT))
 		yaml_error(YAML_MAPPING_START_EVENT, &event);
@@ -204,13 +213,13 @@ read_flags(yaml_parser_t *parser, int *direction, int *hyphenation) {
 			if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
 				yaml_error(YAML_SCALAR_EVENT, &event);
 			if (!strcmp((const char *)event.data.scalar.value, "forward")) {
-				*direction = 0;
+				*direction = DIRECTION_FORWARD;
 			} else if (!strcmp((const char *)event.data.scalar.value, "backward")) {
-				*direction = 1;
+				*direction = DIRECTION_BACKWARD;
 			} else if (!strcmp((const char *)event.data.scalar.value, "bothDirections")) {
-				*direction = 2;
+				*direction = DIRECTION_BOTH;
 			} else if (!strcmp((const char *)event.data.scalar.value, "hyphenate")) {
-				*hyphenation = 1;
+				*hyphenation = HYPHENATION_ON;
 			} else {
 				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 						"Testmode '%s' not supported\n", event.data.scalar.value);
@@ -590,7 +599,7 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	int result = 0;
 	char **table = tables;
 	while (*table) {
-		if (hyphenation) {
+		if (hyphenation == HYPHENATION_ON) {
 			result |= check_hyphenation(*table, word, translation);
 		} else {
 			// FIXME: Note that the typeform array was constructed using the
@@ -789,8 +798,8 @@ main(int argc, char *argv[]) {
 
 		if (event.type != YAML_SCALAR_EVENT) yaml_error(YAML_SCALAR_EVENT, &event);
 
-		int direction = 0;
-		int hyphenation = 0;
+		int direction = DIRECTION_DEFAULT;
+		int hyphenation = HYPHENATION_DEFAULT;
 		if (!strcmp((const char *)event.data.scalar.value, "flags")) {
 			yaml_event_delete(&event);
 			read_flags(&parser, &direction, &hyphenation);
