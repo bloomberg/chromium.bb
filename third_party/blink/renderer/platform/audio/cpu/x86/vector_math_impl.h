@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // This file intentionally does not have header guards, it's included from
-// VectorMathAVX.h and from VectorMathSSE.h with different macro definitions.
-// The following line silences a presubmit warning that would otherwise be
-// triggered by this: no-include-guard-because-multiply-included
+// vector_math_avx.h and from vector_math_sse.h with different macro
+// definitions. The following line silences a presubmit warning that would
+// otherwise be triggered by this: no-include-guard-because-multiply-included
 
 #include "build/build_config.h"
 
