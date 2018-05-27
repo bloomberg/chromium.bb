@@ -195,7 +195,7 @@ class AV1ExtTileTest
   std::vector<std::string> tile_md5_;
 };
 
-TEST_P(AV1ExtTileTest, DecoderResultTest) { TestRoundTrip(); }
+TEST_P(AV1ExtTileTest, DISABLED_DecoderResultTest) { TestRoundTrip(); }
 
 AV1_INSTANTIATE_TEST_CASE(
     // Now only test 2-pass mode.
@@ -204,7 +204,7 @@ AV1_INSTANTIATE_TEST_CASE(
 
 class AV1ExtTileTestLarge : public AV1ExtTileTest {};
 
-TEST_P(AV1ExtTileTestLarge, DecoderResultTest) { TestRoundTrip(); }
+TEST_P(AV1ExtTileTestLarge, DISABLED_DecoderResultTest) { TestRoundTrip(); }
 
 AV1_INSTANTIATE_TEST_CASE(
     // Now only test 2-pass mode.
