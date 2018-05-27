@@ -1320,9 +1320,6 @@ static CSSValue* ConsumeLinearGradient(CSSParserTokenRange& args,
 static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
                                       const CSSParserContext& context,
                                       CSSGradientRepeat repeating) {
-  if (!RuntimeEnabledFeatures::ConicGradientEnabled())
-    return nullptr;
-
   const CSSPrimitiveValue* from_angle = nullptr;
   if (ConsumeIdent<CSSValueFrom>(args)) {
     if (!(from_angle = ConsumeAngle(args, &context,

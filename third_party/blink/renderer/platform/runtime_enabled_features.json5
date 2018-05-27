@@ -226,10 +226,6 @@
       status: "experimental",
     },
     {
-      name: "ConicGradient",
-      status: "experimental",
-    },
-    {
       name: "ConstructableStylesheets",
       status: "experimental",
     },
