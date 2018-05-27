@@ -6,13 +6,27 @@
 #define COMPONENTS_VIZ_TEST_TEST_GLES2_INTERFACE_H_
 
 #include <stddef.h>
+#include <unordered_map>
+#include <unordered_set>
 
+#include "base/callback.h"
+#include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
+#include "components/viz/test/ordered_texture_map.h"
+#include "components/viz/test/test_texture.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/sync_token.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace viz {
 
-class TestWebGraphicsContext3D;
+class TestContextSupport;
 
 class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
  public:
@@ -100,6 +114,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                                  GLsizei width,
                                  GLsizei height) override;
   void TexParameteri(GLenum target, GLenum pname, GLint param) override;
+  void GetTexParameteriv(GLenum target, GLenum pname, GLint* value) override;
 
   void CompressedTexImage2D(GLenum target,
                             GLint level,
@@ -163,8 +178,31 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   GLenum GetGraphicsResetStatusKHR() override;
 
   size_t NumTextures() const;
+  GLuint TextureAt(int i) const;
 
-  void set_test_context(TestWebGraphicsContext3D* context);
+  size_t NumUsedTextures() const { return used_textures_.size(); }
+  bool UsedTexture(int texture) const {
+    return base::ContainsKey(used_textures_, texture);
+  }
+  void ResetUsedTextures() { used_textures_.clear(); }
+
+  size_t NumFramebuffers() const;
+  size_t NumRenderbuffers() const;
+
+  scoped_refptr<TestTexture> BoundTexture(GLenum target);
+  scoped_refptr<TestTexture> UnboundTexture(GLuint texture);
+  GLuint CreateExternalTexture();
+  bool IsContextLost() { return context_lost_; }
+  void set_test_support(TestContextSupport* test_support) {
+    test_support_ = test_support;
+  }
+  const gpu::Capabilities& test_capabilities() const {
+    return test_capabilities_;
+  }
+  const gpu::SyncToken& last_waited_sync_token() const {
+    return last_waited_sync_token_;
+  }
+  void set_context_lost(bool context_lost) { context_lost_ = context_lost; }
   void set_times_bind_texture_succeeds(int times);
 
   void set_have_extension_io_surface(bool have);
@@ -189,12 +227,138 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   void set_support_texture_storage_image(bool support);
   void set_support_texture_npot(bool support);
   void set_max_texture_size(int size);
+  // When set, MapBufferCHROMIUM will return NULL after this many times.
+  void set_times_map_buffer_chromium_succeeds(int times) {
+    times_map_buffer_chromium_succeeds_ = times;
+  }
+
+  virtual GLuint NextTextureId();
+  virtual void RetireTextureId(GLuint id);
+
+  virtual GLuint NextBufferId();
+  virtual void RetireBufferId(GLuint id);
+
+  virtual GLuint NextImageId();
+  virtual void RetireImageId(GLuint id);
+
+  virtual GLuint NextFramebufferId();
+  virtual void RetireFramebufferId(GLuint id);
+
+  virtual GLuint NextRenderbufferId();
+  virtual void RetireRenderbufferId(GLuint id);
+
+  void SetMaxSamples(int max_samples);
+  void set_context_lost_callback(base::OnceClosure callback) {
+    context_lost_callback_ = std::move(callback);
+  }
+
+  int width() const { return width_; }
+  int height() const { return height_; }
+  bool reshape_called() const { return reshape_called_; }
+  void clear_reshape_called() { reshape_called_ = false; }
+  float scale_factor() const { return scale_factor_; }
+
+  enum UpdateType { NO_UPDATE = 0, PREPARE_TEXTURE, POST_SUB_BUFFER };
+
+  gfx::Rect update_rect() const { return update_rect_; }
+
+  UpdateType last_update_type() { return last_update_type_; }
 
  protected:
-  virtual void InitializeTestContext() {}
+  struct TextureTargets {
+    TextureTargets();
+    ~TextureTargets();
 
-  TestWebGraphicsContext3D* test_context_ = nullptr;
+    void BindTexture(GLenum target, GLuint id);
+    void UnbindTexture(GLuint id);
+
+    GLuint BoundTexture(GLenum target);
+
+   private:
+    using TargetTextureMap = std::unordered_map<GLenum, GLuint>;
+    TargetTextureMap bound_textures_;
+  };
+
+  struct Buffer {
+    Buffer();
+    ~Buffer();
+
+    GLenum target;
+    std::unique_ptr<uint8_t[]> pixels;
+    size_t size;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Buffer);
+  };
+
+  struct Image {
+    Image();
+    ~Image();
+
+    std::unique_ptr<uint8_t[]> pixels;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Image);
+  };
+
+  struct Namespace : public base::RefCountedThreadSafe<Namespace> {
+    Namespace();
+
+    // Protects all fields.
+    base::Lock lock;
+    unsigned next_buffer_id;
+    unsigned next_image_id;
+    unsigned next_texture_id;
+    unsigned next_renderbuffer_id;
+    std::unordered_map<unsigned, std::unique_ptr<Buffer>> buffers;
+    std::unordered_set<unsigned> images;
+    OrderedTextureMap textures;
+    std::unordered_set<unsigned> renderbuffer_set;
+
+   private:
+    friend class base::RefCountedThreadSafe<Namespace>;
+    ~Namespace();
+    DISALLOW_COPY_AND_ASSIGN(Namespace);
+  };
+
+  void CheckTextureIsBound(GLenum target);
+
+  void CreateNamespace();
+  static const GLuint kExternalTextureId;
+  GLuint BoundTextureId(GLenum target);
+  unsigned context_id_;
   gpu::Capabilities test_capabilities_;
+  int times_bind_texture_succeeds_;
+  int times_end_query_succeeds_;
+  bool context_lost_;
+  int times_map_buffer_chromium_succeeds_;
+  base::OnceClosure context_lost_callback_;
+  std::unordered_set<unsigned> used_textures_;
+  unsigned next_program_id_;
+  std::unordered_set<unsigned> program_set_;
+  unsigned next_shader_id_;
+  std::unordered_set<unsigned> shader_set_;
+  unsigned next_framebuffer_id_;
+  std::unordered_set<unsigned> framebuffer_set_;
+  unsigned current_framebuffer_;
+  std::vector<TestGLES2Interface*> shared_contexts_;
+  bool reshape_called_;
+  int width_;
+  int height_;
+  float scale_factor_;
+  TestContextSupport* test_support_;
+  gfx::Rect update_rect_;
+  UpdateType last_update_type_;
+  GLuint64 next_insert_fence_sync_;
+  gpu::SyncToken last_waited_sync_token_;
+  int unpack_alignment_;
+
+  base::flat_map<unsigned, unsigned> bound_buffer_;
+  TextureTargets texture_targets_;
+
+  scoped_refptr<Namespace> namespace_;
+  static Namespace* shared_namespace_;
+  base::WeakPtrFactory<TestGLES2Interface> weak_ptr_factory_;
 };
 
 }  // namespace viz

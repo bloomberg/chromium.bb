@@ -37,7 +37,6 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -3787,7 +3786,7 @@ class FramebufferWatchingGLRenderer : public FakeRendererGL {
 
 TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
   auto provider = TestContextProvider::Create();
-  provider->UnboundTestContext3d()->set_have_post_sub_buffer(true);
+  provider->UnboundTestContextGL()->set_have_post_sub_buffer(true);
   provider->BindToCurrentThread();
 
   cc::FakeOutputSurfaceClient output_surface_client;

@@ -20,7 +20,6 @@
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 
 namespace viz {
 class BeginFrameSource;
@@ -41,13 +40,13 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
 
     // Calls a function on both the compositor and worker context.
     template <typename... Args>
-    Builder& AllContexts(void (viz::TestWebGraphicsContext3D::*fn)(Args...),
+    Builder& AllContexts(void (viz::TestGLES2Interface::*fn)(Args...),
                          Args... args) {
       DCHECK(compositor_context_provider_);
       DCHECK(worker_context_provider_);
-      (compositor_context_provider_->UnboundTestContext3d()->*fn)(
+      (compositor_context_provider_->UnboundTestContextGL()->*fn)(
           std::forward<Args>(args)...);
-      (worker_context_provider_->UnboundTestContext3d()->*fn)(
+      (worker_context_provider_->UnboundTestContextGL()->*fn)(
           std::forward<Args>(args)...);
 
       return *this;
@@ -80,13 +79,6 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   }
 
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
-      std::unique_ptr<viz::TestWebGraphicsContext3D> context) {
-    return base::WrapUnique(new FakeLayerTreeFrameSink(
-        viz::TestContextProvider::Create(std::move(context)),
-        viz::TestContextProvider::CreateWorker()));
-  }
-
-  static std::unique_ptr<FakeLayerTreeFrameSink> Create3d(
       std::unique_ptr<viz::TestGLES2Interface> gl) {
     return base::WrapUnique(new FakeLayerTreeFrameSink(
         viz::TestContextProvider::Create(std::move(gl)),
@@ -96,10 +88,8 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
   static std::unique_ptr<FakeLayerTreeFrameSink> Create3dForGpuRasterization(
       int max_msaa_samples = 0) {
     return Builder()
-        .AllContexts(&viz::TestWebGraphicsContext3D::set_gpu_rasterization,
-                     true)
-        .AllContexts(&viz::TestWebGraphicsContext3D::SetMaxSamples,
-                     max_msaa_samples)
+        .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization, true)
+        .AllContexts(&viz::TestGLES2Interface::SetMaxSamples, max_msaa_samples)
         .Build();
   }
 

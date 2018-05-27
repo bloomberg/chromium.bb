@@ -30,10 +30,10 @@
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "components/viz/test/test_texture.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,8 +82,8 @@ static SharedBitmapId CreateAndFillSharedBitmap(SharedBitmapManager* manager,
   return shared_bitmap_id;
 }
 
-// Shared data between multiple ResourceProviderContext. This contains mailbox
-// contents as well as information about sync points.
+// Shared data between multiple ResourceProviderGLES2Interface. This contains
+// mailbox contents as well as information about sync points.
 class ContextSharedData {
  public:
   static std::unique_ptr<ContextSharedData> Create() {
@@ -137,14 +137,12 @@ class ContextSharedData {
   std::unordered_map<unsigned, uint32_t> sync_point_for_mailbox_;
 };
 
-class ResourceProviderContext : public TestWebGraphicsContext3D {
+class ResourceProviderGLES2Interface : public TestGLES2Interface {
  public:
-  static std::unique_ptr<ResourceProviderContext> Create(
-      ContextSharedData* shared_data) {
-    return base::WrapUnique(new ResourceProviderContext(shared_data));
-  }
+  explicit ResourceProviderGLES2Interface(ContextSharedData* shared_data)
+      : shared_data_(shared_data) {}
 
-  void genSyncToken(GLbyte* sync_token) override {
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
     uint64_t fence_sync = shared_data_->InsertFenceSync();
     gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
@@ -161,7 +159,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   }
 
-  void waitSyncToken(const GLbyte* sync_token) override {
+  void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override {
     gpu::SyncToken sync_token_data;
     if (sync_token)
       memcpy(&sync_token_data, sync_token, sizeof(sync_token_data));
@@ -176,7 +174,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return last_waited_sync_token_;
   }
 
-  void texStorage2DEXT(GLenum target,
+  void TexStorage2DEXT(GLenum target,
                        GLint levels,
                        GLuint internalformat,
                        GLint width,
@@ -197,9 +195,9 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     AllocateTexture(gfx::Size(width, height), format);
   }
 
-  void texImage2D(GLenum target,
+  void TexImage2D(GLenum target,
                   GLint level,
-                  GLenum internalformat,
+                  GLint internalformat,
                   GLsizei width,
                   GLsizei height,
                   GLint border,
@@ -209,7 +207,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     CheckTextureIsBound(target);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
-    ASSERT_EQ(internalformat, format);
+    ASSERT_EQ(internalformat, static_cast<GLint>(format));
     ASSERT_FALSE(border);
     ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
     AllocateTexture(gfx::Size(width, height), format);
@@ -217,7 +215,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
       SetPixels(0, 0, width, height, pixels);
   }
 
-  void texSubImage2D(GLenum target,
+  void TexSubImage2D(GLenum target,
                      GLint level,
                      GLint xoffset,
                      GLint yoffset,
@@ -238,11 +236,11 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     SetPixels(xoffset, yoffset, width, height, pixels);
   }
 
-  void genMailboxCHROMIUM(GLbyte* mailbox) override {
+  void GenMailboxCHROMIUM(GLbyte* mailbox) override {
     return shared_data_->GenMailbox(mailbox);
   }
 
-  void produceTextureDirectCHROMIUM(GLuint texture,
+  void ProduceTextureDirectCHROMIUM(GLuint texture,
                                     const GLbyte* mailbox) override {
     // Delay moving the texture into the mailbox until the next
     // sync token, so that it is not visible to other contexts that
@@ -254,8 +252,10 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     pending_produce_textures_.push_back(std::move(pending));
   }
 
-  GLuint createAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override {
-    GLuint texture_id = createTexture();
+  GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override {
+    GLuint texture_id;
+    GenTextures(1, &texture_id);
+
     base::AutoLock lock_for_texture_access(namespace_->lock);
     scoped_refptr<TestTexture> texture =
         shared_data_->ConsumeTexture(mailbox, last_waited_sync_token_);
@@ -273,10 +273,6 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_EQ(texture->format, format);
     memcpy(pixels, texture->data.get(), TextureSizeBytes(size, format));
   }
-
- protected:
-  explicit ResourceProviderContext(ContextSharedData* shared_data)
-      : shared_data_(shared_data) {}
 
  private:
   void AllocateTexture(const gfx::Size& size, GLenum format) {
@@ -335,19 +331,20 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
         child_needs_sync_token_(child_needs_sync_token),
         shared_data_(ContextSharedData::Create()) {
     if (use_gpu_) {
-      auto context3d(ResourceProviderContext::Create(shared_data_.get()));
-      context3d_ = context3d.get();
-      context_provider_ = TestContextProvider::Create(std::move(context3d));
-      context_provider_->UnboundTestContext3d()
+      auto gl_owned =
+          std::make_unique<ResourceProviderGLES2Interface>(shared_data_.get());
+      gl_ = gl_owned.get();
+      context_provider_ = TestContextProvider::Create(std::move(gl_owned));
+      context_provider_->UnboundTestContextGL()
           ->set_support_texture_format_bgra8888(true);
       context_provider_->BindToCurrentThread();
 
-      auto child_context_owned =
-          ResourceProviderContext::Create(shared_data_.get());
-      child_context_ = child_context_owned.get();
+      auto child_gl_owned =
+          std::make_unique<ResourceProviderGLES2Interface>(shared_data_.get());
+      child_gl_ = child_gl_owned.get();
       child_context_provider_ =
-          TestContextProvider::Create(std::move(child_context_owned));
-      child_context_provider_->UnboundTestContext3d()
+          TestContextProvider::Create(std::move(child_gl_owned));
+      child_context_provider_->UnboundTestContextGL()
           ->set_support_texture_format_bgra8888(true);
       child_context_provider_->BindToCurrentThread();
       gpu_memory_buffer_manager_ =
@@ -383,16 +380,16 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
                                                      GL_TEXTURE_2D, filter);
   }
 
-  ResourceProviderContext* context() { return context3d_; }
 
   TransferableResource CreateResource(ResourceFormat format) {
     if (use_gpu()) {
-      unsigned texture = child_context_->createTexture();
+      unsigned texture;
+      child_gl_->GenTextures(1, &texture);
       gpu::Mailbox gpu_mailbox;
-      child_context_->genMailboxCHROMIUM(gpu_mailbox.name);
-      child_context_->produceTextureDirectCHROMIUM(texture, gpu_mailbox.name);
+      child_gl_->GenMailboxCHROMIUM(gpu_mailbox.name);
+      child_gl_->ProduceTextureDirectCHROMIUM(texture, gpu_mailbox.name);
       gpu::SyncToken sync_token;
-      child_context_->genSyncToken(sync_token.GetData());
+      child_gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
       EXPECT_TRUE(sync_token.HasData());
 
       TransferableResource gl_resource = TransferableResource::MakeGL(
@@ -433,8 +430,8 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   const bool use_gpu_;
   const bool child_needs_sync_token_;
   const std::unique_ptr<ContextSharedData> shared_data_;
-  ResourceProviderContext* context3d_ = nullptr;
-  ResourceProviderContext* child_context_ = nullptr;
+  ResourceProviderGLES2Interface* gl_ = nullptr;
+  ResourceProviderGLES2Interface* child_gl_ = nullptr;
   scoped_refptr<TestContextProvider> context_provider_;
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
@@ -747,15 +744,15 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
       std::make_unique<cc::LayerTreeResourceProvider>(
           child_context_provider_.get(), need_sync_tokens);
 
-  GLuint external_texture_id = child_context_->createExternalTexture();
+  GLuint external_texture_id = child_gl_->CreateExternalTexture();
 
   // A sync point is specified directly and should be used.
   gpu::Mailbox external_mailbox;
-  child_context_->genMailboxCHROMIUM(external_mailbox.name);
-  child_context_->produceTextureDirectCHROMIUM(external_texture_id,
-                                               external_mailbox.name);
+  child_gl_->GenMailboxCHROMIUM(external_mailbox.name);
+  child_gl_->ProduceTextureDirectCHROMIUM(external_texture_id,
+                                          external_mailbox.name);
   gpu::SyncToken external_sync_token;
-  child_context_->genSyncToken(external_sync_token.GetData());
+  child_gl_->GenSyncTokenCHROMIUM(external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
   ResourceId id = no_token_resource_provider->ImportResource(
       TransferableResource::MakeGL(external_mailbox, GL_LINEAR,
@@ -951,14 +948,14 @@ TEST_P(DisplayResourceProviderTest, ReadSoftwareResources) {
   child_resource_provider_->RemoveImportedResource(resource_id);
 }
 
-class TextureStateTrackingContext : public TestWebGraphicsContext3D {
+class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD2(bindTexture, void(GLenum target, GLuint texture));
-  MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
-  MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
-  MOCK_METHOD2(produceTextureDirectCHROMIUM,
+  MOCK_METHOD2(BindTexture, void(GLenum target, GLuint texture));
+  MOCK_METHOD3(TexParameteri, void(GLenum target, GLenum pname, GLint param));
+  MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
+  MOCK_METHOD2(ProduceTextureDirectCHROMIUM,
                void(GLuint texture, const GLbyte* mailbox));
-  MOCK_METHOD1(createAndConsumeTextureCHROMIUM,
+  MOCK_METHOD1(CreateAndConsumeTextureCHROMIUM,
                unsigned(const GLbyte* mailbox));
 
   // Force all textures to be consecutive numbers starting at "1",
@@ -970,7 +967,7 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 
   void RetireTextureId(GLuint) override {}
 
-  void genSyncToken(GLbyte* sync_token) override {
+  void GenSyncTokenCHROMIUM(GLbyte* sync_token) override {
     gpu::SyncToken sync_token_data(gpu::CommandBufferNamespace::GPU_IO,
                                    gpu::CommandBufferId::FromUnsafeValue(0x123),
                                    next_fence_sync_++);
@@ -988,19 +985,19 @@ class ResourceProviderTestImportedResourceGLFilters {
   static void RunTest(TestSharedBitmapManager* shared_bitmap_manager,
                       bool mailbox_nearest_neighbor,
                       GLenum sampler_filter) {
-    auto context_owned(std::make_unique<TextureStateTrackingContext>());
-    TextureStateTrackingContext* context = context_owned.get();
-    auto context_provider =
-        TestContextProvider::Create(std::move(context_owned));
+    auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
+    TextureStateTrackingGLES2Interface* gl = gl_owned.get();
+    auto context_provider = TestContextProvider::Create(std::move(gl_owned));
     context_provider->BindToCurrentThread();
 
     auto resource_provider = std::make_unique<DisplayResourceProvider>(
         context_provider.get(), shared_bitmap_manager);
 
-    auto child_context_owned = std::make_unique<TextureStateTrackingContext>();
-    TextureStateTrackingContext* child_context = child_context_owned.get();
+    auto child_gl_owned =
+        std::make_unique<TextureStateTrackingGLES2Interface>();
+    TextureStateTrackingGLES2Interface* child_gl = child_gl_owned.get();
     auto child_context_provider =
-        TestContextProvider::Create(std::move(child_context_owned));
+        TestContextProvider::Create(std::move(child_gl_owned));
     child_context_provider->BindToCurrentThread();
 
     auto child_resource_provider =
@@ -1012,12 +1009,12 @@ class ResourceProviderTestImportedResourceGLFilters {
     gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                               gpu::CommandBufferId::FromUnsafeValue(0x12),
                               0x34);
-    const GLuint64 current_fence_sync = child_context->GetNextFenceSync();
+    const GLuint64 current_fence_sync = child_gl->GetNextFenceSync();
 
-    EXPECT_CALL(*child_context, bindTexture(_, _)).Times(0);
-    EXPECT_CALL(*child_context, waitSyncToken(_)).Times(0);
-    EXPECT_CALL(*child_context, produceTextureDirectCHROMIUM(_, _)).Times(0);
-    EXPECT_CALL(*child_context, createAndConsumeTextureCHROMIUM(_)).Times(0);
+    EXPECT_CALL(*child_gl, BindTexture(_, _)).Times(0);
+    EXPECT_CALL(*child_gl, WaitSyncTokenCHROMIUM(_)).Times(0);
+    EXPECT_CALL(*child_gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*child_gl, CreateAndConsumeTextureCHROMIUM(_)).Times(0);
 
     gpu::Mailbox gpu_mailbox;
     memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
@@ -1031,9 +1028,9 @@ class ResourceProviderTestImportedResourceGLFilters {
         SingleReleaseCallback::Create(base::BindOnce(
             &MockReleaseCallback::Released, base::Unretained(&release))));
     EXPECT_NE(0u, resource_id);
-    EXPECT_EQ(current_fence_sync, child_context->GetNextFenceSync());
+    EXPECT_EQ(current_fence_sync, child_gl->GetNextFenceSync());
 
-    testing::Mock::VerifyAndClearExpectations(child_context);
+    testing::Mock::VerifyAndClearExpectations(child_gl);
 
     // Transfer resources to the parent.
     std::vector<TransferableResource> send_to_parent;
@@ -1055,39 +1052,37 @@ class ResourceProviderTestImportedResourceGLFilters {
       sync_token.SetVerifyFlush();
 
       // Mailbox sync point WaitSyncToken before using the texture.
-      EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+      EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(MatchesSyncToken(sync_token)));
       resource_provider->WaitSyncToken(mapped_resource_id);
-      testing::Mock::VerifyAndClearExpectations(context);
+      testing::Mock::VerifyAndClearExpectations(gl);
 
-      EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_))
+      EXPECT_CALL(*gl, CreateAndConsumeTextureCHROMIUM(_))
           .WillOnce(Return(texture_id));
-      EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
+      EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_2D, texture_id));
 
-      EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _)).Times(0);
+      EXPECT_CALL(*gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
 
       // The sampler will reset these if |mailbox_nearest_neighbor| does not
       // match |sampler_filter|.
       if (mailbox_nearest_neighbor != (sampler_filter == GL_NEAREST)) {
-        EXPECT_CALL(*context,
-                    texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                                  sampler_filter));
-        EXPECT_CALL(*context,
-                    texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                                  sampler_filter));
+        EXPECT_CALL(*gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                                       sampler_filter));
+        EXPECT_CALL(*gl, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                                       sampler_filter));
       }
 
       DisplayResourceProvider::ScopedSamplerGL lock(
           resource_provider.get(), mapped_resource_id, sampler_filter);
-      testing::Mock::VerifyAndClearExpectations(context);
-      EXPECT_EQ(current_fence_sync, context->GetNextFenceSync());
+      testing::Mock::VerifyAndClearExpectations(gl);
+      EXPECT_EQ(current_fence_sync, gl->GetNextFenceSync());
 
       // When done with it, a sync point should be inserted, but no produce is
       // necessary.
-      EXPECT_CALL(*child_context, bindTexture(_, _)).Times(0);
-      EXPECT_CALL(*child_context, produceTextureDirectCHROMIUM(_, _)).Times(0);
+      EXPECT_CALL(*child_gl, BindTexture(_, _)).Times(0);
+      EXPECT_CALL(*child_gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
 
-      EXPECT_CALL(*child_context, waitSyncToken(_)).Times(0);
-      EXPECT_CALL(*child_context, createAndConsumeTextureCHROMIUM(_)).Times(0);
+      EXPECT_CALL(*child_gl, WaitSyncTokenCHROMIUM(_)).Times(0);
+      EXPECT_CALL(*child_gl, CreateAndConsumeTextureCHROMIUM(_)).Times(0);
     }
 
     EXPECT_EQ(0u, returned_to_child.size());
@@ -1148,18 +1143,18 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   if (!use_gpu())
     return;
 
-  auto context_owned(std::make_unique<TextureStateTrackingContext>());
-  TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
+  TextureStateTrackingGLES2Interface* gl = gl_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(gl_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get());
 
-  auto child_context_owned = std::make_unique<TextureStateTrackingContext>();
-  TextureStateTrackingContext* child_context = child_context_owned.get();
+  auto child_gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
+  TextureStateTrackingGLES2Interface* child_gl = child_gl_owned.get();
   auto child_context_provider =
-      TestContextProvider::Create(std::move(child_context_owned));
+      TestContextProvider::Create(std::move(child_gl_owned));
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider =
@@ -1169,12 +1164,12 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
-  const GLuint64 current_fence_sync = child_context->GetNextFenceSync();
+  const GLuint64 current_fence_sync = child_gl->GetNextFenceSync();
 
-  EXPECT_CALL(*child_context, bindTexture(_, _)).Times(0);
-  EXPECT_CALL(*child_context, waitSyncToken(_)).Times(0);
-  EXPECT_CALL(*child_context, produceTextureDirectCHROMIUM(_, _)).Times(0);
-  EXPECT_CALL(*child_context, createAndConsumeTextureCHROMIUM(_)).Times(0);
+  EXPECT_CALL(*child_gl, BindTexture(_, _)).Times(0);
+  EXPECT_CALL(*child_gl, WaitSyncTokenCHROMIUM(_)).Times(0);
+  EXPECT_CALL(*child_gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*child_gl, CreateAndConsumeTextureCHROMIUM(_)).Times(0);
 
   gpu::Mailbox gpu_mailbox;
   memcpy(gpu_mailbox.name, "Hello world", strlen("Hello world") + 1);
@@ -1187,9 +1182,9 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   ResourceId resource_id =
       child_resource_provider->ImportResource(resource, std::move(callback));
   EXPECT_NE(0u, resource_id);
-  EXPECT_EQ(current_fence_sync, child_context->GetNextFenceSync());
+  EXPECT_EQ(current_fence_sync, child_gl->GetNextFenceSync());
 
-  testing::Mock::VerifyAndClearExpectations(child_context);
+  testing::Mock::VerifyAndClearExpectations(child_gl);
 
   // Transfer resources to the parent.
   std::vector<TransferableResource> send_to_parent;
@@ -1212,29 +1207,29 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
     sync_token.SetVerifyFlush();
 
     // Mailbox sync point WaitSyncToken before using the texture.
-    EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token)));
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(MatchesSyncToken(sync_token)));
     resource_provider->WaitSyncToken(mapped_resource_id);
-    testing::Mock::VerifyAndClearExpectations(context);
+    testing::Mock::VerifyAndClearExpectations(gl);
 
     unsigned texture_id = 1;
 
-    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_))
+    EXPECT_CALL(*gl, CreateAndConsumeTextureCHROMIUM(_))
         .WillOnce(Return(texture_id));
 
-    EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
 
     DisplayResourceProvider::ScopedReadLockGL lock(resource_provider.get(),
                                                    mapped_resource_id);
-    testing::Mock::VerifyAndClearExpectations(context);
+    testing::Mock::VerifyAndClearExpectations(gl);
 
     // When done with it, a sync point should be inserted, but no produce is
     // necessary.
-    EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
-    EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _)).Times(0);
+    EXPECT_CALL(*gl, BindTexture(_, _)).Times(0);
+    EXPECT_CALL(*gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
 
-    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
-    EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_)).Times(0);
-    testing::Mock::VerifyAndClearExpectations(context);
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(0);
+    EXPECT_CALL(*gl, CreateAndConsumeTextureCHROMIUM(_)).Times(0);
+    testing::Mock::VerifyAndClearExpectations(gl);
   }
   EXPECT_EQ(0u, returned_to_child.size());
   // Transfer resources back from the parent to the child. Set no resources as
@@ -1251,20 +1246,20 @@ TEST_P(DisplayResourceProviderTest, WaitSyncTokenIfNeeded) {
   if (!use_gpu())
     return;
 
-  auto context_owned = std::make_unique<TextureStateTrackingContext>();
-  TextureStateTrackingContext* context = context_owned.get();
-  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
+  TextureStateTrackingGLES2Interface* gl = gl_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(gl_owned));
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get());
 
-  const GLuint64 current_fence_sync = context->GetNextFenceSync();
+  const GLuint64 current_fence_sync = gl->GetNextFenceSync();
 
-  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
-  EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
-  EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _)).Times(0);
-  EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_)).Times(0);
+  EXPECT_CALL(*gl, BindTexture(_, _)).Times(0);
+  EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(0);
+  EXPECT_CALL(*gl, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
+  EXPECT_CALL(*gl, CreateAndConsumeTextureCHROMIUM(_)).Times(0);
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -1273,20 +1268,21 @@ TEST_P(DisplayResourceProviderTest, WaitSyncTokenIfNeeded) {
   ResourceId id_without_sync = MakeGpuResourceAndSendToDisplay(
       'a', GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(), resource_provider.get());
 
-  EXPECT_EQ(current_fence_sync, context->GetNextFenceSync());
+  EXPECT_EQ(current_fence_sync, gl->GetNextFenceSync());
 
   // First call to WaitSyncToken should call WaitSyncToken, but only if a
   // SyncToken was present.
   {
-    EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(sync_token))).Times(1);
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(MatchesSyncToken(sync_token)))
+        .Times(1);
     resource_provider->WaitSyncToken(id_with_sync);
-    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(0);
     resource_provider->WaitSyncToken(id_without_sync);
   }
 
   {
     // Subsequent calls to WaitSyncToken shouldn't call WaitSyncToken.
-    EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
+    EXPECT_CALL(*gl, WaitSyncTokenCHROMIUM(_)).Times(0);
     resource_provider->WaitSyncToken(id_with_sync);
     resource_provider->WaitSyncToken(id_without_sync);
   }
@@ -1297,14 +1293,14 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   if (!use_gpu())
     return;
 
-  GLuint external_texture_id = child_context_->createExternalTexture();
+  GLuint external_texture_id = child_gl_->CreateExternalTexture();
 
   gpu::Mailbox external_mailbox;
-  child_context_->genMailboxCHROMIUM(external_mailbox.name);
-  child_context_->produceTextureDirectCHROMIUM(external_texture_id,
-                                               external_mailbox.name);
+  child_gl_->GenMailboxCHROMIUM(external_mailbox.name);
+  child_gl_->ProduceTextureDirectCHROMIUM(external_texture_id,
+                                          external_mailbox.name);
   gpu::SyncToken external_sync_token;
-  child_context_->genSyncToken(external_sync_token.GetData());
+  child_gl_->GenSyncTokenCHROMIUM(external_sync_token.GetData());
   EXPECT_TRUE(external_sync_token.HasData());
 
   TransferableResource id1_transfer = TransferableResource::MakeGLOverlay(
@@ -1351,8 +1347,7 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   }
   EXPECT_EQ(1u, resource_provider_->CountPromotionHintRequestsForTesting());
 
-  EXPECT_EQ(list[0].mailbox_holder.sync_token,
-            context3d_->last_waited_sync_token());
+  EXPECT_EQ(list[0].mailbox_holder.sync_token, gl_->last_waited_sync_token());
   ResourceIdSet resource_ids_to_receive;
   resource_ids_to_receive.insert(id1);
   resource_ids_to_receive.insert(id2);

@@ -15,7 +15,6 @@
 #include "cc/test/transfer_cache_test_helper.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
-#include "components/viz/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -108,11 +107,9 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
 
   ~FakeGPUImageDecodeTestGLES2Interface() override {
     // All textures / framebuffers / renderbuffers should be cleaned up.
-    if (test_context_) {
-      EXPECT_EQ(0u, test_context_->NumTextures());
-      EXPECT_EQ(0u, test_context_->NumFramebuffers());
-      EXPECT_EQ(0u, test_context_->NumRenderbuffers());
-    }
+    EXPECT_EQ(0u, NumTextures());
+    EXPECT_EQ(0u, NumFramebuffers());
+    EXPECT_EQ(0u, NumRenderbuffers());
   }
 
   void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) override {
@@ -219,20 +216,15 @@ class GPUImageDecodeTestMockContextProvider : public viz::TestContextProvider {
         std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
             discardable_manager, transfer_cache_helper),
         std::make_unique<FakeGPUImageDecodeTestGLES2Interface>(
-            discardable_manager, transfer_cache_helper),
-        viz::TestWebGraphicsContext3D::Create());
+            discardable_manager, transfer_cache_helper));
   }
 
  private:
   ~GPUImageDecodeTestMockContextProvider() override = default;
   GPUImageDecodeTestMockContextProvider(
       std::unique_ptr<viz::TestContextSupport> support,
-      std::unique_ptr<viz::TestGLES2Interface> gl,
-      std::unique_ptr<viz::TestWebGraphicsContext3D> context)
-      : TestContextProvider(std::move(support),
-                            std::move(gl),
-                            std::move(context),
-                            true) {}
+      std::unique_ptr<viz::TestGLES2Interface> gl)
+      : TestContextProvider(std::move(support), std::move(gl), true) {}
 };
 
 gfx::ColorSpace DefaultColorSpace() {
@@ -248,7 +240,8 @@ class GpuImageDecodeCacheTest
   void SetUp() override {
     context_provider_ = GPUImageDecodeTestMockContextProvider::Create(
         &discardable_manager_, &transfer_cache_helper_);
-    discardable_manager_.SetGLES2Interface(context_provider_->TestContextGL());
+    discardable_manager_.SetGLES2Interface(
+        context_provider_->UnboundTestContextGL());
     context_provider_->BindToCurrentThread();
     {
       viz::RasterContextProvider::ScopedRasterContextLock context_lock(
