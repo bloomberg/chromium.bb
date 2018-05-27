@@ -56,7 +56,7 @@ public class FramebustBlockInfoBar extends InfoBar {
         // Formatting the URL and requesting to omit the scheme might still include it for some of
         // them (e.g. file, filesystem). We split the output of the formatting to make sure we don't
         // end up duplicating it.
-        String formattedUrl = UrlFormatter.formatUrlForSecurityDisplay(mBlockedUrl, true);
+        String formattedUrl = UrlFormatter.formatUrlForSecurityDisplay(mBlockedUrl);
         String scheme = Uri.parse(mBlockedUrl).getScheme() + "://";
 
         TextView schemeView = ellipsizerView.findViewById(R.id.url_scheme);

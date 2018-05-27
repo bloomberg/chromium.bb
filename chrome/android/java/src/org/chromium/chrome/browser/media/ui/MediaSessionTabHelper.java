@@ -313,7 +313,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
 
             String origin = mTab.getUrl();
             try {
-                origin = UrlFormatter.formatUrlForSecurityDisplay(new URI(origin), true);
+                URI uri = new URI(origin);
+                origin = UrlFormatter.formatUrlForSecurityDisplay(origin);
             } catch (URISyntaxException | UnsatisfiedLinkError e) {
                 // UnstatisfiedLinkError can only happen in tests as the natives are not initialized
                 // yet.

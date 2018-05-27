@@ -32,7 +32,7 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
         layout.setIsUsingBigIcon();
         layout.setMessage(mData.getAppName());
         layout.getMessageLayout().addDescription(
-                UrlFormatter.formatUrlForSecurityDisplay(mData.getUrl(), false));
+                UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mData.getUrl()));
         layout.getPrimaryButton()
                 .setButtonColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
                         R.color.app_banner_install_button_bg));

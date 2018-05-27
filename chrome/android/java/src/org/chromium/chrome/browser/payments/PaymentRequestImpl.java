@@ -382,10 +382,10 @@ public class PaymentRequestImpl
         mRenderFrameHost = renderFrameHost;
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
 
-        mPaymentRequestOrigin = UrlFormatter.formatUrlForSecurityDisplay(
-                mRenderFrameHost.getLastCommittedURL(), true);
+        mPaymentRequestOrigin =
+                UrlFormatter.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
         mTopLevelOrigin =
-                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl(), true);
+                UrlFormatter.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl());
 
         mMerchantName = mWebContents.getTitle();
 

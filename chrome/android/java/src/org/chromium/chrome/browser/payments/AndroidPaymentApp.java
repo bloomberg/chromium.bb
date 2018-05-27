@@ -309,7 +309,7 @@ public class AndroidPaymentApp
     }
 
     private static String removeUrlScheme(String url) {
-        return UrlFormatter.formatUrlForSecurityDisplay(url, false /* omit scheme */);
+        return UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url);
     }
 
     private void launchPaymentApp(String id, String merchantName, String origin,

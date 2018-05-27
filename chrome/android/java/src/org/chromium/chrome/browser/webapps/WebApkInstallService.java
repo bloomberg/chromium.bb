@@ -68,7 +68,7 @@ public class WebApkInstallService {
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentIntent(clickPendingIntent)
                 .setWhen(System.currentTimeMillis())
-                .setSubText(UrlFormatter.formatUrlForSecurityDisplay(url, false /* showScheme */))
+                .setSubText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url))
                 .setAutoCancel(true);
 
         NotificationManager notificationManager =

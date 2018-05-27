@@ -8,8 +8,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.annotations.JNINamespace;
 
-import java.net.URI;
-
 /**
  * Wrapper for utilities in url_formatter.
  */
@@ -81,31 +79,23 @@ public final class UrlFormatter {
     }
 
     /**
-     * Builds a String that strips down the URL to its scheme, host, and port.
-     * @param uri URI to break down.
-     * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
-     *                   is ignored.
+     * Builds a String that strips down |uri| to its scheme, host, and port.
+     * @param uri The URI to break down.
      * @return Stripped-down String containing the essential bits of the URL, or the original URL if
      *         it fails to parse it.
      */
-    public static String formatUrlForSecurityDisplay(URI uri, boolean showScheme) {
-        return formatUrlForSecurityDisplay(uri.toString(), showScheme);
+    public static String formatUrlForSecurityDisplay(String uri) {
+        return nativeFormatUrlForSecurityDisplay(uri);
     }
 
     /**
-     * Builds a String that strips down |uri| to its scheme, host, and port.
+     * Builds a String that strips down |uri| to its host, and port.
      * @param uri The URI to break down.
-     * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
-     *                   is ignored.
      * @return Stripped-down String containing the essential bits of the URL, or the original URL if
      *         it fails to parse it.
      */
-    public static String formatUrlForSecurityDisplay(String uri, boolean showScheme) {
-        if (showScheme) {
-            return nativeFormatUrlForSecurityDisplay(uri);
-        } else {
-            return nativeFormatUrlForSecurityDisplayOmitScheme(uri);
-        }
+    public static String formatUrlForSecurityDisplayOmitScheme(String uri) {
+        return nativeFormatUrlForSecurityDisplayOmitScheme(uri);
     }
 
     private static native String nativeFixupUrl(String url);
