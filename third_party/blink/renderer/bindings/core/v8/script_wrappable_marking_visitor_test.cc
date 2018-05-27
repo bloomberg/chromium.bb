@@ -453,6 +453,8 @@ class Mixin : public GarbageCollectedMixin {
   explicit Mixin(DeathAwareScriptWrappable* wrapper_in_mixin)
       : wrapper_in_mixin_(wrapper_in_mixin) {}
 
+  void Trace(Visitor* visitor) override { visitor->Trace(wrapper_in_mixin_); }
+
   void TraceWrappers(ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(wrapper_in_mixin_);
   }
@@ -476,6 +478,11 @@ class Base : public blink::GarbageCollected<Base>,
   static Base* Create(DeathAwareScriptWrappable* wrapper_in_base,
                       DeathAwareScriptWrappable* wrapper_in_mixin) {
     return new Base(wrapper_in_base, wrapper_in_mixin);
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(wrapper_in_base_);
+    Mixin::Trace(visitor);
   }
 
   void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
