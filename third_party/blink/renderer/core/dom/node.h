@@ -402,7 +402,12 @@ class CORE_EXPORT Node : public EventTarget {
     return GetStyleChangeType() == kNeedsReattachStyleChange;
   }
   bool NeedsStyleRecalc() const {
-    return GetStyleChangeType() != kNoStyleChange;
+    // We do not ClearNeedsStyleRecalc() if the recalc triggers a layout re-
+    // attachment (see Element::RecalcStyle()). In order to avoid doing an extra
+    // StyleForLayoutObject for slotted elements, also check if we have been
+    // marked for re-attachment (which mean we have already gone through
+    // RecalcStyleForReattachment as a slot-assigned element).
+    return GetStyleChangeType() != kNoStyleChange && !NeedsReattachLayoutTree();
   }
   StyleChangeType GetStyleChangeType() const {
     return static_cast<StyleChangeType>(node_flags_ & kStyleChangeMask);
