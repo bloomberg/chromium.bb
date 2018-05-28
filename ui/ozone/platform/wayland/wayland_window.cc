@@ -60,7 +60,6 @@ WaylandWindow::~WaylandWindow() {
   if (has_pointer_focus_)
     connection_->pointer()->reset_window_with_pointer_focus();
 
-  surface_.reset();
   delegate_->OnAcceleratedWidgetDestroyed();
 }
 
