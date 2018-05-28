@@ -39,6 +39,9 @@ const char kChromeUserProfileReport[] = "chromeUserProfileReport";
 const char kChromeSignInUser[] = "chromeSignInUser";
 const char kExtensionData[] = "extensionData";
 const char kPlugins[] = "plugins";
+const char kSafeBrowsingWarnings[] = "safeBrowsingWarnings";
+const char kSafeBrowsingWarningsClickThrough[] =
+    "safeBrowsingWarningsClickThrough";
 
 // JSON key in the os_info field.
 const char kOS[] = "os";
@@ -162,6 +165,20 @@ GenerateChromeUserProfileReportRequest(const base::Value& profile_report) {
       !UpdateJSONEncodedStringEntry(profile_report, kPlugins,
                                     request->mutable_plugins(), LIST)) {
     return nullptr;
+  }
+
+  if (const base::Value* count =
+          profile_report.FindKey(kSafeBrowsingWarnings)) {
+    if (!count->is_int())
+      return nullptr;
+    request->set_safe_browsing_warnings(count->GetInt());
+  }
+
+  if (const base::Value* count =
+          profile_report.FindKey(kSafeBrowsingWarningsClickThrough)) {
+    if (!count->is_int())
+      return nullptr;
+    request->set_safe_browsing_warnings_click_through(count->GetInt());
   }
 
   return request;
