@@ -2639,9 +2639,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRemoveNavigationHistoryName,
      flag_descriptions::kRemoveNavigationHistoryDescription, kOsAll,
      FEATURE_VALUE_TYPE(browsing_data::features::kRemoveNavigationHistory)},
+#if defined(OS_ANDROID)
     {"important-sites-in-cbd", flag_descriptions::kImportantSitesInCbdName,
-     flag_descriptions::kImportantSitesInCbdDescription, kOsAll,
+     flag_descriptions::kImportantSitesInCbdDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kImportantSitesInCbd)},
+#endif  // OS_ANDROID
     {"passive-listener-default",
      flag_descriptions::kPassiveEventListenerDefaultName,
      flag_descriptions::kPassiveEventListenerDefaultDescription, kOsAll,

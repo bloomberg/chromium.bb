@@ -17,8 +17,6 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
-#include "chrome/browser/engagement/important_sites_usage_counter.h"
-#include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -42,7 +40,6 @@
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #endif
 
-using ImportantReason = ImportantSitesUtil::ImportantReason;
 using BrowsingDataType = browsing_data::BrowsingDataType;
 
 namespace {
@@ -67,13 +64,6 @@ const char* kCounterPrefsBasic[] = {
     browsing_data::prefs::kDeleteCacheBasic,
 };
 
-const char kRegisterableDomainField[] = "registerableDomain";
-const char kReasonBitField[] = "reasonBitfield";
-const char kExampleOriginField[] = "exampleOrigin";
-const char kIsCheckedField[] = "isChecked";
-const char kStorageSizeField[] = "storageSize";
-const char kHasNotificationsField[] = "hasNotifications";
-
 } // namespace
 
 namespace settings {
@@ -94,11 +84,6 @@ void ClearBrowsingDataHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "clearBrowsingData",
       base::BindRepeating(&ClearBrowsingDataHandler::HandleClearBrowsingData,
-                          base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "getImportantSites",
-      base::BindRepeating(&ClearBrowsingDataHandler::HandleGetImportantSites,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -144,27 +129,23 @@ void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
 void ClearBrowsingDataHandler::HandleClearBrowsingDataForTest() {
   // HandleClearBrowsingData takes in a ListValue as its only parameter. The
   // ListValue must contain four values: web_ui callback ID, a list of data
-  // types that the user cleared from the clear browsing data UI, time period of
-  // the data to be cleared, and important sites to remove.
+  // types that the user cleared from the clear browsing data UI and time period
+  // of the data to be cleared.
 
   std::unique_ptr<base::ListValue> data_types =
       std::make_unique<base::ListValue>();
   data_types->AppendString("browser.clear_data.browsing_history");
 
-  std::unique_ptr<base::ListValue> important_sites =
-      std::make_unique<base::ListValue>();
-
   base::ListValue list_args;
   list_args.AppendString("webui_callback_id");
   list_args.Append(std::move(data_types));
   list_args.AppendInteger(1u);
-  list_args.Append(std::move(important_sites));
   HandleClearBrowsingData(&list_args);
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
-  CHECK_EQ(4U, args->GetSize());
+  CHECK_EQ(3U, args->GetSize());
   std::string webui_callback_id;
   CHECK(args->GetString(0, &webui_callback_id));
 
@@ -270,11 +251,6 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   int period_selected;
   CHECK(args->GetInteger(2, &period_selected));
 
-  const base::ListValue* important_sites = nullptr;
-  CHECK(args->GetList(3, &important_sites));
-  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder =
-      ProcessImportantSites(important_sites);
-
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile_);
 
@@ -285,53 +261,16 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       static_cast<browsing_data::TimePeriod>(period_selected);
 
   browsing_data_important_sites_util::Remove(
-      remove_mask, origin_mask, time_period, std::move(filter_builder), remover,
-      std::move(callback));
+      remove_mask, origin_mask, time_period,
+      content::BrowsingDataFilterBuilder::Create(
+          content::BrowsingDataFilterBuilder::BLACKLIST),
+      remover, std::move(callback));
+
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
       ->GetForProfile(profile_)
       ->OnBrowsingDataCleared();
 #endif
-}
-
-std::unique_ptr<content::BrowsingDataFilterBuilder>
-ClearBrowsingDataHandler::ProcessImportantSites(
-    const base::ListValue* important_sites) {
-  std::vector<std::string> excluding_domains;
-  std::vector<int32_t> excluding_domain_reasons;
-  std::vector<std::string> ignoring_domains;
-  std::vector<int32_t> ignoring_domain_reasons;
-  for (const auto& item : *important_sites) {
-    const base::DictionaryValue* site = nullptr;
-    CHECK(item.GetAsDictionary(&site));
-    bool is_checked = false;
-    CHECK(site->GetBoolean(kIsCheckedField, &is_checked));
-    std::string domain;
-    CHECK(site->GetString(kRegisterableDomainField, &domain));
-    int domain_reason = -1;
-    CHECK(site->GetInteger(kReasonBitField, &domain_reason));
-    if (is_checked) {  // Selected important sites should be deleted.
-      ignoring_domains.push_back(domain);
-      ignoring_domain_reasons.push_back(domain_reason);
-    } else {  // Unselected sites should be kept.
-      excluding_domains.push_back(domain);
-      excluding_domain_reasons.push_back(domain_reason);
-    }
-  }
-
-  if (!excluding_domains.empty() || !ignoring_domains.empty()) {
-    ImportantSitesUtil::RecordBlacklistedAndIgnoredImportantSites(
-        profile_->GetOriginalProfile(), excluding_domains,
-        excluding_domain_reasons, ignoring_domains, ignoring_domain_reasons);
-  }
-
-  std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder(
-      content::BrowsingDataFilterBuilder::Create(
-          content::BrowsingDataFilterBuilder::BLACKLIST));
-  for (const std::string& domain : excluding_domains) {
-    filter_builder->AddRegisterableDomain(domain);
-  }
-  return filter_builder;
 }
 
 void ClearBrowsingDataHandler::OnClearingTaskFinished(
@@ -363,59 +302,6 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
 
   ResolveJavascriptCallback(base::Value(webui_callback_id),
                             base::Value(show_notice));
-}
-
-void ClearBrowsingDataHandler::HandleGetImportantSites(
-    const base::ListValue* args) {
-  AllowJavascript();
-  std::string callback_id;
-  CHECK(args->GetString(0, &callback_id));
-  DCHECK(base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
-
-  Profile* profile = profile_->GetOriginalProfile();
-  bool important_sites_dialog_disabled =
-      ImportantSitesUtil::IsDialogDisabled(profile);
-
-  if (important_sites_dialog_disabled) {
-    ResolveJavascriptCallback(base::Value(callback_id), base::ListValue());
-    return;
-  }
-
-  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-      ImportantSitesUtil::GetImportantRegisterableDomains(
-          profile, ImportantSitesUtil::kMaxImportantSites);
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile);
-  storage::QuotaManager* quota_manager = partition->GetQuotaManager();
-  content::DOMStorageContext* dom_storage = partition->GetDOMStorageContext();
-
-  ImportantSitesUsageCounter::GetUsage(
-      std::move(important_sites), quota_manager, dom_storage,
-      base::BindOnce(&ClearBrowsingDataHandler::OnFetchImportantSitesFinished,
-                     weak_ptr_factory_.GetWeakPtr(), callback_id));
-}
-
-void ClearBrowsingDataHandler::OnFetchImportantSitesFinished(
-    const std::string& callback_id,
-    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites) {
-  base::ListValue important_sites_list;
-
-  for (const auto& info : important_sites) {
-    auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString(kRegisterableDomainField, info.registerable_domain);
-    // The |reason_bitfield| is only passed to Javascript to be logged
-    // from |HandleClearBrowsingData|.
-    entry->SetInteger(kReasonBitField, info.reason_bitfield);
-    entry->SetString(kExampleOriginField, info.example_origin.spec());
-    // Initially all sites are selected for deletion.
-    entry->SetBoolean(kIsCheckedField, true);
-    entry->SetString(kStorageSizeField, ui::FormatBytes(info.usage));
-    bool has_notifications =
-        (info.reason_bitfield & (1 << ImportantReason::NOTIFICATIONS)) != 0;
-    entry->SetBoolean(kHasNotificationsField, has_notifications);
-    important_sites_list.Append(std::move(entry));
-  }
-  ResolveJavascriptCallback(base::Value(callback_id), important_sites_list);
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
