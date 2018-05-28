@@ -10,7 +10,9 @@
 
 namespace content {
 
-struct SpeechRecognitionError;
+namespace mojom {
+class SpeechRecognitionError;
+}
 
 // The interface to be implemented by consumers interested in receiving
 // speech recognition events.
@@ -46,8 +48,9 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // Invoked if there was an error while capturing or recognizing audio.
   // The recognition has already been cancelled when this call is made and
   // no more events will be raised.
-  virtual void OnRecognitionError(int session_id,
-                                  const SpeechRecognitionError& error) = 0;
+  virtual void OnRecognitionError(
+      int session_id,
+      const mojom::SpeechRecognitionError& error) = 0;
 
   // Informs of a change in the captured audio level, useful if displaying
   // a microphone volume indicator while recording.

@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -544,21 +544,21 @@ SpeechRecognitionEngine::ProcessDownstreamResponse(
       case proto::SpeechRecognitionEvent::STATUS_SUCCESS:
         break;
       case proto::SpeechRecognitionEvent::STATUS_NO_SPEECH:
-        return Abort(SPEECH_RECOGNITION_ERROR_NO_SPEECH);
+        return Abort(mojom::SpeechRecognitionErrorCode::kNoSpeech);
       case proto::SpeechRecognitionEvent::STATUS_ABORTED:
-        return Abort(SPEECH_RECOGNITION_ERROR_ABORTED);
+        return Abort(mojom::SpeechRecognitionErrorCode::kAborted);
       case proto::SpeechRecognitionEvent::STATUS_AUDIO_CAPTURE:
-        return Abort(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE);
+        return Abort(mojom::SpeechRecognitionErrorCode::kAudioCapture);
       case proto::SpeechRecognitionEvent::STATUS_NETWORK:
-        return Abort(SPEECH_RECOGNITION_ERROR_NETWORK);
+        return Abort(mojom::SpeechRecognitionErrorCode::kNetwork);
       case proto::SpeechRecognitionEvent::STATUS_NOT_ALLOWED:
-        return Abort(SPEECH_RECOGNITION_ERROR_NOT_ALLOWED);
+        return Abort(mojom::SpeechRecognitionErrorCode::kNotAllowed);
       case proto::SpeechRecognitionEvent::STATUS_SERVICE_NOT_ALLOWED:
-        return Abort(SPEECH_RECOGNITION_ERROR_SERVICE_NOT_ALLOWED);
+        return Abort(mojom::SpeechRecognitionErrorCode::kServiceNotAllowed);
       case proto::SpeechRecognitionEvent::STATUS_BAD_GRAMMAR:
-        return Abort(SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR);
+        return Abort(mojom::SpeechRecognitionErrorCode::kBadGrammar);
       case proto::SpeechRecognitionEvent::STATUS_LANGUAGE_NOT_SUPPORTED:
-        return Abort(SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED);
+        return Abort(mojom::SpeechRecognitionErrorCode::kLanguageNotSupported);
     }
   }
 
@@ -651,21 +651,21 @@ SpeechRecognitionEngine::CloseDownstream(const FSMEventArgs&) {
 
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::AbortSilently(const FSMEventArgs&) {
-  return Abort(SPEECH_RECOGNITION_ERROR_NONE);
+  return Abort(mojom::SpeechRecognitionErrorCode::kNone);
 }
 
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::AbortWithError(const FSMEventArgs&) {
-  return Abort(SPEECH_RECOGNITION_ERROR_NETWORK);
+  return Abort(mojom::SpeechRecognitionErrorCode::kNetwork);
 }
 
 SpeechRecognitionEngine::FSMState SpeechRecognitionEngine::Abort(
-    SpeechRecognitionErrorCode error_code) {
+    mojom::SpeechRecognitionErrorCode error_code) {
   DVLOG(1) << "Aborting with error " << error_code;
 
-  if (error_code != SPEECH_RECOGNITION_ERROR_NONE) {
-    delegate_->OnSpeechRecognitionEngineError(
-        SpeechRecognitionError(error_code));
+  if (error_code != mojom::SpeechRecognitionErrorCode::kNone) {
+    delegate_->OnSpeechRecognitionEngineError(mojom::SpeechRecognitionError(
+        error_code, mojom::SpeechAudioErrorDetails::kNone));
   }
   downstream_fetcher_.reset();
   upstream_fetcher_.reset();

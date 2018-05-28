@@ -36,6 +36,7 @@ android_library("content_java") {
     ":content_java_resources",
     "//base:base_java",
     "//components/download/public/common:public_java",
+    "//content/public/common:speech_recognition_error_code_java",
     "//device/bluetooth:java",
     "//device/gamepad:java",
     "//device/usb:java",
@@ -337,7 +338,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/common/browser_controls_state.h",
     "//content/public/common/console_message_level.h",
     "//content/public/common/screen_orientation_values.h",
-    "//content/public/common/speech_recognition_error.h",
   ]
 }
 

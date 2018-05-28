@@ -95,7 +95,7 @@ class SpeechRecognitionSession : public mojom::SpeechRecognitionSession,
   void OnRecognitionResults(int session_id,
                             const SpeechRecognitionResults& results) override;
   void OnRecognitionError(int session_id,
-                          const SpeechRecognitionError& error) override;
+                          const mojom::SpeechRecognitionError& error) override;
   void OnAudioLevelsChange(int session_id,
                            float volume,
                            float noise_volume) override;

@@ -55,8 +55,7 @@ void ShellSpeechRecognitionManagerDelegate::OnRecognitionResults(
 
 void ShellSpeechRecognitionManagerDelegate::OnRecognitionError(
     int session_id,
-    const content::SpeechRecognitionError& error) {
-}
+    const content::mojom::SpeechRecognitionError& error) {}
 
 void ShellSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
     int session_id,

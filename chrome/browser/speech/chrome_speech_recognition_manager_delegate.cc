@@ -19,7 +19,7 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -66,8 +66,8 @@ void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResults(
 }
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
-    int session_id, const content::SpeechRecognitionError& error) {
-}
+    int session_id,
+    const content::mojom::SpeechRecognitionError& error) {}
 
 void ChromeSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
     int session_id, float volume, float noise_volume) {

@@ -69,7 +69,8 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
   void OnRecognitionResults(int session_id,
                             const SpeechRecognitionResults& result) override {}
   void OnRecognitionError(int session_id,
-                          const SpeechRecognitionError& error) override {}
+                          const mojom::SpeechRecognitionError& error) override {
+  }
   void OnAudioLevelsChange(int session_id,
                            float volume,
                            float noise_volume) override {}

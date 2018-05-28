@@ -36,7 +36,7 @@ class ChromeSpeechRecognitionManagerDelegate
       const content::SpeechRecognitionResults& result) override;
   void OnRecognitionError(
       int session_id,
-      const content::SpeechRecognitionError& error) override;
+      const content::mojom::SpeechRecognitionError& error) override;
   void OnAudioLevelsChange(int session_id,
                            float volume,
                            float noise_volume) override;

@@ -17,7 +17,7 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,8 +90,9 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
       return;
     }
     DCHECK(GetActiveListener());
-    content::SpeechRecognitionError error(
-        content::SPEECH_RECOGNITION_ERROR_NETWORK);
+    content::mojom::SpeechRecognitionError error(
+        content::mojom::SpeechRecognitionErrorCode::kNetwork,
+        content::mojom::SpeechAudioErrorDetails::kNone);
     switch (event) {
       case RECOGNITION_START:
         GetActiveListener()->OnRecognitionStart(kTestSessionId);

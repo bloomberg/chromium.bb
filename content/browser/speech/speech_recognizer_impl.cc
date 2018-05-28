@@ -320,7 +320,7 @@ void SpeechRecognizerImpl::OnSpeechRecognitionEngineEndOfUtterance() {
 }
 
 void SpeechRecognizerImpl::OnSpeechRecognitionEngineError(
-    const SpeechRecognitionError& error) {
+    const mojom::SpeechRecognitionError& error) {
   FSMEventArgs event_args(EVENT_ENGINE_ERROR);
   event_args.engine_error = error;
   BrowserThread::PostTask(
@@ -576,8 +576,9 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
 
   if (!device_params_.IsValid()) {
     DLOG(ERROR) << "Audio input device not found";
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE,
-                                        SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
+    return Abort(mojom::SpeechRecognitionError(
+        mojom::SpeechRecognitionErrorCode::kAudioCapture,
+        mojom::SpeechAudioErrorDetails::kNoMic));
   }
 
   // Audio converter shall provide audio based on these parameters as output.
@@ -670,7 +671,9 @@ SpeechRecognizerImpl::DetectUserSpeechOrTimeout(const FSMEventArgs&) {
     listener()->OnSoundStart(session_id());
     return STATE_RECOGNIZING;
   } else if (GetElapsedTimeMs() >= kNoSpeechTimeoutMs) {
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_NO_SPEECH));
+    return Abort(mojom::SpeechRecognitionError(
+        mojom::SpeechRecognitionErrorCode::kNoSpeech,
+        mojom::SpeechAudioErrorDetails::kNone));
   }
   return STATE_WAITING_FOR_SPEECH;
 }
@@ -701,22 +704,27 @@ SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::AbortSilently(const FSMEventArgs& event_args) {
   DCHECK_NE(event_args.event, EVENT_AUDIO_ERROR);
   DCHECK_NE(event_args.event, EVENT_ENGINE_ERROR);
-  return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_NONE));
+  return Abort(
+      mojom::SpeechRecognitionError(mojom::SpeechRecognitionErrorCode::kNone,
+                                    mojom::SpeechAudioErrorDetails::kNone));
 }
 
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::AbortWithError(const FSMEventArgs& event_args) {
   if (event_args.event == EVENT_AUDIO_ERROR) {
-    return Abort(
-        SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE));
+    return Abort(mojom::SpeechRecognitionError(
+        mojom::SpeechRecognitionErrorCode::kAudioCapture,
+        mojom::SpeechAudioErrorDetails::kNone));
   } else if (event_args.event == EVENT_ENGINE_ERROR) {
     return Abort(event_args.engine_error);
   }
-  return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_ABORTED));
+  return Abort(
+      mojom::SpeechRecognitionError(mojom::SpeechRecognitionErrorCode::kAborted,
+                                    mojom::SpeechAudioErrorDetails::kNone));
 }
 
 SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
-    const SpeechRecognitionError& error) {
+    const mojom::SpeechRecognitionError& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (IsCapturingAudio())
@@ -741,7 +749,7 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
   if (state_ > STATE_STARTING && state_ < STATE_WAITING_FINAL_RESULT)
     listener()->OnAudioEnd(session_id());
 
-  if (error.code != SPEECH_RECOGNITION_ERROR_NONE)
+  if (error.code != mojom::SpeechRecognitionErrorCode::kNone)
     listener()->OnRecognitionError(session_id(), error);
 
   listener()->OnRecognitionEnd(session_id());
@@ -889,7 +897,8 @@ media::AudioCapturerSource* SpeechRecognizerImpl::GetAudioCapturerSource() {
 SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
     : event(event_value),
       audio_data(nullptr),
-      engine_error(SPEECH_RECOGNITION_ERROR_NONE) {}
+      engine_error(mojom::SpeechRecognitionErrorCode::kNone,
+                   mojom::SpeechAudioErrorDetails::kNone) {}
 
 SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(const FSMEventArgs& other) =
     default;

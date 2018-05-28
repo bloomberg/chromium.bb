@@ -210,7 +210,6 @@ jumbo_source_set("common_sources") {
     "simple_connection_filter.cc",
     "simple_connection_filter.h",
     "socket_permission_request.h",
-    "speech_recognition_error.h",
     "speech_recognition_result.cc",
     "speech_recognition_result.h",
     "stop_find_action.h",
@@ -369,6 +368,7 @@ mojom("interfaces") {
 
   public_deps = [
     ":resource_type_bindings",
+    ":speech_recognition_error_code",
     "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
@@ -390,4 +390,16 @@ mojom("resource_type_bindings") {
   sources = [
     "resource_type.mojom",
   ]
+}
+
+# Kept separate from "interfaces" because the Java bindings are needed by
+# Android's implementation of speech recognition.
+mojom("speech_recognition_error_code") {
+  sources = [
+    "speech_recognition_error_code.mojom",
+  ]
+
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
 }

@@ -17,7 +17,7 @@
 #include "base/sys_byteorder.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -46,8 +46,8 @@ class SpeechRecognitionEngineTest
  public:
   SpeechRecognitionEngineTest()
       : last_number_of_upstream_chunks_seen_(0U),
-        error_(SPEECH_RECOGNITION_ERROR_NONE),
-        end_of_utterance_counter_(0) { }
+        error_(mojom::SpeechRecognitionErrorCode::kNone),
+        end_of_utterance_counter_(0) {}
 
   // Creates a speech recognition request and invokes its URL fetcher delegate
   // with the given test data.
@@ -62,7 +62,7 @@ class SpeechRecognitionEngineTest
     ++end_of_utterance_counter_;
   }
   void OnSpeechRecognitionEngineError(
-      const SpeechRecognitionError& error) override {
+      const mojom::SpeechRecognitionError& error) override {
     error_ = error.code;
   }
 
@@ -101,7 +101,7 @@ class SpeechRecognitionEngineTest
   size_t last_number_of_upstream_chunks_seen_;
   base::MessageLoop message_loop_;
   std::string response_buffer_;
-  SpeechRecognitionErrorCode error_;
+  mojom::SpeechRecognitionErrorCode error_;
   int end_of_utterance_counter_;
   base::queue<SpeechRecognitionResults> results_;
 };
@@ -142,7 +142,7 @@ TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -188,7 +188,7 @@ TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -225,7 +225,7 @@ TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
   // Ensure everything is closed cleanly after the downstream is closed.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -271,10 +271,10 @@ TEST_F(SpeechRecognitionEngineTest, HTTPError) {
   // Close the downstream with a HTTP 500 error.
   CloseMockDownstream(DOWNSTREAM_ERROR_HTTP500);
 
-  // Expect a SPEECH_RECOGNITION_ERROR_NETWORK error to be raised.
+  // Expect a mojom::SpeechRecognitionErrorCode::kNetwork error to be raised.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNetwork, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -289,10 +289,10 @@ TEST_F(SpeechRecognitionEngineTest, NetworkError) {
   // Close the downstream fetcher simulating a network failure.
   CloseMockDownstream(DOWNSTREAM_ERROR_NETWORK);
 
-  // Expect a SPEECH_RECOGNITION_ERROR_NETWORK error to be raised.
+  // Expect a mojom::SpeechRecognitionErrorCode::kNetwork error to be raised.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNetwork, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -339,7 +339,7 @@ TEST_F(SpeechRecognitionEngineTest, Stability) {
   // Since there was no final result, we get an empty "no match" result.
   SpeechRecognitionResults empty_result;
   ExpectResultsReceived(empty_result);
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -414,7 +414,7 @@ TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
