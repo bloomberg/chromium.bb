@@ -78,9 +78,18 @@ class KEYBOARD_EXPORT KeyboardController
     HIDE_REASON_MANUAL,
   };
 
-  KeyboardController(std::unique_ptr<KeyboardUI> ui,
-                     KeyboardLayoutDelegate* delegate);
+  KeyboardController();
   ~KeyboardController() override;
+
+  // Enables the virtual keyboard with a specified |ui| and |delegate|.
+  // Disables and re-enables the keyboard if it is already enabled.
+  void EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
+                      KeyboardLayoutDelegate* delegate);
+
+  // Disables the virtual keyboard. Resets the keyboard to its initial disabled
+  // state and destroys the keyboard container window.
+  // Does nothing if the keyboard is already disabled.
+  void DisableKeyboard();
 
   // Returns the container for the keyboard, which is owned by
   // KeyboardController. Creates the container if it's not already created.
@@ -134,12 +143,11 @@ class KEYBOARD_EXPORT KeyboardController
   // lock the keyboard
   void ShowKeyboardInDisplay(const display::Display& display);
 
-  // Sets the active keyboard controller. KeyboardController takes ownership of
-  // the instance. Calling ResetIntance with a new instance destroys the
-  // previous one. May be called with nullptr to clear the instance.
-  static void ResetInstance(KeyboardController* controller);
-
-  // Retrieve the active keyboard controller.
+  // Retrieves the active keyboard controller. Returns nullptr if the keyboard
+  // is disabled.
+  // TODO(https://crbug.com/731537): Change callers to this function from
+  // checking for null to checking for |enabled|. Then make this always return
+  // a non-null pointer.
   static KeyboardController* GetInstance();
 
   // Returns true if keyboard is in SHOWN or SHOWING state.
@@ -175,6 +183,9 @@ class KEYBOARD_EXPORT KeyboardController
   // Returns true if overscroll is currently allowed by the active keyboard
   // container behavior.
   bool IsOverscrollAllowed() const;
+
+  // Whether the keyboard is enabled.
+  bool enabled() const { return enabled_; }
 
   // Handle mouse and touch events on the keyboard. The effects of this method
   // will not stop propagation to the keyboard extension.
@@ -295,6 +306,11 @@ class KEYBOARD_EXPORT KeyboardController
   // If true, show the keyboard window when keyboard UI content updates.
   bool show_on_content_update_;
 
+  // Whether the keyboard is enabled or not. |GetInstance| returns null by
+  // default when the keyboard is not enabled.
+  // TODO(https://crbug.com/731537): Determine this from the keyboard state.
+  bool enabled_ = false;
+
   // If true, the keyboard is always visible even if no window has input focus.
   bool keyboard_locked_;
   KeyboardEventFilter event_filter_;
@@ -313,8 +329,6 @@ class KEYBOARD_EXPORT KeyboardController
   base::Time time_of_last_blur_ = base::Time::UnixEpoch();
 
   DisplayUtil display_util_;
-
-  static KeyboardController* instance_;
 
   base::WeakPtrFactory<KeyboardController> weak_factory_report_lingering_state_;
   base::WeakPtrFactory<KeyboardController> weak_factory_will_hide_;

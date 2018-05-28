@@ -484,8 +484,8 @@ void Shell::CreateKeyboard() {
           keyboard::KeyboardController::GetInstance());
     }
   }
-  keyboard::KeyboardController::ResetInstance(new keyboard::KeyboardController(
-      shell_delegate_->CreateKeyboardUI(), virtual_keyboard_controller_.get()));
+  keyboard_controller_->EnableKeyboard(shell_delegate_->CreateKeyboardUI(),
+                                       virtual_keyboard_controller_.get());
   for (auto& observer : shell_observers_)
     observer.OnKeyboardControllerCreated();
 
@@ -502,7 +502,7 @@ void Shell::DestroyKeyboard() {
           keyboard::KeyboardController::GetInstance());
     }
   }
-  keyboard::KeyboardController::ResetInstance(nullptr);
+  keyboard_controller_->DisableKeyboard();
 }
 
 bool Shell::ShouldSaveDisplaySettings() {
@@ -685,6 +685,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           std::make_unique<KeyboardBrightnessController>()),
+      keyboard_controller_(std::make_unique<keyboard::KeyboardController>()),
       locale_notification_controller_(
           std::make_unique<LocaleNotificationController>()),
       login_screen_controller_(std::make_unique<LoginScreenController>()),

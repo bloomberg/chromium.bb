@@ -52,6 +52,10 @@ namespace gfx {
 class Insets;
 }
 
+namespace keyboard {
+class KeyboardController;
+}  // namespace keyboard
+
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
@@ -322,11 +326,13 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when dictation is ended.
   void OnDictationEnded();
 
-  // Creates a keyboard controller and associate it with the primary root window
-  // controller. Destroys the old keyboard controller if it already exists.
+  // Enables the keyboard and associate it with the primary root window
+  // controller.
+  // TODO(https://crbug.com/731537): Rename this to EnableKeyboard.
   void CreateKeyboard();
 
-  // Destroys the virtual keyboard.
+  // Hides and disables the virtual keyboard.
+  // TODO(https://crbug.com/731537): Rename this to DisableKeyboard.
   void DestroyKeyboard();
 
   // Test if TabletModeWindowManager is not enabled, and if
@@ -745,6 +751,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
+  std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
