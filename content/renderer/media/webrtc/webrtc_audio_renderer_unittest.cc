@@ -297,4 +297,22 @@ TEST_F(WebRtcAudioRendererTest, InitializeWithInvalidDevice) {
             mock_sink_->GetOutputDeviceInfo().device_id());
 }
 
+TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceStoppedSource) {
+  SetupRenderer(kDefaultOutputDeviceId);
+  auto original_sink = mock_sink_;
+  renderer_proxy_->Start();
+
+  EXPECT_CALL(*original_sink.get(), Stop());
+  EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
+  EXPECT_CALL(*this, MockSwitchDeviceCallback(
+                         media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
+  base::RunLoop loop;
+  renderer_proxy_->Stop();
+  renderer_proxy_->SwitchOutputDevice(
+      kInvalidOutputDeviceId,
+      base::BindRepeating(&WebRtcAudioRendererTest::SwitchDeviceCallback,
+                          base::Unretained(this), &loop));
+  loop.Run();
+}
+
 }  // namespace content
