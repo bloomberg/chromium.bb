@@ -625,11 +625,16 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
   InitializeForNthSync();
   ASSERT_TRUE(service()->IsSyncActive());
 
+  TestSyncServiceObserver observer;
+  service()->AddObserver(&observer);
+
   std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
   auth_service()->LoadCredentials(primary_account_id);
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
+  ASSERT_EQ(GoogleServiceAuthError::AuthErrorNone(), service()->GetAuthError());
+  ASSERT_EQ(GoogleServiceAuthError::AuthErrorNone(), observer.auth_error());
 
   // Simulate the credentials getting locally rejected by the client by setting
   // the refresh token to a special invalid value.
@@ -643,6 +648,11 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
             auth_service()->GetAuthError(primary_account_id));
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
   EXPECT_TRUE(invalidate_credentials_called);
+
+  // The observer should have been notified of the auth error state.
+  EXPECT_EQ(rejected_by_client, observer.auth_error());
+
+  service()->RemoveObserver(&observer);
 }
 
 // CrOS does not support signout.
