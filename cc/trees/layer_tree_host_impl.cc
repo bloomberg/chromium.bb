@@ -2756,11 +2756,27 @@ void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
   // future. The name should not refer to SetNeedsRedraw but it does for now.
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsOneBeginImplFrameOnImplThread();
+  // NotifySwapPromiseMonitorsOfSetNeedsRedraw will call
+  // LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl when the
+  // |swap_promise_monitor_| is non-empty, which then calls the
+  // AddRenderingScheduledComponent with |on_main| being false, and that
+  // indicates that there are input event(s) handled by the impl thread and
+  // that there is an impl frame.
+  bool has_impl_thread_handled_event = !swap_promise_monitor_.empty();
+  mutator_host_->SetHasImplThreadHandledEvent(has_impl_thread_handled_event);
 }
 
 void LayerTreeHostImpl::SetNeedsRedraw() {
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsRedrawOnImplThread();
+  // NotifySwapPromiseMonitorsOfSetNeedsRedraw will call
+  // LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl when the
+  // |swap_promise_monitor_| is non-empty, which then calls the
+  // AddRenderingScheduledComponent with |on_main| being false, and that
+  // indicates that there are input event(s) handled by the impl thread and
+  // that there is an impl frame.
+  bool has_impl_thread_handled_event = !swap_promise_monitor_.empty();
+  mutator_host_->SetHasImplThreadHandledEvent(has_impl_thread_handled_event);
 }
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {

@@ -246,6 +246,8 @@ class FakeSchedulerClient : public SchedulerClient,
   size_t MainThreadAnimationsCount() const override { return 0; }
   bool CurrentFrameHadRAF() const override { return false; }
   bool NextFrameHasPendingRAF() const override { return false; }
+  bool HasMainThreadHandledEvent() const override { return false; }
+  bool HasImplThreadHandledEvent() const override { return false; }
 
  protected:
   bool InsideBeginImplFrameCallback(bool state) {
