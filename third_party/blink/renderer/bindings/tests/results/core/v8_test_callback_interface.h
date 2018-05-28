@@ -27,6 +27,9 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
 
   ~V8TestCallbackInterface() override = default;
 
+  // TraceWrapperBase overrides:
+  const char* NameInHeapSnapshot() const override;
+
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
   v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;

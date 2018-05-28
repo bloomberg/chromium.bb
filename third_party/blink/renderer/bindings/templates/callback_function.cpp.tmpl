@@ -11,6 +11,10 @@
 
 namespace blink {
 
+const char* {{cpp_class}}::NameInHeapSnapshot() const {
+  return "{{cpp_class}}";
+}
+
 v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | join(', ')}}) {
   // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".

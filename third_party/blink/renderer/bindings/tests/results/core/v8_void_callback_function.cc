@@ -20,6 +20,10 @@
 
 namespace blink {
 
+const char* V8VoidCallbackFunction::NameInHeapSnapshot() const {
+  return "V8VoidCallbackFunction";
+}
+
 v8::Maybe<void> V8VoidCallbackFunction::Invoke(ScriptWrappable* callback_this_value) {
   // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".

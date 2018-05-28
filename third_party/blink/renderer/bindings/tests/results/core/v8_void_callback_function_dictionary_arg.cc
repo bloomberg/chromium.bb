@@ -21,6 +21,10 @@
 
 namespace blink {
 
+const char* V8VoidCallbackFunctionDictionaryArg::NameInHeapSnapshot() const {
+  return "V8VoidCallbackFunctionDictionaryArg";
+}
+
 v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(ScriptWrappable* callback_this_value, const TestDictionary& arg) {
   // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".

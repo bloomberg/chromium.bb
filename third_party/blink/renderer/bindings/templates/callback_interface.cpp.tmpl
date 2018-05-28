@@ -63,6 +63,10 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, 
 }
 {% endif %}{# is_legacy_callback_interface #}
 
+const char* {{v8_class}}::NameInHeapSnapshot() const {
+  return "{{v8_class}}";
+}
+
 {% for method in methods %}
 
 v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}) {
