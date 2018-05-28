@@ -708,7 +708,6 @@ test("content_browsertests") {
     "../browser/browsing_data/conditional_cache_deletion_helper_browsertest.cc",
     "../browser/child_process_launcher_browsertest.cc",
     "../browser/child_process_security_policy_browsertest.cc",
-    "../browser/compositor/image_transport_factory_browsertest.cc",
     "../browser/cross_site_transfer_browsertest.cc",
     "../browser/database_browsertest.cc",
     "../browser/device_sensors/device_sensor_browsertest.cc",
@@ -1119,8 +1118,8 @@ test("content_browsertests") {
     deps += [ "//ui/events:test_support" ]
   }
 
-  if (!use_aura && !is_mac) {
-    sources -=
+  if (use_aura) {
+    sources +=
         [ "../browser/compositor/image_transport_factory_browsertest.cc" ]
   }
 

@@ -53,11 +53,6 @@
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 -SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled*
 
-#### VizProcessTransportFactory
-# No ContextProvider http://crbug.com/785268
--ImageTransportFactoryTearDownBrowserTest.*
--ImageTransportFactoryBrowserTest.TestLostContext
-
 #### Hit Testing
 # Flaky Result on Windows-7 http://crbug.com/883463
 -MainThreadEventQueueBrowserTest.MouseMove
