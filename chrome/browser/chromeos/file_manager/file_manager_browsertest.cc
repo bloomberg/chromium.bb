@@ -497,7 +497,9 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDownloads) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDownloads) {
+// Flaky (http://crbug/847154).
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       DISABLED_BasicDownloads) {
   AddAllUsers();
   // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDownloads");
