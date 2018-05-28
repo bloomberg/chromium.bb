@@ -281,12 +281,10 @@ void TabManager::DiscardTab(DiscardReason reason) {
 
 #if defined(OS_CHROMEOS)
   // Call Chrome OS specific low memory handling process.
-  if (base::FeatureList::IsEnabled(features::kArcMemoryManagement)) {
-    delegate_->LowMemoryKill(reason);
-    return;
-  }
-#endif
+  delegate_->LowMemoryKill(reason);
+#else
   DiscardTabImpl(reason);
+#endif  // defined(OS_CHROMEOS)
 }
 
 WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {

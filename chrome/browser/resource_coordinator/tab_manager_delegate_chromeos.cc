@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -67,10 +66,6 @@ wm::ActivationClient* GetActivationClient() {
   if (!ash::Shell::HasInstance())
     return nullptr;
   return wm::GetActivationClient(ash::Shell::GetPrimaryRootWindow());
-}
-
-bool IsArcMemoryManagementEnabled() {
-  return base::FeatureList::IsEnabled(features::kArcMemoryManagement);
 }
 
 void OnSetOomScoreAdj(bool success, const std::string& output) {
@@ -473,15 +468,14 @@ void TabManagerDelegate::Observe(int type,
 // 2) last time a tab was selected
 // 3) is the tab currently selected
 void TabManagerDelegate::AdjustOomPriorities() {
-  if (IsArcMemoryManagementEnabled()) {
-    arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
-    if (arc_process_service &&
-        arc_process_service->RequestAppProcessList(
-            base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
-                       weak_ptr_factory_.GetWeakPtr()))) {
-      return;
-    }
+  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+  if (arc_process_service &&
+      arc_process_service->RequestAppProcessList(
+          base::Bind(&TabManagerDelegate::AdjustOomPrioritiesImpl,
+                     weak_ptr_factory_.GetWeakPtr()))) {
+    return;
   }
+
   // Pass in a dummy list if unable to get ARC processes.
   AdjustOomPrioritiesImpl(std::vector<arc::ArcProcess>());
 }
