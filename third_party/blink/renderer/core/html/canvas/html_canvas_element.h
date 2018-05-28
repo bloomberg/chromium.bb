@@ -220,7 +220,7 @@ class CORE_EXPORT HTMLCanvasElement final
                                   const ImageBitmapOptions&) override;
 
   // OffscreenCanvasPlaceholder implementation.
-  void SetPlaceholderFrame(scoped_refptr<StaticBitmapImage>,
+  void SetPlaceholderFrame(scoped_refptr<CanvasResource>,
                            base::WeakPtr<OffscreenCanvasFrameDispatcher>,
                            scoped_refptr<base::SingleThreadTaskRunner>,
                            unsigned resource_id) override;

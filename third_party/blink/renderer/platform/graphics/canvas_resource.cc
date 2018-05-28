@@ -23,12 +23,28 @@ CanvasResource::CanvasResource(base::WeakPtr<CanvasResourceProvider> provider,
                                const CanvasColorParams& color_params)
     : provider_(std::move(provider)),
       filter_quality_(filter_quality),
-      color_params_(color_params) {}
+      color_params_(color_params) {
+  thread_of_origin_ = Platform::Current()->CurrentThread()->ThreadId();
+}
 
 CanvasResource::~CanvasResource() {
-  // Sync token should have been waited on in sub-class implementation of
-  // Abandon().
-  DCHECK(!sync_token_for_release_.HasData());
+#if DCHECK_IS_ON()
+  DCHECK(did_call_on_destroy_);
+#endif
+}
+
+void CanvasResource::OnDestroy() {
+  if (thread_of_origin_ != Platform::Current()->CurrentThread()->ThreadId()) {
+    // Destroyed on wrong thread. This can happen when the thread of origin was
+    // torn down, in which case the GPU context owning any underlying resources
+    // no longer exists.
+    Abandon();
+  } else {
+    TearDown();
+  }
+#if DCHECK_IS_ON()
+  did_call_on_destroy_ = true;
+#endif
 }
 
 bool CanvasResource::IsBitmap() {
@@ -51,9 +67,10 @@ void CanvasResource::SetSyncTokenForRelease(const gpu::SyncToken& token) {
 }
 
 void CanvasResource::WaitSyncTokenBeforeRelease() {
-  auto* gl = ContextGL();
-  if (sync_token_for_release_.HasData() && gl) {
-    gl->WaitSyncTokenCHROMIUM(sync_token_for_release_.GetData());
+  if (sync_token_for_release_.HasData()) {
+    auto* gl = ContextGL();
+    if (gl)
+      gl->WaitSyncTokenCHROMIUM(sync_token_for_release_.GetData());
   }
   sync_token_for_release_.Clear();
 }
@@ -123,6 +140,10 @@ CanvasResourceBitmap::CanvasResourceBitmap(
     : CanvasResource(std::move(provider), filter_quality, color_params),
       image_(std::move(image)) {}
 
+CanvasResourceBitmap::~CanvasResourceBitmap() {
+  OnDestroy();
+}
+
 scoped_refptr<CanvasResourceBitmap> CanvasResourceBitmap::Create(
     scoped_refptr<StaticBitmapImage> image,
     base::WeakPtr<CanvasResourceProvider> provider,
@@ -186,6 +207,11 @@ void CanvasResourceBitmap::TearDown() {
   image_ = nullptr;
 }
 
+void CanvasResourceBitmap::Abandon() {
+  // In the abandon case, we do no wait on the release sync token.
+  image_ = nullptr;
+}
+
 IntSize CanvasResourceBitmap::Size() const {
   if (!image_)
     return IntSize(0, 0);
@@ -217,6 +243,16 @@ bool CanvasResourceBitmap::HasGpuMailbox() const {
 const gpu::SyncToken& CanvasResourceBitmap::GetSyncToken() {
   DCHECK(image_);  // Calling code should check IsValid() before calling this.
   return image_->GetSyncToken();
+}
+
+void CanvasResourceBitmap::Transfer() {
+  DCHECK(image_);  // Calling code should check IsValid() before calling this.
+  return image_->Transfer();
+}
+
+bool CanvasResourceBitmap::OriginClean() const {
+  DCHECK(image_);
+  return image_->OriginClean();
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -271,7 +307,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
 }
 
 CanvasResourceGpuMemoryBuffer::~CanvasResourceGpuMemoryBuffer() {
-  TearDown();
+  OnDestroy();
 }
 
 GLenum CanvasResourceGpuMemoryBuffer::TextureTarget() const {
@@ -308,6 +344,12 @@ void CanvasResourceGpuMemoryBuffer::TearDown() {
     gl->DestroyImageCHROMIUM(image_id_);
   if (gl && texture_id_)
     gl->DeleteTextures(1, &texture_id_);
+  image_id_ = 0;
+  texture_id_ = 0;
+  gpu_memory_buffer_ = nullptr;
+}
+
+void CanvasResourceGpuMemoryBuffer::Abandon() {
   image_id_ = 0;
   texture_id_ = 0;
   gpu_memory_buffer_ = nullptr;

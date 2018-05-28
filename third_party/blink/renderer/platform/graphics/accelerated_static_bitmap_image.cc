@@ -277,7 +277,7 @@ void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
 
 void AcceleratedStaticBitmapImage::Transfer() {
   CheckThread();
-  EnsureMailbox(kUnverifiedSyncToken, GL_NEAREST);
+  EnsureMailbox(kVerifiedSyncToken, GL_NEAREST);
   detach_thread_at_next_check_ = true;
 }
 
