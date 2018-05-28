@@ -15,7 +15,7 @@ namespace contextual_suggestions {
 struct ContextualSuggestion {
   ContextualSuggestion();
   ContextualSuggestion(const ContextualSuggestion&);
-  ContextualSuggestion(ContextualSuggestion&&);
+  ContextualSuggestion(ContextualSuggestion&&) noexcept;
   ~ContextualSuggestion();
 
   ContextualSuggestion& operator=(const ContextualSuggestion&);
