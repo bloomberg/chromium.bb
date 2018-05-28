@@ -353,7 +353,7 @@ class DOMWrapperPurger final : public v8::PersistentHandleVisitor {
     void* values[] = {nullptr, nullptr};
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
         isolate_, v8::Persistent<v8::Object>::Cast(*value));
-    wrapper->SetAlignedPointerInInternalFields(arraysize(indices), indices,
+    wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                                values);
     value->Reset();
   }

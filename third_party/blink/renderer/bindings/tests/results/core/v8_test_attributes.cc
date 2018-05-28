@@ -222,7 +222,7 @@ static void installV8TestAttributesTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestAttributesAccessors, arraysize(V8TestAttributesAccessors));
+      signature, V8TestAttributesAccessors, base::size(V8TestAttributesAccessors));
 
   // Custom signature
 

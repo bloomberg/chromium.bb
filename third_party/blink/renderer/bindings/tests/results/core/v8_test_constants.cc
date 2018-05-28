@@ -120,7 +120,7 @@ static void installV8TestConstantsTemplate(
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
-      V8TestConstantsConstants, arraysize(V8TestConstantsConstants));
+      V8TestConstantsConstants, base::size(V8TestConstantsConstants));
   V8DOMConfiguration::InstallConstantWithGetter(
       isolate, interfaceTemplate, prototypeTemplate,
       "DEPRECATED_CONSTANT", V8TestConstants::DEPRECATED_CONSTANTConstantGetterCallback);
@@ -176,7 +176,7 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
-        constant_configurations, arraysize(constant_configurations));
+        constant_configurations, base::size(constant_configurations));
   }
   if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
     static const V8DOMConfiguration::ConstantConfiguration constant_configurations[] = {
@@ -185,7 +185,7 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
-        constant_configurations, arraysize(constant_configurations));
+        constant_configurations, base::size(constant_configurations));
   }
 
   // Custom signature

@@ -250,7 +250,7 @@ static void installV8TestSpecialOperationsTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestSpecialOperationsMethods, arraysize(V8TestSpecialOperationsMethods));
+      signature, V8TestSpecialOperationsMethods, base::size(V8TestSpecialOperationsMethods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(

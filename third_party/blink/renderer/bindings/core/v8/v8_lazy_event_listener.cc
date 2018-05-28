@@ -112,8 +112,8 @@ v8::Local<v8::Value> V8LazyEventListener::CallListenerFunction(
   v8::Local<v8::Value> parameters[1] = {js_event};
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::CallFunction(handler_function, frame->GetDocument(),
-                                    receiver, arraysize(parameters), parameters,
-                                    script_state->GetIsolate())
+                                    receiver, base::size(parameters),
+                                    parameters, script_state->GetIsolate())
            .ToLocal(&result))
     return v8::Local<v8::Value>();
   return result;

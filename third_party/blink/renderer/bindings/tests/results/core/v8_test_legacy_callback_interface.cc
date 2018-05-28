@@ -64,7 +64,7 @@ static void InstallV8TestLegacyCallbackInterfaceTemplate(v8::Isolate* isolate, c
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
-      V8TestLegacyCallbackInterfaceConstants, arraysize(V8TestLegacyCallbackInterfaceConstants));
+      V8TestLegacyCallbackInterfaceConstants, base::size(V8TestLegacyCallbackInterfaceConstants));
   static_assert(42 == TestLegacyCallbackInterface::kConstValueUshort42, "the value of TestLegacyCallbackInterface_kConstValueUshort42 does not match with implementation");
 }
 

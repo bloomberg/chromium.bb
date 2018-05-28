@@ -327,7 +327,7 @@ void ScriptCustomElementDefinition::RunAdoptedCallback(Element* element,
   v8::Local<v8::Value> argv[] = {
       ToV8(old_owner, script_state_->GetContext()->Global(), isolate),
       ToV8(new_owner, script_state_->GetContext()->Global(), isolate)};
-  RunCallback(adopted_callback_.NewLocal(isolate), element, arraysize(argv),
+  RunCallback(adopted_callback_.NewLocal(isolate), element, base::size(argv),
               argv);
 }
 
@@ -346,7 +346,7 @@ void ScriptCustomElementDefinition::RunAttributeChangedCallback(
       V8StringOrNull(isolate, name.NamespaceURI()),
   };
   RunCallback(attribute_changed_callback_.NewLocal(isolate), element,
-              arraysize(argv), argv);
+              base::size(argv), argv);
 }
 
 }  // namespace blink
