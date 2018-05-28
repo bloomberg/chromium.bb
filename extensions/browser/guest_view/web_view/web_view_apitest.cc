@@ -23,7 +23,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
@@ -296,47 +295,6 @@ void WebViewDPIAPITest::SetUp() {
 
 content::WebContents* WebViewAPITest::GetGuestWebContents() {
   return GetGuestViewManager()->WaitForSingleGuestCreated();
-}
-
-// Occasionally hits NOTIMPLEMENTED on Linux.  https://crbug.com/422998
-#if defined(OS_LINUX)
-#define MAYBE_AcceptTouchEvents DISABLED_AcceptTouchEvents
-#else
-#define MAYBE_AcceptTouchEvents AcceptTouchEvents
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_AcceptTouchEvents) {
-  // This test only makes sense for non-OOPIF WebView, since with
-  // GuestViewCrossProcessFrames events are routed directly to the
-  // guest, so the embedder does not need to know about the installation of
-  // touch handlers.
-  if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
-    return;
-
-  LaunchApp("web_view/accept_touch_events");
-
-  content::RenderViewHost* embedder_rvh =
-      GetEmbedderWebContents()->GetRenderViewHost();
-
-  bool embedder_has_touch_handler =
-      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
-  EXPECT_FALSE(embedder_has_touch_handler);
-
-  SendMessageToGuestAndWait("install-touch-handler", "installed-touch-handler");
-
-  // Note that we need to wait for the installed/registered touch handler to
-  // appear in browser process before querying |embedder_rvh|.
-  // In practice, since we do a roundrtip from browser process to guest and
-  // back, this is sufficient.
-  embedder_has_touch_handler =
-      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
-  EXPECT_TRUE(embedder_has_touch_handler);
-
-  SendMessageToGuestAndWait("uninstall-touch-handler",
-                            "uninstalled-touch-handler");
-  // Same as the note above about waiting.
-  embedder_has_touch_handler =
-      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
-  EXPECT_FALSE(embedder_has_touch_handler);
 }
 
 // This test verifies that hiding the embedder also hides the guest.
