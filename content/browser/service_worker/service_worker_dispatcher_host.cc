@@ -55,8 +55,7 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(int render_process_id)
                            arraysize(kServiceWorkerFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>(this,
                                                                      this),
-      render_process_id_(render_process_id),
-      weak_ptr_factory_(this) {}
+      render_process_id_(render_process_id) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -92,7 +91,6 @@ void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   // for this process might be created before then.
   if (GetContext() && phase_ == Phase::kAddedToContext) {
     GetContext()->RemoveDispatcherHost(render_process_id_);
-    weak_ptr_factory_.InvalidateWeakPtrs();
   }
   phase_ = Phase::kRemovedFromContext;
   context_wrapper_ = nullptr;
@@ -107,11 +105,6 @@ void ServiceWorkerDispatcherHost::OnDestruct() const {
 bool ServiceWorkerDispatcherHost::OnMessageReceived(
     const IPC::Message& message) {
   return false;
-}
-
-base::WeakPtr<ServiceWorkerDispatcherHost>
-ServiceWorkerDispatcherHost::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
@@ -144,14 +137,13 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // TODO(crbug.com/789111#c14): This is probably not right, see bug.
     if (!provider_host) {
       GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
-          render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
-          AsWeakPtr()));
+          render_process_id_, std::move(info), GetContext()->AsWeakPtr()));
       return;
     }
 
     // Otherwise, complete initialization of the pre-created host.
     provider_host->CompleteNavigationInitialized(render_process_id_,
-                                                 std::move(info), AsWeakPtr());
+                                                 std::move(info));
     GetContext()->AddProviderHost(std::move(provider_host));
     return;
   }
@@ -166,8 +158,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   }
 
   GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
-      render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
-      AsWeakPtr()));
+      render_process_id_, std::move(info), GetContext()->AsWeakPtr()));
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {

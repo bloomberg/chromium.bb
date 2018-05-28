@@ -172,10 +172,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     std::unique_ptr<ServiceWorkerProviderHost> owned_host =
         helper_->context()->ReleaseProviderHost(host->process_id(),
                                                 host->provider_id());
-    host->CompleteNavigationInitialized(
-        helper_->mock_render_process_id(), std::move(info),
-        helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
-            ->AsWeakPtr());
+    host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
+                                        std::move(info));
     helper_->context()->AddProviderHost(std::move(owned_host));
   }
 
@@ -287,10 +285,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     std::unique_ptr<ServiceWorkerProviderHost> owned_host =
         helper_->context()->ReleaseProviderHost(host->process_id(),
                                                 host->provider_id());
-    host->CompleteNavigationInitialized(
-        helper_->mock_render_process_id(), std::move(info),
-        helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
-            ->AsWeakPtr());
+    host->CompleteNavigationInitialized(helper_->mock_render_process_id(),
+                                        std::move(info));
     host->SetDocumentUrl(document_url);
     host->SetTopmostFrameUrl(topmost_frame_url);
     helper_->context()->AddProviderHost(std::move(owned_host));

@@ -13,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -115,7 +114,7 @@ std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
       is_parent_frame_secure);
   output_endpoint->BindWithProviderHostInfo(&info);
   return ServiceWorkerProviderHost::Create(process_id, std::move(info),
-                                           std::move(context), nullptr);
+                                           std::move(context));
 }
 
 std::unique_ptr<ServiceWorkerProviderHost>
@@ -137,22 +136,6 @@ CreateProviderHostForServiceWorkerContext(
           process_id, hosted_version, nullptr /* non_network_loader_factory */);
   output_endpoint->BindWithProviderInfo(std::move(provider_info));
   return host;
-}
-
-std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostWithDispatcherHost(
-    int process_id,
-    int provider_id,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    int route_id,
-    ServiceWorkerDispatcherHost* dispatcher_host,
-    ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  ServiceWorkerProviderHostInfo info(
-      provider_id, route_id,
-      blink::mojom::ServiceWorkerProviderType::kForWindow, true);
-  output_endpoint->BindWithProviderHostInfo(&info);
-  return ServiceWorkerProviderHost::Create(process_id, std::move(info),
-                                           std::move(context),
-                                           dispatcher_host->AsWeakPtr());
 }
 
 ServiceWorkerDatabase::ResourceRecord WriteToDiskCacheSync(

@@ -270,15 +270,13 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   options.scope = kScope;
   auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
       options, kRegistrationId, context()->AsWeakPtr());
-  auto dispatcher_host = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
-      helper_->mock_render_process_id());
   // Prepare a ServiceWorkerProviderHost.
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      CreateProviderHostWithDispatcherHost(
-          helper_->mock_render_process_id(), 1 /* dummy provider_id */,
-          context()->AsWeakPtr(), 1 /* route_id */, dispatcher_host.get(),
-          &remote_endpoint);
+      CreateProviderHostForWindow(helper_->mock_render_process_id(),
+                                  1 /* dummy provider_id */,
+                                  true /* is_parent_frame_secure */,
+                                  context()->AsWeakPtr(), &remote_endpoint);
   auto registration_object_host =
       std::make_unique<ServiceWorkerRegistrationObjectHost>(
           context()->AsWeakPtr(), provider_host.get(), registration);
@@ -759,10 +757,10 @@ class ServiceWorkerRegistrationObjectHostTest
       const GURL& document_url) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostWithDispatcherHost(
-            helper_->mock_render_process_id(), provider_id,
-            context()->AsWeakPtr(), 1 /* route_id */, dispatcher_host(),
-            &remote_endpoint);
+        CreateProviderHostForWindow(helper_->mock_render_process_id(),
+                                    provider_id,
+                                    true /* is_parent_frame_secure */,
+                                    context()->AsWeakPtr(), &remote_endpoint);
     host->SetDocumentUrl(document_url);
     context()->AddProviderHost(std::move(host));
     return remote_endpoint;
@@ -788,11 +786,6 @@ class ServiceWorkerRegistrationObjectHostTest
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(registration_info->host_ptr_info.is_valid());
     return registration_info;
-  }
-
-  ServiceWorkerDispatcherHost* dispatcher_host() {
-    return helper_->GetDispatcherHostForProcess(
-        helper_->mock_render_process_id());
   }
 
   void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }

@@ -1154,6 +1154,12 @@ void ServiceWorkerVersion::PostMessageToClient(
     binding_.Close();
     return;
   }
+  if (!provider_host->is_execution_ready()) {
+    mojo::ReportBadMessage(
+        "Received Client#postMessage() request for a reserved client.");
+    binding_.Close();
+    return;
+  }
   provider_host->PostMessageToClient(this, std::move(message));
 }
 

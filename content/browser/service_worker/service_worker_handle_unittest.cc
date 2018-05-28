@@ -119,12 +119,6 @@ class ServiceWorkerHandleTest : public testing::Test {
 
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
-
-    dispatcher_host_ = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
-        helper_->mock_render_process_id());
-    helper_->RegisterDispatcherHost(helper_->mock_render_process_id(),
-                                    dispatcher_host_);
-    dispatcher_host_->Init(helper_->context_wrapper());
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
@@ -160,7 +154,6 @@ class ServiceWorkerHandleTest : public testing::Test {
   }
 
   void TearDown() override {
-    dispatcher_host_ = nullptr;
     registration_ = nullptr;
     version_ = nullptr;
     helper_.reset();
@@ -213,12 +206,9 @@ class ServiceWorkerHandleTest : public testing::Test {
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-
-  base::SimpleTestTickClock tick_clock_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);
@@ -226,7 +216,6 @@ class ServiceWorkerHandleTest : public testing::Test {
 
 TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   const int64_t kProviderId = 99;
-  const int kRenderFrameId = 44;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
   Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
@@ -235,10 +224,10 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      CreateProviderHostWithDispatcherHost(
+      CreateProviderHostForWindow(
           helper_->mock_render_process_id(), kProviderId,
-          helper_->context()->AsWeakPtr(), kRenderFrameId,
-          dispatcher_host_.get(), &remote_endpoint);
+          true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
+          &remote_endpoint);
   provider_host->SetDocumentUrl(pattern);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), pattern);
@@ -263,9 +252,10 @@ TEST_F(ServiceWorkerHandleTest,
   Initialize(std::make_unique<ExtendableMessageEventTestHelper>());
   SetUpRegistration(pattern, script_url);
 
+  base::SimpleTestTickClock tick_clock;
   // Set mock clock on version_ to check timeout behavior.
-  tick_clock_.SetNowTicks(base::TimeTicks::Now());
-  version_->SetTickClockForTesting(&tick_clock_);
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+  version_->SetTickClockForTesting(&tick_clock);
 
   // Make sure worker has a non-zero timeout.
   bool called = false;
@@ -280,7 +270,7 @@ TEST_F(ServiceWorkerHandleTest,
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   // Advance clock by a couple seconds.
-  tick_clock_.Advance(base::TimeDelta::FromSeconds(4));
+  tick_clock.Advance(base::TimeDelta::FromSeconds(4));
   base::TimeDelta remaining_time = version_->remaining_timeout();
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
@@ -322,6 +312,10 @@ TEST_F(ServiceWorkerHandleTest,
 
   // Timeout of message event should not have extended life of service worker.
   EXPECT_EQ(remaining_time, version_->remaining_timeout());
+  // Clean up.
+  base::RunLoop stop_loop;
+  version_->StopWorker(stop_loop.QuitClosure());
+  stop_loop.Run();
 }
 
 TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
@@ -344,9 +338,9 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
       blink::mojom::ServiceWorkerProviderType::kForWindow,
       true /* is_parent_frame_secure */);
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::Create(
-          frame_host->GetProcess()->GetID(), std::move(provider_host_info),
-          helper_->context()->AsWeakPtr(), dispatcher_host_->AsWeakPtr());
+      ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),
+                                        std::move(provider_host_info),
+                                        helper_->context()->AsWeakPtr());
   provider_host->SetDocumentUrl(pattern);
   // Prepare a ServiceWorkerHandle for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
@@ -400,9 +394,9 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
       blink::mojom::ServiceWorkerProviderType::kForWindow,
       true /* is_parent_frame_secure */);
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::Create(
-          frame_host->GetProcess()->GetID(), std::move(provider_host_info),
-          helper_->context()->AsWeakPtr(), dispatcher_host_->AsWeakPtr());
+      ServiceWorkerProviderHost::Create(frame_host->GetProcess()->GetID(),
+                                        std::move(provider_host_info),
+                                        helper_->context()->AsWeakPtr());
   provider_host->SetDocumentUrl(pattern);
   // Prepare a ServiceWorkerHandle for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =

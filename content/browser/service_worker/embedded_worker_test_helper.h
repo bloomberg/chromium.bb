@@ -42,7 +42,6 @@ class EmbeddedWorkerTestHelper;
 class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerDispatcherHost;
 class TestBrowserContext;
 struct PlatformNotificationData;
 struct PushEventPayload;
@@ -115,21 +114,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void RegisterMockInstanceClient(
       std::unique_ptr<MockEmbeddedWorkerInstanceClient> client);
 
-  // Registers the dispatcher host for the process to a map managed by this test
-  // helper. If there is a existing dispatcher host, it'll replace the existing
-  // dispatcher host with the given one. When replacing, this should be called
-  // before ServiceWorkerDispatcherHost::Init to allow the old dispatcher host
-  // to destruct and remove itself from ServiceWorkerContextCore, since Init
-  // adds to context core. If |dispatcher_host| is nullptr, this method just
-  // removes the existing dispatcher host from the map.
-  void RegisterDispatcherHost(
-      int process_id,
-      scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host);
-
-  // Creates and registers a basic dispatcher host for the process if one
-  // registered isn't already.
-  void EnsureDispatcherHostForProcess(int process_id);
-
   template <typename MockType, typename... Args>
   MockType* CreateAndRegisterMockInstanceClient(Args&&... args);
 
@@ -158,8 +142,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int new_render_process_id() const { return new_mock_render_process_id_; }
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
-
-  ServiceWorkerDispatcherHost* GetDispatcherHostForProcess(int process_id);
 
   base::WeakPtr<EmbeddedWorkerTestHelper> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -391,9 +373,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   int next_thread_id_;
   int mock_render_process_id_;
   int new_mock_render_process_id_;
-
-  std::map<int /* process_id */, scoped_refptr<ServiceWorkerDispatcherHost>>
-      dispatcher_hosts_;
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
 
