@@ -30,6 +30,7 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "ipc/ipc_message_macros.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -220,6 +221,13 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
                              base::nullopt /* subresource_overrides */);
   }
   if (subresource_loaders) {
+    // S13nServiceWorker enabled, NetworkService disabled:Clear the default
+    // factory from |subresource_loaders|, as it's the NetworkService factory.
+    // We'll continue using the default from CreateDefaultURLLoaderFactoryBundle
+    // instead.
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+      subresource_loaders->default_factory_info() = nullptr;
+
     loader_factories->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
                                  std::move(subresource_loaders)),
                              base::nullopt /* subresource_overrides */);

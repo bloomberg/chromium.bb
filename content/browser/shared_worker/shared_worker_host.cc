@@ -162,6 +162,14 @@ void SharedWorkerHost::Start(
     network::mojom::URLLoaderFactoryPtrInfo network_factory_info;
     CreateNetworkFactory(mojo::MakeRequest(&network_factory_info));
     DCHECK(!factory_bundle->default_factory_info());
+
+    // This is a NetworkService-backed factory, so it'd be better to send this
+    // only when NetworkService is enabled. But when S13nServiceWorker is
+    // enabled, we need to send the bundle and it crashes if it's sent over Mojo
+    // with no default factory. Furthermore, it is not easy to make a default
+    // URLLoaderFactoryImpl from the browser-side, since we need a
+    // ResourceRequestorInfo. So, just send the bundle and count on the renderer
+    // to clear the default factory upon arrival in that case.
     factory_bundle->default_factory_info() = std::move(network_factory_info);
   }
 
