@@ -172,7 +172,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("selectCreateFolderDownloads"),
+    ::testing::Values(TestCase("selectCreateFolderDownloads").InGuestMode(),
+                      TestCase("selectCreateFolderDownloads"),
                       TestCase("createFolderDownloads").InGuestMode(),
                       TestCase("createFolderDownloads"),
                       TestCase("createFolderDrive")));
@@ -197,6 +198,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("deleteMenuItemNoEntrySelected"),
+                      TestCase("deleteEntryWithToolbar").InGuestMode(),
                       TestCase("deleteEntryWithToolbar")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(QuickView, /* quick_view.js */
@@ -371,6 +373,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu, /* gear_menu.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("showHiddenFilesDownloads"),
+                      TestCase("showHiddenFilesDownloads").InGuestMode(),
                       TestCase("showHiddenFilesDrive"),
                       TestCase("toogleGoogleDocsDrive"),
                       TestCase("showPasteIntoCurrentFolder"),
