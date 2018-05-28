@@ -36,11 +36,6 @@ void SwapPromiseManager::NotifySwapPromiseMonitorsOfSetNeedsCommit() {
   }
 }
 
-// True if there is at least one swap promise monitor.
-bool SwapPromiseManager::HadInputSinceLastCommit() {
-  return !swap_promise_monitors_.empty();
-}
-
 void SwapPromiseManager::WillCommit() {
   for (const auto& swap_promise : swap_promise_list_)
     swap_promise->OnCommit();

@@ -389,14 +389,6 @@ bool SingleThreadProxy::NextFrameHasPendingRAF() const {
   return false;
 }
 
-bool SingleThreadProxy::HasMainThreadHandledEvent() const {
-  return false;
-}
-
-bool SingleThreadProxy::HasImplThreadHandledEvent() const {
-  return false;
-}
-
 bool SingleThreadProxy::IsInsideDraw() {
   return inside_draw_;
 }

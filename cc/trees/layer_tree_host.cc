@@ -533,23 +533,17 @@ DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
-  mutator_host_->SetHasMainThreadHandledEvent(
-      swap_promise_manager_.HadInputSinceLastCommit());
 }
 
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
-  mutator_host_->SetHasMainThreadHandledEvent(
-      swap_promise_manager_.HadInputSinceLastCommit());
 }
 
 void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
-  mutator_host_->SetHasMainThreadHandledEvent(
-      swap_promise_manager_.HadInputSinceLastCommit());
 }
 
 void LayerTreeHost::SetNeedsRecalculateRasterScales() {

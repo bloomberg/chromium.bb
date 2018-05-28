@@ -52,15 +52,11 @@ class SchedulerClient {
   virtual void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) = 0;
 
-  // Functions used for reporting frame rate when there is an animation
-  // associated. For example, when there is CSS / RAF or input driven
-  // animations.
+  // Functions used for reporting anmation targeting UMA, crbug.com/758439.
   virtual size_t CompositedAnimationsCount() const = 0;
   virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
   virtual bool NextFrameHasPendingRAF() const = 0;
-  virtual bool HasMainThreadHandledEvent() const = 0;
-  virtual bool HasImplThreadHandledEvent() const = 0;
 
  protected:
   virtual ~SchedulerClient() {}
