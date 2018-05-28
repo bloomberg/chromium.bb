@@ -230,6 +230,61 @@ void CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
   output_entry->SetReplacedEntryData(data);
 }
 
+FrameMsg_Navigate_Type::Value GetNavigationType(
+    const GURL& old_url,
+    const GURL& new_url,
+    ReloadType reload_type,
+    const NavigationEntryImpl& entry,
+    const FrameNavigationEntry& frame_entry,
+    bool is_same_document_history_load) {
+  // Reload navigations
+  switch (reload_type) {
+    case ReloadType::NORMAL:
+      return FrameMsg_Navigate_Type::RELOAD;
+    case ReloadType::BYPASSING_CACHE:
+    case ReloadType::DISABLE_PREVIEWS:
+      return FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
+    case ReloadType::ORIGINAL_REQUEST_URL:
+      return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+    case ReloadType::NONE:
+      break;  // Fall through to rest of function.
+  }
+
+  if (entry.restore_type() == RestoreType::LAST_SESSION_EXITED_CLEANLY) {
+    if (entry.GetHasPostData())
+      return FrameMsg_Navigate_Type::RESTORE_WITH_POST;
+    else
+      return FrameMsg_Navigate_Type::RESTORE;
+  }
+
+  // History navigations.
+  if (frame_entry.page_state().IsValid()) {
+    if (is_same_document_history_load)
+      return FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT;
+    else
+      return FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
+  }
+  DCHECK(!is_same_document_history_load);
+
+  // A same-document fragment-navigation happens when the only part of the url
+  // that is modified is after the '#' character.
+  //
+  // When modifying this condition, please take a look at:
+  // FrameLoader::shouldPerformFragmentNavigation.
+  //
+  // Note: this check is only valid for navigations that are not history
+  // navigations. For instance, if the history is: 'A#bar' -> 'B' -> 'A#foo', a
+  // history navigation from 'A#foo' to 'A#bar' is not a same-document
+  // navigation, but a different-document one. This is why history navigation
+  // are classified before this check.
+  if (new_url.has_ref() && old_url.EqualsIgnoringRef(new_url) &&
+      frame_entry.method() == "GET") {
+    return FrameMsg_Navigate_Type::SAME_DOCUMENT;
+  } else {
+    return FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+  }
+}
+
 }  // namespace
 
 // NavigationControllerImpl ----------------------------------------------------
@@ -1907,12 +1962,18 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     }
   }
 
-  // TODO(clamy): Create a NavigationRequest here and pass it to Navigator for
-  // navigating.
-  return render_frame_host->frame_tree_node()->navigator()->NavigateToEntry(
-      render_frame_host->frame_tree_node(), *frame_entry, *entry,
-      ReloadType::NONE, false, true, false, nullptr,
-      nullptr /* navigation_ui_data */);
+  std::unique_ptr<NavigationRequest> request = CreateNavigationRequest(
+      render_frame_host->frame_tree_node(), *entry, frame_entry,
+      ReloadType::NONE, false /* is_same_document_history_load */,
+      true /* is_history_navigation_in_new_child */, nullptr, nullptr);
+
+  if (!request)
+    return false;
+
+  render_frame_host->frame_tree_node()->navigator()->Navigate(
+      std::move(request), ReloadType::NONE, RestoreType::NONE);
+
+  return true;
 }
 
 void NavigationControllerImpl::NavigateFromFrameProxy(
@@ -1991,11 +2052,16 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         std::vector<GURL>(), PageState(), method, -1, blob_url_loader_factory);
   }
 
-  // TODO(clamy): Create a NavigationRequest here and pass it to Navigator for
-  // navigating.
-  render_frame_host->frame_tree_node()->navigator()->NavigateToEntry(
-      node, *frame_entry, *entry.get(), ReloadType::NONE, false, false, false,
-      post_body, nullptr /* navigation_ui_data */);
+  std::unique_ptr<NavigationRequest> request = CreateNavigationRequest(
+      render_frame_host->frame_tree_node(), *entry, frame_entry.get(),
+      ReloadType::NONE, false /* is_same_document_history_load */,
+      false /* is_history_navigation_in_new_child */, post_body, nullptr);
+
+  if (!request)
+    return;
+
+  render_frame_host->frame_tree_node()->navigator()->Navigate(
+      std::move(request), ReloadType::NONE, RestoreType::NONE);
 }
 
 void NavigationControllerImpl::ClearAllScreenshots() {
@@ -2249,6 +2315,7 @@ void NavigationControllerImpl::NavigateToPendingEntry(
   // Any renderer-side debug URLs or javascript: URLs should be ignored if the
   // renderer process is not live, unless it is the initial navigation of the
   // tab.
+  // TODO(clamy): Remove this as it is duplicated in HandleRendererDebugURL.
   if (IsRendererDebugURL(pending_entry_->GetURL())) {
     // TODO(creis): Find the RVH for the correct frame.
     if (!delegate_->GetRenderViewHost()->IsRenderViewLive() &&
@@ -2301,17 +2368,44 @@ bool NavigationControllerImpl::NavigateToPendingEntryInternal(
   // Send all the same document frame loads before the different document loads.
   for (const auto& item : same_document_loads) {
     FrameTreeNode* frame = item.first;
-    success |= frame->navigator()->NavigateToPendingEntry(
-        frame, *item.second, reload_type, true,
-        nullptr /* navigation_ui_data */);
+    DCHECK(!IsRendererDebugURL(item.second->url()));
+    std::unique_ptr<NavigationRequest> request = CreateNavigationRequest(
+        frame, *pending_entry_, item.second, reload_type,
+        true /* is_same_document_history_load */,
+        false /* is_history_navigation_in_new_child */, nullptr, nullptr);
+    if (request) {
+      success = true;
+      frame->navigator()->Navigate(std::move(request), reload_type,
+                                   pending_entry_->restore_type());
+    }
   }
   for (const auto& item : different_document_loads) {
     FrameTreeNode* frame = item.first;
-    success |= frame->navigator()->NavigateToPendingEntry(
-        frame, *item.second, reload_type, false,
-        // The NavigationUIData has only been initialized for main frames. Do
-        // not pass it to subframes.
-        frame->IsMainFrame() ? std::move(navigation_ui_data) : nullptr);
+    if (IsRendererDebugURL(item.second->url())) {
+      HandleRendererDebugURL(frame, item.second->url());
+      if (!item.second->url().SchemeIs(url::kJavaScriptScheme)) {
+        // Note: navigations to Javascript URLs should not result in a pending
+        // NavigationEntry. This is why they should return false from this
+        // function.
+        // TODO(clamy): Clean this up as part of the NavigationController
+        // refactoring. Ideally, navigations to JavaScript URLs should not
+        // arrive here.
+        success = true;
+      }
+    } else {
+      std::unique_ptr<NavigationRequest> request = CreateNavigationRequest(
+          frame, *pending_entry_, item.second, reload_type,
+          false /* is_same_document_history_load */,
+          false /* is_history_navigation_in_new_child */, nullptr,
+          // The NavigationUIData has only been initialized for main frames. Do
+          // not pass it to subframes.
+          frame->IsMainFrame() ? std::move(navigation_ui_data) : nullptr);
+      if (request) {
+        success = true;
+        frame->navigator()->Navigate(std::move(request), reload_type,
+                                     pending_entry_->restore_type());
+      }
+    }
   }
   return success;
 }
@@ -2375,6 +2469,114 @@ void NavigationControllerImpl::FindFramesToNavigate(
     FindFramesToNavigate(frame->child_at(i), same_document_loads,
                          different_document_loads);
   }
+}
+
+void NavigationControllerImpl::HandleRendererDebugURL(
+    FrameTreeNode* frame_tree_node,
+    const GURL& url) {
+  if (!frame_tree_node->current_frame_host()->IsRenderFrameLive()) {
+    // Any renderer-side debug URLs or javascript: URLs should be ignored if the
+    // renderer process is not live, unless it is the initial navigation of the
+    // tab.
+    if (!IsInitialNavigation()) {
+      DiscardNonCommittedEntries();
+      return;
+    }
+    frame_tree_node->render_manager()->InitializeRenderFrameIfNecessary(
+        frame_tree_node->current_frame_host());
+  }
+  frame_tree_node->current_frame_host()->HandleRendererDebugURL(url);
+}
+
+std::unique_ptr<NavigationRequest>
+NavigationControllerImpl::CreateNavigationRequest(
+    FrameTreeNode* frame_tree_node,
+    const NavigationEntryImpl& entry,
+    FrameNavigationEntry* frame_entry,
+    ReloadType reload_type,
+    bool is_same_document_history_load,
+    bool is_history_navigation_in_new_child,
+    const scoped_refptr<network::ResourceRequestBody>& post_body,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
+  GURL dest_url = frame_entry->url();
+  Referrer dest_referrer = frame_entry->referrer();
+  if ((reload_type == ReloadType::ORIGINAL_REQUEST_URL ||
+       reload_type == ReloadType::DISABLE_PREVIEWS) &&
+      entry.GetOriginalRequestURL().is_valid() && !entry.GetHasPostData()) {
+    // We may have been redirected when navigating to the current URL.
+    // Use the URL the user originally intended to visit as signaled by the
+    // ReloadType, if it's valid and if a POST wasn't involved; the latter
+    // case avoids issues with sending data to the wrong page. The
+    // DISABLE_PREVIEWS case is triggered from a user action to view the
+    // original URL without any preview intervention treatment.
+    dest_url = entry.GetOriginalRequestURL();
+    dest_referrer = Referrer();
+  }
+
+  // Don't attempt to navigate if the virtual URL is non-empty and invalid.
+  if (frame_tree_node->IsMainFrame()) {
+    const GURL& virtual_url = entry.GetVirtualURL();
+    if (!virtual_url.is_valid() && !virtual_url.is_empty()) {
+      LOG(WARNING) << "Refusing to load for invalid virtual URL: "
+                   << virtual_url.possibly_invalid_spec();
+      return nullptr;
+    }
+  }
+
+  // Don't attempt to navigate to non-empty invalid URLs.
+  if (!dest_url.is_valid() && !dest_url.is_empty()) {
+    LOG(WARNING) << "Refusing to load invalid URL: "
+                 << dest_url.possibly_invalid_spec();
+    return nullptr;
+  }
+
+  // The renderer will reject IPC messages with URLs longer than
+  // this limit, so don't attempt to navigate with a longer URL.
+  if (dest_url.spec().size() > url::kMaxURLChars) {
+    LOG(WARNING) << "Refusing to load URL as it exceeds " << url::kMaxURLChars
+                 << " characters.";
+    return nullptr;
+  }
+
+  // Determine if Previews should be used for the navigation.
+  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
+  if (!frame_tree_node->IsMainFrame()) {
+    // For subframes, use the state of the top-level frame.
+    previews_state = frame_tree_node->frame_tree()
+                         ->root()
+                         ->current_frame_host()
+                         ->last_navigation_previews_state();
+  } else if (reload_type == ReloadType::DISABLE_PREVIEWS) {
+    // Disable LoFi when asked for it explicitly.
+    previews_state = PREVIEWS_NO_TRANSFORM;
+  }
+
+  // Give the delegate an opportunity to adjust the previews state.
+  if (delegate_)
+    delegate_->AdjustPreviewsStateForNavigation(&previews_state);
+
+  // This will be used to set the Navigation Timing API navigationStart
+  // parameter for browser navigations in new tabs (intents, tabs opened through
+  // "Open link in new tab"). If the navigation must wait on the current
+  // RenderFrameHost to execute its BeforeUnload event, the navigation start
+  // will be updated when the BeforeUnload ack is received.
+  base::TimeTicks navigation_start = base::TimeTicks::Now();
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
+      "navigation,rail", "NavigationTiming navigationStart",
+      TRACE_EVENT_SCOPE_GLOBAL, navigation_start);
+
+  FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
+      frame_tree_node->current_url(),  // old_url
+      dest_url,                        // new_url
+      reload_type,                     // reload_type
+      entry,                           // entry
+      *frame_entry,                    // frame_entry
+      is_same_document_history_load);  // is_same_document_history_load
+  return NavigationRequest::CreateBrowserInitiated(
+      frame_tree_node, dest_url, dest_referrer, *frame_entry, entry,
+      navigation_type, previews_state, is_same_document_history_load,
+      is_history_navigation_in_new_child, post_body, navigation_start, this,
+      std::move(navigation_ui_data));
 }
 
 void NavigationControllerImpl::NotifyNavigationEntryCommitted(
