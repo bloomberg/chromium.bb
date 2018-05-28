@@ -496,18 +496,6 @@
       name: "FeaturePolicyVibrateFeature"
     },
     {
-      name: "FetchRequestCache",
-      status: "stable",
-    },
-    {
-      name: "FetchRequestKeepalive",
-      status: "stable",
-    },
-    {
-      name: "FetchRequestSignal",
-      status: "stable",
-    },
-    {
       name: "FileSystem",
       status: "stable",
     },
@@ -670,10 +658,6 @@
     {
       name: "LazyParseCSS",
       status: "experimental",
-    },
-    {
-      name: "LoadingWithMojo",
-      status: "stable",
     },
     {
       name: "LongTaskObserver",

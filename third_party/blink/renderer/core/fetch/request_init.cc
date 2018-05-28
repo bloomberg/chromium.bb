@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 
 namespace blink {
@@ -84,11 +83,9 @@ RequestInit::RequestInit(ExecutionContext* context,
   if (exception_state.HadException())
     return;
 
-  if (RuntimeEnabledFeatures::FetchRequestCacheEnabled()) {
-    cache_ = h.Get<IDLUSVString>("cache").value_or(String());
-    if (exception_state.HadException())
-      return;
-  }
+  cache_ = h.Get<IDLUSVString>("cache").value_or(String());
+  if (exception_state.HadException())
+    return;
 
   redirect_ = h.Get<IDLUSVString>("redirect").value_or(String());
   if (exception_state.HadException())
@@ -106,20 +103,16 @@ RequestInit::RequestInit(ExecutionContext* context,
   if (exception_state.HadException())
     return;
 
-  if (RuntimeEnabledFeatures::FetchRequestKeepaliveEnabled()) {
-    keepalive_ = h.Get<IDLBoolean>("keepalive");
-    if (exception_state.HadException())
-      return;
-  }
+  keepalive_ = h.Get<IDLBoolean>("keepalive");
+  if (exception_state.HadException())
+    return;
 
   base::Optional<v8::Local<v8::Value>> v8_signal;
-  if (RuntimeEnabledFeatures::FetchRequestSignalEnabled()) {
-    // In order to distinguish between undefined and null, split the steps of
-    // looking it up in the dictionary and converting to the native type.
-    v8_signal = h.Get<IDLPassThrough>("signal");
-    if (exception_state.HadException())
-      return;
-  }
+  // In order to distinguish between undefined and null, split the steps of
+  // looking it up in the dictionary and converting to the native type.
+  v8_signal = h.Get<IDLPassThrough>("signal");
+  if (exception_state.HadException())
+    return;
 
   auto v8_body = h.Get<IDLPassThrough>("body");
   if (exception_state.HadException())
