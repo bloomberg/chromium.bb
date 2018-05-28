@@ -34,6 +34,7 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_view.h"
+#include "ash/system/unified_accessibility_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -234,8 +235,8 @@ void UnifiedSystemTrayController::ShowCastDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
-  // TODO(tetsui): Implement Accessibility 's own DetailedViewController.
-  ShowSystemTrayItemDetailedView(system_tray_->GetTrayAccessibility());
+  ShowDetailedView(
+      std::make_unique<UnifiedAccessibilityDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowVPNDetailedView() {
