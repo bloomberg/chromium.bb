@@ -551,10 +551,13 @@ std::string GetOutputCorrespondingTo(pa_threaded_mainloop* mainloop,
 std::string GetRealDefaultDeviceId(pa_threaded_mainloop* mainloop,
                                    pa_context* context,
                                    RequestType type) {
+  DCHECK(mainloop);
+  DCHECK(context);
+  AutoPulseLock auto_lock(mainloop);
   DefaultDevicesData data(mainloop);
-  pa_operation* op =
+  pa_operation* operation =
       pa_context_get_server_info(context, &GetDefaultDeviceIdCallback, &data);
-  WaitForOperationCompletion(mainloop, op);
+  WaitForOperationCompletion(mainloop, operation);
   return (type == RequestType::INPUT) ? data.input_ : data.output_;
 }
 
