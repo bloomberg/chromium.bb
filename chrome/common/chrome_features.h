@@ -40,10 +40,6 @@ extern const base::Feature kAnimatedAppMenuIcon;
 extern const base::Feature kAppBanners;
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-extern const base::Feature kArcMemoryManagement;
-#endif  // defined(OS_CHROMEOS)
-
 extern const base::Feature kAssetDownloadSuggestionsFeature;
 
 extern const base::Feature kAsyncDns;

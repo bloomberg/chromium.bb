@@ -55,12 +55,6 @@ const base::Feature kAppBanners {
 };
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-// Whether to handle low memory kill of ARC apps by Chrome.
-const base::Feature kArcMemoryManagement{
-    "ArcMemoryManagement", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_CHROMEOS)
-
 // If enabled, the list of content suggestions on the New Tab page will contain
 // assets (e.g. books, pictures, audio) that the user downloaded for later use.
 // DO NOT check directly whether this feature is enabled (i.e. do not use
