@@ -256,6 +256,61 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
   }
 }
 
+// Test CanMakePayment and payment request can be fullfiled in incognito mode.
+IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePayIncognito) {
+  SetIncognito();
+  InstallAlicePayForMethod("https://alicepay.com");
+
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_test.html");
+
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ASSERT_TRUE(
+        content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
+    WaitForObservedEvent();
+    ExpectBodyContains({"true"});
+
+    // A new payment request will be created below, so call
+    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    InvokePaymentRequestUI();
+
+    ResetEventWaiterForSequence(
+        {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
+    ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+    ExpectBodyContains({"https://alicepay.com"});
+  }
+
+  // Repeat should have identical results.
+  {
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    NavigateTo("/payment_request_bobpay_test.html");
+
+    ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
+                                 DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+    ASSERT_TRUE(
+        content::ExecuteScript(GetActiveWebContents(), "canMakePayment();"));
+    WaitForObservedEvent();
+    ExpectBodyContains({"true"});
+
+    // A new payment request will be created below, so call
+    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
+    SetDownloaderAndIgnorePortInAppScopeForTesting();
+
+    InvokePaymentRequestUI();
+
+    ResetEventWaiterForSequence(
+        {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
+    ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON, dialog_view());
+    ExpectBodyContains({"https://alicepay.com"});
+  }
+}
+
 // Test payment apps are not available if they are blocked.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, BlockAlicePay) {
   InstallAlicePayForMethod("https://alicepay.com");

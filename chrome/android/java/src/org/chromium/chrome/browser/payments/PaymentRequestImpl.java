@@ -1609,9 +1609,7 @@ public class PaymentRequestImpl
             }
         }
 
-        if (mIsIncognito) {
-            mClient.onCanMakePayment(CanMakePaymentQueryResult.CAN_MAKE_PAYMENT);
-        } else if (isIgnoringQueryQuota) {
+        if (isIgnoringQueryQuota) {
             mClient.onCanMakePayment(response
                             ? CanMakePaymentQueryResult.WARNING_CAN_MAKE_PAYMENT
                             : CanMakePaymentQueryResult.WARNING_CANNOT_MAKE_PAYMENT);

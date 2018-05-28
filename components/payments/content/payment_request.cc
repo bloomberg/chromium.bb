@@ -412,12 +412,6 @@ void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
 
 void PaymentRequest::RespondToCanMakePaymentQuery(bool can_make_payment,
                                                   bool warn_localhost_or_file) {
-  if (delegate_->IsIncognito()) {
-    can_make_payment =
-        spec()->HasBasicCardMethodName() ||
-        base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps);
-  }
-
   mojom::CanMakePaymentQueryResult positive =
       warn_localhost_or_file
           ? mojom::CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
