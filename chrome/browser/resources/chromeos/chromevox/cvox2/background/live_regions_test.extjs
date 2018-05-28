@@ -137,7 +137,8 @@ TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeAtomicText', function() {
     });
 });
 
-TEST_F('LiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
+// Flaky. See https://crbug.com/847028.
+TEST_F('LiveRegionsTest', 'DISABLED_LiveRegionChangeImageAlt', function() {
   // Note that there is a live region outputted as a result of page load; the
   // test expects a live region announcement after a click on the button, but
   // the LiveRegions module has a half second filter for live region
