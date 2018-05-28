@@ -22,6 +22,6 @@
     readonly attribute Element? pointerLockElement;
     // Fullscreen API
     // https://fullscreen.spec.whatwg.org/
-    [RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
+    [LenientSetter, RuntimeEnabled=FullscreenUnprefixed] readonly attribute Element? fullscreenElement;
     [RuntimeEnabled=ConstructableStylesheets] attribute StyleSheetList moreStyleSheets;
 };
