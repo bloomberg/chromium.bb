@@ -1919,6 +1919,14 @@ scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {
       OriginalStyleForLayoutObject());
 }
 
+void HTMLInputElement::DidRecalcStyle(StyleRecalcChange change) {
+  if (change != kReattach)
+    return;
+  ComputedStyle* style = GetNonAttachedStyle();
+  if (style && style->Display() != EDisplay::kNone)
+    input_type_view_->StartResourceLoading();
+}
+
 void HTMLInputElement::DidNotifySubtreeInsertionsToDocument() {
   ListAttributeTargetChanged();
 }
