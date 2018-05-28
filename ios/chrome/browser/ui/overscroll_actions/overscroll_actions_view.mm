@@ -368,8 +368,15 @@ enum class OverscrollViewState {
     _backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
     [self addSubview:_backgroundView];
 
-    if (UseRTLLayout())
+    if (UseRTLLayout()) {
+      // Handle RTL using transforms since this class is CALayer-based.
       [self setTransform:CGAffineTransformMakeScale(-1, 1)];
+      // Reverse labels again because they are subview of |self|, otherwise they
+      // will be rendered backwards.
+      [_addTabLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
+      [_refreshLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
+      [_closeTabLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
+    }
 
     _tapGesture =
         [[UITapGestureRecognizer alloc] initWithTarget:self
