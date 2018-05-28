@@ -34,6 +34,7 @@ issues]].
   - Complete the support of CJK Compatibility block
   - Fix the support of various parentheses, brackets, and braces
   - Minor fixes (kana rules, punctuation marks, Greek alphabets)
+- New 8 dot computer braille table for Czech thanks to Jan Hegr.
 
 ** Other changes
 - Refactoring thanks to Bert Frees
@@ -52,6 +53,7 @@ issues]].
 
 ** New, renamed or removed tables
 *** New
+    - cs-comp8.utb
 *** Renamed
 *** Removed
 
