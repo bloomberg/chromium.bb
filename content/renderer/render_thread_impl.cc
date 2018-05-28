@@ -114,7 +114,6 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
-#include "content/renderer/service_worker/service_worker_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "content/renderer/shared_worker/shared_worker_factory_impl.h"
 #include "content/renderer/web_database_observer_impl.h"
@@ -1305,9 +1304,6 @@ void RenderThreadImpl::InitializeWebKit(
     isolate->IsolateInBackgroundNotification();
   }
 
-  service_worker_message_filter_ = new ServiceWorkerMessageFilter(
-      thread_safe_sender(), GetWebMainThreadScheduler()->IPCTaskRunner());
-  AddFilter(service_worker_message_filter_->GetFilter());
 
   main_thread_scheduler_->SetFreezingWhenBackgroundedEnabled(
       GetContentClient()->renderer()->AllowFreezingWhenProcessBackgrounded());
