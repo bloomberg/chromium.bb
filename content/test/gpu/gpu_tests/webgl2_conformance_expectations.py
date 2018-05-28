@@ -442,6 +442,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac', 'amd', 'intel'], bug=811614)
 
+    # Mac NVIDIA
+    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
+        ['mac', 'nvidia', 'no_angle'], bug=844308)
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/shaderindexing/mat_01.html',
@@ -1005,6 +1008,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
+    self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
+        ['linux', 'amd'], bug=844311)
     self.Fail('conformance2/attribs/gl-vertex-attrib-normalized-int.html',
         ['linux', 'amd'], bug=766776)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
@@ -1265,6 +1270,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-3d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html',
+        ['linux', ('amd', 0x6613)], bug=847217)
+    self.Fail('conformance2/textures/video/tex-2d-rg32f-rg-float.html',
+        ['linux', ('amd', 0x6613)], bug=847217)
     self.Fail('conformance2/textures/image_data/' +
         'tex-3d-rgb32f-rgb-float.html',
         ['linux', ('amd', 0x6613)], bug=701138)
