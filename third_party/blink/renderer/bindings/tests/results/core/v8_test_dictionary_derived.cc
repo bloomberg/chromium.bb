@@ -25,7 +25,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryDerivedImplementedAsK
     "stringOrDoubleSequenceMember",
   };
   return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, arraysize(kKeys));
+      kKeys, kKeys, base::size(kKeys));
 }
 
 void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionaryDerivedImplementedAs& impl, ExceptionState& exceptionState) {

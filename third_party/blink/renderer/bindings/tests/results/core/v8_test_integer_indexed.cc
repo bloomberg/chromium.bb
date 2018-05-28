@@ -342,10 +342,10 @@ static void installV8TestIntegerIndexedTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestIntegerIndexedAccessors, arraysize(V8TestIntegerIndexedAccessors));
+      signature, V8TestIntegerIndexedAccessors, base::size(V8TestIntegerIndexedAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestIntegerIndexedMethods, arraysize(V8TestIntegerIndexedMethods));
+      signature, V8TestIntegerIndexedMethods, base::size(V8TestIntegerIndexedMethods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(

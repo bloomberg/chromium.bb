@@ -83,7 +83,7 @@ SnapshotInterface g_snapshot_interfaces[] = {
     {&V8Document::wrapperTypeInfo,
      V8Document::InstallRuntimeEnabledFeaturesOnTemplate},
 };
-constexpr size_t kSnapshotInterfaceSize = arraysize(g_snapshot_interfaces);
+constexpr size_t kSnapshotInterfaceSize = base::size(g_snapshot_interfaces);
 
 enum class InternalFieldType : uint8_t {
   kNone,
@@ -456,7 +456,7 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
     int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
     void* values[] = {nullptr, const_cast<WrapperTypeInfo*>(
                                    &V8HTMLDocument::wrapperTypeInfo)};
-    document_wrapper->SetAlignedPointerInInternalFields(arraysize(indices),
+    document_wrapper->SetAlignedPointerInInternalFields(base::size(indices),
                                                         indices, values);
 
     // Set the cached accessor for window.document.

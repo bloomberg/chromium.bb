@@ -586,13 +586,13 @@ static void installV8TestInterfaceCheckSecurityTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestInterfaceCheckSecurityAttributes, arraysize(V8TestInterfaceCheckSecurityAttributes));
+      V8TestInterfaceCheckSecurityAttributes, base::size(V8TestInterfaceCheckSecurityAttributes));
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceCheckSecurityAccessors, arraysize(V8TestInterfaceCheckSecurityAccessors));
+      signature, V8TestInterfaceCheckSecurityAccessors, base::size(V8TestInterfaceCheckSecurityAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceCheckSecurityMethods, arraysize(V8TestInterfaceCheckSecurityMethods));
+      signature, V8TestInterfaceCheckSecurityMethods, base::size(V8TestInterfaceCheckSecurityMethods));
 
   // Cross-origin access check
   instanceTemplate->SetAccessCheckCallbackAndHandler(

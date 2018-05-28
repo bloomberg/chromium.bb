@@ -970,16 +970,16 @@ static void installV8TestInterface5Template(
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
-      V8TestInterface5Constants, arraysize(V8TestInterface5Constants));
+      V8TestInterface5Constants, base::size(V8TestInterface5Constants));
   V8DOMConfiguration::InstallLazyDataAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestInterface5LazyDataAttributes, arraysize(V8TestInterface5LazyDataAttributes));
+      V8TestInterface5LazyDataAttributes, base::size(V8TestInterface5LazyDataAttributes));
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterface5Accessors, arraysize(V8TestInterface5Accessors));
+      signature, V8TestInterface5Accessors, base::size(V8TestInterface5Accessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterface5Methods, arraysize(V8TestInterface5Methods));
+      signature, V8TestInterface5Methods, base::size(V8TestInterface5Methods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
@@ -1083,7 +1083,7 @@ void V8TestInterface5::InstallConditionalFeatures(
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instanceObject, prototypeObject, interfaceObject,
           signature, accessor_configurations,
-          arraysize(accessor_configurations));
+          base::size(accessor_configurations));
     }
     if (executionContext && (executionContext->IsWorkerGlobalScope())) {
       static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -1092,7 +1092,7 @@ void V8TestInterface5::InstallConditionalFeatures(
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instanceObject, prototypeObject, interfaceObject,
           signature, accessor_configurations,
-          arraysize(accessor_configurations));
+          base::size(accessor_configurations));
     }
     if (executionContext && (executionContext->IsWorkerGlobalScope())) {
       const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration[] = {
