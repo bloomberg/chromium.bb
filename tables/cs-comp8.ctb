@@ -23,7 +23,7 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Based on the official Czech Braille Standard and Czech8.bwe
+# Based on the official Czech Braille Standard and Czech8.bwe (Window-Eyes Braille table)
 # Implements basic math symbols described at:
 # http://teiresias.muni.cz/czbraille8/?strana=norma
 
