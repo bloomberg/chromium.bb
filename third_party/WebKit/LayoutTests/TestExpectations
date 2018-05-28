@@ -4099,8 +4099,6 @@ crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-witho
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/video-surface-layer/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
-crbug.com/749738 [ Win7 Debug ] http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout ]
-
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Release ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
 
@@ -4829,6 +4827,10 @@ crbug.com/846632 virtual/threaded/animations/responsive/zoom-responsive-transfor
 crbug.com/846693 [ Mac ] virtual/threaded/animations/composited-animation-independent-transform-cancel.html [ Pass Crash Timeout ]
 
 # Sheriff 2018-05-28
+# Merged failing devtools/editor tests.
+crbug.com/749738 http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout Pass ]
+crbug.com/846997 http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Timeout Pass ]
+crbug.com/846982 http/tests/devtools/editor/text-editor-formatter.js [ Timeout Pass ]
 crbug.com/847094 [ Mac ] virtual/gpu-rasterization/images/color-profile-border-image.html [ Pass Failure ]
 crbug.com/847094 [ Mac ] virtual/gpu-rasterization/images/gray-scale-png-with-color-profile.html [ Pass Failure ]
 crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
