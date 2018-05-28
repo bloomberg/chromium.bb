@@ -492,6 +492,12 @@ int ModelTypeToHistogramInt(ModelType model_type) {
   return 0;
 }
 
+int ModelTypeToStableIdentifier(ModelType model_type) {
+  DCHECK(model_type >= UNSPECIFIED && model_type < MODEL_TYPE_COUNT);
+  // Make sure the value is stable and positive.
+  return ModelTypeToHistogramInt(model_type) + 1;
+}
+
 std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type) {
   if (model_type >= FIRST_REAL_MODEL_TYPE) {
     return std::make_unique<base::Value>(ModelTypeToString(model_type));

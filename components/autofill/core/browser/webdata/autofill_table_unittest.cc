@@ -2340,34 +2340,45 @@ INSTANTIATE_TEST_CASE_P(
                                           0,
                                           {nullptr, nullptr}}));
 
-TEST_F(AutofillTableTest, AutofillNoMetadata) {
+class AutofillTableTestPerModelType
+    : public AutofillTableTest,
+      public testing::WithParamInterface<syncer::ModelType> {
+ public:
+  AutofillTableTestPerModelType() {}
+  ~AutofillTableTestPerModelType() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutofillTableTestPerModelType);
+};
+
+TEST_P(AutofillTableTestPerModelType, AutofillNoMetadata) {
+  syncer::ModelType model_type = GetParam();
   MetadataBatch metadata_batch;
-  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
   EXPECT_EQ(0u, metadata_batch.TakeAllMetadata().size());
   EXPECT_EQ(ModelTypeState().SerializeAsString(),
             metadata_batch.GetModelTypeState().SerializeAsString());
 }
 
-TEST_F(AutofillTableTest, AutofillGetAllSyncMetadata) {
+TEST_P(AutofillTableTestPerModelType, AutofillGetAllSyncMetadata) {
+  syncer::ModelType model_type = GetParam();
   EntityMetadata metadata;
   std::string storage_key = "storage_key";
   std::string storage_key2 = "storage_key2";
   metadata.set_sequence_number(1);
 
-  EXPECT_TRUE(
-      table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key, metadata));
+  EXPECT_TRUE(table_->UpdateSyncMetadata(model_type, storage_key, metadata));
 
   ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
 
-  EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+  EXPECT_TRUE(table_->UpdateModelTypeState(model_type, model_type_state));
 
   metadata.set_sequence_number(2);
-  EXPECT_TRUE(
-      table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key2, metadata));
+  EXPECT_TRUE(table_->UpdateSyncMetadata(model_type, storage_key2, metadata));
 
   MetadataBatch metadata_batch;
-  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
 
   EXPECT_TRUE(metadata_batch.GetModelTypeState().initial_sync_done());
 
@@ -2379,13 +2390,14 @@ TEST_F(AutofillTableTest, AutofillGetAllSyncMetadata) {
 
   // Now check that a model type state update replaces the old value
   model_type_state.set_initial_sync_done(false);
-  EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+  EXPECT_TRUE(table_->UpdateModelTypeState(model_type, model_type_state));
 
-  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
   EXPECT_FALSE(metadata_batch.GetModelTypeState().initial_sync_done());
 }
 
-TEST_F(AutofillTableTest, AutofillWriteThenDeleteSyncMetadata) {
+TEST_P(AutofillTableTestPerModelType, AutofillWriteThenDeleteSyncMetadata) {
+  syncer::ModelType model_type = GetParam();
   EntityMetadata metadata;
   MetadataBatch metadata_batch;
   std::string storage_key = "storage_key";
@@ -2396,46 +2408,54 @@ TEST_F(AutofillTableTest, AutofillWriteThenDeleteSyncMetadata) {
   metadata.set_client_tag_hash("client_hash");
 
   // Write the data into the store.
-  EXPECT_TRUE(
-      table_->UpdateSyncMetadata(syncer::AUTOFILL, storage_key, metadata));
-  EXPECT_TRUE(table_->UpdateModelTypeState(syncer::AUTOFILL, model_type_state));
+  EXPECT_TRUE(table_->UpdateSyncMetadata(model_type, storage_key, metadata));
+  EXPECT_TRUE(table_->UpdateModelTypeState(model_type, model_type_state));
   // Delete the data we just wrote.
-  EXPECT_TRUE(table_->ClearSyncMetadata(syncer::AUTOFILL, storage_key));
+  EXPECT_TRUE(table_->ClearSyncMetadata(model_type, storage_key));
   // It shouldn't be there any more.
-  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
 
   EntityMetadataMap metadata_records = metadata_batch.TakeAllMetadata();
   EXPECT_EQ(metadata_records.size(), 0u);
 
   // Now delete the model type state.
-  EXPECT_TRUE(table_->ClearModelTypeState(syncer::AUTOFILL));
-  EXPECT_TRUE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_TRUE(table_->ClearModelTypeState(model_type));
+  EXPECT_TRUE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
   EXPECT_EQ(ModelTypeState().SerializeAsString(),
             metadata_batch.GetModelTypeState().SerializeAsString());
 }
 
-TEST_F(AutofillTableTest, AutofillCorruptSyncMetadata) {
+TEST_P(AutofillTableTestPerModelType, AutofillCorruptSyncMetadata) {
+  syncer::ModelType model_type = GetParam();
   MetadataBatch metadata_batch;
   sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
       "INSERT OR REPLACE INTO autofill_sync_metadata "
-      "(storage_key, value) VALUES(?, ?)"));
-  s.BindString(0, "storage_key");
-  s.BindString(1, "unparseable");
+      "(model_type, storage_key, value) VALUES(?, ?, ?)"));
+  s.BindInt(0, syncer::ModelTypeToStableIdentifier(model_type));
+  s.BindString(1, "storage_key");
+  s.BindString(2, "unparseable");
   EXPECT_TRUE(s.Run());
 
-  EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_FALSE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
 }
 
-TEST_F(AutofillTableTest, AutofillCorruptModelTypeState) {
+TEST_P(AutofillTableTestPerModelType, AutofillCorruptModelTypeState) {
+  syncer::ModelType model_type = GetParam();
   MetadataBatch metadata_batch;
   sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
       "INSERT OR REPLACE INTO autofill_model_type_state "
-      "(rowid, value) VALUES(1, ?)"));
-  s.BindString(0, "unparseable");
+      "(model_type, value) VALUES(?, ?)"));
+  s.BindInt(0, syncer::ModelTypeToStableIdentifier(model_type));
+  s.BindString(1, "unparseable");
   EXPECT_TRUE(s.Run());
 
-  EXPECT_FALSE(table_->GetAllSyncMetadata(syncer::AUTOFILL, &metadata_batch));
+  EXPECT_FALSE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
 }
+
+INSTANTIATE_TEST_CASE_P(AutofillTableTest,
+                        AutofillTableTestPerModelType,
+                        testing::Values(syncer::AUTOFILL,
+                                        syncer::AUTOFILL_PROFILE));
 
 TEST_F(AutofillTableTest, RemoveOrphanAutofillTableRows) {
   // Populate the different tables.

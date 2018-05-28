@@ -478,6 +478,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 75:
       *update_compatible_version = false;
       return MigrateToVersion75AddProfileValidityBitfieldColumn();
+    case 78:
+      *update_compatible_version = true;
+      return MigrateToVersion78AddModelTypeColumns();
   }
   return true;
 }
@@ -1742,10 +1745,20 @@ bool AutofillTable::IsAutofillGUIDInTrash(const std::string& guid) {
   return s.Step();
 }
 
+bool AutofillTable::SupportsMetadataForModelType(
+    syncer::ModelType model_type) const {
+  return (model_type == syncer::AUTOFILL ||
+          model_type == syncer::AUTOFILL_PROFILE);
+}
+
+int AutofillTable::GetKeyValueForModelType(syncer::ModelType model_type) const {
+  return syncer::ModelTypeToStableIdentifier(model_type);
+}
+
 bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
                                        syncer::MetadataBatch* metadata_batch) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
   DCHECK(metadata_batch);
   if (!GetAllSyncEntityMetadata(model_type, metadata_batch)) {
     return false;
@@ -1762,12 +1775,14 @@ bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
 bool AutofillTable::GetAllSyncEntityMetadata(
     syncer::ModelType model_type,
     syncer::MetadataBatch* metadata_batch) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
   DCHECK(metadata_batch);
 
-  sql::Statement s(db_->GetUniqueStatement(
-      "SELECT storage_key, value FROM autofill_sync_metadata"));
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT storage_key, value FROM "
+                              "autofill_sync_metadata WHERE model_type=?"));
+  s.BindInt(0, GetKeyValueForModelType(model_type));
 
   while (s.Step()) {
     std::string storage_key = s.ColumnString(0);
@@ -1788,37 +1803,41 @@ bool AutofillTable::UpdateSyncMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key,
     const sync_pb::EntityMetadata& metadata) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
 
-  sql::Statement s(
-      db_->GetUniqueStatement("INSERT OR REPLACE INTO autofill_sync_metadata "
-                              "(storage_key, value) VALUES(?, ?)"));
-  s.BindString(0, storage_key);
-  s.BindString(1, metadata.SerializeAsString());
+  sql::Statement s(db_->GetUniqueStatement(
+      "INSERT OR REPLACE INTO autofill_sync_metadata "
+      "(model_type, storage_key, value) VALUES(?, ?, ?)"));
+  s.BindInt(0, GetKeyValueForModelType(model_type));
+  s.BindString(1, storage_key);
+  s.BindString(2, metadata.SerializeAsString());
 
   return s.Run();
 }
 
 bool AutofillTable::ClearSyncMetadata(syncer::ModelType model_type,
                                       const std::string& storage_key) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
 
-  sql::Statement s(db_->GetUniqueStatement(
-      "DELETE FROM autofill_sync_metadata WHERE storage_key=?"));
-  s.BindString(0, storage_key);
+  sql::Statement s(
+      db_->GetUniqueStatement("DELETE FROM autofill_sync_metadata WHERE "
+                              "model_type=? AND storage_key=?"));
+  s.BindInt(0, GetKeyValueForModelType(model_type));
+  s.BindString(1, storage_key);
 
   return s.Run();
 }
 
 bool AutofillTable::GetModelTypeState(syncer::ModelType model_type,
                                       sync_pb::ModelTypeState* state) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
 
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT value FROM autofill_model_type_state WHERE id=1"));
+      "SELECT value FROM autofill_model_type_state WHERE model_type=?"));
+  s.BindInt(0, GetKeyValueForModelType(model_type));
 
   if (!s.Step()) {
     return true;
@@ -1831,25 +1850,27 @@ bool AutofillTable::GetModelTypeState(syncer::ModelType model_type,
 bool AutofillTable::UpdateModelTypeState(
     syncer::ModelType model_type,
     const sync_pb::ModelTypeState& model_type_state) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
 
   // Hardcode the id to force a collision, ensuring that there remains only a
   // single entry.
   sql::Statement s(db_->GetUniqueStatement(
-      "INSERT OR REPLACE INTO autofill_model_type_state (id, value) "
-      "VALUES(1,?)"));
-  s.BindString(0, model_type_state.SerializeAsString());
+      "INSERT OR REPLACE INTO autofill_model_type_state (model_type, value) "
+      "VALUES(?,?)"));
+  s.BindInt(0, GetKeyValueForModelType(model_type));
+  s.BindString(1, model_type_state.SerializeAsString());
 
   return s.Run();
 }
 
 bool AutofillTable::ClearModelTypeState(syncer::ModelType model_type) {
-  DCHECK_EQ(model_type, syncer::AUTOFILL)
-      << "Only the AUTOFILL model type is supported";
+  DCHECK(SupportsMetadataForModelType(model_type))
+      << "Model type " << model_type << " not supported for metadata";
 
   sql::Statement s(db_->GetUniqueStatement(
-      "DELETE FROM autofill_model_type_state WHERE id=1"));
+      "DELETE FROM autofill_model_type_state WHERE model_type=?"));
+  s.BindInt(0, GetKeyValueForModelType(model_type));
 
   return s.Run();
 }
@@ -2085,8 +2106,10 @@ bool AutofillTable::InitServerAddressMetadataTable() {
 bool AutofillTable::InitAutofillSyncMetadataTable() {
   if (!db_->DoesTableExist("autofill_sync_metadata")) {
     if (!db_->Execute("CREATE TABLE autofill_sync_metadata ("
-                      "storage_key VARCHAR PRIMARY KEY NOT NULL,"
-                      "value BLOB)")) {
+                      "model_type INTEGER NOT NULL, "
+                      "storage_key VARCHAR NOT NULL, "
+                      "value BLOB, "
+                      "PRIMARY KEY (model_type, storage_key))")) {
       NOTREACHED();
       return false;
     }
@@ -2096,8 +2119,8 @@ bool AutofillTable::InitAutofillSyncMetadataTable() {
 
 bool AutofillTable::InitModelTypeStateTable() {
   if (!db_->DoesTableExist("autofill_model_type_state")) {
-    if (!db_->Execute("CREATE TABLE autofill_model_type_state (id INTEGER "
-                      "PRIMARY KEY, value BLOB)")) {
+    if (!db_->Execute("CREATE TABLE autofill_model_type_state ("
+                      "model_type INTEGER NOT NULL PRIMARY KEY, value BLOB)")) {
       NOTREACHED();
       return false;
     }
@@ -2677,6 +2700,62 @@ bool AutofillTable::MigrateToVersion75AddProfileValidityBitfieldColumn() {
   return db_->Execute(
       "ALTER TABLE autofill_profiles ADD COLUMN validity_bitfield UNSIGNED NOT "
       "NULL DEFAULT 0");
+}
+
+bool AutofillTable::MigrateToVersion78AddModelTypeColumns() {
+  // Add the new model type columns to the autofill metadata tables.
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  if (db_->DoesTableExist("autofill_sync_metadata_temp") &&
+      !db_->Execute("DROP TABLE autofill_sync_metadata_temp")) {
+    return false;
+  }
+
+  if (db_->DoesTableExist("autofill_model_type_state_temp") &&
+      !db_->Execute("DROP TABLE autofill_model_type_state_temp")) {
+    return false;
+  }
+
+  if (!db_->Execute("CREATE TABLE autofill_sync_metadata_temp ("
+                    "model_type INTEGER NOT NULL, "
+                    "storage_key VARCHAR NOT NULL, "
+                    "value BLOB, "
+                    "PRIMARY KEY (model_type, storage_key))") ||
+      !db_->Execute("CREATE TABLE autofill_model_type_state_temp ("
+                    "model_type INTEGER NOT NULL PRIMARY KEY, value BLOB)")) {
+    return false;
+  }
+
+  sql::Statement insert_metadata(
+      db_->GetUniqueStatement("INSERT INTO autofill_sync_metadata_temp "
+                              "(model_type, storage_key, value) "
+                              "SELECT ?, storage_key, value "
+                              "FROM autofill_sync_metadata"));
+  insert_metadata.BindInt(0, syncer::ModelTypeToHistogramInt(syncer::AUTOFILL));
+
+  // Prior to this migration, the table was a singleton, containing only one
+  // entry with id being hard-coded to 1.
+  sql::Statement insert_state(
+      db_->GetUniqueStatement("INSERT INTO autofill_model_type_state_temp "
+                              "(model_type, value) SELECT ?, value "
+                              "FROM autofill_model_type_state WHERE id=1"));
+  insert_state.BindInt(0, syncer::ModelTypeToHistogramInt(syncer::AUTOFILL));
+
+  if (!insert_metadata.Run() || !insert_state.Run()) {
+    return false;
+  }
+
+  return db_->Execute("DROP TABLE autofill_sync_metadata") &&
+         db_->Execute(
+             "ALTER TABLE autofill_sync_metadata_temp "
+             "RENAME TO autofill_sync_metadata") &&
+         db_->Execute("DROP TABLE autofill_model_type_state") &&
+         db_->Execute(
+             "ALTER TABLE autofill_model_type_state_temp "
+             "RENAME TO autofill_model_type_state") &&
+         transaction.Commit();
 }
 
 }  // namespace autofill

@@ -129,7 +129,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 77;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 78;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1545,5 +1545,70 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion76ToCurrent) {
     EXPECT_EQ(11644473723000000, s.ColumnInt64(1));
     EXPECT_EQ(11644474056000000, s.ColumnInt64(2));
     EXPECT_EQ(11644474389000000, s.ColumnInt64(3));
+  }
+}
+
+// Tests adding model_type columns into autofill_sync_metadata and
+// autofill_model_type_state.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion77ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_77.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 77, 77));
+
+    sql::Statement s1(connection.GetUniqueStatement(
+        "SELECT storage_key, value FROM autofill_sync_metadata"));
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ("storage_key1", s1.ColumnString(0));
+    EXPECT_EQ("blob1", s1.ColumnString(1));
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ("storage_key2", s1.ColumnString(0));
+    EXPECT_EQ("blob2", s1.ColumnString(1));
+
+    sql::Statement s2(connection.GetUniqueStatement(
+        "SELECT id, value FROM autofill_model_type_state"));
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ(1, s2.ColumnInt(0));
+    EXPECT_EQ("state", s2.ColumnString(1));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // Check that the AUTOFILL metadata is still there.
+    sql::Statement s1(connection.GetUniqueStatement(
+        "SELECT model_type, storage_key, value FROM autofill_sync_metadata"));
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
+              s1.ColumnInt(0));
+    EXPECT_EQ("storage_key1", s1.ColumnString(1));
+    EXPECT_EQ("blob1", s1.ColumnString(2));
+    ASSERT_TRUE(s1.Step());
+    EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
+              s1.ColumnInt(0));
+    EXPECT_EQ("storage_key2", s1.ColumnString(1));
+    EXPECT_EQ("blob2", s1.ColumnString(2));
+
+    // Check that the AUTOFILL model_type_state is still there.
+    sql::Statement s2(connection.GetUniqueStatement(
+        "SELECT model_type, value FROM autofill_model_type_state"));
+    ASSERT_TRUE(s2.Step());
+    EXPECT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
+              s2.ColumnInt(0));
+    EXPECT_EQ("state", s2.ColumnString(1));
   }
 }

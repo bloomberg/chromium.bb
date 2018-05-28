@@ -249,14 +249,19 @@ struct FormFieldData;
 // autofill_sync_metadata
 //                      Sync-specific metadata for autofill records.
 //
+//   model_type         An int value corresponding to syncer::ModelType enum.
+//                      Added in version 78.
 //   storage_key        A string that uniquely identifies the metadata record
 //                      as well as the corresponding autofill record.
 //   value              The serialized EntityMetadata record.
 //
 // autofill_model_type_state
-//                      Single row table that contains the sync ModelTypeState
-//                      for the autofill model type.
+//                      Contains sync ModelTypeStates for autofill model types.
 //
+//   model_type         An int value corresponding to syncer::ModelType enum.
+//                      Added in version 78. Previously, the table was used only
+//                      for one model type, there was an id column with value 1
+//                      for the single entry.
 //   value              The serialized ModelTypeState record.
 
 class AutofillTable : public WebDatabaseTable,
@@ -479,6 +484,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion73AddMaskedCardBankName();
   bool MigrateToVersion74AddServerCardTypeColumn();
   bool MigrateToVersion75AddProfileValidityBitfieldColumn();
+  bool MigrateToVersion78AddModelTypeColumns();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -534,6 +540,9 @@ class AutofillTable : public WebDatabaseTable,
   bool AddFormFieldValueTime(const FormFieldData& element,
                              std::vector<AutofillChange>* changes,
                              base::Time time);
+
+  bool SupportsMetadataForModelType(syncer::ModelType model_type) const;
+  int GetKeyValueForModelType(syncer::ModelType model_type) const;
 
   bool GetAllSyncEntityMetadata(syncer::ModelType model_type,
                                 syncer::MetadataBatch* metadata_batch);
