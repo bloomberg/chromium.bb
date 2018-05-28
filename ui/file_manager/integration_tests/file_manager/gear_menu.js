@@ -8,9 +8,8 @@
  * Expected files shown in Downloads with hidden enabled
  *
  * @type {!Array<!TestEntryInfo>}
- * @const
  */
-var BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = [
+const BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
@@ -23,9 +22,8 @@ var BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = [
  * Expected files shown in Drive with hidden enabled
  *
  * @type {!Array<!TestEntryInfo>}
- * @const
  */
-var BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = [
+const BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
@@ -41,9 +39,8 @@ var BASIC_DRIVE_ENTRY_SET_WITH_HIDDEN = [
  * Expected files shown in Drive with Google Docs disabled
  *
  * @type {!Array<!TestEntryInfo>}
- * @const
  */
-var BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS = [
+const BASIC_DRIVE_ENTRY_SET_WITHOUT_GDOCS = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
@@ -147,7 +144,7 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
 }
 
 /**
- * Test to toggle the show hidden files option on Downloads
+ * Tests toggling the show-hidden-files menu option on Downloads.
  */
 testcase.showHiddenFilesDownloads = function() {
   var appId;
@@ -179,7 +176,7 @@ testcase.showHiddenFilesDownloads = function() {
 
 
 /**
- * Test to toggle the show hidden files option on Drive
+ * Tests toggling the show-hidden-files menu option on Drive.
  */
 testcase.showHiddenFilesDrive = function() {
   var appId;
@@ -210,7 +207,7 @@ testcase.showHiddenFilesDrive = function() {
 };
 
 /**
- * Test to toggle the Show Google Docs option on Drive
+ * Tests toggling the show-google-docs option on Drive.
  */
 testcase.toogleGoogleDocsDrive = function() {
   var appId;
@@ -280,38 +277,41 @@ testcase.toogleGoogleDocsDrive = function() {
 };
 
 /**
- * Test for the "paste-into-current-folder" menu item
+ * Tests the paste-into-current-folder menu item.
  */
 testcase.showPasteIntoCurrentFolder = function() {
   const entrySet = [ENTRIES.hello, ENTRIES.world];
   var appId;
   StepsRunner.run([
+    // Add files to Downloads volume.
     function() {
       addEntries(['local'], entrySet, this.next);
     },
+    // Open Files.App on Downloads.
     function(result) {
       chrome.test.assertTrue(result);
       openNewWindow(null, RootPath.DOWNLOADS).then(this.next);
     },
     function(inAppId) {
       appId = inAppId;
-      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
+      remoteCall.waitForElement(appId, '#file-list').then(this.next);
     },
-    // Wait for the expected files to appear in the file list.
+    // Wait for the files to appear in the file list.
     function() {
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(entrySet))
           .then(this.next);
     },
+    // Wait for the gear menu button to appear.
     function() {
       remoteCall.waitForElement(appId, '#gear-button').then(this.next);
     },
 
-    // 1. Before selecting entries
+    // 1. Before selecting entries: click the gear menu button.
     function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-button'], this.next);
     },
-    // Wait for menu to appear.
+    // Wait for the gear menu to appear.
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
@@ -397,7 +397,6 @@ testcase.showPasteIntoCurrentFolder = function() {
     function() {
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
-
     function() {
       checkIfNoErrorsOccured(this.next);
     },
@@ -405,35 +404,35 @@ testcase.showPasteIntoCurrentFolder = function() {
 };
 
 /**
- * Test for the "select-all" menu item
+ * Tests the "select-all" menu item.
  */
 testcase.showSelectAllInCurrentFolder = function() {
   const entrySet = [ENTRIES.newlyAdded];
   var appId;
   StepsRunner.run([
+    // Open Files.App on Downloads.
     function() {
       openNewWindow(null, RootPath.DOWNLOADS).then(this.next);
     },
     function(inAppId) {
       appId = inAppId;
-      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
+      remoteCall.waitForElement(appId, '#file-list').then(this.next);
     },
+    // Wait for the gear menu button to appear.
     function() {
       remoteCall.waitForElement(appId, '#gear-button').then(this.next);
     },
-
-    // 1. Before selecting entries
+    // Click the gear menu button.
     function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-button'], this.next);
     },
-    // Wait for menu to appear.
+    // Wait for the gear menu to appear.
     function() {
       remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
           .then(this.next);
     },
-    // #select-all command is shown. It should be disabled
-    // because no files yet
+    // Check: #select-all command is shown, but disabled (no files yet).
     function(result) {
       remoteCall
           .waitForElement(
@@ -443,31 +442,31 @@ testcase.showSelectAllInCurrentFolder = function() {
                   '[disabled]:not([hidden])')
           .then(this.next);
     },
-    // Hide gear menu
+    // Click the file list: the gear menu should hide.
     function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#file-list'], this.next);
     },
+    // Wait for the gear menu to hide.
     function() {
       remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
-    // Add new file
+    // Add a new file to Downloads.
     function() {
       addEntries(['local'], entrySet, this.next);
     },
-    // Wait for the new files to appear in the file list.
+    // Wait for the file list change.
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(entrySet))
           .then(this.next);
     },
-    // Re-show gear menu again
+    // Click on the gear button again.
     function(result) {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-button'], this.next);
     },
-    // Wait for menu to appear.
-    // The 'Select all' command appears enabled.
+    // Check: #select-all command is shown, and enabled (there are files).
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall
@@ -478,23 +477,15 @@ testcase.showSelectAllInCurrentFolder = function() {
                   ':not([disabled]):not([hidden])')
           .then(this.next);
     },
-    // Click 'Select all' menu item.
+    // Click on the #gear-menu-select-all item.
     function(results) {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, ['#gear-menu-select-all'], this.next);
     },
-    // Wait for selection.
+    // Check: the file-list should be selected.
     function() {
       remoteCall.waitForElement(appId, '#file-list li[selected]')
           .then(this.next);
-    },
-    // Hide gear menu
-    function() {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#file-list'], this.next);
-    },
-    function() {
-      remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
