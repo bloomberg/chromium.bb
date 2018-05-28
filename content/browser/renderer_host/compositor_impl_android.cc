@@ -1049,12 +1049,6 @@ void CompositorImpl::DidSubmitCompositorFrame() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidSubmitCompositorFrame");
   pending_frames_++;
   has_submitted_frame_since_became_visible_ = true;
-
-  if (enable_viz_) {
-    // TODO(ericrk): Viz should use the actual swap callback from the Viz
-    // process. This is just a workaround until we wire that up.
-    DidSwapBuffers(size_);
-  }
 }
 
 void CompositorImpl::DidReceiveCompositorFrameAck() {
@@ -1062,6 +1056,12 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
   DCHECK_GT(pending_frames_, 0U);
   pending_frames_--;
   client_->DidSwapFrame(pending_frames_);
+
+  if (enable_viz_) {
+    // TODO(ericrk): Viz should use the actual swap callback from the Viz
+    // process. This is just a workaround until we wire that up.
+    DidSwapBuffers(size_);
+  }
 }
 
 void CompositorImpl::DidLoseLayerTreeFrameSink() {
