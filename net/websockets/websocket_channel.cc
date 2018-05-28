@@ -330,37 +330,29 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
     WebSocketFrameHeader::OpCode op_code,
     scoped_refptr<IOBuffer> buffer,
     size_t buffer_size) {
-  if (buffer_size > INT_MAX) {
-    NOTREACHED() << "Frame size sanity check failed";
-    return CHANNEL_ALIVE;
-  }
-  if (stream_ == NULL) {
-    LOG(DFATAL) << "Got SendFrame without a connection established; "
-                << "misbehaving renderer? fin=" << fin << " op_code=" << op_code
-                << " buffer_size=" << buffer_size;
-    return CHANNEL_ALIVE;
-  }
+  DCHECK_LE(buffer_size, static_cast<size_t>(INT_MAX));
+  DCHECK(stream_) << "Got SendFrame without a connection established; fin="
+                  << fin << " op_code=" << op_code
+                  << " buffer_size=" << buffer_size;
+
   if (InClosingState()) {
     DVLOG(1) << "SendFrame called in state " << state_
              << ". This may be a bug, or a harmless race.";
     return CHANNEL_ALIVE;
   }
-  if (state_ != CONNECTED) {
-    NOTREACHED() << "SendFrame() called in state " << state_;
-    return CHANNEL_ALIVE;
-  }
+
+  DCHECK_EQ(state_, CONNECTED);
   if (buffer_size > base::checked_cast<size_t>(current_send_quota_)) {
     // TODO(ricea): Kill renderer.
     FailChannel("Send quota exceeded", kWebSocketErrorGoingAway, "");
     return CHANNEL_DELETED;
     // |this| has been deleted.
   }
-  if (!WebSocketFrameHeader::IsKnownDataOpCode(op_code)) {
-    LOG(DFATAL) << "Got SendFrame with bogus op_code " << op_code
-                << "; misbehaving renderer? fin=" << fin
-                << " buffer_size=" << buffer_size;
-    return CHANNEL_ALIVE;
-  }
+
+  DCHECK(WebSocketFrameHeader::IsKnownDataOpCode(op_code))
+      << "Got SendFrame with bogus op_code " << op_code << " fin=" << fin
+      << " buffer_size=" << buffer_size;
+
   if (op_code == WebSocketFrameHeader::kOpCodeText ||
       (op_code == WebSocketFrameHeader::kOpCodeContinuation &&
        sending_text_message_)) {
@@ -466,10 +458,7 @@ ChannelState WebSocketChannel::StartClosingHandshake(
     DoDropChannel(false, kWebSocketErrorAbnormalClosure, "");
     return CHANNEL_DELETED;
   }
-  if (state_ != CONNECTED) {
-    NOTREACHED() << "StartClosingHandshake() called in state " << state_;
-    return CHANNEL_ALIVE;
-  }
+  DCHECK_EQ(state_, CONNECTED);
 
   DCHECK(!close_timer_.IsRunning());
   // This use of base::Unretained() is safe because we stop the timer in the

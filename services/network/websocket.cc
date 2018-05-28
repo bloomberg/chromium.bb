@@ -335,17 +335,24 @@ void WebSocket::SendFrame(bool fin,
            << " fin=" << fin << " type=" << type << " data is " << data.size()
            << " bytes";
 
-  if (!channel_) {
+  if (!handshake_succeeded_) {
     // The client should not be sending us frames until after we've informed
     // it that the channel has been opened (OnAddChannelResponse).
-    if (handshake_succeeded_) {
-      DVLOG(1) << "Dropping frame sent to closed websocket";
-    } else {
-      delegate_->ReportBadMessage(
-          Delegate::BadMessageReason::kUnexpectedSendFrame, this);
-    }
+    delegate_->ReportBadMessage(
+        Delegate::BadMessageReason::kUnexpectedSendFrame, this);
     return;
   }
+
+  if (!channel_) {
+    DVLOG(1) << "Dropping frame sent to closed websocket";
+    return;
+  }
+
+  // This is guaranteed by the maximum size enforced on mojo messages.
+  DCHECK_LE(data.size(), static_cast<size_t>(INT_MAX));
+
+  // This is guaranteed by mojo.
+  DCHECK(IsKnownEnumValue(type));
 
   // TODO(darin): Avoid this copy.
   scoped_refptr<net::IOBuffer> data_to_pass(new net::IOBuffer(data.size()));
