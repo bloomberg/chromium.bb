@@ -1,0 +1,27 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("activities") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "bookmark_activity.h",
+    "bookmark_activity.mm",
+    "print_activity.h",
+    "print_activity.mm",
+    "reading_list_activity.h",
+    "reading_list_activity.mm",
+  ]
+  deps = [
+    "resources:activity_services_add_bookmark",
+    "resources:activity_services_edit_bookmark",
+    "resources:activity_services_print",
+    "resources:activity_services_read_later",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/commands",
+    "//ui/base",
+    "//url",
+  ]
+  libs = [ "UIKit.framework" ]
+}
