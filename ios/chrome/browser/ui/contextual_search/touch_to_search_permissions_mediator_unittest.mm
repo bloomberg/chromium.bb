@@ -20,8 +20,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #include "ios/chrome/browser/ui/contextual_search/switches.h"
@@ -58,8 +58,7 @@ std::unique_ptr<KeyedService> CreateSyncSetupService(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-          chrome_browser_state);
+      ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
   return std::make_unique<SyncSetupServiceMock>(
       sync_service, chrome_browser_state->GetPrefs());
 }

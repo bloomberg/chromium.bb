@@ -55,8 +55,8 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sessions/ios_chrome_local_session_event_router.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
@@ -167,7 +167,7 @@ void IOSChromeSyncClient::Initialize() {
 
 syncer::SyncService* IOSChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+  return ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
 PrefService* IOSChromeSyncClient::GetPrefService() {
@@ -283,7 +283,7 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
       sync_sessions::FaviconCache* favicons =
-          IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_)
+          ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
               ->GetFaviconCache();
       return favicons ? favicons->AsWeakPtr()
                       : base::WeakPtr<syncer::SyncableService>();
@@ -296,8 +296,7 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return base::WeakPtr<syncer::SyncableService>();
     }
     case syncer::SESSIONS: {
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
+      return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
           ->GetSessionsSyncableService()
           ->AsWeakPtr();
     }
@@ -315,8 +314,7 @@ base::WeakPtr<syncer::ModelTypeControllerDelegate>
 IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
+      return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
           ->GetDeviceInfoSyncControllerDelegateOnUIThread();
     case syncer::READING_LIST: {
       ReadingListModel* reading_list_model =
@@ -345,8 +343,7 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegateOnUIThread();
     case syncer::SESSIONS:
-      return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_)
+      return ProfileSyncServiceFactory::GetForBrowserState(browser_state_)
           ->GetSessionSyncControllerDelegateOnUIThread();
     default:
       NOTREACHED();
@@ -406,7 +403,7 @@ void IOSChromeSyncClient::GetDeviceInfoTrackers(
           ->GetLoadedBrowserStates();
   for (ios::ChromeBrowserState* browser_state : browser_state_list) {
     browser_sync::ProfileSyncService* profile_sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state);
     if (profile_sync_service != nullptr) {
       const syncer::DeviceInfoTracker* tracker =
           profile_sync_service->GetDeviceInfoTracker();

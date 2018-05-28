@@ -23,7 +23,7 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
@@ -204,7 +204,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         SyncSetupServiceFactory::GetForBrowserState(_browserState);
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_SETTING_TITLE);
     browser_sync::ProfileSyncService* syncService =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
         ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
@@ -699,7 +699,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)showEncryption {
   browser_sync::ProfileSyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   if (!syncService->IsEngineInitialized() ||
       !_syncSetupService->IsSyncEnabled() ||
       [self shouldDisableSettingsOnSyncError])
@@ -903,7 +903,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)shouldEncryptionItemBeEnabled {
   browser_sync::ProfileSyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   return (syncService->IsEngineInitialized() &&
           _syncSetupService->IsSyncEnabled() &&
           ![self shouldDisableSettingsOnSyncError]);

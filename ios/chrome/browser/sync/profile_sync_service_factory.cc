@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 
 #include <utility>
 
@@ -64,13 +64,12 @@ void UpdateNetworkTime(const base::Time& network_time,
 }  // namespace
 
 // static
-IOSChromeProfileSyncServiceFactory*
-IOSChromeProfileSyncServiceFactory::GetInstance() {
-  return base::Singleton<IOSChromeProfileSyncServiceFactory>::get();
+ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
+  return base::Singleton<ProfileSyncServiceFactory>::get();
 }
 
 // static
-ProfileSyncService* IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+ProfileSyncService* ProfileSyncServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   if (!ProfileSyncService::IsSyncAllowedByFlag())
     return nullptr;
@@ -80,8 +79,7 @@ ProfileSyncService* IOSChromeProfileSyncServiceFactory::GetForBrowserState(
 }
 
 // static
-ProfileSyncService*
-IOSChromeProfileSyncServiceFactory::GetForBrowserStateIfExists(
+ProfileSyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
   if (!ProfileSyncService::IsSyncAllowedByFlag())
     return nullptr;
@@ -90,7 +88,7 @@ IOSChromeProfileSyncServiceFactory::GetForBrowserStateIfExists(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
 
-IOSChromeProfileSyncServiceFactory::IOSChromeProfileSyncServiceFactory()
+ProfileSyncServiceFactory::ProfileSyncServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "ProfileSyncService",
           BrowserStateDependencyManager::GetInstance()) {
@@ -115,10 +113,10 @@ IOSChromeProfileSyncServiceFactory::IOSChromeProfileSyncServiceFactory()
   DependsOn(SigninClientFactory::GetInstance());
 }
 
-IOSChromeProfileSyncServiceFactory::~IOSChromeProfileSyncServiceFactory() {}
+ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {}
 
 std::unique_ptr<KeyedService>
-IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
+ProfileSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);

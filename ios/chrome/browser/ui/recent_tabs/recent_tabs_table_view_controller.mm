@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -515,7 +515,7 @@ const int kRelativeTimeMaxHours = 4;
     return;
   }
   syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   _syncedSessions.reset(new synced_sessions::SyncedSessions(syncService));
 
   // Update the TableView and TableViewModel sections to match the new
@@ -770,7 +770,7 @@ const int kRelativeTimeMaxHours = 4;
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
   sync_sessions::OpenTabsUIDelegate* openTabs =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(self.browserState)
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState)
           ->GetOpenTabsUIDelegate();
   const sessions::SessionTab* toLoad = nullptr;
   [self dismissRecentTabsModal];
@@ -969,7 +969,7 @@ const int kRelativeTimeMaxHours = 4;
       [self sessionForSection:section];
   std::string sessionTagCopy = session->tag;
   syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   sync_sessions::OpenTabsUIDelegate* openTabs =
       syncService->GetOpenTabsUIDelegate();
 

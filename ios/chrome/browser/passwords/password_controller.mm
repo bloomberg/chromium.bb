@@ -46,7 +46,7 @@
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -925,8 +925,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   bool isSmartLockBrandingEnabled = false;
   if (self.browserState) {
     syncer::SyncService* sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            self.browserState);
+        ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
     isSmartLockBrandingEnabled =
         password_bubble_experiment::IsSmartLockUser(sync_service);
   }

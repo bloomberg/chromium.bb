@@ -35,8 +35,8 @@
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -98,7 +98,7 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SyncSetupServiceMock>(
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state),
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state),
       browser_state->GetPrefs());
 }
 
@@ -131,7 +131,7 @@ class AuthenticationServiceTest : public PlatformTest,
                               &BuildFakeOAuth2TokenService);
     builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
                               &ios::BuildFakeSigninManager);
-    builder.AddTestingFactory(IOSChromeProfileSyncServiceFactory::GetInstance(),
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               &BuildMockProfileSyncService);
     builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
                               &BuildMockSyncSetupService);
@@ -141,7 +141,7 @@ class AuthenticationServiceTest : public PlatformTest,
         ios::SigninManagerFactory::GetForBrowserState(browser_state_.get());
     profile_sync_service_mock_ =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
-            IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            ProfileSyncServiceFactory::GetForBrowserState(
                 browser_state_.get()));
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()));
@@ -186,8 +186,7 @@ class AuthenticationServiceTest : public PlatformTest,
         ios::AccountTrackerServiceFactory::GetForBrowserState(
             browser_state_.get()),
         ios::SigninManagerFactory::GetForBrowserState(browser_state_.get()),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            browser_state_.get()));
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
     authentication_service_->Initialize(
         std::make_unique<AuthenticationServiceDelegateFake>());
   }

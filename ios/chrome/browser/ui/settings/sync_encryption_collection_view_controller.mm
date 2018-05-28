@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -73,7 +73,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.title = l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_TITLE);
     _browserState = browserState;
     browser_sync::ProfileSyncService* syncService =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
                                   syncService->IsUsingSecondaryPassphrase();
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
@@ -195,7 +195,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypePassphrase: {
       DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
       browser_sync::ProfileSyncService* service =
-          IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+          ProfileSyncServiceFactory::GetForBrowserState(_browserState);
       if (service->IsEngineInitialized() &&
           !service->IsUsingSecondaryPassphrase()) {
         SyncCreatePassphraseCollectionViewController* controller =
@@ -216,7 +216,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)onSyncStateChanged {
   browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   BOOL isNowUsingSecondaryPassphrase =
       service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase();
   if (_isUsingSecondaryPassphrase != isNowUsingSecondaryPassphrase) {

@@ -14,8 +14,8 @@
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -42,8 +42,7 @@ std::unique_ptr<KeyedService> CreateSyncSetupService(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-          chrome_browser_state);
+      ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
   return std::make_unique<SyncSetupServiceMock>(
       sync_service, chrome_browser_state->GetPrefs());
 }
@@ -105,13 +104,13 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     test_cbs_builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
                                        &CreateSyncSetupService);
     test_cbs_builder.AddTestingFactory(
-        IOSChromeProfileSyncServiceFactory::GetInstance(),
+        ProfileSyncServiceFactory::GetInstance(),
         &BuildMockProfileSyncServiceForRecentTabsTableCoordinator);
     chrome_browser_state_ = test_cbs_builder.Build();
 
     ProfileSyncServiceMockForRecentTabsTableCoordinator* sync_service =
         static_cast<ProfileSyncServiceMockForRecentTabsTableCoordinator*>(
-            IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            ProfileSyncServiceFactory::GetForBrowserState(
                 chrome_browser_state_.get()));
     EXPECT_CALL(*sync_service, GetAuthError())
         .WillRepeatedly(::testing::ReturnRef(no_error_));
@@ -158,7 +157,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     if (syncEnabled) {
       ProfileSyncServiceMockForRecentTabsTableCoordinator* sync_service =
           static_cast<ProfileSyncServiceMockForRecentTabsTableCoordinator*>(
-              IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+              ProfileSyncServiceFactory::GetForBrowserState(
                   chrome_browser_state_.get()));
       open_tabs_ui_delegate_.reset(new OpenTabsUIDelegateMock());
       EXPECT_CALL(*sync_service, GetOpenTabsUIDelegate())
@@ -174,7 +173,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
     // ProfileSyncService changes and removed when it is destroyed.
     browser_sync::ProfileSyncServiceMock* sync_service =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
-            IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            ProfileSyncServiceFactory::GetForBrowserState(
                 chrome_browser_state_.get()));
     EXPECT_CALL(*sync_service, AddObserver(_)).Times(AtLeast(1));
     EXPECT_CALL(*sync_service, RemoveObserver(_)).Times(AtLeast(1));

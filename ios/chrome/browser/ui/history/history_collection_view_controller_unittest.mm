@@ -18,8 +18,8 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -64,7 +64,7 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
   return std::make_unique<SyncSetupServiceMock>(sync_service,
                                                 browser_state->GetPrefs());
 }
@@ -109,7 +109,7 @@ class LegacyHistoryCollectionViewControllerTest : public BlockCleanupTest {
         _browsingHistoryDriver.get(),
         ios::HistoryServiceFactory::GetForBrowserState(
             mock_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+        ProfileSyncServiceFactory::GetForBrowserState(
             mock_browser_state_.get()));
 
     history_collection_view_controller_.historyService =

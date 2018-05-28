@@ -29,7 +29,7 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_item.h"
@@ -257,7 +257,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     self.collectionViewAccessibilityIdentifier = kSettingsCollectionViewId;
     _notificationBridge.reset(new SigninObserverBridge(_browserState, self));
     syncer::SyncService* syncService =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
 
     _showMemoryDebugToolsEnabled = [[PrefBackedBoolean alloc]

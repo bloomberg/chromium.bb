@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -133,7 +133,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _browserState = browserState;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
     browser_sync::ProfileSyncService* syncService =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+        ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
         ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),

@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
@@ -66,7 +66,7 @@ void TabSwitcherGetFavicon(GURL const& url,
                            TabSwitcherFaviconGetterCompletionBlock block) {
   DCHECK(browser_state);
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       sync_service ? sync_service->GetOpenTabsUIDelegate() : NULL;
   scoped_refptr<base::RefCountedMemory> favicon;

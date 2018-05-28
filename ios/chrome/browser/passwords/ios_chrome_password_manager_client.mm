@@ -23,7 +23,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
@@ -41,8 +41,7 @@ namespace {
 
 const syncer::SyncService* GetSyncService(
     ios::ChromeBrowserState* browser_state) {
-  return IOSChromeProfileSyncServiceFactory::GetForBrowserStateIfExists(
-      browser_state);
+  return ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
 }
 
 const SigninManagerBase* GetSigninManager(
@@ -73,8 +72,7 @@ IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;
 
 PasswordSyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
   browser_sync::ProfileSyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-          delegate_.browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(delegate_.browserState);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 

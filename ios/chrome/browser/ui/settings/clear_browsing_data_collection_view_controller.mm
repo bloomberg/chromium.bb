@@ -39,7 +39,7 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
@@ -298,7 +298,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
   }
 
   browser_sync::ProfileSyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   history::WebHistoryService* historyService =
       ios::WebHistoryServiceFactory::GetForBrowserState(_browserState);
 
@@ -397,7 +397,7 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
   }
 
   browser_sync::ProfileSyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   if (syncService && syncService->IsSyncActive()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
     // section, to work around a drawing bug in MDC.

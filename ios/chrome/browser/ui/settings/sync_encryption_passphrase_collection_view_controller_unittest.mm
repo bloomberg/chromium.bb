@@ -13,7 +13,7 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -48,8 +48,7 @@ class SyncEncryptionPassphraseCollectionViewControllerTest
     ios::ChromeBrowserState* chrome_browser_state =
         ios::ChromeBrowserState::FromBrowserState(context);
     syncer::SyncService* sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            chrome_browser_state);
+        ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<SyncSetupServiceMock>(
         sync_service, chrome_browser_state->GetPrefs());
   }
