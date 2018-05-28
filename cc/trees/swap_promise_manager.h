@@ -35,8 +35,6 @@ class CC_EXPORT SwapPromiseManager {
   // Called when a commit request is made on the LayerTreeHost.
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();
 
-  bool HadInputSinceLastCommit();
-
   // Called before the commit of the main thread state will be started.
   void WillCommit();
 

@@ -259,7 +259,6 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   host_impl->main_thread_animations_count_ = main_thread_animations_count_;
   host_impl->current_frame_had_raf_ = current_frame_had_raf_;
   host_impl->next_frame_has_pending_raf_ = next_frame_has_pending_raf_;
-  host_impl->has_main_thread_handled_event_ = has_main_thread_handled_event_;
 }
 
 scoped_refptr<ElementAnimations>
@@ -688,29 +687,6 @@ bool AnimationHost::CurrentFrameHadRAF() const {
 
 bool AnimationHost::NextFrameHasPendingRAF() const {
   return next_frame_has_pending_raf_;
-}
-
-void AnimationHost::SetHasMainThreadHandledEvent(
-    bool has_main_thread_handled_event) {
-  if (has_main_thread_handled_event_ == has_main_thread_handled_event)
-    return;
-  has_main_thread_handled_event_ = has_main_thread_handled_event;
-  SetNeedsPushProperties();
-}
-
-void AnimationHost::SetHasImplThreadHandledEvent(
-    bool has_impl_thread_handled_event) {
-  if (has_impl_thread_handled_event_ == has_impl_thread_handled_event)
-    return;
-  has_impl_thread_handled_event_ = has_impl_thread_handled_event;
-}
-
-bool AnimationHost::HasMainThreadHandledEvent() const {
-  return has_main_thread_handled_event_;
-}
-
-bool AnimationHost::HasImplThreadHandledEvent() const {
-  return has_impl_thread_handled_event_;
 }
 
 }  // namespace cc
