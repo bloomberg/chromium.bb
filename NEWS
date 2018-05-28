@@ -14,6 +14,7 @@ issues]].
 - Fix a buffer overflow in table parsing thanks to Samuel Thibault.
   Fixes CVE-2018-11410.
 - Fix input-output mapping of context rules thanks to Bert Frees.
+- Fix back tracking with all caps words thanks to Bert Frees.
 
 ** Braille table improvements
 - Fix some forward- and back-translation errors in Unified French Grade
