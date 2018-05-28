@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 
+#include "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 #include "ios/chrome/browser/ui/activity_services/appex_constants.h"
-#include "ios/chrome/browser/ui/activity_services/print_activity.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
