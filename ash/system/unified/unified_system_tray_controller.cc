@@ -17,6 +17,7 @@
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
+#include "ash/system/ime/unified_ime_detailed_view_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_vpn.h"
@@ -245,8 +246,7 @@ void UnifiedSystemTrayController::ShowVPNDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowIMEDetailedView() {
-  // TODO(tetsui): Implement IME's own DetailedViewController.
-  ShowSystemTrayItemDetailedView(system_tray_->GetTrayIME());
+  ShowDetailedView(std::make_unique<UnifiedIMEDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::TransitionToMainView() {

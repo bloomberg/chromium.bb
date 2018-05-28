@@ -604,6 +604,8 @@ component("ash") {
     "system/ime/ime_observer.h",
     "system/ime/tray_ime_chromeos.cc",
     "system/ime/tray_ime_chromeos.h",
+    "system/ime/unified_ime_detailed_view_controller.cc",
+    "system/ime/unified_ime_detailed_view_controller.h",
     "system/ime_menu/ime_list_view.cc",
     "system/ime_menu/ime_list_view.h",
     "system/ime_menu/ime_menu_tray.cc",
