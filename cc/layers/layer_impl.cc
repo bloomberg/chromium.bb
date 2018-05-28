@@ -84,7 +84,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-  layer_tree_impl_->AddToElementMap(this);
+  layer_tree_impl_->AddToElementLayerList(element_id_);
 
   SetNeedsPushProperties();
 }
@@ -92,7 +92,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
 LayerImpl::~LayerImpl() {
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
   layer_tree_impl_->UnregisterLayer(this);
-  layer_tree_impl_->RemoveFromElementMap(this);
+  layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
 }
@@ -643,9 +643,9 @@ void LayerImpl::SetElementId(ElementId element_id) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"), "LayerImpl::SetElementId",
                "element", element_id.AsValue().release());
 
-  layer_tree_impl_->RemoveFromElementMap(this);
+  layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
-  layer_tree_impl_->AddToElementMap(this);
+  layer_tree_impl_->AddToElementLayerList(element_id_);
 
   SetNeedsPushProperties();
 }

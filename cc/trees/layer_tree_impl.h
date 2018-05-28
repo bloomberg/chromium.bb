@@ -381,11 +381,9 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerImpl* LayerById(int id) const;
 
-  // TODO(jaydasika): this is deprecated. It is used by
-  // scrolling animation to look up layers to mutate.
-  LayerImpl* LayerByElementId(ElementId element_id) const;
-  void AddToElementMap(LayerImpl* layer);
-  void RemoveFromElementMap(LayerImpl* layer);
+  bool IsElementInLayerList(ElementId element_id) const;
+  void AddToElementLayerList(ElementId element_id);
+  void RemoveFromElementLayerList(ElementId element_id);
 
   void SetSurfaceLayerIds(
       const base::flat_set<viz::SurfaceId>& surface_layer_ids);
@@ -622,7 +620,8 @@ class CC_EXPORT LayerTreeImpl {
   // Set of layers that need to push properties.
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
-  std::unordered_map<ElementId, int, ElementIdHash> element_layers_map_;
+  // Set of ElementIds which are present in the |layer_list_|.
+  std::unordered_set<ElementId, ElementIdHash> elements_in_layer_list_;
 
   std::unordered_map<ElementId, float, ElementIdHash>
       element_id_to_opacity_animations_;
