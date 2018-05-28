@@ -58,15 +58,15 @@ def cpp_name(entry):
 
 
 def enum_for_css_keyword(keyword):
-    return 'CSSValue' + upper_camel_case(keyword)
+    return 'CSSValue' + _upper_camel_case(keyword)
 
 
 def enum_for_css_property(property_name):
-    return 'CSSProperty' + upper_camel_case(property_name)
+    return 'CSSProperty' + _upper_camel_case(property_name)
 
 
 def enum_for_css_property_alias(property_name):
-    return 'CSSPropertyAlias' + upper_camel_case(property_name)
+    return 'CSSPropertyAlias' + _upper_camel_case(property_name)
 
 # FIXME: Merge these with the above methods.
 # and update all the generators to use these ones.
@@ -99,7 +99,7 @@ def naming_style(f):
 
 
 @naming_style
-def upper_camel_case(words):
+def _upper_camel_case(words):
     return ''.join(upper_first_letter(word) for word in words)
 
 
@@ -114,19 +114,19 @@ def snake_case(words):
 
 @naming_style
 def enum_type_name(words):
-    return upper_camel_case(words)
+    return _upper_camel_case(words)
 
 
 @naming_style
 def enum_value_name(words):
-    return 'k' + upper_camel_case(words)
+    return 'k' + _upper_camel_case(words)
 
 
 @naming_style
 def class_name(words):
-    return upper_camel_case(words)
+    return _upper_camel_case(words)
 
 
 @naming_style
 def method_name(words):
-    return upper_camel_case(words)
+    return _upper_camel_case(words)

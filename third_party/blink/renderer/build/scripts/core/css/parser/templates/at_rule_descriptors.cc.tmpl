@@ -35,9 +35,9 @@ struct Property;
 %enum
 %%
 {% for descriptor in descriptors %}
-{{descriptor.name}}, static_cast<int>(AtRuleDescriptorID::{{descriptor.upper_camel_name}})
+{{descriptor.name}}, static_cast<int>(AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}})
 {% if descriptor.alias %}
-{{descriptor.alias}}, static_cast<int>(AtRuleDescriptorID::{{descriptor.upper_camel_name}})
+{{descriptor.alias}}, static_cast<int>(AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}})
 {% endif %}
 {% endfor %}
 %%
@@ -84,8 +84,8 @@ AtRuleDescriptorID AsAtRuleDescriptorID(StringView string) {
 CSSPropertyID AtRuleDescriptorIDAsCSSPropertyID(AtRuleDescriptorID id) {
   switch (id) {
 {% for descriptor in descriptors %}
-  case AtRuleDescriptorID::{{descriptor.upper_camel_name}}:
-    return CSSProperty{{descriptor.upper_camel_name}};
+  case AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}}:
+    return CSSProperty{{descriptor.name.to_upper_camel_case()}};
 {% endfor %}
   default:
     NOTREACHED();
@@ -96,8 +96,8 @@ CSSPropertyID AtRuleDescriptorIDAsCSSPropertyID(AtRuleDescriptorID id) {
 AtRuleDescriptorID CSSPropertyIDAsAtRuleDescriptor(CSSPropertyID id) {
   switch (id) {
 {% for descriptor in descriptors %}
-  case CSSProperty{{descriptor.upper_camel_name}}:
-    return AtRuleDescriptorID::{{descriptor.upper_camel_name}};
+  case CSSProperty{{descriptor.name.to_upper_camel_case()}}:
+    return AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}};
 {% endfor %}
   default:
     NOTREACHED();

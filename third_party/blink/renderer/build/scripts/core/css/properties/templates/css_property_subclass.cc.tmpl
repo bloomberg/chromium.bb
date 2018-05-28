@@ -19,14 +19,14 @@ namespace CSSLonghand {
 {% set layer_type = 'Background' if property.style_builder_template == 'background_layer' else 'Mask' %}
 {% set fill_type = property.style_builder_template_args['fill_type'] %}
 {% set fill_type_getter = property.style_builder_template_args['fill_type_getter'] or fill_type %}
-{{declare_initial(property.upper_camel_name)}} {
+{{declare_initial(property.name.to_upper_camel_case())}} {
   FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
   currChild->Set{{fill_type}}(FillLayer::InitialFill{{fill_type}}(EFillLayerType::k{{layer_type}}));
   for (currChild = currChild->Next(); currChild; currChild = currChild->Next())
     currChild->Clear{{fill_type}}();
 }
 
-{{declare_inherit(property.upper_camel_name)}} {
+{{declare_inherit(property.name.to_upper_camel_case())}} {
   FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
   FillLayer* prevChild = 0;
   const FillLayer* currParent = &state.ParentStyle()->{{layer_type}}Layers();
@@ -54,7 +54,7 @@ namespace CSSLonghand {
   }
 }
 
-{{declare_value(property.upper_camel_name)}} {
+{{declare_value(property.name.to_upper_camel_case())}} {
   FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
   FillLayer* prevChild = 0;
   if (value.IsValueList() && !value.IsImageSetValue()) {
@@ -80,7 +80,7 @@ namespace CSSLonghand {
 {% elif property.style_builder_template == 'color' %}
 {% set initial_color = property.style_builder_template_args['initial_color'] or 'StyleColor::CurrentColor' %}
 {% set visited_link_setter = 'SetVisitedLink' + property.name_for_methods %}
-{{declare_initial(property.upper_camel_name)}} {
+{{declare_initial(property.name.to_upper_camel_case())}} {
   StyleColor color = {{initial_color}}();
   if (state.ApplyPropertyToRegularStyle())
     {{set_value(property)}}(color);
@@ -88,7 +88,7 @@ namespace CSSLonghand {
     state.Style()->{{visited_link_setter}}(color);
 }
 
-{{declare_inherit(property.upper_camel_name)}} {
+{{declare_inherit(property.name.to_upper_camel_case())}} {
   // Visited link style can never explicitly inherit from parent visited link
   // style so no separate getters are needed.
   StyleColor color = state.ParentStyle()->{{property.getter}}();
@@ -98,7 +98,7 @@ namespace CSSLonghand {
     state.Style()->{{visited_link_setter}}(color);
 }
 
-{{declare_value(property.upper_camel_name)}} {
+{{declare_value(property.name.to_upper_camel_case())}} {
   if (state.ApplyPropertyToRegularStyle())
     {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
   if (state.ApplyPropertyToVisitedLinkStyle()) {
@@ -108,11 +108,11 @@ namespace CSSLonghand {
 }
 {% elif property.style_builder_template == 'counter' %}
 {% set action = property.style_builder_template_args['action'] %}
-{{declare_initial(property.upper_camel_name)}} {
+{{declare_initial(property.name.to_upper_camel_case())}} {
   state.Style()->Clear{{action}}Directives();
 }
 
-{{declare_inherit(property.upper_camel_name)}} {
+{{declare_inherit(property.name.to_upper_camel_case())}} {
   const CounterDirectiveMap* parentMap = state.ParentStyle()->GetCounterDirectives();
   if (!parentMap)
     return;
@@ -128,7 +128,7 @@ namespace CSSLonghand {
   }
 }
 
-{{declare_value(property.upper_camel_name)}} {
+{{declare_value(property.name.to_upper_camel_case())}} {
   state.Style()->Clear{{action}}Directives();
 
   if (!value.IsValueList()) {
@@ -157,7 +157,7 @@ namespace CSSLonghand {
 }
 {% elif property.style_builder_template == 'grid' %}
 {% set type = property.style_builder_template_args['type'] %}
-  {{declare_initial(property.upper_camel_name)}} {
+  {{declare_initial(property.name.to_upper_camel_case())}} {
     state.Style()->SetGridTemplate{{type}}s(ComputedStyleInitialValues::InitialGridTemplate{{type}}s());
     state.Style()->SetNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
     state.Style()->SetOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
@@ -168,7 +168,7 @@ namespace CSSLonghand {
     state.Style()->SetGridAutoRepeat{{type}}sType(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sType());
   }
 
-  {{declare_inherit(property.upper_camel_name)}} {
+  {{declare_inherit(property.name.to_upper_camel_case())}} {
     state.Style()->SetGridTemplate{{type}}s(state.ParentStyle()->GridTemplate{{type}}s());
     state.Style()->SetNamedGrid{{type}}Lines(state.ParentStyle()->NamedGrid{{type}}Lines());
     state.Style()->SetOrderedNamedGrid{{type}}Lines(state.ParentStyle()->OrderedNamedGrid{{type}}Lines());
@@ -179,7 +179,7 @@ namespace CSSLonghand {
     state.Style()->SetGridAutoRepeat{{type}}sType(state.ParentStyle()->GridAutoRepeat{{type}}sType());
   }
 
-  {{declare_value(property.upper_camel_name)}} {
+  {{declare_value(property.name.to_upper_camel_case())}} {
     Vector<GridTrackSize> trackSizes;
     Vector<GridTrackSize> autoRepeatTrackSizes;
     NamedGridLinesMap namedGridLines;

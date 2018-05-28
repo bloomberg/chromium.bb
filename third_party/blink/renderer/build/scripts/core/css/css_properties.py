@@ -5,7 +5,6 @@
 
 import json5_generator
 from name_utilities import (
-    upper_camel_case,
     enum_value_name,
     enum_for_css_property,
     enum_for_css_property_alias
@@ -163,12 +162,11 @@ class CSSProperties(object):
             updated_alias = aliased_property.copy()
             updated_alias['name'] = alias['name']
             updated_alias['alias_for'] = alias['alias_for']
-            updated_alias['aliased_property'] = aliased_property['upper_camel_name']
+            updated_alias['aliased_property'] = aliased_property['name'].to_upper_camel_case()
             updated_alias['property_id'] = enum_for_css_property_alias(
                 alias['name'].original)
             updated_alias['enum_value'] = aliased_property['enum_value'] + \
                 self._alias_offset
-            updated_alias['upper_camel_name'] = upper_camel_case(alias['name'].original)
             self._aliases[i] = updated_alias
 
     def expand_parameters(self, property_):
@@ -179,11 +177,10 @@ class CSSProperties(object):
         # Basic info.
         name = property_['name'].original
         property_['property_id'] = enum_for_css_property(name)
-        property_['upper_camel_name'] = upper_camel_case(name)
         property_['is_internal'] = name.startswith('-internal-')
         method_name = property_['name_for_methods']
         if not method_name:
-            method_name = upper_camel_case(name).replace('Webkit', '')
+            method_name = property_['name'].to_upper_camel_case().replace('Webkit', '')
         set_if_none(property_, 'inherited', False)
 
         # Initial function, Getters and Setters for ComputedStyle.
