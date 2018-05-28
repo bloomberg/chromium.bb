@@ -6,21 +6,23 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetModel.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 /**
- * This stateless class provides methods to bind the items in a {@link PasswordAccessorySheetModel}
+ * This stateless class provides methods to bind the items in a {@link SimpleListObservable<Item>}
  * to the {@link RecyclerView} used as view of the Password accessory sheet component.
  */
 class PasswordAccessorySheetViewBinder
-        implements RecyclerViewAdapter.ViewBinder<PasswordAccessorySheetModel,
+        implements RecyclerViewAdapter.ViewBinder<SimpleListObservable<Item>,
                 PasswordAccessorySheetViewBinder.TextViewHolder> {
     /**
      * Holds a TextView that represents a list entry.
@@ -53,11 +55,15 @@ class PasswordAccessorySheetViewBinder
 
     @Override
     public void onBindViewHolder(
-            PasswordAccessorySheetModel model, TextViewHolder holder, int position) {
-        KeyboardAccessoryData.Action item = model.getItem(position);
+            SimpleListObservable<Item> model, TextViewHolder holder, int position) {
+        Item item = model.get(position);
+        if (item.isPassword()) {
+            holder.getView().setTransformationMethod(new PasswordTransformationMethod());
+        }
         holder.getView().setText(item.getCaption());
-        if (item.getDelegate() != null) {
-            holder.getView().setOnClickListener(src -> item.getDelegate().onActionTriggered(item));
+        if (item.getItemSelectedCallback() != null) {
+            holder.getView().setOnClickListener(
+                    src -> item.getItemSelectedCallback().onResult(item));
         }
     }
 

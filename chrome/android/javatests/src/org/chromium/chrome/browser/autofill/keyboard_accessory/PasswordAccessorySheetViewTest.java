@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.PasswordTransformationMethod;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -20,11 +21,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -39,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessorySheetViewTest {
-    private PasswordAccessorySheetModel mModel;
+    private SimpleListObservable<KeyboardAccessoryData.Item> mModel;
     private AtomicReference<RecyclerView> mView = new AtomicReference<>();
 
     @Rule
@@ -89,7 +92,7 @@ public class PasswordAccessorySheetViewTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        mModel = new PasswordAccessorySheetModel();
+        mModel = new SimpleListObservable<>();
         mActivityTestRule.startMainActivityOnBlankPage();
         openLayoutInAccessorySheet(R.layout.password_accessory_sheet, view -> {
             mView.set((RecyclerView) view);
@@ -111,7 +114,32 @@ public class PasswordAccessorySheetViewTest {
     public void testAddingCaptionsToTheModelRendersThem() {
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.addLabel("Passwords"));
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(new KeyboardAccessoryData.Item() {
+            @Override
+            public int getType() {
+                return KeyboardAccessoryData.Item.TYPE_LABEL;
+            }
+
+            @Override
+            public String getCaption() {
+                return "Passwords";
+            }
+
+            @Override
+            public String getContentDescription() {
+                return null;
+            }
+
+            @Override
+            public boolean isPassword() {
+                return false;
+            }
+
+            @Override
+            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
+                return null;
+            }
+        }));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
@@ -122,26 +150,85 @@ public class PasswordAccessorySheetViewTest {
     @MediumTest
     public void testAddingSuggestionsToTheModelRendersClickableActions() throws ExecutionException {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
-        final KeyboardAccessoryData.Action testSuggestion = new KeyboardAccessoryData.Action() {
+        assertThat(mView.get().getChildCount(), is(0));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(new KeyboardAccessoryData.Item() {
+            @Override
+            public int getType() {
+                return KeyboardAccessoryData.Item.TYPE_SUGGESTIONS;
+            }
+
+            @Override
+            public String getCaption() {
+                return "Name Suggestion";
+            }
+
+            @Override
+            public String getContentDescription() {
+                return null;
+            }
+
+            @Override
+            public boolean isPassword() {
+                return false;
+            }
+
+            @Override
+            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
+                return item -> clicked.set(true);
+            }
+        }));
+
+        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
+
+        TextView suggestion = (TextView) mView.get().getChildAt(0);
+        assertThat(suggestion.getText(), is("Name Suggestion"));
+
+        ThreadUtils.runOnUiThreadBlocking(suggestion::performClick);
+        assertThat(clicked.get(), is(true));
+    }
+
+    @Test
+    @MediumTest
+    public void testAddingPasswordsToTheModelRendersThemHidden() throws ExecutionException {
+        final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
+        assertThat(mView.get().getChildCount(), is(0));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(new KeyboardAccessoryData.Item() {
+            @Override
+            public int getType() {
+                return KeyboardAccessoryData.Item.TYPE_SUGGESTIONS;
+            }
+
             @Override
             public String getCaption() {
                 return "Password Suggestion";
             }
 
             @Override
-            public Delegate getDelegate() {
-                return action -> clicked.set(true);
+            public String getContentDescription() {
+                return null;
             }
-        };
-        assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.addSuggestion(testSuggestion));
+            @Override
+            public boolean isPassword() {
+                return true;
+            }
+
+            @Override
+            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
+                return item -> clicked.set(true);
+            }
+        }));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
 
         TextView suggestion = (TextView) mView.get().getChildAt(0);
         assertThat(suggestion.getText(), is("Password Suggestion"));
+        assertThat(suggestion.getTransformationMethod(),
+                instanceOf(PasswordTransformationMethod.class));
 
         ThreadUtils.runOnUiThreadBlocking(suggestion::performClick);
         assertThat(clicked.get(), is(true));

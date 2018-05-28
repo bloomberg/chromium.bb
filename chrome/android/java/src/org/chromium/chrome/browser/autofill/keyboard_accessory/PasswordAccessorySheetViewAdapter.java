@@ -7,23 +7,24 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 class PasswordAccessorySheetViewAdapter<VH extends RecyclerView.ViewHolder>
-        extends RecyclerViewAdapter<PasswordAccessorySheetModel, VH> {
+        extends RecyclerViewAdapter<SimpleListObservable<KeyboardAccessoryData.Item>, VH> {
     /**
      * Construct a new {@link RecyclerViewAdapter}.
      *
-     * @param model      The {@link PasswordAccessorySheetModel} model used to retrieve items to
-     *                   display in the {@link RecyclerView}.
+     * @param model      The {@link SimpleListObservable<KeyboardAccessoryData.Item>} model used to
+     *                   retrieve items to display in the {@link RecyclerView}.
      * @param viewBinder The {@link ViewBinder} binding this adapter to the view holder.
      */
-    public PasswordAccessorySheetViewAdapter(PasswordAccessorySheetModel model,
-            ViewBinder<PasswordAccessorySheetModel, VH> viewBinder) {
+    public PasswordAccessorySheetViewAdapter(SimpleListObservable<KeyboardAccessoryData.Item> model,
+            ViewBinder<SimpleListObservable<KeyboardAccessoryData.Item>, VH> viewBinder) {
         super(model, viewBinder);
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mModel.getItem(position).getType();
+        return mModel.get(position).getType();
     }
 }

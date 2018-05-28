@@ -5,10 +5,15 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
+import org.chromium.base.Callback;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +37,7 @@ public class KeyboardAccessoryData {
 
     /**
      * An observer receives notifications from an {@link Provider} it is subscribed to.
-     * @param <T> Either an {@link Action} or a {@link Tab} that this instance observes.
+     * @param <T> An {@link Action}, {@link Tab} or {@link Item} that this instance observes.
      */
     public interface Observer<T> {
         /**
@@ -104,6 +109,49 @@ public class KeyboardAccessoryData {
         }
         String getCaption();
         Delegate getDelegate();
+    }
+
+    /**
+     * This describes an item in a accessory sheet. They are usually list items that were created
+     * natively.
+     */
+    public interface Item {
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef({TYPE_LABEL, TYPE_SUGGESTIONS})
+        @interface Type {}
+        int TYPE_LABEL = 1;
+        int TYPE_SUGGESTIONS = 2;
+
+        /**
+         * Returns the type of the item.
+         * @return Returns a {@link Type}.
+         */
+        @Type
+        int getType();
+
+        /**
+         * Returns a human-readable, translated string that will appear as text of the item.
+         * @return A short descriptive string of the item.
+         */
+        String getCaption();
+
+        /**
+         * Returns a translated description that can be used for accessibility.
+         * @return A short description of the displayed item.
+         */
+        String getContentDescription();
+
+        /**
+         * Returns whether the item (i.e. its caption) contains a password. Can be used to determine
+         * when to apply text transformations to hide passwords.
+         * @return Returns true if the caption is a password. False otherwise.
+         */
+        boolean isPassword();
+
+        /**
+         * The delegate is called when the Item is selected by a user.
+         */
+        Callback<Item> getItemSelectedCallback();
     }
 
     /**
