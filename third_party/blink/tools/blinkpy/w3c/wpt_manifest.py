@@ -37,7 +37,7 @@ class WPTManifest(object):
         }
 
     The format of a manifest item depends on:
-        https://github.com/w3c/web-platform-tests/blob/master/tools/manifest/item.py
+        https://github.com/web-platform-tests/wpt/blob/master/tools/manifest/item.py
     which can be roughly summarized as follows:
         * testharness test: [url, extras]
         * reftest: [url, references, extras]

@@ -35,7 +35,7 @@ class LocalWPT(object):
             self.run(['git', 'reset', '--hard', 'origin/master'])
             return
 
-        _log.info('Cloning GitHub w3c/web-platform-tests into %s', self.path)
+        _log.info('Cloning GitHub web-platform-tests/wpt into %s', self.path)
         if self.gh_token:
             remote_url = WPT_GH_SSH_URL_TEMPLATE.format(self.gh_token)
         else:

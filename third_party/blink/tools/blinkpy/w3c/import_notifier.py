@@ -17,13 +17,14 @@ import logging
 import re
 
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.w3c.common import WPT_GH_URL
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
 from blinkpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
 
 _log = logging.getLogger(__name__)
 
-GITHUB_COMMIT_PREFIX = 'https://github.com/w3c/web-platform-tests/commit/'
+GITHUB_COMMIT_PREFIX = WPT_GH_URL + 'commit/'
 SHORT_GERRIT_PREFIX = 'https://crrev.com/c/'
 
 

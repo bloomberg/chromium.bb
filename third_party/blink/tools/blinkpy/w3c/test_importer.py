@@ -23,7 +23,7 @@ from blinkpy.common.net.network_transaction import NetworkTimeout
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
-from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable
+from blinkpy.w3c.common import read_credentials, is_testharness_baseline, is_file_exportable, WPT_GH_URL
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from blinkpy.w3c.import_notifier import ImportNotifier
 from blinkpy.w3c.local_wpt import LocalWPT
@@ -329,7 +329,7 @@ class TestImporter(object):
             # could still be useful for reference.
             pull_request = self.wpt_github.pr_for_chromium_commit(commit)
             if pull_request:
-                _log.info('PR: https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
+                _log.info('PR: %spull/%d', WPT_GH_URL, pull_request.number)
             else:
                 _log.warning('No pull request found.')
             error = local_wpt.apply_patch(commit.format_patch())

@@ -8,8 +8,8 @@ import json
 import logging
 
 
-WPT_GH_ORG = 'w3c'
-WPT_GH_REPO_NAME = 'web-platform-tests'
+WPT_GH_ORG = 'web-platform-tests'
+WPT_GH_REPO_NAME = 'wpt'
 WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_MIRROR_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
 WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)

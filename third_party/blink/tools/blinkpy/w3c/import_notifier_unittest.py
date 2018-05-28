@@ -143,8 +143,8 @@ class ImportNotifierTest(unittest.TestCase):
         self.local_wpt.is_commit_affecting_directory = _is_commit_affecting_directory
         self.assertEqual(
             self.notifier.format_commit_list(imported_commits, '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo'),
-            u'Subject 1: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
-            u'ABC~‾¥≈¤･・•∙·☼★星🌟星★☼·∙•・･¤≈¥‾~XYZ: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
+            u'Subject 1: https://github.com/web-platform-tests/wpt/commit/SHA1 [affecting this directory]\n'
+            u'ABC~‾¥≈¤･・•∙·☼★星🌟星★☼·∙•・･¤≈¥‾~XYZ: https://github.com/web-platform-tests/wpt/commit/SHA2\n'
         )
 
     def test_find_owned_directory_non_virtual(self):
