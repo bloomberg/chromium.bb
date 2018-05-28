@@ -91,6 +91,24 @@ TEST_F(ModelTypeTest, ModelTypeHistogramMapping) {
   }
 }
 
+TEST_F(ModelTypeTest, ModelTypeToStableIdentifier) {
+  std::set<int> identifiers;
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    SCOPED_TRACE(ModelTypeToString(it.Get()));
+    int stable_identifier = ModelTypeToStableIdentifier(it.Get());
+    EXPECT_GT(stable_identifier, 0);
+    EXPECT_TRUE(identifiers.insert(stable_identifier).second)
+        << "Expected identifier values to be unique";
+  }
+
+  // Hard code a few example model_types to make it harder to break that the
+  // identifiers are stable.
+  EXPECT_EQ(3, ModelTypeToStableIdentifier(BOOKMARKS));
+  EXPECT_EQ(7, ModelTypeToStableIdentifier(AUTOFILL));
+  EXPECT_EQ(9, ModelTypeToStableIdentifier(TYPED_URLS));
+}
+
 TEST_F(ModelTypeTest, ModelTypeSetFromString) {
   ModelTypeSet empty;
   ModelTypeSet one(BOOKMARKS);

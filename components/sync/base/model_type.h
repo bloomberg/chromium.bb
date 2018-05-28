@@ -338,9 +338,13 @@ FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
 const char* ModelTypeToString(ModelType model_type);
 
 // Some histograms take an integer parameter that represents a model type.
-// The mapping from ModelType to integer is defined here.  It should match
-// the mapping from integer to labels defined in histograms.xml.
+// The mapping from ModelType to integer is defined here. It should match the
+// mapping from integer to labels defined in histograms.xml.
 int ModelTypeToHistogramInt(ModelType model_type);
+
+// Returns for every model_type a positive unique integer that is stable over
+// time and thus can be used when persisting data.
+int ModelTypeToStableIdentifier(ModelType model_type);
 
 // Handles all model types, and not just real ones.
 std::unique_ptr<base::Value> ModelTypeToValue(ModelType model_type);
