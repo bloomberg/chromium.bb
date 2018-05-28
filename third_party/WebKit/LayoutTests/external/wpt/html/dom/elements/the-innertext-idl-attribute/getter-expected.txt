@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 213 tests; 133 PASS, 80 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 213 tests; 134 PASS, 79 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -52,7 +52,7 @@ PASS child of display:none child of svg ("<div style='display:none'><div id='tar
 PASS display:contents container ("<div style='display:contents'>abc")
 PASS display:contents container ("<div><div style='display:contents'>abc")
 PASS display:contents rendered ("<div>123<span style='display:contents'>abc")
-FAIL display:contents not processed via textContent ("<div style='display:contents'>   ") assert_equals: expected "" but got "   "
+PASS display:contents not processed via textContent ("<div style='display:contents'>   ")
 PASS display:contents not processed via textContent ("<div><div style='display:contents'>   ")
 PASS visibility:hidden container ("<div style='visibility:hidden'>abc")
 PASS visibility:hidden child not rendered ("<div>123<span style='visibility:hidden'>abc")
