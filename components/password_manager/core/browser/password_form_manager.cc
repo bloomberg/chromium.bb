@@ -682,8 +682,6 @@ void PasswordFormManager::ProcessUpdate() {
   if (!observed_form_.IsPossibleChangePasswordForm())
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
 
-  // TODO(crbug.com/840384): If there is no username, we should vote again when
-  // the credential is updated with a username.
   if (pending_credentials_.times_used == 1)
     UploadFirstLoginVotes(*submitted_form_);
 }
