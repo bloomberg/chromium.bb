@@ -669,6 +669,8 @@ component("ash") {
     "system/network/tray_vpn.h",
     "system/network/unified_network_detailed_view_controller.cc",
     "system/network/unified_network_detailed_view_controller.h",
+    "system/network/unified_vpn_detailed_view_controller.cc",
+    "system/network/unified_vpn_detailed_view_controller.h",
     "system/network/vpn_feature_pod_controller.cc",
     "system/network/vpn_feature_pod_controller.h",
     "system/network/vpn_list.cc",
