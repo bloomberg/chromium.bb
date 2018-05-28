@@ -63,11 +63,9 @@ bool CanShowAppInfoDialog() {
 #if BUILDFLAG(ENABLE_APP_LIST)
 void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
                           Profile* profile,
-                          const extensions::Extension* app,
-                          const base::Closure& close_callback) {
+                          const extensions::Extension* app) {
   views::View* app_info_view = new AppInfoDialog(profile, app);
-  views::DialogDelegate* dialog =
-      CreateAppListContainerForView(app_info_view, close_callback);
+  views::DialogDelegate* dialog = CreateAppListContainerForView(app_info_view);
   views::Widget* dialog_widget = new views::Widget();
   views::Widget::InitParams params =
       views::DialogDelegate::GetDialogWidgetInitParams(dialog, nullptr, nullptr,

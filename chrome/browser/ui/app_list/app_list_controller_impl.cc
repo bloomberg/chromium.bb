@@ -73,10 +73,6 @@ AppListControllerDelegate::Pinnable AppListControllerDelegateImpl::GetPinnable(
                              ChromeLauncherController::instance()->profile());
 }
 
-void AppListControllerDelegateImpl::OnShowChildDialog() {}
-
-void AppListControllerDelegateImpl::OnCloseChildDialog() {}
-
 void AppListControllerDelegateImpl::CreateNewWindow(Profile* profile,
                                                     bool incognito) {
   if (incognito)

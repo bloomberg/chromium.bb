@@ -76,11 +76,6 @@ class AppListControllerDelegate {
   // Returns true if requested app is open.
   virtual bool IsAppOpen(const std::string& app_id) const = 0;
 
-  // Called before and after a dialog opens in the app list. For example,
-  // displays an overlay that disables the app list while the dialog is open.
-  virtual void OnShowChildDialog();
-  virtual void OnCloseChildDialog();
-
   // Whether the controller supports a Show App Info flow.
   virtual bool CanDoShowAppInfoFlow();
 

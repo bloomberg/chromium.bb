@@ -92,7 +92,7 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == LAUNCH_NEW) {
     delegate()->ExecuteLaunchCommand(event_flags);
   } else if (command_id == UNINSTALL) {
-    arc::ShowArcAppUninstallDialog(profile(), controller(), app_id());
+    arc::ShowArcAppUninstallDialog(profile(), app_id());
   } else if (command_id == SHOW_APP_INFO) {
     ShowPackageInfo();
   } else if (command_id >= LAUNCH_APP_SHORTCUT_FIRST &&

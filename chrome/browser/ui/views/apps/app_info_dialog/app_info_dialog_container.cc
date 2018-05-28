@@ -132,9 +132,8 @@ class BaseDialogContainer : public views::DialogDelegateView {
 class AppListDialogContainer : public BaseDialogContainer,
                                public views::ButtonListener {
  public:
-  AppListDialogContainer(views::View* dialog_body,
-                         const base::Closure& close_callback)
-      : BaseDialogContainer(dialog_body, close_callback) {
+  explicit AppListDialogContainer(views::View* dialog_body)
+      : BaseDialogContainer(dialog_body, base::RepeatingClosure()) {
     SetBackground(std::make_unique<AppListOverlayBackground>());
     close_button_ = views::BubbleFrameView::CreateCloseButton(this);
     AddChildView(close_button_);
@@ -244,10 +243,8 @@ class NativeDialogContainer : public BaseDialogContainer {
 }  // namespace
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-views::DialogDelegateView* CreateAppListContainerForView(
-    views::View* view,
-    const base::Closure& close_callback) {
-  return new AppListDialogContainer(view, close_callback);
+views::DialogDelegateView* CreateAppListContainerForView(views::View* view) {
+  return new AppListDialogContainer(view);
 }
 #endif  // ENABLE_APP_LIST
 

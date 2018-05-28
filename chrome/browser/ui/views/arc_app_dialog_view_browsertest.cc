@@ -408,8 +408,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
   std::string app_id =
       arc_app_list_pref()->GetAppId(package_name, app_activity);
 
-  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
-                            app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), app_id);
   content::RunAllPendingInMessageLoop();
 
   // Cancelling the dialog won't uninstall any app.
@@ -417,8 +416,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2u, arc_app_list_pref()->GetAppIds().size());
 
-  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
-                            app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), app_id);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsArcAppDialogViewAliveForTest());
 
@@ -437,8 +435,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
   std::string intent_uri = "Fake Shortcut uri 0";
   std::string app_id = arc_app_list_pref()->GetAppId(package_name, intent_uri);
 
-  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
-                            app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), app_id);
   content::RunAllPendingInMessageLoop();
 
   // Cancelling the dialog won't uninstall any app.
@@ -446,8 +443,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
   content::RunAllPendingInMessageLoop();
   EXPECT_EQ(2u, arc_app_list_pref()->GetAppIds().size());
 
-  ShowArcAppUninstallDialog(browser()->profile(), nullptr /*controller*/,
-                            app_id);
+  ShowArcAppUninstallDialog(browser()->profile(), app_id);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(IsArcAppDialogViewAliveForTest());
 

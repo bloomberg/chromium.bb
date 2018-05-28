@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 
-class AppListControllerDelegate;
 class Profile;
 
 // ExtensionUninstaller runs the extension uninstall flow. It shows the
@@ -17,9 +16,7 @@ class Profile;
 class ExtensionUninstaller
     : public extensions::ExtensionUninstallDialog::Delegate {
  public:
-  ExtensionUninstaller(Profile* profile,
-                       const std::string& extension_id,
-                       AppListControllerDelegate* controller);
+  ExtensionUninstaller(Profile* profile, const std::string& extension_id);
   ~ExtensionUninstaller() override;
 
   void Run();
@@ -33,7 +30,6 @@ class ExtensionUninstaller
 
   Profile* profile_;
   std::string app_id_;
-  AppListControllerDelegate* controller_;
   std::unique_ptr<extensions::ExtensionUninstallDialog> dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstaller);

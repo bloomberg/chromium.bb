@@ -108,8 +108,6 @@ bool ExtensionAppResult::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    controller()->OnShowChildDialog();
-
     extension_enable_flow_.reset(new ExtensionEnableFlow(
         profile(), app_id(), this));
     extension_enable_flow_->StartForNativeWindow(nullptr);
@@ -131,7 +129,6 @@ void ExtensionAppResult::ExecuteLaunchCommand(int event_flags) {
 
 void ExtensionAppResult::ExtensionEnableFlowFinished() {
   extension_enable_flow_.reset();
-  controller()->OnCloseChildDialog();
 
   // Automatically open app after enabling.
   Open(ui::EF_NONE);
@@ -139,7 +136,6 @@ void ExtensionAppResult::ExtensionEnableFlowFinished() {
 
 void ExtensionAppResult::ExtensionEnableFlowAborted(bool user_initiated) {
   extension_enable_flow_.reset();
-  controller()->OnCloseChildDialog();
 }
 
 void ExtensionAppResult::OnExtensionLoaded(
