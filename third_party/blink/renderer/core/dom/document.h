@@ -1418,6 +1418,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   SlotAssignmentEngine& GetSlotAssignmentEngine();
 
+  bool IsSlotAssignmentOrLegacyDistributionDirty();
+
 #if DCHECK_IS_ON()
   unsigned& SlotAssignmentRecalcForbiddenRecursionDepth() {
     return slot_assignment_recalc_forbidden_recursion_depth_;

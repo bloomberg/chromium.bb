@@ -458,8 +458,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void MarkAncestorsWithChildNeedsDistributionRecalc();
 
-  bool IsSlotAssignmentOrLegacyDistributionDirty() const;
-
   bool ChildNeedsStyleInvalidation() const {
     return GetFlag(kChildNeedsStyleInvalidationFlag);
   }

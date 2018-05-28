@@ -22,6 +22,10 @@ class SlotAssignmentEngine final
   void Connected(ShadowRoot&);
   void Disconnected(ShadowRoot&);
 
+  bool HasPendingSlotAssignmentRecalc() const {
+    return !shadow_roots_needing_recalc_.IsEmpty();
+  }
+
   void RecalcSlotAssignments();
 
   void Trace(blink::Visitor*);

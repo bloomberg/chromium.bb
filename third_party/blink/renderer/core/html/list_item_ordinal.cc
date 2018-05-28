@@ -274,7 +274,7 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
   // If distribution recalc is needed, updateListMarkerNumber will be re-invoked
   // after distribution is calculated.
   const Node* item_node = layout_list_item->GetNode();
-  if (item_node->GetDocument().ChildNeedsDistributionRecalc())
+  if (item_node->GetDocument().IsSlotAssignmentOrLegacyDistributionDirty())
     return;
 
   Node* list_node = EnclosingList(item_node);
@@ -282,14 +282,6 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
   // is resolved.
   if (!list_node)
     return;
-
-  // Note: We don't need to invalidate list items in unassigned slots.
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
-    if (ShadowRoot* shadow_root = list_node->ContainingShadowRoot()) {
-      if (shadow_root->NeedsSlotAssignmentRecalc())
-        return;
-    }
-  }
 
   bool is_list_reversed = false;
   if (auto* o_list_element = ToHTMLOListElementOrNull(list_node)) {
