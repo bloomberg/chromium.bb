@@ -16,7 +16,7 @@ LazyNow::LazyNow(const TickClock* tick_clock)
   DCHECK(tick_clock);
 }
 
-LazyNow::LazyNow(LazyNow&& move_from)
+LazyNow::LazyNow(LazyNow&& move_from) noexcept
     : tick_clock_(move_from.tick_clock_), now_(move_from.now_) {
   move_from.tick_clock_ = nullptr;
   move_from.now_ = nullopt;
