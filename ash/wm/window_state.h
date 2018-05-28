@@ -363,6 +363,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
 
+  bool HasMaximumWidthOrHeight() const;
+
   // Returns the window's current always_on_top state.
   bool GetAlwaysOnTop() const;
 
