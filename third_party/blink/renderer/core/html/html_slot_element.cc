@@ -477,6 +477,10 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
   if (change < kIndependentInherit)
     return;
   for (auto& node : assigned_nodes_) {
+    if (change == kReattach && node->IsElementNode()) {
+      ToElement(node)->RecalcStyleForReattach();
+      continue;
+    }
     node->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(

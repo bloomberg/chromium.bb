@@ -7,6 +7,8 @@
 #include <array>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 
@@ -126,6 +128,43 @@ TEST_F(HTMLSlotElementTest, TableSizeLimit) {
   Seq lcs;
   std::fill_n(std::back_inserter(lcs), kTableSize - 1, 'a');
   EXPECT_EQ(lcs, LongestCommonSubsequence(seq1, seq2));
+}
+
+class HTMLSlotElementReattachTest : public testing::Test {
+ protected:
+  void SetUp() final {
+    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
+
+ private:
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+};
+
+TEST_F(HTMLSlotElementReattachTest, RecalcAssignedNodeStyleForReattach) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id='host'><span id='span'></span></div>
+  )HTML");
+
+  Element& host = *GetDocument().getElementById("host");
+  Element& span = *GetDocument().getElementById("span");
+
+  ShadowRoot& shadow_root =
+      host.AttachShadowRootInternal(ShadowRootType::kOpen);
+
+  shadow_root.SetInnerHTMLFromString(
+      R"HTML(<span><slot /></span>)HTML");
+
+  Element& shadow_span = *ToElement(shadow_root.firstChild());
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  shadow_span.setAttribute(HTMLNames::styleAttr, "display:block");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().documentElement()->RecalcStyle(kNoChange);
+
+  EXPECT_TRUE(shadow_span.GetNonAttachedStyle());
+  EXPECT_TRUE(span.GetNonAttachedStyle());
 }
 
 }  // namespace blink
