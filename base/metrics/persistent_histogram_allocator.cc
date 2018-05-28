@@ -301,7 +301,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::GetHistogram(
       // but that doesn't work because the allocated block may have been
       // aligned to the next boundary value.
       HashMetricName(data->name) != data->samples_metadata.id) {
-    NOTREACHED();
     return nullptr;
   }
   return CreateHistogram(data);
@@ -343,7 +342,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
     size_t counts_bytes = CalculateRequiredCountsBytes(bucket_count);
     if (counts_bytes == 0) {
       // |bucket_count| was out-of-range.
-      NOTREACHED();
       return nullptr;
     }
 
@@ -374,7 +372,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
           bucket_ranges->set_persistent_reference(ranges_ref);
         } else {
           // This should never happen but be tolerant if it does.
-          NOTREACHED();
           ranges_ref = PersistentMemoryAllocator::kReferenceNull;
         }
       }
@@ -425,9 +422,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
     return histogram;
   }
 
-  if (memory_allocator_->IsCorrupt())
-    NOTREACHED() << memory_allocator_->Name() << " is corrupt!";
-
   return nullptr;
 }
 
@@ -460,7 +454,6 @@ void PersistentHistogramAllocator::MergeHistogramDeltaToStatisticsRecorder(
     // so a future try, if successful, will get what was missed. If it
     // continues to fail, some metric data will be lost but that is better
     // than crashing.
-    NOTREACHED();
     return;
   }
 
@@ -476,7 +469,6 @@ void PersistentHistogramAllocator::MergeHistogramFinalDeltaToStatisticsRecorder(
   if (!existing) {
     // The above should never fail but if it does, no real harm is done.
     // Some metric data will be lost but that is better than crashing.
-    NOTREACHED();
     return;
   }
 
@@ -504,10 +496,8 @@ void PersistentHistogramAllocator::ClearLastCreatedReferenceForTesting() {
 
 std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
     PersistentHistogramData* histogram_data_ptr) {
-  if (!histogram_data_ptr) {
-    NOTREACHED();
+  if (!histogram_data_ptr)
     return nullptr;
-  }
 
   // Sparse histograms are quite different so handle them as a special case.
   if (histogram_data_ptr->histogram_type == SPARSE_HISTOGRAM) {
@@ -547,16 +537,13 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   if (!ranges_data || histogram_bucket_count < 2 ||
       histogram_bucket_count >= max_buckets ||
       allocated_bytes < required_bytes) {
-    NOTREACHED();
     return nullptr;
   }
 
   std::unique_ptr<const BucketRanges> created_ranges = CreateRangesFromData(
       ranges_data, histogram_ranges_checksum, histogram_bucket_count + 1);
-  if (!created_ranges) {
-    NOTREACHED();
+  if (!created_ranges)
     return nullptr;
-  }
   const BucketRanges* ranges =
       StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
           created_ranges.release());
@@ -567,7 +554,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   if (counts_bytes == 0 ||
       (counts_ref != 0 &&
        memory_allocator_->GetAllocSize(counts_ref) < counts_bytes)) {
-    NOTREACHED();
     return nullptr;
   }
 
@@ -623,7 +609,7 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
       DCHECK(histogram);
       break;
     default:
-      NOTREACHED();
+      return nullptr;
   }
 
   if (histogram) {
@@ -710,7 +696,6 @@ bool GlobalHistogramAllocator::CreateWithFile(
   }
   if (!mmfile->IsValid() ||
       !FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true)) {
-    NOTREACHED() << file_path;
     return false;
   }
 
@@ -891,7 +876,6 @@ void GlobalHistogramAllocator::CreateWithSharedMemoryHandle(
       new SharedMemory(handle, /*readonly=*/false));
   if (!shm->Map(size) ||
       !SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(*shm)) {
-    NOTREACHED();
     return;
   }
 
