@@ -434,16 +434,16 @@ void FrameLoader::FinishedParsing() {
         document_loader_ ? document_loader_->IsCommittedButEmpty() : true);
   }
 
+  if (frame_->View()) {
+    // Check if the scrollbars are really needed for the content. If not, remove
+    // them, relayout, and repaint.
+    frame_->View()->RestoreScrollbar();
+
+    ProcessFragment(frame_->GetDocument()->Url(), document_loader_->LoadType(),
+                    kNavigationToDifferentDocument);
+  }
+
   frame_->GetDocument()->CheckCompleted();
-
-  if (!frame_->View())
-    return;
-
-  // Check if the scrollbars are really needed for the content. If not, remove
-  // them, relayout, and repaint.
-  frame_->View()->RestoreScrollbar();
-  ProcessFragment(frame_->GetDocument()->Url(), document_loader_->LoadType(),
-                  kNavigationToDifferentDocument);
 }
 
 bool FrameLoader::AllAncestorsAreComplete() const {
