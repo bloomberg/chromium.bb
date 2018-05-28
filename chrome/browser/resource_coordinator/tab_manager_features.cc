@@ -91,6 +91,7 @@ const char kProactiveTabDiscard_AudioUsageObservationWindow[] =
     "AudioUsageObservationWindow";
 const char kProactiveTabDiscard_NotificationsUsageObservationWindow[] =
     "NotificationsUsageObservationWindow";
+const char kProactiveTabDiscard_FreezeTimeout[] = "FreezeTimeout";
 
 // Default values for ProactiveTabDiscardParams.
 //
@@ -129,6 +130,8 @@ const base::TimeDelta kProactiveTabDiscard_AudioUsageObservationWindow_Default =
 const base::TimeDelta
     kProactiveTabDiscard_NotificationsUsageObservationWindow_Default =
         base::TimeDelta::FromHours(2);
+const base::TimeDelta kProactiveTabDiscard_FreezeTimeout_Default =
+    base::TimeDelta::FromMinutes(10);
 
 ProactiveTabDiscardParams::ProactiveTabDiscardParams() = default;
 ProactiveTabDiscardParams::ProactiveTabDiscardParams(
@@ -196,6 +199,11 @@ ProactiveTabDiscardParams GetProactiveTabDiscardParams(int memory_in_gb) {
           kProactiveTabDiscard_NotificationsUsageObservationWindow,
           kProactiveTabDiscard_NotificationsUsageObservationWindow_Default
               .InSeconds()));
+
+  params.freeze_timeout =
+      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+          features::kProactiveTabDiscarding, kProactiveTabDiscard_FreezeTimeout,
+          kProactiveTabDiscard_FreezeTimeout_Default.InSeconds()));
 
   return params;
 }
