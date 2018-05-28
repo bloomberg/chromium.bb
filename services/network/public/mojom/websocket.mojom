@@ -102,10 +102,15 @@ interface WebSocket {
   // Open new WebSocket connection to |socket_url|. |requested_protocols| is a
   // list of tokens identifying sub-protocols the renderer would like to use,
   // as described in RFC6455 "Subprotocols Using the WebSocket Protocol".
+  // |additional_headers| are miscellaneous HTTP headers to be added to the
+  // request. Headers semantically relevant to the WebSocket handshake such
+  // as "sec-websocket-protocol" and "origin" are handled separately, (e.g.,
+  // "sec-websocket-protocol" is constructed from  |requested_protocols| in
+  // this message).
   AddChannelRequest(url.mojom.Url url,
                     array<string> requested_protocols,
                     url.mojom.Url first_party_for_cookies,
-                    string user_agent_override,
+                    array<HttpHeader> additional_headers,
                     WebSocketClient client);
 
   // Send a non-control frame to the remote server.
