@@ -1317,7 +1317,6 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 }
 
 void ServiceWorkerContextClient::DispatchAbortPaymentEvent(
-    int /* event_id */,  // TODO(shimazu): Remove this.
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchAbortPaymentEventCallback callback) {
   TRACE_EVENT0("ServiceWorker",
@@ -1332,7 +1331,6 @@ void ServiceWorkerContextClient::DispatchAbortPaymentEvent(
 }
 
 void ServiceWorkerContextClient::DispatchCanMakePaymentEvent(
-    int /* event_id */,  // TODO(shimazu): Remove this.
     payments::mojom::CanMakePaymentEventDataPtr eventData,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchCanMakePaymentEventCallback callback) {
@@ -1351,7 +1349,6 @@ void ServiceWorkerContextClient::DispatchCanMakePaymentEvent(
 }
 
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
-    int /* payment_request_id */,  // TODO(shimazu): Remove this.
     payments::mojom::PaymentRequestEventDataPtr eventData,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchPaymentRequestEventCallback callback) {

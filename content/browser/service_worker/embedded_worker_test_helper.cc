@@ -277,7 +277,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   }
 
   void DispatchAbortPaymentEvent(
-      int payment_request_id,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchAbortPaymentEventCallback callback) override {
     if (!helper_)
@@ -287,7 +286,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   }
 
   void DispatchCanMakePaymentEvent(
-      int payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchCanMakePaymentEventCallback callback) override {
@@ -299,7 +297,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   }
 
   void DispatchPaymentRequestEvent(
-      int payment_request_id,
       payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override {
