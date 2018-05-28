@@ -122,8 +122,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   // The web origin to use for the WebSocket.
   const url::Origin origin_;
 
-  // handshake_succeeded_ is set and used by WebSocketManager to manage
-  // counters for per-renderer WebSocket throttling.
+  // handshake_succeeded_ is used by WebSocketManager to manage counters for
+  // per-renderer WebSocket throttling.
   bool handshake_succeeded_;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_;
