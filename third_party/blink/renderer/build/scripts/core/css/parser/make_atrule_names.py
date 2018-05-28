@@ -11,8 +11,6 @@ import gperf
 import json5_generator
 import template_expander
 
-from name_utilities import upper_camel_case
-
 
 class AtRuleNamesWriter(json5_generator.Writer):
     """
@@ -38,8 +36,6 @@ class AtRuleNamesWriter(json5_generator.Writer):
         chars_used = 0
         self._longest_name_length = 0
         for offset, descriptor in enumerate(self._descriptors):
-            descriptor['upper_camel_name'] = upper_camel_case(
-                descriptor['name'].original)
             descriptor['enum_value'] = first_descriptor_id + offset
             self._character_offsets.append(chars_used)
             chars_used += len(descriptor['name'].original)

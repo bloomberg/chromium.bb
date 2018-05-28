@@ -14,7 +14,7 @@ namespace blink {
 enum class AtRuleDescriptorID {
   Invalid = 0,
 {% for descriptor in descriptors %}
-  {{descriptor.upper_camel_name}} = {{descriptor.enum_value}},
+  {{descriptor.name.to_upper_camel_case()}} = {{descriptor.enum_value}},
 {% endfor %}
 };
 
