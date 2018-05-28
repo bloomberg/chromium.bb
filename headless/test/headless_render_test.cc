@@ -360,27 +360,12 @@ void HeadlessRenderTest::OnFrameStartedLoading(
     state_ = LOADING;
     main_frame_ = params.GetFrameId();
   }
-
-  auto it = unconfirmed_frame_redirects_.find(params.GetFrameId());
-  if (it != unconfirmed_frame_redirects_.end()) {
-    confirmed_frame_redirects_[params.GetFrameId()].push_back(it->second);
-    unconfirmed_frame_redirects_.erase(it);
-  }
 }
 
 void HeadlessRenderTest::OnFrameScheduledNavigation(
     const page::FrameScheduledNavigationParams& params) {
-  CHECK(unconfirmed_frame_redirects_.find(params.GetFrameId()) ==
-        unconfirmed_frame_redirects_.end());
-  unconfirmed_frame_redirects_[params.GetFrameId()] =
-      Redirect(params.GetUrl(), params.GetReason());
-}
-
-void HeadlessRenderTest::OnFrameClearedScheduledNavigation(
-    const page::FrameClearedScheduledNavigationParams& params) {
-  auto it = unconfirmed_frame_redirects_.find(params.GetFrameId());
-  if (it != unconfirmed_frame_redirects_.end())
-    unconfirmed_frame_redirects_.erase(it);
+  scheduled_navigations_[params.GetFrameId()].emplace_back(
+      Navigation{params.GetUrl(), params.GetReason()});
 }
 
 void HeadlessRenderTest::OnFrameNavigated(

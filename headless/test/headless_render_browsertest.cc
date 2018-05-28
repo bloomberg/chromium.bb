@@ -138,12 +138,8 @@ MATCHER_P(RequestPath, expected, "") {
   return arg.relative_url == expected;
 }
 
-MATCHER_P(RedirectUrl, expected, "") {
-  return arg.first == expected;
-}
-
-MATCHER_P(RedirectReason, expected, "") {
-  return arg.second == expected;
+MATCHER_P(Reason, expected, "") {
+  return arg.reason == expected;
 }
 
 MATCHER_P(CookieValue, expected, "") {
@@ -214,8 +210,7 @@ class HelloWorldTest : public HeadlessRenderTest {
     EXPECT_THAT(TextLayout(dom_snapshot), ElementsAre("Hello headless world!"));
     EXPECT_THAT(GetProtocolHandler()->urls_requested(), ElementsAre(kSomeUrl));
     EXPECT_FALSE(main_frame_.empty());
-    EXPECT_TRUE(unconfirmed_frame_redirects_.empty());
-    EXPECT_TRUE(confirmed_frame_redirects_.empty());
+    EXPECT_TRUE(scheduled_navigations_.empty());
     EXPECT_THAT(frames_[main_frame_].size(), Eq(1u));
     const auto& frame = frames_[main_frame_][0];
     EXPECT_THAT(frame->GetUrl(), Eq(kSomeUrl));
@@ -421,11 +416,10 @@ class ClientRedirectChain : public HeadlessRenderTest {
         NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
     EXPECT_THAT(value, NodeValue("Pass"));
     EXPECT_THAT(
-        confirmed_frame_redirects_[main_frame_],
-        ElementsAre(
-            RedirectReason(FrameScheduledNavigationReason::META_TAG_REFRESH),
-            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
-            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED)));
+        scheduled_navigations_[main_frame_],
+        ElementsAre(Reason(FrameScheduledNavigationReason::META_TAG_REFRESH),
+                    Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+                    Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED)));
     EXPECT_THAT(frames_[main_frame_].size(), Eq(4u));
   }
 };
@@ -445,9 +439,9 @@ class ClientRedirectChain_NoJs : public ClientRedirectChain {
     const DOMNode* value =
         NextNode(dom_snapshot, FindTag(dom_snapshot, "TITLE"));
     EXPECT_THAT(value, NodeValue("Hello, World 1"));
-    EXPECT_THAT(confirmed_frame_redirects_[main_frame_],
-                ElementsAre(RedirectReason(
-                    FrameScheduledNavigationReason::META_TAG_REFRESH)));
+    EXPECT_THAT(
+        scheduled_navigations_[main_frame_],
+        ElementsAre(Reason(FrameScheduledNavigationReason::META_TAG_REFRESH)));
     EXPECT_THAT(frames_[main_frame_].size(), Eq(2u));
   }
 };
@@ -479,12 +473,11 @@ class ServerRedirectChain : public HeadlessRenderTest {
     EXPECT_THAT(value, NodeValue("Pass"));
 #ifndef DISABLE_HTTP_REDIRECTS_CHECKS
     EXPECT_THAT(
-        confirmed_frame_redirects_[main_frame_],
+        scheduled_navigations_[main_frame_],
         ElementsAre(
-            RedirectReason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
-            RedirectReason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
-            RedirectReason(
-                FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+            Reason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
+            Reason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
+            Reason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
     EXPECT_THAT(frames_[main_frame_].size(), Eq(4u));
 #endif  // #ifndef DISABLE_HTTP_REDIRECTS_CHECKS
   }
@@ -683,22 +676,20 @@ class FramesRedirectChain : public HeadlessRenderTest {
     EXPECT_THAT(frames_[a_frame->GetId()].size(), Eq(3u));
     EXPECT_THAT(frames_[b_frame->GetId()].size(), Eq(1u));
     EXPECT_THAT(frames_[i_frame->GetId()].size(), Eq(4u));
-    EXPECT_THAT(confirmed_frame_redirects_[main_frame->GetId()],
-                ElementsAre(RedirectReason(
+    EXPECT_THAT(scheduled_navigations_[main_frame->GetId()],
+                ElementsAre(Reason(
                     FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
     EXPECT_THAT(
-        confirmed_frame_redirects_[a_frame->GetId()],
+        scheduled_navigations_[a_frame->GetId()],
         ElementsAre(
-            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
-            RedirectReason(
-                FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+            Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+            Reason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
     EXPECT_THAT(
-        confirmed_frame_redirects_[i_frame->GetId()],
+        scheduled_navigations_[i_frame->GetId()],
         ElementsAre(
-            RedirectReason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
-            RedirectReason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
-            RedirectReason(
-                FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
+            Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+            Reason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH),
+            Reason(FrameScheduledNavigationReason::HTTP_HEADER_REFRESH)));
 #endif  // #ifndef DISABLE_HTTP_REDIRECTS_CHECKS
   }
 };
@@ -725,14 +716,17 @@ class DoubleRedirect : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    // Two navigations have been scheduled while the document was loading...
+    EXPECT_THAT(
+        scheduled_navigations_[main_frame_],
+        ElementsAre(Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED),
+                    Reason(FrameScheduledNavigationReason::SCRIPT_INITIATED)));
+    // ..., but only the second one was started. It canceled the first one.
     EXPECT_THAT(
         GetProtocolHandler()->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/2"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
-    EXPECT_THAT(confirmed_frame_redirects_[main_frame_],
-                ElementsAre(RedirectReason(
-                    FrameScheduledNavigationReason::SCRIPT_INITIATED)));
     EXPECT_THAT(frames_[main_frame_].size(), Eq(2u));
   }
 };
@@ -755,11 +749,15 @@ class RedirectAfterCompletion : public HeadlessRenderTest {
   }
 
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    // While the document was loading, one navigation has been scheduled...
+    EXPECT_THAT(
+        scheduled_navigations_[main_frame_],
+        ElementsAre(Reason(FrameScheduledNavigationReason::META_TAG_REFRESH)));
+    // ..., but because of the timeout, it has not been started yet.
     EXPECT_THAT(GetProtocolHandler()->urls_requested(),
                 ElementsAre("http://www.example.com/"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
-    EXPECT_THAT(confirmed_frame_redirects_[main_frame_], ElementsAre());
     EXPECT_THAT(frames_[main_frame_].size(), Eq(1u));
   }
 };
