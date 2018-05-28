@@ -36,7 +36,9 @@ table_files = \
 	corrections.cti \
 	countries.cti \
 	cs-chardefs.cti \
+	cs-comp8.utb \
 	cs-g1.ctb \
+	cs-letterDef8Dots.uti \
 	cs.tbl \
 	cs-translation.cti \
 	cy-cy-g1.utb \

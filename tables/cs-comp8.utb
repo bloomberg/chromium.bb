@@ -28,7 +28,7 @@
 # http://teiresias.muni.cz/czbraille8/?strana=norma
 
 include digits8Dots.uti
-include cs-letterDef8Dots.cti
+include cs-letterDef8Dots.uti
 
 sign \x0000 9
 sign \x0001 178

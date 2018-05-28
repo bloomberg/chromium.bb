@@ -2,7 +2,7 @@ display: unicode.dis
 table:
   locale: cs
   grade: 0
-  __assert-match: cs-comp8.ctb
+  __assert-match: cs-comp8.utb
 tests:
   - # Capital Czech letters
     - NECHŤ JIŽ HŘÍŠNÉ SAXOFONY ĎÁBLŮ ROZEZVUČÍ SÍŇ ÚDĚSNÝMI TÓNY WALTZU, TANGA A QUICKSTEPU!
