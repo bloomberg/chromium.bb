@@ -4531,7 +4531,6 @@ crbug.com/802915 css3/blending/isolation-should-include-non-local-background.htm
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/830472 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
-crbug.com/830472 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
 
 # document.querySelector(":target") is flaky when called in window.load event.
 crbug.com/843523 external/wpt/dom/nodes/query-target-in-load-event.html [ Failure ]
