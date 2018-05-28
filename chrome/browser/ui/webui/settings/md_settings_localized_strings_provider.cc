@@ -539,11 +539,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"historyDeletionDialogTitle",
        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
       {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
-      {"importantSitesSubtitleCookies",
-       IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES},
-      {"importantSitesSubtitleCookiesAndCache",
-       IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES_AND_CACHE},
-      {"importantSitesConfirm", IDS_SETTINGS_IMPORTANT_SITES_CONFIRM},
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
@@ -1942,10 +1937,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
             IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING,
             IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING));
   }
-
-  html_source->AddBoolean(
-      "importantSitesInCbd",
-      base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
 
   html_source->AddString(
       "improveBrowsingExperience",

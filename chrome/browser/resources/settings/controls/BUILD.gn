@@ -9,7 +9,6 @@ js_type_check("closure_compile") {
     ":controlled_button",
     ":controlled_radio_button",
     ":extension_controlled_indicator",
-    ":important_site_checkbox",
     ":pref_control_behavior",
     ":settings_boolean_control_behavior",
     ":settings_checkbox",
@@ -44,13 +43,6 @@ js_library("extension_controlled_indicator") {
     "..:extension_control_browser_proxy",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
-  ]
-}
-
-js_library("important_site_checkbox") {
-  deps = [
-    ":settings_boolean_control_behavior",
-    "../clear_browsing_data_dialog:clear_browsing_data_browser_proxy",
   ]
 }
 

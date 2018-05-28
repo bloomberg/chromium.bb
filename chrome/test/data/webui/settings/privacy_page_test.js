@@ -6,7 +6,7 @@ cr.define('settings_privacy_page', function() {
   /** @implements {settings.ClearBrowsingDataBrowserProxy} */
   class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
     constructor() {
-      super(['initialize', 'clearBrowsingData', 'getImportantSites']);
+      super(['initialize', 'clearBrowsingData']);
 
       /**
        * The promise to return from |clearBrowsingData|.
@@ -15,12 +15,6 @@ cr.define('settings_privacy_page', function() {
        * @private {?Promise}
        */
       this.clearBrowsingDataPromise_ = null;
-
-      /**
-       * Response for |getImportantSites|.
-       * @private {!Array<!ImportantSite>}
-       */
-      this.importantSites_ = [];
     }
 
     /** @param {!Promise} promise */
@@ -29,24 +23,12 @@ cr.define('settings_privacy_page', function() {
     }
 
     /** @override */
-    clearBrowsingData(dataTypes, timePeriod, importantSites) {
-      this.methodCalled(
-          'clearBrowsingData', [dataTypes, timePeriod, importantSites]);
+    clearBrowsingData(dataTypes, timePeriod) {
+      this.methodCalled('clearBrowsingData', [dataTypes, timePeriod]);
       cr.webUIListenerCallback('browsing-data-removing', true);
       return this.clearBrowsingDataPromise_ !== null ?
           this.clearBrowsingDataPromise_ :
           Promise.resolve();
-    }
-
-    /** @param {!Array<!ImportantSite>} sites */
-    setImportantSites(sites) {
-      this.importantSites_ = sites;
-    }
-
-    /** @override */
-    getImportantSites() {
-      this.methodCalled('getImportantSites');
-      return Promise.resolve(this.importantSites_);
     }
 
     /** @override */
@@ -182,7 +164,6 @@ cr.define('settings_privacy_page', function() {
 
       test('ClearBrowsingDataTap', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
-        assertFalse(element.showImportantSitesDialog_);
 
         const cancelButton = element.$$('.cancel-button');
         assertTrue(!!cancelButton);
@@ -205,14 +186,13 @@ cr.define('settings_privacy_page', function() {
         MockInteractions.tap(actionButton);
 
         return testBrowserProxy.whenCalled('clearBrowsingData')
-            .then(function([dataTypes, timePeriod, importantSites]) {
+            .then(function([dataTypes, timePeriod]) {
               assertEquals(1, dataTypes.length);
               assertEquals('browser.clear_data.cookies_basic', dataTypes[0]);
               assertTrue(element.$$('#clearBrowsingDataDialog').open);
               assertTrue(cancelButton.disabled);
               assertTrue(actionButton.disabled);
               assertTrue(spinner.active);
-              assertTrue(importantSites.length == 0);
 
               // Simulate signal from browser indicating that clearing has
               // completed.
@@ -228,8 +208,6 @@ cr.define('settings_privacy_page', function() {
               assertFalse(actionButton.disabled);
               assertFalse(spinner.active);
               assertFalse(!!element.$$('#notice'));
-              // Check that the dialog didn't switch to important sites.
-              assertFalse(element.showImportantSitesDialog_);
             });
       });
 
@@ -346,84 +324,9 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  function registerImportantSitesTests() {
-    suite('ImportantSites', function() {
-      /** @type {settings.TestClearBrowsingDataBrowserProxy} */
-      let testBrowserProxy;
-
-      /** @type {SettingsClearBrowsingDataDialogElement} */
-      let element;
-
-      /** @type {Array<ImportantSite>} */
-      const importantSites = [
-        {registerableDomain: 'google.com', isChecked: true},
-        {registerableDomain: 'yahoo.com', isChecked: true}
-      ];
-
-      setup(function() {
-        loadTimeData.overrideValues({importantSitesInCbd: true});
-        testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
-        testBrowserProxy.setImportantSites(importantSites);
-        settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
-        PolymerTest.clearBody();
-        element = document.createElement('settings-clear-browsing-data-dialog');
-        element.set('prefs', getClearBrowsingDataPrefs());
-        document.body.appendChild(element);
-        return testBrowserProxy.whenCalled('initialize').then(function() {
-          return testBrowserProxy.whenCalled('getImportantSites');
-        });
-      });
-
-      teardown(function() {
-        element.remove();
-      });
-
-      test('getImportantSites', function() {
-        assertTrue(element.$$('#clearBrowsingDataDialog').open);
-        assertFalse(element.showImportantSitesDialog_);
-        // Select cookie checkbox.
-        MockInteractions.tap(element.$$('#cookiesCheckboxBasic').$.checkbox);
-        assertTrue(element.$$('#cookiesCheckboxBasic').checked);
-        // Clear browsing data.
-        MockInteractions.tap(element.$$('#clearBrowsingDataConfirm'));
-        Polymer.dom.flush();
-        assertFalse(element.$$('#clearBrowsingDataDialog').open);
-        assertTrue(element.showImportantSitesDialog_);
-        return new Promise(function(resolve) {
-                 element.async(resolve);
-               })
-            .then(function() {
-              assertTrue(element.$$('#importantSitesDialog').open);
-              const firstImportantSite = element.$$('important-site-checkbox');
-              assertTrue(!!firstImportantSite);
-              assertEquals(
-                  'google.com', firstImportantSite.site.registerableDomain);
-              assertTrue(firstImportantSite.site.isChecked);
-              // Choose to keep storage for google.com.
-              MockInteractions.tap(firstImportantSite.$$('#checkbox'));
-              assertFalse(firstImportantSite.site.isChecked);
-              // Confirm deletion.
-              MockInteractions.tap(element.$$('#importantSitesConfirm'));
-              return testBrowserProxy.whenCalled('clearBrowsingData')
-                  .then(function([dataTypes, timePeriod, sites]) {
-                    assertEquals(1, dataTypes.length);
-                    assertEquals(
-                        'browser.clear_data.cookies_basic', dataTypes[0]);
-                    assertEquals(2, sites.length);
-                    assertEquals('google.com', sites[0].registerableDomain);
-                    assertFalse(sites[0].isChecked);
-                    assertEquals('yahoo.com', sites[1].registerableDomain);
-                    assertTrue(sites[1].isChecked);
-                  });
-            });
-      });
-    });
-  }
-
   if (cr.isMac || cr.isWin)
     registerNativeCertificateManagerTests();
 
   registerClearBrowsingDataTests();
-  registerImportantSitesTests();
   registerPrivacyPageTests();
 });
