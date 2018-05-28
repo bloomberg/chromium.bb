@@ -299,7 +299,7 @@ void WebSocket::AddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
-    const std::string& user_agent_override,
+    std::vector<mojom::HttpHeaderPtr> additional_headers,
     mojom::WebSocketClientPtr client) {
   DVLOG(3) << "WebSocket::AddChannelRequest @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
@@ -312,12 +312,6 @@ void WebSocket::AddChannelRequest(
     return;
   }
 
-  net::HttpRequestHeaders additional_headers;
-  if (!user_agent_override.empty() &&
-      net::HttpUtil::IsValidHeaderValue(user_agent_override)) {
-    additional_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
-                                 user_agent_override);
-  }
   client_ = std::move(client);
 
   DCHECK(!channel_);
@@ -326,11 +320,11 @@ void WebSocket::AddChannelRequest(
         FROM_HERE,
         base::BindOnce(&WebSocket::AddChannel, weak_ptr_factory_.GetWeakPtr(),
                        socket_url, requested_protocols, site_for_cookies,
-                       additional_headers),
+                       std::move(additional_headers)),
         delay_);
   } else {
     AddChannel(socket_url, requested_protocols, site_for_cookies,
-               additional_headers);
+               std::move(additional_headers));
   }
 }
 
@@ -399,10 +393,11 @@ void WebSocket::OnConnectionError() {
   delegate_->OnLostConnectionToClient(this);
 }
 
-void WebSocket::AddChannel(const GURL& socket_url,
-                           const std::vector<std::string>& requested_protocols,
-                           const GURL& site_for_cookies,
-                           const net::HttpRequestHeaders& additional_headers) {
+void WebSocket::AddChannel(
+    const GURL& socket_url,
+    const std::vector<std::string>& requested_protocols,
+    const GURL& site_for_cookies,
+    std::vector<mojom::HttpHeaderPtr> additional_headers) {
   DVLOG(3) << "WebSocket::AddChannel @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
@@ -418,8 +413,20 @@ void WebSocket::AddChannel(const GURL& socket_url,
   int64_t quota = pending_flow_control_quota_;
   pending_flow_control_quota_ = 0;
 
+  net::HttpRequestHeaders headers_to_pass;
+  for (const auto& header : additional_headers) {
+    if (net::HttpUtil::IsValidHeaderName(header->name) &&
+        net::HttpUtil::IsValidHeaderValue(header->value) &&
+        (net::HttpUtil::IsSafeHeader(header->name) ||
+         base::EqualsCaseInsensitiveASCII(
+             header->name, net::HttpRequestHeaders::kUserAgent))) {
+      // TODO(yhirano): Revisit the last condition. See
+      // https://chromium-review.googlesource.com/c/chromium/src/+/1059092.
+      headers_to_pass.SetHeader(header->name, header->value);
+    }
+  }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
-                                  site_for_cookies, additional_headers);
+                                  site_for_cookies, headers_to_pass);
   if (quota > 0)
     SendFlowControl(quota);
 }

@@ -24,7 +24,6 @@
 class GURL;
 
 namespace net {
-class HttpRequestHeaders;
 class URLRequestContext;
 class WebSocketChannel;
 class SSLInfo;
@@ -80,7 +79,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   void AddChannelRequest(const GURL& url,
                          const std::vector<std::string>& requested_protocols,
                          const GURL& site_for_cookies,
-                         const std::string& user_agent_override,
+                         std::vector<mojom::HttpHeaderPtr> additional_headers,
                          mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
@@ -97,7 +96,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const GURL& site_for_cookies,
-                  const net::HttpRequestHeaders& additional_headers);
+                  std::vector<mojom::HttpHeaderPtr> additional_headers);
 
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;

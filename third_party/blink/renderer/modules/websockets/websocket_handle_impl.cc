@@ -7,6 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle_client.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
 #include "third_party/blink/renderer/platform/network/web_socket_handshake_response.h"
@@ -54,11 +55,15 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
   client_ = client;
 
   network::mojom::blink::WebSocketClientPtr client_proxy;
+  Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
+  if (!user_agent_override.IsNull()) {
+    additional_headers.push_back(network::mojom::blink::HttpHeader::New(
+        HTTPNames::User_Agent, user_agent_override));
+  }
   client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner));
-  websocket_->AddChannelRequest(
-      url, protocols, site_for_cookies,
-      user_agent_override.IsNull() ? g_empty_string : user_agent_override,
-      std::move(client_proxy));
+  websocket_->AddChannelRequest(url, protocols, site_for_cookies,
+                                std::move(additional_headers),
+                                std::move(client_proxy));
 }
 
 void WebSocketHandleImpl::Send(bool fin,
