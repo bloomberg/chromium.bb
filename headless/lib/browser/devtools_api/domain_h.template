@@ -147,8 +147,6 @@ class ExperimentalDomain : public Domain {
 
   {# Generate methods for each experimental command. #}
   {% for command in domain.commands %}
-    {# Skip redirected commands. #}
-    {% if "redirect" in command %}{% continue %}{% endif %}
     {# Skip non-experimental commands. #}
     {% if not command.experimental %}{% continue %}{% endif %}
 {{ command_decl(command) }}

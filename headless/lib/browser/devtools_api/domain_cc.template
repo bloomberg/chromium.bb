@@ -42,9 +42,6 @@ void Domain::RegisterEventHandlersIfNeeded() {
   {% endif %}
 
   {% for command in domain.commands %}
-    {# Skip redirected commands. #}
-    {% if "redirect" in command %}{% continue %}{% endif %}
-
     {% set class_name = 'ExperimentalDomain' if command.experimental else 'Domain' %}
     {% set method_name = command.name | sanitize_literal | to_title_case %}
 void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::OnceCallback<void(std::unique_ptr<{{method_name}}Result>)> callback) {
