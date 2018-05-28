@@ -92,6 +92,10 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptModuleResolver* GetScriptModuleResolver() = 0;
   virtual base::SingleThreadTaskRunner* TaskRunner() = 0;
+
+  // Get the default referrer policy of this modulator as the environment
+  // settings object.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-referrer-policy
   virtual ReferrerPolicy GetReferrerPolicy() = 0;
 
   // Returns the security origin of the "fetch client settings object".
