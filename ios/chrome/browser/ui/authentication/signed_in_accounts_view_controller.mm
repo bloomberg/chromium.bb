@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
@@ -115,7 +115,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
   [model addSectionWithIdentifier:SectionIdentifierAccounts];
   ProfileOAuth2TokenService* oauth2_service =
-      OAuth2TokenServiceFactory::GetForBrowserState(_browserState);
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
   AccountTrackerService* accountTracker =
       ios::AccountTrackerServiceFactory::GetForBrowserState(_browserState);
   for (const std::string& account_id : oauth2_service->GetAccounts()) {
@@ -220,7 +220,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     _browserState = browserState;
     _dispatcher = dispatcher;
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
-        OAuth2TokenServiceFactory::GetForBrowserState(_browserState), self));
+        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
+        self));
     _transitionController = [[MDCDialogTransitionController alloc] init];
     self.modalPresentationStyle = UIModalPresentationCustom;
     self.transitioningDelegate = _transitionController;
@@ -249,7 +250,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
                       self.presentingViewController.view.bounds.size.width -
                           2 * kMDCMinHorizontalPadding);
   OAuth2TokenService* token_service =
-      OAuth2TokenServiceFactory::GetForBrowserState(_browserState);
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
   int shownAccounts =
       MIN(kMaxShownAccounts, token_service->GetAccounts().size());
   CGSize maxSize = CGSizeMake(width - 2 * kHorizontalPadding, CGFLOAT_MAX);
@@ -391,7 +392,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 - (void)onEndBatchChanges {
   ProfileOAuth2TokenService* tokenService =
-      OAuth2TokenServiceFactory::GetForBrowserState(_browserState);
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
   if (tokenService->GetAccounts().empty()) {
     [self dismissWithCompletion:nil];
     return;

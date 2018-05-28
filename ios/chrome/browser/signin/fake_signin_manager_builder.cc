@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 
@@ -22,7 +22,8 @@ std::unique_ptr<KeyedService> BuildFakeSigninManager(
       ios::ChromeBrowserState::FromBrowserState(browser_state);
   std::unique_ptr<SigninManager> manager(new FakeSigninManager(
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          chrome_browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(
           chrome_browser_state),
       ios::GaiaCookieManagerServiceFactory::GetForBrowserState(

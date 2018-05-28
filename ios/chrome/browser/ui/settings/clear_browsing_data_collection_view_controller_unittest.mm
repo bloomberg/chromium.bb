@@ -24,7 +24,7 @@
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
 #include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
@@ -67,7 +67,7 @@ class ClearBrowsingDataCollectionViewControllerTest
     // Setup identity services.
     TestChromeBrowserState::Builder builder;
     builder.SetPrefService(CreatePrefService());
-    builder.AddTestingFactory(OAuth2TokenServiceFactory::GetInstance(),
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildFakeOAuth2TokenService);
     builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
                               &ios::BuildFakeSigninManager);

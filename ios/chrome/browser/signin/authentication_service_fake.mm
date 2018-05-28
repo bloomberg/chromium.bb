@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -78,7 +78,7 @@ AuthenticationServiceFake::CreateAuthenticationService(
       ios::ChromeBrowserState::FromBrowserState(context);
   auto service = base::WrapUnique(new AuthenticationServiceFake(
       browser_state->GetPrefs(),
-      OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
       ios::SigninManagerFactory::GetForBrowserState(browser_state),

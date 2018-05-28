@@ -31,7 +31,7 @@
 #include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
 #include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -127,7 +127,7 @@ class AuthenticationServiceTest : public PlatformTest,
     builder.SetPrefService(CreatePrefService());
     builder.AddTestingFactory(SigninClientFactory::GetInstance(),
                               &BuildFakeTestSigninClient);
-    builder.AddTestingFactory(OAuth2TokenServiceFactory::GetInstance(),
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildFakeOAuth2TokenService);
     builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
                               &ios::BuildFakeSigninManager);
@@ -146,7 +146,7 @@ class AuthenticationServiceTest : public PlatformTest,
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()));
     CreateAuthenticationService();
-    OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
+    ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
         ->AddObserver(this);
   }
 
@@ -161,7 +161,7 @@ class AuthenticationServiceTest : public PlatformTest,
   }
 
   void TearDown() override {
-    OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
+    ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
         ->RemoveObserver(this);
     authentication_service_->Shutdown();
     authentication_service_.reset();
@@ -180,7 +180,8 @@ class AuthenticationServiceTest : public PlatformTest,
     }
     authentication_service_ = std::make_unique<AuthenticationService>(
         browser_state_->GetPrefs(),
-        OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get()),
+        ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+            browser_state_.get()),
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()),
         ios::AccountTrackerServiceFactory::GetForBrowserState(
             browser_state_.get()),
@@ -264,7 +265,8 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
   EXPECT_NSEQ(identity_, authentication_service_->GetAuthenticatedIdentity());
 
   ProfileOAuth2TokenService* token_service =
-      OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get());
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          browser_state_.get());
   AccountTrackerService* account_tracker =
       ios::AccountTrackerServiceFactory::GetForBrowserState(
           browser_state_.get());
@@ -422,7 +424,8 @@ TEST_F(AuthenticationServiceTest,
 
   identity_service_->AddIdentities(@[ @"foo3" ]);
   ProfileOAuth2TokenService* token_service =
-      OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get());
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          browser_state_.get());
   std::vector<std::string> accounts = token_service->GetAccounts();
   std::sort(accounts.begin(), accounts.end());
   ASSERT_EQ(2u, accounts.size());
@@ -597,7 +600,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   SetCachedMDMInfo(identity_, user_info);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
+  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
       ->GetDelegate()
       ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
   EXPECT_EQ(2, refresh_token_available_count_);
@@ -638,7 +641,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
+  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
       ->GetDelegate()
       ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
 
@@ -675,7 +678,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
+  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
       ->GetDelegate()
       ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
 
@@ -734,7 +737,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  OAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
+  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
       ->GetDelegate()
       ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
 

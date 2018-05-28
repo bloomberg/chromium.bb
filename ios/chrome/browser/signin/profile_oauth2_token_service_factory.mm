@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -19,7 +19,7 @@
 #error "This file requires ARC support."
 #endif
 
-OAuth2TokenServiceFactory::OAuth2TokenServiceFactory()
+ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "ProfileOAuth2TokenService",
           BrowserStateDependencyManager::GetInstance()) {
@@ -28,26 +28,27 @@ OAuth2TokenServiceFactory::OAuth2TokenServiceFactory()
   DependsOn(ios::SigninErrorControllerFactory::GetInstance());
 }
 
-OAuth2TokenServiceFactory::~OAuth2TokenServiceFactory() {}
+ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {}
 
-ProfileOAuth2TokenService* OAuth2TokenServiceFactory::GetForBrowserState(
+ProfileOAuth2TokenService* ProfileOAuth2TokenServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<ProfileOAuth2TokenService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-OAuth2TokenServiceFactory* OAuth2TokenServiceFactory::GetInstance() {
-  return base::Singleton<OAuth2TokenServiceFactory>::get();
+ProfileOAuth2TokenServiceFactory*
+ProfileOAuth2TokenServiceFactory::GetInstance() {
+  return base::Singleton<ProfileOAuth2TokenServiceFactory>::get();
 }
 
-void OAuth2TokenServiceFactory::RegisterBrowserStatePrefs(
+void ProfileOAuth2TokenServiceFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ProfileOAuth2TokenService::RegisterProfilePrefs(registry);
 }
 
 std::unique_ptr<KeyedService>
-OAuth2TokenServiceFactory::BuildServiceInstanceFor(
+ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
