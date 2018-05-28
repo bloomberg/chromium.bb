@@ -279,6 +279,22 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                             FrameLoadVector* sameDocumentLoads,
                             FrameLoadVector* differentDocumentLoads);
 
+  // Handles a navigation to a renderer-debug URL.
+  void HandleRendererDebugURL(FrameTreeNode* frame_tree_node, const GURL& url);
+
+  // Creates and returns a NavigationRequest based on the provided parameters.
+  // Will return nullptr if the parameters are invalid and the navigation cannot
+  // start.
+  std::unique_ptr<NavigationRequest> CreateNavigationRequest(
+      FrameTreeNode* frame_tree_node,
+      const NavigationEntryImpl& entry,
+      FrameNavigationEntry* frame_entry,
+      ReloadType reload_type,
+      bool is_same_document_history_load,
+      bool is_history_navigation_in_new_child,
+      const scoped_refptr<network::ResourceRequestBody>& post_body,
+      std::unique_ptr<NavigationUIData> navigation_ui_data);
+
   // Returns whether there is a pending NavigationEntry whose unique ID matches
   // the given NavigationHandle's pending_nav_entry_id.
   bool PendingEntryMatchesHandle(NavigationHandleImpl* handle) const;

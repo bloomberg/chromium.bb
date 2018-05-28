@@ -84,37 +84,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       std::unique_ptr<NavigationHandleImpl> navigation_handle,
       bool was_within_same_document) {}
 
-  // Called by the NavigationController to cause the Navigator to navigate
-  // to the current pending entry. The NavigationController should be called
-  // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
-  // The callbacks can be inside of this function, or at some future time.
-  //
-  // If this method returns false, then the navigation is discarded (equivalent
-  // to calling DiscardPendingEntry on the NavigationController).
-  //
-  // TODO(nasko): Remove this method from the interface, since Navigator and
-  // NavigationController know about each other. This will be possible once
-  // initialization of Navigator and NavigationController is properly done.
-  virtual bool NavigateToPendingEntry(
-      FrameTreeNode* frame_tree_node,
-      const FrameNavigationEntry& frame_entry,
-      ReloadType reload_type,
-      bool is_same_document_history_load,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
-  // DEPRECATED. Callers should use NavigateToPendingEntry instead.
-  // TODO(clamy): This is only briefly exposed to facilitate a larger
-  // refactoring of NavigationController and will go away soon.
-  virtual bool NavigateToEntry(
-      FrameTreeNode* frame_tree_node,
-      const FrameNavigationEntry& frame_entry,
-      const NavigationEntryImpl& entry,
-      ReloadType reload_type,
-      bool is_same_document_history_load,
-      bool is_history_navigation_in_new_child,
-      bool is_pending_entry,
-      const scoped_refptr<network::ResourceRequestBody>& post_body,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
-
   // Called on a newly created subframe during a history navigation. The browser
   // process looks up the corresponding FrameNavigationEntry for the new frame
   // navigates it in the correct process. Returns false if the
@@ -126,6 +95,14 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GURL& default_url);
 
   // Navigation requests -------------------------------------------------------
+
+  // Called by the NavigationController to cause the Navigator to navigate to
+  // |navigation_request|. The NavigationController should be called back with
+  // RendererDidNavigate on success or DiscardPendingEntry on failure. The
+  // callbacks should be called in a future iteration of the message loop.
+  virtual void Navigate(std::unique_ptr<NavigationRequest> request,
+                        ReloadType reload_type,
+                        RestoreType restore_type) {}
 
   virtual base::TimeTicks GetCurrentLoadStart();
 

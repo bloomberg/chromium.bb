@@ -11,6 +11,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/common/previews_state.h"
 
 namespace content {
 
@@ -69,6 +70,14 @@ class NavigationControllerDelegate {
   virtual void DetachInterstitialPage(bool has_focus) = 0;
 
   virtual void UpdateOverridingUserAgent() = 0;
+
+  // Gives the delegate a chance to adjust the previews state during navigation.
+  // When called, previews_state will be pointing to a valid set of previews, or
+  // an enum value disabling previews.  The call will change the value of
+  // previews_state in place, and must change it to either a value disabling
+  // previews, or a subset of the previews passed in.
+  virtual void AdjustPreviewsStateForNavigation(
+      PreviewsState* previews_state) = 0;
 };
 
 }  // namespace content
