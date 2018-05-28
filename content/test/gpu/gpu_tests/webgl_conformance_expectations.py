@@ -459,6 +459,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # AMD
+    self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
+        ['linux', 'amd'], bug=844311)
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
     self.Fail('conformance/rendering/clipping-wide-points.html',
@@ -555,6 +557,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # shell.
     self.Skip('conformance/extensions/oes-texture-float-with-video.html',
         ['android', 'qualcomm', 'no_passthrough'], bug=499555)
+    self.Skip('conformance/rendering/line-rendering-quality.html',
+        ['android', 'qualcomm', 'no_passthrough'], bug=847222)
 
     # Nexus 5
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
