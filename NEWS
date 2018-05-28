@@ -27,6 +27,12 @@ issues]].
     letters often do not have to mark the identifiers deliberately. So
     in this version, we this item has been deleted.
   - Fixed a bug in the braille code that revises the space and 0
+- Updates to Bopomofo-based Chinese Braille Table thanks to Bo-Cheng Jhan
+  - Redefine some Chinese words and phrases
+  - Add various Nemeth symbols such as arrows and parenthesis
+  - Complete the support of CJK Compatibility block
+  - Fix the support of various parentheses, brackets, and braces
+  - Minor fixes (kana rules, punctuation marks, Greek alphabets)
 
 ** Other changes
 - Refactoring thanks to Bert Frees
