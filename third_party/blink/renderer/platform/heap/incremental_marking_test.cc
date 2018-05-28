@@ -1482,7 +1482,6 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyValuesToVectorMember) {
 // don't free marked backings.
 TEST(IncrementalMarkingTest, DISABLED_WeakHashMapPromptlyFreeDisabled) {
   ThreadState* state = ThreadState::Current();
-  state->SetGCState(ThreadState::kIncrementalMarkingStartScheduled);
   state->SetGCState(ThreadState::kIncrementalMarkingStepScheduled);
   Persistent<Object> obj1 = Object::Create();
   NormalPageArena* arena = static_cast<NormalPageArena*>(
@@ -1600,10 +1599,7 @@ class IncrementalMarkingTestDriver {
       FinishGC();
   }
 
-  void Start() {
-    thread_state_->ScheduleIncrementalMarkingStart();
-    thread_state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
-  }
+  void Start() { thread_state_->IncrementalMarkingStart(BlinkGC::kTesting); }
 
   bool SingleStep() {
     CHECK(thread_state_->IsIncrementalMarking());

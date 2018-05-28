@@ -104,7 +104,8 @@ class PLATFORM_EXPORT BlinkGC final {
     kPageNavigationGC = 5,
     kThreadTerminationGC = 6,
     kTesting = 7,
-    kLastGCReason = kTesting,
+    kIncrementalIdleGC = 8,
+    kLastGCReason = kIncrementalIdleGC,
   };
 
   enum ArenaIndices {
