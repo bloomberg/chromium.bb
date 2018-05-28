@@ -188,6 +188,12 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void SetAnimationCounts(size_t total_animations_count,
                           bool current_frame_had_raf,
                           bool next_frame_has_pending_raf);
+  void SetHasMainThreadHandledEvent(
+      bool has_main_thread_handled_event) override;
+  void SetHasImplThreadHandledEvent(
+      bool has_impl_thread_handled_event) override;
+  bool HasMainThreadHandledEvent() const override;
+  bool HasImplThreadHandledEvent() const override;
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
@@ -229,6 +235,13 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   size_t main_thread_animations_count_ = 0;
   bool current_frame_had_raf_ = false;
   bool next_frame_has_pending_raf_ = false;
+  // Tracks whether an input event was handled on the main/impl thread during
+  // the current frame. Used for tracking main/impl frame draw interval. Reset
+  // at every new main/impl frame.
+  bool has_main_thread_handled_event_ = false;
+  // This is set from impl side only, so do not push this property from main
+  // to impl.
+  bool has_impl_thread_handled_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

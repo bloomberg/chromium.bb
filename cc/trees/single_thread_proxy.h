@@ -94,6 +94,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   size_t MainThreadAnimationsCount() const override;
   bool CurrentFrameHadRAF() const override;
   bool NextFrameHasPendingRAF() const override;
+  bool HasMainThreadHandledEvent() const override;
+  bool HasImplThreadHandledEvent() const override;
 
   // LayerTreeHostImplClient implementation
   void DidLoseLayerTreeFrameSinkOnImplThread() override;

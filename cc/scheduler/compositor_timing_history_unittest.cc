@@ -47,7 +47,8 @@ class CompositorTimingHistoryTest : public testing::Test {
                      int composited_animations_count,
                      int main_thread_animations_count,
                      bool current_frame_had_raf = false,
-                     bool next_frame_has_pending_raf = false) {
+                     bool next_frame_has_pending_raf = false,
+                     bool has_main_thread_handled_input_event = false) {
     timing_history_.WillBeginMainFrame(true, Now());
     timing_history_.BeginMainFrameStarted(Now());
     timing_history_.WillCommit();
@@ -58,13 +59,15 @@ class CompositorTimingHistoryTest : public testing::Test {
     timing_history_.WillDraw();
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
     timing_history_.DidDraw(true, Now(), composited_animations_count,
-                            main_thread_animations_count,
-                            current_frame_had_raf, next_frame_has_pending_raf);
+                            main_thread_animations_count, current_frame_had_raf,
+                            next_frame_has_pending_raf,
+                            has_main_thread_handled_input_event, false);
   }
 
   void DrawImplFrame(int advance_ms,
                      int composited_animations_count,
-                     int main_thread_animations_count) {
+                     int main_thread_animations_count,
+                     bool has_impl_thread_handled_input_event = false) {
     timing_history_.WillBeginMainFrame(true, Now());
     timing_history_.BeginMainFrameStarted(Now());
     timing_history_.BeginMainFrameAborted();
@@ -73,7 +76,8 @@ class CompositorTimingHistoryTest : public testing::Test {
     timing_history_.WillDraw();
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
     timing_history_.DidDraw(false, Now(), composited_animations_count,
-                            main_thread_animations_count, false, false);
+                            main_thread_animations_count, false, false, false,
+                            has_impl_thread_handled_input_event);
   }
 
  protected:
@@ -126,7 +130,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_Commit) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw(true, Now(), 0, 0, false, false);
+  timing_history_.DidDraw(true, Now(), 0, 0, false, false, false, false);
 
   EXPECT_EQ(begin_main_frame_queue_duration,
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());
@@ -177,7 +181,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw(false, Now(), 0, 0, false, false);
+  timing_history_.DidDraw(false, Now(), 0, 0, false, false, false, false);
 
   EXPECT_EQ(base::TimeDelta(),
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());
@@ -438,6 +442,32 @@ TEST_F(CompositorTimingHistoryTest, AnimationsWithNewActiveTreeNotUsed) {
   TestAnimationUMA(histogram_tester, 3, 1);
   histogram_tester.ExpectBucketCount(
       "Scheduling.Renderer.DrawIntervalWithCompositedAnimations2", 123, 1);
+}
+
+TEST_F(CompositorTimingHistoryTest, FramesWithInputEvent) {
+  base::HistogramTester histogram_tester;
+
+  DrawImplFrame(123, 0, 0, true);
+  TestAnimationUMA(histogram_tester, 0, 0);
+
+  DrawImplFrame(456, 0, 0, true);
+  TestAnimationUMA(histogram_tester, 1, 0);
+  histogram_tester.ExpectBucketCount(
+      "Scheduling.Renderer.DrawIntervalWithCompositedAnimations2", 456, 1);
+
+  DrawImplFrame(321, 0, 0, false);
+  TestAnimationUMA(histogram_tester, 1, 0);
+
+  DrawMainFrame(654, 0, 0, false, false, true);
+  TestAnimationUMA(histogram_tester, 1, 0);
+
+  DrawMainFrame(234, 0, 0, false, false, true);
+  TestAnimationUMA(histogram_tester, 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Scheduling.Renderer.DrawIntervalWithMainThreadAnimations2", 234, 1);
+
+  DrawMainFrame(243, 0, 0, false, false, false);
+  TestAnimationUMA(histogram_tester, 1, 1);
 }
 
 }  // namespace

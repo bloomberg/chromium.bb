@@ -375,6 +375,14 @@ bool ProxyImpl::NextFrameHasPendingRAF() const {
   return host_impl_->mutator_host()->NextFrameHasPendingRAF();
 }
 
+bool ProxyImpl::HasMainThreadHandledEvent() const {
+  return host_impl_->mutator_host()->HasMainThreadHandledEvent();
+}
+
+bool ProxyImpl::HasImplThreadHandledEvent() const {
+  return host_impl_->mutator_host()->HasImplThreadHandledEvent();
+}
+
 bool ProxyImpl::IsInsideDraw() {
   return inside_draw_;
 }

@@ -131,6 +131,10 @@ class MutatorHost {
   virtual size_t MainThreadAnimationsCount() const = 0;
   virtual bool CurrentFrameHadRAF() const = 0;
   virtual bool NextFrameHasPendingRAF() const = 0;
+  virtual void SetHasMainThreadHandledEvent(bool) = 0;
+  virtual void SetHasImplThreadHandledEvent(bool) = 0;
+  virtual bool HasMainThreadHandledEvent() const = 0;
+  virtual bool HasImplThreadHandledEvent() const = 0;
 };
 
 class MutatorEvents {

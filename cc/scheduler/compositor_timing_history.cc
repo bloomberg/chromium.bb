@@ -864,7 +864,9 @@ void CompositorTimingHistory::DidDraw(
     size_t composited_animations_count,
     size_t main_thread_animations_count,
     bool current_frame_had_raf,
-    bool next_frame_has_pending_raf) {
+    bool next_frame_has_pending_raf,
+    bool has_main_thread_handled_input_event,
+    bool has_impl_thread_handled_input_event) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
   base::TimeDelta draw_duration = draw_end_time - draw_start_time_;
@@ -886,11 +888,18 @@ void CompositorTimingHistory::DidDraw(
   if (!draw_end_time_prev_.is_null()) {
     base::TimeDelta draw_interval = draw_end_time - draw_end_time_prev_;
     uma_reporter_->AddDrawInterval(draw_interval);
-    if (composited_animations_count > 0 &&
-        previous_frame_had_composited_animations_)
+    bool current_impl_frame_had_input_or_animation =
+        composited_animations_count > 0 || has_impl_thread_handled_input_event;
+    bool previous_impl_frame_had_input_or_animation =
+        previous_frame_had_composited_animations_ ||
+        previous_frame_had_impl_thread_handled_input_event_;
+    if (current_impl_frame_had_input_or_animation &&
+        previous_impl_frame_had_input_or_animation)
       uma_reporter_->AddDrawIntervalWithCompositedAnimations(draw_interval);
   }
   previous_frame_had_composited_animations_ = composited_animations_count > 0;
+  previous_frame_had_impl_thread_handled_input_event_ =
+      has_impl_thread_handled_input_event;
   draw_end_time_prev_ = draw_end_time;
 
   if (used_new_active_tree) {
@@ -906,9 +915,11 @@ void CompositorTimingHistory::DidDraw(
     active_tree_main_frame_time_ = base::TimeTicks();
 
     bool current_main_frame_had_visual_update =
-        main_thread_animations_count > 0 || current_frame_had_raf;
+        main_thread_animations_count > 0 || current_frame_had_raf ||
+        has_main_thread_handled_input_event;
     bool previous_main_frame_had_visual_update =
-        previous_frame_had_main_thread_animations_ || previous_frame_had_raf_;
+        previous_frame_had_main_thread_animations_ || previous_frame_had_raf_ ||
+        previous_frame_had_main_thread_handled_input_event_;
     if (current_main_frame_had_visual_update &&
         previous_main_frame_had_visual_update) {
       base::TimeDelta draw_interval =
@@ -925,6 +936,8 @@ void CompositorTimingHistory::DidDraw(
     // also already has a future raf scheduled.
     previous_frame_had_raf_ =
         current_frame_had_raf && next_frame_has_pending_raf;
+    previous_frame_had_main_thread_handled_input_event_ =
+        has_main_thread_handled_input_event;
 
     new_active_tree_draw_end_time_prev_ = draw_end_time;
 

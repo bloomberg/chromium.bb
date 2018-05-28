@@ -657,8 +657,9 @@ void Scheduler::DrawIfPossible() {
       drawing_with_new_active_tree,
       begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().frame_time,
       client_->CompositedAnimationsCount(),
-      client_->MainThreadAnimationsCount(),
-      client_->CurrentFrameHadRAF(), client_->NextFrameHasPendingRAF());
+      client_->MainThreadAnimationsCount(), client_->CurrentFrameHadRAF(),
+      client_->NextFrameHasPendingRAF(), client_->HasMainThreadHandledEvent(),
+      client_->HasImplThreadHandledEvent());
 }
 
 void Scheduler::DrawForced() {
@@ -675,8 +676,9 @@ void Scheduler::DrawForced() {
       drawing_with_new_active_tree,
       begin_impl_frame_tracker_.DangerousMethodCurrentOrLast().frame_time,
       client_->CompositedAnimationsCount(),
-      client_->MainThreadAnimationsCount(),
-      client_->CurrentFrameHadRAF(), client_->NextFrameHasPendingRAF());
+      client_->MainThreadAnimationsCount(), client_->CurrentFrameHadRAF(),
+      client_->NextFrameHasPendingRAF(), client_->HasMainThreadHandledEvent(),
+      client_->HasImplThreadHandledEvent());
 }
 
 void Scheduler::SetDeferCommits(bool defer_commits) {
