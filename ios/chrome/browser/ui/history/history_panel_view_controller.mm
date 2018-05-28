@@ -14,7 +14,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
 #import "ios/chrome/browser/ui/history/history_search_view_controller.h"
@@ -118,7 +118,7 @@ CGFloat kShadowOpacity = 0.2f;
         _browsingHistoryDriver.get(),
         ios::HistoryServiceFactory::GetForBrowserState(
             browserState, ServiceAccessType::EXPLICIT_ACCESS),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState));
+        ProfileSyncServiceFactory::GetForBrowserState(browserState));
 
     _historyCollectionController.historyService = _browsingHistoryService.get();
 

@@ -11,7 +11,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -201,7 +201,7 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
 - (std::unique_ptr<const synced_sessions::DistantSession>)distantSessionForTag:
     (std::string const&)tag {
   syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   return std::make_unique<synced_sessions::DistantSession>(syncService, tag);
 }
 
@@ -226,7 +226,7 @@ void FillSetUsingSessions(synced_sessions::SyncedSessions const& sessions,
 
 - (void)syncedSessionsChanged {
   syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
 
   std::unique_ptr<synced_sessions::SyncedSessions> oldSyncedSessions(
       new synced_sessions::SyncedSessions(syncService));

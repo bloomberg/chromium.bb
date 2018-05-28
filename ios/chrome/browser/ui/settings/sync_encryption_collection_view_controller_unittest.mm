@@ -10,8 +10,8 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -44,15 +44,14 @@ class SyncEncryptionCollectionViewControllerTest
  protected:
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;
-    test_cbs_builder.AddTestingFactory(
-        IOSChromeProfileSyncServiceFactory::GetInstance(),
-        &CreateNiceProfileSyncServiceMock);
+    test_cbs_builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                                       &CreateNiceProfileSyncServiceMock);
     chrome_browser_state_ = test_cbs_builder.Build();
     CollectionViewControllerTest::SetUp();
 
     mock_profile_sync_service_ =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
-            IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            ProfileSyncServiceFactory::GetForBrowserState(
                 chrome_browser_state_.get()));
     ON_CALL(*mock_profile_sync_service_, IsEngineInitialized())
         .WillByDefault(Return(true));

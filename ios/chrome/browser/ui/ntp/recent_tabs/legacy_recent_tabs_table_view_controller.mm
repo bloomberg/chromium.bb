@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
@@ -340,7 +340,7 @@ enum CellType {
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
   sync_sessions::OpenTabsUIDelegate* openTabs =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState)
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState)
           ->GetOpenTabsUIDelegate();
   const sessions::SessionTab* toLoad = nullptr;
   [self dismissRecentTabsModal];
@@ -508,7 +508,7 @@ enum CellType {
   [self.tableView deleteSections:indexesToBeDeleted
                 withRowAnimation:UITableViewRowAnimationFade];
   syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   _syncedSessions.reset(new synced_sessions::SyncedSessions(syncService));
   _sessionState = newSessionState;
 
@@ -656,7 +656,7 @@ enum CellType {
       [self sessionAtIndexPath:indexPath];
   std::string sessionTagCopy = session->tag;
   syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   sync_sessions::OpenTabsUIDelegate* openTabs =
       syncService->GetOpenTabsUIDelegate();
   _syncedSessions->EraseSession([self indexOfSessionAtIndexPath:indexPath]);

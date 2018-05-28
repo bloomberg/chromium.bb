@@ -11,7 +11,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
@@ -64,8 +64,7 @@
       _browsingHistoryDriver.get(),
       ios::HistoryServiceFactory::GetForBrowserState(
           self.browserState, ServiceAccessType::EXPLICIT_ACCESS),
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-          self.browserState));
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState));
   historyTableViewController.historyService = _browsingHistoryService.get();
 
   // Configure and present HistoryNavigationController.

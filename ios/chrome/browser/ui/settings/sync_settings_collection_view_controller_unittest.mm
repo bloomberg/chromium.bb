@@ -14,8 +14,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
@@ -92,8 +92,7 @@ class SyncSettingsCollectionViewControllerTest
     ios::ChromeBrowserState* chrome_browser_state =
         ios::ChromeBrowserState::FromBrowserState(context);
     browser_sync::ProfileSyncService* sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            chrome_browser_state);
+        ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<NiceMock<SyncSetupServiceMock>>(
         sync_service, chrome_browser_state->GetPrefs());
   }
@@ -103,8 +102,7 @@ class SyncSettingsCollectionViewControllerTest
     ios::ChromeBrowserState* chrome_browser_state =
         ios::ChromeBrowserState::FromBrowserState(context);
     browser_sync::ProfileSyncService* sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            chrome_browser_state);
+        ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<NiceMock<SyncSetupServiceMockThatSucceeds>>(
         sync_service, chrome_browser_state->GetPrefs());
   }
@@ -114,8 +112,7 @@ class SyncSettingsCollectionViewControllerTest
     ios::ChromeBrowserState* chrome_browser_state =
         ios::ChromeBrowserState::FromBrowserState(context);
     browser_sync::ProfileSyncService* sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            chrome_browser_state);
+        ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
     return std::make_unique<NiceMock<SyncSetupServiceMockThatFails>>(
         sync_service, chrome_browser_state->GetPrefs());
   }
@@ -157,9 +154,8 @@ class SyncSettingsCollectionViewControllerTest
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
                                        &CreateSyncSetupService);
-    test_cbs_builder.AddTestingFactory(
-        IOSChromeProfileSyncServiceFactory::GetInstance(),
-        &CreateProfileSyncService);
+    test_cbs_builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
+                                       &CreateProfileSyncService);
     chrome_browser_state_ = test_cbs_builder.Build();
     CollectionViewControllerTest::SetUp();
 
@@ -176,7 +172,7 @@ class SyncSettingsCollectionViewControllerTest
 
     mock_profile_sync_service_ =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
-            IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+            ProfileSyncServiceFactory::GetForBrowserState(
                 chrome_browser_state_.get()));
     ON_CALL(*mock_profile_sync_service_, IsEngineInitialized())
         .WillByDefault(Return(true));

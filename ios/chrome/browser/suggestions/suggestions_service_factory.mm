@@ -24,7 +24,7 @@
 #include "components/suggestions/suggestions_store.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -56,7 +56,7 @@ SuggestionsServiceFactory::SuggestionsServiceFactory()
           "SuggestionsService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 SuggestionsServiceFactory::~SuggestionsServiceFactory() {
@@ -70,7 +70,7 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   browser_sync::ProfileSyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
   base::FilePath database_dir(
       browser_state->GetStatePath().Append(kThumbnailDirectory));
 

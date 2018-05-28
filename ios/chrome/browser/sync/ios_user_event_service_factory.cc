@@ -18,7 +18,7 @@
 #include "components/sync/user_events/user_event_sync_bridge.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 
@@ -45,7 +45,7 @@ std::unique_ptr<KeyedService>
 IOSUserEventServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+      ProfileSyncServiceFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(browser_state));
   if (!syncer::UserEventServiceImpl::MightRecordEvents(
           browser_state->IsOffTheRecord(), sync_service)) {

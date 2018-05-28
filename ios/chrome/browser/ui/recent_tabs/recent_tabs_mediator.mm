@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_consumer.h"
@@ -150,7 +150,7 @@
 
 - (BOOL)hasForeignSessions {
   browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   DCHECK(service);
   sync_sessions::OpenTabsUIDelegate* openTabs =
       service->GetOpenTabsUIDelegate();
@@ -165,7 +165,7 @@
 - (void)reloadSessionsData {
   const syncer::ModelTypeSet types(syncer::SESSIONS);
   // Requests a sync refresh of the sessions for the current profile.
-  IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState)
+  ProfileSyncServiceFactory::GetForBrowserState(_browserState)
       ->TriggerRefresh(types);
 }
 

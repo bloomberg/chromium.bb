@@ -17,7 +17,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
@@ -57,13 +57,13 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
 
   // Register for sync status changes.
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
   sync_service->AddObserver(this);
 }
 
 SyncErrorInfoBarDelegate::~SyncErrorInfoBarDelegate() {
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
   sync_service->RemoveObserver(this);
 }
 

@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -118,7 +118,7 @@ const CGFloat kSpinnerButtonPadding = 18;
             ->GetAuthenticatedUserEmail();
     DCHECK(userEmail);
     browser_sync::ProfileSyncService* service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState_);
+        ProfileSyncServiceFactory::GetForBrowserState(browserState_);
     if (service->IsEngineInitialized() &&
         service->IsUsingSecondaryPassphrase()) {
       base::Time passphrase_time = service->GetExplicitPassphraseTime();
@@ -352,15 +352,14 @@ const CGFloat kSpinnerButtonPadding = 18;
 
   if (!syncObserver_.get()) {
     syncObserver_.reset(new SyncObserverBridge(
-        self,
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState_)));
+        self, ProfileSyncServiceFactory::GetForBrowserState(browserState_)));
   }
 
   // Clear out the error message.
   self.syncErrorMessage = nil;
 
   browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState_);
+      ProfileSyncServiceFactory::GetForBrowserState(browserState_);
   DCHECK(service);
   // It is possible for a race condition to happen where a user is allowed
   // to call the backend with the passphrase before the backend is
@@ -536,7 +535,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 - (void)onSyncStateChanged {
   browser_sync::ProfileSyncService* service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState_);
+      ProfileSyncServiceFactory::GetForBrowserState(browserState_);
 
   if (!service->IsEngineInitialized()) {
     return;

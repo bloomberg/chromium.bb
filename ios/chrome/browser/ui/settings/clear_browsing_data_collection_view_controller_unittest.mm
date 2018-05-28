@@ -26,8 +26,8 @@
 #include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/common/string_util.h"
@@ -71,15 +71,14 @@ class ClearBrowsingDataCollectionViewControllerTest
                               &BuildFakeOAuth2TokenService);
     builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
                               &ios::BuildFakeSigninManager);
-    builder.AddTestingFactory(IOSChromeProfileSyncServiceFactory::GetInstance(),
+    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
                               &BuildMockProfileSyncService);
     browser_state_ = builder.Build();
 
     signin_manager_ =
         ios::SigninManagerFactory::GetForBrowserState(browser_state_.get());
     mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-            browser_state_.get()));
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
   }
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {

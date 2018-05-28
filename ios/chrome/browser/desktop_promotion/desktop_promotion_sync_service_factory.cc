@@ -9,7 +9,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 
 // static
 DesktopPromotionSyncService*
@@ -29,7 +29,7 @@ DesktopPromotionSyncServiceFactory::DesktopPromotionSyncServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "DesktopPromotionSyncService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 DesktopPromotionSyncServiceFactory::~DesktopPromotionSyncServiceFactory() =
@@ -42,7 +42,7 @@ DesktopPromotionSyncServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<DesktopPromotionSyncService>(
       browser_state->GetPrefs(),
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 
 bool DesktopPromotionSyncServiceFactory::ServiceIsNULLWhileTesting() const {

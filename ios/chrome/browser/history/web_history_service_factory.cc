@@ -14,7 +14,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
@@ -25,7 +25,7 @@ namespace {
 // false otherwise.
 bool IsHistorySyncEnabled(ios::ChromeBrowserState* browser_state) {
   syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+      ProfileSyncServiceFactory::GetForBrowserState(browser_state);
   return sync_service && sync_service->IsSyncActive() &&
          sync_service->GetActiveDataTypes().Has(
              syncer::HISTORY_DELETE_DIRECTIVES);
@@ -54,7 +54,7 @@ WebHistoryServiceFactory::WebHistoryServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "WebHistoryService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(IOSChromeProfileSyncServiceFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 

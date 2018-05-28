@@ -19,7 +19,7 @@
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/js/js_event_details.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios.h"
@@ -236,6 +236,6 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
 syncer::SyncService* SyncInternalsMessageHandler::GetSyncService() {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());
-  return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+  return ProfileSyncServiceFactory::GetForBrowserState(
       browser_state->GetOriginalChromeBrowserState());
 }

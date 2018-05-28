@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
@@ -352,7 +352,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
     ios::ChromeBrowserState* browser_state =
         chrome_test_util::GetOriginalBrowserState();
     browser_sync::ProfileSyncService* profile_sync_service =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state);
     profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(
         syncer::REASON_DECRYPTION, sync_pb::EncryptedData());
     return l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION);

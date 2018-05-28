@@ -25,7 +25,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
     ios::ChromeBrowserState* browser_state)
@@ -154,8 +154,7 @@ bool AutocompleteProviderClientImpl::SearchSuggestEnabled() const {
 
 bool AutocompleteProviderClientImpl::IsTabUploadToGoogleActive() const {
   return syncer::GetUploadToGoogleState(
-             IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-                 browser_state_),
+             ProfileSyncServiceFactory::GetForBrowserState(browser_state_),
              syncer::ModelType::PROXY_TABS) == syncer::UploadState::ACTIVE;
 }
 

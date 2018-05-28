@@ -21,7 +21,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 
 namespace {
@@ -40,7 +40,7 @@ CreateCounterForBrowserStateAndPref(ios::ChromeBrowserState* browser_state,
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
         base::BindRepeating(&ios::WebHistoryServiceFactory::GetForBrowserState,
                             base::Unretained(browser_state)),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteCache) {
@@ -51,14 +51,14 @@ CreateCounterForBrowserStateAndPref(ios::ChromeBrowserState* browser_state,
     return std::make_unique<browsing_data::PasswordsCounter>(
         IOSChromePasswordStoreFactory::GetForBrowserState(
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   if (pref_name == browsing_data::prefs::kDeleteFormData) {
     return std::make_unique<browsing_data::AutofillCounter>(
         ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
+        ProfileSyncServiceFactory::GetForBrowserState(browser_state));
   }
 
   return nullptr;
