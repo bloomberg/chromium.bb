@@ -68,7 +68,6 @@ SkFontMgr* FontCache::static_font_manager_ = nullptr;
 #if defined(OS_WIN)
 bool FontCache::antialiased_text_enabled_ = false;
 bool FontCache::lcd_text_enabled_ = false;
-float FontCache::device_scale_factor_ = 1.0;
 bool FontCache::use_skia_font_fallback_ = false;
 #endif  // defined(OS_WIN)
 
