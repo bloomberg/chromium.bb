@@ -998,6 +998,9 @@ enum class OverscrollViewState {
     _selectionCircleLayer.fillColor =
         [UIColor colorWithRed:1 green:1 blue:1 alpha:0.2].CGColor;
     _selectionCircleMaskLayer.fillColor = [[UIColor clearColor] CGColor];
+    [_addTabLabel setTextColor:[UIColor whiteColor]];
+    [_refreshLabel setTextColor:[UIColor whiteColor]];
+    [_closeTabLabel setTextColor:[UIColor whiteColor]];
   } else {
     [_addTabActionImageView setImage:[UIImage imageNamed:kNewTabActionImage]];
     [_refreshActionImageView setImage:[UIImage imageNamed:kRefreshActionImage]];
