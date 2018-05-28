@@ -1486,6 +1486,7 @@ interface Document : Node
     getter firstElementChild
     getter fonts
     getter forms
+    getter fullscreen
     getter fullscreenElement
     getter fullscreenEnabled
     getter head
@@ -1682,6 +1683,9 @@ interface Document : Node
     setter dir
     setter domain
     setter fgColor
+    setter fullscreen
+    setter fullscreenElement
+    setter fullscreenEnabled
     setter linkColor
     setter moreStyleSheets
     setter onabort
@@ -6860,6 +6864,7 @@ interface ShadowRoot : DocumentFragment
     method elementFromPoint
     method elementsFromPoint
     method getSelection
+    setter fullscreenElement
     setter innerHTML
     setter moreStyleSheets
 interface SharedWorker : EventTarget

@@ -24,7 +24,8 @@
 [
     ImplementedAs=DocumentFullscreen
 ] partial interface Document {
-    [RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
+    [LenientSetter, RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
+    [LenientSetter, Unscopable, RuntimeEnabled=FullscreenUnprefixed, ImplementedAs=fullscreenElement] readonly attribute boolean fullscreen;
 
     [RuntimeEnabled=FullscreenUnprefixed] void exitFullscreen();
 
