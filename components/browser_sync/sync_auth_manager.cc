@@ -221,12 +221,10 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
     return;
   }
 
-  GoogleServiceAuthError token_error =
-      token_service_->GetAuthError(GetAuthenticatedAccountInfo().account_id);
+  GoogleServiceAuthError token_error = token_service_->GetAuthError(account_id);
   if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_REJECTED_BY_CLIENT)) {
-    is_auth_in_progress_ = false;
     // When the refresh token is replaced by a new token with a
     // CREDENTIALS_REJECTED_BY_CLIENT error, Sync must be stopped immediately,
     // even if the current access token is still valid. This happens e.g. when
@@ -239,11 +237,10 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
     // CREDENTIALS_REJECTED_BY_CLIENT is only set by the signin component when
     // the refresh token is created.
     ClearAccessTokenAndRequest();
-    // TODO(treib): Should we also set our auth error state?
+    UpdateAuthErrorState(token_error);
 
     sync_service_->OnRefreshTokenRevoked();
-    // TODO(treib): We can probably early-out here - no point in also calling
-    // OnRefreshTokenAvailable on the ProfileSyncService.
+    return;
   }
 
   sync_service_->OnRefreshTokenAvailable();
