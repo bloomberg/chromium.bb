@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_FIPS181_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_FIPS181_H_
 
 #include <string>
 
@@ -21,11 +21,11 @@ extern void ForceFixPassword(std::string* password);
 // for all sites, but eventually we can incorporate additional information to
 // determine passwords that are likely to be accepted (i.e. use pattern field,
 // previous generated passwords, crowdsourcing, etc.)
-class PasswordGenerator {
+class PasswordGeneratorFips181 {
  public:
   // |max_length| is used as a hint for the generated password's length.
-  explicit PasswordGenerator(int max_length);
-  ~PasswordGenerator();
+  explicit PasswordGeneratorFips181(int max_length);
+  ~PasswordGeneratorFips181();
 
   // Returns a random password such that:
   // (1) Each character is guaranteed to be a non-whitespace printable ASCII
@@ -40,14 +40,14 @@ class PasswordGenerator {
  private:
   // Unit test also need to access |kDefaultPasswordLength|.
   static const int kDefaultPasswordLength;
-  FRIEND_TEST_ALL_PREFIXES(PasswordGeneratorTest, PasswordLength);
+  FRIEND_TEST_ALL_PREFIXES(PasswordGeneratorFips181Test, PasswordLength);
 
   // The length of the generated password.
   const int password_length_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerator);
+  DISALLOW_COPY_AND_ASSIGN(PasswordGeneratorFips181);
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_GENERATOR_FIPS181_H_

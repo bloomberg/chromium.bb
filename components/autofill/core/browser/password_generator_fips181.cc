@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator_fips181.h"
 
 #include <stddef.h>
 
@@ -54,7 +54,7 @@ bool VerifyPassword(const std::string& password) {
 
 namespace autofill {
 
-const int PasswordGenerator::kDefaultPasswordLength = 15;
+const int PasswordGeneratorFips181::kDefaultPasswordLength = 15;
 
 void ForceFixPassword(std::string* password) {
   for (char& it : *password) {
@@ -72,11 +72,11 @@ void ForceFixPassword(std::string* password) {
   }
 }
 
-PasswordGenerator::PasswordGenerator(int max_length)
+PasswordGeneratorFips181::PasswordGeneratorFips181(int max_length)
     : password_length_(GetLengthFromHint(max_length, kDefaultPasswordLength)) {}
-PasswordGenerator::~PasswordGenerator() {}
+PasswordGeneratorFips181::~PasswordGeneratorFips181() {}
 
-std::string PasswordGenerator::Generate() const {
+std::string PasswordGeneratorFips181::Generate() const {
   char password[255];
   char unused_hypenated_password[255];
   // Generate passwords that have numbers and upper and lower case letters.

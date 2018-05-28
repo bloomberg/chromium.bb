@@ -6,7 +6,7 @@
 
 #include <locale>
 
-#include "components/autofill/core/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator_fips181.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -32,30 +32,32 @@ void CheckPasswordCorrectness(const std::string& password) {
 
 namespace autofill {
 
-TEST(PasswordGeneratorTest, PasswordLength) {
-  PasswordGenerator pg1(10);
+TEST(PasswordGeneratorFips181Test, PasswordLength) {
+  PasswordGeneratorFips181 pg1(10);
   std::string password = pg1.Generate();
   EXPECT_EQ(password.size(), 10u);
 
-  PasswordGenerator pg2(-1);
+  PasswordGeneratorFips181 pg2(-1);
   password = pg2.Generate();
-  EXPECT_EQ(password.size(),
-            static_cast<size_t>(PasswordGenerator::kDefaultPasswordLength));
+  EXPECT_EQ(
+      password.size(),
+      static_cast<size_t>(PasswordGeneratorFips181::kDefaultPasswordLength));
 
-  PasswordGenerator pg3(100);
+  PasswordGeneratorFips181 pg3(100);
   password = pg3.Generate();
-  EXPECT_EQ(password.size(),
-            static_cast<size_t>(PasswordGenerator::kDefaultPasswordLength));
+  EXPECT_EQ(
+      password.size(),
+      static_cast<size_t>(PasswordGeneratorFips181::kDefaultPasswordLength));
 }
 
-TEST(PasswordGeneratorTest, PasswordPattern) {
-  PasswordGenerator pg(12);
+TEST(PasswordGeneratorFips181Test, PasswordPattern) {
+  PasswordGeneratorFips181 pg(12);
   std::string password = pg.Generate();
   CheckPasswordCorrectness(password);
 }
 
-TEST(PasswordGeneratorTest, Printable) {
-  PasswordGenerator pg(12);
+TEST(PasswordGeneratorFips181Test, Printable) {
+  PasswordGeneratorFips181 pg(12);
   std::string password = pg.Generate();
   for (size_t i = 0; i < password.size(); i++) {
     // Make sure that the character is printable.
@@ -63,7 +65,7 @@ TEST(PasswordGeneratorTest, Printable) {
   }
 }
 
-TEST(PasswordGeneratorTest, ForceFixPasswordTest) {
+TEST(PasswordGeneratorFips181Test, ForceFixPasswordTest) {
   std::string passwords_to_fix[] = {"nonumbersoruppercase",
                                     "nonumbersWithuppercase",
                                     "numbers3Anduppercase", "UmpAwgemHoc"};
