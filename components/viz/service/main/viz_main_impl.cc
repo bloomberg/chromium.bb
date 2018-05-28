@@ -141,11 +141,19 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
 
   CreateUkmRecorderIfNeeded(dependencies.connector);
 
+  // We need to provide GpuServiceImpl a callback to exit the GPU process. With
+  // OOP-D this requires destroying RootCompositorFrameSinkImpls on the
+  // compositor thread while the GPU thread is still running to avoid deadlock.
+  // For non OOP-D we can simply quit the GPU thread RunLoop.
+  base::OnceClosure exit_callback =
+      compositor_thread_
+          ? base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this))
+          : base::BindOnce(&base::RunLoop::QuitCurrentDeprecated);
   gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_task_runner(),
       gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences(),
       gpu_init_->gpu_info_for_hardware_gpu(),
-      gpu_init_->gpu_feature_info_for_hardware_gpu());
+      gpu_init_->gpu_feature_info_for_hardware_gpu(), std::move(exit_callback));
 }
 
 VizMainImpl::~VizMainImpl() {
@@ -275,6 +283,7 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
 
 void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
     mojom::FrameSinkManagerParamsPtr params) {
+  DCHECK(compositor_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!frame_sink_manager_);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -297,8 +306,35 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
 }
 
 void VizMainImpl::TearDownOnCompositorThread() {
+  DCHECK(compositor_thread_task_runner_->BelongsToCurrentThread());
+
   frame_sink_manager_.reset();
   display_provider_.reset();
+}
+
+void VizMainImpl::CleanupForShutdownOnCompositorThread() {
+  DCHECK(compositor_thread_task_runner_->BelongsToCurrentThread());
+
+  if (frame_sink_manager_)
+    frame_sink_manager_->ForceShutdown();
+}
+
+void VizMainImpl::ExitProcess() {
+  DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(compositor_thread_task_runner_);
+
+  // Close mojom::VizMain bindings first so the browser can't try to reconnect.
+  binding_.Close();
+  associated_binding_.Close();
+
+  // PostTask to the compositor thread to cleanup and then exit the GPU thread
+  // RunLoop once that is finished. Unretained is safe here because |this| owns
+  // |compositor_thread_|.
+  compositor_thread_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&VizMainImpl::CleanupForShutdownOnCompositorThread,
+                     base::Unretained(this)),
+      base::BindOnce([]() { base::RunLoop::QuitCurrentDeprecated(); }));
 }
 
 void VizMainImpl::PreSandboxStartup() {

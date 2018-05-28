@@ -40,6 +40,9 @@ class GpuChannelManagerDelegate {
                                  const std::string& key,
                                  const std::string& shader) = 0;
 
+  // Cleanly exits the GPU process in response to an unrecoverable error.
+  virtual void ExitProcess() = 0;
+
 #if defined(OS_WIN)
   virtual void SendAcceleratedSurfaceCreatedChildWindow(
       SurfaceHandle parent_window,

@@ -81,6 +81,13 @@ void FrameSinkManagerImpl::SetLocalClient(
   client_ = client;
 }
 
+void FrameSinkManagerImpl::ForceShutdown() {
+  if (binding_.is_bound())
+    binding_.Close();
+
+  sink_map_.clear();
+}
+
 void FrameSinkManagerImpl::RegisterFrameSinkId(
     const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

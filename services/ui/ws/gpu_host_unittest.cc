@@ -56,7 +56,8 @@ TestGpuService::TestGpuService(
                      gpu::GpuFeatureInfo(),
                      gpu::GpuPreferences(),
                      base::nullopt,
-                     base::nullopt) {}
+                     base::nullopt,
+                     /*exit_callback=*/base::DoNothing()) {}
 
 }  // namespace
 

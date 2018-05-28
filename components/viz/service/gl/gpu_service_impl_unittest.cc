@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -49,9 +50,9 @@ class GpuServiceTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(io_thread_.Start());
     gpu_service_ = std::make_unique<GpuServiceImpl>(
-        gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_.task_runner(),
+        gpu::GPUInfo(), /*watchdog_thread=*/nullptr, io_thread_.task_runner(),
         gpu::GpuFeatureInfo(), gpu::GpuPreferences(), gpu::GPUInfo(),
-        gpu::GpuFeatureInfo());
+        gpu::GpuFeatureInfo(), /*exit_callback=*/base::DoNothing());
   }
 
   void TearDown() override {

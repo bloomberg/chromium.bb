@@ -117,7 +117,8 @@ GpuServiceImpl::GpuServiceImpl(
     const gpu::GpuPreferences& gpu_preferences,
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
-        gpu_feature_info_for_hardware_gpu)
+        gpu_feature_info_for_hardware_gpu,
+    base::OnceClosure exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
@@ -128,6 +129,7 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_feature_info_(gpu_feature_info),
       gpu_info_for_hardware_gpu_(gpu_info_for_hardware_gpu),
       gpu_feature_info_for_hardware_gpu_(gpu_feature_info_for_hardware_gpu),
+      exit_callback_(std::move(exit_callback)),
       bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
@@ -143,8 +145,7 @@ GpuServiceImpl::~GpuServiceImpl() {
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get() =
       base::Callback<void(int, size_t, const std::string&)>();
-  base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::MANUAL,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait;
   if (io_runner_->PostTask(
           FROM_HERE, base::Bind(&DestroyBinding, bindings_.get(), &wait))) {
     wait.Wait();
@@ -606,6 +607,14 @@ void GpuServiceImpl::StoreShaderToDisk(int client_id,
   (*gpu_host_)->StoreShaderToDisk(client_id, key, shader);
 }
 
+void GpuServiceImpl::ExitProcess() {
+  if (is_exiting_)
+    return;
+
+  is_exiting_ = true;
+  std::move(exit_callback_).Run();
+}
+
 #if defined(OS_WIN)
 void GpuServiceImpl::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
@@ -780,8 +789,7 @@ void GpuServiceImpl::ThrowJavaException() {
 void GpuServiceImpl::Stop(StopCallback callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce([] { base::RunLoop::QuitCurrentWhenIdleDeprecated(); }),
+      FROM_HERE, base::BindOnce(&GpuServiceImpl::ExitProcess, weak_ptr_),
       std::move(callback));
 }
 

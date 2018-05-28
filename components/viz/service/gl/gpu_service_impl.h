@@ -65,7 +65,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                  const gpu::GpuPreferences& gpu_preferences,
                  const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
                  const base::Optional<gpu::GpuFeatureInfo>&
-                     gpu_feature_info_for_hardware_gpu);
+                     gpu_feature_info_for_hardware_gpu,
+                 base::OnceClosure exit_callback);
 
   ~GpuServiceImpl() override;
 
@@ -144,6 +145,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void StoreShaderToDisk(int client_id,
                          const std::string& key,
                          const std::string& shader) override;
+  void ExitProcess() override;
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(
       gpu::SurfaceHandle parent_window,
@@ -261,6 +263,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // comes from external sources.
   std::unique_ptr<base::WaitableEvent> owned_shutdown_event_;
   base::WaitableEvent* shutdown_event_ = nullptr;
+
+  // Callback that safely exits GPU process.
+  base::OnceClosure exit_callback_;
+  bool is_exiting_ = false;
 
   base::Time start_time_;
 
