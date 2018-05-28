@@ -1152,7 +1152,7 @@ V8_FYI_WATERFALL = {
 }
 
 COMMON_GTESTS = {
-  'angle_deqp_egl_tests': {
+  'angle_deqp_egl_d3d11_tests': {
     'tester_configs': [
       {
         'predicate': Predicates.DEQP,
@@ -1179,9 +1179,96 @@ COMMON_GTESTS = {
     'swarming': {
       'shards': 4,
     },
+    'test': 'angle_deqp_egl_tests',
     'args': [
-      '--test-launcher-batch-limit=400'
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-d3d11',
     ]
+  },
+  'angle_deqp_egl_gl_tests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEQP,
+        'build_configs': ['Release', 'Release_x64'],
+        'swarming_dimension_sets': [
+          # NVIDIA Win 10
+          {
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
+            'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
+          },
+          # Linux NVIDIA Quadro P400
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          # Mac Intel
+          {
+            'gpu': '8086:0a2e',
+            'os': 'Mac-10.12.6'
+          },
+          # Mac AMD
+          {
+            'gpu': '1002:6821',
+            'hidpi': '1',
+            'os': 'Mac-10.12.6'
+          },
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux FYI Ozone (Intel)',
+        ],
+      },
+    ],
+    'swarming': {
+      'shards': 4,
+    },
+    'test': 'angle_deqp_egl_tests',
+    'args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gl',
+    ],
+  },
+  'angle_deqp_egl_gles_tests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEQP,
+        # Run on Nexus 5X swarmed bots.
+        'build_configs': ['android-chromium'],
+        'swarming_dimension_sets': [
+          # Nexus 5X
+          {
+            'device_type': 'bullhead',
+            'device_os': 'MMB29Q',
+            'os': 'Android',
+          }
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux FYI Ozone (Intel)',
+        ],
+      },
+    ],
+    'swarming': {
+      'shards': 4,
+    },
+    'test': 'angle_deqp_egl_tests',
+    # Only pass the display type to desktop. The Android runner doesn't support
+    # passing args to the executable but only one display type is supported on
+    # Android anyways.
+    'desktop_args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gles',
+    ],
+    'android_args': [
+      '--enable-xml-result-parsing',
+      '--shard-timeout=500',
+    ],
   },
 
   'angle_deqp_gles2_d3d11_tests': {
