@@ -203,14 +203,14 @@ class ElementRareData : public NodeRareData {
   std::unique_ptr<SpaceSplitString> part_names_;
   std::unique_ptr<NamesMap> part_names_map_;
   TraceWrapperMember<NamedNodeMap> attribute_map_;
-  Member<AttrNodeList> attr_node_list_;
+  TraceWrapperMember<AttrNodeList> attr_node_list_;
   Member<InlineCSSStyleDeclaration> cssom_wrapper_;
   Member<InlineStylePropertyMap> cssom_map_wrapper_;
 
   Member<ElementAnimations> element_animations_;
   TraceWrapperMember<ElementIntersectionObserverData>
       intersection_observer_data_;
-  Member<ResizeObserverDataMap> resize_observer_data_;
+  TraceWrapperMember<ResizeObserverDataMap> resize_observer_data_;
 
   scoped_refptr<ComputedStyle> computed_style_;
   // TODO(davaajav):remove this field when v0 custom elements are deprecated

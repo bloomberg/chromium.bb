@@ -30,6 +30,9 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
   void Visit(void*, TraceWrapperDescriptor) final;
   void Visit(DOMWrapperMap<ScriptWrappable>*, const ScriptWrappable*) final;
+  void VisitBackingStoreStrongly(void* object,
+                                 void** object_slot,
+                                 TraceDescriptor desc) final;
 
  protected:
   using Visitor::Visit;

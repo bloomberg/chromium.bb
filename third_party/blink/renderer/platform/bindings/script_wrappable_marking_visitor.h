@@ -104,6 +104,9 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   void Visit(void*, TraceWrapperDescriptor) override;
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) override;
+  void VisitBackingStoreStrongly(void* object,
+                                 void** object_slot,
+                                 TraceDescriptor desc) override;
 
  protected:
   using Visitor::Visit;

@@ -84,7 +84,9 @@ class CORE_EXPORT EventListenerMap final {
   //  - HeapVector is much more space efficient than HeapHashMap.
   //  - An EventTarget rarely has event listeners for many event types, and
   //    HeapVector is faster in such cases.
-  HeapVector<std::pair<AtomicString, Member<EventListenerVector>>, 2> entries_;
+  HeapVector<std::pair<AtomicString, TraceWrapperMember<EventListenerVector>>,
+             2>
+      entries_;
 
 #if DCHECK_IS_ON()
   int active_iterator_count_ = 0;

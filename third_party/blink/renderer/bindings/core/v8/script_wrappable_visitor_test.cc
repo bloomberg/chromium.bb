@@ -22,6 +22,12 @@ class VerifyingScriptWrappableVisitor : public ScriptWrappableVisitor {
     visited_objects_.push_back(desc.base_object_payload);
   }
 
+  void VisitBackingStoreStrongly(void* object,
+                                 void** object_slot,
+                                 TraceDescriptor desc) override {
+    desc.callback(this, desc.base_object_payload);
+  }
+
   bool DidVisitObject(const ScriptWrappable* script_wrappable) const {
     return std::find(visited_objects_.begin(), visited_objects_.end(),
                      script_wrappable) != visited_objects_.end();

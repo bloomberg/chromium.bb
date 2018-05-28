@@ -41,12 +41,8 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
       continue;
     ScriptWrappable* script_wrappable = active_wrappable->ToScriptWrappable();
     // Notify the visitor about this script_wrappable by dispatching to the
-    // corresponding visitor->Visit(script_wrappable) method.
-    // Ideally, we would call visitor->TraceWrappers(script_wrappable) here,
-    // but that method requires TraceWrapperMember<T>. Since we are getting
-    // the script wrappable from ActiveScriptWrappables, we do not have
-    // TraceWrapperMember<T> and have to use TraceWrappersFromGeneratedCode.
-    visitor->TraceWrappersFromGeneratedCode(script_wrappable);
+    // corresponding Trace method.
+    visitor->TraceWithWrappers(script_wrappable);
   }
 }
 
