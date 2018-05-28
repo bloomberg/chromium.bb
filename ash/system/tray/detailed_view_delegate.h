@@ -5,6 +5,12 @@
 #ifndef ASH_SYSTEM_TRAY_DETAILED_VIEW_DELEGATE_H_
 #define ASH_SYSTEM_TRAY_DETAILED_VIEW_DELEGATE_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
+namespace ui {
+class NativeTheme;
+};
+
 namespace ash {
 
 // A delegate of TrayDetailedView that handles bubble related actions e.g.
@@ -20,6 +26,9 @@ class DetailedViewDelegate {
 
   // Close the bubble that contains the detailed view.
   virtual void CloseBubble() = 0;
+
+  // Get the background color of the detailed view.
+  virtual SkColor GetBackgroundColor(ui::NativeTheme* native_theme) = 0;
 };
 
 }  // namespace ash

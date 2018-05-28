@@ -7,6 +7,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace ash {
 
@@ -31,6 +32,12 @@ void SystemTrayItemDetailedViewDelegate::TransitionToMainView(
 void SystemTrayItemDetailedViewDelegate::CloseBubble() {
   if (owner_->system_tray())
     owner_->system_tray()->CloseBubble();
+}
+
+SkColor SystemTrayItemDetailedViewDelegate::GetBackgroundColor(
+    ui::NativeTheme* native_theme) {
+  return native_theme->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBackground);
 }
 
 void SystemTrayItemDetailedViewDelegate::DoTransitionToMainView() {
