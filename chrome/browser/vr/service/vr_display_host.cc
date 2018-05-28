@@ -120,6 +120,7 @@ void VRDisplayHost::SetListeningForActivate(bool listening) {
 
 void VRDisplayHost::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
+  browser_device_->UpdateListeningForActivate(this);
   display_->SetInFocusedFrame(in_focused_frame);
 }
 
