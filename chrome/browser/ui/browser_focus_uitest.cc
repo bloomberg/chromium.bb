@@ -789,14 +789,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NoFocusForBackgroundNTP) {
 
 // Tests that the location bar is focusable when showing, which is the case in
 // popup windows.
-// The location bar is currently broken in MacViews Browser.
-// TODO(crbug.com/831483): Enable test once mac is fixed.
-#if defined(OS_MACOSX)
-#define MAYBE_PopupLocationBar DISABLED_PopupLocationBar
-#else
-#define MAYBE_PopupLocationBar PopupLocationBar
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_PopupLocationBar) {
+// Flaky. See http://crbug.com/846848.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_PopupLocationBar) {
   ui_test_utils::BrowserAddedObserver browser_added_observer;
   Browser* popup_browser = new Browser(
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
