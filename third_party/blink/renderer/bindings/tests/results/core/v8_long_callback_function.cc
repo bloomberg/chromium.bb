@@ -21,6 +21,10 @@
 
 namespace blink {
 
+const char* V8LongCallbackFunction::NameInHeapSnapshot() const {
+  return "V8LongCallbackFunction";
+}
+
 v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) {
   // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".

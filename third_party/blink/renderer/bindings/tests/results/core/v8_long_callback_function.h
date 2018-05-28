@@ -27,6 +27,9 @@ class CORE_EXPORT V8LongCallbackFunction final : public CallbackFunctionBase {
 
   ~V8LongCallbackFunction() override = default;
 
+  // TraceWrapperBase overrides:
+  const char* NameInHeapSnapshot() const override;
+
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<int32_t> Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) WARN_UNUSED_RESULT;

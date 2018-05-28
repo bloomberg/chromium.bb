@@ -20,6 +20,10 @@
 
 namespace blink {
 
+const char* V8TestCallbackInterface::NameInHeapSnapshot() const {
+  return "V8TestCallbackInterface";
+}
+
 v8::Maybe<void> V8TestCallbackInterface::voidMethod(ScriptWrappable* callback_this_value) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation

@@ -76,6 +76,10 @@ v8::Local<v8::FunctionTemplate> V8TestLegacyCallbackInterface::DomTemplate(v8::I
       InstallV8TestLegacyCallbackInterfaceTemplate);
 }
 
+const char* V8TestLegacyCallbackInterface::NameInHeapSnapshot() const {
+  return "V8TestLegacyCallbackInterface";
+}
+
 v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* callback_this_value, Node* node) {
   // This function implements "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation

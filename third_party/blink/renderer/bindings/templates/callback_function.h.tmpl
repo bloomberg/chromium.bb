@@ -23,6 +23,9 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
 
   ~{{cpp_class}}() override = default;
 
+  // TraceWrapperBase overrides:
+  const char* NameInHeapSnapshot() const override;
+
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<{{return_cpp_type}}> Invoke({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;

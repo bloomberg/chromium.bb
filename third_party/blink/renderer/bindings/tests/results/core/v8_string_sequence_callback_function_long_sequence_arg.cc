@@ -21,6 +21,10 @@
 
 namespace blink {
 
+const char* V8StringSequenceCallbackFunctionLongSequenceArg::NameInHeapSnapshot() const {
+  return "V8StringSequenceCallbackFunctionLongSequenceArg";
+}
+
 v8::Maybe<Vector<String>> V8StringSequenceCallbackFunctionLongSequenceArg::Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) {
   // This function implements "invoke" algorithm defined in
   // "3.10. Invoking callback functions".

@@ -27,6 +27,9 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
 
   ~V8VoidCallbackFunctionModules() override = default;
 
+  // TraceWrapperBase overrides:
+  const char* NameInHeapSnapshot() const override;
+
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<void> Invoke(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;

@@ -28,6 +28,9 @@ class CORE_EXPORT V8VoidCallbackFunctionInterfaceArg final : public CallbackFunc
 
   ~V8VoidCallbackFunctionInterfaceArg() override = default;
 
+  // TraceWrapperBase overrides:
+  const char* NameInHeapSnapshot() const override;
+
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<void> Invoke(ScriptWrappable* callback_this_value, HTMLDivElement* divElement) WARN_UNUSED_RESULT;
