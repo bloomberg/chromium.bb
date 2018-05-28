@@ -56,7 +56,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             self._outputs[class_data.filename + '.h'] = (
                 self.generate_property_h_builder(
                     class_data.classname, class_data.filename, property_))
-            if 'should_implement_apply_functions_in_cpp' in property_:
+            if not property_['style_builder_inline']:
                 self._outputs[class_data.filename + '.cc'] = (
                     self.generate_property_cpp_builder(
                         class_data.filename, property_))
@@ -97,15 +97,20 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         return generate_property_cpp
 
     def calculate_apply_functions_to_declare(self, property_):
-        if property_['style_builder_template'] in ['background_layer', 'color', 'counter', 'grid', 'mask_layer']:
-            property_['should_implement_apply_functions_in_cpp'] = True
+        cc_templates = ['background_layer', 'color', 'counter', 'grid', 'mask_layer']
+        property_['style_builder_inline'] = property_['style_builder_template'] not in cc_templates
 
-        property_['should_implement_apply_functions'] = (
+        property_['style_builder_declare'] = (
             property_['is_property'] and
             not property_['longhands'] and
             not property_['direction_aware_options'] and
             not property_['builder_skip'] and
             not property_['style_builder_legacy'])
+
+        if not property_['style_builder_declare']:
+            for x in ['initial', 'inherit', 'value']:
+                property_['style_builder_generate_%s' % x] = False
+
 
     def h_includes(self, property_):
         if property_['alias_for']:
@@ -120,7 +125,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             yield "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
     def cpp_includes(self, property_):
-        if 'should_implement_apply_functions_in_cpp' in property_:
+        if not property_['style_builder_inline']:
             for include in self.apply_includes(property_):
                 yield 'third_party/blink/renderer/' + include
 

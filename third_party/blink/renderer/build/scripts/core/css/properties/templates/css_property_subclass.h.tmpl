@@ -119,10 +119,10 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   }
     {% endif %}
   {% endif %}
-  {% if property.should_implement_apply_functions %}
+  {% if property.style_builder_declare %}
 
   // Style builder functions
-{{style_builder_functions(property)}}
+{{style_builder_functions(property, true)}}
   {%- endif %}
   {% endif %}
 };
