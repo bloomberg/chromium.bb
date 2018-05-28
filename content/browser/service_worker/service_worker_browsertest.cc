@@ -82,7 +82,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
@@ -288,52 +287,6 @@ VerifySaveDataNotInAccessControlRequestHeader(
     http_response->set_content("PASS");
   }
   return std::move(http_response);
-}
-
-// The ImportsBustMemcache test requires that the imported script
-// would naturally be cached in blink's memcache, but the embedded
-// test server doesn't produce headers that allow the blink's memcache
-// to do that. This interceptor injects headers that give the import
-// an experiration far in the future.
-class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
- public:
-  explicit LongLivedResourceInterceptor(const std::string& body)
-      : body_(body) {}
-  ~LongLivedResourceInterceptor() override {}
-
-  // net::URLRequestInterceptor implementation
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    const char kHeaders[] =
-        "HTTP/1.1 200 OK\n"
-        "Content-Type: text/javascript\n"
-        "Expires: Thu, 1 Jan 2100 20:00:00 GMT\n"
-        "\n";
-    std::string headers(kHeaders, arraysize(kHeaders));
-    return new net::URLRequestTestJob(
-        request, network_delegate, headers, body_, true);
-  }
-
- private:
-  std::string body_;
-  DISALLOW_COPY_AND_ASSIGN(LongLivedResourceInterceptor);
-};
-
-void CreateLongLivedResourceInterceptors(
-    const GURL& worker_url, const GURL& import_url) {
-  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::unique_ptr<net::URLRequestInterceptor> interceptor;
-
-  interceptor.reset(new LongLivedResourceInterceptor(
-      "importScripts('long_lived_import.js');"));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      worker_url, std::move(interceptor));
-
-  interceptor.reset(new LongLivedResourceInterceptor(
-      "// the imported script does nothing"));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      import_url, std::move(interceptor));
 }
 
 void CountScriptResources(
@@ -2405,14 +2358,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
   StartServerAndNavigateToSetup();
   const char kScopeUrl[] = "/service_worker/imports_bust_memcache_scope/";
   const char kPageUrl[] = "/service_worker/imports_bust_memcache.html";
-  const char kScriptUrl[] = "/service_worker/worker_with_one_import.js";
-  const char kImportUrl[] = "/service_worker/long_lived_import.js";
   const base::string16 kOKTitle(base::ASCIIToUTF16("OK"));
   const base::string16 kFailTitle(base::ASCIIToUTF16("FAIL"));
-
-  RunOnIOThread(base::BindOnce(&CreateLongLivedResourceInterceptors,
-                               embedded_test_server()->GetURL(kScriptUrl),
-                               embedded_test_server()->GetURL(kImportUrl)));
 
   TitleWatcher title_watcher(shell()->web_contents(), kOKTitle);
   title_watcher.AlsoWaitForTitle(kFailTitle);
