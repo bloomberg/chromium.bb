@@ -61,11 +61,6 @@ void AppListControllerDelegate::GetAppInfoDialogBounds(
   std::move(callback).Run(gfx::Rect());
 }
 
-void AppListControllerDelegate::OnShowChildDialog() {
-}
-void AppListControllerDelegate::OnCloseChildDialog() {
-}
-
 std::string AppListControllerDelegate::AppListSourceToString(
     AppListSource source) {
   switch (source) {
@@ -105,8 +100,6 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
     return;
   }
 
-  OnShowChildDialog();
-
   UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                             AppInfoLaunchSource::FROM_APP_LIST,
                             AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
@@ -119,10 +112,7 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
         const extensions::Extension* extension =
             GetExtension(profile, extension_id);
         DCHECK(extension);
-        ShowAppInfoInAppList(
-            bounds, profile, extension,
-            base::BindRepeating(&AppListControllerDelegate::OnCloseChildDialog,
-                                self));
+        ShowAppInfoInAppList(bounds, profile, extension);
       },
       weak_ptr_factory_.GetWeakPtr(), profile, extension_id));
 }
@@ -130,8 +120,7 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 void AppListControllerDelegate::UninstallApp(Profile* profile,
                                              const std::string& app_id) {
   // ExtensionUninstall deletes itself when done or aborted.
-  ExtensionUninstaller* uninstaller =
-      new ExtensionUninstaller(profile, app_id, this);
+  ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile, app_id);
   uninstaller->Run();
 }
 

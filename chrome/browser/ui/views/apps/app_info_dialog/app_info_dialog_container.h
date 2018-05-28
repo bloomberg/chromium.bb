@@ -19,9 +19,7 @@ class View;
 // Creates a new dialog containing |view| that can be displayed inside the app
 // list, covering the entire app list and adding a close button. Takes ownership
 // of |view|.
-views::DialogDelegateView* CreateAppListContainerForView(
-    views::View* view,
-    const base::Closure& close_callback);
+views::DialogDelegateView* CreateAppListContainerForView(views::View* view);
 
 #endif  // ENABLE_APP_LIST
 

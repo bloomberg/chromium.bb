@@ -39,8 +39,7 @@ bool CanShowAppInfoDialog();
 // and |profile| at the given |app_info_bounds|.
 void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
                           Profile* profile,
-                          const extensions::Extension* app,
-                          const base::Closure& close_callback);
+                          const extensions::Extension* app);
 #endif
 
 // Shows the chrome app information in a native dialog box.

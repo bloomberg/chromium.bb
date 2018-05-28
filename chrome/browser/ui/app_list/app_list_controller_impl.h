@@ -35,8 +35,6 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   void PinApp(const std::string& app_id) override;
   void UnpinApp(const std::string& app_id) override;
   Pinnable GetPinnable(const std::string& app_id) override;
-  void OnShowChildDialog() override;
-  void OnCloseChildDialog() override;
   void CreateNewWindow(Profile* profile, bool incognito) override;
   void OpenURL(Profile* profile,
                const GURL& url,

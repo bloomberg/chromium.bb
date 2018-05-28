@@ -48,7 +48,6 @@ ExtensionAppItem::ExtensionAppItem(
     const gfx::ImageSkia& installing_icon,
     bool is_platform_app)
     : ChromeAppListItem(profile, extension_id),
-      extension_enable_flow_controller_(NULL),
       extension_name_(extension_name),
       installing_icon_(CreateDisabledIcon(installing_icon)),
       is_platform_app_(is_platform_app) {
@@ -101,9 +100,6 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    extension_enable_flow_controller_ = GetController();
-    extension_enable_flow_controller_->OnShowChildDialog();
-
     extension_enable_flow_.reset(new ExtensionEnableFlow(
         profile(), extension_id(), this));
     extension_enable_flow_->StartForNativeWindow(nullptr);
@@ -131,17 +127,12 @@ void ExtensionAppItem::Launch(int event_flags) {
 
 void ExtensionAppItem::ExtensionEnableFlowFinished() {
   extension_enable_flow_.reset();
-  extension_enable_flow_controller_->OnCloseChildDialog();
-  extension_enable_flow_controller_ = NULL;
-
   // Automatically launch app after enabling.
   Launch(ui::EF_NONE);
 }
 
 void ExtensionAppItem::ExtensionEnableFlowAborted(bool user_initiated) {
   extension_enable_flow_.reset();
-  extension_enable_flow_controller_->OnCloseChildDialog();
-  extension_enable_flow_controller_ = NULL;
 }
 
 void ExtensionAppItem::Activate(int event_flags) {
