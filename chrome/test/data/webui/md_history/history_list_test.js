@@ -175,6 +175,24 @@ suite('<history-list>', function() {
     });
   });
 
+  // See http://crbug.com/845802.
+  test('disabling ctrl + a command on syncedTabs page', function() {
+    app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+    app.selectedPage_ = 'syncedTabs';
+    return PolymerTest.flushTasks().then(function() {
+      const field = toolbar.$['main-toolbar'].getSearchField();
+      field.blur();
+      assertFalse(field.showingSearch);
+
+      const modifier = cr.isMac ? 'meta' : 'ctrl';
+      MockInteractions.pressAndReleaseKeyOn(document.body, 65, modifier, 'a');
+
+      assertDeepEquals(
+          [false, false, false, false],
+          element.historyData_.map(i => i.selected));
+    });
+  });
+
   test('setting first and last items', function() {
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
 

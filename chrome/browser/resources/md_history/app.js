@@ -226,7 +226,8 @@ Polymer({
         e.canExecute = this.$.toolbar.count > 0;
         break;
       case 'select-all-command':
-        e.canExecute = !this.$.toolbar.searchField.isSearchFocused();
+        e.canExecute = !this.$.toolbar.searchField.isSearchFocused() &&
+            !this.syncedTabsSelected_(this.selectedPage_);
         break;
     }
   },
