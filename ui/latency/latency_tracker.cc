@@ -187,7 +187,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
     // This UMA metric tracks the performance of overall scrolling as a high
     // level metric.
-    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
+    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
         "Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin",
         original_component, gpu_swap_begin_component);
 
@@ -215,7 +215,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
     // This UMA metric tracks the performance of overall scrolling as a high
     // level metric.
-    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
+    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
         "Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin",
         original_component, gpu_swap_begin_component);
 
