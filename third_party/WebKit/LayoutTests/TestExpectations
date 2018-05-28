@@ -4836,3 +4836,4 @@ crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/mod
 crbug.com/846920 http/tests/devtools/device-orientation-success.js [ Pass Failure ]
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
+crbug.com/847205 [ Mac ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Crash Timeout ]
