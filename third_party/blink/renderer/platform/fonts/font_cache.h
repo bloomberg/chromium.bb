@@ -172,14 +172,10 @@ class PLATFORM_EXPORT FontCache {
   // related to FontCache. Move it somewhere else, e.g. to WebThemeEngine.
   static bool AntialiasedTextEnabled() { return antialiased_text_enabled_; }
   static bool LcdTextEnabled() { return lcd_text_enabled_; }
-  static float DeviceScaleFactor() { return device_scale_factor_; }
   static void SetAntialiasedTextEnabled(bool enabled) {
     antialiased_text_enabled_ = enabled;
   }
   static void SetLCDTextEnabled(bool enabled) { lcd_text_enabled_ = enabled; }
-  static void SetDeviceScaleFactor(float device_scale_factor) {
-    device_scale_factor_ = device_scale_factor;
-  }
   static void AddSideloadedFontForTesting(sk_sp<SkTypeface>);
   // Functions to cache and retrieve the system font metrics.
   static void SetMenuFontMetrics(const wchar_t* family_name,
@@ -308,7 +304,6 @@ class PLATFORM_EXPORT FontCache {
 #if defined(OS_WIN)
   static bool antialiased_text_enabled_;
   static bool lcd_text_enabled_;
-  static float device_scale_factor_;
   static HashMap<String, sk_sp<SkTypeface>>* sideloaded_fonts_;
   // The system font metrics cache.
   static AtomicString* menu_font_family_name_;

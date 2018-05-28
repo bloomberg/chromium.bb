@@ -137,12 +137,6 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
     gfx::win::MaybeInitializeDirectWrite();
   InitializeDWriteFontProxy(ChildThread::Get()->GetConnector());
 
-  double device_scale_factor = 1.0;
-  base::StringToDouble(
-      command_line.GetSwitchValueASCII(switches::kDeviceScaleFactor),
-      &device_scale_factor);
-  blink::WebFontRendering::SetDeviceScaleFactor(device_scale_factor);
-
   int antialiasing_enabled = 1;
   base::StringToInt(
       command_line.GetSwitchValueASCII(switches::kPpapiAntialiasedTextEnabled),

@@ -14,11 +14,6 @@ void WebFontRendering::SetSkiaFontManager(sk_sp<SkFontMgr> font_mgr) {
 }
 
 // static
-void WebFontRendering::SetDeviceScaleFactor(float device_scale_factor) {
-  FontCache::SetDeviceScaleFactor(device_scale_factor);
-}
-
-// static
 void WebFontRendering::AddSideloadedFontForTesting(sk_sp<SkTypeface> typeface) {
   FontCache::AddSideloadedFontForTesting(std::move(typeface));
 }
