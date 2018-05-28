@@ -51,7 +51,6 @@ class BlobStorageContext;
 namespace content {
 
 class ServiceWorkerContextCore;
-class ServiceWorkerDispatcherHost;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
@@ -169,8 +168,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static std::unique_ptr<ServiceWorkerProviderHost> Create(
       int process_id,
       ServiceWorkerProviderHostInfo info,
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   ~ServiceWorkerProviderHost() override;
 
@@ -384,10 +382,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // For service worker clients. Completes initialization of
   // provider hosts used for navigation requests.
-  void CompleteNavigationInitialized(
-      int process_id,
-      ServiceWorkerProviderHostInfo info,
-      base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
+  void CompleteNavigationInitialized(int process_id,
+                                     ServiceWorkerProviderHostInfo info);
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
@@ -467,11 +463,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
-  ServiceWorkerProviderHost(
-      int process_id,
-      ServiceWorkerProviderHostInfo info,
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host);
+  ServiceWorkerProviderHost(int process_id,
+                            ServiceWorkerProviderHostInfo info,
+                            base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
@@ -633,15 +627,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
-
-  // |dispatcher_host_| is expected to outlive |this| because it destroys
-  // |this| upon destruction. However, it may be null in some cases:
-  // 1) In some tests.
-  // 2) Navigations and service worker startup pre-create a
-  // ServiceWorkerProviderHost instance before there is a renderer assigned to
-  // it. The dispatcher host is set once the instance starts hosting a
-  // renderer.
-  base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host_;
 
   bool allow_association_;
 

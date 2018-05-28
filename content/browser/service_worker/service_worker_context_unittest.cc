@@ -665,10 +665,6 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
           registration.get(),
           GURL("https://another-origin.example.net/test/script_url"),
           1L /* version_id */, helper_->context()->AsWeakPtr());
-  // CreateProviderHostForServiceWorkerContext calls
-  // ServiceWorkerProviderHost::CompleteStartWorkerPreparation, which requires a
-  // dispatcher host.
-  helper_->EnsureDispatcherHostForProcess(kRenderProcessId2);
   remote_endpoints.emplace_back();
   std::unique_ptr<ServiceWorkerProviderHost> host4 =
       CreateProviderHostForServiceWorkerContext(

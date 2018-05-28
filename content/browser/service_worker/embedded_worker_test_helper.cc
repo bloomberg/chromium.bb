@@ -20,7 +20,6 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/renderer.mojom.h"
@@ -41,22 +40,6 @@
 namespace content {
 
 namespace {
-
-class MockServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
- public:
-  MockServiceWorkerDispatcherHost(int process_id, IPC::Sender* sender)
-      : ServiceWorkerDispatcherHost(process_id), sender_(sender) {}
-
-  bool Send(IPC::Message* message) override { return sender_->Send(message); }
-
- protected:
-  ~MockServiceWorkerDispatcherHost() override {}
-
- private:
-  IPC::Sender* sender_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerDispatcherHost);
-};
 
 void OnFetchEventCommon(
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -432,8 +415,6 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                          url_loader_factory_getter_.get());
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
-  EnsureDispatcherHostForProcess(mock_render_process_id());
-  EnsureDispatcherHostForProcess(new_render_process_id());
 
   // Install a mocked mojom::Renderer interface to catch requests to
   // establish Mojo connection for EWInstanceClient.
@@ -479,21 +460,6 @@ void EmbeddedWorkerTestHelper::RegisterMockInstanceClient(
   mock_instance_clients_.push_back(std::move(client));
 }
 
-void EmbeddedWorkerTestHelper::RegisterDispatcherHost(
-    int process_id,
-    scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host) {
-  dispatcher_hosts_[process_id] = std::move(dispatcher_host);
-}
-
-void EmbeddedWorkerTestHelper::EnsureDispatcherHostForProcess(int process_id) {
-  if (context()->GetDispatcherHost(process_id))
-    return;
-  auto dispatcher_host =
-      base::MakeRefCounted<MockServiceWorkerDispatcherHost>(process_id, this);
-  dispatcher_host->Init(wrapper_.get());
-  RegisterDispatcherHost(process_id, std::move(dispatcher_host));
-}
-
 ServiceWorkerContextCore* EmbeddedWorkerTestHelper::context() {
   return wrapper_->context();
 }
@@ -501,11 +467,6 @@ ServiceWorkerContextCore* EmbeddedWorkerTestHelper::context() {
 void EmbeddedWorkerTestHelper::ShutdownContext() {
   wrapper_->Shutdown();
   wrapper_ = nullptr;
-}
-
-ServiceWorkerDispatcherHost*
-EmbeddedWorkerTestHelper::GetDispatcherHostForProcess(int process_id) {
-  return dispatcher_hosts_[process_id].get();
 }
 
 // static

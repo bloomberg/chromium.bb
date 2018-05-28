@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
@@ -74,8 +73,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  base::WeakPtr<ServiceWorkerDispatcherHost> AsWeakPtr();
-
  protected:
   ~ServiceWorkerDispatcherHost() override;
 
@@ -110,8 +107,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   Phase phase_ = Phase::kInitial;
   // Only accessed on the IO thread.
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
-
-  base::WeakPtrFactory<ServiceWorkerDispatcherHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcherHost);
 };

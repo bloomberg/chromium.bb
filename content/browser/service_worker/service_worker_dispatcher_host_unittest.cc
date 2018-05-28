@@ -130,7 +130,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     int process_id = helper_->mock_render_process_id();
     dispatcher_host_ =
         new TestingServiceWorkerDispatcherHost(process_id, helper_.get());
-    helper_->RegisterDispatcherHost(process_id, nullptr);
     dispatcher_host_->Init(context_wrapper());
   }
 

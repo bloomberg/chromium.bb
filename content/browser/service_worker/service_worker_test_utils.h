@@ -27,7 +27,6 @@ class HttpResponseInfo;
 namespace content {
 
 class ServiceWorkerContextCore;
-class ServiceWorkerDispatcherHost;
 class ServiceWorkerProviderHost;
 class ServiceWorkerStorage;
 class ServiceWorkerVersion;
@@ -103,14 +102,6 @@ CreateProviderHostForServiceWorkerContext(
     bool is_parent_frame_secure,
     ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerRemoteProviderEndpoint* output_endpoint);
-
-std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostWithDispatcherHost(
-    int process_id,
-    int provider_id,
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    int route_id,
-    ServiceWorkerDispatcherHost* dispatcher_host,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
 // Writes the script down to |storage| synchronously. This should not be used in
