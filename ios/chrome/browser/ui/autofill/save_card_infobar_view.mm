@@ -25,42 +25,34 @@
 
 namespace {
 
-// Padding used on the top and bottom edges of the infobar. Every view with the
-// exception of the close button is inside this padding.
-const CGFloat kVerticalPadding = 10;
+// Padding used on the edges of the infobar.
+const CGFloat kPadding = 16;
 
-// Padding used on the leading and trailing edges of the infobar.
-const CGFloat kHorizontalPadding = 10;
+// Padding used on the close button to increase the touchable area. This added
+// to the close button icon's intrinsic padding equals kPadding.
+const CGFloat kCloseButtonPadding = 12;
 
-// Padding used on the top and leading edges of the icon. This is to align its
-// top edge with the top edge of the message and its leading edge with the
-// leading edge of the content.
-const CGFloat kIconPadding = 3;
-
-// Padding used on the top edge of the GPay icon. This is to align its top with
-// the top edge of the message. Similar to the infobar content,
-// kHorizontalPadding is used on the leading edge of the GPay icon.
-const CGFloat kGPayIconVerticalPadding = 12;
-
-// Padding used in the close button. This is to make up for the padding in the
-// close button icon itself in order to align the icon with kVerticalPadding and
-// kHorizontalPadding.
-const CGFloat kCloseButtonInnerPadding = 8;
+// Intrinsic padding of the icon. Used to set a padding on the icon that equals
+// kPadding.
+const CGFloat kIconIntrinsicPadding = 6;
 
 // Vertical spacing between the views.
-const CGFloat kVerticalSpacing = 10;
+const CGFloat kVerticalSpacing = 16;
 
 // Horizontal spacing between the views.
-const CGFloat kHorizontalSpacing = 10;
+const CGFloat kHorizontalSpacing = 8;
 
 // Color in RGB to be used as tint color on the icon.
 const CGFloat kIconTintColor = 0x1A73E8;
+
+// Padding used on the top edge of the action buttons' container.
+const CGFloat kButtonsTopPadding = 24;
 
 // Color in RGB used as background of the action buttons.
 const int kButtonTitleColorBlue = 0x4285f4;
 
 // Corner radius for action buttons.
-const CGFloat kButtonCornerRadius = 11.0;
+const CGFloat kButtonCornerRadius = 8.0;
 
 // Returns the font for the infobar message.
 UIFont* InfoBarMessageFont() {
@@ -94,8 +86,8 @@ UIFont* InfoBarMessageFont() {
 @synthesize visibleHeight = _visibleHeight;
 @synthesize sizingDelegate = _sizingDelegate;
 @synthesize delegate = _delegate;
-@synthesize googlePayBrandingEnabled = _googlePayBrandingEnabled;
 @synthesize icon = _icon;
+@synthesize googlePayIcon = _googlePayIcon;
 @synthesize message = _message;
 @synthesize closeButtonImage = _closeButtonImage;
 @synthesize description = _description;
@@ -146,7 +138,6 @@ UIFont* InfoBarMessageFont() {
     UIImage* shadowImage = [UIImage imageNamed:@"infobar_shadow"];
     UIImageView* shadowView = [[UIImageView alloc] initWithImage:shadowImage];
     shadowView.translatesAutoresizingMaskIntoConstraints = NO;
-
     [self addSubview:shadowView];
     [NSLayoutConstraint activateConstraints:@[
       [self.leadingAnchor constraintEqualToAnchor:shadowView.leadingAnchor],
@@ -156,69 +147,29 @@ UIFont* InfoBarMessageFont() {
     ]];
   }
 
-  // The topmost view containing the icon, the message, and the close button,
-  // arranged from the leading edge to the trailing edge respectively. The icon
-  // and the close button are fixed to the edges while the message expands to
-  // fill the remaining space.
-  UIStackView* headerView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
-  headerView.translatesAutoresizingMaskIntoConstraints = NO;
-  headerView.clipsToBounds = YES;
-  headerView.axis = UILayoutConstraintAxisHorizontal;
-  headerView.alignment = UIStackViewAlignmentTop;
-
-  [self addSubview:headerView];
+  // The top container view that lays out the icon, the content, and the close
+  // button hotizontally.
+  UIStackView* horizontalLayoutView =
+      [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  horizontalLayoutView.translatesAutoresizingMaskIntoConstraints = NO;
+  horizontalLayoutView.clipsToBounds = YES;
+  horizontalLayoutView.axis = UILayoutConstraintAxisHorizontal;
+  horizontalLayoutView.alignment = UIStackViewAlignmentTop;
+  [self addSubview:horizontalLayoutView];
   id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
   [NSLayoutConstraint activateConstraints:@[
     [layoutGuide.leadingAnchor
-        constraintEqualToAnchor:headerView.leadingAnchor],
+        constraintEqualToAnchor:horizontalLayoutView.leadingAnchor],
     [layoutGuide.trailingAnchor
-        constraintEqualToAnchor:headerView.trailingAnchor],
-    [layoutGuide.topAnchor constraintEqualToAnchor:headerView.topAnchor],
+        constraintEqualToAnchor:horizontalLayoutView.trailingAnchor],
+    [layoutGuide.topAnchor
+        constraintEqualToAnchor:horizontalLayoutView.topAnchor],
   ]];
 
-  // The middle view containing all of the content.
-  UIStackView* contentView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
-  contentView.translatesAutoresizingMaskIntoConstraints = NO;
-  contentView.clipsToBounds = YES;
-  contentView.axis = UILayoutConstraintAxisVertical;
-  contentView.spacing = kVerticalSpacing;
-  contentView.layoutMarginsRelativeArrangement = YES;
-  contentView.layoutMargins =
-      UIEdgeInsetsMake(kVerticalPadding, kHorizontalPadding, kVerticalPadding,
-                       kHorizontalPadding);
-
-  [self addSubview:contentView];
-  [NSLayoutConstraint activateConstraints:@[
-    [layoutGuide.leadingAnchor
-        constraintEqualToAnchor:contentView.leadingAnchor],
-    [layoutGuide.trailingAnchor
-        constraintEqualToAnchor:contentView.trailingAnchor],
-    [headerView.bottomAnchor constraintEqualToAnchor:contentView.topAnchor],
-  ]];
-
-  // The bottommost trailing edge aligned view containing the action buttons.
-  UIStackView* footerView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
-  footerView.translatesAutoresizingMaskIntoConstraints = NO;
-  footerView.clipsToBounds = YES;
-  footerView.axis = UILayoutConstraintAxisHorizontal;
-  footerView.spacing = kHorizontalSpacing;
-  footerView.layoutMarginsRelativeArrangement = YES;
-  footerView.layoutMargins = UIEdgeInsetsMake(
-      0, kHorizontalPadding, kVerticalPadding, kHorizontalPadding);
-
-  [self addSubview:footerView];
-  [NSLayoutConstraint activateConstraints:@[
-    [layoutGuide.leadingAnchor
-        constraintLessThanOrEqualToAnchor:footerView.leadingAnchor],
-    [layoutGuide.trailingAnchor
-        constraintEqualToAnchor:footerView.trailingAnchor],
-    [contentView.bottomAnchor constraintEqualToAnchor:footerView.topAnchor],
-    [layoutGuide.bottomAnchor constraintEqualToAnchor:footerView.bottomAnchor],
-  ]];
-
+  // The icon is fixed to the top leading edge.
   if (self.icon) {
     UIImageView* iconImageView = [[UIImageView alloc] initWithImage:self.icon];
-    if (IsRefreshInfobarEnabled() && !self.googlePayBrandingEnabled) {
+    if (IsRefreshInfobarEnabled()) {
       iconImageView.tintColor = UIColorFromRGB(kIconTintColor);
     }
     // Prevent the icon from shrinking or expanding horizontally.
@@ -234,14 +185,123 @@ UIFont* InfoBarMessageFont() {
     iconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     iconContainerView.clipsToBounds = YES;
     iconContainerView.layoutMarginsRelativeArrangement = YES;
-    iconContainerView.layoutMargins = iconContainerView.layoutMargins =
-        UIEdgeInsetsMake(
-            self.googlePayBrandingEnabled ? kGPayIconVerticalPadding
-                                          : kIconPadding,
-            self.googlePayBrandingEnabled ? kHorizontalPadding : kIconPadding,
-            0, 0);
+    iconContainerView.layoutMargins = UIEdgeInsetsMake(
+        kPadding - kIconIntrinsicPadding, kPadding - kIconIntrinsicPadding, 0,
+        kHorizontalSpacing - kIconIntrinsicPadding);
     [iconContainerView addArrangedSubview:iconImageView];
-    [headerView addArrangedSubview:iconContainerView];
+    [horizontalLayoutView addArrangedSubview:iconContainerView];
+  }
+
+  // The middle container view that lays out the header and the content
+  // vertically.
+  UIStackView* verticalLayoutView =
+      [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  verticalLayoutView.translatesAutoresizingMaskIntoConstraints = NO;
+  verticalLayoutView.clipsToBounds = YES;
+  verticalLayoutView.axis = UILayoutConstraintAxisVertical;
+  verticalLayoutView.spacing = kVerticalSpacing;
+  verticalLayoutView.layoutMarginsRelativeArrangement = YES;
+  verticalLayoutView.layoutMargins =
+      UIEdgeInsetsMake(kPadding, self.icon ? 0 : kPadding, 0, 0);
+  [horizontalLayoutView addArrangedSubview:verticalLayoutView];
+
+  // Add the header view.
+  [verticalLayoutView addArrangedSubview:[self headerView]];
+
+  // Add the content view.
+  [verticalLayoutView addArrangedSubview:[self contentView]];
+
+  // The close button is fixed to the top trailing edge.
+  if (self.closeButtonImage) {
+    UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    closeButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [closeButton setImage:self.closeButtonImage forState:UIControlStateNormal];
+    closeButton.contentEdgeInsets =
+        UIEdgeInsetsMake(kCloseButtonPadding, kCloseButtonPadding,
+                         kCloseButtonPadding, kCloseButtonPadding);
+    [closeButton addTarget:self
+                    action:@selector(didTapClose)
+          forControlEvents:UIControlEventTouchUpInside];
+    [closeButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
+    if (IsRefreshInfobarEnabled()) {
+      closeButton.tintColor = [UIColor blackColor];
+      closeButton.alpha = 0.20;
+    }
+    // Prevent the button from shrinking or expanding horizontally.
+    [closeButton
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+    [closeButton setContentHuggingPriority:UILayoutPriorityRequired
+                                   forAxis:UILayoutConstraintAxisHorizontal];
+
+    [horizontalLayoutView addArrangedSubview:closeButton];
+  }
+
+  // The bottom trailing edge aligned view containing the action buttons.
+  UIStackView* footerView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  footerView.translatesAutoresizingMaskIntoConstraints = NO;
+  footerView.clipsToBounds = YES;
+  footerView.axis = UILayoutConstraintAxisHorizontal;
+  footerView.spacing = kHorizontalSpacing;
+  footerView.layoutMarginsRelativeArrangement = YES;
+  footerView.layoutMargins =
+      UIEdgeInsetsMake(kButtonsTopPadding, kPadding, kPadding, kPadding);
+  [self addSubview:footerView];
+  [NSLayoutConstraint activateConstraints:@[
+    [layoutGuide.leadingAnchor
+        constraintLessThanOrEqualToAnchor:footerView.leadingAnchor],
+    [layoutGuide.trailingAnchor
+        constraintEqualToAnchor:footerView.trailingAnchor],
+    [horizontalLayoutView.bottomAnchor
+        constraintEqualToAnchor:footerView.topAnchor],
+    [layoutGuide.bottomAnchor constraintEqualToAnchor:footerView.bottomAnchor],
+  ]];
+
+  if (self.cancelButtonTitle.length > 0UL) {
+    UIButton* cancelButton =
+        [self actionButtonWithTitle:self.cancelButtonTitle
+                            palette:nil
+                         titleColor:UIColorFromRGB(kButtonTitleColorBlue)
+                             target:self
+                             action:@selector(didTapCancel)];
+
+    [footerView addArrangedSubview:cancelButton];
+  }
+
+  if (self.confirmButtonTitle.length > 0UL) {
+    UIButton* confirmButton =
+        [self actionButtonWithTitle:self.confirmButtonTitle
+                            palette:[MDCPalette cr_bluePalette]
+                         titleColor:[UIColor whiteColor]
+                             target:self
+                             action:@selector(didTapConfirm)];
+
+    [footerView addArrangedSubview:confirmButton];
+  }
+}
+
+// Returns the view containing the infobar header.
+- (UIView*)headerView {
+  UIStackView* headerView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  headerView.translatesAutoresizingMaskIntoConstraints = NO;
+  headerView.clipsToBounds = YES;
+  headerView.axis = UILayoutConstraintAxisHorizontal;
+  headerView.alignment = UIStackViewAlignmentCenter;
+  headerView.spacing = kHorizontalSpacing;
+
+  if (self.googlePayIcon) {
+    UIImageView* iconImageView =
+        [[UIImageView alloc] initWithImage:self.googlePayIcon];
+    // Prevent the icon from shrinking or expanding horizontally.
+    [iconImageView
+        setContentCompressionResistancePriority:UILayoutPriorityRequired
+                                        forAxis:
+                                            UILayoutConstraintAxisHorizontal];
+    [iconImageView setContentHuggingPriority:UILayoutPriorityRequired
+                                     forAxis:UILayoutConstraintAxisHorizontal];
+
+    [headerView addArrangedSubview:iconImageView];
   }
 
   if (self.message) {
@@ -251,12 +311,20 @@ UIFont* InfoBarMessageFont() {
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.clipsToBounds = YES;
-    label.text = self.message.messageText;
-    label.font = InfoBarMessageFont();
     label.textColor = [[MDCPalette greyPalette] tint900];
     label.numberOfLines = 0;
-    label.lineBreakMode = NSLineBreakByWordWrapping;
     label.backgroundColor = [UIColor clearColor];
+    NSMutableParagraphStyle* paragraphStyle =
+        [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+    paragraphStyle.lineSpacing = 1.5;
+    NSDictionary* attributes = @{
+      NSParagraphStyleAttributeName : paragraphStyle,
+      NSFontAttributeName : InfoBarMessageFont(),
+    };
+    [label setAttributedText:[[NSAttributedString alloc]
+                                 initWithString:self.message.messageText
+                                     attributes:attributes]];
 
     if (self.message.linkRanges.count > 0UL) {
       __weak SaveCardInfoBarView* weakSelf = self;
@@ -279,65 +347,41 @@ UIFont* InfoBarMessageFont() {
         [[UIStackView alloc] initWithArrangedSubviews:@[]];
     messageContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     messageContainerView.clipsToBounds = YES;
-    messageContainerView.axis = UILayoutConstraintAxisHorizontal;
-    messageContainerView.alignment = UIStackViewAlignmentTop;
-    messageContainerView.layoutMarginsRelativeArrangement = YES;
-    messageContainerView.layoutMargins = UIEdgeInsetsMake(
-        kVerticalPadding, kHorizontalPadding, 0, kHorizontalPadding);
     [messageContainerView addArrangedSubview:label];
     [headerView addArrangedSubview:messageContainerView];
   }
 
-  if (self.closeButtonImage) {
-    UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [closeButton setImage:self.closeButtonImage forState:UIControlStateNormal];
-    closeButton.contentEdgeInsets =
-        UIEdgeInsetsMake(kCloseButtonInnerPadding, kCloseButtonInnerPadding,
-                         kCloseButtonInnerPadding, kCloseButtonInnerPadding);
-    [closeButton addTarget:self
-                    action:@selector(didTapClose)
-          forControlEvents:UIControlEventTouchUpInside];
-    [closeButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
-    if (IsUIRefreshPhase1Enabled()) {
-      closeButton.tintColor = [UIColor blackColor];
-      closeButton.alpha = 0.20;
-    }
-    // Prevent the button from shrinking or expanding horizontally.
-    [closeButton
-        setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                        forAxis:
-                                            UILayoutConstraintAxisHorizontal];
-    [closeButton setContentHuggingPriority:UILayoutPriorityRequired
-                                   forAxis:UILayoutConstraintAxisHorizontal];
+  return headerView;
+}
 
-    UIView* closeButtonContainerView =
-        [[UIView alloc] initWithFrame:CGRectZero];
-    closeButtonContainerView.translatesAutoresizingMaskIntoConstraints = NO;
-    closeButtonContainerView.clipsToBounds = YES;
-    [closeButtonContainerView addSubview:closeButton];
-    AddSameConstraints(closeButtonContainerView, closeButton);
-    [headerView addArrangedSubview:closeButtonContainerView];
-  }
+// Returns the view containing the infobar content.
+- (UIView*)contentView {
+  UIStackView* contentView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  contentView.translatesAutoresizingMaskIntoConstraints = NO;
+  contentView.clipsToBounds = YES;
+  contentView.axis = UILayoutConstraintAxisVertical;
+  contentView.spacing = kVerticalSpacing;
 
+  // Description.
   if (self.description.length > 0UL) {
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.text = self.description;
-    label.font = [MDCTypography captionFont];
-    label.textColor = [[MDCPalette greyPalette] tint600];
+    label.textColor = [[MDCPalette greyPalette] tint700];
     label.numberOfLines = 0;
-    label.lineBreakMode = NSLineBreakByWordWrapping;
     label.backgroundColor = [UIColor clearColor];
+    NSMutableParagraphStyle* paragraphStyle =
+        [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+    paragraphStyle.lineSpacing = 1.4;
+    NSDictionary* attributes = @{
+      NSParagraphStyleAttributeName : paragraphStyle,
+      NSFontAttributeName : [MDCTypography body1Font],
+    };
+    [label setAttributedText:[[NSAttributedString alloc]
+                                 initWithString:self.description
+                                     attributes:attributes]];
 
-    UIStackView* descriptionContainerView =
-        [[UIStackView alloc] initWithFrame:CGRectZero];
-    descriptionContainerView.translatesAutoresizingMaskIntoConstraints = NO;
-    descriptionContainerView.clipsToBounds = YES;
-    descriptionContainerView.axis = UILayoutConstraintAxisVertical;
-    descriptionContainerView.spacing = kVerticalSpacing;
-    [descriptionContainerView addArrangedSubview:label];
-    [contentView addArrangedSubview:descriptionContainerView];
+    [contentView addArrangedSubview:label];
   }
 
   DCHECK(self.cardIssuerIcon);
@@ -361,7 +405,7 @@ UIFont* InfoBarMessageFont() {
   UILabel* cardLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   cardLabel.translatesAutoresizingMaskIntoConstraints = NO;
   cardLabel.text = self.cardLabel;
-  cardLabel.font = [MDCTypography captionFont];
+  cardLabel.font = [MDCTypography body1Font];
   cardLabel.textColor = [[MDCPalette greyPalette] tint900];
   cardLabel.backgroundColor = [UIColor clearColor];
   [cardDetailsContainerView addArrangedSubview:cardLabel];
@@ -369,8 +413,8 @@ UIFont* InfoBarMessageFont() {
   UILabel* cardSublabel = [[UILabel alloc] initWithFrame:CGRectZero];
   cardSublabel.translatesAutoresizingMaskIntoConstraints = NO;
   cardSublabel.text = self.cardSublabel;
-  cardSublabel.font = [MDCTypography captionFont];
-  cardSublabel.textColor = [[MDCPalette greyPalette] tint600];
+  cardSublabel.font = [MDCTypography body1Font];
+  cardSublabel.textColor = [[MDCPalette greyPalette] tint700];
   cardSublabel.backgroundColor = [UIColor clearColor];
   [cardDetailsContainerView addArrangedSubview:cardSublabel];
 
@@ -382,71 +426,50 @@ UIFont* InfoBarMessageFont() {
                                       forAxis:UILayoutConstraintAxisHorizontal];
   [cardDetailsContainerView addArrangedSubview:dummyView];
 
-  if (self.legalMessages.count > 0UL) {
-    UIStackView* legalMessagesView =
-        [[UIStackView alloc] initWithArrangedSubviews:@[]];
-    legalMessagesView.translatesAutoresizingMaskIntoConstraints = NO;
-    legalMessagesView.clipsToBounds = YES;
-    legalMessagesView.axis = UILayoutConstraintAxisVertical;
-    legalMessagesView.spacing = kVerticalSpacing;
-    [contentView addArrangedSubview:legalMessagesView];
+  // Legal messages.
+  auto block = ^(MessageWithLinks* legalMessage, NSUInteger idx, BOOL* stop) {
+    DCHECK_GT(legalMessage.messageText.length, 0UL);
+    DCHECK_EQ(legalMessage.linkURLs.size(), legalMessage.linkRanges.count);
 
-    auto block = ^(MessageWithLinks* legalMessage, NSUInteger idx, BOOL* stop) {
-      DCHECK_GT(legalMessage.messageText.length, 0UL);
-      DCHECK_EQ(legalMessage.linkURLs.size(), legalMessage.linkRanges.count);
-
-      UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-      label.translatesAutoresizingMaskIntoConstraints = NO;
-      label.text = legalMessage.messageText;
-      label.font = [MDCTypography captionFont];
-      label.textColor = [[MDCPalette greyPalette] tint600];
-      label.numberOfLines = 0;
-      label.lineBreakMode = NSLineBreakByWordWrapping;
-      label.backgroundColor = [UIColor clearColor];
-
-      if (legalMessage.linkRanges.count > 0UL) {
-        __weak SaveCardInfoBarView* weakSelf = self;
-        self.legalMessageLinkController =
-            [self labelLinkControllerWithLabel:label
-                                        action:^(const GURL& URL) {
-                                          [weakSelf.delegate
-                                              saveCardInfoBarView:weakSelf
-                                               didTapLegalLinkURL:URL];
-                                        }];
-      }
-      [legalMessage.linkRanges
-          enumerateObjectsUsingBlock:^(NSValue* rangeValue, NSUInteger idx,
-                                       BOOL* stop) {
-            [self.legalMessageLinkController
-                addLinkWithRange:rangeValue.rangeValue
-                             url:legalMessage.linkURLs[idx]];
-          }];
-      [legalMessagesView addArrangedSubview:label];
+    UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    label.textColor = [[MDCPalette greyPalette] tint700];
+    label.numberOfLines = 0;
+    label.backgroundColor = [UIColor clearColor];
+    NSMutableParagraphStyle* paragraphStyle =
+        [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+    paragraphStyle.lineSpacing = 1.4;
+    NSDictionary* attributes = @{
+      NSParagraphStyleAttributeName : paragraphStyle,
+      NSFontAttributeName : [MDCTypography body1Font],
     };
-    [self.legalMessages enumerateObjectsUsingBlock:block];
-  }
+    [label setAttributedText:[[NSAttributedString alloc]
+                                 initWithString:legalMessage.messageText
+                                     attributes:attributes]];
 
-  if (self.cancelButtonTitle.length > 0UL) {
-    UIButton* cancelButton =
-        [self actionButtonWithTitle:self.cancelButtonTitle
-                            palette:nil
-                         titleColor:UIColorFromRGB(kButtonTitleColorBlue)
-                             target:self
-                             action:@selector(didTapCancel)];
+    if (legalMessage.linkRanges.count > 0UL) {
+      __weak SaveCardInfoBarView* weakSelf = self;
+      self.legalMessageLinkController =
+          [self labelLinkControllerWithLabel:label
+                                      action:^(const GURL& URL) {
+                                        [weakSelf.delegate
+                                            saveCardInfoBarView:weakSelf
+                                             didTapLegalLinkURL:URL];
+                                      }];
+    }
+    [legalMessage.linkRanges
+        enumerateObjectsUsingBlock:^(NSValue* rangeValue, NSUInteger idx,
+                                     BOOL* stop) {
+          [self.legalMessageLinkController
+              addLinkWithRange:rangeValue.rangeValue
+                           url:legalMessage.linkURLs[idx]];
+        }];
+    [contentView addArrangedSubview:label];
+  };
+  [self.legalMessages enumerateObjectsUsingBlock:block];
 
-    [footerView addArrangedSubview:cancelButton];
-  }
-
-  if (self.confirmButtonTitle.length > 0UL) {
-    UIButton* confirmButton =
-        [self actionButtonWithTitle:self.confirmButtonTitle
-                            palette:[MDCPalette cr_bluePalette]
-                         titleColor:[UIColor whiteColor]
-                             target:self
-                             action:@selector(didTapConfirm)];
-
-    [footerView addArrangedSubview:confirmButton];
-  }
+  return contentView;
 }
 
 // Creates and returns an instance of LabelLinkController for |label| and

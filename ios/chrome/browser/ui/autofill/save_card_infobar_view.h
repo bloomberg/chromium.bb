@@ -36,9 +36,9 @@ class GURL;
 
 @property(nonatomic, weak) id<SaveCardInfoBarViewDelegate> delegate;
 
-@property(nonatomic, assign) BOOL googlePayBrandingEnabled;
-
 @property(nonatomic, strong) UIImage* icon;
+
+@property(nonatomic, strong) UIImage* googlePayIcon;
 
 @property(nonatomic, strong) MessageWithLinks* message;
 
