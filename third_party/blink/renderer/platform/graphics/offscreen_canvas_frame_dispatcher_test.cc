@@ -9,6 +9,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 using testing::_;
@@ -23,7 +24,7 @@ class MockOffscreenCanvasFrameDispatcher
       : OffscreenCanvasFrameDispatcher(nullptr, 0, 0, 0, {10, 10}) {}
 
   MOCK_METHOD2(PostImageToPlaceholder,
-               void(scoped_refptr<StaticBitmapImage>, unsigned resource_id));
+               void(scoped_refptr<CanvasResource>, unsigned resource_id));
 };
 
 class OffscreenCanvasFrameDispatcherTest : public testing::Test {
@@ -37,7 +38,7 @@ class OffscreenCanvasFrameDispatcherTest : public testing::Test {
     return dispatcher_->num_unreclaimed_frames_posted_;
   }
 
-  StaticBitmapImage* GetLatestUnpostedImage() {
+  CanvasResource* GetLatestUnpostedImage() {
     return dispatcher_->latest_unposted_image_.get();
   }
 

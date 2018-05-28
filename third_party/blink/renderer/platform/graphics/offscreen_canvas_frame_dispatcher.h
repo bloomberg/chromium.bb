@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class CanvasResource;
+
 class OffscreenCanvasFrameDispatcherClient {
  public:
   virtual void BeginFrame() = 0;
@@ -103,10 +105,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
   void SetNeedsBeginFrameInternal();
 
   bool VerifyImageSize(const IntSize);
-  void PostImageToPlaceholderIfNotBlocked(scoped_refptr<StaticBitmapImage>,
+  void PostImageToPlaceholderIfNotBlocked(scoped_refptr<CanvasResource>,
                                           viz::ResourceId resource_id);
   // virtual for testing
-  virtual void PostImageToPlaceholder(scoped_refptr<StaticBitmapImage>,
+  virtual void PostImageToPlaceholder(scoped_refptr<CanvasResource>,
                                       viz::ResourceId resource_id);
 
   viz::mojom::blink::CompositorFrameSinkPtr sink_;
@@ -117,7 +119,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
 
   // The latest_unposted_resource_id_ always refers to the Id of the frame
   // resource used by the latest_unposted_image_.
-  scoped_refptr<StaticBitmapImage> latest_unposted_image_;
+  scoped_refptr<CanvasResource> latest_unposted_image_;
   viz::ResourceId latest_unposted_resource_id_;
   unsigned num_unreclaimed_frames_posted_;
 

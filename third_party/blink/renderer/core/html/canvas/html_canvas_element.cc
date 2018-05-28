@@ -697,7 +697,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
 
   if (PlaceholderFrame()) {
     DCHECK(GetDocument().Printing());
-    context.DrawImage(PlaceholderFrame().get(), Image::kSyncDecode,
+    context.DrawImage(PlaceholderFrame()->Bitmap().get(), Image::kSyncDecode,
                       PixelSnappedIntRect(r));
     return;
   }
@@ -798,7 +798,7 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
       image_bitmap = canvas2d_bridge_->NewImageSnapshot(hint);
     } else if (PlaceholderFrame()) {
       DCHECK(PlaceholderFrame()->OriginClean());
-      image_bitmap = PlaceholderFrame();
+      image_bitmap = PlaceholderFrame()->Bitmap();
     }
   }
   if (!image_bitmap)
@@ -1161,8 +1161,9 @@ void HTMLCanvasElement::CreateCanvas2DLayerBridgeForTesting(
 scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
     SourceDrawingBuffer source_buffer,
     AccelerationHint hint) {
-  if (SurfaceLayerBridge())
-    return PlaceholderFrame();
+  if (SurfaceLayerBridge()) {
+    return PlaceholderFrame()->Bitmap();
+  }
 
   if (!IsPaintable())
     return nullptr;
@@ -1276,7 +1277,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
 
   if (PlaceholderFrame()) {
     *status = kNormalSourceImageStatus;
-    return PlaceholderFrame();
+    return PlaceholderFrame()->Bitmap();
   }
 
   if (!context_) {
@@ -1360,15 +1361,14 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 }
 
 void HTMLCanvasElement::SetPlaceholderFrame(
-    scoped_refptr<StaticBitmapImage> image,
+    scoped_refptr<CanvasResource> image,
     base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     unsigned resource_id) {
   OffscreenCanvasPlaceholder::SetPlaceholderFrame(
       std::move(image), std::move(dispatcher), std::move(task_runner),
       resource_id);
-  IntSize new_size(PlaceholderFrame()->width(), PlaceholderFrame()->height());
-  SetSize(new_size);
+  SetSize(PlaceholderFrame()->Size());
   NotifyListenersCanvasChanged();
 }
 

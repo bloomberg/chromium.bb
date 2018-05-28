@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -68,7 +69,7 @@ void UpdatePlaceholderImage(
     base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     int placeholder_canvas_id,
-    scoped_refptr<blink::StaticBitmapImage> image,
+    scoped_refptr<blink::CanvasResource> image,
     viz::ResourceId resource_id) {
   DCHECK(IsMainThread());
   OffscreenCanvasPlaceholder* placeholder_canvas =
@@ -83,7 +84,7 @@ void UpdatePlaceholderImage(
 }  // namespace
 
 void OffscreenCanvasFrameDispatcher::PostImageToPlaceholderIfNotBlocked(
-    scoped_refptr<StaticBitmapImage> image,
+    scoped_refptr<CanvasResource> image,
     viz::ResourceId resource_id) {
   if (placeholder_canvas_id_ == kInvalidPlaceholderCanvasId) {
     offscreen_canvas_resource_provider_->ReclaimResource(resource_id);
@@ -111,7 +112,7 @@ void OffscreenCanvasFrameDispatcher::PostImageToPlaceholderIfNotBlocked(
 }
 
 void OffscreenCanvasFrameDispatcher::PostImageToPlaceholder(
-    scoped_refptr<StaticBitmapImage> image,
+    scoped_refptr<CanvasResource> image,
     viz::ResourceId resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
       Platform::Current()->CurrentThread()->GetTaskRunner();
@@ -166,8 +167,14 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
 
   // For frameless canvas, we don't get a valid frame_sink_id and should drop.
   if (!frame_sink_id_.is_valid()) {
+    scoped_refptr<CanvasResource> canvas_resource =
+        CanvasResourceBitmap::Create(std::move(image),
+                                     nullptr,  // Resource provider not
+                                               // specified -> recycling will
+                                               // not work
+                                     kLow_SkFilterQuality, CanvasColorParams());
     PostImageToPlaceholderIfNotBlocked(
-        std::move(image),
+        std::move(canvas_resource),
         offscreen_canvas_resource_provider_->GetNextResourceId());
     return false;
   }
@@ -246,8 +253,13 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
 
   commit_type_histogram.Count(commit_type);
 
-  PostImageToPlaceholderIfNotBlocked(
+  scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
       std::move(image),
+      nullptr,  // Resource provider not specified -> recycling will not work
+      kLow_SkFilterQuality, CanvasColorParams());
+
+  PostImageToPlaceholderIfNotBlocked(
+      std::move(canvas_resource),
       offscreen_canvas_resource_provider_->GetNextResourceId());
 
   frame->resource_list.push_back(std::move(resource));
