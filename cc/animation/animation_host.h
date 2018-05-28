@@ -201,8 +201,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool NeedsTickMutator(base::TimeTicks monotonic_time,
                         const ScrollTree& scroll_tree) const;
 
-  // Return the animator state representing all ticking worklet animations.
-  std::unique_ptr<MutatorInputState> CollectAnimatorsState(
+  // Return the state representing all ticking worklet animations.
+  std::unique_ptr<MutatorInputState> CollectWorkletAnimationsState(
       base::TimeTicks timeline_time,
       const ScrollTree& scroll_tree);
 

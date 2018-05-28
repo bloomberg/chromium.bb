@@ -13,6 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::Mock;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::_;
 
@@ -72,7 +73,8 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
   host_impl_->ActivateAnimations();
 
   base::TimeDelta local_time = base::TimeDelta::FromSecondsD(duration / 2);
-  worklet_animation_impl_->SetLocalTime(local_time);
+
+  worklet_animation_impl_->SetOutputState({0, local_time});
 
   TickAnimationsTransferEvents(base::TimeTicks(), 0u);
 
@@ -88,7 +90,7 @@ TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
 TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
   AttachWorkletAnimation();
 
-  MockLayerTreeMutator* mock_mutator = new MockLayerTreeMutator();
+  MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
   ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
@@ -115,7 +117,7 @@ TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedWithCorrectInputState) {
 TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
   AttachWorkletAnimation();
 
-  MockLayerTreeMutator* mock_mutator = new MockLayerTreeMutator();
+  MockLayerTreeMutator* mock_mutator = new NiceMock<MockLayerTreeMutator>();
   host_impl_->SetLayerTreeMutator(
       base::WrapUnique<LayerTreeMutator>(mock_mutator));
   ON_CALL(*mock_mutator, HasAnimators()).WillByDefault(Return(true));
@@ -144,15 +146,61 @@ TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
   Mock::VerifyAndClearExpectations(mock_mutator);
 }
 
-TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrolltimeline) {
+TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
   auto scroll_timeline = std::make_unique<MockScrollTimeline>();
   EXPECT_CALL(*scroll_timeline, CurrentTime(_)).WillOnce(Return(1234));
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", std::move(scroll_timeline));
 
   ScrollTree scroll_tree;
-  EXPECT_EQ(1234, worklet_animation->CurrentTime(base::TimeTicks::Now(),
-                                                 scroll_tree));
+  MutatorInputState::AnimationState state =
+      worklet_animation->GetInputState(base::TimeTicks::Now(), scroll_tree);
+  EXPECT_EQ(1234, state.current_time);
+}
+
+TEST_F(WorkletAnimationTest,
+       CurrentTimeFromDocumentTimelineIsOffsetByStartTime) {
+  scoped_refptr<WorkletAnimation> worklet_animation =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
+
+  base::TimeTicks first_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
+  base::TimeTicks second_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
+  base::TimeTicks third_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 246.8);
+
+  ScrollTree scroll_tree;
+  MutatorInputState::AnimationState state =
+      worklet_animation->GetInputState(first_ticks, scroll_tree);
+  // First state request sets the start time and thus current time should be 0.
+  EXPECT_EQ(0, state.current_time);
+  state = worklet_animation->GetInputState(second_ticks, scroll_tree);
+  EXPECT_EQ(123.4, state.current_time);
+  // Should always offset from start time.
+  state = worklet_animation->GetInputState(third_ticks, scroll_tree);
+  EXPECT_EQ(246.8, state.current_time);
+}
+
+TEST_F(WorkletAnimationTest, NeedsUpdateCorrectlyReflectsInputTimeChange) {
+  scoped_refptr<WorkletAnimation> worklet_animation =
+      WorkletAnimation::Create(worklet_animation_id_, "test_name", nullptr);
+
+  base::TimeTicks first_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
+  base::TimeTicks second_ticks =
+      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
+
+  ScrollTree scroll_tree;
+  // First time should always be true.
+  EXPECT_TRUE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree));
+  worklet_animation->GetInputState(first_ticks, scroll_tree);
+  // Should be false if time is not different from last GetState.
+  EXPECT_FALSE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree));
+  // Should be true when input time is different.
+  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree));
+  // Should be side-effect free.
+  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree));
 }
 
 }  // namespace
