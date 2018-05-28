@@ -28,14 +28,14 @@ def parse_args():
   parser.add_argument('old_file', help='Old file to generate/apply patch.')
   parser.add_argument('new_file', help='New file to generate patch from.')
   parser.add_argument('patch_file', help='Patch filename to use.')
-  parser.add_argument('output_dir',
-                      help='Directory to write binary protobuf to.')
+  parser.add_argument('output_file', help='File to write binary protobuf to.')
   return parser.parse_args()
 
 
-def gen(old_file, new_file, patch_file, output_dir, is_raw, is_win):
+def gen(old_file, new_file, patch_file, output_file, is_raw, is_win):
   """Generates a new patch and binary encodes a protobuf pair."""
   # Create output directory if missing.
+  output_dir = os.path.dirname(output_file)
   if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -61,7 +61,7 @@ def gen(old_file, new_file, patch_file, output_dir, is_raw, is_win):
   ret = subprocess.call([sys.executable,
                          os.path.join(ABS_PATH, 'create_seed_file_pair.py'),
                          os.path.abspath(protoc), old_file, patch_file,
-                         os.path.join(output_dir, 'seed_proto.bin')],
+                         output_file],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE)
   os.remove(patch_file)
@@ -73,7 +73,7 @@ def main():
   return gen(os.path.join(ABS_TESTDATA_PATH, args.old_file),
              os.path.join(ABS_TESTDATA_PATH, args.new_file),
              os.path.join(ABS_TESTDATA_PATH, args.patch_file),
-             os.path.abspath(args.output_dir),
+             os.path.abspath(args.output_file),
              args.raw,
              platform.system() == 'Windows')
 
