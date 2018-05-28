@@ -15,6 +15,7 @@
   `);
   var attachedBoth = Promise.all([session1.protocol.Page.onceFrameAttached(), session2.protocol.Page.onceFrameAttached()]);
   var startedLoadingBoth = Promise.all([session1.protocol.Page.onceFrameStartedLoading(), session2.protocol.Page.onceFrameStartedLoading()]);
+  var stopLoadingBoth = Promise.all([session1.protocol.Page.onceFrameStoppedLoading(), session2.protocol.Page.onceFrameStoppedLoading()]);
   var navigatedBoth = Promise.all([session1.protocol.Page.onceFrameNavigated(), session2.protocol.Page.onceFrameNavigated()]);
 
   await attachedBoth;
@@ -26,6 +27,7 @@
   await navigatedBoth;
   testRunner.log('Navigated in both');
 
+  await stopLoadingBoth;
   testRunner.log('\nNavigating frame in 2');
   session2.evaluate('frame.src = "about:blank"');
   startedLoadingBoth = Promise.all([session1.protocol.Page.onceFrameStartedLoading(), session2.protocol.Page.onceFrameStartedLoading()]);
