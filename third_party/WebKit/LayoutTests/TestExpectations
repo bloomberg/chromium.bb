@@ -136,7 +136,7 @@ crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/jpeg-yuv-image-decodin
 crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/object-data-url-case-insensitivity.html [ Pass Failure ]
 crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/percentage-height-image-with-auto-height-container-computes-as-percentage.html [ Pass Failure ]
 crbug.com/726075 [ Mac ] virtual/gpu-rasterization/images/png-color-profile-ignore-gamma.html [ Pass Failure ]
-crbug.com/726075 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/overflow-menu-always-visible.html [ Pass Timeout ]
+crbug.com/726075 virtual/new-remote-playback-pipeline/media/controls/overflow-menu-always-visible.html [ Pass Timeout ]
 crbug.com/726075 [ Mac ] virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure Crash ]
 crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/animation-worklet-start-delay.html [ Pass Failure Crash ]
 crbug.com/726075 [ Mac ] virtual/threaded/fast/animationworklet/worklet-animation-duration.html [ Pass Failure Crash ]
