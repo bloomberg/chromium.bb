@@ -88,7 +88,6 @@ cast_source_set("browser") {
     "tts/tts_message_filter.h",
     "tts/tts_platform.cc",
     "tts/tts_platform.h",
-    "tts/tts_platform_stub.cc",
     "url_request_context_factory.cc",
     "url_request_context_factory.h",
   ]
@@ -99,6 +98,7 @@ cast_source_set("browser") {
       "cast_content_browser_client_simple.cc",
       "cast_network_request_interceptor_simple.cc",
       "pref_service_helper_simple.cc",
+      "tts/tts_platform_stub.cc",
     ]
   }
 
