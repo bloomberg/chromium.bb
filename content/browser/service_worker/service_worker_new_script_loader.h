@@ -155,6 +155,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
 
   State state_ = State::kNotStarted;
 
+  const uint32_t original_options_;
+
   base::WeakPtrFactory<ServiceWorkerNewScriptLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNewScriptLoader);

@@ -46,6 +46,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
                        base::SequencedTaskRunnerHandle::Get()),
       loader_factory_(std::move(loader_factory)),
       client_(std::move(client)),
+      original_options_(options),
       weak_factory_(this) {
   network::ResourceRequest resource_request(original_request);
 
@@ -85,6 +86,10 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       incumbent_cache_resource_id =
           stored_version->script_cache_map()->LookupResourceId(request_url_);
     }
+    // Request SSLInfo. It will be persisted in service worker storage and
+    // may be used by ServiceWorkerNavigationLoader for navigations handled
+    // by this service worker.
+    options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
   }
 
   if (ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
@@ -227,7 +232,17 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(response_info.release()));
 
-  client_->OnReceiveResponse(response_head, std::move(downloaded_file));
+  // Don't pass SSLInfo to the client when the original request doesn't ask
+  // to send it.
+  if (response_head.ssl_info.has_value() &&
+      !(original_options_ &
+        network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
+    network::ResourceResponseHead new_response_head = response_head;
+    new_response_head.ssl_info.reset();
+    client_->OnReceiveResponse(new_response_head, std::move(downloaded_file));
+  } else {
+    client_->OnReceiveResponse(response_head, std::move(downloaded_file));
+  }
 }
 
 void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
