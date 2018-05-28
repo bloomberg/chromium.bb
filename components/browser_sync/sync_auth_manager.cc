@@ -259,17 +259,6 @@ void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
   sync_service_->OnRefreshTokenRevoked();
 }
 
-void SyncAuthManager::OnRefreshTokensLoaded() {
-  // This notification gets fired when OAuth2TokenService loads the tokens from
-  // storage. Initialize the engine if sync is enabled. If the sync token was
-  // not loaded, GetCredentials() will generate invalid credentials to cause the
-  // engine to generate an auth error (https://crbug.com/121755).
-  // TODO(treib): Is this necessary? Either we actually have a refresh token, in
-  // which case this was already called from OnRefreshTokenAvailable above, or
-  // there is no refresh token, in which case Sync can't start anyway.
-  sync_service_->OnRefreshTokenAvailable();
-}
-
 bool SyncAuthManager::IsRetryingAccessTokenFetchForTest() const {
   return request_access_token_retry_timer_.IsRunning();
 }
