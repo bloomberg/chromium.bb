@@ -4,7 +4,6 @@
 
 # https://crbug.com/715640
 -ServiceWorkerBrowserTest.Reload
--ServiceWorkerBrowserTest.ResponseFromHTTPSServiceWorkerIsMarkedAsSecure
 -ServiceWorkerNavigationPreloadTest.CanceledByInterceptor
 -ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
 -ServiceWorkerV8CodeCacheForCacheStorageTest.V8CacheOnCacheStorage
