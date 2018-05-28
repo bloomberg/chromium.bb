@@ -15,11 +15,53 @@
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
 
+namespace views {
+class ImageView;
+}  // namespace views
+
 namespace ash {
+class ImeController;
 
 namespace tray {
 class IMEDefaultView;
-class IMEDetailedView;
+
+// A list of available IMEs shown in the IME detailed view of the system menu,
+// along with other items in the title row (a settings button and optional
+// enterprise-controlled icon).
+class IMEDetailedView : public ImeListView {
+ public:
+  IMEDetailedView(DetailedViewDelegate* delegate,
+                  ImeController* ime_controller);
+  ~IMEDetailedView() override = default;
+
+  void Update(const std::string& current_ime_id,
+              const std::vector<mojom::ImeInfo>& list,
+              const std::vector<mojom::ImeMenuItem>& property_list,
+              bool show_keyboard_toggle,
+              SingleImeBehavior single_ime_behavior) override;
+
+  views::ImageView* controlled_setting_icon() {
+    return controlled_setting_icon_;
+  }
+
+ private:
+  // ImeListView:
+  void ResetImeListView() override;
+  void HandleButtonPressed(views::Button* sender,
+                           const ui::Event& event) override;
+  void CreateExtraTitleRowButtons() override;
+  void ShowSettings();
+
+  ImeController* const ime_controller_;
+
+  // Gear icon that takes the user to IME settings.
+  views::Button* settings_button_ = nullptr;
+
+  // This icon says that the IMEs are managed by policy.
+  views::ImageView* controlled_setting_icon_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);
+};
 }
 
 class ImeController;
