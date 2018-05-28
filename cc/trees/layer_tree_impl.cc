@@ -596,52 +596,47 @@ LayerImplList::reverse_iterator LayerTreeImpl::rend() {
   return layer_list_.rend();
 }
 
-LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
-  auto iter = element_layers_map_.find(element_id);
-  return (iter == element_layers_map_.end()) ? nullptr
-                                             : LayerById(iter->second);
+bool LayerTreeImpl::IsElementInLayerList(ElementId element_id) const {
+  return elements_in_layer_list_.count(element_id);
 }
 
 ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
 }
 
-void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
-  ElementId element_id = layer->element_id();
+void LayerTreeImpl::AddToElementLayerList(ElementId element_id) {
   if (!element_id)
     return;
 
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("layer-element"),
-               "LayerTreeImpl::AddToElementMap", "element",
-               element_id.AsValue().release(), "layer_id", layer->id());
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
+               "LayerTreeImpl::AddToElementLayerList", "element",
+               element_id.AsValue().release());
 
 #if DCHECK_IS_ON()
-  LayerImpl* existing_layer = LayerByElementId(element_id);
   bool element_id_collision_detected =
-      existing_layer && existing_layer != layer;
+      elements_in_layer_list_.count(element_id);
 
   DCHECK(!element_id_collision_detected);
 #endif
 
-  element_layers_map_[element_id] = layer->id();
+  elements_in_layer_list_.insert(element_id);
 
   host_impl_->mutator_host()->RegisterElement(element_id,
                                               GetElementTypeForAnimation());
 }
 
-void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
-  if (!layer->element_id())
+void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
+  if (!element_id)
     return;
 
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("layer-element"),
-               "LayerTreeImpl::RemoveFromElementMap", "element",
-               layer->element_id().AsValue().release(), "layer_id",
-               layer->id());
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
+               "LayerTreeImpl::RemoveFromElementLayerList", "element",
+               element_id.AsValue().release());
 
-  host_impl_->mutator_host()->UnregisterElement(layer->element_id(),
+  host_impl_->mutator_host()->UnregisterElement(element_id,
                                                 GetElementTypeForAnimation());
 
-  element_layers_map_.erase(layer->element_id());
+  elements_in_layer_list_.erase(element_id);
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,

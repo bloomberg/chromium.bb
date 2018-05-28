@@ -965,10 +965,6 @@ TEST_F(AuraScrollbarLayerTest, ScrollbarLayerCreateAfterSetScrollable) {
   layer_tree_host_->CommitAndCreatePendingTree();
   host_impl->ActivateSyncTree();
 
-  LayerImpl* scroll_layer_impl =
-      host_impl->active_tree()->LayerByElementId(scroll_layer->element_id());
-  EXPECT_TRUE(scroll_layer_impl->needs_show_scrollbars());
-
   std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
   scoped_refptr<Layer> scrollbar_layer = SolidColorScrollbarLayer::Create(
       scrollbar->Orientation(), kThumbThickness, kTrackStart,
