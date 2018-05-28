@@ -397,8 +397,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
       "twoGetUserMediaAndStop({video: true, audio: true});");
 }
 
+// Flaky. See https://crbug.com/846741.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaWithEqualConstraints) {
+                       DISABLED_TwoGetUserMediaWithEqualConstraints) {
   std::string constraints1 = "{video: true, audio: true}";
   const std::string& constraints2 = constraints1;
   std::string expected_result = "w=640:h=480-w=640:h=480";
@@ -417,16 +418,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
-// Test fails under MSan, http://crbug.com/445745
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
-  DISABLED_TwoGetUserMediaWithFirstHdSecondVga
-#else
-#define MAYBE_TwoGetUserMediaWithFirstHdSecondVga \
-  TwoGetUserMediaWithFirstHdSecondVga
-#endif
+// Test fails under MSan, http://crbug.com/445745.
+// Flaky. See https://crbug.com/846960.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_TwoGetUserMediaWithFirstHdSecondVga) {
+                       DISABLED_TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
       "{video: {width : {exact: 1280}, height: {exact: 720}}}";
   std::string constraints2 =
@@ -488,8 +483,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 // This test makes two getUserMedia requests, one with impossible constraints
 // that should trigger an error, and one with valid constraints. The test
 // verifies getUserMedia can succeed after being given impossible constraints.
+// Flaky. See https://crbug.com/846984.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       TwoGetUserMediaAndCheckCallbackAfterFailure) {
+                       DISABLED_TwoGetUserMediaAndCheckCallbackAfterFailure) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -708,16 +704,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("srcObjectRemoveVideoTrack()");
 }
 
-// Flaky on memory and leak sanitizers. https://crbug.com/843844
-#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SrcObjectRemoveFirstOfTwoVideoTracks \
-  DISABLED_SrcObjectRemoveFirstOfTwoVideoTracks
-#else
-#define MAYBE_SrcObjectRemoveFirstOfTwoVideoTracks \
-  SrcObjectRemoveFirstOfTwoVideoTracks
-#endif
+// Flaky. https://crbug.com/843844
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       SrcObjectRemoveFirstOfTwoVideoTracks) {
+                       DISABLED_SrcObjectRemoveFirstOfTwoVideoTracks) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
