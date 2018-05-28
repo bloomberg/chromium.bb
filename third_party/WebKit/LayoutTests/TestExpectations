@@ -2858,6 +2858,9 @@ crbug.com/832071 virtual/service-worker-servicification/external/wpt/service-wor
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] virtual/picture-in-picture/external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-all.https.sub.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/service-workers/service-worker/fetch-event.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/fetch/security/redirect-to-url-with-credentials.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-032.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
