@@ -12,7 +12,6 @@ include_rules = [
   "+google_apis/gcm",
   "+jni",
   "+jingle/notifier",
-  "+net/base/load_flags.h",
   "+net/base/backoff_entry.h",
   "+net/base/ip_endpoint.h",
   "+net/base/network_change_notifier.h",
@@ -20,6 +19,7 @@ include_rules = [
   "+net/http/http_status_code.h",
   "+net/traffic_annotation",
   "+net/url_request",
+  "+net/base/load_flags.h",
 
   "+services/network/public",
   "+services/network/test",

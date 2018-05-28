@@ -24,17 +24,19 @@ namespace syncer {
 //
 // TODO(https://crbug.com/828833): This code is the duplicate of same code in
 // the ntp component. It should be removed, once appropriate place is found.
+// TODO(https://crbug.com/842655): Flip Callback to OnceCallback once safe
+// parser is refactored.
 class JsonUnsafeParser {
  public:
   using SuccessCallback =
-      base::OnceCallback<void(std::unique_ptr<base::Value>)>;
-  using ErrorCallback = base::OnceCallback<void(const std::string&)>;
+      base::RepeatingCallback<void(std::unique_ptr<base::Value>)>;
+  using ErrorCallback = base::RepeatingCallback<void(const std::string&)>;
 
   // As with SafeJsonParser, runs either success_callback or error_callback on
   // the calling thread, but not before the call returns.
   static void Parse(const std::string& unsafe_json,
-                    SuccessCallback success_callback,
-                    ErrorCallback error_callback);
+                    const SuccessCallback& success_callback,
+                    const ErrorCallback& error_callback);
 
   JsonUnsafeParser() = delete;
 };

@@ -7,7 +7,6 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
@@ -95,7 +94,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
           .SetProjectId(project_id)
           .Build();
   request->Start(callback.Get(),
-                 base::BindOnce(syncer::JsonUnsafeParser::Parse),
+                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
                  url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
@@ -136,7 +135,7 @@ TEST_F(PerUserTopicRegistrationRequestTest, ShouldSubscribeWithoutErrors) {
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
   request->Start(callback.Get(),
-                 base::BindOnce(syncer::JsonUnsafeParser::Parse),
+                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
                  url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
@@ -178,7 +177,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
   request->Start(callback.Get(),
-                 base::BindOnce(syncer::JsonUnsafeParser::Parse),
+                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
                  url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
@@ -218,7 +217,7 @@ TEST_F(PerUserTopicRegistrationRequestTest,
                                     CreateHeadersForTest(net::HTTP_OK),
                                     response_body, response_status);
   request->Start(callback.Get(),
-                 base::BindOnce(syncer::JsonUnsafeParser::Parse),
+                 base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
                  url_loader_factory());
   base::RunLoop().RunUntilIdle();
 
