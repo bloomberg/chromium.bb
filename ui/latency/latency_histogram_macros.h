@@ -14,6 +14,18 @@
 
 // Event latency that is mostly under 2 seconds. We should only use 100 buckets
 // when needed.
+#define UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(name, start, \
+                                                               end)         \
+  CONFIRM_EVENT_TIMES_EXIST(start, end)                                     \
+  base::UmaHistogramCustomCounts(                                           \
+      name,                                                                 \
+      std::max(                                                             \
+          static_cast<int64_t>(0),                                          \
+          (end.last_event_time - start.first_event_time).InMicroseconds()), \
+      1, 2000000, 100);
+
+// Event latency that is mostly under 1 second. We should only use 100 buckets
+// when needed.
 #define UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(name, start, \
                                                                  end)         \
   CONFIRM_EVENT_TIMES_EXIST(start, end)                                       \
@@ -22,7 +34,7 @@
       std::max(                                                               \
           static_cast<int64_t>(0),                                            \
           (end.last_event_time - start.first_event_time).InMicroseconds()),   \
-      1, 2000000, 100);
+      1, 1000000, 100);
 
 #define UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(name, start, end)          \
   CONFIRM_EVENT_TIMES_EXIST(start, end)                                     \
