@@ -150,11 +150,15 @@ void ImageInputType::StartResourceLoading() {
 
   HTMLImageLoader& image_loader = GetElement().EnsureImageLoader();
   image_loader.UpdateFromElement();
+}
 
+void ImageInputType::OnAttachWithLayoutObject() {
   LayoutObject* layout_object = GetElement().GetLayoutObject();
-  if (!layout_object || !layout_object->IsLayoutImage())
+  DCHECK(layout_object);
+  if (!layout_object->IsLayoutImage())
     return;
 
+  HTMLImageLoader& image_loader = GetElement().EnsureImageLoader();
   LayoutImageResource* image_resource =
       ToLayoutImage(layout_object)->ImageResource();
   image_resource->SetImageResource(image_loader.GetContent());
@@ -263,14 +267,8 @@ void ImageInputType::EnsurePrimaryContent() {
 }
 
 void ImageInputType::ReattachFallbackContent() {
-  if (GetElement().GetDocument().InStyleRecalc()) {
-    // This can happen inside of AttachLayoutTree() in the middle of a
-    // RebuildLayoutTree, so we need to reattach synchronously here.
-    GetElement().ReattachLayoutTree(
-        SyncReattachContext::CurrentAttachContext());
-  } else {
+  if (!GetElement().GetDocument().InStyleRecalc())
     GetElement().LazyReattachIfAttached();
-  }
 }
 
 void ImageInputType::CreateShadowSubtree() {

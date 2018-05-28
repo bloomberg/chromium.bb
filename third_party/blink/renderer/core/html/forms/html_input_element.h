@@ -400,6 +400,7 @@ class CORE_EXPORT HTMLInputElement
   void AddToRadioButtonGroup();
   void RemoveFromRadioButtonGroup();
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
+  void DidRecalcStyle(StyleRecalcChange) override;
 
   AtomicString name_;
   // The value string in |value| value mode.
