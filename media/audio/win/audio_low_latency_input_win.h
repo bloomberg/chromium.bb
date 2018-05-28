@@ -161,6 +161,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   bool InitializeDmo();
   bool SetDmoProperties();
   bool SetDmoFormat();
+  bool SetDmoDevices(IPropertyStore* ps);
   bool CreateDummyRenderClientsForDmo();
 
   // AudioConverter::InputCallback implementation.
@@ -245,6 +246,10 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // Note that AudioDeviceDescription::kDefaultDeviceId represents the default
   // device role and is not a valid ID as such.
   std::string device_id_;
+
+  // Contains the unique name of the output device from which to cancel echo, in
+  // case voice processing is enabled, i.e. |use_voice_processing_| is true.
+  std::string output_device_id_for_aec_;
 
   // Pointer to the object that will receive the recorded audio samples.
   AudioInputCallback* sink_ = nullptr;

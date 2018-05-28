@@ -70,6 +70,38 @@ bool IsSupportedFormatForConversion(const WAVEFORMATEX& format) {
   return true;
 }
 
+// Returns the index of the device in the device collection, or -1 for the
+// default device, as used by the voice processing DMO.
+base::Optional<WORD> GetAudioDeviceCollectionIndexFromId(
+    const std::string& device_id,
+    const EDataFlow data_flow) {
+  // The default device is specified with -1.
+  if (AudioDeviceDescription::IsDefaultDevice(device_id))
+    return -1;
+
+  WORD device_index = -1;
+  HRESULT hr = E_FAIL;
+  // The default communications does not have an index itself, so we need to
+  // find the index for the underlying device.
+  if (AudioDeviceDescription::IsCommunicationsDevice(device_id)) {
+    const std::string communications_id =
+        (data_flow == eCapture)
+            ? CoreAudioUtil::GetCommunicationsInputDeviceID()
+            : CoreAudioUtil::GetCommunicationsOutputDeviceID();
+    hr = CoreAudioUtil::GetDeviceCollectionIndex(communications_id, data_flow,
+                                                 &device_index);
+  } else {
+    // Otherwise, just look for the device_id directly.
+    hr = CoreAudioUtil::GetDeviceCollectionIndex(device_id, data_flow,
+                                                 &device_index);
+  }
+
+  if (FAILED(hr) || hr == S_FALSE)
+    return base::nullopt;
+
+  return device_index;
+}
+
 // Implementation of IMediaBuffer, as required for
 // IMediaObject::ProcessOutput(). After consuming data provided by
 // ProcessOutput(), call SetLength() to update the buffer availability.
@@ -147,6 +179,7 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
     AudioManagerBase::VoiceProcessingMode voice_processing_mode)
     : manager_(manager),
       device_id_(device_id),
+      output_device_id_for_aec_(AudioDeviceDescription::kDefaultDeviceId),
       log_callback_(log_callback),
       use_voice_processing_(voice_processing_mode ==
                             AudioManagerBase::VoiceProcessingMode::kEnabled) {
@@ -491,7 +524,52 @@ bool WASAPIAudioInputStream::IsMuted() {
 
 void WASAPIAudioInputStream::SetOutputDeviceForAec(
     const std::string& output_device_id) {
-  // Not supported. Do nothing.
+  if (!use_voice_processing_)
+    return;
+
+  if (output_device_id == output_device_id_for_aec_)
+    return;
+
+  output_device_id_for_aec_ = output_device_id;
+
+  // Set devices.
+  Microsoft::WRL::ComPtr<IPropertyStore> ps;
+  HRESULT hr = voice_capture_dmo_->QueryInterface(IID_IPropertyStore, &ps);
+  if (FAILED(hr) || !ps) {
+    log_callback_.Run(base::StringPrintf(
+        "WASAPIAIS:SetOutputDeviceForAec: Getting DMO property store failed."));
+    return;
+  }
+
+  if (!SetDmoDevices(ps.Get())) {
+    log_callback_.Run(
+        "WASAPIAIS:SetOutputDeviceForAec: Setting device indices failed.");
+    return;
+  }
+
+  // Recreate the dummy render client on the new output.
+  hr = audio_client_for_render_->Stop();
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to stop output streaming.";
+  }
+
+  CreateDummyRenderClientsForDmo();
+
+  if (!CoreAudioUtil::FillRenderEndpointBufferWithSilence(
+          audio_client_for_render_.Get(), audio_render_client_.Get())) {
+    DLOG(WARNING) << "Failed to pre-fill render buffer with silence.";
+  }
+
+  hr = audio_client_for_render_->Start();
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to start output streaming: " << std::hex << hr
+                << ", proceeding without rendering.";
+  }
+
+  log_callback_.Run(base::StringPrintf(
+      "WASAPIAIS:SetOutputDeviceForAec: Successfully updated AEC output "
+      "device to %s",
+      output_device_id.c_str()));
 }
 
 void WASAPIAudioInputStream::Run() {
@@ -1295,29 +1373,8 @@ bool WASAPIAudioInputStream::SetDmoProperties() {
     return false;
   }
 
-  // Find the input device index if a non-default device is used.
-  // The default device is specified with -1. The default communications device
-  // cannot be specified, so we need to find the index for that underlying
-  // device.
-  WORD input_device_index = -1;
-  if (!AudioDeviceDescription::IsDefaultDevice(device_id_)) {
-    hr = CoreAudioUtil::GetDeviceCollectionIndex(
-        AudioDeviceDescription::IsCommunicationsDevice(device_id_)
-            ? CoreAudioUtil::GetCommunicationsInputDeviceID()
-            : device_id_,
-        eCapture, &input_device_index);
-    if (FAILED(hr) || hr == S_FALSE)
-      return false;
-  }
-
   // Set devices.
-  // TODO(grunell): Set output device to other than default.
-  WORD output_device_index = -1;
-  LONG device_index_value =
-      (static_cast<ULONG>(output_device_index) << 16) +
-      (static_cast<ULONG>(input_device_index) & 0x0000ffff);
-  if (FAILED(CoreAudioUtil::SetVtI4Property(
-          ps.Get(), MFPKEY_WMAAECMA_DEVICE_INDEXES, device_index_value))) {
+  if (!SetDmoDevices(ps.Get())) {
     DLOG(ERROR) << "Setting device indices failed.";
     return false;
   }
@@ -1403,11 +1460,44 @@ bool WASAPIAudioInputStream::SetDmoFormat() {
   return true;
 }
 
+bool WASAPIAudioInputStream::SetDmoDevices(IPropertyStore* ps) {
+  // Look up the input device's index.
+  const base::Optional<WORD> input_device_index =
+      GetAudioDeviceCollectionIndexFromId(device_id_, eCapture);
+
+  if (!input_device_index) {
+    log_callback_.Run(
+        base::StringPrintf("WASAPIAIS:SetDmoDevices: Could not "
+                           "resolve input device index for %s",
+                           device_id_.c_str()));
+    return false;
+  }
+
+  // Look up the output device's index.
+  const base::Optional<WORD> output_device_index =
+      GetAudioDeviceCollectionIndexFromId(output_device_id_for_aec_, eRender);
+  if (!output_device_index) {
+    log_callback_.Run(
+        base::StringPrintf("WASAPIAIS:SetDmoDevices: Could not "
+                           "resolve output device index for %s",
+                           output_device_id_for_aec_.c_str()));
+    return false;
+  }
+
+  // The DEVICE_INDEXES property packs the input and output indices into the
+  // upper and lower halves of a LONG.
+  LONG device_index_value =
+      (static_cast<ULONG>(*output_device_index) << 16) +
+      (static_cast<ULONG>(*input_device_index) & 0x0000ffff);
+  return !FAILED(CoreAudioUtil::SetVtI4Property(
+      ps, MFPKEY_WMAAECMA_DEVICE_INDEXES, device_index_value));
+}
+
 bool WASAPIAudioInputStream::CreateDummyRenderClientsForDmo() {
   Microsoft::WRL::ComPtr<IAudioClient> audio_client(CoreAudioUtil::CreateClient(
-      AudioDeviceDescription::kDefaultDeviceId, eRender, eConsole));
+      output_device_id_for_aec_, eRender, eConsole));
   if (!audio_client.Get()) {
-    DLOG(ERROR) << "Failed to create audio client for rendering.";
+    DLOG(ERROR) << "Failed to create audio client for dummy rendering for DMO.";
     return false;
   }
 
