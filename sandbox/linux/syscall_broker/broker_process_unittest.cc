@@ -731,7 +731,7 @@ TEST(BrokerProcess, CreateFile) {
   unlink(permfile_name);
 }
 
-void TestStatHelper(bool fast_check_in_client, bool follow_links) {
+void TestStatHelper(bool fast_check_in_client) {
   ScopedTemporaryFile tmp_file;
   EXPECT_EQ(12, write(tmp_file.fd(), "blahblahblah", 12));
 
@@ -759,8 +759,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(tempfile_name, follow_links, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(tempfile_name, &sb));
   }
 
   BrokerCommandSet command_set;
@@ -774,8 +773,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(nonesuch_name, follow_links, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(nonesuch_name, &sb));
   }
   {
     // Actual file with no permission to see file.
@@ -785,8 +783,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(tempfile_name, follow_links, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(tempfile_name, &sb));
   }
   {
     // Nonexistent file with permissions to see file.
@@ -797,29 +794,20 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, &sb));
 
     // Gets denied all the way back to root since no create permission.
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(leading_path1, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(leading_path2, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(leading_path3, follow_links, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(leading_path1, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(leading_path2, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(leading_path3, &sb));
 
     // Not fooled by substrings.
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path1, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path2, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path3, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path4, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path5, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path6, follow_links, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path1, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path2, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path3, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path4, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path5, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path6, &sb));
   }
   {
     // Nonexistent file with permissions to create file.
@@ -830,28 +818,22 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(nonesuch_name, &sb));
 
     // Gets ENOENT all the way back to root since it has create permission.
-    EXPECT_EQ(-ENOENT, open_broker.Stat(leading_path1, follow_links, &sb));
-    EXPECT_EQ(-ENOENT, open_broker.Stat(leading_path2, follow_links, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(leading_path1, &sb));
+    EXPECT_EQ(-ENOENT, open_broker.Stat(leading_path2, &sb));
 
     // But can always get the root.
-    EXPECT_EQ(0, open_broker.Stat(leading_path3, follow_links, &sb));
+    EXPECT_EQ(0, open_broker.Stat(leading_path3, &sb));
 
     // Not fooled by substrings.
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path1, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path2, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path3, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path4, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path5, follow_links, &sb));
-    EXPECT_EQ(-kFakeErrnoSentinel,
-              open_broker.Stat(bad_leading_path6, follow_links, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path1, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path2, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path3, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path4, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path5, &sb));
+    EXPECT_EQ(-kFakeErrnoSentinel, open_broker.Stat(bad_leading_path6, &sb));
   }
   {
     // Actual file with permissions to see file.
@@ -862,7 +844,7 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
     ASSERT_TRUE(open_broker.Init(base::BindRepeating(&NoOpCallback)));
 
     memset(&sb, 0, sizeof(sb));
-    EXPECT_EQ(0, open_broker.Stat(tempfile_name, follow_links, &sb));
+    EXPECT_EQ(0, open_broker.Stat(tempfile_name, &sb));
 
     // Following fields may never be consistent but should be non-zero.
     // Don't trust the platform to define fields with any particular sign.
@@ -887,13 +869,11 @@ void TestStatHelper(bool fast_check_in_client, bool follow_links) {
 }
 
 TEST(BrokerProcess, StatFileClient) {
-  TestStatHelper(true, true);
-  TestStatHelper(true, false);
+  TestStatHelper(true);
 }
 
 TEST(BrokerProcess, StatFileHost) {
-  TestStatHelper(false, true);
-  TestStatHelper(false, false);
+  TestStatHelper(false);
 }
 
 void TestRenameHelper(bool fast_check_in_client) {
