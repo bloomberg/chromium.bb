@@ -1873,6 +1873,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "text/date_time_format_test.cc",
     "text/hyphenation_test.cc",
     "text/icu_error_test.cc",
+    "text/line_ending_test.cc",
     "text/platform_locale_test.cc",
     "text/segmented_string_test.cc",
     "text/suffix_tree_test.cc",
