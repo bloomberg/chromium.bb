@@ -197,7 +197,6 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       prerender_url_(url),
       referrer_(referrer),
       profile_(profile),
-      has_stopped_loading_(false),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),
       prerendering_has_been_cancelled_(false),
@@ -523,7 +522,6 @@ void PrerenderContents::RenderFrameCreated(
 }
 
 void PrerenderContents::DidStopLoading() {
-  has_stopped_loading_ = true;
   NotifyPrerenderStopLoading();
 }
 
@@ -547,8 +545,7 @@ void PrerenderContents::DidStartNavigation(
   // Neither of these can happen in the case of an invisible prerender.
   // So the cause is: Some JavaScript caused a new URL to be loaded.  In that
   // case, the spinner would start again in the browser, so we must reset
-  // has_stopped_loading_ so that the spinner won't be stopped.
-  has_stopped_loading_ = false;
+  // has_finished_loading_ so that the spinner won't be stopped.
   has_finished_loading_ = false;
 }
 
