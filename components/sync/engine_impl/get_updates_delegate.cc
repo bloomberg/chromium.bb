@@ -49,11 +49,10 @@ NormalGetUpdatesDelegate::~NormalGetUpdatesDelegate() {}
 // This function assumes the progress markers have already been populated.
 void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  // TODO(crbug.com/510165): Remove this once the server doesn't depend on it
-  // anymore.
+  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information. It's not
+  // used anymore, but |source| is a required field so we have to set it anyway.
   get_updates->mutable_caller_info()->set_source(
-      nudge_tracker_.GetLegacySource());
+      sync_pb::GetUpdatesCallerInfo::UNKNOWN);
 
   // Set the origin.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::GU_TRIGGER);
@@ -100,42 +99,12 @@ ConfigureGetUpdatesDelegate::ConfigureGetUpdatesDelegate(
 
 ConfigureGetUpdatesDelegate::~ConfigureGetUpdatesDelegate() {}
 
-namespace {
-
-sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
-ConvertConfigureOriginToLegacySource(
-    sync_pb::SyncEnums::GetUpdatesOrigin origin) {
-  switch (origin) {
-    case sync_pb::SyncEnums::NEWLY_SUPPORTED_DATATYPE:
-      return sync_pb::GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
-    case sync_pb::SyncEnums::MIGRATION:
-      return sync_pb::GetUpdatesCallerInfo::MIGRATION;
-    case sync_pb::SyncEnums::RECONFIGURATION:
-      return sync_pb::GetUpdatesCallerInfo::RECONFIGURATION;
-    case sync_pb::SyncEnums::NEW_CLIENT:
-      return sync_pb::GetUpdatesCallerInfo::NEW_CLIENT;
-    case sync_pb::SyncEnums::PROGRAMMATIC:
-      return sync_pb::GetUpdatesCallerInfo::PROGRAMMATIC;
-    // We shouldn't encounter any other (non-configure) origins here.
-    case sync_pb::SyncEnums::UNKNOWN_ORIGIN:
-    case sync_pb::SyncEnums::PERIODIC:
-    case sync_pb::SyncEnums::GU_TRIGGER:
-    case sync_pb::SyncEnums::RETRY:
-      break;
-  }
-  NOTREACHED();
-  return sync_pb::GetUpdatesCallerInfo::UNKNOWN;
-}
-
-}  // namespace
-
 void ConfigureGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  // TODO(crbug.com/510165): Remove this once the server doesn't depend on it
-  // anymore.
+  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information. It's not
+  // used anymore, but |source| is a required field so we have to set it anyway.
   get_updates->mutable_caller_info()->set_source(
-      ConvertConfigureOriginToLegacySource(origin_));
+      sync_pb::GetUpdatesCallerInfo::UNKNOWN);
 
   get_updates->set_get_updates_origin(origin_);
 }
@@ -161,11 +130,10 @@ PollGetUpdatesDelegate::~PollGetUpdatesDelegate() {}
 
 void PollGetUpdatesDelegate::HelpPopulateGuMessage(
     sync_pb::GetUpdatesMessage* get_updates) const {
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  // TODO(crbug.com/510165): Remove this once the server doesn't depend on it
-  // anymore.
+  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information. It's not
+  // used anymore, but |source| is a required field so we have to set it anyway.
   get_updates->mutable_caller_info()->set_source(
-      sync_pb::GetUpdatesCallerInfo::PERIODIC);
+      sync_pb::GetUpdatesCallerInfo::UNKNOWN);
 
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::PERIODIC);
 }

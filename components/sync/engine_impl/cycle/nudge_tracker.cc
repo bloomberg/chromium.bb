@@ -299,55 +299,6 @@ void NudgeTracker::SetLegacyNotificationHint(
   type_trackers_.find(type)->second->SetLegacyNotificationHint(progress);
 }
 
-sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
-    const {
-  // There's an order to these sources: NOTIFICATION, DATATYPE_REFRESH, LOCAL,
-  // RETRY.  The server makes optimization decisions based on this field, so
-  // it's important to get this right.  Setting it wrong could lead to missed
-  // updates.
-  //
-  // This complexity is part of the reason why we're deprecating 'source' in
-  // favor of 'origin'.
-  bool has_invalidation_pending = false;
-  bool has_refresh_request_pending = false;
-  bool has_commit_pending = false;
-  bool is_initial_sync_required = false;
-  bool has_retry = IsRetryRequired();
-
-  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
-       it != type_trackers_.end(); ++it) {
-    const DataTypeTracker& tracker = *it->second;
-    if (!tracker.IsBlocked() && tracker.HasPendingInvalidation()) {
-      has_invalidation_pending = true;
-    }
-    if (!tracker.IsBlocked() && tracker.HasRefreshRequestPending()) {
-      has_refresh_request_pending = true;
-    }
-    if (!tracker.IsBlocked() && tracker.HasLocalChangePending()) {
-      has_commit_pending = true;
-    }
-    if (!tracker.IsBlocked() && tracker.IsInitialSyncRequired()) {
-      is_initial_sync_required = true;
-    }
-  }
-
-  if (has_invalidation_pending) {
-    return sync_pb::GetUpdatesCallerInfo::NOTIFICATION;
-  } else if (has_refresh_request_pending) {
-    return sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH;
-  } else if (is_initial_sync_required) {
-    // Not quite accurate, but good enough for our purposes.  This setting of
-    // SOURCE is just a backward-compatibility hack anyway.
-    return sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH;
-  } else if (has_commit_pending) {
-    return sync_pb::GetUpdatesCallerInfo::LOCAL;
-  } else if (has_retry) {
-    return sync_pb::GetUpdatesCallerInfo::RETRY;
-  } else {
-    return sync_pb::GetUpdatesCallerInfo::UNKNOWN;
-  }
-}
-
 sync_pb::SyncEnums::GetUpdatesOrigin NudgeTracker::GetOrigin() const {
   for (const auto& type_and_tracker : type_trackers_) {
     const DataTypeTracker& tracker = *type_and_tracker.second;
