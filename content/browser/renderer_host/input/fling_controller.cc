@@ -107,13 +107,6 @@ bool FlingController::FilterGestureEventForFlingBoosting(
   if (!fling_booster_)
     return false;
 
-  // TODO(sahel): Don't boost touchpad fling for now. Once browserside
-  // touchscreen fling is implemented, move the fling_controller_ from
-  // GestureEventQueue to RednerWidgetHostImpl. This will gaurantee proper
-  // gesture scroll event order in RednerWidgetHostImpl while boosting.
-  if (gesture_event.event.SourceDevice() == blink::kWebGestureDeviceTouchpad)
-    return false;
-
   bool cancel_current_fling;
   bool should_filter_event = fling_booster_->FilterGestureEventForFlingBoosting(
       gesture_event.event, &cancel_current_fling);
@@ -374,8 +367,13 @@ void FlingController::CancelCurrentFling() {
 
   // Synthesize a GestureScrollBegin, as the original event was suppressed. It
   // is important to send the GSB after resetting the fling_booster_ otherwise
-  // it will get filtered by the booster again.
+  // it will get filtered by the booster again. This is necessary for
+  // touchscreen fling cancelation only, since autoscroll fling cancelation
+  // doesn't get deferred and when the touchpad fling cancelation gets deferred,
+  // the first wheel event after the cancelation will cause a GSB generation.
   if (fling_cancellation_is_deferred &&
+      last_fling_boost_event.SourceDevice() ==
+          blink::kWebGestureDeviceTouchscreen &&
       (last_fling_boost_event.GetType() == WebInputEvent::kGestureScrollBegin ||
        last_fling_boost_event.GetType() ==
            WebInputEvent::kGestureScrollUpdate)) {
@@ -391,19 +389,11 @@ void FlingController::CancelCurrentFling() {
                   : last_fling_boost_event.data.scroll_begin.delta_y_hint;
     scroll_begin_event.data.scroll_begin.delta_x_hint = delta_x_hint;
     scroll_begin_event.data.scroll_begin.delta_y_hint = delta_y_hint;
-    ui::SourceEventType latency_source_event_type =
-        ui::SourceEventType::UNKNOWN;
-    if (scroll_begin_event.SourceDevice() ==
-        blink::kWebGestureDeviceTouchscreen) {
-      latency_source_event_type = ui::SourceEventType::INERTIAL;
-    } else if (scroll_begin_event.SourceDevice() ==
-               blink::kWebGestureDeviceTouchpad) {
-      latency_source_event_type = ui::SourceEventType::WHEEL;
-    }
 
     event_sender_client_->SendGeneratedGestureScrollEvents(
         GestureEventWithLatencyInfo(
-            scroll_begin_event, ui::LatencyInfo(latency_source_event_type)));
+            scroll_begin_event,
+            ui::LatencyInfo(ui::SourceEventType::INERTIAL)));
   }
 
   if (had_active_fling) {
