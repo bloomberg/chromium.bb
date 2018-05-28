@@ -108,7 +108,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public Visitor {
                  void** object_slot,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final {}
   void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,

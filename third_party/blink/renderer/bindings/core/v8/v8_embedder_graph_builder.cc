@@ -151,6 +151,12 @@ void V8EmbedderGraphBuilder::Visit(void* object,
   PushToWorklist(ToWorklistItem(graph_node, wrapper_descriptor));
 }
 
+void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
+                                                       void** object_slot,
+                                                       TraceDescriptor desc) {
+  desc.callback(this, desc.base_object_payload);
+}
+
 void V8EmbedderGraphBuilder::Visit(DOMWrapperMap<ScriptWrappable>* wrapper_map,
                                    const ScriptWrappable* key) {
   // Add an edge from the current parent to the V8 object.

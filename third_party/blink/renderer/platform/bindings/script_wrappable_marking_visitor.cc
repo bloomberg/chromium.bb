@@ -173,7 +173,7 @@ void ScriptWrappableMarkingVisitor::RegisterV8Reference(
 
   ScriptWrappable* script_wrappable =
       reinterpret_cast<ScriptWrappable*>(internal_fields.second);
-  TraceWrappersFromGeneratedCode(script_wrappable);
+  TraceWithWrappers(script_wrappable);
 }
 
 void ScriptWrappableMarkingVisitor::RegisterV8References(
@@ -268,6 +268,13 @@ void ScriptWrappableMarkingVisitor::Visit(
     verifier_deque_.push_back(MarkingDequeItem(wrapper_descriptor));
   }
 #endif
+}
+
+void ScriptWrappableMarkingVisitor::VisitBackingStoreStrongly(
+    void* object,
+    void** object_slot,
+    TraceDescriptor desc) {
+  desc.callback(this, desc.base_object_payload);
 }
 
 void ScriptWrappableMarkingVisitor::Visit(

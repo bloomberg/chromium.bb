@@ -218,7 +218,7 @@ void TraceTrait<T>::TraceWrappers(ScriptWrappableVisitor* visitor, void* self) {
   static_assert(sizeof(T), "type needs to be defined");
   static_assert(IsGarbageCollectedType<T>::value,
                 "only objects deriving from GarbageCollected can be used");
-  visitor->DispatchTraceWrappers(static_cast<T*>(self));
+  static_cast<T*>(self)->Trace(visitor);
 }
 
 template <typename T, typename Traits>
