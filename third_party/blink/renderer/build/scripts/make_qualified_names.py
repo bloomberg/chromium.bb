@@ -55,7 +55,6 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
     filters = {
         'hash': hasher.hash,
         'symbol': _symbol,
-        'to_macro_style': name_utilities.to_macro_style,
     }
 
     def __init__(self, json5_file_paths, output_dir):

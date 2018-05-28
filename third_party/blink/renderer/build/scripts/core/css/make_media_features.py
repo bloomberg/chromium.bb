@@ -21,7 +21,6 @@ class MakeMediaFeaturesWriter(json5_generator.Writer):
     }
     filters = {
         'symbol': media_feature_symbol.getMediaFeatureSymbolWithSuffix(''),
-        'to_macro_style': name_utilities.to_macro_style,
         'upper_first_letter': name_utilities.upper_first_letter,
     }
 

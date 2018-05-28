@@ -61,7 +61,6 @@ class MakeNamesWriter(json5_generator.Writer):
         'hash': hasher.hash,
         'script_name': name_utilities.script_name,
         'symbol': _symbol,
-        'to_macro_style': name_utilities.to_macro_style,
     }
 
     def __init__(self, json5_file_path, output_dir):

@@ -39,11 +39,6 @@ def upper_first_letter(name):
     return name[0].upper() + name[1:]
 
 
-def to_macro_style(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()
-
-
 def script_name(entry):
     return os.path.basename(entry['name'].original)
 
