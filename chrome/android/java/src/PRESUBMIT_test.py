@@ -55,6 +55,47 @@ class CheckNotificationConstructors(unittest.TestCase):
         mock_input, MockOutputApi())
     self.assertEqual(0, len(errors))
 
+class CheckAlertDialogBuilder(unittest.TestCase):
+  """Test the _CheckAlertDialogBuilder presubmit check."""
+
+  def testTruePositives(self):
+    """Examples of when AlertDialog.Builder use is correctly flagged."""
+    mock_input = MockInputApi()
+    mock_input.files = [
+      MockFile('path/One.java', ['new AlertDialog.Builder()']),
+      MockFile('path/Two.java', ['new AlertDialog.Builder(context);']),
+    ]
+    errors = PRESUBMIT._CheckAlertDialogBuilder(
+        mock_input, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertEqual(2, len(errors[0].items))
+    self.assertTrue('One.java' in errors[0].items[0])
+    self.assertTrue('Two.java' in errors[0].items[1])
+
+  def testFalsePositives(self):
+    """Examples of when AlertDialog.Builder should not be flagged."""
+    mock_input = MockInputApi()
+    mock_input.files = [
+      MockFile(
+          'chrome/android/java/src/org/chromium/chrome/browser/permissions/'
+              'PermissionDialogView.java',
+          ['new AlertDialog.Builder()']),
+      MockFile(
+          'chrome/android/java/src/org/chromium/chrome/browser/'
+              'JavascriptAppModalDialog.java',
+          ['new AlertDialog.Builder()']),
+      MockFile('path/One.java', ['AlertDialog.Builder']),
+      MockFile('path/Two.java', ['// do not: new AlertDialog.Builder()']),
+      MockFile('path/Three.java', [
+          '/** ChromeAlertDialogBuilder',
+          ' * replaces: new AlertDialog.Builder()']),
+      MockFile('path/PRESUBMIT.py', ['new AlertDialog.Builder()']),
+      MockFile('path/Four.java', ['new AlertDialog.Builder()'],
+          action='D'),
+    ]
+    errors = PRESUBMIT._CheckAlertDialogBuilder(
+        mock_input, MockOutputApi())
+    self.assertEqual(0, len(errors))
 
 if __name__ == '__main__':
   unittest.main()
