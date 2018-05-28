@@ -59,5 +59,38 @@ const CSSValue* Display::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Display());
 }
 
+void Display::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetDisplay(ComputedStyleInitialValues::InitialDisplay());
+  state.Style()->SetDisplayLayoutCustomName(
+      ComputedStyleInitialValues::InitialDisplayLayoutCustomName());
+}
+
+void Display::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetDisplay(state.ParentStyle()->Display());
+  state.Style()->SetDisplayLayoutCustomName(
+      state.ParentStyle()->DisplayLayoutCustomName());
+}
+
+void Display::ApplyValue(StyleResolverState& state,
+                         const CSSValue& value) const {
+  if (value.IsIdentifierValue()) {
+    state.Style()->SetDisplay(
+        ToCSSIdentifierValue(value).ConvertTo<EDisplay>());
+    state.Style()->SetDisplayLayoutCustomName(
+        ComputedStyleInitialValues::InitialDisplayLayoutCustomName());
+    return;
+  }
+
+  DCHECK(value.IsLayoutFunctionValue());
+  const cssvalue::CSSLayoutFunctionValue& layout_function_value =
+      cssvalue::ToCSSLayoutFunctionValue(value);
+
+  EDisplay display = layout_function_value.IsInline()
+                         ? EDisplay::kInlineLayoutCustom
+                         : EDisplay::kLayoutCustom;
+  state.Style()->SetDisplay(display);
+  state.Style()->SetDisplayLayoutCustomName(layout_function_value.GetName());
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

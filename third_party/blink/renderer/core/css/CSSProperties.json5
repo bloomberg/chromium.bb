@@ -539,7 +539,6 @@
       default_value: "Color::kBlack",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
       keywords: ["currentcolor"],
@@ -556,7 +555,6 @@
       typedom_types: ["Keyword"],
       default_value: "ltr",
       type_name: "TextDirection",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       priority: "High",
     },
@@ -745,7 +743,6 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       font: true,
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       priority: "High",
     },
@@ -759,7 +756,6 @@
       typedom_types: ["Keyword"],
       default_value: "mixed",
       getter: "GetTextOrientation",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       priority: "High",
     },
@@ -768,7 +764,6 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "TextOrientation",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       priority: "High",
     },
@@ -782,7 +777,6 @@
       typedom_types: ["Keyword"],
       default_value: "horizontal-tb",
       type_name: "WritingMode",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       priority: "High",
     },
@@ -791,7 +785,6 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "WritingMode",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       priority: "High",
     },
@@ -813,7 +806,6 @@
       field_template: "primitive",
       default_value: "1.0",
       type_name: "float",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
     },
@@ -1009,7 +1001,6 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
-      style_builder_legacy: true,
       style_builder_custom_functions: ["inherit", "value"],
       keywords: ["sub", "super"],
       typedom_types: ["Keyword", "Percentage", "Length"]
@@ -1126,7 +1117,6 @@
       interpolable: true,
       keywords: ["none"],
       typedom_types: ["Keyword", "Image"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
     },
     {
@@ -1389,7 +1379,6 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["auto", "currentcolor"],
       typedom_types: ["Keyword"],
@@ -1497,7 +1486,6 @@
       separator: ",",
       type_name: "ContentData",
       computed_style_custom_functions: ["getter", "setter"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
@@ -1535,7 +1523,6 @@
         "zoom-out", "grab", "grabbing"
       ],
       default_value: "auto",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       typedom_types: ["Keyword"]
     },
@@ -1575,7 +1562,6 @@
         "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
       ],
       typedom_types: ["Keyword"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
@@ -1811,7 +1797,6 @@
     {
       name: "grid-template-areas",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["none"],
       typedom_types: ["Keyword"]
@@ -2007,7 +1992,6 @@
       typedom_types: ["Keyword", "Image"],
       type_name: "StyleImage",
       computed_style_custom_functions: ["getter", "setter"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
       keywords: ["none"]
     },
@@ -2367,7 +2351,6 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       type_name: "EBorderStyle",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
@@ -2550,7 +2533,6 @@
       typedom_types: ["Keyword"],
       default_value: "static",
       getter: "GetPosition",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["inherit"],
     },
     {
@@ -2575,7 +2557,6 @@
       keywords: ["none", "both", "horizontal", "vertical"],
       typedom_types: ["Keyword"],
       default_value: "none",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
     },
     {
@@ -2901,7 +2882,6 @@
     {
       name: "size",
       property_methods: ["ParseSingleValue"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
@@ -3052,7 +3032,6 @@
       typedom_types: ["Keyword"],
       default_value: "start",
       getter: "GetTextAlign",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
     },
     {
@@ -3137,7 +3116,6 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length(kFixed)",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       typedom_types: ["Length", "Percentage"]
     },
@@ -3356,7 +3334,6 @@
       name: "vertical-align",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      style_builder_legacy: true,
       style_builder_custom_functions: ["inherit", "value"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle"],
@@ -3405,7 +3382,6 @@
       keywords: ["none", "drag", "no-drag"],
       default_value: "none",
       name_for_methods: "DraggableRegionMode",
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
@@ -3423,7 +3399,6 @@
     {
       name: "-webkit-border-image",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
     },
     {
@@ -3725,7 +3700,6 @@
       name: "-webkit-mask-box-image-source",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
-      style_builder_legacy: true,
       style_builder_custom_functions: ["value"],
     },
     {
@@ -3898,7 +3872,6 @@
       name: "-webkit-text-emphasis-style",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
     },
     {
@@ -4032,7 +4005,6 @@
     {
       name: "will-change",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      style_builder_legacy: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["auto"],
       typedom_types: ["Keyword"]

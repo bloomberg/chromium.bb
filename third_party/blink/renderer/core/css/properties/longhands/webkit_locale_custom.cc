@@ -31,5 +31,16 @@ const CSSValue* WebkitLocale::CSSValueFromComputedStyleInternal(
   return CSSStringValue::Create(style.Locale());
 }
 
+void WebkitLocale::ApplyValue(StyleResolverState& state,
+                              const CSSValue& value) const {
+  if (value.IsIdentifierValue()) {
+    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueAuto);
+    state.GetFontBuilder().SetLocale(nullptr);
+  } else {
+    state.GetFontBuilder().SetLocale(
+        LayoutLocale::Get(AtomicString(ToCSSStringValue(value).Value())));
+  }
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

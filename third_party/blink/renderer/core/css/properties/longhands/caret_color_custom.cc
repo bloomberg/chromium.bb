@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -49,6 +50,34 @@ const CSSValue* CaretColor::CSSValueFromComputedStyleInternal(
   else
     color = style.CaretColor().ToStyleColor().Resolve(style.GetColor());
   return cssvalue::CSSColorValue::Create(color.Rgb());
+}
+
+void CaretColor::ApplyInitial(StyleResolverState& state) const {
+  StyleAutoColor color = StyleAutoColor::AutoColor();
+  if (state.ApplyPropertyToRegularStyle())
+    state.Style()->SetCaretColor(color);
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->SetVisitedLinkCaretColor(color);
+}
+
+void CaretColor::ApplyInherit(StyleResolverState& state) const {
+  StyleAutoColor color = state.ParentStyle()->CaretColor();
+  if (state.ApplyPropertyToRegularStyle())
+    state.Style()->SetCaretColor(color);
+  if (state.ApplyPropertyToVisitedLinkStyle())
+    state.Style()->SetVisitedLinkCaretColor(color);
+}
+
+void CaretColor::ApplyValue(StyleResolverState& state,
+                            const CSSValue& value) const {
+  if (state.ApplyPropertyToRegularStyle()) {
+    state.Style()->SetCaretColor(
+        StyleBuilderConverter::ConvertStyleAutoColor(state, value));
+  }
+  if (state.ApplyPropertyToVisitedLinkStyle()) {
+    state.Style()->SetVisitedLinkCaretColor(
+        StyleBuilderConverter::ConvertStyleAutoColor(state, value, true));
+  }
 }
 
 }  // namespace CSSLonghand

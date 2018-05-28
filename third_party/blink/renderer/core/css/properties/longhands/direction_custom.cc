@@ -16,5 +16,11 @@ const CSSValue* Direction::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Direction());
 }
 
+void Direction::ApplyValue(StyleResolverState& state,
+                           const CSSValue& value) const {
+  state.Style()->SetDirection(
+      ToCSSIdentifierValue(value).ConvertTo<TextDirection>());
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
@@ -57,6 +58,55 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
   return CSSGridTemplateAreasValue::Create(style.NamedGridArea(),
                                            style.NamedGridAreaRowCount(),
                                            style.NamedGridAreaColumnCount());
+}
+
+void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetNamedGridArea(
+      ComputedStyleInitialValues::InitialNamedGridArea());
+  state.Style()->SetNamedGridAreaRowCount(
+      ComputedStyleInitialValues::InitialNamedGridAreaRowCount());
+  state.Style()->SetNamedGridAreaColumnCount(
+      ComputedStyleInitialValues::InitialNamedGridAreaColumnCount());
+}
+
+void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetNamedGridArea(state.ParentStyle()->NamedGridArea());
+  state.Style()->SetNamedGridAreaRowCount(
+      state.ParentStyle()->NamedGridAreaRowCount());
+  state.Style()->SetNamedGridAreaColumnCount(
+      state.ParentStyle()->NamedGridAreaColumnCount());
+}
+
+void GridTemplateAreas::ApplyValue(StyleResolverState& state,
+                                   const CSSValue& value) const {
+  if (value.IsIdentifierValue()) {
+    // FIXME: Shouldn't we clear the grid-area values
+    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
+    return;
+  }
+
+  const CSSGridTemplateAreasValue& grid_template_areas_value =
+      ToCSSGridTemplateAreasValue(value);
+  const NamedGridAreaMap& new_named_grid_areas =
+      grid_template_areas_value.GridAreaMap();
+
+  NamedGridLinesMap named_grid_column_lines;
+  NamedGridLinesMap named_grid_row_lines;
+  StyleBuilderConverter::ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
+      state.Style()->OrderedNamedGridColumnLines(), named_grid_column_lines);
+  StyleBuilderConverter::ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
+      state.Style()->OrderedNamedGridRowLines(), named_grid_row_lines);
+  StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
+      new_named_grid_areas, named_grid_column_lines, kForColumns);
+  StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
+      new_named_grid_areas, named_grid_row_lines, kForRows);
+  state.Style()->SetNamedGridColumnLines(named_grid_column_lines);
+  state.Style()->SetNamedGridRowLines(named_grid_row_lines);
+
+  state.Style()->SetNamedGridArea(new_named_grid_areas);
+  state.Style()->SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());
+  state.Style()->SetNamedGridAreaColumnCount(
+      grid_template_areas_value.ColumnCount());
 }
 
 }  // namespace CSSLonghand

@@ -16,5 +16,10 @@ const CSSValue* Position::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetPosition());
 }
 
+void Position::ApplyInherit(StyleResolverState& state) const {
+  if (!state.ParentNode()->IsDocumentNode())
+    state.Style()->SetPosition(state.ParentStyle()->GetPosition());
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

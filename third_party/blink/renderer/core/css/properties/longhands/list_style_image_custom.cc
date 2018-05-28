@@ -31,5 +31,11 @@ const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(CSSValueNone);
 }
 
+void ListStyleImage::ApplyValue(StyleResolverState& state,
+                                const CSSValue& value) const {
+  state.Style()->SetListStyleImage(
+      state.GetStyleImage(CSSPropertyListStyleImage, value));
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

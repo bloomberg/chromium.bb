@@ -99,5 +99,37 @@ const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
   return value;
 }
 
+void Cursor::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->ClearCursorList();
+  state.Style()->SetCursor(ComputedStyleInitialValues::InitialCursor());
+}
+
+void Cursor::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetCursor(state.ParentStyle()->Cursor());
+  state.Style()->SetCursorList(state.ParentStyle()->Cursors());
+}
+
+void Cursor::ApplyValue(StyleResolverState& state,
+                        const CSSValue& value) const {
+  state.Style()->ClearCursorList();
+  if (value.IsValueList()) {
+    state.Style()->SetCursor(ECursor::kAuto);
+    for (const auto& item : ToCSSValueList(value)) {
+      if (item->IsCursorImageValue()) {
+        const cssvalue::CSSCursorImageValue& cursor =
+            cssvalue::ToCSSCursorImageValue(*item);
+        const CSSValue& image = cursor.ImageValue();
+        state.Style()->AddCursor(state.GetStyleImage(CSSPropertyCursor, image),
+                                 cursor.HotSpotSpecified(), cursor.HotSpot());
+      } else {
+        state.Style()->SetCursor(
+            ToCSSIdentifierValue(*item).ConvertTo<ECursor>());
+      }
+    }
+  } else {
+    state.Style()->SetCursor(ToCSSIdentifierValue(value).ConvertTo<ECursor>());
+  }
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

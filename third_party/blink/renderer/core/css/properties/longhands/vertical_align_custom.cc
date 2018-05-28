@@ -59,5 +59,26 @@ const CSSValue* VerticalAlign::CSSValueFromComputedStyleInternal(
   return nullptr;
 }
 
+void VerticalAlign::ApplyInherit(StyleResolverState& state) const {
+  EVerticalAlign vertical_align = state.ParentStyle()->VerticalAlign();
+  state.Style()->SetVerticalAlign(vertical_align);
+  if (vertical_align == EVerticalAlign::kLength) {
+    state.Style()->SetVerticalAlignLength(
+        state.ParentStyle()->GetVerticalAlignLength());
+  }
+}
+
+void VerticalAlign::ApplyValue(StyleResolverState& state,
+                               const CSSValue& value) const {
+  if (value.IsIdentifierValue()) {
+    state.Style()->SetVerticalAlign(
+        ToCSSIdentifierValue(value).ConvertTo<EVerticalAlign>());
+  } else {
+    state.Style()->SetVerticalAlignLength(
+        ToCSSPrimitiveValue(value).ConvertToLength(
+            state.CssToLengthConversionData()));
+  }
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

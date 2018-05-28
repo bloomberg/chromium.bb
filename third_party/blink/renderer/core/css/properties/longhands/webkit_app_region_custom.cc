@@ -24,5 +24,19 @@ const CSSValue* WebkitAppRegion::CSSValueFromComputedStyleInternal(
                                         : CSSValueNoDrag);
 }
 
+void WebkitAppRegion::ApplyInitial(StyleResolverState& state) const {}
+
+void WebkitAppRegion::ApplyInherit(StyleResolverState& state) const {}
+
+void WebkitAppRegion::ApplyValue(StyleResolverState& state,
+                                 const CSSValue& value) const {
+  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  state.Style()->SetDraggableRegionMode(identifier_value.GetValueID() ==
+                                                CSSValueDrag
+                                            ? EDraggableRegionMode::kDrag
+                                            : EDraggableRegionMode::kNoDrag);
+  state.GetDocument().SetHasAnnotatedRegions(true);
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink
