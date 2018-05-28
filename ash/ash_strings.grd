@@ -759,6 +759,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_TRACING" desc="The status tray item indicating that performance tracing is running.">
         Performance tracing enabled
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_TRACING_NOTIFICATION_TITLE" desc="The title of a notification indicating that performance tracing is running.">
+        Performance tracing active
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_TRACING_NOTIFICATION_MESSAGE" desc="The message of a notification indicating that performance tracing is running.">
+        Performance tracing is turned on
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
         Brightness
       </message>
