@@ -188,10 +188,8 @@ void GpuChannelManager::MaybeExitOnContextLost() {
   if (!gpu_preferences().single_process && !gpu_preferences().in_process_gpu) {
     LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
                << " from problems.";
-    // Signal the message loop to quit to shut down other threads
-    // gracefully.
-    base::RunLoop::QuitCurrentDeprecated();
     exiting_for_lost_context_ = true;
+    delegate_->ExitProcess();
   }
 }
 

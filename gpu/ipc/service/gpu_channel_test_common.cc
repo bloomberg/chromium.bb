@@ -37,6 +37,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override {}
+  void ExitProcess() override {}
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(
       SurfaceHandle parent_window,
