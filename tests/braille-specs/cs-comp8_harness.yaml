@@ -1,7 +1,7 @@
 display: unicode.dis
 table:
   locale: cs
-  grade: 0
+  type: computer
   __assert-match: cs-comp8.utb
 tests:
   - # Capital Czech letters

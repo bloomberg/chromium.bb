@@ -1,7 +1,9 @@
 # liblouis: Czech 8-dot Computer Braille Table
+
+#-display-name: Czech computer braille
+#
 #+locale:cs
 #+type:computer
-#+contraction:no
 #+grade:0
 #+dots:8
 #
