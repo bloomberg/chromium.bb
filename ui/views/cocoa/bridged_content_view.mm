@@ -302,6 +302,17 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   return self;
 }
 
+- (void)dealloc {
+  // Update and cache the new input context. Otherwise,
+  // [NSTextInputContext currentInputContext] might still hold on to this
+  // view's NSTextInputContext even after it's deallocated.
+  // See http://crbug.com/846386.
+  [[self window] makeFirstResponder:nil];
+  [NSApp updateWindows];
+
+  [super dealloc];
+}
+
 - (void)clearView {
   textInputClient_ = nullptr;
   hostedView_ = nullptr;
