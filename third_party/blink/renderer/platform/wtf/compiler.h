@@ -29,17 +29,6 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 
-#if defined(__GNUC__)
-#define GCC_VERSION \
-  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#define GCC_VERSION_AT_LEAST(major, minor, patch) \
-  (GCC_VERSION >= (major * 10000 + minor * 100 + patch))
-#else
-/* Define this for !GCC compilers, just so we can write things like
- * GCC_VERSION_AT_LEAST(4, 1, 0). */
-#define GCC_VERSION_AT_LEAST(major, minor, patch) 0
-#endif
-
 /* ==== Compiler features ==== */
 
 /* NEVER_INLINE */
