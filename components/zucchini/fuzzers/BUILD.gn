@@ -39,7 +39,7 @@ proto_library("zucchini_file_pair_proto") {
 # Ensure protoc is available.
 # Disabled on Windows due to crbug/844826.
 if (current_toolchain == host_toolchain && !is_win) {
-  # Raw Apply Fuzzer:
+  # Raw Apply Fuzzer Seed:
   action("zucchini_raw_apply_seed") {
     script = "generate_fuzzer_data.py"
 
@@ -49,8 +49,10 @@ if (current_toolchain == host_toolchain && !is_win) {
       "new_eventlog_provider.dll",  # <new_file>
       "eventlog_provider.patch",  # <patch_file> (temporary)
 
-      # <output_dir>
-      rebase_path("$target_gen_dir/testdata/raw_apply_fuzzer", root_build_dir),
+      # <output_file>
+      rebase_path(
+          "$target_gen_dir/testdata/apply_fuzzer/raw_apply_seed_proto.bin",
+          root_build_dir),
     ]
 
     # Files depended upon.
@@ -62,7 +64,7 @@ if (current_toolchain == host_toolchain && !is_win) {
 
     # Outputs: necessary for validation.
     outputs = [
-      "$target_gen_dir/testdata/raw_apply_fuzzer/seed_proto.bin",
+      "$target_gen_dir/testdata/apply_fuzzer/raw_apply_seed_proto.bin",
     ]
     deps = [
       "//components/zucchini:zucchini",
@@ -70,9 +72,43 @@ if (current_toolchain == host_toolchain && !is_win) {
     ]
   }
 
-  fuzzer_test("zucchini_raw_apply_fuzzer") {
+  # ZTF Apply Fuzzer Seed:
+  action("zucchini_ztf_apply_seed") {
+    script = "generate_fuzzer_data.py"
+
+    # *.ztf files are expected to be valid ZTF format.
+    args = [
+      "old.ztf",  # <old_file>
+      "new.ztf",  # <new_file>
+      "ztf.patch",  # <patch_file> (temporary)
+
+      # <output_file>
+      rebase_path(
+          "$target_gen_dir/testdata/apply_fuzzer/ztf_apply_seed_proto.bin",
+          root_build_dir),
+    ]
+
+    # Files depended upon.
     sources = [
-      "raw_apply_fuzzer.cc",
+      "create_seed_file_pair.py",
+      "testdata/new.ztf",
+      "testdata/old.ztf",
+    ]
+
+    # Outputs: necessary for validation.
+    outputs = [
+      "$target_gen_dir/testdata/apply_fuzzer/ztf_apply_seed_proto.bin",
+    ]
+    deps = [
+      "//components/zucchini:zucchini",
+      "//third_party/protobuf:protoc",
+    ]
+  }
+
+  # Apply Fuzzer:
+  fuzzer_test("zucchini_apply_fuzzer") {
+    sources = [
+      "apply_fuzzer.cc",
     ]
     deps = [
       ":zucchini_file_pair_proto",
@@ -80,8 +116,11 @@ if (current_toolchain == host_toolchain && !is_win) {
       "//components/zucchini:zucchini_lib",
       "//third_party/libprotobuf-mutator",
     ]
-    seed_corpus = "$target_gen_dir/testdata/raw_apply_fuzzer"
-    seed_corpus_deps = [ ":zucchini_raw_apply_seed" ]
+    seed_corpus = "$target_gen_dir/testdata/apply_fuzzer"
+    seed_corpus_deps = [
+      ":zucchini_raw_apply_seed",
+      ":zucchini_ztf_apply_seed",
+    ]
   }
 
   # Raw Gen Fuzzer:

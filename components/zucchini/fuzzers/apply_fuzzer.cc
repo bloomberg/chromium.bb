@@ -18,7 +18,7 @@
 
 struct Environment {
   Environment() {
-    logging::SetMinLogLevel(3);  // Disable console spamming.
+    logging::SetMinLogLevel(logging::LOG_FATAL);  // Disable console spamming.
   }
 };
 
