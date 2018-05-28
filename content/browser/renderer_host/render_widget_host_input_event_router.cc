@@ -1206,6 +1206,11 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     }
   }
 
+  // If we set a target and it's not in the map, we won't get notified if the
+  // target goes away, so drop the target and the resulting events.
+  if (!touchscreen_gesture_target_in_map_)
+    touchscreen_gesture_target_.target = nullptr;
+
   if (!touchscreen_gesture_target_.target) {
     root_view->GestureEventAck(gesture_event,
                                INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
