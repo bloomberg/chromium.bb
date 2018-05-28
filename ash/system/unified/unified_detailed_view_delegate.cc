@@ -22,4 +22,9 @@ void UnifiedDetailedViewDelegate::CloseBubble() {
   tray_controller_->CloseBubble();
 }
 
+SkColor UnifiedDetailedViewDelegate::GetBackgroundColor(
+    ui::NativeTheme* native_theme) {
+  return SK_ColorTRANSPARENT;
+}
+
 }  // namespace ash

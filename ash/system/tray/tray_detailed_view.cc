@@ -252,10 +252,8 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
       back_button_(nullptr) {
   box_layout_ = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  SetBackground(features::IsSystemTrayUnifiedEnabled()
-                    ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
-                    : views::CreateThemedSolidBackground(
-                          this, ui::NativeTheme::kColorId_BubbleBackground));
+  SetBackground(views::CreateSolidBackground(
+      delegate_->GetBackgroundColor(GetNativeTheme())));
 }
 
 TrayDetailedView::~TrayDetailedView() = default;
@@ -310,12 +308,8 @@ void TrayDetailedView::CreateScrollableList() {
   scroller_ = new views::ScrollView;
   scroller_->SetContents(scroll_content_);
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    scroller_->SetBackgroundColor(kUnifiedMenuBackgroundColor);
-  } else {
-    scroller_->SetBackgroundThemeColorId(
-        ui::NativeTheme::kColorId_BubbleBackground);
-  }
+  scroller_->SetBackgroundColor(
+      delegate_->GetBackgroundColor(GetNativeTheme()));
 
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);

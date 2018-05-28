@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/ime_menu/ime_list_view.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -251,13 +252,21 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 
 // A list of available IMEs shown in the opt-in IME menu, which has a different
 // height depending on the number of IMEs in the list.
-class ImeMenuListView : public ImeListView {
+class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
  public:
-  ImeMenuListView(DetailedViewDelegate* delegate) : ImeListView(delegate) {
+  ImeMenuListView() : ImeListView(this) {
     set_should_focus_ime_after_selection_with_keyboard(true);
   }
 
   ~ImeMenuListView() override = default;
+
+  // DetailedViewDelegate:
+  void TransitionToMainView(bool restore_focus) override {}
+  void CloseBubble() override {}
+  SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override {
+    return native_theme->GetSystemColor(
+        ui::NativeTheme::kColorId_BubbleBackground);
+  }
 
  protected:
   void Layout() override {
@@ -323,7 +332,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   bubble_view->AddChildView(new ImeTitleView(!show_bottom_buttons));
 
   // Adds IME list to the bubble.
-  ime_list_view_ = new ImeMenuListView(nullptr);
+  ime_list_view_ = new ImeMenuListView();
   ime_list_view_->Init(ShouldShowKeyboardToggle(),
                        ImeListView::SHOW_SINGLE_IME);
   bubble_view->AddChildView(ime_list_view_);
