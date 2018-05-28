@@ -4,12 +4,9 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
@@ -18,28 +15,7 @@
 using extensions::Extension;
 using extensions::FeatureSwitch;
 
-class ExtensionOptionsApiTest : public extensions::ExtensionApiTest,
-                                public testing::WithParamInterface<bool> {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
-
-    bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kGuestViewCrossProcessFrames);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kGuestViewCrossProcessFrames);
-    }
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_CASE_P(ExtensionOptionsApiTests,
-                        ExtensionOptionsApiTest,
-                        testing::Bool());
+class ExtensionOptionsApiTest : public extensions::ExtensionApiTest {};
 
 // crbug/415949.
 #if defined(OS_MACOSX)
@@ -47,7 +23,7 @@ INSTANTIATE_TEST_CASE_P(ExtensionOptionsApiTests,
 #else
 #define MAYBE_ExtensionCanEmbedOwnOptions ExtensionCanEmbedOwnOptions
 #endif
-IN_PROC_BROWSER_TEST_P(ExtensionOptionsApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest,
                        MAYBE_ExtensionCanEmbedOwnOptions) {
   base::FilePath extension_dir =
       test_data_dir_.AppendASCII("extension_options").AppendASCII("embed_self");
@@ -55,7 +31,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionOptionsApiTest,
   ASSERT_TRUE(RunExtensionSubtest("extension_options/embed_self", "test.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionOptionsApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest,
                        ShouldNotEmbedOtherExtensionsOptions) {
   base::FilePath dir = test_data_dir_.AppendASCII("extension_options")
                            .AppendASCII("embed_other");
@@ -81,7 +57,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionOptionsApiTest,
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionOptionsApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest,
                        CannotEmbedUsingInvalidExtensionIds) {
   ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("extension_options")
                                    .AppendASCII("embed_invalid"),
