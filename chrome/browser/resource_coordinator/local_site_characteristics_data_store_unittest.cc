@@ -72,7 +72,8 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
 TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
   auto reader = data_store_->GetReaderForOrigin(kTestOrigin);
   EXPECT_TRUE(reader);
-  auto writer = data_store_->GetWriterForOrigin(kTestOrigin);
+  auto writer =
+      data_store_->GetWriterForOrigin(kTestOrigin, TabVisibility::kBackground);
   EXPECT_TRUE(writer);
 
   EXPECT_EQ(1U, data_store_->origin_data_map_for_testing().size());
@@ -116,12 +117,13 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   auto reader = data_store_->GetReaderForOrigin(kOrigin1Url);
   EXPECT_TRUE(reader);
 
-  auto writer = data_store_->GetWriterForOrigin(kOrigin1Url);
+  auto writer =
+      data_store_->GetWriterForOrigin(kOrigin1Url, TabVisibility::kBackground);
   EXPECT_TRUE(writer);
 
   internal::LocalSiteCharacteristicsDataImpl* data =
       data_store_->origin_data_map_for_testing().find(kOrigin1Url)->second;
-  EXPECT_NE(nullptr, data);
+  EXPECT_TRUE(data);
 
   constexpr base::TimeDelta kDelay = base::TimeDelta::FromHours(1);
 
@@ -138,13 +140,11 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
   const std::string kOrigin2Url = GURL(kTestOrigin2).GetOrigin().GetContent();
   auto reader2 = data_store_->GetReaderForOrigin(kOrigin2Url);
   EXPECT_TRUE(reader2);
-  auto writer2 = data_store_->GetWriterForOrigin(kOrigin2Url);
+  auto writer2 =
+      data_store_->GetWriterForOrigin(kOrigin2Url, TabVisibility::kBackground);
   EXPECT_TRUE(writer2);
-  internal::LocalSiteCharacteristicsDataImpl* data2 =
-      data_store_->origin_data_map_for_testing().find(kOrigin2Url)->second;
-  EXPECT_NE(nullptr, data2);
-  data2->NotifySiteLoaded();
-  data2->NotifyUpdatesFaviconInBackground();
+  writer2->NotifySiteLoaded();
+  writer2->NotifyUpdatesFaviconInBackground();
 
   // This site hasn'be been unloaded yet, so the last loaded time shouldn't have
   // changed.
@@ -188,6 +188,10 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
             reader2->UpdatesFaviconInBackground());
   EXPECT_EQ(data->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
+
+  internal::LocalSiteCharacteristicsDataImpl* data2 =
+      data_store_->origin_data_map_for_testing().find(kOrigin2Url)->second;
+  EXPECT_TRUE(data2);
   EXPECT_EQ(data2->last_loaded_time_for_testing(),
             test_clock_.NowTicks() - base::TimeTicks::UnixEpoch());
 

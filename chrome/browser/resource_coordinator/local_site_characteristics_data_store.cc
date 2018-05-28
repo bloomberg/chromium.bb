@@ -52,12 +52,13 @@ LocalSiteCharacteristicsDataStore::GetReaderForOrigin(
 
 std::unique_ptr<SiteCharacteristicsDataWriter>
 LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
-    const std::string& origin_str) {
+    const std::string& origin_str,
+    TabVisibility tab_visibility) {
   internal::LocalSiteCharacteristicsDataImpl* impl =
       GetOrCreateFeatureImpl(origin_str);
   DCHECK(impl);
   LocalSiteCharacteristicsDataWriter* data_writer =
-      new LocalSiteCharacteristicsDataWriter(impl);
+      new LocalSiteCharacteristicsDataWriter(impl, tab_visibility);
   return base::WrapUnique(data_writer);
 }
 

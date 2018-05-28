@@ -16,6 +16,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
+#include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 
 namespace resource_coordinator {
@@ -40,6 +41,10 @@ FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataImplTest,
 // about the same origin will share a unique ref counted instance of this
 // object, because of this all the operations done on these objects should be
 // done on the same thread, this class isn't thread safe.
+//
+// By default tabs associated with instances of this class are assumed to be
+// running in foreground, |NotifyTabBackgrounded| should get called to indicate
+// that the tab is running in background.
 class LocalSiteCharacteristicsDataImpl
     : public base::RefCounted<LocalSiteCharacteristicsDataImpl> {
  public:
@@ -60,7 +65,13 @@ class LocalSiteCharacteristicsDataImpl
   // Must be called when an unload event is received for this site, this can be
   // invoked several times if instances of this class are shared between
   // multiple tabs.
-  void NotifySiteUnloaded();
+  void NotifySiteUnloaded(TabVisibility tab_visibility);
+
+  // Must be called when a loaded tab gets backgrounded.
+  void NotifyLoadedSiteBackgrounded();
+
+  // Must be called when a loaded tab gets foregrounded.
+  void NotifyLoadedSiteForegrounded();
 
   // Returns the usage of a given feature for this origin.
   SiteFeatureUsage UpdatesFaviconInBackground() const;
@@ -85,6 +96,14 @@ class LocalSiteCharacteristicsDataImpl
 
   const SiteCharacteristicsProto& site_characteristics_for_testing() const {
     return site_characteristics_;
+  }
+
+  size_t loaded_tabs_in_background_count_for_testing() const {
+    return loaded_tabs_in_background_count_;
+  }
+
+  base::TimeTicks background_session_begin_for_testing() const {
+    return background_session_begin_;
   }
 
  protected:
@@ -155,12 +174,16 @@ class LocalSiteCharacteristicsDataImpl
 
   const std::string& origin_str() const { return origin_str_; }
 
-  bool IsLoaded() const { return active_webcontents_count_ > 0U; }
+  bool IsLoaded() const { return loaded_tabs_count_ > 0U; }
 
   // Callback that needs to be called by the database once it has finished
   // trying to read the protobuf.
   void OnInitCallback(
       base::Optional<SiteCharacteristicsProto> site_characteristic_proto);
+
+  // Decrement the |loaded_tabs_in_background_count_| counter and update the
+  // local feature observation durations if necessary.
+  void DecrementNumLoadedBackgroundTabs();
 
   // This site's characteristics, contains the features and other values are
   // measured.
@@ -169,16 +192,19 @@ class LocalSiteCharacteristicsDataImpl
   // This site's origin.
   const std::string origin_str_;
 
-  // The number of active WebContents for this origin. Several tabs with the
+  // The number of loaded tabs for this origin. Several tabs with the
   // same origin might share the same instance of this object, this counter
   // will allow to properly update the observation time (starts when the first
   // tab gets loaded, stops when the last one gets unloaded).
-  //
-  // TODO(sebmarchand): Also track the number of tabs that are in background for
-  // this origin and use this to update the observation windows. The number of
-  // active WebContents doesn't tell anything about the background/foreground
-  // state of a tab.
-  size_t active_webcontents_count_;
+  size_t loaded_tabs_count_;
+
+  // Number of loaded tabs currently in background for this origin, the
+  // implementation doesn't need to track unloaded tabs running in background.
+  size_t loaded_tabs_in_background_count_;
+
+  // The time at which the |loaded_tabs_in_background_count_| counter changed
+  // from 0 to 1.
+  base::TimeTicks background_session_begin_;
 
   // The database used to store the site characteristics, it should outlive
   // this object.

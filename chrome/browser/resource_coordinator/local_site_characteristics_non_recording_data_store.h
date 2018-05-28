@@ -26,7 +26,8 @@ class LocalSiteCharacteristicsNonRecordingDataStore
   std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
       const std::string& origin_str) override;
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
-      const std::string& origin_str) override;
+      const std::string& origin_str,
+      TabVisibility tab_visibility) override;
   bool IsRecordingForTesting() override;
 
  private:

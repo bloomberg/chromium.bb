@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
@@ -42,7 +43,8 @@ class LocalSiteCharacteristicsDataStore
   std::unique_ptr<SiteCharacteristicsDataReader> GetReaderForOrigin(
       const std::string& origin_str) override;
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
-      const std::string& origin_str) override;
+      const std::string& origin_str,
+      TabVisibility tab_visibility) override;
   bool IsRecordingForTesting() override;
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {
