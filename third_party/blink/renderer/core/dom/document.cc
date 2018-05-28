@@ -4462,7 +4462,7 @@ void Document::HoveredElementDetached(Element& element) {
   // While in detaching, we shouldn't use FlatTreeTraversal if slot assignemnt
   // is dirty because it might triger assignement recalc. hover_element_ will be
   // updated after recalc assignment is calculated (and re-layout is done).
-  if (element.IsSlotAssignmentOrLegacyDistributionDirty()) {
+  if (IsSlotAssignmentOrLegacyDistributionDirty()) {
     hover_element_ = nullptr;
   } else {
     hover_element_ = SkipDisplayNoneAncestors(&element);
@@ -7397,6 +7397,16 @@ SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
   if (!slot_assignment_engine_)
     slot_assignment_engine_ = SlotAssignmentEngine::Create();
   return *slot_assignment_engine_;
+}
+
+bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
+  if (ChildNeedsDistributionRecalc())
+    return true;
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+      GetSlotAssignmentEngine().HasPendingSlotAssignmentRecalc()) {
+    return true;
+  }
+  return false;
 }
 
 void Document::TraceWrappers(ScriptWrappableVisitor* visitor) const {
