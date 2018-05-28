@@ -424,6 +424,7 @@ void WebMediaPlayerMS::TrackRemoved(const blink::WebMediaStreamTrack& track) {
 }
 
 void WebMediaPlayerMS::ActiveStateChanged(bool is_active) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // The case when the stream becomes active is handled by TrackAdded().
   if (is_active)
     return;

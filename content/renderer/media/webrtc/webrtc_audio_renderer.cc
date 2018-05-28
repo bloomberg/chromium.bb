@@ -374,10 +374,14 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
     const media::OutputDeviceStatusCB& callback) {
   DVLOG(1) << "WebRtcAudioRenderer::SwitchOutputDevice()";
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!source_) {
+    callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    return;
+  }
+
   DCHECK_GE(session_id_, 0);
   {
     base::AutoLock auto_lock(lock_);
-    DCHECK(source_);
     DCHECK_NE(state_, UNINITIALIZED);
   }
 
