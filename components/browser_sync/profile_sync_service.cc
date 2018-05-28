@@ -533,6 +533,12 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   UpdateFirstSyncTimePref();
 
   ReportPreviousSessionMemoryWarningCount();
+
+  // TODO(treib): Consider kicking off an access token fetch here. Currently,
+  // the flow goes as follows: The SyncEngine tries to connect to the server,
+  // but has no access token, so it ends up calling OnConnectionStatusChange(
+  // syncer::CONNECTION_AUTH_ERROR) which in turn causes SyncAuthManager to
+  // request a new access token. That seems needlessly convoluted.
 }
 
 void ProfileSyncService::InitializeEngine() {
@@ -618,10 +624,6 @@ void ProfileSyncService::OnRefreshTokenAvailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (HasSyncingEngine()) {
-    // TODO(treib): This call shouldn't be necessary: Either this is the initial
-    // refresh token, in which case a request is already pending, or the refresh
-    // token changed, which the SyncAuthManager should detect and handle
-    // internally (but it doesn't yet).
     auth_manager_->RequestAccessToken();
   } else {
     startup_controller_->TryStart();

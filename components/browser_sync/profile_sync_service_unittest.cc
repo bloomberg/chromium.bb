@@ -107,19 +107,31 @@ class SyncEngineNoReturn : public FakeSyncEngine {
   void Initialize(InitParams params) override {}
 };
 
-class FakeSyncEngineCollectDeleteDirParam : public FakeSyncEngine {
+// FakeSyncEngine that stores the SyncCredentials passed into Initialize(), and
+// optionally also whether InvalidateCredentials was called.
+class FakeSyncEngineCollectCredentials : public FakeSyncEngine {
  public:
-  explicit FakeSyncEngineCollectDeleteDirParam(
-      std::vector<bool>* delete_dir_param)
-      : delete_dir_param_(delete_dir_param) {}
+  explicit FakeSyncEngineCollectCredentials(
+      syncer::SyncCredentials* init_credentials,
+      const base::RepeatingClosure& invalidate_credentials_callback)
+      : init_credentials_(init_credentials),
+        invalidate_credentials_callback_(invalidate_credentials_callback) {}
 
   void Initialize(InitParams params) override {
-    delete_dir_param_->push_back(params.delete_sync_data_folder);
+    *init_credentials_ = params.credentials;
     FakeSyncEngine::Initialize(std::move(params));
   }
 
+  void InvalidateCredentials() override {
+    if (invalidate_credentials_callback_) {
+      invalidate_credentials_callback_.Run();
+    }
+    FakeSyncEngine::InvalidateCredentials();
+  }
+
  private:
-  std::vector<bool>* delete_dir_param_;
+  syncer::SyncCredentials* init_credentials_;
+  base::RepeatingClosure invalidate_credentials_callback_;
 };
 
 // FakeSyncEngine that calls an external callback when ClearServerData is
@@ -137,22 +149,6 @@ class SyncEngineCaptureClearServerData : public FakeSyncEngine {
 
  private:
   ClearServerDataCalled clear_server_data_called_;
-};
-
-// FakeSyncEngine that calls an external callback when InvalidateCredentials is
-// called.
-class SyncEngineCaptureInvalidateCredentials : public FakeSyncEngine {
- public:
-  explicit SyncEngineCaptureInvalidateCredentials(
-      const base::RepeatingClosure& invalidate_credentials_called)
-      : invalidate_credentials_called_(invalidate_credentials_called) {}
-
-  void InvalidateCredentials() override {
-    invalidate_credentials_called_.Run();
-  }
-
- private:
-  base::RepeatingClosure invalidate_credentials_called_;
 };
 
 ACTION(ReturnNewFakeSyncEngine) {
@@ -277,6 +273,8 @@ class ProfileSyncServiceTest : public ::testing::Test {
                       base::Unretained(this), reason);
   }
 
+  // TODO(treib,mastiz): EXPECTs outside of the test body are an antipattern.
+  // Either move these into the tests themselves, or replace with ON_CALLs.
   void ExpectDataTypeManagerCreation(
       int times,
       const FakeDataTypeManager::ConfigureCalled& callback) {
@@ -291,6 +289,15 @@ class ProfileSyncServiceTest : public ::testing::Test {
         .WillRepeatedly(ReturnNewFakeSyncEngine());
   }
 
+  void ExpectSyncEngineCreationCollectCredentials(
+      syncer::SyncCredentials* init_credentials,
+      const base::RepeatingClosure& invalidate_credentials_callback) {
+    EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
+        .WillOnce(
+            Return(ByMove(std::make_unique<FakeSyncEngineCollectCredentials>(
+                init_credentials, invalidate_credentials_callback))));
+  }
+
   void ExpectSyncEngineCreationCaptureClearServerData(
       base::Closure* captured_callback) {
     EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
@@ -298,14 +305,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
             Return(ByMove(std::make_unique<SyncEngineCaptureClearServerData>(
                 base::BindRepeating(&OnClearServerDataCalled,
                                     base::Unretained(captured_callback))))));
-  }
-
-  void ExpectSyncEngineCreationCaptureInvalidateCredentials(
-      const base::RepeatingClosure& callback) {
-    EXPECT_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
-        .WillOnce(Return(
-            ByMove(std::make_unique<SyncEngineCaptureInvalidateCredentials>(
-                callback))));
   }
 
   void PrepareDelayedInitSyncEngine() {
@@ -549,6 +548,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
 
 TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   CreateService(ProfileSyncService::AUTO_START);
+
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
   ExpectSyncEngineCreation(1);
@@ -584,16 +584,30 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
 }
 
 TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
+  syncer::SyncCredentials init_credentials;
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
-  ExpectSyncEngineCreation(1);
+  ExpectSyncEngineCreationCollectCredentials(&init_credentials,
+                                             base::RepeatingClosure());
   InitializeForNthSync();
   ASSERT_TRUE(service()->IsSyncActive());
 
-  std::string primary_account_id =
+  const std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
-  auth_service()->LoadCredentials(primary_account_id);
+
+  // Make sure the expected credentials (correct account_id, empty access token)
+  // were passed to the SyncEngine.
+  ASSERT_EQ(primary_account_id, init_credentials.account_id);
+  ASSERT_TRUE(init_credentials.sync_token.empty());
+
+  // At this point, the real SyncEngine would try to connect to the server, fail
+  // (because it has no access token), and eventually call
+  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR). Since our fake SyncEngine
+  // doesn't do any of this, call that explicitly here.
+  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
 
@@ -613,24 +627,37 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
 // Checks that CREDENTIALS_REJECTED_BY_CLIENT resets the access token and stops
 // Sync. Regression test for https://crbug.com/824791.
 TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
+  syncer::SyncCredentials init_credentials;
   bool invalidate_credentials_called = false;
   base::RepeatingClosure invalidate_credentials_callback =
       base::BindRepeating([](bool* called) { *called = true; },
                           base::Unretained(&invalidate_credentials_called));
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
-  ExpectSyncEngineCreationCaptureInvalidateCredentials(
-      invalidate_credentials_callback);
+  ExpectSyncEngineCreationCollectCredentials(&init_credentials,
+                                             invalidate_credentials_callback);
   InitializeForNthSync();
   ASSERT_TRUE(service()->IsSyncActive());
 
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  std::string primary_account_id =
+  const std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
-  auth_service()->LoadCredentials(primary_account_id);
+
+  // Make sure the expected credentials (correct account_id, empty access token)
+  // were passed to the SyncEngine.
+  ASSERT_EQ(primary_account_id, init_credentials.account_id);
+  ASSERT_TRUE(init_credentials.sync_token.empty());
+
+  // At this point, the real SyncEngine would try to connect to the server, fail
+  // (because it has no access token), and eventually call
+  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR). Since our fake SyncEngine
+  // doesn't do any of this, call that explicitly here.
+  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
   ASSERT_EQ(GoogleServiceAuthError::AuthErrorNone(), service()->GetAuthError());
@@ -658,16 +685,30 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
 // CrOS does not support signout.
 #if !defined(OS_CHROMEOS)
 TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
+  syncer::SyncCredentials init_credentials;
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
-  ExpectSyncEngineCreation(1);
+  ExpectSyncEngineCreationCollectCredentials(&init_credentials,
+                                             base::RepeatingClosure());
   InitializeForNthSync();
   EXPECT_TRUE(service()->IsSyncActive());
 
-  std::string primary_account_id =
+  const std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
-  auth_service()->LoadCredentials(primary_account_id);
+
+  // Make sure the expected credentials (correct account_id, empty access token)
+  // were passed to the SyncEngine.
+  ASSERT_EQ(primary_account_id, init_credentials.account_id);
+  ASSERT_TRUE(init_credentials.sync_token.empty());
+
+  // At this point, the real SyncEngine would try to connect to the server, fail
+  // (because it has no access token), and eventually call
+  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR). Since our fake SyncEngine
+  // doesn't do any of this, call that explicitly here.
+  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
@@ -703,21 +744,34 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
   // automatic replies to access token requests.
   auth_service()->set_auto_post_fetch_response_on_message_loop(false);
 
+  syncer::SyncCredentials init_credentials;
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
-  ExpectSyncEngineCreation(1);
+  ExpectSyncEngineCreationCollectCredentials(&init_credentials,
+                                             base::RepeatingClosure());
   InitializeForNthSync();
   ASSERT_TRUE(service()->IsSyncActive());
+
+  const std::string primary_account_id =
+      signin_manager()->GetAuthenticatedAccountId();
+
+  // Make sure the expected credentials (correct account_id, empty access token)
+  // were passed to the SyncEngine.
+  ASSERT_EQ(primary_account_id, init_credentials.account_id);
+  ASSERT_TRUE(init_credentials.sync_token.empty());
 
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
-  auth_service()->LoadCredentials(primary_account_id);
-  // Wait for ProfileSyncService to be notified of the loaded credentials and
-  // send an access token request.
+  // At this point, the real SyncEngine would try to connect to the server, fail
+  // (because it has no access token), and eventually call
+  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR). Since our fake SyncEngine
+  // doesn't do any of this, call that explicitly here.
+  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+
+  // Wait for ProfileSyncService to send an access token request.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
                                            base::Time::Max());
@@ -748,21 +802,34 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
   // automatic replies to access token requests.
   auth_service()->set_auto_post_fetch_response_on_message_loop(false);
 
+  syncer::SyncCredentials init_credentials;
+
   CreateService(ProfileSyncService::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
-  ExpectSyncEngineCreation(1);
+  ExpectSyncEngineCreationCollectCredentials(&init_credentials,
+                                             base::RepeatingClosure());
   InitializeForNthSync();
   ASSERT_TRUE(service()->IsSyncActive());
+
+  const std::string primary_account_id =
+      signin_manager()->GetAuthenticatedAccountId();
+
+  // Make sure the expected credentials (correct account_id, empty access token)
+  // were passed to the SyncEngine.
+  ASSERT_EQ(primary_account_id, init_credentials.account_id);
+  ASSERT_TRUE(init_credentials.sync_token.empty());
 
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  std::string primary_account_id =
-      signin_manager()->GetAuthenticatedAccountId();
-  auth_service()->LoadCredentials(primary_account_id);
-  // Wait for ProfileSyncService to be notified of the loaded credentials and
-  // send an access token request.
+  // At this point, the real SyncEngine would try to connect to the server, fail
+  // (because it has no access token), and eventually call
+  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR). Since our fake SyncEngine
+  // doesn't do any of this, call that explicitly here.
+  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+
+  // Wait for ProfileSyncService to send an access token request.
   base::RunLoop().RunUntilIdle();
   auth_service()->IssueAllTokensForAccount(primary_account_id, "access token",
                                            base::Time::Max());
