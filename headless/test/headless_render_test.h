@@ -39,7 +39,10 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
                            public runtime::ExperimentalObserver,
                            public TestInMemoryProtocolHandler::RequestDeferrer {
  public:
-  typedef std::pair<std::string, page::FrameScheduledNavigationReason> Redirect;
+  struct Navigation {
+    std::string url;
+    page::FrameScheduledNavigationReason reason;
+  };
 
   void RunDevTooledTest() override;
 
@@ -127,8 +130,6 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
       const page::FrameStartedLoadingParams& params) override;
   void OnFrameScheduledNavigation(
       const page::FrameScheduledNavigationParams& params) override;
-  void OnFrameClearedScheduledNavigation(
-      const page::FrameClearedScheduledNavigationParams& params) override;
   void OnFrameNavigated(const page::FrameNavigatedParams& params) override;
 
   // runtime::ExperimentalObserver implementation:
@@ -139,8 +140,12 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   // TestInMemoryProtocolHandler::RequestDeferrer
   void OnRequest(const GURL& url, base::Closure complete_request) override;
 
-  std::map<std::string, std::vector<Redirect>> confirmed_frame_redirects_;
-  std::map<std::string, Redirect> unconfirmed_frame_redirects_;
+  // For each frame, keep track of scheduled navigations.
+  // FYI: It doesn't track every navigations. For instance, it doesn't include
+  // the first navigation. It doesn't include HTTP redirect, but it includes
+  // client-side redirect.
+  std::map<std::string, std::vector<Navigation>> scheduled_navigations_;
+
   std::map<std::string, std::vector<std::unique_ptr<page::Frame>>> frames_;
   std::string main_frame_;
   std::vector<std::string> console_log_;
