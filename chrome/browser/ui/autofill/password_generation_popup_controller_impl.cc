@@ -21,7 +21,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator_fips181.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -80,7 +80,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       form_(form),
       driver_(driver),
       observer_(observer),
-      generator_(new PasswordGenerator(max_length)),
+      generator_(new PasswordGeneratorFips181(max_length)),
       // TODO(estade): use correct text direction.
       controller_common_(bounds, base::i18n::LEFT_TO_RIGHT, container_view),
       password_selected_(false),

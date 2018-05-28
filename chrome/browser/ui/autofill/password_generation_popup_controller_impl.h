@@ -31,7 +31,7 @@ class PasswordManagerDriver;
 
 namespace autofill {
 
-class PasswordGenerator;
+class PasswordGeneratorFips181;
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupView;
 struct Suggestion;
@@ -133,7 +133,7 @@ class PasswordGenerationPopupControllerImpl
   PasswordGenerationPopupObserver* observer_;
 
   // Controls how passwords are generated.
-  std::unique_ptr<PasswordGenerator> generator_;
+  std::unique_ptr<PasswordGeneratorFips181> generator_;
 
   // Contains common popup data.
   const PopupControllerCommon controller_common_;
