@@ -770,7 +770,7 @@ def _ComputePakFileSymbols(
     section_name = models.SECTION_PAK_NONTRANSLATED
   overhead = (12 + 6) * compression_ratio  # Header size plus extra offset
   symbols_by_id[file_name] = models.Symbol(
-      section_name, overhead, full_name='{}: overhead'.format(file_name))
+      section_name, overhead, full_name='Overhead: {}'.format(file_name))
   for resource_id in sorted(contents.resources):
     if resource_id in alias_map:
       # 4 extra bytes of metadata (2 16-bit ints)
@@ -858,6 +858,7 @@ def _ParsePakInfoFile(pak_info_path):
 
 def _ParsePakSymbols(
     section_sizes, object_paths, output_directory, symbols_by_id):
+  object_paths_by_id = collections.defaultdict(list)
   for path in object_paths:
     whitelist_path = os.path.join(output_directory, path + '.whitelist')
     if (not os.path.exists(whitelist_path)
@@ -872,10 +873,24 @@ def _ParsePakSymbols(
         # resulting in resource_ids that don't end up being in the final apk.
         if resource_id not in symbols_by_id:
           continue
-        symbols_by_id[resource_id].object_path = path
+        object_paths_by_id[resource_id].append(path)
 
-  raw_symbols = sorted(symbols_by_id.values(),
-                       key=lambda s: (s.section_name, s.address))
+  raw_symbols = []
+  for resource_id, symbol in symbols_by_id.iteritems():
+    raw_symbols.append(symbol)
+    paths = set(object_paths_by_id[resource_id])
+    if paths:
+      symbol.object_path = paths.pop()
+      if paths:
+        aliases = symbol.aliases or [symbol]
+        symbol.aliases = aliases
+        for path in paths:
+          new_sym = models.Symbol(
+              symbol.section_name, symbol.size, address=symbol.address,
+              full_name=symbol.full_name, object_path=path, aliases=aliases)
+          aliases.append(new_sym)
+          raw_symbols.append(new_sym)
+  raw_symbols.sort(key=lambda s: (s.section_name, s.address))
   raw_total = 0.0
   int_total = 0
   for symbol in raw_symbols:
