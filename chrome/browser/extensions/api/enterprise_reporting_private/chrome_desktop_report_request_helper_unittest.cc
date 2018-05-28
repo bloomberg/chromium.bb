@@ -159,4 +159,36 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, InvalidInput) {
   EXPECT_FALSE(GenerateChromeDesktopReportRequest(*report, &profile_));
 }
 
+TEST_F(ChromeDesktopReportRequestGeneratorTest, SafeBrowsing) {
+  std::unique_ptr<base::DictionaryValue> report;
+  report = base::DictionaryValue::From(
+      base::JSONReader::Read("{\"browserReport\": "
+                             "{\"chromeUserProfileReport\":[{"
+                             "\"safeBrowsingWarnings\":\"invalid\"}]}}"));
+  ASSERT_TRUE(report);
+  EXPECT_FALSE(GenerateChromeDesktopReportRequest(*report, &profile_));
+
+  report = base::DictionaryValue::From(base::JSONReader::Read(
+      "{\"browserReport\": "
+      "{\"chromeUserProfileReport\":[{\"safeBrowsingWarningsClickThrough\":"
+      "\"invalid\"}]}}"));
+  ASSERT_TRUE(report);
+  EXPECT_FALSE(GenerateChromeDesktopReportRequest(*report, &profile_));
+
+  report = base::DictionaryValue::From(base::JSONReader::Read(
+      "{\"browserReport\": "
+      "{\"chromeUserProfileReport\":[{\"safeBrowsingWarnings\":3, "
+      "\"safeBrowsingWarningsClickThrough\":1}]}}"));
+  ASSERT_TRUE(report);
+  std::unique_ptr<em::ChromeDesktopReportRequest> request =
+      GenerateChromeDesktopReportRequest(*report, &profile_);
+  ASSERT_TRUE(request);
+  EXPECT_EQ(3u, request->browser_report()
+                    .chrome_user_profile_reports(0)
+                    .safe_browsing_warnings());
+  EXPECT_EQ(1u, request->browser_report()
+                    .chrome_user_profile_reports(0)
+                    .safe_browsing_warnings_click_through());
+}
+
 }  // namespace extensions
