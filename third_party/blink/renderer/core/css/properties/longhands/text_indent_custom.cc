@@ -80,5 +80,48 @@ const CSSValue* TextIndent::CSSValueFromComputedStyleInternal(
   return list;
 }
 
+void TextIndent::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetTextIndent(ComputedStyleInitialValues::InitialTextIndent());
+  state.Style()->SetTextIndentLine(
+      ComputedStyleInitialValues::InitialTextIndentLine());
+  state.Style()->SetTextIndentType(
+      ComputedStyleInitialValues::InitialTextIndentType());
+}
+
+void TextIndent::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetTextIndent(state.ParentStyle()->TextIndent());
+  state.Style()->SetTextIndentLine(state.ParentStyle()->GetTextIndentLine());
+  state.Style()->SetTextIndentType(state.ParentStyle()->GetTextIndentType());
+}
+
+void TextIndent::ApplyValue(StyleResolverState& state,
+                            const CSSValue& value) const {
+  Length length_or_percentage_value;
+  TextIndentLine text_indent_line_value =
+      ComputedStyleInitialValues::InitialTextIndentLine();
+  TextIndentType text_indent_type_value =
+      ComputedStyleInitialValues::InitialTextIndentType();
+
+  for (auto& list_value : ToCSSValueList(value)) {
+    if (list_value->IsPrimitiveValue()) {
+      length_or_percentage_value =
+          ToCSSPrimitiveValue(*list_value)
+              .ConvertToLength(state.CssToLengthConversionData());
+    } else if (ToCSSIdentifierValue(*list_value).GetValueID() ==
+               CSSValueEachLine) {
+      text_indent_line_value = TextIndentLine::kEachLine;
+    } else if (ToCSSIdentifierValue(*list_value).GetValueID() ==
+               CSSValueHanging) {
+      text_indent_type_value = TextIndentType::kHanging;
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  state.Style()->SetTextIndent(length_or_percentage_value);
+  state.Style()->SetTextIndentLine(text_indent_line_value);
+  state.Style()->SetTextIndentType(text_indent_type_value);
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

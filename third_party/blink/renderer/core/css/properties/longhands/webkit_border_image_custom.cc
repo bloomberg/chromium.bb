@@ -27,5 +27,13 @@ const CSSValue* WebkitBorderImage::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style);
 }
 
+void WebkitBorderImage::ApplyValue(StyleResolverState& state,
+                                   const CSSValue& value) const {
+  NinePieceImage image;
+  CSSToStyleMap::MapNinePieceImage(state, CSSPropertyWebkitBorderImage, value,
+                                   image);
+  state.Style()->SetBorderImage(image);
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

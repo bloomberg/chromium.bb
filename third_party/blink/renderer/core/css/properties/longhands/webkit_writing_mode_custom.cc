@@ -16,5 +16,11 @@ const CSSValue* WebkitWritingMode::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetWritingMode());
 }
 
+void WebkitWritingMode::ApplyValue(StyleResolverState& state,
+                                   const CSSValue& value) const {
+  state.SetWritingMode(
+      ToCSSIdentifierValue(value).ConvertTo<blink::WritingMode>());
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

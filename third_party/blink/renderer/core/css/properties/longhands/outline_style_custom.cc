@@ -21,5 +21,25 @@ const CSSValue* OutlineStyle::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.OutlineStyle());
 }
 
+void OutlineStyle::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetOutlineStyleIsAuto(
+      ComputedStyleInitialValues::InitialOutlineStyleIsAuto());
+  state.Style()->SetOutlineStyle(EBorderStyle::kNone);
+}
+
+void OutlineStyle::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetOutlineStyleIsAuto(
+      state.ParentStyle()->OutlineStyleIsAuto());
+  state.Style()->SetOutlineStyle(state.ParentStyle()->OutlineStyle());
+}
+
+void OutlineStyle::ApplyValue(StyleResolverState& state,
+                              const CSSValue& value) const {
+  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  state.Style()->SetOutlineStyleIsAuto(
+      static_cast<bool>(identifier_value.ConvertTo<OutlineIsAuto>()));
+  state.Style()->SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

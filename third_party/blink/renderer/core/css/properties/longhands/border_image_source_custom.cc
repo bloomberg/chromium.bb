@@ -38,5 +38,11 @@ const CSSValue* BorderImageSource::InitialValue() const {
   return &value;
 }
 
+void BorderImageSource::ApplyValue(StyleResolverState& state,
+                                   const CSSValue& value) const {
+  state.Style()->SetBorderImageSource(
+      state.GetStyleImage(CSSPropertyBorderImageSource, value));
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

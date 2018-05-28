@@ -119,5 +119,95 @@ const CSSValue* Content::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForContentData(style);
 }
 
+void Content::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetContent(nullptr);
+}
+
+void Content::ApplyInherit(StyleResolverState& state) const {
+  // FIXME: In CSS3, it will be possible to inherit content. In CSS2 it is not.
+  // This note is a reminder that eventually "inherit" needs to be supported.
+}
+
+void Content::ApplyValue(StyleResolverState& state,
+                         const CSSValue& value) const {
+  if (value.IsIdentifierValue()) {
+    DCHECK(ToCSSIdentifierValue(value).GetValueID() == CSSValueNormal ||
+           ToCSSIdentifierValue(value).GetValueID() == CSSValueNone);
+    state.Style()->SetContent(nullptr);
+    return;
+  }
+
+  ContentData* first_content = nullptr;
+  ContentData* prev_content = nullptr;
+  for (auto& item : ToCSSValueList(value)) {
+    ContentData* next_content = nullptr;
+    if (item->IsImageGeneratorValue() || item->IsImageSetValue() ||
+        item->IsImageValue()) {
+      next_content =
+          ContentData::Create(state.GetStyleImage(CSSPropertyContent, *item));
+    } else if (item->IsCounterValue()) {
+      const cssvalue::CSSCounterValue* counter_value =
+          cssvalue::ToCSSCounterValue(item.Get());
+      const auto list_style_type =
+          CssValueIDToPlatformEnum<EListStyleType>(counter_value->ListStyle());
+      std::unique_ptr<CounterContent> counter =
+          std::make_unique<CounterContent>(
+              AtomicString(counter_value->Identifier()), list_style_type,
+              AtomicString(counter_value->Separator()));
+      next_content = ContentData::Create(std::move(counter));
+    } else if (item->IsIdentifierValue()) {
+      QuoteType quote_type;
+      switch (ToCSSIdentifierValue(*item).GetValueID()) {
+        default:
+          NOTREACHED();
+          FALLTHROUGH;
+        case CSSValueOpenQuote:
+          quote_type = QuoteType::kOpen;
+          break;
+        case CSSValueCloseQuote:
+          quote_type = QuoteType::kClose;
+          break;
+        case CSSValueNoOpenQuote:
+          quote_type = QuoteType::kNoOpen;
+          break;
+        case CSSValueNoCloseQuote:
+          quote_type = QuoteType::kNoClose;
+          break;
+      }
+      next_content = ContentData::Create(quote_type);
+    } else {
+      String string;
+      if (item->IsFunctionValue()) {
+        const CSSFunctionValue* function_value = ToCSSFunctionValue(item.Get());
+        DCHECK_EQ(function_value->FunctionType(), CSSValueAttr);
+        state.Style()->SetUnique();
+        // TODO: Can a namespace be specified for an attr(foo)?
+        QualifiedName attr(
+            g_null_atom, ToCSSCustomIdentValue(function_value->Item(0)).Value(),
+            g_null_atom);
+        const AtomicString& value = state.GetElement()->getAttribute(attr);
+        string = value.IsNull() ? g_empty_string : value.GetString();
+      } else {
+        string = ToCSSStringValue(*item).Value();
+      }
+      if (prev_content && prev_content->IsText()) {
+        TextContentData* text_content = ToTextContentData(prev_content);
+        text_content->SetText(text_content->GetText() + string);
+        continue;
+      }
+      next_content = ContentData::Create(string);
+    }
+
+    if (!first_content)
+      first_content = next_content;
+    else
+      prev_content->SetNext(next_content);
+
+    prev_content = next_content;
+  }
+  DCHECK(first_content);
+  state.Style()->SetContent(first_content);
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

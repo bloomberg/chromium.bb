@@ -20,5 +20,11 @@ const CSSValue* WebkitTextOrientation::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetTextOrientation());
 }
 
+void WebkitTextOrientation::ApplyValue(StyleResolverState& state,
+                                       const CSSValue& value) const {
+  state.SetTextOrientation(
+      ToCSSIdentifierValue(value).ConvertTo<ETextOrientation>());
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink
