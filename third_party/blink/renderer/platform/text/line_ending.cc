@@ -72,8 +72,7 @@ void NormalizeToCRLF(const CharType* src, size_t src_length, CharType* q) {
   while (p < src + src_length) {
     CharType c = *p++;
     if (c == '\r') {
-      // Safe to look ahead because of trailing '\0'.
-      if (*p != '\n') {
+      if (p >= src + src_length || *p != '\n') {
         // Turn CR into CRLF.
         *q++ = '\r';
         *q++ = '\n';
