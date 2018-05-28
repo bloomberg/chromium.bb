@@ -14,7 +14,7 @@
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "media/base/audio_capturer_source.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -97,7 +97,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
     FSMEvent event;
     scoped_refptr<AudioChunk> audio_data;
     SpeechRecognitionResults engine_results;
-    SpeechRecognitionError engine_error;
+    mojom::SpeechRecognitionError engine_error;
   };
 
   ~SpeechRecognizerImpl() override;
@@ -126,7 +126,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   FSMState ProcessFinalResult(const FSMEventArgs& event_args);
   FSMState AbortSilently(const FSMEventArgs& event_args);
   FSMState AbortWithError(const FSMEventArgs& event_args);
-  FSMState Abort(const SpeechRecognitionError& error);
+  FSMState Abort(const mojom::SpeechRecognitionError& error);
   FSMState DetectEndOfSpeech(const FSMEventArgs& event_args);
   FSMState DoNothing(const FSMEventArgs& event_args) const;
   FSMState NotFeasible(const FSMEventArgs& event_args);
@@ -154,7 +154,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
       const SpeechRecognitionResults& results) override;
   void OnSpeechRecognitionEngineEndOfUtterance() override;
   void OnSpeechRecognitionEngineError(
-      const SpeechRecognitionError& error) override;
+      const mojom::SpeechRecognitionError& error) override;
 
   media::AudioSystem* GetAudioSystem();
   void CreateAudioCapturerSource();

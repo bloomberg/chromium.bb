@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "content/public/common/speech_recognition_error.h"
 
 namespace content {
 

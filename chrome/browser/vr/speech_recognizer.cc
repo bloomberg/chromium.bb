@@ -16,7 +16,7 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -80,7 +80,7 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
       const content::SpeechRecognitionResults& results) override;
   void OnRecognitionError(
       int session_id,
-      const content::SpeechRecognitionError& error) override;
+      const content::mojom::SpeechRecognitionError& error) override;
   void OnSoundStart(int session_id) override;
   void OnSoundEnd(int session_id) override;
   void OnAudioLevelsChange(int session_id,
@@ -226,13 +226,13 @@ void SpeechRecognizerOnIO::OnRecognitionResults(
 
 void SpeechRecognizerOnIO::OnRecognitionError(
     int session_id,
-    const content::SpeechRecognitionError& error) {
+    const content::mojom::SpeechRecognitionError& error) {
   switch (error.code) {
-    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
+    case content::mojom::SpeechRecognitionErrorCode::kNetwork:
       NotifyRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR);
       break;
-    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
-    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
+    case content::mojom::SpeechRecognitionErrorCode::kNoSpeech:
+    case content::mojom::SpeechRecognitionErrorCode::kNoMatch:
       NotifyRecognitionStateChanged(SPEECH_RECOGNITION_TRY_AGAIN);
       break;
     default:

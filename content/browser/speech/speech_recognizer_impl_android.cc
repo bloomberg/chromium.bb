@@ -208,9 +208,10 @@ void SpeechRecognizerImplAndroid::OnRecognitionError(
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SpeechRecognitionErrorCode code =
-      static_cast<SpeechRecognitionErrorCode>(error);
-  listener()->OnRecognitionError(session_id(), SpeechRecognitionError(code));
+  listener()->OnRecognitionError(
+      session_id(), mojom::SpeechRecognitionError(
+                        static_cast<mojom::SpeechRecognitionErrorCode>(error),
+                        mojom::SpeechAudioErrorDetails::kNone));
 }
 
 void SpeechRecognizerImplAndroid::OnRecognitionEnd(

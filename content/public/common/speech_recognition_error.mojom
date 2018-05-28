@@ -4,30 +4,16 @@
 
 module content.mojom;
 
-// TODO(adithyas): Update users of content::SpeechRecognitionErrorCode to use
-// this instead, then remove content::SpeechRecognitionErrorCode.
-enum SpeechRecognitionErrorCode {
-  kNone,
-  kNoSpeech,
-  kAborted,
-  kAudioCapture,
-  kNetwork,
-  kNotAllowed,
-  kServiceNotAllowed,
-  kBadGrammar,
-  kLanguageNotSupported,
-  kNoMatch
-};
+import "content/public/common/speech_recognition_error_code.mojom";
 
-// TODO(adithyas): Update users of content::SpeechAudioErrorDetails to use
-// this instead, then remove content::SpeechAudioErrorDetails.
+// Used to provide further details about an audio capture related error.
 enum SpeechAudioErrorDetails {
   kNone,
   kNoMic
 };
 
-// TODO(adithyas): Update users of content::SpeechRecognitionError to use
-// this instead, then remove content::SpeechRecognitionError.
+// Used to send information to the renderer about an error in the browser's
+// speech recognition engine.
 struct SpeechRecognitionError {
   content.mojom.SpeechRecognitionErrorCode code;
   content.mojom.SpeechAudioErrorDetails details;

@@ -240,8 +240,8 @@ void SpeechRecognitionSession::OnRecognitionResults(
 
 void SpeechRecognitionSession::OnRecognitionError(
     int session_id,
-    const SpeechRecognitionError& error) {
-  client_->ErrorOccurred(error);
+    const mojom::SpeechRecognitionError& error) {
+  client_->ErrorOccurred(mojom::SpeechRecognitionError::New(error));
 }
 
 // The events below are currently not used by speech JS APIs implementation.

@@ -21,7 +21,7 @@
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
 
 // Length of timeout to cancel recognition if there's no speech heard.
@@ -75,7 +75,7 @@ class SpeechRecognizer::EventListener
       const content::SpeechRecognitionResults& results) override;
   void OnRecognitionError(
       int session_id,
-      const content::SpeechRecognitionError& error) override;
+      const content::mojom::SpeechRecognitionError& error) override;
   void OnSoundStart(int session_id) override;
   void OnSoundEnd(int session_id) override;
   void OnAudioLevelsChange(int session_id,
@@ -225,9 +225,9 @@ void SpeechRecognizer::EventListener::OnRecognitionResults(
 
 void SpeechRecognizer::EventListener::OnRecognitionError(
     int session_id,
-    const content::SpeechRecognitionError& error) {
+    const content::mojom::SpeechRecognitionError& error) {
   StopOnIOThread();
-  if (error.code == content::SPEECH_RECOGNITION_ERROR_NETWORK) {
+  if (error.code == content::mojom::SpeechRecognitionErrorCode::kNetwork) {
     NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_NETWORK_ERROR);
   }
   NotifyRecognitionStateChanged(SPEECH_RECOGNIZER_READY);

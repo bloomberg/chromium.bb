@@ -18,7 +18,6 @@
 #include "third_party/blink/public/web/web_speech_recognizer_client.h"
 
 namespace content {
-struct SpeechRecognitionError;
 
 // SpeechRecognitionDispatcher is a delegate for methods used by WebKit for
 // scripted JS speech APIs. It's the complement of
@@ -101,10 +100,10 @@ class SpeechRecognitionSessionClientImpl
   void SoundStarted() override;
   void SoundEnded() override;
   void AudioEnded() override;
-  void ErrorOccurred(const content::SpeechRecognitionError& error) override;
+  void ErrorOccurred(const mojom::SpeechRecognitionErrorPtr error) override;
   void Ended() override;
   void ResultRetrieved(
-      const std::vector<content::SpeechRecognitionResult>& results) override;
+      const std::vector<SpeechRecognitionResult>& results) override;
 
  private:
   // Not owned, |parent_dispatcher_| owns |this|.

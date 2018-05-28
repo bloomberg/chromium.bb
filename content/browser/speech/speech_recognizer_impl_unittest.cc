@@ -70,7 +70,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
         audio_ended_(false),
         sound_started_(false),
         sound_ended_(false),
-        error_(SPEECH_RECOGNITION_ERROR_NONE),
+        error_(mojom::SpeechRecognitionErrorCode::kNone),
         volume_(-1.0f) {
     // SpeechRecognizer takes ownership of sr_engine.
     SpeechRecognitionEngine* sr_engine =
@@ -150,7 +150,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
   void OnRecognitionError(int session_id,
-                          const SpeechRecognitionError& error) override {
+                          const mojom::SpeechRecognitionError& error) override {
     EXPECT_TRUE(recognition_started_);
     EXPECT_FALSE(recognition_ended_);
     error_ = error.code;
@@ -245,7 +245,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   bool audio_ended_;
   bool sound_started_;
   bool sound_ended_;
-  SpeechRecognitionErrorCode error_;
+  mojom::SpeechRecognitionErrorCode error_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   std::vector<uint8_t> audio_packet_;
   std::unique_ptr<media::AudioBus> audio_bus_;
@@ -265,7 +265,7 @@ TEST_F(SpeechRecognizerImplTest, StartNoInputDevices) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kAudioCapture, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -293,7 +293,7 @@ TEST_F(SpeechRecognizerImplTest, StopBeforeDeviceInfoReceived) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -321,7 +321,7 @@ TEST_F(SpeechRecognizerImplTest, CancelBeforeDeviceInfoReceived) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -336,7 +336,7 @@ TEST_F(SpeechRecognizerImplTest, StopNoData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -352,7 +352,7 @@ TEST_F(SpeechRecognizerImplTest, CancelNoData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_ABORTED, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kAborted, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -384,7 +384,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
 
   // Create a response string.
   proto::SpeechRecognitionEvent proto_event;
@@ -414,7 +414,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_TRUE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -433,7 +433,7 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_ABORTED, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kAborted, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -456,7 +456,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
 
   // Issue the network callback to complete the process.
   fetcher->set_url(fetcher->GetOriginalURL());
@@ -468,7 +468,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNetwork, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -491,7 +491,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   EXPECT_TRUE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
 
   // Issue the network callback to complete the process.
   fetcher->set_url(fetcher->GetOriginalURL());
@@ -502,7 +502,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(recognition_ended_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NETWORK, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNetwork, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -519,7 +519,7 @@ TEST_F(SpeechRecognizerImplTest, OnCaptureError_PropagatesError) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kAudioCapture, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -542,7 +542,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NO_SPEECH, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNoSpeech, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -571,7 +571,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
   }
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
@@ -612,7 +612,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   EXPECT_NEAR(0.89926866f, volume_, 0.00001f);
   EXPECT_FLOAT_EQ(0.75071919f, noise_volume_);
 
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
   EXPECT_FALSE(audio_ended_);
   EXPECT_FALSE(recognition_ended_);
   recognizer_->AbortRecognition();

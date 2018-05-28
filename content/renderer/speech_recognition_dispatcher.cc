@@ -108,28 +108,28 @@ void SpeechRecognitionDispatcher::Abort(
 }
 
 static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
-    SpeechRecognitionErrorCode e) {
+    content::mojom::SpeechRecognitionErrorCode e) {
   switch (e) {
-    case SPEECH_RECOGNITION_ERROR_NONE:
+    case mojom::SpeechRecognitionErrorCode::kNone:
       NOTREACHED();
       return WebSpeechRecognizerClient::kOtherError;
-    case SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+    case mojom::SpeechRecognitionErrorCode::kNoSpeech:
       return WebSpeechRecognizerClient::kNoSpeechError;
-    case SPEECH_RECOGNITION_ERROR_ABORTED:
+    case mojom::SpeechRecognitionErrorCode::kAborted:
       return WebSpeechRecognizerClient::kAbortedError;
-    case SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE:
+    case mojom::SpeechRecognitionErrorCode::kAudioCapture:
       return WebSpeechRecognizerClient::kAudioCaptureError;
-    case SPEECH_RECOGNITION_ERROR_NETWORK:
+    case mojom::SpeechRecognitionErrorCode::kNetwork:
       return WebSpeechRecognizerClient::kNetworkError;
-    case SPEECH_RECOGNITION_ERROR_NOT_ALLOWED:
+    case mojom::SpeechRecognitionErrorCode::kNotAllowed:
       return WebSpeechRecognizerClient::kNotAllowedError;
-    case SPEECH_RECOGNITION_ERROR_SERVICE_NOT_ALLOWED:
+    case mojom::SpeechRecognitionErrorCode::kServiceNotAllowed:
       return WebSpeechRecognizerClient::kServiceNotAllowedError;
-    case SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
+    case mojom::SpeechRecognitionErrorCode::kBadGrammar:
       return WebSpeechRecognizerClient::kBadGrammarError;
-    case SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED:
+    case mojom::SpeechRecognitionErrorCode::kLanguageNotSupported:
       return WebSpeechRecognizerClient::kLanguageNotSupportedError;
-    case SPEECH_RECOGNITION_ERROR_NO_MATCH:
+    case mojom::SpeechRecognitionErrorCode::kNoMatch:
       NOTREACHED();
       return WebSpeechRecognizerClient::kOtherError;
   }
@@ -199,13 +199,13 @@ void SpeechRecognitionSessionClientImpl::AudioEnded() {
 }
 
 void SpeechRecognitionSessionClientImpl::ErrorOccurred(
-    const content::SpeechRecognitionError& error) {
-  if (error.code == SPEECH_RECOGNITION_ERROR_NO_MATCH) {
+    const mojom::SpeechRecognitionErrorPtr error) {
+  if (error->code == mojom::SpeechRecognitionErrorCode::kNoMatch) {
     web_client_.DidReceiveNoMatch(handle_, WebSpeechRecognitionResult());
   } else {
     web_client_.DidReceiveError(handle_,
                                 WebString(),  // TODO(primiano): message?
-                                WebKitErrorCode(error.code));
+                                WebKitErrorCode(error->code));
   }
 }
 
@@ -215,7 +215,7 @@ void SpeechRecognitionSessionClientImpl::Ended() {
 }
 
 void SpeechRecognitionSessionClientImpl::ResultRetrieved(
-    const std::vector<content::SpeechRecognitionResult>& results) {
+    const std::vector<SpeechRecognitionResult>& results) {
   size_t provisional_count =
       std::count_if(results.begin(), results.end(),
                     [](const SpeechRecognitionResult& result) {

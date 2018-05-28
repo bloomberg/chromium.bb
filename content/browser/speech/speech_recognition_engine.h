@@ -17,7 +17,7 @@
 #include "content/browser/speech/chunked_byte_buffer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
-#include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_grammar.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -66,7 +66,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
         const SpeechRecognitionResults& results) = 0;
     virtual void OnSpeechRecognitionEngineEndOfUtterance() = 0;
     virtual void OnSpeechRecognitionEngineError(
-        const SpeechRecognitionError& error) = 0;
+        const mojom::SpeechRecognitionError& error) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -194,7 +194,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
   FSMState CloseDownstream(const FSMEventArgs& event_args);
   FSMState AbortSilently(const FSMEventArgs& event_args);
   FSMState AbortWithError(const FSMEventArgs& event_args);
-  FSMState Abort(SpeechRecognitionErrorCode error);
+  FSMState Abort(content::mojom::SpeechRecognitionErrorCode error);
   FSMState DoNothing(const FSMEventArgs& event_args);
   FSMState NotFeasible(const FSMEventArgs& event_args);
 
