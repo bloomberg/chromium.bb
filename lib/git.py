@@ -10,6 +10,7 @@ from __future__ import print_function
 import collections
 import datetime
 import errno
+import fnmatch
 import hashlib
 import os
 import re
@@ -143,7 +144,10 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
 
 def IsGitRepo(cwd):
   """Checks if there's a git repo rooted at a directory."""
-  return os.path.isdir(os.path.join(cwd, '.git'))
+  is_checkout = os.path.isdir(os.path.join(cwd, '.git'))
+  is_bare_repo = os.path.isdir(os.path.join(
+      cwd, 'objects')) and os.path.isdir(os.path.join(cwd, 'refs'))
+  return is_checkout or is_bare_repo
 
 
 def IsGitRepositoryCorrupted(cwd):
@@ -1449,3 +1453,22 @@ def GarbageCollection(git_repo, prune_all=False):
   if prune_all:
     cmd.append('--prune=all')
   RunGit(git_repo, cmd)
+
+
+def DeleteStaleLocks(git_repo):
+  """Clean up stale locks left behind in a git repo.
+
+  This might occur if an earlier git command was killed during an operation.
+  Warning: This is dangerous because these locks are intended to prevent
+  corruption. Only use this if you are sure that no other git process is
+  accessing the repo (such as at the beginning of a fresh build).
+
+  Args"
+    git_repo: Directory of git repository.
+  """
+  if not IsGitRepo(git_repo):
+    raise GitException("Not a valid git repo: %s" % git_repo)
+
+  for root, _, filenames in os.walk(os.path.join(git_repo, '.git')):
+    for filename in fnmatch.filter(filenames, '*.lock'):
+      os.remove(os.path.join(root, filename))

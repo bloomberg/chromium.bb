@@ -220,6 +220,45 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
     git.GetGitRepoRevision(self.fake_git_dir, branch='branch', short=True)
     self.assertCommandContains(['rev-parse', '--short', 'branch'])
 
+  def testIsGitRepo(self):
+    git.Init(self.fake_git_dir)
+    os.makedirs(os.path.join(self.fake_git_dir, '.git', 'refs', 'heads'))
+    os.makedirs(os.path.join(self.fake_git_dir, '.git', 'objects'))
+    other_file = os.path.join(self.fake_git_dir, 'other_file')
+    osutils.Touch(other_file)
+
+    ret = git.IsGitRepo(self.fake_git_dir)
+    self.assertTrue(ret)
+
+  def testIsGitRepo_bare(self):
+    git.Init(self.fake_git_dir)
+    os.makedirs(os.path.join(self.fake_git_dir, 'refs', 'heads'))
+    os.makedirs(os.path.join(self.fake_git_dir, 'objects'))
+    config_file = os.path.join(self.fake_git_dir, 'config')
+    osutils.Touch(config_file)
+
+    ret = git.IsGitRepo(self.fake_git_dir)
+    self.assertTrue(ret)
+
+  def testDeleteStaleLocks(self):
+    git.Init(self.fake_git_dir)
+    refs_heads = os.path.join(self.fake_git_dir, '.git', 'refs', 'heads')
+    os.makedirs(refs_heads)
+    fake_lock = os.path.join(refs_heads, 'master.lock')
+    osutils.Touch(fake_lock)
+    os.makedirs(self.fake_path)
+    dot_lock_not_in_dot_git = os.path.join(self.fake_git_dir, 'some.lock')
+    osutils.Touch(dot_lock_not_in_dot_git)
+    other_file = os.path.join(self.fake_path, 'other_file')
+    osutils.Touch(other_file)
+
+    git.DeleteStaleLocks(self.fake_git_dir)
+    self.assertExists(os.path.join(self.fake_git_dir, '.git'))
+    self.assertExists(refs_heads)
+    self.assertExists(dot_lock_not_in_dot_git)
+    self.assertExists(other_file)
+    self.assertNotExists(fake_lock)
+
 
 class ProjectCheckoutTest(cros_test_lib.TestCase):
   """Tests for git.ProjectCheckout"""

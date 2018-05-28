@@ -63,13 +63,18 @@ class RepositoryTests(cros_test_lib.RunCommandTestCase):
 
 class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
   """Test cases related to repository initialization."""
+
+  def __init__(self, *args, **kwargs):
+    self.repo = None
+    super(RepoInitTests, self).__init__(*args, **kwargs)
+
   def setUp(self):
     self.PatchObject(time, 'sleep')
 
   def _Initialize(self, branch='master'):
-    repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
-                                     self.tempdir, branch=branch)
-    repo.Initialize()
+    self.repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
+                                          self.tempdir, branch=branch)
+    self.repo.Initialize()
 
   @cros_test_lib.NetworkTest()
   def testReInitialization(self):
@@ -82,6 +87,27 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
     # repo init on 'monkey' will retry on failures.
     self.assertRaises(Exception, self._Initialize, 'monkey')
     self._Initialize('release-R20-2268.B')
+
+  @cros_test_lib.NetworkTest()
+  def testBuildRootGitCleanup(self):
+    """Test successful repo cleanup."""
+    self._Initialize()
+    run_cmd_mock = self.PatchObject(
+        cros_build_lib, 'RunCommand', wraps=cros_build_lib.RunCommand)
+    self.repo.BuildRootGitCleanup(prune_all=True)
+
+    # RunCommand should be called twice.
+    self.assertEqual(run_cmd_mock.call_count, 2)
+
+  @cros_test_lib.NetworkTest()
+  def testCleanStaleLocks(self):
+    """Test successful repo lock cleanup."""
+    self._Initialize('release-R19-2046.B')
+    self.PatchObject(git, 'IsGitRepo')
+    dsl = self.PatchObject(git, 'DeleteStaleLocks')
+    self.repo.CleanStaleLocks()
+
+    self.assertEqual(dsl.call_count, 198)
 
   def testInitializationWithRepoInitRetry(self):
     """Test Initialization with repo init retry."""
@@ -109,12 +135,13 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
     self.assertEqual(mock_cleanup.call_count, 0)
     self.assertEqual(mock_init.call_count, 1)
 
+
 class RepoInitChromeBotTests(RepoInitTests):
   """Test that Re-init works with the chrome-bot account.
 
   In testing, repo init behavior on the buildbots is different from a
-  local run, because there is some logic in 'repo' that filters changes based on
-  GIT_COMMITTER_IDENT.  So for sanity's sake, try to emulate running on the
+  local run, because there is some logic in 'repo' that filters changes based
+  on GIT_COMMITTER_IDENT.  So for sanity's sake, try to emulate running on the
   buildbots.
   """
   def setUp(self):
