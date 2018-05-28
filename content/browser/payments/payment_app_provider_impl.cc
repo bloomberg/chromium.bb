@@ -268,7 +268,6 @@ void DispatchAbortPaymentEvent(
       active_version, std::move(callback));
 
   active_version->event_dispatcher()->DispatchAbortPaymentEvent(
-      invocation_callbacks->request_id(),
       invocation_callbacks->CreateInterfacePtrAndBind(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
@@ -298,8 +297,7 @@ void DispatchCanMakePaymentEvent(
       active_version, std::move(callback));
 
   active_version->event_dispatcher()->DispatchCanMakePaymentEvent(
-      invocation_callbacks->request_id(), std::move(event_data),
-      invocation_callbacks->CreateInterfacePtrAndBind(),
+      std::move(event_data), invocation_callbacks->CreateInterfacePtrAndBind(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
 
@@ -330,8 +328,7 @@ void DispatchPaymentRequestEvent(
       active_version, std::move(callback));
 
   active_version->event_dispatcher()->DispatchPaymentRequestEvent(
-      invocation_callbacks->request_id(), std::move(event_data),
-      invocation_callbacks->CreateInterfacePtrAndBind(),
+      std::move(event_data), invocation_callbacks->CreateInterfacePtrAndBind(),
       active_version->CreateSimpleEventCallback(event_finish_id));
 }
 

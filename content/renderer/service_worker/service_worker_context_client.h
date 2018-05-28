@@ -327,16 +327,13 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                          base::TimeDelta timeout,
                          DispatchSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
-      int payment_request_id,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchAbortPaymentEventCallback callback) override;
   void DispatchCanMakePaymentEvent(
-      int payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchCanMakePaymentEventCallback callback) override;
   void DispatchPaymentRequestEvent(
-      int payment_request_id,
       payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override;
