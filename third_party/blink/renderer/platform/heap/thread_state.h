@@ -146,7 +146,6 @@ class PLATFORM_EXPORT ThreadState {
   enum GCState {
     kNoGCScheduled,
     kIdleGCScheduled,
-    kIncrementalMarkingStartScheduled,
     kIncrementalMarkingStepScheduled,
     kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,
@@ -288,12 +287,13 @@ class PLATFORM_EXPORT ThreadState {
   void DisableWrapperTracingBarrier();
 
   // Incremental GC.
-
-  void ScheduleIncrementalMarkingStart();
   void ScheduleIncrementalMarkingStep();
   void ScheduleIncrementalMarkingFinalize();
 
-  void IncrementalMarkingStart();
+  void RunIncrementalMarkingStepTask();
+  void RunIncrementalMarkingFinalizeTask();
+
+  void IncrementalMarkingStart(BlinkGC::GCReason);
   void IncrementalMarkingStep();
   void IncrementalMarkingFinalize();
 
@@ -621,7 +621,7 @@ class PLATFORM_EXPORT ThreadState {
   // collect garbage at this point.
   bool ShouldScheduleIdleGC();
   bool ShouldForceConservativeGC();
-  bool ShouldScheduleIncrementalMarking() const;
+  bool ShouldScheduleIncrementalMarking();
   // V8 minor or major GC is likely to drop a lot of references to objects
   // on Oilpan's heap. We give a chance to schedule a GC.
   bool ShouldScheduleV8FollowupGC();
