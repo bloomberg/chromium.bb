@@ -5,13 +5,10 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -95,8 +92,7 @@ class MockExtensionsAPIClient : public extensions::ShellExtensionsAPIClient {
 
 namespace extensions {
 
-class AppViewTest : public AppShellTest,
-                    public testing::WithParamInterface<bool> {
+class AppViewTest : public AppShellTest {
  protected:
   AppViewTest() { GuestViewManager::set_factory_for_testing(&factory_); }
 
@@ -153,23 +149,11 @@ class AppViewTest : public AppShellTest,
     // even on machines without physical devices. This is required by tests that
     // request permission to use media devices.
     command_line->AppendSwitch("use-fake-device-for-media-stream");
-
-    bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kGuestViewCrossProcessFrames);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kGuestViewCrossProcessFrames);
-    }
   }
 
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
-
-INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
 
 #if defined(OS_WIN)
 #define MAYBE_TestAppViewGoodDataShouldSucceed \
@@ -178,14 +162,14 @@ INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
 #define MAYBE_TestAppViewGoodDataShouldSucceed TestAppViewGoodDataShouldSucceed
 #endif
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_P(AppViewTest, MAYBE_TestAppViewGoodDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, MAYBE_TestAppViewGoodDataShouldSucceed) {
   RunTest("testAppViewGoodDataShouldSucceed",
           "app_view/apitest",
           "app_view/apitest/skeleton");
 }
 
 // Tests that <appview> can handle media permission requests.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMediaRequest) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMediaRequest) {
   static_cast<ShellExtensionsBrowserClient*>(ExtensionsBrowserClient::Get())
       ->SetAPIClientForTest(nullptr);
   static_cast<ShellExtensionsBrowserClient*>(ExtensionsBrowserClient::Get())
@@ -200,7 +184,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMediaRequest) {
 // Tests that <appview> correctly processes parameters passed on connect.
 // This test should fail to connect because the embedded app (skeleton) will
 // refuse the data passed by the embedder app and deny the request.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
   RunTest("testAppViewRefusedDataShouldFail",
           "app_view/apitest",
           "app_view/apitest/skeleton");
@@ -214,7 +198,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
   TestAppViewWithUndefinedDataShouldSucceed
 #endif
 // Tests that <appview> is able to navigate to another installed app.
-IN_PROC_BROWSER_TEST_P(AppViewTest,
+IN_PROC_BROWSER_TEST_F(AppViewTest,
                        MAYBE_TestAppViewWithUndefinedDataShouldSucceed) {
   RunTest("testAppViewWithUndefinedDataShouldSucceed",
           "app_view/apitest",
