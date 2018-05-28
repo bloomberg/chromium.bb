@@ -683,6 +683,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           HostContentSettingsMap::PatternSourcePredicate());
     }
 
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, delete_begin_, delete_end_,
+        HostContentSettingsMap::PatternSourcePredicate());
+
     auto* handler_registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(profile_);
     if (handler_registry)
