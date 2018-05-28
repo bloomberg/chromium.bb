@@ -780,7 +780,7 @@ UIImage* InfoBarCloseImage() {
          forControlEvents:UIControlEventTouchUpInside];
   [closeButton_ setTag:tag];
   [closeButton_ setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
-  if (IsUIRefreshPhase1Enabled()) {
+  if (IsRefreshInfobarEnabled()) {
     closeButton_.tintColor = [UIColor blackColor];
     closeButton_.alpha = 0.20;
   }
