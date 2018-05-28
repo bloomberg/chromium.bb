@@ -19,12 +19,14 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -250,24 +252,21 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
       : key_press_event_sink_(base::BindRepeating(
             &AutofillInteractiveTestBase::HandleKeyPressEvent,
             base::Unretained(this))),
-        popup_views_enabled_(popup_views_enabled) {}
+        popup_views_enabled_(popup_views_enabled) {
+    scoped_feature_list_.InitWithFeatureState(kAutofillExpandedPopupViews,
+                                              popup_views_enabled_);
+  }
+
   ~AutofillInteractiveTestBase() override {}
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    scoped_feature_list_.InitWithFeatureState(kAutofillExpandedPopupViews,
-                                              popup_views_enabled_);
-
+    InProcessBrowserTest::SetUpOnMainThread();
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
 
     // Inject the test delegate into the AutofillManager.
-    content::WebContents* web_contents = GetWebContents();
-    ContentAutofillDriver* autofill_driver =
-        ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(web_contents->GetMainFrame());
-    AutofillManager* autofill_manager = autofill_driver->autofill_manager();
-    autofill_manager->SetTestDelegate(&test_delegate_);
+    GetAutofillManager()->SetTestDelegate(&test_delegate_);
 
     // If the mouse happened to be over where the suggestions are shown, then
     // the preview will show up and will fail the tests. We need to give it a
@@ -283,12 +282,7 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     // Make sure to close any showing popups prior to tearing down the UI.
-    content::WebContents* web_contents = GetWebContents();
-    AutofillManager* autofill_manager =
-        ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(web_contents->GetMainFrame())
-            ->autofill_manager();
-    autofill_manager->client()->HideAutofillPopup();
+    GetAutofillManager()->client()->HideAutofillPopup();
     test::ReenableSystemServices();
   }
 
@@ -298,6 +292,13 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
 
   content::RenderViewHost* GetRenderViewHost() {
     return GetWebContents()->GetRenderViewHost();
+  }
+
+  AutofillManager* GetAutofillManager() {
+    content::WebContents* web_contents = GetWebContents();
+    return ContentAutofillDriverFactory::FromWebContents(web_contents)
+        ->DriverForFrame(web_contents->GetMainFrame())
+        ->autofill_manager();
   }
 
   void CreateTestProfile() {
@@ -591,7 +592,7 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink_;
 
   // Indicates if AutofillExpandedPopupViews is enabled.
-  bool popup_views_enabled_;
+  const bool popup_views_enabled_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -604,7 +605,7 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
 //  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
 //        is enabled for testing.
 class AutofillInteractiveTest : public AutofillInteractiveTestBase,
-                                public ::testing::WithParamInterface<bool> {
+                                public testing::WithParamInterface<bool> {
  protected:
   AutofillInteractiveTest() : AutofillInteractiveTestBase(GetParam()) {}
   ~AutofillInteractiveTest() override = default;
@@ -1766,6 +1767,197 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, FieldsChangeName) {
   ExpectFieldValue("phone", "15125551234");
 }
 
+// Test params:
+//  - bool popup_views_enabled_: whether feature AutofillExpandedPopupViews
+//        is enabled.
+//  - bool restrict_unowned_fields_: whether autofill of unowned fields is
+//        restricted to checkout related pages.
+class AutofillRestrictUnownedFieldsTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ protected:
+  AutofillRestrictUnownedFieldsTest()
+      : AutofillInteractiveTestBase(std::get<0>(GetParam())),
+        restrict_unowned_fields_(std::get<1>(GetParam())) {
+    std::vector<base::Feature> enabled;
+    std::vector<base::Feature> disabled = {
+        features::kAutofillEnforceMinRequiredFieldsForHeuristics,
+        features::kAutofillEnforceMinRequiredFieldsForQuery,
+        features::kAutofillEnforceMinRequiredFieldsForUpload};
+    (restrict_unowned_fields_ ? enabled : disabled)
+        .push_back(features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+    scoped_feature_list_.InitWithFeatures(enabled, disabled);
+  }
+
+  const bool restrict_unowned_fields_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test that we do not fill formless non-checkout forms when we enable the
+// formless form restrictions.
+IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, NoAutocomplete) {
+  SCOPED_TRACE(base::StringPrintf("restrict_unowned_fields_ = %d",
+                                  restrict_unowned_fields_));
+  base::HistogramTester histogram;
+
+  CreateTestProfile();
+
+  GURL url =
+      embedded_test_server()->GetURL("/autofill/formless_no_autocomplete.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Of unowned forms are restricted, then there are no forms detected.
+  if (restrict_unowned_fields_) {
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    // We should only have samples saying that some elements were filtered.
+    auto buckets =
+        histogram.GetAllSamples("Autofill.UnownedFieldsWereFiltered");
+    ASSERT_EQ(1u, buckets.size());
+    EXPECT_EQ(1, buckets[0].min);  // The "true" bucket.
+
+    ASSERT_EQ(0U, GetAutofillManager()->NumFormsDetected());
+    return;
+  }
+
+  // If we reach this point, then unowned forms are not restricted. There
+  // should a form we can trigger fill on (using the firstname field)
+  ASSERT_FALSE(restrict_unowned_fields_);
+  ASSERT_EQ(1U, GetAutofillManager()->NumFormsDetected());
+  TriggerFormFill("firstname");
+
+  // Wait for the fill to happen.
+  bool has_filled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderViewHost(),
+                                                   "hasFilled()", &has_filled));
+  EXPECT_EQ(has_filled, !restrict_unowned_fields_);
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // If only some form fields are tagged with autocomplete types, then the
+  // number of input elements will not match the number of fields when autofill
+  // triees to preview or fill.
+  histogram.ExpectUniqueSample("Autofill.NumElementsMatchesNumFields",
+                               !restrict_unowned_fields_, 2);
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address", "4120 Freidrich Lane");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we do not fill formless non-checkout forms when we enable the
+// formless form restrictions. This test differes from the NoAutocomplete
+// version of the the test in that at least one of the fields has an
+// autocomplete attribute, so autofill will always be aware of the existence
+// of the form.
+IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, SomeAutocomplete) {
+  SCOPED_TRACE(base::StringPrintf("restrict_unowned_fields_ = %d",
+                                  restrict_unowned_fields_));
+  CreateTestProfile();
+
+  base::HistogramTester histogram;
+
+  GURL url = embedded_test_server()->GetURL(
+      "/autofill/formless_some_autocomplete.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ASSERT_EQ(1U, GetAutofillManager()->NumFormsDetected());
+  TriggerFormFill("firstname");
+
+  // Wait for the fill to happen.
+  bool has_filled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderViewHost(),
+                                                   "hasFilled()", &has_filled));
+  EXPECT_EQ(has_filled, !restrict_unowned_fields_);
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // If only some form fields are tagged with autocomplete types, then the
+  // number of input elements will not match the number of fields when autofill
+  // triees to preview or fill.
+  histogram.ExpectUniqueSample("Autofill.NumElementsMatchesNumFields",
+                               !restrict_unowned_fields_, 2);
+
+  // http://crbug.com/841784
+  // Formless fields with autocomplete attributes don't work because the
+  // extracted form and the form to be previewed/filled end up with a mismatched
+  // number of fields and early abort.
+  // This is fixed when !restrict_unowned_fields_
+  if (restrict_unowned_fields_) {
+    // We should only have samples saying that some elements were filtered.
+    auto buckets =
+        histogram.GetAllSamples("Autofill.UnownedFieldsWereFiltered");
+    ASSERT_EQ(1u, buckets.size());
+    EXPECT_EQ(1, buckets[0].min);  // The "true" bucket.
+
+    ExpectFieldValue("firstname", "M");
+    ExpectFieldValue("address", "");
+    ExpectFieldValue("state", "--");
+    ExpectFieldValue("city", "");
+    ExpectFieldValue("company", "");
+    ExpectFieldValue("email", "");
+    ExpectFieldValue("phone", "");
+  } else {
+    ExpectFieldValue("firstname", "Milton");
+    ExpectFieldValue("address", "4120 Freidrich Lane");
+    ExpectFieldValue("state", "TX");
+    ExpectFieldValue("city", "Austin");
+    ExpectFieldValue("company", "Initech");
+    ExpectFieldValue("email", "red.swingline@initech.com");
+    ExpectFieldValue("phone", "15125551234");
+  }
+}
+
+// Test that we do not fill formless non-checkout forms when we enable the
+// formless form restrictions.
+IN_PROC_BROWSER_TEST_P(AutofillRestrictUnownedFieldsTest, AllAutocomplete) {
+  SCOPED_TRACE(base::StringPrintf("restrict_unowned_fields_ = %d",
+                                  restrict_unowned_fields_));
+  CreateTestProfile();
+
+  base::HistogramTester histogram;
+
+  GURL url = embedded_test_server()->GetURL(
+      "/autofill/formless_all_autocomplete.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ASSERT_EQ(1U, GetAutofillManager()->NumFormsDetected());
+  TriggerFormFill("firstname");
+
+  // Wait for the fill to happen.
+  bool has_filled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderViewHost(),
+                                                   "hasFilled()", &has_filled));
+  EXPECT_TRUE(has_filled);
+
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // If all form fields are tagged with autocomplete types, we make them all
+  // available to be filled.
+  histogram.ExpectUniqueSample("Autofill.NumElementsMatchesNumFields", true, 2);
+
+  if (restrict_unowned_fields_) {
+    // We should only have samples saying that no elements were filtered.
+    auto buckets =
+        histogram.GetAllSamples("Autofill.UnownedFieldsWereFiltered");
+    ASSERT_EQ(1u, buckets.size());
+    EXPECT_EQ(0, buckets[0].min);  // The "false" bucket.
+  }
+
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address", "4120 Freidrich Lane");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
 // An extension of the test fixture for tests with site isolation.
 //
 // Test params:
@@ -1773,7 +1965,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, FieldsChangeName) {
 //        is enabled for testing.
 class AutofillInteractiveIsolationTest
     : public AutofillInteractiveTestBase,
-      public ::testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<bool> {
  protected:
   AutofillInteractiveIsolationTest()
       : AutofillInteractiveTestBase(GetParam()) {}
@@ -1937,7 +2129,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
 //  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
 //        is enabled for testing.
 class DynamicFormInteractiveTest : public AutofillInteractiveTestBase,
-                                   public ::testing::WithParamInterface<bool> {
+                                   public testing::WithParamInterface<bool> {
  protected:
   DynamicFormInteractiveTest()
       : AutofillInteractiveTestBase(GetParam()),
@@ -2342,16 +2534,17 @@ IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 }
 
-INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveTest, testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(All,
                         AutofillSingleClickTest,
                         testing::Combine(testing::Bool(), testing::Bool()));
 
+INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveIsolationTest, testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(All, DynamicFormInteractiveTest, testing::Bool());
+
 INSTANTIATE_TEST_CASE_P(All,
-                        AutofillInteractiveIsolationTest,
-                        ::testing::Bool());
-
-INSTANTIATE_TEST_CASE_P(All, DynamicFormInteractiveTest, ::testing::Bool());
-
+                        AutofillRestrictUnownedFieldsTest,
+                        testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace autofill

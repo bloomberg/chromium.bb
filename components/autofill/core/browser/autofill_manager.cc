@@ -1776,8 +1776,9 @@ bool AutofillManager::ParseForm(const FormData& form,
 
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
-  if (!form_structure->ShouldBeParsed())
+  if (!form_structure->ShouldBeParsed()) {
     return false;
+  }
 
   if (cached_form) {
     // We need to keep the server data if available. We need to use them while

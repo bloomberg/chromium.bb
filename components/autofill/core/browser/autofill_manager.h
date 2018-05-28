@@ -203,6 +203,9 @@ class AutofillManager : public AutofillHandler,
   // to be uploadable. Exposed for testing.
   bool ShouldUploadForm(const FormStructure& form);
 
+  // Returns the number of forms this Autofill Manager is aware of.
+  size_t NumFormsDetected() const { return form_structures_.size(); }
+
  protected:
   // Test code should prefer to use this constructor.
   AutofillManager(AutofillDriver* driver,
