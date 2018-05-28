@@ -1,0 +1,26 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("openscreen_code") {
+  cflags = [
+    "-Wall",
+    "-Werror",
+  ]
+}
+
+config("default_optimization") {
+  if (is_debug) {
+    cflags = [ "-O0" ]
+  } else {
+    cflags = [ "-O2" ]
+  }
+}
+
+config("symbol_visibility_hidden") {
+  cflags = [ "-fvisibility=hidden" ]
+}
+
+config("symbol_visibility_default") {
+  cflags = [ "-fvisibility=default" ]
+}

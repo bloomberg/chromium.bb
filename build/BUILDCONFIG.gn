@@ -15,8 +15,19 @@ if (current_os == "") {
   current_os = target_os
 }
 
+declare_args() {
+  # Debug build.  Most global debug build flags are declared in
+  # //build/config/BUILD.gn.
+  is_debug = false
+}
+
 # All binary targets will get this list of configs by default.
-_shared_binary_target_configs = [ "//build:compiler_defaults" ]
+_shared_binary_target_configs = [
+  "//build/config:openscreen_code",
+  "//build/config:symbol_visibility_hidden",
+  "//build:compiler_defaults",
+  "//build:default_include_dirs",
+]
 
 # Apply that default list to the binary target types.
 set_defaults("executable") {
