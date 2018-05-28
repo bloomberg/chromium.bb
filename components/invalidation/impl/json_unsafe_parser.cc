@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,14 @@
 namespace syncer {
 
 void JsonUnsafeParser::Parse(const std::string& unsafe_json,
-                             SuccessCallback success_callback,
-                             ErrorCallback error_callback) {
+                             const SuccessCallback& success_callback,
+                             const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](const std::string& unsafe_json, SuccessCallback success_callback,
-             ErrorCallback error_callback) {
+          [](const std::string& unsafe_json,
+             const SuccessCallback& success_callback,
+             const ErrorCallback& error_callback) {
             std::string error_msg;
             int error_line, error_column;
             std::unique_ptr<base::Value> value =
@@ -28,14 +29,13 @@ void JsonUnsafeParser::Parse(const std::string& unsafe_json,
                     unsafe_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
                     &error_msg, &error_line, &error_column);
             if (value) {
-              std::move(success_callback).Run(std::move(value));
+              success_callback.Run(std::move(value));
             } else {
-              std::move(error_callback)
-                  .Run(base::StringPrintf("%s (%d:%d)", error_msg.c_str(),
-                                          error_line, error_column));
+              error_callback.Run(base::StringPrintf(
+                  "%s (%d:%d)", error_msg.c_str(), error_line, error_column));
             }
           },
-          unsafe_json, std::move(success_callback), std::move(error_callback)));
+          unsafe_json, success_callback, error_callback));
 }
 
 }  // namespace syncer

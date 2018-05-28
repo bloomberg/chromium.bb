@@ -14,17 +14,13 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/invalidation/impl/status.h"
+#include "components/invalidation/public/invalidation_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace syncer {
-
-using ParseJSONCallback = base::OnceCallback<void(
-    const std::string& unsafe_json,
-    base::OnceCallback<void(std::unique_ptr<base::Value>)> success_callback,
-    base::OnceCallback<void(const std::string&)> error_callback)>;
 
 // A single request to register against per user topic service.
 class PerUserTopicRegistrationRequest {
@@ -76,7 +72,7 @@ class PerUserTopicRegistrationRequest {
   // Starts an async request. The callback is invoked when the request succeeds
   // or fails. The callback is not called if the request is destroyed.
   void Start(CompletedCallback callback,
-             ParseJSONCallback parsed_json,
+             const ParseJSONCallback& parsed_json,
              network::mojom::URLLoaderFactory* loader_factory);
 
  private:

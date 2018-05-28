@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -38,11 +37,12 @@ PerUserTopicRegistrationRequest::~PerUserTopicRegistrationRequest() = default;
 
 void PerUserTopicRegistrationRequest::Start(
     CompletedCallback callback,
-    ParseJSONCallback parse_json,
+    const ParseJSONCallback& parse_json,
     network::mojom::URLLoaderFactory* loader_factory) {
   DCHECK(request_completed_callback_.is_null()) << "Request already running!";
   request_completed_callback_ = std::move(callback);
-  parse_json_ = std::move(parse_json);
+  parse_json_ = parse_json;
+
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory,
       base::BindOnce(&PerUserTopicRegistrationRequest::OnURLFetchComplete,
@@ -85,12 +85,15 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
              std::string());
     return;
   }
-  std::move(parse_json_)
-      .Run(*response_body,
-           base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseSuccess,
-                          weak_ptr_factory_.GetWeakPtr()),
-           base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseFailure,
-                          weak_ptr_factory_.GetWeakPtr()));
+  auto success_callback =
+      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseSuccess,
+                     weak_ptr_factory_.GetWeakPtr());
+  auto error_callback =
+      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseFailure,
+                     weak_ptr_factory_.GetWeakPtr());
+  parse_json_.Run(*response_body,
+                  base::AdaptCallbackForRepeating(std::move(success_callback)),
+                  base::AdaptCallbackForRepeating(std::move(error_callback)));
 }
 
 void PerUserTopicRegistrationRequest::OnJsonParseFailure(
