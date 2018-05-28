@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -87,9 +88,9 @@ base::string16 GetChromeCounterTextFromResult(
     // Determines whether or not to show the count with exception message.
     int del_cookie_counter_msg_id = IDS_DEL_COOKIES_COUNTER_ADVANCED;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
     if (AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile)) {
-#else  // !defined(OS_CHROMEOS)
+#else
     if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
 #endif
       del_cookie_counter_msg_id =
