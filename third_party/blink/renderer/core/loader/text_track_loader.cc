@@ -143,7 +143,7 @@ bool TextTrackLoader::Load(const KURL& url,
   CancelLoad();
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::texttrack;
+  options.initiator_info.name = FetchInitiatorTypeNames::track;
 
   FetchParameters cue_fetch_params(ResourceRequest(url), options);
 

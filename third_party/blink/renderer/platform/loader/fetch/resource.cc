@@ -1089,6 +1089,8 @@ void Resource::DidChangePriority(ResourceLoadPriority load_priority,
 // TODO(toyoshim): Consider to generate automatically. https://crbug.com/675515.
 static const char* InitiatorTypeNameToString(
     const AtomicString& initiator_type_name) {
+  if (initiator_type_name == FetchInitiatorTypeNames::audio)
+    return "Audio";
   if (initiator_type_name == FetchInitiatorTypeNames::css)
     return "CSS resource";
   if (initiator_type_name == FetchInitiatorTypeNames::document)
@@ -1097,21 +1099,27 @@ static const char* InitiatorTypeNameToString(
     return "Icon";
   if (initiator_type_name == FetchInitiatorTypeNames::internal)
     return "Internal resource";
+  if (initiator_type_name == FetchInitiatorTypeNames::fetch)
+    return "Fetch";
   if (initiator_type_name == FetchInitiatorTypeNames::link)
     return "Link element resource";
+  if (initiator_type_name == FetchInitiatorTypeNames::other)
+    return "Other resource";
   if (initiator_type_name == FetchInitiatorTypeNames::processinginstruction)
     return "Processing instruction";
-  if (initiator_type_name == FetchInitiatorTypeNames::texttrack)
-    return "Text track";
+  if (initiator_type_name == FetchInitiatorTypeNames::track)
+    return "Track";
   if (initiator_type_name == FetchInitiatorTypeNames::uacss)
     return "User Agent CSS resource";
+  if (initiator_type_name == FetchInitiatorTypeNames::video)
+    return "Video";
   if (initiator_type_name == FetchInitiatorTypeNames::xml)
     return "XML resource";
   if (initiator_type_name == FetchInitiatorTypeNames::xmlhttprequest)
     return "XMLHttpRequest";
 
   static_assert(
-      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount == 13,
+      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount == 17,
       "New FetchInitiatorTypeNames should be handled correctly here.");
 
   return "Resource";
