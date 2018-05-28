@@ -4524,7 +4524,7 @@ crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/mod
 crbug.com/831720 [ Win Linux ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Win Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/831720 [ Mac Win Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 virtual/video-surface-layer/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 
@@ -4827,3 +4827,8 @@ crbug.com/846656 [ Linux ] external/wpt/css/selectors/focus-visible-002-manual.h
 crbug.com/846631 virtual/service-worker-servicification/http/tests/serviceworker/navigation_preload/navigation-preload-resource-timing.html [ Pass Failure ]
 crbug.com/846632 virtual/threaded/animations/responsive/zoom-responsive-transform-animation-002.html [ Pass Failure Crash Timeout ]
 crbug.com/846693 [ Mac ] virtual/threaded/animations/composited-animation-independent-transform-cancel.html [ Pass Crash Timeout ]
+
+# Sheriff 2018-05-28
+crbug.com/847094 [ Mac ] virtual/gpu-rasterization/images/color-profile-border-image.html [ Pass Failure ]
+crbug.com/847094 [ Mac ] virtual/gpu-rasterization/images/gray-scale-png-with-color-profile.html [ Pass Failure ]
+crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
