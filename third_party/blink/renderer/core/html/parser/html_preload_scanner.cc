@@ -320,10 +320,7 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (!referrer_policy_set_ &&
                Match(attribute_name, referrerpolicyAttr) &&
                !attribute_value.IsNull()) {
-      referrer_policy_set_ = true;
-      SecurityPolicy::ReferrerPolicyFromString(
-          attribute_value, kSupportReferrerPolicyLegacyKeywords,
-          &referrer_policy_);
+      SetReferrerPolicy(attribute_value, kSupportReferrerPolicyLegacyKeywords);
     }
   }
 
@@ -367,10 +364,8 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (!referrer_policy_set_ &&
                Match(attribute_name, referrerpolicyAttr) &&
                !attribute_value.IsNull()) {
-      referrer_policy_set_ = true;
-      SecurityPolicy::ReferrerPolicyFromString(
-          attribute_value, kDoNotSupportReferrerPolicyLegacyKeywords,
-          &referrer_policy_);
+      SetReferrerPolicy(attribute_value,
+                        kDoNotSupportReferrerPolicyLegacyKeywords);
     } else if (!integrity_attr_set_ && Match(attribute_name, integrityAttr)) {
       integrity_attr_set_ = true;
       SubresourceIntegrity::ParseIntegrityAttribute(
@@ -564,6 +559,14 @@ class TokenPreloadScanner::StartTagScanner {
 
   void SetCrossOrigin(const String& cors_setting) {
     cross_origin_ = GetCrossOriginAttributeValue(cors_setting);
+  }
+
+  void SetReferrerPolicy(
+      const String& attribute_value,
+      ReferrerPolicyLegacyKeywordsSupport legacy_keywords_support) {
+    referrer_policy_set_ = true;
+    SecurityPolicy::ReferrerPolicyFromString(
+        attribute_value, legacy_keywords_support, &referrer_policy_);
   }
 
   void SetNonce(const String& nonce) { nonce_ = nonce; }
