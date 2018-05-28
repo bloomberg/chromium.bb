@@ -360,7 +360,7 @@ class TestExporterTest(LoggingTestCase):
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertFalse(success)
-        self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
+        self.assertLog(['INFO: Cloning GitHub web-platform-tests/wpt into /tmp/wpt\n',
                         'INFO: Searching for exportable in-flight CLs.\n',
                         'INFO: In-flight CLs cannot be exported due to the following error:\n',
                         'ERROR: Gerrit API fails.\n',
@@ -374,7 +374,7 @@ class TestExporterTest(LoggingTestCase):
         success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
 
         self.assertFalse(success)
-        self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
+        self.assertLog(['INFO: Cloning GitHub web-platform-tests/wpt into /tmp/wpt\n',
                         'INFO: Searching for exportable in-flight CLs.\n',
                         'INFO: Searching for exportable Chromium commits.\n',
                         'INFO: Attention: The following errors have prevented some commits from being exported:\n',
