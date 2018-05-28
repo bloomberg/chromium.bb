@@ -21,6 +21,7 @@
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_vpn.h"
 #include "ash/system/network/unified_network_detailed_view_controller.h"
+#include "ash/system/network/unified_vpn_detailed_view_controller.h"
 #include "ash/system/network/vpn_feature_pod_controller.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
@@ -240,8 +241,7 @@ void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowVPNDetailedView() {
-  // TODO(tetsui): Implement VPN's own DetailedViewController.
-  ShowSystemTrayItemDetailedView(system_tray_->GetTrayVPN());
+  ShowDetailedView(std::make_unique<UnifiedVPNDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowIMEDetailedView() {
