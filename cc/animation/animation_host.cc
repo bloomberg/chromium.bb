@@ -329,7 +329,8 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
     // trees similar to other animations. However our final goal is to only call
     // it once, ideally after activation, and only when the input
     // to an active timeline has changed. http://crbug.com/767210
-    mutator_->Mutate(CollectAnimatorsState(monotonic_time, scroll_tree));
+    mutator_->Mutate(
+        CollectWorkletAnimationsState(monotonic_time, scroll_tree));
     did_animate = true;
   }
 
@@ -349,13 +350,13 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
 
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
-  mutator_->Mutate(CollectAnimatorsState(monotonic_time, scroll_tree));
+  mutator_->Mutate(CollectWorkletAnimationsState(monotonic_time, scroll_tree));
 }
 
-std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
+std::unique_ptr<MutatorInputState> AnimationHost::CollectWorkletAnimationsState(
     base::TimeTicks monotonic_time,
     const ScrollTree& scroll_tree) {
-  TRACE_EVENT0("cc", "AnimationHost::CollectAnimatorsState");
+  TRACE_EVENT0("cc", "AnimationHost::CollectWorkletAnimationsState");
   std::unique_ptr<MutatorInputState> result =
       std::make_unique<MutatorInputState>();
 
@@ -363,11 +364,9 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
     if (!animation->IsWorkletAnimation())
       continue;
 
-    WorkletAnimation* worklet_animation = ToWorkletAnimation(animation.get());
-    MutatorInputState::AnimationState state{
-        worklet_animation->id(), worklet_animation->name(),
-        worklet_animation->CurrentTime(monotonic_time, scroll_tree)};
-
+    const MutatorInputState::AnimationState& state =
+        ToWorkletAnimation(animation.get())
+            ->GetInputState(monotonic_time, scroll_tree);
     result->animations.push_back(std::move(state));
   }
 
@@ -638,9 +637,7 @@ void AnimationHost::SetMutationUpdate(
     if (to_update == ticking_animations_.end())
       continue;
 
-    DCHECK(to_update->get()->IsWorkletAnimation());
-    ToWorkletAnimation(to_update->get())
-        ->SetLocalTime(animation_state.local_time);
+    ToWorkletAnimation(to_update->get())->SetOutputState(animation_state);
   }
 }
 

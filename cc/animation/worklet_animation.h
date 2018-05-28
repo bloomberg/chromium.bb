@@ -36,15 +36,14 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
     return scroll_timeline_.get();
   }
 
-  void SetLocalTime(base::TimeDelta local_time);
   bool IsWorkletAnimation() const override;
 
   void Tick(base::TimeTicks monotonic_time) override;
 
-  // Returns the current time to be passed into the underlying AnimationWorklet.
-  // The current time is based on the timeline associated with the animation.
-  double CurrentTime(base::TimeTicks monotonic_time,
-                     const ScrollTree& scroll_tree);
+  MutatorInputState::AnimationState GetInputState(
+      base::TimeTicks monotonic_time,
+      const ScrollTree& scroll_tree);
+  void SetOutputState(const MutatorOutputState::AnimationState& state);
 
   // Returns true if the worklet animation needs to be updated which happens iff
   // its current time is going to be different from last time given these input.
@@ -53,7 +52,10 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
  private:
   ~WorkletAnimation() override;
-
+  // Returns the current time to be passed into the underlying AnimationWorklet.
+  // The current time is based on the timeline associated with the animation.
+  double CurrentTime(base::TimeTicks monotonic_time,
+                     const ScrollTree& scroll_tree);
   std::string name_;
 
   // The ScrollTimeline associated with the underlying animation. If null, the
@@ -66,6 +68,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   base::TimeDelta local_time_;
 
+  base::Optional<base::TimeTicks> start_time_;
   base::Optional<double> last_current_time_;
 
   bool is_impl_instance_;
