@@ -50,6 +50,9 @@
 
 namespace {
 
+// Owned by ash::Shell.
+keyboard::KeyboardController* g_keyboard_controller = nullptr;
+
 constexpr int kHideKeyboardDelayMs = 100;
 
 // Reports an error histogram if the keyboard state is lingering in an
@@ -204,47 +207,73 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
 
-// static
-KeyboardController* KeyboardController::instance_ = nullptr;
-
-KeyboardController::KeyboardController(std::unique_ptr<KeyboardUI> ui,
-                                       KeyboardLayoutDelegate* delegate)
-    : ui_(std::move(ui)),
-      layout_delegate_(delegate),
-      show_on_content_update_(false),
-      keyboard_locked_(false),
-      state_(KeyboardControllerState::UNKNOWN),
-      weak_factory_report_lingering_state_(this),
+KeyboardController::KeyboardController()
+    : weak_factory_report_lingering_state_(this),
       weak_factory_will_hide_(this) {
+  DCHECK_EQ(g_keyboard_controller, nullptr);
+  g_keyboard_controller = this;
+}
+
+KeyboardController::~KeyboardController() {
+  DCHECK(g_keyboard_controller);
+  DCHECK(!enabled_)
+      << "Keyboard must be disabled before KeyboardController is destroyed";
+  g_keyboard_controller = nullptr;
+}
+
+void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
+                                        KeyboardLayoutDelegate* delegate) {
+  if (enabled_)
+    DisableKeyboard();
+
+  ui_ = std::move(ui);
+  layout_delegate_ = delegate;
+  show_on_content_update_ = false;
+  enabled_ = true;
+  keyboard_locked_ = false;
+  state_ = KeyboardControllerState::UNKNOWN;
   ui_->GetInputMethod()->AddObserver(this);
   ui_->SetController(this);
   SetContainerBehaviorInternal(ContainerType::FULL_WIDTH);
   ChangeState(KeyboardControllerState::INITIAL);
+  visual_bounds_in_screen_ = gfx::Rect();
+  time_of_last_blur_ = base::Time::UnixEpoch();
 }
 
-KeyboardController::~KeyboardController() {
+void KeyboardController::DisableKeyboard() {
+  if (!enabled_)
+    return;
+
+  // TODO(https://crbug.com/731537): Move KeyboardController members into a
+  // subobject so we can just put this code into the subobject destructor.
+  queued_display_change_.reset();
+  queued_container_type_.reset();
+  container_behavior_.reset();
+  animation_observer_.reset();
+
   if (container_) {
     if (container_->GetRootWindow())
       container_->GetRootWindow()->RemoveObserver(this);
     container_->RemoveObserver(this);
     container_->RemovePreTargetHandler(&event_filter_);
+    container_.reset();
   }
+
+  enabled_ = false;
+
   ui_->GetInputMethod()->RemoveObserver(this);
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardClosed();
+  observer_list_.Clear();
   ui_->SetController(nullptr);
-}
-
-// static
-void KeyboardController::ResetInstance(KeyboardController* controller) {
-  if (instance_ && instance_ != controller)
-    delete instance_;
-  instance_ = controller;
+  ui_.reset();
 }
 
 // static
 KeyboardController* KeyboardController::GetInstance() {
-  return instance_;
+  return g_keyboard_controller && g_keyboard_controller->enabled()
+             ? g_keyboard_controller
+             : nullptr;
 }
 
 bool KeyboardController::keyboard_visible() const {

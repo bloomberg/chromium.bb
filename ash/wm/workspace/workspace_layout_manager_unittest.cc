@@ -118,13 +118,30 @@ display::Display GetDisplayNearestWindow(aura::Window* window) {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window);
 }
 
-void EnableStickyKeyboard() {
-  keyboard::KeyboardController::ResetInstance(new keyboard::KeyboardController(
-      std::make_unique<keyboard::TestKeyboardUI>(
-          Shell::Get()->window_tree_host_manager()->input_method()),
-      nullptr));
-  keyboard::KeyboardController::GetInstance()->set_keyboard_locked(true);
-}
+class ScopedStickyKeyboardEnabler {
+ public:
+  ScopedStickyKeyboardEnabler()
+      : accessibility_controller_(Shell::Get()->accessibility_controller()),
+        enabled_(accessibility_controller_->IsVirtualKeyboardEnabled()) {
+    accessibility_controller_->SetVirtualKeyboardEnabled(true);
+    keyboard::KeyboardController::GetInstance()->EnableKeyboard(
+        std::make_unique<keyboard::TestKeyboardUI>(
+            Shell::Get()->window_tree_host_manager()->input_method()),
+        nullptr);
+    keyboard::KeyboardController::GetInstance()->set_keyboard_locked(true);
+  }
+
+  ~ScopedStickyKeyboardEnabler() {
+    keyboard::KeyboardController::GetInstance()->set_keyboard_locked(false);
+    accessibility_controller_->SetVirtualKeyboardEnabled(enabled_);
+  }
+
+ private:
+  AccessibilityController* accessibility_controller_;
+  const bool enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedStickyKeyboardEnabler);
+};
 
 }  // namespace
 
@@ -1675,7 +1692,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
 // Tests that when a child window gains focus the top level window containing it
 // is resized to fit the remaining workspace area.
 TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
-  EnableStickyKeyboard();
+  ScopedStickyKeyboardEnabler sticky_enabler;
 
   // See comment at top of file for why this is needed.
   CustomFrameViewAshSizeLock min_size_lock;
@@ -1707,7 +1724,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
-  EnableStickyKeyboard();
+  ScopedStickyKeyboardEnabler sticky_enabler;
 
   // See comment at top of file for why this is needed.
   CustomFrameViewAshSizeLock min_size_lock;
@@ -1759,7 +1776,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, IgnoreKeyboardBoundsChange) {
-  EnableStickyKeyboard();
+  ScopedStickyKeyboardEnabler sticky_enabler;
   InitKeyboardBounds();
 
   std::unique_ptr<aura::Window> window(CreateTestWindow(keyboard_bounds()));
