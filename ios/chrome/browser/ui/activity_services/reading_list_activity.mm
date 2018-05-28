@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
+#import "ios/chrome/browser/ui/activity_services/reading_list_activity.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
