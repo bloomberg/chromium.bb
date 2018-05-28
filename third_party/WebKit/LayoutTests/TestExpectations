@@ -4832,3 +4832,4 @@ crbug.com/846693 [ Mac ] virtual/threaded/animations/composited-animation-indepe
 crbug.com/847094 [ Mac ] virtual/gpu-rasterization/images/color-profile-border-image.html [ Pass Failure ]
 crbug.com/847094 [ Mac ] virtual/gpu-rasterization/images/gray-scale-png-with-color-profile.html [ Pass Failure ]
 crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
+crbug.com/846920 http/tests/devtools/device-orientation-success.js [ Pass Failure ]
