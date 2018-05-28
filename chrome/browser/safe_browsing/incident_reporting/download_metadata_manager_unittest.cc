@@ -450,7 +450,8 @@ class SetRequestTest
 
 // Tests that DownloadMetadataManager::SetRequest works for all combinations of
 // states.
-TEST_P(SetRequestTest, SetRequest) {
+// Flaky. See https://crbug.com/845811.
+TEST_P(SetRequestTest, DISABLED_SetRequest) {
   // Optionally put a metadata file in the profile directory.
   switch (metadata_file_present_) {
     case ABSENT:
