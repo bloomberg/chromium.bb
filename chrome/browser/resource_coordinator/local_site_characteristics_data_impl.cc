@@ -17,7 +17,7 @@ namespace internal {
 namespace {
 
 base::TimeDelta GetTickDeltaSinceEpoch() {
-  return resource_coordinator::NowTicks() - base::TimeTicks::UnixEpoch();
+  return NowTicks() - base::TimeTicks::UnixEpoch();
 }
 
 // Returns all the SiteCharacteristicsFeatureProto elements contained in a
@@ -39,34 +39,45 @@ void LocalSiteCharacteristicsDataImpl::NotifySiteLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update the last loaded time when this origin gets loaded for the first
   // time.
-  if (active_webcontents_count_ == 0) {
+  if (loaded_tabs_count_ == 0) {
     site_characteristics_.set_last_loaded(
         TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
   }
-  active_webcontents_count_++;
+  loaded_tabs_count_++;
 }
 
-void LocalSiteCharacteristicsDataImpl::NotifySiteUnloaded() {
+void LocalSiteCharacteristicsDataImpl::NotifySiteUnloaded(
+    TabVisibility tab_visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  active_webcontents_count_--;
+
+  if (tab_visibility == TabVisibility::kBackground)
+    DecrementNumLoadedBackgroundTabs();
+
+  loaded_tabs_count_--;
   // Only update the last loaded time when there's no more loaded instance of
   // this origin.
-  if (active_webcontents_count_ > 0U)
+  if (loaded_tabs_count_ > 0U)
     return;
 
   base::TimeDelta current_unix_time = GetTickDeltaSinceEpoch();
-  base::TimeDelta extra_observation_duration =
-      current_unix_time -
-      InternalRepresentationToTimeDelta(site_characteristics_.last_loaded());
 
   // Update the |last_loaded_time_| field, as the moment this site gets unloaded
   // also corresponds to the last moment it was loaded.
   site_characteristics_.set_last_loaded(
       TimeDeltaToInternalRepresentation(current_unix_time));
+}
 
-  // Update the observation duration fields.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    IncrementFeatureObservationDuration(iter, extra_observation_duration);
+void LocalSiteCharacteristicsDataImpl::NotifyLoadedSiteBackgrounded() {
+  if (loaded_tabs_in_background_count_ == 0)
+    background_session_begin_ = NowTicks();
+
+  loaded_tabs_in_background_count_++;
+
+  DCHECK_LE(loaded_tabs_in_background_count_, loaded_tabs_count_);
+}
+
+void LocalSiteCharacteristicsDataImpl::NotifyLoadedSiteForegrounded() {
+  DecrementNumLoadedBackgroundTabs();
 }
 
 SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UpdatesFaviconInBackground()
@@ -122,7 +133,8 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
     OnDestroyDelegate* delegate,
     LocalSiteCharacteristicsDatabase* database)
     : origin_str_(origin_str),
-      active_webcontents_count_(0U),
+      loaded_tabs_count_(0U),
+      loaded_tabs_in_background_count_(0U),
       database_(database),
       delegate_(delegate),
       safe_to_write_to_db_(false),
@@ -143,6 +155,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // object.
   // TODO(sebmarchand): Check if this is a valid assumption.
   DCHECK(!IsLoaded());
+  DCHECK_EQ(0U, loaded_tabs_in_background_count_);
 
   DCHECK(delegate_);
   delegate_->OnLocalSiteCharacteristicsDataImplDestroyed(this);
@@ -164,15 +177,14 @@ base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
   base::TimeDelta observation_time_for_feature =
       InternalRepresentationToTimeDelta(feature_proto.observation_duration());
 
-  // If this site is still loaded and the feature isn't in use then the
+  // If this site is still in background and the feature isn't in use then the
   // observation time since load needs to be added.
-  if (IsLoaded() &&
+  if (loaded_tabs_in_background_count_ > 0U &&
       InternalRepresentationToTimeDelta(feature_proto.use_timestamp())
           .is_zero()) {
-    base::TimeDelta observation_time_since_load =
-        GetTickDeltaSinceEpoch() -
-        InternalRepresentationToTimeDelta(site_characteristics_.last_loaded());
-    observation_time_for_feature += observation_time_since_load;
+    base::TimeDelta observation_time_since_backgrounded =
+        NowTicks() - background_session_begin_;
+    observation_time_for_feature += observation_time_since_backgrounded;
   }
 
   return observation_time_for_feature;
@@ -270,6 +282,7 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
     SiteCharacteristicsFeatureProto* feature_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsLoaded());
+  DCHECK_GT(loaded_tabs_in_background_count_, 0U);
 
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
@@ -333,6 +346,24 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
 
   safe_to_write_to_db_ = true;
   DCHECK(site_characteristics_.IsInitialized());
+}
+
+void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GT(loaded_tabs_in_background_count_, 0U);
+  loaded_tabs_in_background_count_--;
+  // Only update the observation durations if there's no more backgounded
+  // instance of this origin.
+  if (loaded_tabs_in_background_count_ > 0U)
+    return;
+
+  DCHECK(!background_session_begin_.is_null());
+  base::TimeDelta extra_observation_duration =
+      NowTicks() - background_session_begin_;
+
+  // Update the observation duration fields.
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
+    IncrementFeatureObservationDuration(iter, extra_observation_duration);
 }
 
 }  // namespace internal

@@ -17,6 +17,10 @@ class SiteCharacteristicsDataWriter {
   virtual void NotifySiteLoaded() = 0;
   virtual void NotifySiteUnloaded() = 0;
 
+  // Records background/foreground events.
+  virtual void NotifySiteBackgrounded() = 0;
+  virtual void NotifySiteForegrounded() = 0;
+
   // Records feature usage.
   virtual void NotifyUpdatesFaviconInBackground() = 0;
   virtual void NotifyUpdatesTitleInBackground() = 0;

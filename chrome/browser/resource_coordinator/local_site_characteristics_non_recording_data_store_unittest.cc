@@ -34,9 +34,11 @@ TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, EndToEnd) {
 
   auto reader = non_recording_data_store.GetReaderForOrigin(kTestOrigin);
   EXPECT_TRUE(reader);
-  auto fake_writer = non_recording_data_store.GetWriterForOrigin(kTestOrigin);
+  auto fake_writer = non_recording_data_store.GetWriterForOrigin(
+      kTestOrigin, TabVisibility::kBackground);
   EXPECT_TRUE(fake_writer);
-  auto real_writer = recording_data_store->GetWriterForOrigin(kTestOrigin);
+  auto real_writer = recording_data_store->GetWriterForOrigin(
+      kTestOrigin, TabVisibility::kBackground);
   EXPECT_TRUE(real_writer);
 
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,

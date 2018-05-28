@@ -22,17 +22,19 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
   // base::MakeRefCounted.
   LocalSiteCharacteristicsDataReaderTest()
       : scoped_set_tick_clock_for_testing_(&test_clock_) {
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     test_impl_ =
         base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
             "foo.com", &delegate_, &database_));
     test_impl_->NotifySiteLoaded();
+    test_impl_->NotifyLoadedSiteBackgrounded();
     LocalSiteCharacteristicsDataReader* reader =
         new LocalSiteCharacteristicsDataReader(test_impl_.get());
     reader_ = base::WrapUnique(reader);
   }
 
   ~LocalSiteCharacteristicsDataReaderTest() override {
-    test_impl_->NotifySiteUnloaded();
+    test_impl_->NotifySiteUnloaded(TabVisibility::kBackground);
   }
 
   base::SimpleTestTickClock test_clock_;
