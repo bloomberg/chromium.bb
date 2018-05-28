@@ -211,6 +211,14 @@ bool WindowState::IsUserPositionable() const {
           window_->type() == aura::client::WINDOW_TYPE_PANEL);
 }
 
+bool WindowState::HasMaximumWidthOrHeight() const {
+  if (!window_->delegate())
+    return false;
+
+  const gfx::Size max_size = window_->delegate()->GetMaximumSize();
+  return max_size.width() || max_size.height();
+}
+
 bool WindowState::CanMaximize() const {
   // Window must allow maximization and have no maximum width or height.
   if ((window_->GetProperty(aura::client::kResizeBehaviorKey) &
@@ -218,11 +226,7 @@ bool WindowState::CanMaximize() const {
     return false;
   }
 
-  if (!window_->delegate())
-    return true;
-
-  const gfx::Size max_size = window_->delegate()->GetMaximumSize();
-  return !max_size.width() && !max_size.height();
+  return !HasMaximumWidthOrHeight();
 }
 
 bool WindowState::CanMinimize() const {
@@ -240,14 +244,16 @@ bool WindowState::CanActivate() const {
 }
 
 bool WindowState::CanSnap() const {
-  if (!CanResize() || window_->type() == aura::client::WINDOW_TYPE_PANEL ||
-      ::wm::GetTransientParent(window_)) {
+  const bool is_panel_window =
+      window_->type() == aura::client::WINDOW_TYPE_PANEL;
+
+  if (!CanResize() || is_panel_window)
     return false;
-  }
-  // If a window cannot be maximized, assume it cannot snap either.
-  // TODO(oshima): We should probably snap if the maximum size is greater than
-  // the snapped size.
-  return CanMaximize();
+
+  // Allow windows with no maximum width or height to be snapped.
+  // TODO(oshima): We should probably snap if the maximum size is defined
+  // and greater than the snapped size.
+  return !HasMaximumWidthOrHeight();
 }
 
 bool WindowState::HasRestoreBounds() const {
