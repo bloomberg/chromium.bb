@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/web_resource_timing_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -54,7 +55,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                            time_origin,
                            info.finish_time,
                            info.allow_negative_values)),
-      initiator_type_(initiator_type),
+      initiator_type_(initiator_type.IsEmpty() ? FetchInitiatorTypeNames::other
+                                               : initiator_type),
       alpn_negotiated_protocol_(
           static_cast<String>(info.alpn_negotiated_protocol)),
       connection_info_(static_cast<String>(info.connection_info)),

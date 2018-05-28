@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -836,6 +837,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
   // and the |CORS flag| is unset, and unset otherwise."
 
   ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.initiator_info.name = FetchInitiatorTypeNames::fetch;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = fetch_request_data_->Origin().get();
   if (fetch_request_data_->URLLoaderFactory()) {

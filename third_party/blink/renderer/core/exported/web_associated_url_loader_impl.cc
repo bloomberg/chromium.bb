@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -414,13 +415,19 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
     const ResourceRequest& webcore_request = new_request.ToResourceRequest();
-    if (webcore_request.GetRequestContext() ==
-        WebURLRequest::kRequestContextUnspecified) {
-      // FIXME: We load URLs without setting a TargetType (and therefore a
+    WebURLRequest::RequestContext context = webcore_request.GetRequestContext();
+    if (context == WebURLRequest::kRequestContextUnspecified) {
+      // TODO(yoav): We load URLs without setting a TargetType (and therefore a
       // request context) in several places in content/
       // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
       // Remove this once those places are patched up.
       new_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+    } else if (context == WebURLRequest::kRequestContextVideo) {
+      resource_loader_options.initiator_info.name =
+          FetchInitiatorTypeNames::video;
+    } else if (context == WebURLRequest::kRequestContextAudio) {
+      resource_loader_options.initiator_info.name =
+          FetchInitiatorTypeNames::audio;
     }
 
     Document* document = ToDocument(observer_->LifecycleContext());
