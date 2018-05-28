@@ -13,18 +13,18 @@
 namespace blink {
 namespace StyleBuildingUtils {
 
-inline bool borderImageLengthMatchesAllSides(
-    const BorderImageLengthBox& borderImageLengthBox,
-    const BorderImageLength& borderImageLength) {
-  return (borderImageLengthBox.Left() == borderImageLength &&
-          borderImageLengthBox.Right() == borderImageLength &&
-          borderImageLengthBox.Top() == borderImageLength &&
-          borderImageLengthBox.Bottom() == borderImageLength);
+inline bool BorderImageLengthMatchesAllSides(
+    const BorderImageLengthBox& border_image_length_box,
+    const BorderImageLength& border_image_length) {
+  return (border_image_length_box.Left() == border_image_length &&
+          border_image_length_box.Right() == border_image_length &&
+          border_image_length_box.Top() == border_image_length &&
+          border_image_length_box.Bottom() == border_image_length);
 }
-inline bool lengthMatchesAllSides(const LengthBox& lengthBox,
+inline bool LengthMatchesAllSides(const LengthBox& length_box,
                                   const Length& length) {
-  return (lengthBox.Left() == length && lengthBox.Right() == length &&
-          lengthBox.Top() == length && lengthBox.Bottom() == length);
+  return (length_box.Left() == length && length_box.Right() == length &&
+          length_box.Top() == length && length_box.Bottom() == length);
 }
 
 }  // namespace StyleBuildingUtils
