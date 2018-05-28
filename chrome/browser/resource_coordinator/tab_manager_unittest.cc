@@ -59,16 +59,19 @@ using content::WebContentsTester;
 namespace resource_coordinator {
 namespace {
 
-const char kTestUrl[] = "http://www.example.com";
+constexpr char kTestUrl[] = "http://www.example.com";
 
 // Default parameters for testing proactive LifecycleUnit discarding.
-const int kLowLoadedTabCount = 5;
-const int kModerateLoadedTabCount = 10;
-const int kHighLoadedTabCount = 20;
-const base::TimeDelta kLowOccludedTimeout = base::TimeDelta::FromMinutes(100);
-const base::TimeDelta kModerateOccludedTimeout =
+constexpr int kLowLoadedTabCount = 5;
+constexpr int kModerateLoadedTabCount = 10;
+constexpr int kHighLoadedTabCount = 20;
+constexpr base::TimeDelta kLowOccludedTimeout =
+    base::TimeDelta::FromMinutes(100);
+constexpr base::TimeDelta kModerateOccludedTimeout =
     base::TimeDelta::FromMinutes(10);
-const base::TimeDelta kHighOccludedTimeout = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kHighOccludedTimeout =
+    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kFreezeTimeout = base::TimeDelta::FromMinutes(10);
 
 class NonResumingBackgroundTabNavigationThrottle
     : public BackgroundTabNavigationThrottle {
@@ -83,49 +86,12 @@ class NonResumingBackgroundTabNavigationThrottle
   DISALLOW_COPY_AND_ASSIGN(NonResumingBackgroundTabNavigationThrottle);
 };
 
-class TabStripDummyDelegate : public TestTabStripModelDelegate {
+class TabStripModelSimpleDelegate : public TestTabStripModelDelegate {
  public:
-  TabStripDummyDelegate() {}
-
-  bool RunUnloadListenerBeforeClosing(WebContents* contents) override {
-    return false;
-  }
+  TabStripModelSimpleDelegate() = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TabStripDummyDelegate);
-};
-
-class MockTabStripModelObserver : public TabStripModelObserver {
- public:
-  MockTabStripModelObserver()
-      : nb_events_(0), old_contents_(nullptr), new_contents_(nullptr) {}
-
-  int NbEvents() const { return nb_events_; }
-  WebContents* OldContents() const { return old_contents_; }
-  WebContents* NewContents() const { return new_contents_; }
-
-  void Reset() {
-    nb_events_ = 0;
-    old_contents_ = nullptr;
-    new_contents_ = nullptr;
-  }
-
-  // TabStripModelObserver implementation:
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     WebContents* old_contents,
-                     WebContents* new_contents,
-                     int index) override {
-    nb_events_++;
-    old_contents_ = old_contents;
-    new_contents_ = new_contents;
-  }
-
- private:
-  int nb_events_;
-  WebContents* old_contents_;
-  WebContents* new_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
+  DISALLOW_COPY_AND_ASSIGN(TabStripModelSimpleDelegate);
 };
 
 enum TestIndicies {
@@ -143,6 +109,10 @@ enum TestIndicies {
 
 bool IsTabDiscarded(content::WebContents* web_contents) {
   return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsDiscarded();
+}
+
+bool IsTabFrozen(content::WebContents* web_contents) {
+  return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsFrozen();
 }
 
 }  // namespace
@@ -333,6 +303,7 @@ class TabManagerWithProactiveDiscardExperimentEnabledTest
     params.low_loaded_tab_count = kLowLoadedTabCount;
     params.moderate_loaded_tab_count = kModerateLoadedTabCount;
     params.high_loaded_tab_count = kHighLoadedTabCount;
+    params.freeze_timeout = kFreezeTimeout;
     return params;
   }
 
@@ -1272,17 +1243,6 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
 
   tab_strip->GetWebContentsAt(0)->WasHidden();
 
-  // Nothing should be discarded initially.
-  for (int tab = 0; tab < kHighLoadedTabCount; tab++) {
-    EXPECT_FALSE(TabLifecycleUnitExternal::FromWebContents(
-                     tab_strip->GetWebContentsAt(tab))
-                     ->IsDiscarded());
-  }
-
-  // Run until idle without fast forwarding time, as discarding while in the
-  // excessive state should happen immediately.
-  task_runner_->RunUntilIdle();
-
   // The hidden tab (at index 0) should be the only discarded tab.
   EXPECT_TRUE(
       TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
@@ -1450,6 +1410,88 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   task_runner_->FastForwardBy(kLowOccludedTimeout);
 }
 
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
+       FreezeBackgroundTabs) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create 3 tabs.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(0), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(2)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(2), TabLoadTracker::LoadingState::LOADED);
+
+  // No tab should be frozen initially.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // Make the 2nd tab visible and the 2nd tab hidden after half the freeze
+  // timeout. No tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout / 2);
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // After the full freeze timeout, the 3rd tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout / 2);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // After half the freeze timeout, the 1st tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout / 2);
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest, FreezeOnceLoaded) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create a hidden tab in the LOADING state.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
+  web_contents->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      web_contents, TabLoadTracker::LoadingState::LOADING);
+
+  // After the freeze timeout, the tab should not be frozen because it is still
+  // LOADING.
+  task_runner_->FastForwardBy(kFreezeTimeout + base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsTabFrozen(web_contents));
+
+  // Once loaded, the tab should be frozen.
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      web_contents, TabLoadTracker::LoadingState::LOADED);
+  EXPECT_TRUE(IsTabFrozen(web_contents));
+
+  tab_strip->CloseAllTabs();
+}
+
 TEST_F(TabManagerTest, ProactiveDiscardDoesNotOccurWhenDisabled) {
   auto window = std::make_unique<TestBrowserWindow>();
   Browser::CreateParams params(profile(), true);
@@ -1467,6 +1509,25 @@ TEST_F(TabManagerTest, ProactiveDiscardDoesNotOccurWhenDisabled) {
   EXPECT_FALSE(
       TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(0))
           ->IsDiscarded());
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerTest, FreezingDoesNotOccurWhenDisabled) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+
+  task_runner_->FastForwardBy(kFreezeTimeout);
+
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
 
   tab_strip->CloseAllTabs();
 }

@@ -78,15 +78,16 @@ namespace {
 // The default timeout time after which the next background tab gets loaded if
 // the previous tab has not finished loading yet. This is ignored in kPaused
 // loading mode.
-const TimeDelta kDefaultBackgroundTabLoadTimeout = TimeDelta::FromSeconds(10);
+constexpr TimeDelta kDefaultBackgroundTabLoadTimeout =
+    TimeDelta::FromSeconds(10);
 
 // The number of loading slots for background tabs. TabManager will start to
 // load the next background tab when the loading slots free up.
-const size_t kNumOfLoadingSlots = 1;
+constexpr size_t kNumOfLoadingSlots = 1;
 
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
-const int kAdjustmentIntervalSeconds = 10;
+constexpr int kAdjustmentIntervalSeconds = 10;
 
 struct LifecycleUnitAndSortKey {
   explicit LifecycleUnitAndSortKey(LifecycleUnit* lifecycle_unit)
@@ -603,6 +604,9 @@ void TabManager::OnLoadingStateChange(content::WebContents* web_contents,
         !IsInBackgroundTabOpeningSession()) {
       stats_collector_->OnBackgroundTabOpeningSessionEnded();
     }
+
+    // Once a tab is loaded, it might be eligible for freezing.
+    PerformStateTransitions();
   }
 }
 
@@ -913,86 +917,82 @@ base::TimeDelta TabManager::GetTimeInBackgroundBeforeProactiveDiscard() const {
   return proactive_discard_params_.low_occluded_timeout;
 }
 
-LifecycleUnit* TabManager::GetNextDiscardableLifecycleUnit() const {
-  LifecycleUnit* next_to_discard = nullptr;
-  base::TimeTicks earliest_last_visible_time = base::TimeTicks::Max();
-
-  // TODO(fdoray), TODO(varunmohan) : switch this to use
-  // GetSortedLifecycleUnits(). Eventually, there will be some more advanced
-  // logic around LifecycleUnit importance (perhaps ML LifecycleUnit ranking)
-  // which will be used to determine which LifecycleUnit to discard. For now,
-  // choosing which LifecycleUnit to discard based on the longest duration a
-  // LifecycleUnit was backgrounded.
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    // Ignore LifecycleUnits that cannot be discarded.
-    if (!lifecycle_unit->CanDiscard(DiscardReason::kProactive))
-      continue;
-
-    base::TimeTicks last_visible_time = lifecycle_unit->GetLastVisibleTime();
-
-    // This LifecycleUnit was last visible earlier than the current earliest
-    // LifecycleUnit, so it will be discarded earlier.
-    if (last_visible_time < earliest_last_visible_time) {
-      earliest_last_visible_time = last_visible_time;
-      next_to_discard = lifecycle_unit;
-    }
-  }
-
-  return next_to_discard;
-}
-
-void TabManager::UpdateProactiveDiscardTimerIfNecessary() {
-  // If the proactive discarding feature is not enabled, do nothing.
+void TabManager::PerformStateTransitions() {
   if (!base::FeatureList::IsEnabled(features::kProactiveTabDiscarding))
     return;
 
-  // Create or stop |proactive_discard_timer_|.
-  if (!proactive_discard_timer_) {
-    proactive_discard_timer_ =
-        std::make_unique<base::OneShotTimer>(GetTickClock());
-  } else {
-    proactive_discard_timer_->Stop();
+  base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
+  base::TimeTicks now = NowTicks();
+  LifecycleUnit* oldest_discardable_lifecycle_unit = nullptr;
+
+  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
+    // Freeze LifecycleUnits that have been in the background for more than
+    // |kBackgroundTabFreezeTimeout|.
+    if (lifecycle_unit->CanFreeze()) {
+      const base::TimeDelta time_not_visible =
+          now - lifecycle_unit->GetLastVisibleTime();
+      const base::TimeDelta time_until_freeze =
+          proactive_discard_params_.freeze_timeout - time_not_visible;
+
+      if (time_until_freeze <= base::TimeDelta()) {
+        lifecycle_unit->Freeze();
+      } else {
+        next_state_transition_time =
+            std::min(now + time_until_freeze, next_state_transition_time);
+      }
+    }
+
+    // Keep track of the discardable LifecycleUnit that has been non-visible for
+    // the longest time. It might be discarded below.
+    if (lifecycle_unit->CanDiscard(DiscardReason::kProactive)) {
+      if (!oldest_discardable_lifecycle_unit ||
+          lifecycle_unit->GetLastVisibleTime() <
+              oldest_discardable_lifecycle_unit->GetLastVisibleTime()) {
+        oldest_discardable_lifecycle_unit = lifecycle_unit;
+      }
+    }
   }
 
-  // No loaded LifecycleUnits. In Low threshold, but no timer is necessary.
-  if (num_loaded_lifecycle_units_ == 0)
-    return;
+  // Proactively discard the LifecycleUnit that has been non-visible for the
+  // longest time if it has been non-visible for at least
+  // GetTimeInBackgroundBeforeProactiveDiscard().
+  //
+  // Note: Discarding a LifecycleUnit might change the value returned by
+  // GetTimeInBackgroundBeforeProactiveDiscard(). Therefore, discard only the
+  // oldest LifecycleUnit and call PerformStateTransitions() again, rather than
+  // discarding all LifecycleUnits that have been non-visible for at least
+  // GetTimeInBackgroundBeforeProactiveDiscard().
+  if (oldest_discardable_lifecycle_unit) {
+    const base::TimeDelta time_not_visible =
+        now - oldest_discardable_lifecycle_unit->GetLastVisibleTime();
+    const base::TimeDelta time_until_discard =
+        GetTimeInBackgroundBeforeProactiveDiscard() - time_not_visible;
 
-  LifecycleUnit* next_to_discard = GetNextDiscardableLifecycleUnit();
+    if (time_until_discard <= base::TimeDelta()) {
+      oldest_discardable_lifecycle_unit->Discard(DiscardReason::kProactive);
+      // As mentioned above, call PeformStateTransitions() again after a
+      // discard.
+      next_state_transition_time = base::TimeTicks();
+    } else {
+      next_state_transition_time =
+          std::min(now + time_until_discard, next_state_transition_time);
+    }
+  }
 
-  // There were no discardable LifecycleUnits. No timer is necessary.
-  if (!next_to_discard)
-    return;
+  // Schedule the next call to PerformStateTransitions().
+  if (!state_transitions_timer_) {
+    state_transitions_timer_ =
+        std::make_unique<base::OneShotTimer>(GetTickClock());
+  } else {
+    state_transitions_timer_->Stop();
+  }
 
-  // Get the time |next_to_discard| was last visible and subtract it from the
-  // time that a LifecycleUnit can be in the background before being discarded
-  // to get the exact time until the next LifecycleUnit should be discarded.
-  base::TimeDelta time_backgrounded =
-      NowTicks() - next_to_discard->GetLastVisibleTime();
-  base::TimeDelta time_until_discard =
-      GetTimeInBackgroundBeforeProactiveDiscard() - time_backgrounded;
-
-  // Ensure |time_until_discard| is a non-negative base::TimeDelta.
-  time_until_discard = std::max(base::TimeDelta(), time_until_discard);
-
-  // On a |time_until_discard| long timer, discard |next_to_discard|. If for
-  // some reason |next_to_discard| is destroyed while this timer is waiting,
-  // OnLifecycleUnitDestroyed() will be called and the timer will be reset. When
-  // a tab is discarded, OnLifecycleUnitStateChanged() will be called, which
-  // will set up the timer for the next tab to be discarded.
-  proactive_discard_timer_->Start(
-      FROM_HERE, time_until_discard,
-      base::BindRepeating(
-          [](LifecycleUnit* lifecycle_unit, TabManager* tab_manager) {
-            // If |lifecycle_unit| can still be discarded, discard it.
-            // Otherwise, find a new tab to be discarded and reset
-            // |proactive_discard_timer|.
-            if (lifecycle_unit->CanDiscard(DiscardReason::kProactive))
-              lifecycle_unit->Discard(DiscardReason::kProactive);
-            else
-              tab_manager->UpdateProactiveDiscardTimerIfNecessary();
-          },
-          next_to_discard, this));
+  if (!next_state_transition_time.is_max()) {
+    state_transitions_timer_->Start(
+        FROM_HERE, next_state_transition_time - now,
+        base::BindRepeating(&TabManager::PerformStateTransitions,
+                            base::Unretained(this)));
+  }
 }
 
 void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
@@ -1003,21 +1003,32 @@ void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
   bool is_discarded = (state == LifecycleState::PENDING_DISCARD ||
                        state == LifecycleState::DISCARDED);
 
-  if (is_discarded && !was_discarded)
+  if (is_discarded && !was_discarded) {
     num_loaded_lifecycle_units_--;
-  else if (was_discarded && !is_discarded)
+  } else if (was_discarded && !is_discarded) {
     num_loaded_lifecycle_units_++;
+    // Incrementing the number of loaded tabs might change the return value of
+    // GetTimeInBackgroundBeforeProactiveDiscard(). Call
+    // PerformStateTransitions() to determine if a tab should be discarded in
+    // response to that change.
+    //
+    // Note: PerformStateTransitions() is not called when a tab is frozen or
+    // discarded, because this is unnecessary and could cause recursive calls:
+    //   TabManager::PerformStateTransitions()
+    //     LifecycleUnit::Freeze()
+    //       TabManager::OnLifecycleUnitStateChanged()
+    //         TabManager::PerformStateTransitions()
+    PerformStateTransitions();
+  }
 
   DCHECK_EQ(num_loaded_lifecycle_units_,
             GetNumLoadedLifecycleUnits(lifecycle_units_));
-
-  UpdateProactiveDiscardTimerIfNecessary();
 }
 
 void TabManager::OnLifecycleUnitVisibilityChanged(
     LifecycleUnit* lifecycle_unit,
     content::Visibility visibility) {
-  UpdateProactiveDiscardTimerIfNecessary();
+  PerformStateTransitions();
 }
 
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
@@ -1030,7 +1041,7 @@ void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
   DCHECK_EQ(num_loaded_lifecycle_units_,
             GetNumLoadedLifecycleUnits(lifecycle_units_));
 
-  UpdateProactiveDiscardTimerIfNecessary();
+  PerformStateTransitions();
 }
 
 void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
@@ -1044,7 +1055,7 @@ void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
   DCHECK_EQ(num_loaded_lifecycle_units_,
             GetNumLoadedLifecycleUnits(lifecycle_units_));
 
-  UpdateProactiveDiscardTimerIfNecessary();
+  PerformStateTransitions();
 }
 
 }  // namespace resource_coordinator
