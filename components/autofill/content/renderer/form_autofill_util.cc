@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -820,10 +821,21 @@ void ForEachMatchingFormFieldCommon(
     bool force_override,
     const Callback& callback) {
   DCHECK(control_elements);
-  if (control_elements->size() != data.fields.size()) {
-    // This case should be reachable only for pathological websites and tests,
-    // which add or remove form fields while the user is interacting with the
-    // Autofill popup.
+
+  const bool num_elements_matches_num_fields =
+      control_elements->size() == data.fields.size();
+  UMA_HISTOGRAM_BOOLEAN("Autofill.NumElementsMatchesNumFields",
+                        num_elements_matches_num_fields);
+  if (!num_elements_matches_num_fields) {
+    // http://crbug.com/841784
+    // This pathological case was only thought to be reachable iff the fields
+    // are added/removed from the form while the user is interacting with the
+    // autofill popup.
+    //
+    // Is is also reachable for formless non-checkout forms when checkout
+    // restrictions are applied.
+    //
+    // TODO(crbug/847221): Add a UKM to capture these events.
     return;
   }
 
@@ -924,6 +936,7 @@ void FillFormField(const FormFieldData& data,
     return;
 
   WebInputElement* input_element = ToWebInputElement(field);
+
   if (IsCheckableElement(input_element)) {
     input_element->SetChecked(IsChecked(data.check_status), true);
   } else {
@@ -1727,6 +1740,15 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
       elements_with_autocomplete.push_back(element);
     }
   }
+
+  // http://crbug.com/841784
+  // Capture the number of times this formless checkout logic prevents a from
+  // being autofilled (fill logic expects to receive a autofill field entry,
+  // possibly not fillable, for each control element).
+  // Note: this will be fixed by http://crbug.com/806987
+  UMA_HISTOGRAM_BOOLEAN(
+      "Autofill.UnownedFieldsWereFiltered",
+      elements_with_autocomplete.size() != control_elements.size());
 
   if (elements_with_autocomplete.empty())
     return false;
