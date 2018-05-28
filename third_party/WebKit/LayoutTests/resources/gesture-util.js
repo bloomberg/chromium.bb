@@ -9,12 +9,12 @@ function waitForCompositorCommit() {
 }
 
 // Returns a promise that resolves when the given condition is met or rejects
-// after 500 animation frames.
+// after 200 animation frames.
 function waitFor(condition) {
-  const MAX_FRAME = 500;
+  const MAX_FRAME = 200;
   return new Promise((resolve, reject) => {
     function tick(frames) {
-      // We requestAnimationFrame either for 500 frames or until condition is
+      // We requestAnimationFrame either for 200 frames or until condition is
       // met.
       if (frames >= MAX_FRAME)
         reject('Reaches the maximum frames.');
