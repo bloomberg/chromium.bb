@@ -3591,7 +3591,7 @@ String Element::innerText() {
   // tree.
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  if (!GetLayoutObject())
+  if (!GetLayoutObject() && !HasDisplayContentsStyle())
     return textContent(true);
 
   return PlainText(
