@@ -19,47 +19,48 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# Latin letters a-z with dot 7 as capital indicator.
-# Usually included to form a 8 dots table.
+# Note that this table does not simply include latinLetterDef8Dots.uti
+# because latinLetterDef8Dots defines "w" as 2456, but in Czech 2456
+# is used for "ř" and "w" is mapped to 12356.
 
-uplow Aa 17,1
-uplow \x00c1\x00e1 167,16 # a with acute
-uplow Bb 127,12
-uplow Cc 147,14
-uplow \x010c\x010d 1467,146 # c with caron
-uplow Dd 1457,145
-uplow \x010e\x010f 14567,1456 # d with caron
-uplow Ee 157,15
-uplow \x00c9\x00e9 3457,345 # e with acute
-uplow \x011a\x011b 1267,126 # e with caron
-uplow Ff 1247,124
-uplow Gg 12457,1245
-uplow Hh 1257,125
-uplow Ii 247,24
-uplow \x00cd\x00ed 347,34 # i with acute
-uplow Jj 2457,245
-uplow Kk 137,13
-uplow Ll 1237,123
-uplow Mm 1347,134
-uplow Nn 13457,1345
-uplow \x0147\x0148 12467,1246 # n with caron
-uplow Oo 1357,135
-uplow \x00d3\x00f3 2467,246 # o with acute
-uplow Pp 12347,1234
-uplow Qq 123457,12345
-uplow Rr 12357,1235
-uplow \x0158\x0159 24567,2456 # r with caron
-uplow Ss 2347,234
-uplow \x0160\x0161 1567,156 # s with caron
-uplow Tt 23457,2345
-uplow \x0164\x0165 12567,1256 # t with caron
-uplow Uu 1367,136
-uplow \x00da\x00fa 3467,346 # u with acute
-uplow \x016e\x016f 234567,23456 # u with ring above
-uplow Vv 12367,1236
-uplow Ww 123567,12356
-uplow Xx 13467,1346
-uplow Yy 134567,13456
-uplow \x00dd\x00fd 123467,12346 # y with acute
-uplow Zz 13567,1356
-uplow \x017d\x017e 23467,2346 # z with caron
+uplow   \x0041\x0061  17,1              Aa       LATIN CAPITAL LETTER A - LATIN SMALL LETTER A
+uplow   \x00C1\x00E1  167,16            Áá       LATIN CAPITAL LETTER A WITH ACUTE - LATIN SMALL LETTER A WITH ACUTE
+uplow   \x0042\x0062  127,12            Bb       LATIN CAPITAL LETTER B - LATIN SMALL LETTER B
+uplow   \x0043\x0063  147,14            Cc       LATIN CAPITAL LETTER C - LATIN SMALL LETTER C
+uplow   \x010C\x010D  1467,146          Čč       LATIN CAPITAL LETTER C WITH CARON - LATIN SMALL LETTER C WITH CARON
+uplow   \x0044\x0064  1457,145          Dd       LATIN CAPITAL LETTER D - LATIN SMALL LETTER D
+uplow   \x010E\x010F  14567,1456        Ďď       LATIN CAPITAL LETTER D WITH CARON - LATIN SMALL LETTER D WITH CARON
+uplow   \x0045\x0065  157,15            Ee       LATIN CAPITAL LETTER E - LATIN SMALL LETTER E
+uplow   \x00C9\x00E9  3457,345          Éé       LATIN CAPITAL LETTER E WITH ACUTE - LATIN SMALL LETTER E WITH ACUTE
+uplow   \x011A\x011B  1267,126          Ěě       LATIN CAPITAL LETTER E WITH CARON - LATIN SMALL LETTER E WITH CARON
+uplow   \x0046\x0066  1247,124          Ff       LATIN CAPITAL LETTER F - LATIN SMALL LETTER F
+uplow   \x0047\x0067  12457,1245        Gg       LATIN CAPITAL LETTER G - LATIN SMALL LETTER G
+uplow   \x0048\x0068  1257,125          Hh       LATIN CAPITAL LETTER H - LATIN SMALL LETTER H
+uplow   \x0049\x0069  247,24            Ii       LATIN CAPITAL LETTER I - LATIN SMALL LETTER I
+uplow   \x00CD\x00ED  347,34            Íí       LATIN CAPITAL LETTER I WITH ACUTE - LATIN SMALL LETTER I WITH ACUTE
+uplow   \x004A\x006A  2457,245          Jj       LATIN CAPITAL LETTER J - LATIN SMALL LETTER J
+uplow   \x004B\x006B  137,13            Kk       LATIN CAPITAL LETTER K - LATIN SMALL LETTER K
+uplow   \x004C\x006C  1237,123          Ll       LATIN CAPITAL LETTER L - LATIN SMALL LETTER L
+uplow   \x004D\x006D  1347,134          Mm       LATIN CAPITAL LETTER M - LATIN SMALL LETTER M
+uplow   \x004E\x006E  13457,1345        Nn       LATIN CAPITAL LETTER N - LATIN SMALL LETTER N
+uplow   \x0147\x0148  12467,1246        Ňň       LATIN CAPITAL LETTER N WITH CARON - LATIN SMALL LETTER N WITH CARON
+uplow   \x004F\x006F  1357,135          Oo       LATIN CAPITAL LETTER O - LATIN SMALL LETTER O
+uplow   \x00D3\x00F3  2467,246          Óó       LATIN CAPITAL LETTER O WITH ACUTE - LATIN SMALL LETTER O WITH ACUTE
+uplow   \x0050\x0070  12347,1234        Pp       LATIN CAPITAL LETTER P - LATIN SMALL LETTER P
+uplow   \x0051\x0071  123457,12345      Qq       LATIN CAPITAL LETTER Q - LATIN SMALL LETTER Q
+uplow   \x0052\x0072  12357,1235        Rr       LATIN CAPITAL LETTER R - LATIN SMALL LETTER R
+uplow   \x0158\x0159  24567,2456        Řř       LATIN CAPITAL LETTER R WITH CARON - LATIN SMALL LETTER R WITH CARON
+uplow   \x0053\x0073  2347,234          Ss       LATIN CAPITAL LETTER S - LATIN SMALL LETTER S
+uplow   \x0160\x0161  1567,156          Šš       LATIN CAPITAL LETTER S WITH CARON - LATIN SMALL LETTER S WITH CARON
+uplow   \x0054\x0074  23457,2345        Tt       LATIN CAPITAL LETTER T - LATIN SMALL LETTER T
+uplow   \x0164\x0165  12567,1256        Ťť       LATIN CAPITAL LETTER T WITH CARON - LATIN SMALL LETTER T WITH CARON
+uplow   \x0055\x0075  1367,136          Uu       LATIN CAPITAL LETTER U - LATIN SMALL LETTER U
+uplow   \x00DA\x00FA  3467,346          Úú       LATIN CAPITAL LETTER U WITH ACUTE - LATIN SMALL LETTER U WITH ACUTE
+uplow   \x016E\x016F  234567,23456      Ůů       LATIN CAPITAL LETTER U WITH RING ABOVE - LATIN SMALL LETTER U WITH RING ABOVE
+uplow   \x0056\x0076  12367,1236        Vv       LATIN CAPITAL LETTER V - LATIN SMALL LETTER V
+uplow   \x0057\x0077  123567,12356      Ww       LATIN CAPITAL LETTER W - LATIN SMALL LETTER W
+uplow   \x0058\x0078  13467,1346        Xx       LATIN CAPITAL LETTER X - LATIN SMALL LETTER X
+uplow   \x0059\x0079  134567,13456      Yy       LATIN CAPITAL LETTER Y - LATIN SMALL LETTER Y
+uplow   \x00DD\x00FD  123467,12346      Ýý       LATIN CAPITAL LETTER Y WITH ACUTE - LATIN SMALL LETTER Y WITH ACUTE
+uplow   \x005A\x007A  13567,1356        Zz       LATIN CAPITAL LETTER Z - LATIN SMALL LETTER Z
+uplow   \x017D\x017E  23467,2346        Žž       LATIN CAPITAL LETTER Z WITH CARON - LATIN SMALL LETTER Z WITH CARON
