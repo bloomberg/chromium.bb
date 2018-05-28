@@ -144,7 +144,6 @@ class PeerConnectionTracker;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
-class ServiceWorkerMessageFilter;
 class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
@@ -621,7 +620,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Used on the renderer and IPC threads.
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
-  scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 
