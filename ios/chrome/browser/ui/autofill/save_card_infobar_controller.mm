@@ -79,18 +79,16 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   self.infoBarView = infoBarView;
   self.infoBarView.delegate = self;
 
-  // GPay branding.
-  [self.infoBarView
-      setGooglePayBrandingEnabled:self.saveCardInfobarDelegate
-                                      ->IsGooglePayBrandingEnabled()];
-
   // Close button.
   [self.infoBarView setCloseButtonImage:InfoBarCloseImage()];
 
   // Icon.
   gfx::Image icon = self.saveCardInfobarDelegate->GetIcon();
   DCHECK(!icon.IsEmpty());
-  [self.infoBarView setIcon:icon.ToUIImage()];
+  if (self.saveCardInfobarDelegate->IsGooglePayBrandingEnabled())
+    [self.infoBarView setGooglePayIcon:icon.ToUIImage()];
+  else
+    [self.infoBarView setIcon:icon.ToUIImage()];
 
   // Message, if any.
   base::string16 messageText = self.saveCardInfobarDelegate->GetMessageText();
