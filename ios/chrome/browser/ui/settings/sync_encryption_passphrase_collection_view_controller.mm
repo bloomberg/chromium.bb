@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -141,7 +141,8 @@ const CGFloat kSpinnerButtonPadding = 18;
     footerMessage_ = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
 
     tokenServiceObserver_.reset(new OAuth2TokenServiceObserverBridge(
-        OAuth2TokenServiceFactory::GetForBrowserState(browserState_), self));
+        ProfileOAuth2TokenServiceFactory::GetForBrowserState(browserState_),
+        self));
 
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.

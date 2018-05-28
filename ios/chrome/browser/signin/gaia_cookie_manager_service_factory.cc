@@ -11,7 +11,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 
 namespace ios {
@@ -21,7 +21,7 @@ GaiaCookieManagerServiceFactory::GaiaCookieManagerServiceFactory()
           "GaiaCookieManagerService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(SigninClientFactory::GetInstance());
-  DependsOn(OAuth2TokenServiceFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 GaiaCookieManagerServiceFactory::~GaiaCookieManagerServiceFactory() {}
@@ -45,7 +45,8 @@ GaiaCookieManagerServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<GaiaCookieManagerService>(
-      OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          chrome_browser_state),
       GaiaConstants::kChromeSource,
       SigninClientFactory::GetForBrowserState(chrome_browser_state));
 }

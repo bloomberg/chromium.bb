@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -207,7 +207,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
-        OAuth2TokenServiceFactory::GetForBrowserState(_browserState), self));
+        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
+        self));
     self.collectionViewAccessibilityIdentifier = kSettingsSyncId;
     _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
@@ -280,7 +281,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [model setHeader:syncToHeader
         forSectionWithIdentifier:SectionIdentifierSyncAccounts];
     ProfileOAuth2TokenService* oauth2_service =
-        OAuth2TokenServiceFactory::GetForBrowserState(_browserState);
+        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
     AccountTrackerService* accountTracker =
         ios::AccountTrackerServiceFactory::GetForBrowserState(_browserState);
 
@@ -848,7 +849,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)hasAccountsSection {
   OAuth2TokenService* tokenService =
-      OAuth2TokenServiceFactory::GetForBrowserState(_browserState);
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
   return _allowSwitchSyncAccount && tokenService->GetAccounts().size() > 1;
 }
 
