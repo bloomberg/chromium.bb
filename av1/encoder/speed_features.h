@@ -374,6 +374,11 @@ typedef struct SPEED_FEATURES {
   // 1-2: progressively increasing aggressiveness of pruning
   int model_based_prune_tx_search_level;
 
+  // Model based breakout after interpolation filter search
+  // 0: no breakout
+  // 1: use model based rd breakout
+  int model_based_post_interp_filter_breakout;
+
   // Used if partition_search_type = FIXED_SIZE_PARTITION
   BLOCK_SIZE always_this_block_size;
 
