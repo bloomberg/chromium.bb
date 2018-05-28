@@ -1715,7 +1715,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_KeyboardFocusSimple) {
 // http://crbug.com/660044.
 // Flaky on MacOSX, crbug.com/817067.
 // Flaky on linux, crbug.com/706830.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Flaky on Windows, crbug.com/847201.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_KeyboardFocusWindowCycle DISABLED_KeyboardFocusWindowCycle
 #else
 #define MAYBE_KeyboardFocusWindowCycle KeyboardFocusWindowCycle
