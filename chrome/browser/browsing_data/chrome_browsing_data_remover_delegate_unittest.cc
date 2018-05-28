@@ -2919,8 +2919,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
     if (base::ContainsValue(whitelisted_types, info->type()))
       continue;
-    std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
-        url, GURL(), info->type(), std::string(), nullptr);
+    std::unique_ptr<base::Value> value =
+        map->GetWebsiteSetting(url, url, info->type(), std::string(), nullptr);
 
     if (value && value->is_int()) {
       EXPECT_EQ(CONTENT_SETTING_BLOCK, value->GetInt())
