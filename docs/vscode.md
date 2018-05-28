@@ -527,7 +527,7 @@ these files are ignored by VS Code (see files.exclude above) and cannot be
 opened e.g. from quick-open (`Ctrl+P`).
 As of version 1.21, VS Code does not support negated glob commands, but you can
 define a set of exclude pattern to include only out/Debug/gen:
-
+```
 "files.exclude": {
   // Ignore build output folders. Except out/Debug/gen/
   "out/[^D]*/": true,
@@ -535,6 +535,7 @@ define a set of exclude pattern to include only out/Debug/gen:
   "out/Debug/g[^e]*": true,
   "out_*/**": true,
 },
+```
 
 Once it does, you can use
 ```
