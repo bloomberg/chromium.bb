@@ -17,6 +17,7 @@
   testRunner.log('Started loading');
   await dp.Page.onceFrameNavigated();
   testRunner.log('Navigated');
+  await dp.Page.onceFrameStoppedLoading();
   session.evaluate('frame.src = "about:blank"');
   await dp.Page.onceFrameStartedLoading();
   testRunner.log('Started loading');
