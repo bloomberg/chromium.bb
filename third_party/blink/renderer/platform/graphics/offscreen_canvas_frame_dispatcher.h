@@ -87,7 +87,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher
  private:
   friend class OffscreenCanvasFrameDispatcherTest;
 
-  bool PrepareFrame(scoped_refptr<StaticBitmapImage>,
+  bool PrepareFrame(scoped_refptr<CanvasResource>,
                     double commit_start_time,
                     const SkIRect& damage_rect,
                     viz::CompositorFrame* frame);
