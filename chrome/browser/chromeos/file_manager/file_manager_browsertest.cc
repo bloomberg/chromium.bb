@@ -145,7 +145,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_OpenAudioFiles, /* open_audio_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("audioOpenDownloads").InGuestMode(),
+    ::testing::Values(TestCase("audioOpenCloseDownloads"),
+                      TestCase("audioOpenCloseDownloads").InGuestMode(),
+                      TestCase("audioOpenCloseDrive"),
+                      TestCase("audioOpenDownloads").InGuestMode(),
                       TestCase("audioOpenDownloads"),
                       TestCase("audioOpenDrive"),
                       TestCase("audioAutoAdvanceDrive"),
