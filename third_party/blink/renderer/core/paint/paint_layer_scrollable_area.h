@@ -201,7 +201,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // last DelayScrollOffsetClampScope object is destructed, all
   // PaintLayerScrollableArea's that delayed clamping their offsets will
   // immediately clamp them.
-  class DelayScrollOffsetClampScope {
+  class CORE_EXPORT DelayScrollOffsetClampScope {
     STACK_ALLOCATED();
 
    public:
