@@ -5,7 +5,7 @@
 from itertools import chain
 
 from blinkbuild.name_style_converter import NameStyleConverter
-from name_utilities import enum_value_name, method_name
+from name_utilities import enum_value_name
 
 
 def _flatten_list(x):
@@ -138,7 +138,8 @@ class Field(object):
                  custom_copy, custom_compare, mutable, getter_method_name,
                  setter_method_name, initial_method_name,
                  computed_style_custom_functions, **kwargs):
-        self.name = NameStyleConverter(name_for_methods).to_class_data_member()
+        name_source = NameStyleConverter(name_for_methods)
+        self.name = name_source.to_class_data_member()
         self.property_name = property_name
         self.type_name = type_name
         self.wrapper_pointer_name = wrapper_pointer_name
@@ -154,13 +155,11 @@ class Field(object):
         # Method names
         self.getter_method_name = getter_method_name
         self.setter_method_name = setter_method_name
-        self.internal_getter_method_name = method_name([self.name, 'internal'])
-        self.internal_mutable_method_name = method_name(
-            ['mutable', name_for_methods, 'internal'])
-        self.internal_setter_method_name = method_name(
-            [setter_method_name, 'internal'])
+        self.internal_getter_method_name = name_source.to_function_name(suffix='internal')
+        self.internal_mutable_method_name = name_source.to_function_name(prefix='mutable', suffix='internal')
+        self.internal_setter_method_name = NameStyleConverter(setter_method_name).to_function_name(suffix='internal')
         self.initial_method_name = initial_method_name
-        self.resetter_method_name = method_name(['reset', name_for_methods])
+        self.resetter_method_name = name_source.to_function_name(prefix='reset')
         self.computed_style_custom_functions = computed_style_custom_functions
         # Only bitfields have sizes.
         self.is_bit_field = self.size is not None
@@ -177,7 +176,6 @@ class Field(object):
             assert self.is_inherited or not self.is_independent, \
                 'Only inherited fields can be independent'
 
-            self.is_inherited_method_name = method_name(
-                [name_for_methods, 'is inherited'])
+            self.is_inherited_method_name = name_source.to_function_name(suffix=['is', 'inherited'])
         assert len(kwargs) == 0, \
             'Unexpected arguments provided to Field: ' + str(kwargs)

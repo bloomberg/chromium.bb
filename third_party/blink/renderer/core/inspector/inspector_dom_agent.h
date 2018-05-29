@@ -212,7 +212,7 @@ class CORE_EXPORT InspectorDOMAgent final
   void ReleaseDanglingNodes();
 
   // Methods called from the InspectorInstrumentation.
-  void DomContentLoadedEventFired(LocalFrame*);
+  void DOMContentLoadedEventFired(LocalFrame*);
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
   void DidInsertDOMNode(Node*);
   void WillRemoveDOMNode(Node*);
