@@ -15,6 +15,7 @@ namespace {
 // choices.
 const char kContentInsetChoiceValue[] = "content-inset";
 const char kSafeAreaChoiceValue[] = "safe-area";
+const char kHybridChoiceValue[] = "hybrid";
 }
 
 namespace fullscreen {
@@ -29,6 +30,8 @@ const flags_ui::FeatureEntry::Choice kViewportAdjustmentExperimentChoices[] = {
      "content-inset"},
     {"Update Safe Area", kViewportAdjustmentExperimentCommandLineSwitch,
      "safe-area"},
+    {"Use Hybrid Implementation",
+     kViewportAdjustmentExperimentCommandLineSwitch, "hybrid"},
 };
 
 ViewportAdjustmentExperiment GetActiveViewportExperiment() {
@@ -41,6 +44,8 @@ ViewportAdjustmentExperiment GetActiveViewportExperiment() {
       return ViewportAdjustmentExperiment::CONTENT_INSET;
     if (viewport_experiment == std::string(kSafeAreaChoiceValue))
       return ViewportAdjustmentExperiment::SAFE_AREA;
+    if (viewport_experiment == std::string(kHybridChoiceValue))
+      return ViewportAdjustmentExperiment::HYBRID;
   }
   return ViewportAdjustmentExperiment::FRAME;
 }

@@ -22,6 +22,7 @@
 @end
 
 @implementation CRWGenericContentView
+@synthesize contentOffset = _contentOffset;
 
 - (instancetype)initWithView:(UIView*)view {
   self = [super initWithFrame:CGRectZero];

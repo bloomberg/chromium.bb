@@ -21,6 +21,7 @@
 @end
 
 @implementation CRWFakeContentView
+@synthesize contentOffset = _contentOffset;
 @synthesize contentInset = _contentInset;
 @synthesize scrollView = _scrollView;
 @synthesize shouldUseViewContentInset = _shouldUseViewContentInset;
