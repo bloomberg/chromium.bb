@@ -69,7 +69,7 @@ SurfaceManager::~SurfaceManager() {
   base::flat_set<SurfaceId> children(
       GetSurfacesReferencedByParent(root_surface_id_));
   for (const auto& child : children)
-    RemoveSurfaceReferenceImpl(root_surface_id_, child);
+    RemoveSurfaceReferenceImpl(SurfaceReference(root_surface_id_, child));
 
   GarbageCollectSurfaces();
 
@@ -211,7 +211,7 @@ void SurfaceManager::AddSurfaceReferences(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   for (const auto& reference : references)
-    AddSurfaceReferenceImpl(reference.parent_id(), reference.child_id());
+    AddSurfaceReferenceImpl(reference);
 }
 
 void SurfaceManager::RemoveSurfaceReferences(
@@ -219,7 +219,7 @@ void SurfaceManager::RemoveSurfaceReferences(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   for (const auto& reference : references)
-    RemoveSurfaceReferenceImpl(reference.parent_id(), reference.child_id());
+    RemoveSurfaceReferenceImpl(reference);
 }
 
 void SurfaceManager::AssignTemporaryReference(const SurfaceId& surface_id,
@@ -319,8 +319,11 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
   return reachable_surfaces;
 }
 
-void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
-                                             const SurfaceId& child_id) {
+void SurfaceManager::AddSurfaceReferenceImpl(
+    const SurfaceReference& reference) {
+  const SurfaceId& parent_id = reference.parent_id();
+  const SurfaceId& child_id = reference.child_id();
+
   if (parent_id.frame_sink_id() == child_id.frame_sink_id()) {
     DLOG(ERROR) << "Cannot add self reference from " << parent_id << " to "
                 << child_id;
@@ -344,8 +347,11 @@ void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
     RemoveTemporaryReference(child_id, RemovedReason::EMBEDDED);
 }
 
-void SurfaceManager::RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
-                                                const SurfaceId& child_id) {
+void SurfaceManager::RemoveSurfaceReferenceImpl(
+    const SurfaceReference& reference) {
+  const SurfaceId& parent_id = reference.parent_id();
+  const SurfaceId& child_id = reference.child_id();
+
   auto iter_parent = references_.find(parent_id);
   auto iter_child = references_.find(child_id);
   if (iter_parent == references_.end() || iter_child == references_.end())
