@@ -111,8 +111,7 @@ struct DriveUploader::UploadFileInfo {
     }
   }
 
-  ~UploadFileInfo() {
-  }
+  ~UploadFileInfo() = default;
 
   // Useful for printf debugging.
   std::string DebugString() const {
@@ -181,7 +180,7 @@ DriveUploader::DriveUploader(
       wake_lock_provider_(std::move(wake_lock_provider)),
       weak_ptr_factory_(this) {}
 
-DriveUploader::~DriveUploader() {}
+DriveUploader::~DriveUploader() = default;
 
 CancelCallback DriveUploader::UploadNewFile(
     const std::string& parent_resource_id,

@@ -44,7 +44,7 @@ typedef base::Callback<void(
 
 class DriveUploaderInterface {
  public:
-  virtual ~DriveUploaderInterface() {}
+  virtual ~DriveUploaderInterface() = default;
 
   // Starts batch processing for upload requests. All requests which upload
   // small files (less than kMaxMultipartUploadSize) between

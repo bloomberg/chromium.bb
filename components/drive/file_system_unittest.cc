@@ -74,8 +74,8 @@ bool CompareHashAndFilePath(const HashAndFilePath& a,
 // This class is used to record directory changes and examine them later.
 class MockDirectoryChangeObserver : public FileSystemObserver {
  public:
-  MockDirectoryChangeObserver() {}
-  ~MockDirectoryChangeObserver() override {}
+  MockDirectoryChangeObserver() = default;
+  ~MockDirectoryChangeObserver() override = default;
 
   // FileSystemObserver overrides.
   void OnDirectoryChanged(const base::FilePath& directory_path) override {

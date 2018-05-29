@@ -22,8 +22,7 @@ EventLogger::EventLogger()
       next_event_id_(0) {
 }
 
-EventLogger::~EventLogger() {
-}
+EventLogger::~EventLogger() = default;
 
 void EventLogger::LogRawString(logging::LogSeverity severity,
                                const std::string& what) {

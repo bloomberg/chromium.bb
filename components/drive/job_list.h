@@ -115,13 +115,13 @@ class JobListObserver {
   virtual void OnJobUpdated(const JobInfo& job_info) {}
 
  protected:
-  virtual ~JobListObserver() {}
+  virtual ~JobListObserver() = default;
 };
 
 // The interface to expose the list of issued Drive jobs.
 class JobListInterface {
  public:
-  virtual ~JobListInterface() {}
+  virtual ~JobListInterface() = default;
 
   // Returns the list of jobs currently managed by the scheduler.
   virtual std::vector<JobInfo> GetJobInfoList() = 0;

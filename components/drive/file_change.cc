@@ -87,10 +87,9 @@ std::string FileChange::ChangeList::DebugString() const {
   return ss.str();
 }
 
-FileChange::FileChange() {
-}
+FileChange::FileChange() = default;
 FileChange::FileChange(const FileChange& other) = default;
-FileChange::~FileChange() {}
+FileChange::~FileChange() = default;
 
 void FileChange::Update(const base::FilePath file_path,
                         const FileChange::Change& new_change) {

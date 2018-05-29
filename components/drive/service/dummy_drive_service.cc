@@ -27,9 +27,9 @@ using google_apis::drive::UploadRangeCallback;
 
 namespace drive {
 
-DummyDriveService::DummyDriveService() {}
+DummyDriveService::DummyDriveService() = default;
 
-DummyDriveService::~DummyDriveService() {}
+DummyDriveService::~DummyDriveService() = default;
 
 void DummyDriveService::Initialize(const std::string& account_id) {}
 

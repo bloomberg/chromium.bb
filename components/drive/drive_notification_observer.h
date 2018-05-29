@@ -18,7 +18,7 @@ class DriveNotificationObserver {
   virtual void OnPushNotificationEnabled(bool enabled) {}
 
  protected:
-  virtual ~DriveNotificationObserver() {}
+  virtual ~DriveNotificationObserver() = default;
 };
 
 }  // namespace drive

@@ -13,25 +13,20 @@ AddNewDirectoryOptions::AddNewDirectoryOptions()
 AddNewDirectoryOptions::AddNewDirectoryOptions(
     const AddNewDirectoryOptions& other) = default;
 
-AddNewDirectoryOptions::~AddNewDirectoryOptions() {
-}
+AddNewDirectoryOptions::~AddNewDirectoryOptions() = default;
 
-UploadNewFileOptions::UploadNewFileOptions() {
-}
+UploadNewFileOptions::UploadNewFileOptions() = default;
 
 UploadNewFileOptions::UploadNewFileOptions(const UploadNewFileOptions& other) =
     default;
 
-UploadNewFileOptions::~UploadNewFileOptions() {
-}
+UploadNewFileOptions::~UploadNewFileOptions() = default;
 
-UploadExistingFileOptions::UploadExistingFileOptions() {
-}
+UploadExistingFileOptions::UploadExistingFileOptions() = default;
 
 UploadExistingFileOptions::UploadExistingFileOptions(
     const UploadExistingFileOptions& other) = default;
 
-UploadExistingFileOptions::~UploadExistingFileOptions() {
-}
+UploadExistingFileOptions::~UploadExistingFileOptions() = default;
 
 }  // namespace drive
