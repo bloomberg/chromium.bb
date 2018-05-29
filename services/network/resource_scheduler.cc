@@ -29,7 +29,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/resource_scheduler_params_manager.h"
 #include "url/scheme_host_port.h"
 
 namespace network {
@@ -547,7 +546,7 @@ class ResourceScheduler::Client {
   void UpdateParamsForNetworkQuality() {
     params_for_network_quality_ =
         resource_scheduler_->resource_scheduler_params_manager_
-            ->GetParamsForEffectiveConnectionType(
+            .GetParamsForEffectiveConnectionType(
                 network_quality_estimator_
                     ? network_quality_estimator_->GetEffectiveConnectionType()
                     : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
@@ -1057,8 +1056,6 @@ ResourceScheduler::ResourceScheduler(bool enabled)
                                                  kYieldMsParam,
                                                  kYieldMsDefault))),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  resource_scheduler_params_manager_ =
-      std::make_unique<ResourceSchedulerParamsManager>();
   // Don't run the two experiments together.
   if (priority_requests_delayable_ && head_priority_requests_delayable_)
     priority_requests_delayable_ = false;
@@ -1276,12 +1273,9 @@ bool ResourceScheduler::IsRendererSideResourceSchedulerEnabled() {
 }
 
 void ResourceScheduler::SetResourceSchedulerParamsManagerForTests(
-    std::unique_ptr<ResourceSchedulerParamsManager>
-        resource_scheduler_params_manager) {
+    const ResourceSchedulerParamsManager& resource_scheduler_params_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  resource_scheduler_params_manager_ =
-      std::move(resource_scheduler_params_manager);
-  DCHECK(resource_scheduler_params_manager_);
+  resource_scheduler_params_manager_.Reset(resource_scheduler_params_manager);
 }
 
 }  // namespace network

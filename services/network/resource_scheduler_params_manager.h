@@ -62,6 +62,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
   ParamsForNetworkQuality GetParamsForEffectiveConnectionType(
       net::EffectiveConnectionType effective_connection_type) const;
 
+  // Resets the internal container with the given one.
+  void Reset(const ParamsForNetworkQualityContainer&
+                 params_for_network_quality_container) {
+    params_for_network_quality_container_ =
+        params_for_network_quality_container;
+  }
+  void Reset(const ResourceSchedulerParamsManager& other) {
+    Reset(other.params_for_network_quality_container_);
+  }
+
  private:
   // Reads the experiments params for DelayRequestsOnMultiplexedConnections
   // finch experiment, modifies |result| based on the experiment params, and
@@ -90,7 +100,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
 
   // The number of delayable requests in-flight for different ranges of the
   // network quality.
-  const ParamsForNetworkQualityContainer params_for_network_quality_container_;
+  ParamsForNetworkQualityContainer params_for_network_quality_container_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

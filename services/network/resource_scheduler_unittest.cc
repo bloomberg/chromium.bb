@@ -174,11 +174,8 @@ class ResourceSchedulerTest : public testing::Test {
     // mock_timer_.
     scheduler_.reset(new ResourceScheduler(enabled));
 
-    if (resource_scheduler_params_manager_) {
-      scheduler()->SetResourceSchedulerParamsManagerForTests(
-          std::make_unique<ResourceSchedulerParamsManager>(
-              *resource_scheduler_params_manager_));
-    }
+    scheduler()->SetResourceSchedulerParamsManagerForTests(
+        resource_scheduler_params_manager_);
 
     scheduler_->OnClientCreated(kChildId, kRouteId,
                                 &network_quality_estimator_);
@@ -364,9 +361,8 @@ class ResourceSchedulerTest : public testing::Test {
     params_for_network_quality_container[net::EFFECTIVE_CONNECTION_TYPE_2G] =
         params_2g;
 
-    resource_scheduler_params_manager_ =
-        std::make_unique<ResourceSchedulerParamsManager>(
-            params_for_network_quality_container);
+    resource_scheduler_params_manager_.Reset(
+        params_for_network_quality_container);
   }
 
   void InitializeThrottleDelayableExperiment(bool lower_delayable_count_enabled,
@@ -396,9 +392,8 @@ class ResourceSchedulerTest : public testing::Test {
     params_for_network_quality_container[net::EFFECTIVE_CONNECTION_TYPE_3G] =
         params_3g;
 
-    resource_scheduler_params_manager_ =
-        std::make_unique<ResourceSchedulerParamsManager>(
-            params_for_network_quality_container);
+    resource_scheduler_params_manager_.Reset(
+        params_for_network_quality_container);
   }
 
   void NonDelayableThrottlesDelayableHelper(double non_delayable_weight) {
@@ -439,8 +434,7 @@ class ResourceSchedulerTest : public testing::Test {
   net::HttpServerPropertiesImpl http_server_properties_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext context_;
-  std::unique_ptr<ResourceSchedulerParamsManager>
-      resource_scheduler_params_manager_;
+  ResourceSchedulerParamsManager resource_scheduler_params_manager_;
   base::FieldTrialList field_trial_list_;
 };
 
