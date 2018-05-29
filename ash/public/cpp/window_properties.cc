@@ -31,8 +31,16 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kFrameActiveColorKey,
+      ui::mojom::WindowManager::kFrameActiveColor_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterImageSkiaProperty(
       kFrameImageActiveKey, mojom::kFrameImageActive_Property);
+  property_converter->RegisterPrimitiveProperty(
+      kFrameInactiveColorKey,
+      ui::mojom::WindowManager::kFrameInactiveColor_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());

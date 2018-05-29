@@ -11,9 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
-#include "third_party/skia/include/core/SkColor.h"
-
 namespace aura {
 class PropertyConverter;
 class Window;
@@ -61,9 +58,6 @@ bool GetInitialBounds(const InitProperties& properties, gfx::Rect* bounds);
 bool GetWindowPreferredSize(const InitProperties& properties, gfx::Size* size);
 
 bool ShouldRemoveStandardFrame(const InitProperties& properties);
-
-base::Optional<SkColor> GetFrameColor(const InitProperties& properties,
-                                      bool active);
 
 bool ShouldEnableImmersive(const InitProperties& properties);
 

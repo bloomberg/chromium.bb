@@ -70,12 +70,6 @@ interface WindowManager {
   // and the client area should be equivalent to the window area. Type: bool
   const string kRemoveStandardFrame_InitProperty = "init:remove-standard-frame";
 
-  // FIXME Type: int32_t
-  const string kActiveFrameColor_InitProperty = "init:active-frame-color";
-
-  // FIXME Type: int32_t
-  const string kInactiveFrameColor_InitProperty = "init:inactive-frame-color";
-
   // A flag controlling the window's presence on the mash shelf. Type: bool
   const string kWindowIgnoredByShelf_InitProperty =
       "init:window-ignored-by-shelf";
@@ -107,6 +101,10 @@ interface WindowManager {
   // Used to explicitly control whether a window appears in the most recently
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
   const string kExcludeFromMru_Property = "prop:exclude_from_mru";
+
+  // Used to control the color of the window frame. Type: SkColor.
+  const string kFrameActiveColor_Property = "prop:frame-active-color";
+  const string kFrameInactiveColor_Property = "prop:frame-inactive-color";
 
   // If true, when a window is in in fullscreen mode, the user cannot reveal
   // the top portion of the window through a touch / mouse gesture.
