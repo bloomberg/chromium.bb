@@ -41,18 +41,15 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
   }
 
   // Compute offset to the farthest position of the decorating box.
-  // TODO(layout-dev): This is quite incorrect.
-  LayoutUnit logical_top = text_fragment_.Offset().top;
-  LayoutUnit position = logical_top + offset;
-  int offset_int = position.Floor();
+  // TODO(layout-dev): This does not take farthest offset within the decorating
+  // box into account, only the position within this text fragment.
+  int offset_int = offset.Floor();
 
   // Gaps are not needed for TextTop because it generally has internal
   // leadings.
   if (position_type == FontVerticalPositionType::TextTop)
     return offset_int;
-
-  // TODO(layout-dev): Add or subtract one depending on side (IsLineOverSide).
-  return offset_int + 1;
+  return !IsLineOverSide(position_type) ? offset_int + 1 : offset_int - 1;
 }
 
 }  // namespace blink
