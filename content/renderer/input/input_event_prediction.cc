@@ -119,7 +119,10 @@ void InputEventPrediction::UpdateSinglePointer(
     if (predictor != pointer_id_predictor_map_.end()) {
       predictor->second->Update(data);
     } else {
-      pointer_id_predictor_map_.insert({event.id, SetUpPredictor()});
+      // Workaround for GLIBC C++ < 7.3 that fails to insert with braces
+      // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82522
+      auto pair = std::make_pair(event.id, SetUpPredictor());
+      pointer_id_predictor_map_.insert(std::move(pair));
       pointer_id_predictor_map_[event.id]->Update(data);
     }
   }
