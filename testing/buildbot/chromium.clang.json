@@ -689,7 +689,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -1140,6 +1141,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -1601,6 +1609,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -2049,6 +2064,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -2510,6 +2532,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -2965,6 +2994,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -3426,6 +3462,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -3881,6 +3924,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -7464,7 +7514,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -7903,7 +7954,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -8330,7 +8382,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -9593,7 +9646,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -10072,7 +10126,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -10499,6 +10554,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -10960,6 +11022,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -11415,6 +11484,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -11876,6 +11952,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -12331,6 +12414,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -12792,6 +12882,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -13247,6 +13344,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -13708,6 +13812,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -14166,6 +14277,13 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "ipc_tests"
@@ -14621,6 +14739,13 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -15666,6 +15791,18 @@
           ]
         },
         "test": "installer_util_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ],
+          "shards": 2
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
