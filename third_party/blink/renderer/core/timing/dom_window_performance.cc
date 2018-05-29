@@ -17,12 +17,6 @@ void DOMWindowPerformance::Trace(blink::Visitor* visitor) {
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
-void DOMWindowPerformance::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(performance_);
-  Supplement<LocalDOMWindow>::TraceWrappers(visitor);
-}
-
 // static
 const char DOMWindowPerformance::kSupplementName[] = "DOMWindowPerformance";
 

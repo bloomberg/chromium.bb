@@ -56,11 +56,6 @@ void MojoWatcher::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void MojoWatcher::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  ScriptWrappable::TraceWrappers(visitor);
-  visitor->TraceWrappers(callback_);
-}
-
 bool MojoWatcher::HasPendingActivity() const {
   return handle_.is_valid();
 }

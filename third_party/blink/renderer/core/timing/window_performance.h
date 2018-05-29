@@ -75,7 +75,6 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                       bool cancelable);
 
   void Trace(blink::Visitor*) override;
-  using Performance::TraceWrappers;
 
  private:
   explicit WindowPerformance(LocalDOMWindow*);

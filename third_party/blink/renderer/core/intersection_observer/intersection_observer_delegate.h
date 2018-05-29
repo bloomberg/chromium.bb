@@ -23,7 +23,6 @@ class IntersectionObserverDelegate
                        IntersectionObserver&) = 0;
   virtual ExecutionContext* GetExecutionContext() const = 0;
   virtual void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {}
   const char* NameInHeapSnapshot() const override {
     return "IntersectionObserverDelegate";
   }

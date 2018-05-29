@@ -261,12 +261,6 @@ void ImageBitmapFactories::Trace(blink::Visitor* visitor) {
   Supplement<WorkerGlobalScope>::Trace(visitor);
 }
 
-void ImageBitmapFactories::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  Supplement<LocalDOMWindow>::TraceWrappers(visitor);
-  Supplement<WorkerGlobalScope>::TraceWrappers(visitor);
-}
-
 void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
     ImageBitmapRejectionReason reason) {
   switch (reason) {

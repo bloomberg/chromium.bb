@@ -65,11 +65,6 @@ void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
   SingleModuleClient::Trace(visitor);
 }
 
-void ModuleTreeLinker::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(result_);
-  SingleModuleClient::TraceWrappers(visitor);
-}
-
 #if DCHECK_IS_ON()
 const char* ModuleTreeLinker::StateToString(ModuleTreeLinker::State state) {
   switch (state) {
@@ -200,7 +195,7 @@ void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
 
   // Store the |module_script| here which will be used as result of the
   // algorithm when success. Also, this ensures that the |module_script| is
-  // TraceWrappers()ed via ModuleTreeLinker.
+  // traced via ModuleTreeLinker.
   result_ = module_script;
   AdvanceState(State::kFetchingDependencies);
 

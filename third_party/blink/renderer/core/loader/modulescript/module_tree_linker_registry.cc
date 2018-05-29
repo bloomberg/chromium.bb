@@ -14,12 +14,6 @@ void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_tree_linkers_);
 }
 
-void ModuleTreeLinkerRegistry::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (const auto& member : active_tree_linkers_)
-    visitor->TraceWrappers(member);
-}
-
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
     const KURL& url,
     const KURL& base_url,

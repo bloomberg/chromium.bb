@@ -85,7 +85,6 @@ class CORE_EXPORT WorkletGlobalScope
   bool DocumentSecureContext() const { return document_secure_context_; }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   // Partial implementation of the "set up a worklet environment settings

@@ -67,11 +67,4 @@ void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {
   visitor->Trace(intersection_observations_);
 }
 
-void ElementIntersectionObserverData::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto& entry : intersection_observations_) {
-    visitor->TraceWrappers(entry.key);
-  }
-}
-
 }  // namespace blink

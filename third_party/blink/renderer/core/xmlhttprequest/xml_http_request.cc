@@ -2010,14 +2010,6 @@ void XMLHttpRequest::Trace(blink::Visitor* visitor) {
   PausableObject::Trace(visitor);
 }
 
-void XMLHttpRequest::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(response_blob_);
-  visitor->TraceWrappers(response_document_);
-  visitor->TraceWrappers(response_array_buffer_);
-  visitor->TraceWrappers(response_text_);
-  XMLHttpRequestEventTarget::TraceWrappers(visitor);
-}
-
 std::ostream& operator<<(std::ostream& ostream, const XMLHttpRequest* xhr) {
   return ostream << "XMLHttpRequest " << static_cast<const void*>(xhr);
 }

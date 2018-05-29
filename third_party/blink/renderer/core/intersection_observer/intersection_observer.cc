@@ -387,10 +387,4 @@ void IntersectionObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void IntersectionObserver::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(delegate_);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 }  // namespace blink
