@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -66,6 +67,8 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -1122,39 +1125,85 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   EXPECT_EQ(content::SSLStatus::NORMAL_CONTENT, entry->GetSSL().content_status);
 }
 
-const char kReportURI[] = "https://report-hpkp.test";
+const char kReportURI[] = "https://report-hpkp.test/";
 
 class PKPModelClientTest : public SecurityStateTabHelperTest {
  public:
   void SetUpOnMainThread() override {
+    // Switch HTTPS server to use the "localhost" cert. The test mocks out cert
+    // verification results, anyways, but it mocks results based on the used
+    // cert, so this server needs a different cert from the test server used to
+    // send the HPKP header.
+    https_server_.SetSSLConfig(
+        net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
     ASSERT_TRUE(https_server_.Start());
-    url_request_context_getter_ = browser()->profile()->GetRequestContext();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&PKPModelClientTest::SetUpOnIOThread,
-                       base::Unretained(this)));
+
+    // Create a second embedded test server using a different cert (the default
+    // CERT_OK one) to send an HPKP header, which should result in an entry
+    // being added to the TransportSecurityState. This server will use a
+    // different port, but HPKP headers are set on hosts basis, not origins.
+    net::EmbeddedTestServer https_set_hpkp_server(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_set_hpkp_server.RegisterRequestHandler(
+        base::BindRepeating(&PKPModelClientTest::SendPublicKeyPinsResponse));
+    ASSERT_TRUE(https_set_hpkp_server.Start());
+
+    // Set up a mock result.
+    net::CertVerifyResult verify_result;
+    verify_result.verified_cert = https_set_hpkp_server.GetCertificate();
+    verify_result.cert_status = 0;
+    // These are the important lines. HPKP headers from servers with certs not
+    // issued by known roots are ignored, so need to claim the cert is from the
+    // known root. The second line sets a bogus hash, which matches the
+    // "Public-Key-Pins" header set by SendPublicKeyPinsResponse.
+    verify_result.is_issued_by_known_root = true;
+    verify_result.public_key_hashes.push_back(
+        net::HashValue(GetExpectedCertHash()));
+
+    mock_cert_verifier()->AddResultForCert(
+        https_set_hpkp_server.GetCertificate(), verify_result, net::OK);
+
+    // Do a navigation where the response should be a valid Public-Key-Pins
+    // header.
+    ui_test_utils::NavigateToURL(
+        browser(), https_set_hpkp_server.GetURL("localhost", "/"));
+
+    CheckSecurityInfoForSecure(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        security_state::SECURE, false, security_state::CONTENT_STATUS_NONE,
+        false, false);
   }
 
-  void SetUpOnIOThread() {
-    net::URLRequestContext* request_context =
-        url_request_context_getter_->GetURLRequestContext();
-    net::TransportSecurityState* security_state =
-        request_context->transport_security_state();
-
-    base::Time expiration =
-        base::Time::Now() + base::TimeDelta::FromSeconds(10000);
-
-    net::HashValue hash(net::HASH_VALUE_SHA256);
-    memset(hash.data(), 0x99, hash.size());
-    net::HashValueVector hashes;
-    hashes.push_back(hash);
-
-    security_state->AddHPKP(https_server_.host_port_pair().host(), expiration,
-                            true, hashes, GURL(kReportURI));
+ private:
+  // Returns the (bogus) expected SHA-256 hash of the cert set by the
+  // Public-Key-Pins header.
+  static net::SHA256HashValue GetExpectedCertHash() {
+    net::SHA256HashValue hash;
+    memset(&hash.data, 0x99, base::size(hash.data));
+    return hash;
   }
 
- protected:
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  // Returns a response with an empty body and a "Public-Key-Pins" header.
+  static std::unique_ptr<net::test_server::HttpResponse>
+  SendPublicKeyPinsResponse(const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response(
+        new net::test_server::BasicHttpResponse());
+
+    net::SHA256HashValue hash = GetExpectedCertHash();
+    std::string base64_hash;
+    base::Base64Encode(base::StringPiece(reinterpret_cast<char*>(hash.data),
+                                         base::size(hash.data)),
+                       &base64_hash);
+
+    std::string header_value = base::StringPrintf(
+        "max-age=50000;"
+        "pin-sha256=\"%s\";"
+        "pin-sha256=\"nZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZk=\";"
+        "report-uri=\"%s\"",
+        base64_hash.c_str(), kReportURI);
+    response->AddCustomHeader("Public-Key-Pins", header_value);
+    return std::move(response);
+  }
 };
 
 INSTANTIATE_TEST_CASE_P(, PKPModelClientTest, ::testing::Values(false, true));
