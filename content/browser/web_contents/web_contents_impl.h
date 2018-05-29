@@ -362,7 +362,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   int GetCrashedErrorCode() const override;
   bool IsBeingDestroyed() const override;
   void NotifyNavigationStateChanged(InvalidateTypes changed_flags) override;
-  void OnAudioStateChanged(bool is_audible) override;
+  void OnAudioStateChanged() override;
   base::TimeTicks GetLastActiveTime() const override;
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
   void WasShown() override;
@@ -1720,6 +1720,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   bool has_persistent_video_ = false;
 
+  bool is_currently_audible_ = false;
   bool was_ever_audible_ = false;
 
   // Helper variable for resolving races in UpdateTargetURL / ClearTargetURL.

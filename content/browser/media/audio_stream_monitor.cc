@@ -192,7 +192,7 @@ void AudioStreamMonitor::UpdateStreams() {
 
   if (is_audible_ != was_audible) {
     MaybeToggle();
-    web_contents_->OnAudioStateChanged(is_audible_);
+    web_contents_->OnAudioStateChanged();
   }
 }
 
