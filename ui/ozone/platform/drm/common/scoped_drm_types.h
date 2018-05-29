@@ -78,13 +78,6 @@ typedef std::unique_ptr<drmModePropertyBlobRes, DrmPropertyBlobDeleter>
 typedef std::unique_ptr<drmModeFB, DrmFramebufferDeleter>
     ScopedDrmFramebufferPtr;
 
-struct ScopedDrmPropertyBlob {
-  ScopedDrmPropertyBlob(int fd, uint32_t blob_id);
-  ~ScopedDrmPropertyBlob();
-  int fd;
-  uint32_t blob_id;
-};
-
 typedef std::unique_ptr<drm_color_lut, base::FreeDeleter> ScopedDrmColorLutPtr;
 typedef std::unique_ptr<drm_color_ctm, base::FreeDeleter> ScopedDrmColorCtmPtr;
 

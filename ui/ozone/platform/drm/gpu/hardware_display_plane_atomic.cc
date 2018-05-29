@@ -134,4 +134,13 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
   return true;
 }
 
+bool HardwareDisplayPlaneAtomic::SetPlaneCtm(drmModeAtomicReq* property_set,
+                                             uint32_t ctm_blob_id) {
+  if (!properties_.plane_ctm.id)
+    return false;
+
+  properties_.plane_ctm.value = ctm_blob_id;
+  return AddProperty(property_set, id_, properties_.plane_ctm);
+}
+
 }  // namespace ui

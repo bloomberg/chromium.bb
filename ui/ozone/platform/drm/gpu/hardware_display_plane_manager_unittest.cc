@@ -25,9 +25,10 @@
 
 namespace {
 
-constexpr uint32_t kTypePropId = 200;
-constexpr uint32_t kInFormatsPropId = 201;
-constexpr uint32_t kInFormatsBlobPropId = 300;
+constexpr uint32_t kTypePropId = 300;
+constexpr uint32_t kInFormatsPropId = 301;
+constexpr uint32_t kPlaneCtmId = 302;
+constexpr uint32_t kInFormatsBlobPropId = 400;
 
 const uint32_t kDummyFormat = 0;
 const gfx::Size kDefaultBufferSize(2, 2);
@@ -64,8 +65,22 @@ void HardwareDisplayPlaneManagerTest::SetUp() {
 void HardwareDisplayPlaneManagerTest::InitializeDrmState(
     size_t crtc_count,
     size_t planes_per_crtc) {
-  property_names_.insert({kTypePropId, "type"});
-  property_names_.insert({kInFormatsPropId, "IN_FORMATS"});
+  property_names_ = {
+      // Add all required properties.
+      {200, "CRTC_ID"},
+      {201, "CRTC_X"},
+      {202, "CRTC_Y"},
+      {203, "CRTC_W"},
+      {204, "CRTC_H"},
+      {205, "FB_ID"},
+      {206, "SRC_X"},
+      {207, "SRC_Y"},
+      {208, "SRC_W"},
+      {209, "SRC_H"},
+      // Defines some optional properties we use for convenience.
+      {kTypePropId, "type"},
+      {kInFormatsPropId, "IN_FORMATS"},
+  };
 
   for (size_t i = 0; i < crtc_count; ++i) {
     ui::MockDrmDevice::CrtcProperties crtc_prop;
@@ -77,15 +92,23 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
       ui::MockDrmDevice::PlaneProperties plane_prop;
       plane_prop.id = 100 + i * planes_per_crtc + j;
       plane_prop.crtc_mask = 1 << i;
-      plane_prop.properties = {
-          {.id = kTypePropId,
-           .value = j == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY},
-          {.id = kInFormatsPropId, .value = kInFormatsBlobPropId},
+      for (const auto& pair : property_names_) {
+        uint32_t value = 0;
+        if (pair.first == kTypePropId)
+          value = j == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY;
+        else if (pair.first == kInFormatsPropId)
+          value = kInFormatsBlobPropId;
+
+        plane_prop.properties.push_back({.id = pair.first, .value = value});
       };
 
       plane_properties_.emplace_back(std::move(plane_prop));
     }
   }
+
+  // Separately add optional properties that will be used in some tests, but the
+  // tests will append the property to the planes on a case-by-case basis.
+  property_names_.insert({kPlaneCtmId, "PLANE_CTM"});
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, SinglePlaneAssignment) {
@@ -292,6 +315,44 @@ TEST_F(HardwareDisplayPlaneManagerTest, UnusedPlanesAreReleased) {
   EXPECT_EQ(0, fake_drm_->get_overlay_clear_call_count());
   EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&hdpl, false));
   EXPECT_EQ(1, fake_drm_->get_overlay_clear_call_count());
+}
+
+TEST_F(HardwareDisplayPlaneManagerTest,
+       SetColorCorrectionOnAllCrtcPlanes_Success) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  plane_properties_[0].properties.push_back({.id = kPlaneCtmId, .value = 0});
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ true);
+
+  ui::ScopedDrmColorCtmPtr ctm_blob(new drm_color_ctm());
+  EXPECT_TRUE(fake_drm_->plane_manager()->SetColorCorrectionOnAllCrtcPlanes(
+      crtc_properties_[0].id, std::move(ctm_blob)));
+  EXPECT_EQ(1, fake_drm_->get_commit_count());
+}
+
+TEST_F(HardwareDisplayPlaneManagerTest,
+       SetColorCorrectionOnAllCrtcPlanes_NoPlaneCtmProperty) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ true);
+
+  ui::ScopedDrmColorCtmPtr ctm_blob(new drm_color_ctm());
+  EXPECT_FALSE(fake_drm_->plane_manager()->SetColorCorrectionOnAllCrtcPlanes(
+      crtc_properties_[0].id, std::move(ctm_blob)));
+  EXPECT_EQ(0, fake_drm_->get_commit_count());
+}
+
+TEST_F(HardwareDisplayPlaneManagerTest,
+       SetColorCorrectionOnAllCrtcPlanes_OnePlaneMissingCtmProperty) {
+  InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/2);
+  plane_properties_[0].properties.push_back({.id = kPlaneCtmId, .value = 0});
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ true);
+
+  ui::ScopedDrmColorCtmPtr ctm_blob(new drm_color_ctm());
+  EXPECT_FALSE(fake_drm_->plane_manager()->SetColorCorrectionOnAllCrtcPlanes(
+      crtc_properties_[0].id, std::move(ctm_blob)));
+  EXPECT_EQ(0, fake_drm_->get_commit_count());
 }
 
 class FakeFenceFD {

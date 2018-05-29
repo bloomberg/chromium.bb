@@ -128,44 +128,28 @@ bool HardwareDisplayPlaneManagerAtomic::SetColorCorrectionOnAllCrtcPlanes(
     uint32_t crtc_id,
     ScopedDrmColorCtmPtr ctm_blob_data) {
   ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
-  uint32_t blob_id = 0;
-  int fd = drm_->get_fd();
-  int ret = drmModeCreatePropertyBlob(fd, ctm_blob_data.get(),
-                                      sizeof(drm_color_ctm), &blob_id);
-  DCHECK(!ret && blob_id);
-  ScopedDrmPropertyBlob property_blob(fd, blob_id);
+  ScopedDrmPropertyBlob property_blob(
+      drm_->CreatePropertyBlob(ctm_blob_data.get(), sizeof(drm_color_ctm)));
 
   const int crtc_index = LookupCrtcIndex(crtc_id);
   DCHECK_GE(crtc_index, 0);
-  const int crtc_bit = 1 << crtc_index;
 
-  ScopedDrmPlaneResPtr plane_resources(drmModeGetPlaneResources(fd));
-  DCHECK(plane_resources);
-  bool all_planes_ctm = true;
-  for (uint32_t i = 0; i < plane_resources->count_planes; ++i) {
-    ScopedDrmPlanePtr drm_plane(
-        drmModeGetPlane(fd, plane_resources->planes[i]));
-    DCHECK(drm_plane);
+  for (auto& plane : planes_) {
+    HardwareDisplayPlaneAtomic* atomic_plane =
+        static_cast<HardwareDisplayPlaneAtomic*>(plane.get());
 
-    // This assumes planes can belong only to one crtc.
-    if (!(drm_plane->possible_crtcs & crtc_bit))
+    // This assumes planes can only belong to one crtc.
+    if (!atomic_plane->CanUseForCrtc(crtc_index))
       continue;
-    ScopedDrmObjectPropertyPtr plane_props(drmModeObjectGetProperties(
-        fd, plane_resources->planes[i], DRM_MODE_OBJECT_PLANE));
-    DCHECK(plane_props);
-    ScopedDrmPropertyPtr property(
-        FindDrmProperty(fd, plane_props.get(), "PLANE_CTM"));
-    if (property) {
-      int ret = drmModeAtomicAddProperty(
-          property_set.get(), plane_resources->planes[i], property->prop_id,
-          property_blob.blob_id);
-      LOG_IF(ERROR, ret < 0) << "Failed to set PLANE_CTM property.";
+
+    if (!atomic_plane->SetPlaneCtm(property_set.get(), property_blob->id())) {
+      LOG(ERROR) << "Failed to set PLANE_CTM for plane=" << atomic_plane->id();
+      return false;
     }
-    all_planes_ctm = all_planes_ctm && property;
   }
-  drm_->CommitProperties(property_set.get(), DRM_MODE_ATOMIC_NONBLOCK, 0,
-                         DrmDevice::PageFlipCallback());
-  return all_planes_ctm;
+
+  return drm_->CommitProperties(property_set.get(), DRM_MODE_ATOMIC_NONBLOCK, 0,
+                                DrmDevice::PageFlipCallback());
 }
 
 bool HardwareDisplayPlaneManagerAtomic::ValidatePrimarySize(

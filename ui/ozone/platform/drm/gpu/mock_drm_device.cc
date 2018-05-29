@@ -275,6 +275,13 @@ bool MockDrmDevice::SetProperty(uint32_t connector_id,
   return true;
 }
 
+ScopedDrmPropertyBlob MockDrmDevice::CreatePropertyBlob(void* blob,
+                                                        size_t size) {
+  return ScopedDrmPropertyBlob(new DrmPropertyBlobMetadata(this, 0xffffffff));
+}
+
+void MockDrmDevice::DestroyPropertyBlob(uint32_t id) {}
+
 bool MockDrmDevice::GetCapability(uint64_t capability, uint64_t* value) {
   return true;
 }
@@ -359,6 +366,8 @@ bool MockDrmDevice::CommitProperties(drmModeAtomicReq* properties,
     std::move(callback).Run(0, base::TimeTicks());
   else
     callbacks_.push(std::move(callback));
+
+  commit_count_++;
   return true;
 }
 

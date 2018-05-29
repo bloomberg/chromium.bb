@@ -133,6 +133,15 @@ bool CanQueryForResources(int fd) {
 
 }  // namespace
 
+DrmPropertyBlobMetadata::DrmPropertyBlobMetadata(DrmDevice* drm, uint32_t id)
+    : drm_(drm), id_(id) {}
+
+DrmPropertyBlobMetadata::~DrmPropertyBlobMetadata() {
+  DCHECK(drm_);
+  DCHECK(id_);
+  drm_->DestroyPropertyBlob(id_);
+}
+
 class DrmDevice::PageFlipManager {
  public:
   PageFlipManager() : next_id_(0) {}
@@ -431,6 +440,18 @@ bool DrmDevice::SetProperty(uint32_t connector_id,
   DCHECK(file_.IsValid());
   return !drmModeConnectorSetProperty(file_.GetPlatformFile(), connector_id,
                                       property_id, value);
+}
+
+ScopedDrmPropertyBlob DrmDevice::CreatePropertyBlob(void* blob, size_t size) {
+  uint32_t id = 0;
+  int ret = drmModeCreatePropertyBlob(file_.GetPlatformFile(), blob, size, &id);
+  DCHECK(!ret && id);
+
+  return ScopedDrmPropertyBlob(new DrmPropertyBlobMetadata(this, id));
+}
+
+void DrmDevice::DestroyPropertyBlob(uint32_t id) {
+  drmModeDestroyPropertyBlob(file_.GetPlatformFile(), id);
 }
 
 bool DrmDevice::GetCapability(uint64_t capability, uint64_t* value) {
