@@ -729,27 +729,16 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
   if (!IsSVGViewElement(anchor_node))
     return;
 
-  SVGViewElement& view_element = ToSVGViewElement(*anchor_node);
-
-  // Spec: If the SVG fragment identifier addresses a 'view' element
-  // within an SVG document (e.g., MyDrawing.svg#MyView) then the
-  // closest ancestor 'svg' element is displayed in the
-  // viewport. Any view specification attributes included on the
-  // given 'view' element override the corresponding view
-  // specification attributes on the closest ancestor 'svg' element.
-  // TODO(ed): The spec text above is a bit unclear.
-  // Should the transform from outermost svg to nested svg be applied to
-  // "display" the inner svg in the viewport, then let the view element
-  // override the inner svg's view specification attributes. Should it
-  // fill/override the outer viewport?
-  SVGSVGElement* svg = view_element.ownerSVGElement();
-  if (!svg)
-    return;
-  SVGViewSpec* view_spec = SVGViewSpec::CreateForElement(*svg);
-  view_spec->InheritViewAttributesFromElement(view_element);
-  UseCounter::Count(svg->GetDocument(),
+  // Spec: If the SVG fragment identifier addresses a 'view' element within an
+  // SVG document (e.g., MyDrawing.svg#MyView) then the root 'svg' element is
+  // displayed in the SVG viewport. Any view specification attributes included
+  // on the given 'view' element override the corresponding view specification
+  // attributes on the root 'svg' element.
+  SVGViewSpec* view_spec = SVGViewSpec::CreateForElement(*this);
+  view_spec->InheritViewAttributesFromElement(ToSVGViewElement(*anchor_node));
+  UseCounter::Count(GetDocument(),
                     WebFeature::kSVGSVGElementFragmentSVGViewElement);
-  svg->SetViewSpec(view_spec);
+  SetViewSpec(view_spec);
 }
 
 void SVGSVGElement::FinishParsingChildren() {
