@@ -61,20 +61,18 @@ TestStateProvider::TestStateProvider()
 
 void TestStateProvider::SetPersistentState(const gfx::Rect& bounds,
                                            const gfx::Rect& work_area,
-                                           ui::WindowShowState show_state,
-                                           bool has_persistent_data) {
+                                           ui::WindowShowState show_state) {
   persistent_bounds_ = bounds;
   persistent_work_area_ = work_area;
   persistent_show_state_ = show_state;
-  has_persistent_data_ = has_persistent_data;
+  has_persistent_data_ = true;
 }
 
 void TestStateProvider::SetLastActiveState(const gfx::Rect& bounds,
-                                           ui::WindowShowState show_state,
-                                           bool has_last_active_data) {
+                                           ui::WindowShowState show_state) {
   last_active_bounds_ = bounds;
   last_active_show_state_ = show_state;
-  has_last_active_data_ = has_last_active_data;
+  has_last_active_data_ = true;
 }
 
 bool TestStateProvider::GetPersistentState(
@@ -100,65 +98,6 @@ bool TestStateProvider::GetLastActiveWindowState(
 }
 
 // static
-void WindowSizerTestUtil::GetWindowBoundsAndShowState(
-    const gfx::Rect& monitor1_bounds,
-    const gfx::Rect& monitor1_work_area,
-    const gfx::Rect& monitor2_bounds,
-    const gfx::Rect& bounds,
-    const gfx::Rect& work_area,
-    ui::WindowShowState show_state_persisted,
-    ui::WindowShowState show_state_last,
-    Source source,
-    const Browser* browser,
-    const gfx::Rect& passed_in,
-    size_t display_index,
-    gfx::Rect* out_bounds,
-    ui::WindowShowState* out_show_state) {
-  DCHECK(out_show_state);
-  TestScreen test_screen;
-  test_screen.AddDisplay(monitor1_bounds, monitor1_work_area);
-  if (!monitor2_bounds.IsEmpty())
-    test_screen.AddDisplay(monitor2_bounds, monitor2_bounds);
-  std::unique_ptr<TestStateProvider> sp(new TestStateProvider);
-  if (source == PERSISTED || source == BOTH)
-    sp->SetPersistentState(bounds, work_area, show_state_persisted, true);
-  if (source == LAST_ACTIVE || source == BOTH)
-    sp->SetLastActiveState(bounds, show_state_last, true);
-
-  WindowSizer sizer(std::move(sp), browser);
-  sizer.DetermineWindowBoundsAndShowState(passed_in,
-                                          out_bounds,
-                                          out_show_state);
-}
-
-// static
-ui::WindowShowState WindowSizerTestUtil::GetWindowShowState(
-    ui::WindowShowState show_state_persisted,
-    ui::WindowShowState show_state_last,
-    Source source,
-    const Browser* browser,
-    const gfx::Rect& bounds,
-    const gfx::Rect& display_config) {
-  TestScreen test_screen;
-  test_screen.AddDisplay(display_config, display_config);
-  std::unique_ptr<TestStateProvider> sp(new TestStateProvider);
-  if (source == PERSISTED || source == BOTH)
-    sp->SetPersistentState(bounds, display_config, show_state_persisted, true);
-  if (source == LAST_ACTIVE || source == BOTH)
-    sp->SetLastActiveState(bounds, show_state_last, true);
-
-  WindowSizer sizer(std::move(sp), browser);
-
-  ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
-  gfx::Rect out_bounds;
-  sizer.DetermineWindowBoundsAndShowState(
-      gfx::Rect(),
-      &out_bounds,
-      &out_show_state);
-  return out_show_state;
-}
-
-// static
 void WindowSizerTestUtil::GetWindowBounds(const gfx::Rect& monitor1_bounds,
                                           const gfx::Rect& monitor1_work_area,
                                           const gfx::Rect& monitor2_bounds,
@@ -168,11 +107,20 @@ void WindowSizerTestUtil::GetWindowBounds(const gfx::Rect& monitor1_bounds,
                                           const Browser* browser,
                                           const gfx::Rect& passed_in,
                                           gfx::Rect* out_bounds) {
-  ui::WindowShowState out_show_state = ui::SHOW_STATE_DEFAULT;
-  GetWindowBoundsAndShowState(
-      monitor1_bounds, monitor1_work_area, monitor2_bounds, bounds, work_area,
-      ui::SHOW_STATE_DEFAULT, ui::SHOW_STATE_DEFAULT, source, browser,
-      passed_in, 0u, out_bounds, &out_show_state);
+  TestScreen test_screen;
+  test_screen.AddDisplay(monitor1_bounds, monitor1_work_area);
+  if (!monitor2_bounds.IsEmpty())
+    test_screen.AddDisplay(monitor2_bounds, monitor2_bounds);
+
+  auto provider = std::make_unique<TestStateProvider>();
+  if (source == PERSISTED || source == BOTH)
+    provider->SetPersistentState(bounds, work_area, ui::SHOW_STATE_DEFAULT);
+  if (source == LAST_ACTIVE || source == BOTH)
+    provider->SetLastActiveState(bounds, ui::SHOW_STATE_DEFAULT);
+
+  ui::WindowShowState ignored;
+  WindowSizer sizer(std::move(provider), browser);
+  sizer.DetermineWindowBoundsAndShowState(passed_in, out_bounds, &ignored);
 }
 
 #if !defined(OS_MACOSX)

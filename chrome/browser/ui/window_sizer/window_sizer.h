@@ -115,9 +115,6 @@ class WindowSizer {
 
   virtual ~WindowSizer();
 
-  // The edge of the screen to check for out-of-bounds.
-  enum Edge { TOP, LEFT, BOTTOM, RIGHT };
-
   // Gets the size and placement of the last active window. Returns true if this
   // data is valid, false if there is no last window and the application should
   // restore saved state from preferences using RestoreWindowPosition.
