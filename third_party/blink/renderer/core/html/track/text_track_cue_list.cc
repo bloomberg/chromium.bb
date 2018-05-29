@@ -144,10 +144,4 @@ void TextTrackCueList::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void TextTrackCueList::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (auto cue : list_) {
-    visitor->TraceWrappers(cue);
-  }
-  ScriptWrappable::TraceWrappers(visitor);
-}
 }  // namespace blink

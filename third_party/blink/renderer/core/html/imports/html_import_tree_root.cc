@@ -87,8 +87,4 @@ void HTMLImportTreeRoot::Trace(blink::Visitor* visitor) {
   HTMLImport::Trace(visitor);
 }
 
-void HTMLImportTreeRoot::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(document_);
-}
-
 }  // namespace blink

@@ -33,13 +33,6 @@ void CustomElementReactionStack::Trace(blink::Visitor* visitor) {
   visitor->Trace(backup_queue_);
 }
 
-void CustomElementReactionStack::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto key : map_.Keys()) {
-    visitor->TraceWrappers(key);
-  }
-}
-
 void CustomElementReactionStack::Push() {
   stack_.push_back(nullptr);
 }

@@ -147,9 +147,4 @@ void HTMLImportsController::Trace(blink::Visitor* visitor) {
   visitor->Trace(loaders_);
 }
 
-void HTMLImportsController::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(root_);
-}
-
 }  // namespace blink

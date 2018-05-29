@@ -1106,11 +1106,6 @@ void HTMLCanvasElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-void HTMLCanvasElement::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(context_);
-  HTMLElement::TraceWrappers(visitor);
-}
-
 void HTMLCanvasElement::DisableDeferral(DisableDeferralReason reason) {
   if (canvas2d_bridge_)
     canvas2d_bridge_->DisableDeferral(reason);
