@@ -8,6 +8,8 @@ option optimize_for = LITE_RUNTIME;
 
 package autofill;
 
+import "password_requirements.proto";
+
 // The message is sent when a client needs to autofill forms on web pages and
 // asks the server about known field types.
 // Next available id: 11
@@ -25,7 +27,7 @@ message AutofillQueryContents {
 
 // This message is the result of an Autofill query. It holds the field type
 // information.
-// Next available id: 8
+// Next available id: 10
 message AutofillQueryResponseContents {
   optional bool upload_required = 1;
   repeated group Field = 2 {
@@ -34,6 +36,10 @@ message AutofillQueryResponseContents {
     // |overall_type_prediction| as the first item).
     message FieldPrediction { optional fixed32 type = 1; }
     repeated FieldPrediction predictions = 7;
+
+    // For fields of type NEW_PASSWORD and ACCOUNT_CREATION_PASSWORD, this may
+    // specify requirements for the generation of passwords.
+    optional PasswordRequirementsSpec password_requirements = 9;
   }
 }
 
