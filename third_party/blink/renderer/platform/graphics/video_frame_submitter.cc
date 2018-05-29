@@ -8,7 +8,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/filter_operations.h"
-#include "cc/resources/video_resource_updater.h"
 #include "cc/scheduler/video_frame_controller.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/returned_resource.h"

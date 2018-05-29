@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/resources/video_resource_updater.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -15,6 +14,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "media/base/video_frame.h"
+#include "media/renderers/video_resource_updater.h"
 
 namespace blink {
 
@@ -40,7 +40,7 @@ void VideoFrameResourceProvider::Initialize(
     max_texture_size = 16 * 1024;
   }
 
-  resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
+  resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
       media_context_provider, shared_bitmap_reporter, resource_provider_.get(),
       settings_.use_stream_video_draw_quad,
       settings_.resource_settings.use_gpu_memory_buffer_resources,

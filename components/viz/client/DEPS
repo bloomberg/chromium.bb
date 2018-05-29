@@ -7,6 +7,7 @@ include_rules = [
   "+gpu/GLES2/gl2extchromium.h",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
+  "+mojo/public/cpp/system/buffer.h",
   "+third_party/skia",
   "+third_party/khronos/GLES2",
 

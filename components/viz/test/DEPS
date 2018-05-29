@@ -11,6 +11,7 @@ include_rules = [
   "+gpu/config/gpu_feature_info.h",
   "+gpu/GLES2",
   "+gpu/skia_bindings/grcontext_for_gles2_interface.h",
+  "+media",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
   "+services/viz/privileged/interfaces",
