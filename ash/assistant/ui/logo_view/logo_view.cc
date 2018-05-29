@@ -24,6 +24,10 @@ int64_t TimeTicksToMs(const base::TimeTicks& timestamp) {
   return (timestamp - base::TimeTicks()).InMilliseconds();
 }
 
+int32_t GetLogoAlpha(const LogoView::Logo& logo) {
+  return logo.GetAlpha() * 255;
+}
+
 }  // namespace
 
 LogoView::LogoView()
@@ -93,8 +97,6 @@ void LogoView::DrawDots(gfx::Canvas* canvas) {
   // we need to find out why the Mic parts are overlapping in the first place.
   for (auto iter = logo_.dots().rbegin(); iter != logo_.dots().rend(); ++iter)
     DrawDot(canvas, (*iter).get());
-
-  layer()->SetOpacity(logo_.GetAlpha());
 }
 
 void LogoView::DrawDot(gfx::Canvas* canvas, Dot* dot) {
@@ -127,6 +129,7 @@ void LogoView::DrawShape(gfx::Canvas* canvas, Shape* shape, SkColor color) {
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(color);
+  paint_flags.setAlpha(GetLogoAlpha(logo_));
   paint_flags.setStyle(cc::PaintFlags::kStroke_Style);
   paint_flags.setStrokeCap(shape->cap());
 
@@ -142,6 +145,7 @@ void LogoView::DrawLine(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(dot->color());
+  paint_flags.setAlpha(GetLogoAlpha(logo_));
   paint_flags.setStrokeWidth(stroke_width);
   paint_flags.setStyle(cc::PaintFlags::kStroke_Style);
   paint_flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
@@ -159,6 +163,7 @@ void LogoView::DrawCircle(gfx::Canvas* canvas, Dot* dot, float x, float y) {
   cc::PaintFlags paint_flags;
   paint_flags.setAntiAlias(true);
   paint_flags.setColor(dot->color());
+  paint_flags.setAlpha(GetLogoAlpha(logo_));
   paint_flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(x * dots_scale_, y * dots_scale_),
                      radius * dots_scale_, paint_flags);
