@@ -15,7 +15,6 @@ import argparse
 import contextlib
 import errno
 import os
-import pipes
 import sys
 import tempfile
 
@@ -444,7 +443,7 @@ To install the debug symbols for all available packages, run:
         ssh_cmd.extend(['--multi', 'stdio'])
         target_type = 'extended-remote'
 
-      ssh_cmd = ' '.join(map(pipes.quote, ssh_cmd))
+      ssh_cmd = cros_build_lib.CmdToStr(ssh_cmd)
 
       if self.in_chroot:
         if inferior_cmd:
@@ -464,32 +463,28 @@ To install the debug symbols for all available packages, run:
 
   def RunRemote(self):
     """Handle remote debugging, via gdbserver & cross debugger."""
-    device = None
-    try:
-      device = remote_access.ChromiumOSDeviceHandler(
-          self.remote,
-          port=self.remote_port,
-          connect_settings=self.ssh_settings,
-          ping=self.ping).device
-    except remote_access.DeviceNotPingableError:
-      raise GdbBadRemoteDeviceError('Remote device %s is not responding to '
-                                    'ping.' % self.remote)
+    with remote_access.ChromiumOSDeviceHandler(
+        self.remote,
+        port=self.remote_port,
+        connect_settings=self.ssh_settings,
+        ping=self.ping) as device:
 
-    self.VerifyAndFinishInitialization(device)
-    gdb_cmd = self.cross_gdb
+      self.VerifyAndFinishInitialization(device)
+      gdb_cmd = self.cross_gdb
 
-    gdb_commands = self.GetGdbInitCommands(self.inf_cmd, device)
-    gdb_args = ['--quiet'] + ['--eval-command=%s' % x for x in gdb_commands]
-    gdb_args += self.gdb_args
+      gdb_commands = self.GetGdbInitCommands(self.inf_cmd, device)
+      gdb_args = ['--quiet'] + ['--eval-command=%s' % x for x in gdb_commands]
+      gdb_args += self.gdb_args
 
-    if self.cgdb:
-      gdb_args = ['-d', gdb_cmd, '--'] + gdb_args
-      gdb_cmd = 'cgdb'
+      if self.cgdb:
+        gdb_args = ['-d', gdb_cmd, '--'] + gdb_args
+        gdb_cmd = 'cgdb'
 
-    logging.debug('Running: %s', [gdb_cmd] + gdb_args)
-
-    os.chdir(self.sysroot)
-    sys.exit(os.execvp(gdb_cmd, gdb_args))
+      cros_build_lib.RunCommand(
+          [gdb_cmd] + gdb_args,
+          ignore_sigint=True,
+          print_cmd=True,
+          cwd=self.sysroot)
 
   def Run(self):
     """Runs the debugger in a proper environment (e.g. qemu)."""
@@ -534,7 +529,7 @@ To install the debug symbols for all available packages, run:
                                        for x in gdb_commands]
     gdb_args += self.gdb_args
 
-    sys.exit(os.execvp(gdb_cmd, gdb_args))
+    os.execvp(gdb_cmd, gdb_args)
 
 
 def _ReExecuteIfNeeded(argv, ns_net=False, ns_pid=False):
