@@ -7,7 +7,34 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class LoginUIServiceTest : public testing::Test {
+ public:
+  LoginUIServiceTest()
+      : profile_manager_(TestingBrowserProcess::GetGlobal()),
+        profile_(nullptr) {}
+  ~LoginUIServiceTest() override {}
+
+  void SetUp() override {
+    ASSERT_TRUE(profile_manager_.SetUp());
+    profile_ = profile_manager_.CreateTestingProfile("Person 1");
+  }
+
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+
+  TestingProfileManager profile_manager_;
+  // Test profile used by all tests - this is owned by profile_manager_.
+  TestingProfile* profile_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginUIServiceTest);
+};
 
 class TestLoginUI : public LoginUIService::LoginUI {
  public:
@@ -19,8 +46,8 @@ class TestLoginUI : public LoginUIService::LoginUI {
   DISALLOW_COPY_AND_ASSIGN(TestLoginUI);
 };
 
-TEST(LoginUIServiceTest, CanSetMultipleLoginUIs) {
-  LoginUIService service(nullptr);
+TEST_F(LoginUIServiceTest, CanSetMultipleLoginUIs) {
+  LoginUIService service(profile_);
 
   EXPECT_EQ(nullptr, service.current_login_ui());
 
@@ -48,8 +75,8 @@ TEST(LoginUIServiceTest, CanSetMultipleLoginUIs) {
   EXPECT_EQ(nullptr, service.current_login_ui());
 }
 
-TEST(LoginUIServiceTest, SetProfileBlockingErrorMessage) {
-  LoginUIService service(nullptr);
+TEST_F(LoginUIServiceTest, SetProfileBlockingErrorMessage) {
+  LoginUIService service(profile_);
 
   service.SetProfileBlockingErrorMessage();
 

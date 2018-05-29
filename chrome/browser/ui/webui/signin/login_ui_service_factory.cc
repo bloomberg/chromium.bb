@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
@@ -16,6 +18,8 @@ LoginUIServiceFactory::LoginUIServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "LoginUIServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 LoginUIServiceFactory::~LoginUIServiceFactory() {}
@@ -42,4 +46,8 @@ base::Closure LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
 KeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new LoginUIService(static_cast<Profile*>(profile));
+}
+
+bool LoginUIServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+  return true;
 }

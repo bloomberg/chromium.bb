@@ -35,8 +35,11 @@
 class ConsentBumpActivator : public BrowserListObserver,
                              public LoginUIService::Observer {
  public:
-  explicit ConsentBumpActivator(Profile* profile)
-      : profile_(profile),
+  // Creates a ConsentBumpActivator for |profile| which is owned by
+  // |login_ui_service|.
+  ConsentBumpActivator(LoginUIService* login_ui_service, Profile* profile)
+      : login_ui_service_(login_ui_service),
+        profile_(profile),
         scoped_browser_list_observer_(this),
         scoped_login_ui_service_observer_(this) {
     // Check if there is already an active browser window for |profile|.
@@ -57,8 +60,7 @@ class ConsentBumpActivator : public BrowserListObserver,
 
     if (ShouldShowConsentBumpFor(profile_)) {
       selected_browser_ = browser;
-      scoped_login_ui_service_observer_.Add(
-          LoginUIServiceFactory::GetForProfile(profile_));
+      scoped_login_ui_service_observer_.Add(login_ui_service_);
       selected_browser_->signin_view_controller()->ShowModalSyncConsentBump(
           selected_browser_);
     }
@@ -108,6 +110,8 @@ class ConsentBumpActivator : public BrowserListObserver,
   }
 
  private:
+  LoginUIService* login_ui_service_;  // owner
+
   Profile* profile_;
 
   ScopedObserver<BrowserList, ConsentBumpActivator>
@@ -129,8 +133,9 @@ LoginUIService::LoginUIService(Profile* profile)
 #endif
 {
 #if !defined(OS_CHROMEOS)
-  if (profile && !profile->IsOffTheRecord() && !profile->IsSupervised()) {
-    consent_bump_activator_ = std::make_unique<ConsentBumpActivator>(profile);
+  if (IsUnifiedConsentBumpEnabled(profile)) {
+    consent_bump_activator_ =
+        std::make_unique<ConsentBumpActivator>(this, profile);
   }
 #endif
 }
