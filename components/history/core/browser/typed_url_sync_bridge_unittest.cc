@@ -1034,10 +1034,11 @@ TEST_F(TypedURLSyncBridgeTest, ExpireLocalTypedUrl) {
                             EntityChange::ACTION_ADD);
   }
 
-  // Check all the metadata is here.
+  // Check all the metadata is here, no need to untrack anything so far.
   MetadataBatch metadata_batch;
   metadata_store()->GetAllSyncMetadata(&metadata_batch);
   ASSERT_EQ(5u, metadata_batch.TakeAllMetadata().size());
+  ASSERT_EQ(0U, processor().untrack_for_storage_key_set().size());
 
   // Simulate expiration - delete some urls from the backend and create deleted
   // row vector.
@@ -1057,6 +1058,8 @@ TEST_F(TypedURLSyncBridgeTest, ExpireLocalTypedUrl) {
   // This does not propagate to the processor.
   EXPECT_EQ(0U, processor().put_multimap().size() - previous_put_size);
   EXPECT_EQ(0U, processor().delete_set().size());
+  // The processor is still informed to clear its in-memory maps.
+  EXPECT_EQ(3U, processor().untrack_for_storage_key_set().size());
 
   // The urls are removed from the metadata store.
   MetadataBatch smaller_metadata_batch;

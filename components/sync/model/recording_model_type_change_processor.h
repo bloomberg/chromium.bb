@@ -32,6 +32,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
                         const std::string& storage_key,
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntity(const EntityData& entity_data) override;
+  void UntrackEntityForStorageKey(const std::string& storage_key) override;
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
 
@@ -53,6 +54,10 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
     return untrack_set_;
   }
 
+  const std::set<std::string>& untrack_for_storage_key_set() const {
+    return untrack_for_storage_key_set_;
+  }
+
   MetadataBatch* metadata() const { return metadata_.get(); }
 
   // Constructs the processor and assigns its raw pointer to the given address.
@@ -68,6 +73,7 @@ class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
   std::multimap<std::string, std::unique_ptr<EntityData>> update_multimap_;
   std::set<std::string> delete_set_;
   std::set<std::unique_ptr<EntityData>> untrack_set_;
+  std::set<std::string> untrack_for_storage_key_set_;
   std::unique_ptr<MetadataBatch> metadata_;
   bool is_tracking_metadata_ = true;
 };
