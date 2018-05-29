@@ -72,10 +72,4 @@ void StyleRuleCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
   PropertySetCSSStyleDeclaration::Trace(visitor);
 }
 
-void StyleRuleCSSStyleDeclaration::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(parent_rule_);
-  PropertySetCSSStyleDeclaration::TraceWrappers(visitor);
-}
-
 }  // namespace blink

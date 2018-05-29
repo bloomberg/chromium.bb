@@ -183,7 +183,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool CanBeActivated(const String& current_preferrable_name) const;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(blink::ScriptWrappableVisitor*) const override;
 
  private:
   CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);
