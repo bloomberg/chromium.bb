@@ -12,9 +12,9 @@
 
 #include "base/macros.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
+#include "ui/ozone/common/linux/overlay_plane.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
 namespace gfx {
 class Rect;

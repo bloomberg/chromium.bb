@@ -48,6 +48,9 @@ if (ozone_platform_gbm) {
     sources = [
       "linux/drm_util_linux.cc",
       "linux/drm_util_linux.h",
+      "linux/overlay_plane.cc",
+      "linux/overlay_plane.h",
+      "linux/scanout_buffer.h",
     ]
 
     deps = [
@@ -55,6 +58,8 @@ if (ozone_platform_gbm) {
       "//third_party/libdrm",
       "//third_party/minigbm",
       "//ui/gfx:buffer_types",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/geometry:geometry",
     ]
 
     visibility = [ "//ui/ozone/platform/drm/*" ]

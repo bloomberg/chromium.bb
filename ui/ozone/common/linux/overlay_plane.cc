@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
+#include "ui/ozone/common/linux/overlay_plane.h"
 
 #include <stddef.h>
 
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 
 namespace ui {
 
@@ -36,8 +36,7 @@ OverlayPlane::OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
 
 OverlayPlane::OverlayPlane(const OverlayPlane& other) = default;
 
-OverlayPlane::~OverlayPlane() {
-}
+OverlayPlane::~OverlayPlane() {}
 
 bool OverlayPlane::operator<(const OverlayPlane& plane) const {
   return std::tie(z_order, display_bounds, crop_rect, plane_transform) <

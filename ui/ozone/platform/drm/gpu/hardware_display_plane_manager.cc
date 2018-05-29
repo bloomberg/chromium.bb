@@ -14,11 +14,11 @@
 #include "base/posix/safe_strerror.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_dummy.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 namespace {

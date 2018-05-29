@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 
 class SkCanvas;
 struct SkImageInfo;

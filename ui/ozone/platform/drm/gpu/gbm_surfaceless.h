@@ -15,7 +15,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_overlay.h"
 #include "ui/gl/scoped_binders.h"
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
+#include "ui/ozone/common/linux/overlay_plane.h"
 
 namespace ui {
 
