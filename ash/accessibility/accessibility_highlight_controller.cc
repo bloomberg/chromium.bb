@@ -80,7 +80,8 @@ void AccessibilityHighlightController::SetFocusHighlightRect(
 }
 
 void AccessibilityHighlightController::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_MOVED) {
+  if (event->type() == ui::ET_MOUSE_MOVED ||
+      event->type() == ui::ET_MOUSE_DRAGGED) {
     cursor_point_ = event->location();
     if (event->target()) {
       ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
