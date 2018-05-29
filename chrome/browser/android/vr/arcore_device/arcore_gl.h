@@ -36,6 +36,7 @@ class MailboxToSurfaceBridge;
 namespace device {
 
 class ARCore;
+struct ARCoreHitTestRequest;
 class ARImageTransport;
 
 // All of this class's methods must be called on the same valid GL thread with
@@ -55,9 +56,18 @@ class ARCoreGl {
     return gl_thread_task_runner_;
   }
 
+  void RequestHitTest(mojom::XRRayPtr,
+                      mojom::VRMagicWindowProvider::RequestHitTestCallback);
+
   base::WeakPtr<ARCoreGl> GetWeakPtr();
 
  private:
+  // TODO(https://crbug/835948): remove frame_size.
+  void ProcessFrame(
+      mojom::VRMagicWindowFrameDataPtr frame_data,
+      const gfx::Size& frame_size,
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
+
   bool IsOnGlThread() const;
 
   scoped_refptr<gl::GLSurface> surface_;
@@ -71,6 +81,9 @@ class ARCoreGl {
   bool is_initialized_ = false;
 
   vr::FPSMeter fps_meter_;
+
+  std::vector<std::unique_ptr<ARCoreHitTestRequest>> hit_test_requests_;
+
   // Must be last.
   base::WeakPtrFactory<ARCoreGl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(ARCoreGl);

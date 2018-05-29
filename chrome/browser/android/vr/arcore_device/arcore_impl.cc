@@ -11,7 +11,11 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/display.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/transform.h"
 
 using base::android::JavaRef;
 
@@ -196,6 +200,130 @@ gfx::Transform ARCoreImpl::GetProjectionMatrix(float near, float far) {
   gfx::Transform result;
   result.matrix().setColMajorf(matrix_4x4);
   return result;
+}
+
+// TODO(835948): remove image-size
+bool ARCoreImpl::RequestHitTest(
+    const mojom::XRRayPtr& ray,
+    const gfx::Size& image_size,
+    std::vector<mojom::XRHitResultPtr>* hit_results) {
+  DCHECK(IsOnGlThread());
+  DCHECK(arcore_session_.is_valid());
+  DCHECK(arcore_frame_.is_valid());
+
+  internal::ScopedArCoreObject<ArHitResultList*> arcore_hit_result_list;
+  ArHitResultList_create(arcore_session_.get(),
+                         arcore_hit_result_list.receive());
+  if (!arcore_hit_result_list.is_valid()) {
+    DLOG(ERROR) << "ArHitResultList_create failed!";
+    return false;
+  }
+
+  gfx::PointF screen_point;
+  if (!TransformRayToScreenSpace(ray, image_size, &screen_point)) {
+    return false;
+  }
+
+  // ARCore returns hit-results in sorted order, thus providing the guarantee
+  // of sorted results promised by the WebXR spec for requestHitTest().
+  ArFrame_hitTest(arcore_session_.get(), arcore_frame_.get(),
+                  screen_point.x() * image_size.width(),
+                  screen_point.y() * image_size.height(),
+                  arcore_hit_result_list.get());
+
+  int arcore_hit_result_list_size = 0;
+  ArHitResultList_getSize(arcore_session_.get(), arcore_hit_result_list.get(),
+                          &arcore_hit_result_list_size);
+
+  for (int i = 0; i < arcore_hit_result_list_size; i++) {
+    internal::ScopedArCoreObject<ArHitResult*> arcore_hit;
+    ArHitResult_create(arcore_session_.get(), arcore_hit.receive());
+    if (!arcore_hit.is_valid()) {
+      DLOG(ERROR) << "ArHitResult_create failed!";
+      return false;
+    }
+
+    ArHitResultList_getItem(arcore_session_.get(), arcore_hit_result_list.get(),
+                            i, arcore_hit.get());
+
+    mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
+    if (!ArHitResultToXRHitResult(arcore_hit.get(), mojo_hit.get())) {
+      return false;
+    }
+    hit_results->push_back(std::move(mojo_hit));
+  }
+  return true;
+}
+
+// TODO(835948): remove this method.
+bool ARCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
+                                           const gfx::Size& image_size,
+                                           gfx::PointF* screen_point) {
+  DCHECK(IsOnGlThread());
+  DCHECK(arcore_session_.is_valid());
+  DCHECK(arcore_frame_.is_valid());
+
+  internal::ScopedArCoreObject<ArCamera*> arcore_camera;
+  ArFrame_acquireCamera(arcore_session_.get(), arcore_frame_.get(),
+                        arcore_camera.receive());
+  DCHECK(arcore_camera.is_valid())
+      << "ArFrame_acquireCamera failed despite documentation saying it cannot";
+
+  // Get the projection matrix.
+  float projection_matrix[16];
+  ArCamera_getProjectionMatrix(arcore_session_.get(), arcore_camera.get(), 0.1,
+                               1000, projection_matrix);
+  SkMatrix44 projection44;
+  projection44.setColMajorf(projection_matrix);
+  gfx::Transform projection_transform(projection44);
+
+  // Get the view matrix.
+  float view_matrix[16];
+  ArCamera_getViewMatrix(arcore_session_.get(), arcore_camera.get(),
+                         view_matrix);
+  SkMatrix44 view44;
+  view44.setColMajorf(view_matrix);
+  gfx::Transform view_transform(view44);
+
+  // Create the combined matrix.
+  gfx::Transform proj_view_transform = projection_transform * view_transform;
+
+  // Transform the ray into screen space.
+  gfx::Point3F screen_point_3d{ray->origin[0] + ray->direction[0],
+                               ray->origin[1] + ray->direction[1],
+                               ray->origin[2] + ray->direction[2]};
+  proj_view_transform.TransformPoint(&screen_point_3d);
+  if (screen_point_3d.x() < -1 || screen_point_3d.x() > 1 ||
+      screen_point_3d.y() < -1 || screen_point_3d.y() > 1) {
+    // The point does not project back into screen space, so this won't
+    // work with the screen-space-based hit-test API.
+    DLOG(ERROR) << "Invalid ray - does not originate from device screen.";
+    return false;
+  }
+
+  screen_point->set_x((screen_point_3d.x() + 1) / 2);
+  screen_point->set_y((screen_point_3d.y() + 1) / 2);
+  return true;
+}
+
+bool ARCoreImpl::ArHitResultToXRHitResult(ArHitResult* arcore_hit,
+                                          mojom::XRHitResult* hit_result) {
+  DCHECK(IsOnGlThread());
+  DCHECK(arcore_session_.is_valid());
+  DCHECK(arcore_frame_.is_valid());
+
+  internal::ScopedArCoreObject<ArPose*> arcore_pose;
+  ArPose_create(arcore_session_.get(), nullptr, arcore_pose.receive());
+  if (!arcore_pose.is_valid()) {
+    DLOG(ERROR) << "ArPose_create failed!";
+    return false;
+  }
+  ArHitResult_getHitPose(arcore_session_.get(), arcore_hit, arcore_pose.get());
+  hit_result->hit_matrix.resize(16);
+  ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(),
+                   hit_result->hit_matrix.data());
+
+  return true;
 }
 
 bool ARCoreImpl::IsOnGlThread() {

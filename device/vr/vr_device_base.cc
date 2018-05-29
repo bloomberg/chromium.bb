@@ -147,6 +147,13 @@ void VRDeviceBase::SetListeningForActivate(bool is_listening) {
   OnListeningForActivate(is_listening);
 }
 
+void VRDeviceBase::RequestHitTest(
+    mojom::XRRayPtr ray,
+    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+  NOTREACHED() << "Unexpected call to a device without hit-test support";
+  std::move(callback).Run(base::nullopt);
+}
+
 void VRDeviceBase::UpdateListeningForActivate(VRDisplayImpl* display) {
   if (display->ListeningForActivate() && display->InFocusedFrame()) {
     bool was_listening = !!listening_for_activate_diplay_;

@@ -33,9 +33,13 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
 
 VRDisplayImpl::~VRDisplayImpl() = default;
 
+bool VRDisplayImpl::IsPrivilegedOperationAllowed() {
+  return device_->IsAccessAllowed(this) && InFocusedFrame();
+}
+
 void VRDisplayImpl::RequestSession(
     mojom::VRDisplayHost::RequestSessionCallback callback) {
-  if (!CanStartNewSession()) {
+  if (!IsPrivilegedOperationAllowed()) {
     std::move(callback).Run(false);
     return;
   }
@@ -74,8 +78,13 @@ void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
   device_->GetMagicWindowFrameData(frame_size, rotation, std::move(callback));
 }
 
-bool VRDisplayImpl::CanStartNewSession() {
-  return device_->IsAccessAllowed(this) && InFocusedFrame();
+void VRDisplayImpl::RequestHitTest(mojom::XRRayPtr ray,
+                                   RequestHitTestCallback callback) {
+  if (!IsPrivilegedOperationAllowed()) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  device_->RequestHitTest(std::move(ray), std::move(callback));
 }
 
 void VRDisplayImpl::SetListeningForActivate(bool listening) {

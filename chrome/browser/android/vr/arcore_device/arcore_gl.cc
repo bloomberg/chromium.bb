@@ -34,8 +34,6 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
-namespace device {
-
 namespace {
 // Input display coordinates (range 0..1) used with ARCore's
 // transformDisplayUvCoords to calculate the output matrix.
@@ -78,6 +76,18 @@ gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
 }
 
 }  // namespace
+
+namespace device {
+
+struct ARCoreHitTestRequest {
+  ARCoreHitTestRequest() = default;
+  ~ARCoreHitTestRequest() = default;
+  mojom::XRRayPtr ray;
+  mojom::VRMagicWindowProvider::RequestHitTestCallback callback;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ARCoreHitTestRequest);
+};
 
 ARCoreGl::ARCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -195,6 +205,62 @@ void ARCoreGl::ProduceFrame(
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
 
+  // Post a task to finish processing the frame so any calls to
+  // RequestHitTest() that were made during this function, which can block
+  // on the arcore_->Update() call above, can be processed in this frame.
+  gl_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ARCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&frame_data), frame_size,
+                     base::Passed(&callback)));
+}
+
+void ARCoreGl::RequestHitTest(
+    mojom::XRRayPtr ray,
+    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+
+  std::unique_ptr<ARCoreHitTestRequest> request =
+      std::make_unique<ARCoreHitTestRequest>();
+  request->ray = std::move(ray);
+  request->callback = std::move(callback);
+  hit_test_requests_.push_back(std::move(request));
+}
+
+void ARCoreGl::ProcessFrame(
+    mojom::VRMagicWindowFrameDataPtr frame_data,
+    const gfx::Size& frame_size,
+    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
+  DCHECK(IsOnGlThread());
+  DCHECK(is_initialized_);
+
+  // The timing requirements for hit-test are documented here:
+  // https://github.com/immersive-web/hit-test/blob/master/explainer.md#timing
+  // The current implementation of frame generation on the renderer side is
+  // 1:1 with calls to this method, so it is safe to fire off the hit-test
+  // results here, one at a time, in the order they were enqueued prior to
+  // running the GetFrameDataCallback.
+  // Since mojo callbacks are processed in order, this will result in the
+  // correct sequence of hit-test callbacks / promise resolutions. If
+  // the implementation of the renderer processing were to change, this
+  // code is fragile and could break depending on the new implementation.
+  // TODO(https://crbug.com/844174): In order to be more correct by design,
+  // hit results should be bundled with the frame data - that way it would be
+  // obvious how the timing between the results and the frame should go.
+  for (auto& request : hit_test_requests_) {
+    std::vector<mojom::XRHitResultPtr> results;
+    if (!arcore_->RequestHitTest(request->ray, frame_size, &results)) {
+      std::move(request->callback).Run(base::nullopt);
+    }
+    std::move(request->callback).Run(std::move(results));
+  }
+  hit_test_requests_.clear();
+
+  // Running this callback after resolving all the hit-test requests ensures
+  // that we satisfy the guarantee of the WebXR hit-test spec - that the
+  // hit-test promise resolves immediately prior to the frame for which it is
+  // valid.
   std::move(callback).Run(std::move(frame_data));
 }
 

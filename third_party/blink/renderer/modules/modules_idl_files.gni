@@ -425,6 +425,7 @@ modules_idl_files =
           "xr/xr_device.idl",
           "xr/xr_device_pose.idl",
           "xr/xr_frame_of_reference.idl",
+          "xr/xr_hit_result.idl",
           "xr/xr_input_pose.idl",
           "xr/xr_input_source.idl",
           "xr/xr_input_source_event.idl",

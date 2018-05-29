@@ -263,4 +263,12 @@ mojom::VRPosePtr FakeARCore::Update() {
   return pose;
 }
 
+bool FakeARCore::RequestHitTest(
+    const mojom::XRRayPtr& ray,
+    const gfx::Size& image_size,
+    std::vector<mojom::XRHitResultPtr>* hit_results) {
+  // TODO(https://crbug.com/837834): implement for testing.
+  return false;
+}
+
 }  // namespace device

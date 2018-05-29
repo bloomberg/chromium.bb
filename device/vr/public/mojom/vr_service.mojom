@@ -89,6 +89,20 @@ struct VRPose {
   bool pose_reset;
 };
 
+struct XRRay {
+  // TODO(https://crbug.com/845293): use Point3F and Vector3F from
+  // ui/gfx/geometry and inline directly in requestHitTest().
+  array<float, 3> origin;
+  array<float, 3> direction;
+};
+
+struct XRHitResult {
+  // A 4x4 transformation matrix representing the position of the object hit
+  // and the orientation of the normal of the object at the hit location.
+  // TODO(https://crbug.com/845293): use gfx.mojom.Transform.
+  array<float, 16> hit_matrix;
+};
+
 struct VRDisplayCapabilities {
   bool hasPosition;
   bool hasExternalDisplay;
@@ -290,6 +304,17 @@ interface VRMagicWindowProvider {
   GetFrameData(gfx.mojom.Size frame_size,
       display.mojom.Rotation display_rotation) =>
       (VRMagicWindowFrameData? frame_data);
+
+  // Performs a raycast into the magic window scene and returns a list of
+  // XRHitResults sorted from closest to furthest hit from the ray. Each
+  // hit result contains a hit_matrix containing the transform of the hit
+  // where the rotation represents the normal of the surface hit.
+  // An empty result list means there were no hits. If a nullopt is returned,
+  // there was an error.
+  // TODO(https://crbug.com/842025): have one "session" type, merging
+  // VRMagicWindowProvider and VRPresentationProvider because RequestHitTest
+  // makes sense for both types of sessions.
+  RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
 };
 
 // Provides the necessary functionality for a presenting WebVR page to draw
