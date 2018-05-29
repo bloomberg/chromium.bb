@@ -16,7 +16,6 @@
 #include "chrome_elf/third_party_dlls/logs.h"
 #include "chrome_elf/third_party_dlls/main.h"
 #include "chrome_elf/third_party_dlls/packed_list_file.h"
-#include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
@@ -166,8 +165,7 @@ bool GetDataFromImage(PVOID buffer,
   section_path->clear();
   section_basename->clear();
 
-  pe_image_safe::PEImageSafe image(reinterpret_cast<HMODULE>(buffer),
-                                   buffer_size);
+  pe_image_safe::PEImageSafe image(buffer, buffer_size);
   PIMAGE_FILE_HEADER file_header = image.GetFileHeader();
   if (!file_header ||
       image.GetImageBitness() == pe_image_safe::ImageBitness::kUnknown) {
@@ -206,7 +204,6 @@ bool GetDataFromImage(PVOID buffer,
 
   // For now, consider it a success if at least one source results in a name.
   // Allow for the rare case of one or the other not being there.
-  // (E.g.: a module could have no export directory.)
   if (image_name->empty() && temp_section_path.empty())
     return false;
 
@@ -281,16 +278,13 @@ NTSTATUS NewNtMapViewOfSectionImpl(
     return ret;
   }
 
-  // Note that one of either image_name or section_basename can be empty.
-  std::string image_name_hash;
-  if (!image_name.empty())
-    image_name_hash = elf_sha1::SHA1HashString(image_name);
-  std::string section_basename_hash;
-  if (!section_basename.empty())
-    section_basename_hash = elf_sha1::SHA1HashString(section_basename);
+  // Note that one of either image_name or section_basename can be empty, and
+  // the resulting hash string would be empty as well.
+  std::string image_name_hash = elf_sha1::SHA1HashString(image_name);
+  std::string section_basename_hash =
+      elf_sha1::SHA1HashString(section_basename);
   std::string fingerprint_hash =
-      GetFingerprintString(image_size, time_date_stamp);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
+      GetFingerprintHash(image_size, time_date_stamp);
 
   // Check sources for blacklist decision.
   bool block = false;
@@ -321,8 +315,7 @@ NTSTATUS NewNtMapViewOfSectionImpl(
     // No block.
     // Ensure a non-null image name for the log.  Prefer the section basename
     // (to match the path).
-    name_matched =
-        section_basename.empty() ? &image_name_hash : &section_basename_hash;
+    name_matched = section_basename.empty() ? &image_name : &section_basename;
   }
   // IME is an explicit whitelist.
   // TODO(pennymac): create an explicit allow LogType?
@@ -467,20 +460,6 @@ HookStatus ApplyHook() {
   g_hook_active = true;
 
   return HookStatus::kSuccess;
-}
-
-bool GetDataFromImageForTesting(PVOID buffer,
-                                DWORD buffer_size,
-                                DWORD* time_date_stamp,
-                                DWORD* image_size,
-                                std::string* image_name,
-                                std::string* section_path,
-                                std::string* section_basename) {
-  if (!g_nt_query_virtual_memory_func)
-    InitImports();
-
-  return GetDataFromImage(buffer, buffer_size, time_date_stamp, image_size,
-                          image_name, section_path, section_basename);
 }
 
 }  // namespace third_party_dlls
