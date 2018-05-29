@@ -129,8 +129,6 @@ public class ToolbarTablet
         mShouldAnimateButtonVisibilityChange = false;
         mToolbarButtonsVisible = true;
         mToolbarButtons = new TintedImageButton[] {mBackButton, mForwardButton, mReloadButton};
-
-        if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
     }
 
     @Override
@@ -165,6 +163,7 @@ public class ToolbarTablet
                 return findViewById(R.id.menu_button);
             }
         });
+        if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
 
         mBackButton.setOnClickListener(this);
         mBackButton.setLongClickable(true);
