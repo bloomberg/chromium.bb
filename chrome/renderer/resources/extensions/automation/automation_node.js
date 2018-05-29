@@ -1160,7 +1160,6 @@ function AutomationRootNodeImpl(treeID) {
   $Function.call(AutomationNodeImpl, this, this);
   this.treeID = treeID;
   this.axNodeDataCache_ = {__proto__: null};
-  this.actionRequestIDToCallback_ = {__proto__: null};
 }
 
 utils.defineProperty(AutomationRootNodeImpl, 'idToAutomationRootNode_',
@@ -1190,6 +1189,18 @@ utils.defineProperty(AutomationRootNodeImpl, 'destroy', function(treeID) {
   delete AutomationRootNodeImpl.idToAutomationRootNode_[treeID];
 });
 
+/**
+ * A counter keeping track of IDs to use for mapping action requests to
+ * their callback function.
+ */
+AutomationRootNodeImpl.actionRequestCounter = 0;
+
+/**
+ * A map from a request ID to the corresponding callback function to call
+ * when the action response event is received.
+ */
+AutomationRootNodeImpl.actionRequestIDToCallback = {};
+
 AutomationRootNodeImpl.prototype = {
   __proto__: AutomationNodeImpl.prototype,
 
@@ -1209,10 +1220,6 @@ AutomationRootNodeImpl.prototype = {
    * @private
    */
   axNodeDataCache_: null,
-
-  actionRequestCounter_: 0,
-
-  actionRequestIDToCallback_: null,
 
   get id() {
     var result = GetRootID(this.treeID);
@@ -1341,14 +1348,15 @@ AutomationRootNodeImpl.prototype = {
   },
 
   addActionResultCallback: function(callback) {
-    this.actionRequestIDToCallback_[++this.actionRequestCounter_] = callback;
-    return this.actionRequestCounter_;
+    AutomationRootNodeImpl.actionRequestIDToCallback[
+        ++AutomationRootNodeImpl.actionRequestCounter] = callback;
+    return AutomationRootNodeImpl.actionRequestCounter;
   },
 
   onActionResult: function(requestID, result) {
-    if (requestID in this.actionRequestIDToCallback_) {
-      this.actionRequestIDToCallback_[requestID](result);
-      delete this.actionRequestIDToCallback_[requestID];
+    if (requestID in AutomationRootNodeImpl.actionRequestIDToCallback) {
+      AutomationRootNodeImpl.actionRequestIDToCallback[requestID](result);
+      delete AutomationRootNodeImpl.actionRequestIDToCallback[requestID];
     }
   },
 
