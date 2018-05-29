@@ -721,6 +721,7 @@ TEST_F(ManagePasswordsBubbleModelTest, EyeIcon_ReauthForPasswordsRevealing) {
       for (ManagePasswordsBubbleModel::DisplayReason display_reason :
            {ManagePasswordsBubbleModel::AUTOMATIC,
             ManagePasswordsBubbleModel::USER_ACTION}) {
+        // That state is impossible.
         if (is_manual_fallback_for_saving &&
             (display_reason == ManagePasswordsBubbleModel::AUTOMATIC))
           continue;
@@ -739,13 +740,15 @@ TEST_F(ManagePasswordsBubbleModelTest, EyeIcon_ReauthForPasswordsRevealing) {
         EXPECT_CALL(*controller(), ArePasswordsRevealedWhenBubbleIsOpened())
             .WillOnce(Return(false));
         EXPECT_CALL(*controller(), BubbleIsManualFallbackForSaving())
-            .WillOnce(Return(is_manual_fallback_for_saving));
+            .WillRepeatedly(Return(is_manual_fallback_for_saving));
 
         PretendPasswordWaiting(display_reason);
-        bool reauth_expected =
-            is_manual_fallback_for_saving
-                ? form_has_autofilled_value
-                : display_reason == ManagePasswordsBubbleModel::USER_ACTION;
+        bool reauth_expected = form_has_autofilled_value;
+        if (!reauth_expected) {
+          reauth_expected =
+              !is_manual_fallback_for_saving &&
+              display_reason == ManagePasswordsBubbleModel::USER_ACTION;
+        }
         EXPECT_EQ(reauth_expected,
                   model()->password_revealing_requires_reauth());
 
@@ -753,7 +756,6 @@ TEST_F(ManagePasswordsBubbleModelTest, EyeIcon_ReauthForPasswordsRevealing) {
           EXPECT_CALL(*controller(), AuthenticateUser())
               .WillOnce(Return(false));
           EXPECT_FALSE(model()->RevealPasswords());
-          ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
 
           EXPECT_CALL(*controller(), AuthenticateUser()).WillOnce(Return(true));
           EXPECT_TRUE(model()->RevealPasswords());
@@ -805,7 +807,7 @@ TEST_F(ManagePasswordsBubbleModelTest, PasswordsRevealedReportedAfterReauth) {
 
 TEST_F(ManagePasswordsBubbleModelTest, DisableEditing) {
   EXPECT_CALL(*controller(), BubbleIsManualFallbackForSaving())
-      .WillOnce(Return(false));
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(*controller(), GetCredentialSource())
       .WillOnce(Return(password_manager::metrics_util::CredentialSourceType::
                            kCredentialManagementAPI));
