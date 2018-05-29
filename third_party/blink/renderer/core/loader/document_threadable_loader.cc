@@ -599,7 +599,6 @@ bool DocumentThreadableLoader::RedirectReceived(
     const ResourceResponse& redirect_response) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
-  DCHECK(async_);
 
   checker_.RedirectReceived();
 
@@ -781,7 +780,6 @@ void DocumentThreadableLoader::DataDownloaded(Resource* resource,
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
   DCHECK(actual_request_.IsNull());
-  DCHECK(async_);
 
   checker_.DataDownloaded();
   client_->DidDownloadData(data_length);
@@ -792,7 +790,6 @@ void DocumentThreadableLoader::DidReceiveResourceTiming(
     const ResourceTimingInfo& info) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
-  DCHECK(async_);
 
   client_->DidReceiveResourceTiming(info);
 }
@@ -802,7 +799,6 @@ void DocumentThreadableLoader::DidDownloadToBlob(
     scoped_refptr<BlobDataHandle> blob) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
-  DCHECK(async_);
 
   checker_.DidDownloadToBlob();
   client_->DidDownloadToBlob(std::move(blob));
@@ -813,7 +809,6 @@ void DocumentThreadableLoader::ResponseReceived(
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK_EQ(resource, GetResource());
-  DCHECK(async_);
 
   checker_.ResponseReceived();
 
@@ -992,7 +987,6 @@ void DocumentThreadableLoader::DataReceived(Resource* resource,
                                             const char* data,
                                             size_t data_length) {
   DCHECK_EQ(resource, GetResource());
-  DCHECK(async_);
 
   checker_.DataReceived();
 
@@ -1020,11 +1014,16 @@ void DocumentThreadableLoader::HandleReceivedData(const char* data,
 void DocumentThreadableLoader::NotifyFinished(Resource* resource) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
-  DCHECK(async_);
 
   checker_.NotifyFinished(resource);
 
-  if (resource->ErrorOccurred()) {
+  // Don't throw an exception for failed sync local file loads.
+  // TODO(japhet): This logic has been moved around but unchanged since 2007.
+  // Tested by fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html
+  // Do we still need this?
+  bool is_sync_to_local_file = resource->Url().IsLocalFile() && !async_;
+
+  if (resource->ErrorOccurred() && !is_sync_to_local_file) {
     DispatchDidFail(resource->GetResourceError());
   } else {
     HandleSuccessfulFinish(resource->Identifier());
@@ -1176,70 +1175,10 @@ void DocumentThreadableLoader::LoadRequestSync(
     fetch_params.MutableResourceRequest().SetTimeoutInterval(
         options_.timeout_milliseconds / 1000.0);
   }
-  RawResource* resource = RawResource::FetchSynchronously(
-      fetch_params, loading_context_->GetResourceFetcher());
-  ResourceResponse response = resource->GetResponse();
-  unsigned long identifier = resource->Identifier();
-  ThreadableLoaderClient* client = client_;
-  const KURL& request_url = request.Url();
 
-  // No exception for file:/// resources, see <rdar://problem/4962298>. Also, if
-  // we have an HTTP response, then it wasn't a network error in fact.
-  if (resource->LoadFailedOrCanceled() && !request_url.IsLocalFile() &&
-      response.HttpStatusCode() <= 0) {
-    DispatchDidFail(resource->GetResourceError());
-    return;
-  }
-
-  // FIXME: A synchronous request does not tell us whether a redirect happened
-  // or not, so we guess by comparing the request and response URLs. This isn't
-  // a perfect test though, since a server can serve a redirect to the same URL
-  // that was requested. Also comparing the request and response URLs as strings
-  // will fail if the requestURL still has its credentials.
-  if (request_url != response.Url() &&
-      !IsAllowedRedirect(request.GetFetchRequestMode(), response.Url())) {
-    client_ = nullptr;
-    client->DidFailRedirectCheck();
-    return;
-  }
-
-  HandleResponse(identifier, request.GetFetchRequestMode(),
-                 request.GetFetchCredentialsMode(), response, nullptr);
-
-  // HandleResponse() may detect an error. In such a case (check |m_client| as
-  // it gets reset by clear() call), skip the rest.
-  //
-  // |this| is alive here since loadResourceSynchronously() keeps it alive until
-  // the end of the function.
-  if (!client_)
-    return;
-
-  if (scoped_refptr<const SharedBuffer> data = resource->ResourceBuffer()) {
-    data->ForEachSegment([this](const char* segment, size_t segment_size,
-                                size_t segment_offset) -> bool {
-      HandleReceivedData(segment, segment_size);
-      // The client may cancel this loader in handleReceivedData().
-      return client_;
-    });
-  }
-
-  // The client may cancel this loader in handleReceivedData(). In such a case,
-  // skip the rest.
-  if (!client_)
-    return;
-
-  base::Optional<int64_t> downloaded_file_length =
-      resource->DownloadedFileLength();
-  if (downloaded_file_length) {
-    client_->DidDownloadData(*downloaded_file_length);
-  }
-  if (request.DownloadToBlob()) {
-    if (resource->DownloadedBlob())
-      client_->DidDownloadData(resource->DownloadedBlob()->size());
-    client_->DidDownloadToBlob(resource->DownloadedBlob());
-  }
-
-  HandleSuccessfulFinish(identifier);
+  checker_.WillAddClient();
+  RawResource::FetchSynchronously(fetch_params,
+                                  loading_context_->GetResourceFetcher(), this);
 }
 
 void DocumentThreadableLoader::LoadRequest(

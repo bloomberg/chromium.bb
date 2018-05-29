@@ -43,7 +43,9 @@ class SourceKeyedCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
-  static RawResource* FetchSynchronously(FetchParameters&, ResourceFetcher*);
+  static RawResource* FetchSynchronously(FetchParameters&,
+                                         ResourceFetcher*,
+                                         RawResourceClient* = nullptr);
   static RawResource* Fetch(FetchParameters&,
                             ResourceFetcher*,
                             RawResourceClient*);

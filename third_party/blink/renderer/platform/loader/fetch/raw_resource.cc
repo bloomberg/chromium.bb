@@ -41,10 +41,11 @@
 namespace blink {
 
 RawResource* RawResource::FetchSynchronously(FetchParameters& params,
-                                             ResourceFetcher* fetcher) {
+                                             ResourceFetcher* fetcher,
+                                             RawResourceClient* client) {
   params.MakeSynchronous();
   return ToRawResource(fetcher->RequestResource(
-      params, RawResourceFactory(Resource::kRaw), nullptr));
+      params, RawResourceFactory(Resource::kRaw), client));
 }
 
 RawResource* RawResource::FetchImport(FetchParameters& params,
