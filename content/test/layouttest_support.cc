@@ -561,7 +561,7 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
 }
 
 void SchedulerRunIdleTasks(base::OnceClosure callback) {
-  blink::scheduler::WebMainThreadScheduler* scheduler =
+  blink::scheduler::WebThreadScheduler* scheduler =
       content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
   blink::scheduler::RunIdleTasksForTesting(scheduler, std::move(callback));
 }

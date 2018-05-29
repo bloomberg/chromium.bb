@@ -23,7 +23,7 @@ constexpr const char kLocalStorageNamespaceId[] = "";
 
 LocalStorageCachedAreas::LocalStorageCachedAreas(
     mojom::StoragePartitionService* storage_partition_service,
-    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : storage_partition_service_(storage_partition_service),
       total_cache_limit_(base::SysInfo::IsLowEndDevice()
                              ? kTotalCacheLimitInBytesLowEnd
@@ -84,7 +84,7 @@ void LocalStorageCachedAreas::ClearAreasIfNeeded() {
 scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
     const std::string& namespace_id,
     const url::Origin& origin,
-    blink::scheduler::WebMainThreadScheduler* scheduler) {
+    blink::scheduler::WebThreadScheduler* scheduler) {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class CacheMetrics {

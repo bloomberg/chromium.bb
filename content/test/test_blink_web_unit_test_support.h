@@ -19,7 +19,7 @@
 
 namespace blink {
 namespace scheduler {
-class WebMainThreadScheduler;
+class WebThreadScheduler;
 }
 }
 
@@ -82,8 +82,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
-  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
-      main_thread_scheduler_;
+  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
   std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 

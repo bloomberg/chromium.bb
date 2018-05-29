@@ -17,7 +17,7 @@
 
 namespace blink {
 namespace scheduler {
-class WebMainThreadScheduler;
+class WebThreadScheduler;
 }
 }  // namespace blink
 
@@ -37,7 +37,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
  public:
   LocalStorageCachedAreas(
       mojom::StoragePartitionService* storage_partition_service,
-      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
+      blink::scheduler::WebThreadScheduler* main_thread_scheduler);
   ~LocalStorageCachedAreas();
 
   // Returns, creating if necessary, a cached storage area for the given origin.
@@ -61,7 +61,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
   scoped_refptr<LocalStorageCachedArea> GetCachedArea(
       const std::string& namespace_id,
       const url::Origin& origin,
-      blink::scheduler::WebMainThreadScheduler* scheduler);
+      blink::scheduler::WebThreadScheduler* scheduler);
 
   mojom::StoragePartitionService* const storage_partition_service_;
 
@@ -87,7 +87,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
   size_t total_cache_limit_;
 
   // Not owned.
-  blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStorageCachedAreas);
 };

@@ -37,7 +37,7 @@ namespace scheduler {
 namespace main_thread_scheduler_impl_unittest {
 
 using testing::Mock;
-using InputEventState = WebMainThreadScheduler::InputEventState;
+using InputEventState = WebThreadScheduler::InputEventState;
 
 class FakeInputEvent : public blink::WebInputEvent {
  public:
@@ -114,7 +114,7 @@ void RepostingUpdateClockIdleTestTask(
   clock->Advance(advance_time);
 }
 
-void WillBeginFrameIdleTask(WebMainThreadScheduler* scheduler,
+void WillBeginFrameIdleTask(WebThreadScheduler* scheduler,
                             uint64_t sequence_number,
                             base::SimpleTestTickClock* clock,
                             base::TimeTicks deadline) {
@@ -3107,7 +3107,7 @@ TEST_F(MainThreadSchedulerImplTest,
       FROM_HERE,
       base::BindOnce(SlowCountingTask, &count, &clock_, 7, timer_task_runner_));
 
-  std::unique_ptr<WebMainThreadScheduler::RendererPauseHandle> paused;
+  std::unique_ptr<WebThreadScheduler::RendererPauseHandle> paused;
   for (int i = 0; i < 1000; i++) {
     viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_.NowTicks(),
@@ -3381,7 +3381,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
   EXPECT_EQ(279u, run_order.size());
 }
 
-class MockRAILModeObserver : public WebMainThreadScheduler::RAILModeObserver {
+class MockRAILModeObserver : public WebThreadScheduler::RAILModeObserver {
  public:
   MOCK_METHOD1(OnRAILModeChanged, void(v8::RAILMode rail_mode));
 };

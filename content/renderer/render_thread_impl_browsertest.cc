@@ -55,7 +55,7 @@
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -132,7 +132,7 @@ class RenderThreadImplForTest : public RenderThreadImpl {
  public:
   RenderThreadImplForTest(
       const InProcessChildThreadParams& params,
-      std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler,
+      std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler,
       scoped_refptr<base::SingleThreadTaskRunner>& test_task_counter,
       base::MessageLoop* unowned_message_loop)
       : RenderThreadImpl(params,
@@ -248,9 +248,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
     // in RenderThreadImpl::Init().
     cmd->AppendSwitch(switches::kIgnoreGpuBlacklist);
 
-    std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+    std::unique_ptr<blink::scheduler::WebThreadScheduler>
         main_thread_scheduler =
-            blink::scheduler::WebMainThreadScheduler::Create();
+            blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
         test_task_counter_.get());
 

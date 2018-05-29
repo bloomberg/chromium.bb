@@ -31,7 +31,7 @@ class FieldTrialList;
 
 namespace blink {
 namespace scheduler {
-class WebMainThreadScheduler;
+class WebThreadScheduler;
 }
 class WebGestureEvent;
 class WebInputElement;
@@ -69,7 +69,7 @@ class RenderViewTest : public testing::Test {
     void Shutdown();
 
    private:
-    std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+    std::unique_ptr<blink::scheduler::WebThreadScheduler>
         main_thread_scheduler_;
     std::unique_ptr<RendererBlinkPlatformImplTestOverrideImpl>
         blink_platform_impl_;

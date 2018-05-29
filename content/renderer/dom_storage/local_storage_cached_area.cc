@@ -76,7 +76,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     const url::Origin& origin,
     mojom::SessionStorageNamespace* session_namespace,
     LocalStorageCachedAreas* cached_areas,
-    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : namespace_id_(namespace_id),
       origin_(origin),
       binding_(this),
@@ -98,7 +98,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     const url::Origin& origin,
     mojom::StoragePartitionService* storage_partition_service,
     LocalStorageCachedAreas* cached_areas,
-    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : origin_(origin),
       binding_(this),
       cached_areas_(cached_areas),

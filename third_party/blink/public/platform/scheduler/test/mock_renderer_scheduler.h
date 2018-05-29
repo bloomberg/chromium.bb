@@ -11,13 +11,13 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_thread.h"
 
 namespace blink {
 namespace scheduler {
 
-class MockRendererScheduler : public WebMainThreadScheduler {
+class MockRendererScheduler : public WebThreadScheduler {
  public:
   MockRendererScheduler() = default;
   ~MockRendererScheduler() override = default;
