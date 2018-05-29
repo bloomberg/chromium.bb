@@ -692,16 +692,11 @@ Polymer({
   },
 
   /**
-   * Triggered when the 'change' event for the selected mode slider is
-   * triggered. This only occurs when the value is committed (i.e. not while
-   * the slider is being dragged).
-   * @param {number} newModeIndex The new index value for which thie function is
-   *     called.
+   * Updates the selected mode based on the latest pref value.
    * @private
    */
-  onSelectedModeChange_: function(newModeIndex) {
+  onSelectedModeSliderChange_: function() {
     if (this.currentSelectedModeIndex_ == -1 ||
-        this.currentSelectedModeIndex_ == newModeIndex ||
         this.currentSelectedModeIndex_ == this.selectedModePref_.value) {
       // Don't change the selected display mode until we have received an update
       // from Chrome and the mode differs from the current mode.
@@ -714,6 +709,24 @@ Polymer({
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
         this.setPropertiesCallback_.bind(this));
+  },
+
+  /**
+   * Handles a change in the |selectedModePref| value triggered via the observer
+   * @param {number} newModeIndex The new index value for which thie function is
+   *     called.
+   * @private
+   */
+  onSelectedModeChange_: function(newModeIndex) {
+    // We want to ignore all value changes to the pref due to the slider being
+    // dragged. Since this can only happen when the slider is present which is
+    // when display zoom is disabled, we can use this check.
+    // See http://crbug/845712 for more info.
+    if (!this.showDisplayZoomSetting_)
+      return;
+    if (this.currentSelectedModeIndex_ == newModeIndex)
+      return;
+    this.onSelectedModeSliderChange_();
   },
 
   /**
