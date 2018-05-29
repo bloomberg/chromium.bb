@@ -55,7 +55,10 @@ namespace AV1HiprecConvolve {
     make_tuple(8, 8, 50000, filter),   make_tuple(8, 4, 50000, filter),
     make_tuple(64, 24, 1000, filter),  make_tuple(64, 64, 1000, filter),
     make_tuple(64, 56, 1000, filter),  make_tuple(32, 8, 10000, filter),
-    make_tuple(32, 28, 10000, filter), make_tuple(32, 32, 10000, filter)
+    make_tuple(32, 28, 10000, filter), make_tuple(32, 32, 10000, filter),
+    make_tuple(16, 34, 10000, filter), make_tuple(32, 34, 10000, filter),
+    make_tuple(64, 34, 1000, filter),  make_tuple(8, 17, 10000, filter),
+    make_tuple(16, 17, 10000, filter), make_tuple(32, 17, 10000, filter)
   };
   return ::testing::ValuesIn(params);
 }

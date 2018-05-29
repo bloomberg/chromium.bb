@@ -51,7 +51,7 @@ void av1_wiener_convolve_add_src_neon(const uint8_t *src, ptrdiff_t src_stride,
 
   assert(x_step_q4 == 16 && y_step_q4 == 16);
   assert(!(w % 8));
-  assert(!(h % 4));
+
   assert(w <= MAX_SB_SIZE);
   assert(h <= MAX_SB_SIZE);
 
@@ -365,7 +365,32 @@ void av1_wiener_convolve_add_src_neon(const uint8_t *src, ptrdiff_t src_stride,
         s5 = s9;
         s6 = s10;
         height -= 4;
-      } while (height > 0);
+      } while (height > 3);
+
+      if (height != 0) {
+        __builtin_prefetch(dst_tmp_ptr + 0 * dst_stride);
+        __builtin_prefetch(dst_tmp_ptr + 1 * dst_stride);
+
+        do {
+          s7 = vld1q_s16(s);
+          s += src_stride;
+
+          t0 =
+              wiener_convolve8_vert_4x8(s0, s1, s2, s3, s4, s5, s6,
+                                        filter_y_tmp, bd, conv_params->round_1);
+          vst1_u8(d, t0);
+          d += dst_stride;
+
+          s0 = s1;
+          s1 = s2;
+          s2 = s3;
+          s3 = s4;
+          s4 = s5;
+          s5 = s6;
+          s6 = s7;
+          height -= 1;
+        } while (height > 0);
+      }
 
       src_tmp_ptr += 8;
       dst_tmp_ptr += 8;
