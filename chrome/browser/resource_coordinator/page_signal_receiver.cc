@@ -36,9 +36,10 @@ PageSignalReceiver::PageSignalReceiver() : binding_(this) {}
 
 PageSignalReceiver::~PageSignalReceiver() = default;
 
-void PageSignalReceiver::NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) {
+void PageSignalReceiver::NotifyPageAlmostIdle(
+    const CoordinationUnitID& page_cu_id) {
   DCHECK(IsPageAlmostIdleSignalEnabled());
-  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
   if (web_contents_iter == cu_id_web_contents_map_.end())
     return;
   for (auto& observer : observers_)
@@ -46,9 +47,9 @@ void PageSignalReceiver::NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) {
 }
 
 void PageSignalReceiver::SetExpectedTaskQueueingDuration(
-    const CoordinationUnitID& cu_id,
+    const CoordinationUnitID& page_cu_id,
     base::TimeDelta duration) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
   if (web_contents_iter == cu_id_web_contents_map_.end())
     return;
   for (auto& observer : observers_)
@@ -56,9 +57,9 @@ void PageSignalReceiver::SetExpectedTaskQueueingDuration(
                                                duration);
 }
 
-void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& cu_id,
+void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& page_cu_id,
                                            mojom::LifecycleState state) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
   if (web_contents_iter == cu_id_web_contents_map_.end())
     return;
   for (auto& observer : observers_)
@@ -66,8 +67,8 @@ void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& cu_id,
 }
 
 void PageSignalReceiver::NotifyNonPersistentNotificationCreated(
-    const CoordinationUnitID& cu_id) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+    const CoordinationUnitID& page_cu_id) {
+  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
   if (web_contents_iter == cu_id_web_contents_map_.end())
     return;
   for (auto& observer : observers_)

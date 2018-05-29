@@ -51,13 +51,13 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   static PageSignalReceiver* GetInstance();
 
   // mojom::PageSignalReceiver implementation.
-  void NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) override;
-  void SetExpectedTaskQueueingDuration(const CoordinationUnitID& cu_id,
+  void NotifyPageAlmostIdle(const CoordinationUnitID& page_cu_id) override;
+  void SetExpectedTaskQueueingDuration(const CoordinationUnitID& page_cu_id,
                                        base::TimeDelta duration) override;
-  void SetLifecycleState(const CoordinationUnitID& cu_id,
+  void SetLifecycleState(const CoordinationUnitID& page_cu_id,
                          mojom::LifecycleState) override;
   void NotifyNonPersistentNotificationCreated(
-      const CoordinationUnitID& cu_id) override;
+      const CoordinationUnitID& page_cu_id) override;
 
   void AddObserver(PageSignalObserver* observer);
   void RemoveObserver(PageSignalObserver* observer);
