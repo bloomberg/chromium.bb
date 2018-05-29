@@ -301,15 +301,14 @@ content::WebContents* WebViewAPITest::GetGuestWebContents() {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, EmbedderVisibilityChanged) {
   LaunchApp("web_view/visibility_changed");
 
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+  base::RunLoop run_loop;
   WebContentsHiddenObserver observer(GetGuestWebContents(),
-                                     loop_runner->QuitClosure());
+                                     run_loop.QuitClosure());
 
   // Handled in web_view/visibility_changed/main.js
   SendMessageToEmbedder("hide-embedder");
   if (!observer.hidden_observed())
-    loop_runner->Run();
+    run_loop.Run();
 }
 
 // Test for http://crbug.com/419611.
@@ -333,15 +332,14 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, DisplayNoneSetSrc) {
 IN_PROC_BROWSER_TEST_F(WebViewAPITest, GuestVisibilityChanged) {
   LaunchApp("web_view/visibility_changed");
 
-  scoped_refptr<content::MessageLoopRunner> loop_runner(
-      new content::MessageLoopRunner);
+  base::RunLoop run_loop;
   WebContentsHiddenObserver observer(GetGuestWebContents(),
-                                     loop_runner->QuitClosure());
+                                     run_loop.QuitClosure());
 
   // Handled in web_view/visibility_changed/main.js
   SendMessageToEmbedder("hide-guest");
   if (!observer.hidden_observed())
-    loop_runner->Run();
+    run_loop.Run();
 }
 
 // This test ensures that closing app window on 'loadcommit' does not crash.
