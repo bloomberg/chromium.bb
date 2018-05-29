@@ -2043,7 +2043,8 @@ static size_t mem_get_varsize(const uint8_t *src, int sz) {
 
 #if EXT_TILE_DEBUG
 // Reads the next tile returning its size and adjusting '*data' accordingly
-// based on 'is_last'.
+// based on 'is_last'. On return, '*data' is updated to point to the end of the
+// raw tile buffer in the bit stream.
 static void get_ls_tile_buffer(
     const uint8_t *const data_end, struct aom_internal_error_info *error_info,
     const uint8_t **data, TileBufferDec (*const tile_buffers)[MAX_TILE_COLS],
@@ -2087,23 +2088,24 @@ static void get_ls_tile_buffer(
   }
 
   *data += size;
-
-  tile_buffers[row][col].raw_data_end = *data;
 }
 
-static void get_ls_tile_buffers(
+// Returns the end of the last tile buffer
+// (tile_buffers[cm->tile_rows - 1][cm->tile_cols - 1]).
+static const uint8_t *get_ls_tile_buffers(
     AV1Decoder *pbi, const uint8_t *data, const uint8_t *data_end,
     TileBufferDec (*const tile_buffers)[MAX_TILE_COLS]) {
   AV1_COMMON *const cm = &pbi->common;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
   const int have_tiles = tile_cols * tile_rows > 1;
+  const uint8_t *raw_data_end;  // The end of the last tile buffer
 
   if (!have_tiles) {
     const size_t tile_size = data_end - data;
     tile_buffers[0][0].data = data;
     tile_buffers[0][0].size = tile_size;
-    tile_buffers[0][0].raw_data_end = NULL;
+    raw_data_end = NULL;
   } else {
     // We locate only the tile buffers that are required, which are the ones
     // specified by pbi->dec_tile_col and pbi->dec_tile_row. Also, we always
@@ -2162,7 +2164,7 @@ static void get_ls_tile_buffers(
 
     // If we have not read the last column, then read it to get the last tile.
     if (tile_cols_end != tile_cols) {
-      int c = tile_cols - 1;
+      const int c = tile_cols - 1;
 
       data = tile_col_data_end[c - 1];
 
@@ -2171,7 +2173,9 @@ static void get_ls_tile_buffers(
                            tile_buffers, tile_size_bytes, c, r, tile_copy_mode);
       }
     }
+    raw_data_end = data;
   }
+  return raw_data_end;
 }
 #endif  // EXT_TILE_DEBUG
 
@@ -2315,6 +2319,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   int inv_row_order;
   int tile_row, tile_col;
   uint8_t allow_update_cdf;
+  const uint8_t *raw_data_end = NULL;
 
   if (cm->large_scale_tile) {
     tile_rows_start = single_row ? dec_tile_row : 0;
@@ -2349,7 +2354,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
 #if EXT_TILE_DEBUG
   if (cm->large_scale_tile)
-    get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
+    raw_data_end = get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
 #endif  // EXT_TILE_DEBUG
     get_tile_buffers(pbi, data, data_end, tile_buffers, startTile, endTile);
@@ -2419,7 +2424,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       return aom_reader_find_end(&pbi->tile_data->bit_reader);
     }
     // Return the end of the last tile buffer
-    return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
+    return raw_data_end;
   }
   TileDataDec *const tile_data = pbi->tile_data + endTile;
 
@@ -2510,6 +2515,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
   int tile_count_tg;
   int num_workers;
   int worker_idx;
+  const uint8_t *raw_data_end = NULL;
 
   if (cm->large_scale_tile) {
     tile_rows_start = single_row ? dec_tile_row : 0;
@@ -2574,7 +2580,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     // get tile size in tile group
 #if EXT_TILE_DEBUG
   if (cm->large_scale_tile)
-    get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
+    raw_data_end = get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
   else
 #endif  // EXT_TILE_DEBUG
     get_tile_buffers(pbi, data, data_end, tile_buffers, startTile, endTile);
@@ -2645,7 +2651,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
       return aom_reader_find_end(&pbi->tile_data->bit_reader);
     }
     // Return the end of the last tile buffer
-    return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
+    return raw_data_end;
   }
   TileDataDec *const tile_data = pbi->tile_data + endTile;
 
