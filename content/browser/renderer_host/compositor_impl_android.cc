@@ -751,6 +751,8 @@ void CompositorImpl::CreateLayerTreeHost() {
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
+  if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders))
+    settings.initial_debug_state.show_debug_borders.set();
   settings.single_thread_proxy_scheduler = true;
   settings.use_painted_device_scale_factor = true;
 
