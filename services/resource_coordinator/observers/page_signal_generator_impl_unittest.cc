@@ -43,13 +43,13 @@ class MockPageSignalReceiver : public mojom::PageSignalReceiver {
   ~MockPageSignalReceiver() override = default;
 
   // mojom::PageSignalReceiver implementation.
-  void NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) override {}
-  void SetExpectedTaskQueueingDuration(const CoordinationUnitID& cu_id,
+  void NotifyPageAlmostIdle(const CoordinationUnitID& page_cu_id) override {}
+  void SetExpectedTaskQueueingDuration(const CoordinationUnitID& page_cu_id,
                                        base::TimeDelta duration) override {}
-  void SetLifecycleState(const CoordinationUnitID& cu_id,
+  void SetLifecycleState(const CoordinationUnitID& page_cu_id,
                          mojom::LifecycleState) override {}
   MOCK_METHOD1(NotifyNonPersistentNotificationCreated,
-               void(const CoordinationUnitID& cu_id));
+               void(const CoordinationUnitID& page_cu_id));
 
  private:
   mojo::Binding<mojom::PageSignalReceiver> binding_;
