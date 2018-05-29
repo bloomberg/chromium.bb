@@ -519,6 +519,7 @@ void AutofillPopupViewNativeViews::AddExtraInitParams(
     views::Widget::InitParams* params) {
   // Ensure the bubble border is not painted on an opaque background.
   params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
 }
 
 std::unique_ptr<views::View> AutofillPopupViewNativeViews::CreateWrapperView() {
