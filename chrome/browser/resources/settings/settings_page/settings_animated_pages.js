@@ -38,6 +38,10 @@ Polymer({
     focusConfig: Object,
   },
 
+  listeners: {
+    'neon-animation-finish': 'onNeonAnimationFinish_',
+  },
+
   /**
    * The last "previous" route reported by the router.
    * @private {?settings.Route}
@@ -51,6 +55,18 @@ Polymer({
         Polymer.dom(this).observeNodes(this.lightDomChanged_.bind(this));
   },
 
+  /** @private */
+  onNeonAnimationFinish_: function() {
+    if (settings.lastRouteChangeWasPopstate())
+      return;
+
+    // Set initial focus when navigating to a subpage for a11y.
+    let subPage = /** @type {SettingsSubpageElement} */ (
+        this.querySelector('settings-subpage.iron-selected'));
+    if (subPage)
+      subPage.initialFocus();
+  },
+
   /**
    * @param {!Event} e
    * @private
@@ -61,14 +77,8 @@ Polymer({
 
     // Don't attempt to focus any anchor element, unless last navigation was a
     // 'pop' (backwards) navigation.
-    if (!settings.lastRouteChangeWasPopstate()) {
-      // Exception for a11y: set initial focus when navigating to a subpage.
-      let subPage = /** @type {SettingsSubpageElement} */ (
-          this.querySelector('settings-subpage.iron-selected'));
-      if (subPage)
-        subPage.initialFocus();
+    if (!settings.lastRouteChangeWasPopstate())
       return;
-    }
 
     // Only handle iron-select events from neon-animatable elements and the
     // given whitelist of settings-subpage instances.
