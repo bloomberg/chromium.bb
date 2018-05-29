@@ -1531,18 +1531,18 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   canvas()->ClearCopiedImage();
   marked_canvas_dirty_ = false;
 
-  if (!canvas()->GetOrCreateCanvasResourceProviderForWebGL())
+  if (!canvas()->GetOrCreateCanvasResourceProvider())
     return false;
 
-  if (!canvas()->GetOrCreateCanvasResourceProviderForWebGL()->IsAccelerated())
+  if (!canvas()->ResourceProvider()->IsAccelerated())
     return false;
 
   ScopedTexture2DRestorer restorer(this);
   ScopedFramebufferRestorer fbo_restorer(this);
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  if (!CopyRenderingResultsFromDrawingBuffer(
-          canvas()->ResourceProviderForWebGL(), source_buffer)) {
+  if (!CopyRenderingResultsFromDrawingBuffer(canvas()->ResourceProvider(),
+                                             source_buffer)) {
     // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
     // handle before reaching this point.  If that assumption ever stops holding

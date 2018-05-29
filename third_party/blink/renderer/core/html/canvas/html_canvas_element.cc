@@ -34,7 +34,6 @@
 #include "base/location.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
@@ -131,8 +130,6 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
       context_creation_was_blocked_(false),
       ignore_reset_(false),
       origin_clean_(true),
-      did_fail_to_create_resource_provider_(false),
-      resource_provider_is_clear_(false),
       surface_layer_bridge_(nullptr),
       gpu_memory_usage_(0),
       externally_allocated_memory_(0),
@@ -395,7 +392,7 @@ void HTMLCanvasElement::FinalizeFrame() {
   // into the canvas, now is a good time to unlock cache entries.
   auto* resource_provider = canvas2d_bridge_
                                 ? canvas2d_bridge_->GetResourceProvider()
-                                : ResourceProviderForWebGL();
+                                : ResourceProvider();
   if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
@@ -613,12 +610,6 @@ bool HTMLCanvasElement::PaintsIntoCanvasBuffer() const {
   return true;
 }
 
-CanvasColorParams HTMLCanvasElement::ColorParams() const {
-  if (context_)
-    return context_->ColorParams();
-  return CanvasColorParams();
-}
-
 void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   if (listeners_.size() == 0)
     return;
@@ -713,8 +704,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
       scoped_refptr<StaticBitmapImage> snapshot =
           canvas2d_bridge_
               ? canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration)
-              : (webgl_resource_provider_ ? webgl_resource_provider_->Snapshot()
-                                          : nullptr);
+              : (ResourceProvider() ? ResourceProvider()->Snapshot() : nullptr);
       if (snapshot) {
         // GraphicsContext cannot handle gpu resource serialization.
         snapshot = snapshot->MakeUnaccelerated();
@@ -732,14 +722,6 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
 
   if (Is3d() && PaintsIntoCanvasBuffer())
     context_->MarkLayerComposited();
-}
-
-bool HTMLCanvasElement::Is3d() const {
-  return context_ && context_->Is3d();
-}
-
-bool HTMLCanvasElement::Is2d() const {
-  return context_ && context_->Is2d();
 }
 
 bool HTMLCanvasElement::IsAnimated2d() const {
@@ -773,8 +755,8 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
   if (Is3d()) {
     if (context_->CreationAttributes().premultiplied_alpha) {
       context_->PaintRenderingResultsToCanvas(source_buffer);
-      if (webgl_resource_provider_)
-        image_bitmap = webgl_resource_provider_->Snapshot();
+      if (ResourceProvider())
+        image_bitmap = ResourceProvider()->Snapshot();
     } else {
       scoped_refptr<Uint8Array> data_array =
           context_->PaintRenderingResultsToDataArray(source_buffer);
@@ -1122,28 +1104,6 @@ Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   return canvas2d_bridge_.get();
 }
 
-CanvasResourceProvider*
-HTMLCanvasElement::GetOrCreateCanvasResourceProviderForWebGL() {
-  DCHECK(Is3d());
-  if (!webgl_resource_provider_ && !did_fail_to_create_resource_provider_) {
-    resource_provider_is_clear_ = true;
-    if (IsValidImageSize(Size())) {
-      webgl_resource_provider_ = CanvasResourceProvider::Create(
-          size_,
-          Platform::Current()->IsGpuCompositingDisabled()
-              ? CanvasResourceProvider::kSoftwareResourceUsage
-              : CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams());
-    }
-    if (!webgl_resource_provider_) {
-      did_fail_to_create_resource_provider_ = true;
-    } else {
-      UpdateMemoryUsage();
-    }
-  }
-  return webgl_resource_provider_.get();
-}
-
 void HTMLCanvasElement::CreateCanvas2DLayerBridgeForTesting(
     std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
@@ -1184,8 +1144,8 @@ scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
   if (need_to_update) {
     if (Is2d() && GetOrCreateCanvas2DLayerBridge()) {
       copied_image_ = canvas2d_bridge_->NewImageSnapshot(hint);
-    } else if (Is3d() && GetOrCreateCanvasResourceProviderForWebGL()) {
-      copied_image_ = webgl_resource_provider_->Snapshot();
+    } else if (Is3d() && GetOrCreateCanvasResourceProvider()) {
+      copied_image_ = ResourceProvider()->Snapshot();
     }
     UpdateMemoryUsage();
   }
@@ -1194,7 +1154,7 @@ scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
 
 void HTMLCanvasElement::DiscardResourceProvider() {
   canvas2d_bridge_.reset();
-  webgl_resource_provider_.reset();
+  ReplaceResourceProvider(nullptr);
   dirty_rect_ = FloatRect();
   UpdateMemoryUsage();
 }
@@ -1298,8 +1258,8 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     // use paintRenderingResultsToCanvas instead of getImage in order to keep a
     // cached copy of the backing in the canvas's resource provider.
     RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
-    if (webgl_resource_provider_) {
-      image = webgl_resource_provider_->Snapshot();
+    if (ResourceProvider()) {
+      image = ResourceProvider()->Snapshot();
     } else {
       image = CreateTransparentImage(Size());
     }
@@ -1498,9 +1458,9 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
     non_gpu_buffer_count++;
 
   if (Is3d()) {
-    if (webgl_resource_provider_) {
+    if (ResourceProvider()) {
       non_gpu_buffer_count++;
-      if (webgl_resource_provider_->IsAccelerated()) {
+      if (ResourceProvider()->IsAccelerated()) {
         gpu_buffer_count += 2;
       }
     }

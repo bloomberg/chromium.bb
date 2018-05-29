@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class CanvasResourceProvider;
+
 class PLATFORM_EXPORT CanvasResourceHost {
  public:
   virtual ~CanvasResourceHost() = default;
@@ -17,6 +19,14 @@ class PLATFORM_EXPORT CanvasResourceHost {
   virtual void SetNeedsCompositingUpdate() = 0;
   virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const = 0;
   virtual void UpdateMemoryUsage() = 0;
+
+  CanvasResourceProvider* ResourceProvider() const;
+
+  std::unique_ptr<CanvasResourceProvider> ReplaceResourceProvider(
+      std::unique_ptr<CanvasResourceProvider>);
+
+ private:
+  std::unique_ptr<CanvasResourceProvider> resource_provider_;
 };
 
 }  // namespace blink

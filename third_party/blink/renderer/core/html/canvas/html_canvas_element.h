@@ -63,7 +63,6 @@ class Layer;
 namespace blink {
 
 class Canvas2DLayerBridge;
-class CanvasColorParams;
 class CanvasContextCreationAttributesCore;
 class CanvasDrawListener;
 class CanvasRenderingContext;
@@ -155,18 +154,13 @@ class CORE_EXPORT HTMLCanvasElement final
   bool OriginClean() const override;
   void SetOriginTainted() override { origin_clean_ = false; }
 
-  bool Is3d() const;
-  bool Is2d() const;
   bool IsAnimated2d() const;
 
   Canvas2DLayerBridge* GetCanvas2DLayerBridge() {
     return canvas2d_bridge_.get();
   }
   Canvas2DLayerBridge* GetOrCreateCanvas2DLayerBridge();
-  CanvasResourceProvider* GetOrCreateCanvasResourceProviderForWebGL();
-  CanvasResourceProvider* ResourceProviderForWebGL() const {
-    return webgl_resource_provider_.get();
-  }
+
   void DiscardResourceProvider() override;
 
   FontSelector* GetFontSelector() override;
@@ -321,7 +315,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetSurfaceSize(const IntSize&);
 
   bool PaintsIntoCanvasBuffer() const;
-  CanvasColorParams ColorParams() const;
 
   scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(SourceDrawingBuffer,
                                                        AccelerationHint) const;
@@ -350,16 +343,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // It prevents repeated attempts in allocating resources after the first
   // attempt failed.
-  mutable bool did_fail_to_create_resource_provider_;
-
   bool HasResourceProvider() {
-    return canvas2d_bridge_ || webgl_resource_provider_;
+    return canvas2d_bridge_ || !!CanvasResourceHost::ResourceProvider();
   }
-
-  bool resource_provider_is_clear_;
-
-  // This is only used by canvas with webgl rendering context.
-  std::unique_ptr<CanvasResourceProvider> webgl_resource_provider_;
 
   // Canvas2DLayerBridge is used when canvas has 2d rendering context
   std::unique_ptr<Canvas2DLayerBridge> canvas2d_bridge_;
