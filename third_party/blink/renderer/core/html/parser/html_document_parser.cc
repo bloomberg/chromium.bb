@@ -175,11 +175,6 @@ void HTMLDocumentParser::Trace(blink::Visitor* visitor) {
   HTMLParserScriptRunnerHost::Trace(visitor);
 }
 
-void HTMLDocumentParser::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(script_runner_);
-  ScriptableDocumentParser::TraceWrappers(visitor);
-}
-
 void HTMLDocumentParser::Detach() {
   if (have_background_parser_)
     StopBackgroundParser();

@@ -310,14 +310,4 @@ void TextTrackList::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
 }
 
-void TextTrackList::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (auto track : add_track_tracks_)
-    visitor->TraceWrappers(track);
-  for (auto track : element_tracks_)
-    visitor->TraceWrappers(track);
-  for (auto track : inband_tracks_)
-    visitor->TraceWrappers(track);
-  EventTargetWithInlineData::TraceWrappers(visitor);
-}
-
 }  // namespace blink

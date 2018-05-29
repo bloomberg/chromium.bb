@@ -433,9 +433,4 @@ void HTMLAnchorElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-void HTMLAnchorElement::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(rel_list_);
-  HTMLElement::TraceWrappers(visitor);
-}
-
 }  // namespace blink
