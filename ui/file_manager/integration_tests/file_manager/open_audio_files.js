@@ -31,6 +31,64 @@ function getTrackText(audioAppId, query) {
 }
 
 /**
+ * Tests opening then closing the Audio Player from Files app. TODO(noel): move the fileSystemURL
+ * helper out of this routine and use it everywhere in this file?
+ *
+ * @param {string} path Directory path to be tested: Downloads or Drive.
+ */
+function audioOpenClose(path) {
+  let audioAppId;
+  let appId;
+
+  function audioFileSystemURL(directory, audioFile) {
+    return 'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID +
+        '/external' + directory + '/' + self.encodeURIComponent(audioFile);
+  }
+
+  StepsRunner.run([
+    // Open Files.App on the given (volume) path.
+    function() {
+      setupAndWaitUntilReady(null, path, this.next);
+    },
+    // Open Beautiful Song.ogg audio file.
+    function(result) {
+      appId = result.windowId;
+      remoteCall.callRemoteTestUtil(
+          'openFile', appId, ['Beautiful Song.ogg'], this.next);
+    },
+    // Wait for the Audio Player window to open.
+    function(result) {
+      chrome.test.assertTrue(result);
+      audioPlayerApp.waitForWindow('audio_player.html').then(this.next);
+    },
+    // Check: Audio Player should automatically play.
+    function(windowId) {
+      audioAppId = windowId;
+      audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
+          then(this.next);
+    },
+    // Check: Beautiful Song.ogg should be playing.
+    function(element) {
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
+          element.attributes.currenttrackurl);
+      this.next();
+    },
+    // Close the Audio Player window.
+    function() {
+      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+    },
+    // Check: Audio Player window should close.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'Failed to close audio window');
+      this.next();
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+/**
  * Tests if the audio player shows up for the selected image and that the audio
  * is loaded successfully.
  *
@@ -140,14 +198,7 @@ function audioOpen(path) {
         });
       }).then(this.next, function(e) { chrome.test.fail(e); });
     },
-    // Wait for the changes of the player status.
     function() {
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
-    },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result, 'Fail to close the window');
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -219,12 +270,9 @@ function audioAutoAdvance(path) {
           'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
-
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+      this.next();
     },
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -286,13 +334,9 @@ function audioRepeatAllModeSingleFile(path) {
           'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
-
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+      this.next();
     },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -339,14 +383,7 @@ function audioNoRepeatModeSingleFile(path) {
       var selector = 'audio-player[playcount="1"]:not([playing])';
       audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
     },
-    // Get the source file name.
-    function(element) {
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
-    },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -415,13 +452,9 @@ function audioRepeatOneModeSingleFile(path) {
           'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
-
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+      this.next();
     },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -500,13 +533,9 @@ function audioRepeatAllModeMultipleFile(path) {
           'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
-
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+      this.next();
     },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -568,14 +597,7 @@ function audioNoRepeatModeMultipleFile(path) {
       var query = 'audio-player:not([playing])';
       audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
-    // Get the source file name.
-    function(element) {
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
-    },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -658,17 +680,21 @@ function audioRepeatOneModeMultipleFile(path) {
           'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
-
-      // Close window
-      audioPlayerApp.closeWindowAndWait(audioAppId).then(this.next);
+      this.next();
     },
-    // Wait for the audio player.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
 }
+
+testcase.audioOpenCloseDownloads = function() {
+  audioOpenClose(RootPath.DOWNLOADS);
+};
+
+testcase.audioOpenCloseDrive = function() {
+  audioOpenClose(RootPath.DRIVE);
+};
 
 testcase.audioOpenDownloads = function() {
   audioOpen(RootPath.DOWNLOADS);
