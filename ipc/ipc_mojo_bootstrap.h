@@ -56,6 +56,8 @@ class COMPONENT_EXPORT(IPC) MojoBootstrap {
   virtual void Flush() = 0;
 
   virtual mojo::AssociatedGroup* GetAssociatedGroup() = 0;
+
+  enum { kMaxOutgoingMessagesSizeForTesting = 100000u };
 };
 
 }  // namespace IPC
