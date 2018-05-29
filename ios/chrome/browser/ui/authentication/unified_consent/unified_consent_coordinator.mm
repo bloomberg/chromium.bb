@@ -106,7 +106,11 @@
 - (void)identityChooserCoordinatorDidClose:
     (IdentityChooserCoordinator*)coordinator {
   CHECK_EQ(self.identityChooserCoordinator, coordinator);
-  self.selectedIdentity = self.identityChooserCoordinator.selectedIdentity;
+  if (self.identityChooserCoordinator.addAccountTapped) {
+    [self.delegate unifiedConsentCoordinatorDidTapOnAddAccount:self];
+  } else {
+    self.selectedIdentity = self.identityChooserCoordinator.selectedIdentity;
+  }
   self.identityChooserCoordinator.delegate = nil;
   self.identityChooserCoordinator = nil;
 }

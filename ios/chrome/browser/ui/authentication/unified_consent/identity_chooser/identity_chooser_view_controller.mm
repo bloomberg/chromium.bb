@@ -67,12 +67,21 @@ const CGFloat kFooterHeight = 17.;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  // TODO(crbug.com/827072): Needs to implement "Add Account…" button action.
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-  if (indexPath.section != 0)
-    return;
-  [self.selectionDelegate identityChooserViewController:self
-                           didSelectIdentityAtIndexPath:indexPath];
+  switch (indexPath.section) {
+    case 0:
+      [self.selectionDelegate identityChooserViewController:self
+                               didSelectIdentityAtIndexPath:indexPath];
+      break;
+    case 1:
+      DCHECK_EQ(0, indexPath.row);
+      [self.presentationDelegate
+          identityChooserViewControllerDidTapOnAddAccount:self];
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 @end

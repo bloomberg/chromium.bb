@@ -11,7 +11,7 @@
 
 @class UnifiedConsentViewController;
 
-// Delegate protocol for UnityConsentViewController.
+// Delegate protocol for UnifiedConsentViewController.
 @protocol UnifiedConsentViewControllerDelegate<NSObject>
 
 // Called when the user taps on the settings link.
@@ -29,7 +29,7 @@
 
 @end
 
-// UnityConsentViewController is a sub view controller to ask for the user
+// UnifiedConsentViewController is a sub view controller to ask for the user
 // consent before the user can sign-in.
 // All the string ids displayed by the view are available with
 // |consentStringIds| and |openSettingsStringId|. Those can be used to record
@@ -38,9 +38,9 @@
 
 @property(nonatomic, weak) id<UnifiedConsentViewControllerDelegate> delegate;
 // String id for text to open the settings (related to record the user consent).
-@property(nonatomic, readonly) int openSettingsStringId;
+@property(nonatomic, assign, readonly) int openSettingsStringId;
 // Returns YES if the consent view is scrolled to the bottom.
-@property(nonatomic, readonly) BOOL isScrolledToBottom;
+@property(nonatomic, assign, readonly) BOOL isScrolledToBottom;
 
 // -[UnifiedConsentViewController init] should be used.
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
