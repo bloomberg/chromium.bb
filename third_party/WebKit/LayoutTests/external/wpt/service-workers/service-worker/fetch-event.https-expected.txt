@@ -25,5 +25,12 @@ FAIL FetchEvent#request.isReloadNavigation is true (location.reload()) assert_eq
 FAIL FetchEvent#request.isReloadNavigation is true (history.go(0)) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
 FAIL FetchEvent#request.isReloadNavigation is true (POST + location.reload()) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
 FAIL FetchEvent#request.isReloadNavigation is true (with history traversal) assert_equals: expected "method = GET, isReloadNavigation = false" but got "method = GET, isReloadNavigation = undefined"
+FAIL FetchEvent#request.isHistoryNavigation is true (with history.go(-1)) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
+FAIL FetchEvent#request.isHistoryNavigation is true (with history.go(1)) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
+FAIL FetchEvent#request.isHistoryNavigation is false (with history.go(0)) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
+FAIL FetchEvent#request.isHistoryNavigation is false (with location.reload) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
+FAIL FetchEvent#request.isHistoryNavigation is true (with history.go(-2)) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
+FAIL FetchEvent#request.isHistoryNavigation is true (with history.go(2)) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
+FAIL FetchEvent#request.isReloadNavigation is true (POST + history.go(-1)) assert_equals: expected "method = GET, isHistoryNavigation = false" but got "method = GET, isHistoryNavigation = undefined"
 Harness: the test ran to completion.
 
