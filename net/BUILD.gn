@@ -2220,9 +2220,9 @@ source_set("net_public_deps") {
     ":buildflags",
     ":net_nqe_proto",
     ":net_quic_proto",
-    ":traffic_annotation",
     "//crypto",
     "//crypto:platform",
+    "//net/traffic_annotation",
     "//third_party/boringssl",
     "//url",
   ]
@@ -2672,7 +2672,6 @@ static_library("test_support") {
     "test/url_request/url_request_mock_data_job.h",
     "test/url_request/url_request_slow_download_job.cc",
     "test/url_request/url_request_slow_download_job.h",
-    "traffic_annotation/network_traffic_annotation_test_helper.h",
     "url_request/test_url_fetcher_factory.cc",
     "url_request/test_url_fetcher_factory.h",
     "url_request/url_request_test_util.cc",
@@ -2682,13 +2681,13 @@ static_library("test_support") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
-    ":traffic_annotation",
     "//base",
     "//base/test:test_support",
     "//crypto",
     "//net",
     "//net/dns:test_support",
     "//net/tools/tld_cleanup",
+    "//net/traffic_annotation:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//url",
@@ -3325,15 +3324,6 @@ source_set("simple_quic_tools") {
   ]
   public_deps = [
     ":net_quic_trace_proto",
-  ]
-}
-
-source_set("traffic_annotation") {
-  sources = [
-    "traffic_annotation/network_traffic_annotation.h",
-  ]
-  deps = [
-    "//base",
   ]
 }
 
