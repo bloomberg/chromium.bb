@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -15,11 +16,8 @@ namespace ash {
 
 namespace {
 
-// TODO(dmblack): Move common dimensions to shared constant file.
 // Appearance.
-constexpr int kPaddingDip = 14;
 constexpr int kPreferredHeightDip = 48;
-constexpr int kSpacingDip = 8;
 
 // InvisibleScrollBar ----------------------------------------------------------
 
