@@ -45892,6 +45892,11 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Reboot Pending"/>
 </enum>
 
+<enum name="UpdateEngineChromeOsVersionPrefix">
+  <int value="-1" label="Invalid"/>
+  <int value="0" label="Not set"/>
+</enum>
+
 <enum name="UpdateEngineConnectionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Ethernet"/>
