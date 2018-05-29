@@ -49,7 +49,7 @@ void CrostiniRemover::OnConciergeStarted(ConciergeClientResult result) {
     return;
   }
   CrostiniManager::GetInstance()->StopVm(
-      profile_, kCrostiniDefaultVmName,
+      profile_, vm_name_,
       base::BindOnce(&CrostiniRemover::StopVmFinished, this));
 }
 
@@ -67,9 +67,9 @@ void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
     return;
   }
   CrostiniRegistryServiceFactory::GetForProfile(profile_)->ClearApplicationList(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+      vm_name_, container_name_);
   CrostiniManager::GetInstance()->DestroyDiskImage(
-      CryptohomeIdForProfile(profile_), base::FilePath(kCrostiniDefaultVmName),
+      CryptohomeIdForProfile(profile_), base::FilePath(vm_name_),
       vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
       base::BindOnce(&CrostiniRemover::DestroyDiskImageFinished, this));
 }
