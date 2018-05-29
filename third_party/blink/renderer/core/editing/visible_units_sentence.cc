@@ -30,7 +30,9 @@
 
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
@@ -38,13 +40,32 @@ namespace blink {
 
 namespace {
 
-unsigned EndSentenceBoundary(const UChar* characters,
-                             unsigned length,
-                             unsigned,
-                             BoundarySearchContextAvailability,
-                             bool&) {
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  return iterator->next();
+// TODO(editing-dev): We should move |FindNonSpaceCharacter()| to
+// "text_boundaries.cc" with |FindNextSentenceBoundaryForward|.
+int FindNonSpaceCharacter(const UChar* characters16,
+                          int length,
+                          int passed_offset) {
+  for (int offset = passed_offset; offset < length; ++offset) {
+    if (characters16[offset] != ' ')
+      return offset;
+  }
+  return length;
+}
+
+// TODO(editing-dev): We should move |FindNonSpaceCharacter()| to
+// "text_boundaries.cc" like |FindWordEndBoundary()|.
+int FindNextSentenceBoundaryForward(const UChar* characters16,
+                                    int length,
+                                    int passed_offset) {
+  DCHECK_GE(length, 0);
+  DCHECK_GE(passed_offset, 0);
+  DCHECK_LE(passed_offset, length);
+  TextBreakIterator* iterator = SentenceBreakIterator(characters16, length);
+  // "move_by_sentence_boundary.html" requires to skip a space characters
+  // between sentences.
+  const int offset = FindNonSpaceCharacter(characters16, length, passed_offset);
+  const int result = iterator->following(offset);
+  return result == kTextBreakDone ? length : result;
 }
 
 unsigned NextSentencePositionBoundary(const UChar* characters,
@@ -82,12 +103,8 @@ unsigned StartSentenceBoundary(const UChar* characters,
 
 // TODO(yosin) This includes the space after the punctuation that marks the end
 // of the sentence.
-template <typename Strategy>
-static VisiblePositionTemplate<Strategy> EndOfSentenceAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(NextBoundary(c, EndSentenceBoundary),
-                               TextAffinity::kUpstreamIfPossible);
+PositionInFlatTree EndOfSentenceInternal(const PositionInFlatTree& position) {
+  return FindBoundaryForward(position, FindNextSentenceBoundaryForward);
 }
 
 template <typename Strategy>
@@ -99,12 +116,24 @@ VisiblePositionTemplate<Strategy> StartOfSentenceAlgorithm(
 
 }  // namespace
 
+PositionInFlatTreeWithAffinity EndOfSentence(const PositionInFlatTree& start) {
+  const PositionInFlatTree result = EndOfSentenceInternal(start);
+  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+      PositionInFlatTreeWithAffinity(result), start);
+}
+
+PositionWithAffinity EndOfSentence(const Position& start) {
+  const PositionInFlatTreeWithAffinity result =
+      EndOfSentence(ToPositionInFlatTree(start));
+  return ToPositionInDOMTreeWithAffinity(result);
+}
+
 VisiblePosition EndOfSentence(const VisiblePosition& c) {
-  return EndOfSentenceAlgorithm<EditingStrategy>(c);
+  return CreateVisiblePosition(EndOfSentence(c.DeepEquivalent()));
 }
 
 VisiblePositionInFlatTree EndOfSentence(const VisiblePositionInFlatTree& c) {
-  return EndOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
+  return CreateVisiblePosition(EndOfSentence(c.DeepEquivalent()));
 }
 
 EphemeralRange ExpandEndToSentenceBoundary(const EphemeralRange& range) {

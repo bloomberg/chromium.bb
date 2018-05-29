@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -47,7 +48,21 @@ class VisibleUnitsSentenceTest : public EditingTestBase {
   }
 };
 
-TEST_F(VisibleUnitsSentenceTest, endOfSentence) {
+class ParameterizedVisibleUnitsSentenceTest
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      public VisibleUnitsSentenceTest {
+ protected:
+  ParameterizedVisibleUnitsSentenceTest() : ScopedLayoutNGForTest(GetParam()) {}
+
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        ParameterizedVisibleUnitsSentenceTest,
+                        ::testing::Bool());
+
+TEST_P(ParameterizedVisibleUnitsSentenceTest, EndOfSentenceShadowDOMV0) {
   const char* body_content = "<a id=host><b id=one>1</b><b id=two>22</b></a>";
   const char* shadow_content =
       "<p><i id=three>333</i> <content select=#two></content> <content "
@@ -61,28 +76,28 @@ TEST_F(VisibleUnitsSentenceTest, endOfSentence) {
   Node* four = shadow_root->getElementById("four")->firstChild();
 
   EXPECT_EQ(
-      Position(two, 2),
+      Position(four, 4),
       EndOfSentence(CreateVisiblePositionInDOMTree(*one, 0)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(four, 4),
       EndOfSentence(CreateVisiblePositionInFlatTree(*one, 0)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(two, 2),
+      Position(four, 4),
       EndOfSentence(CreateVisiblePositionInDOMTree(*one, 1)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(four, 4),
       EndOfSentence(CreateVisiblePositionInFlatTree(*one, 1)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(two, 2),
+      Position(four, 4),
       EndOfSentence(CreateVisiblePositionInDOMTree(*two, 0)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(four, 4),
       EndOfSentence(CreateVisiblePositionInFlatTree(*two, 0)).DeepEquivalent());
 
   EXPECT_EQ(
-      Position(two, 2),
+      Position(four, 4),
       EndOfSentence(CreateVisiblePositionInDOMTree(*two, 1)).DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(four, 4),
