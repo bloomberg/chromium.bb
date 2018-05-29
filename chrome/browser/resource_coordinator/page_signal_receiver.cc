@@ -65,6 +65,15 @@ void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& cu_id,
     observer.OnLifecycleStateChanged(web_contents_iter->second, state);
 }
 
+void PageSignalReceiver::NotifyNonPersistentNotificationCreated(
+    const CoordinationUnitID& cu_id) {
+  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  if (web_contents_iter == cu_id_web_contents_map_.end())
+    return;
+  for (auto& observer : observers_)
+    observer.OnNonPersistentNotificationCreated(web_contents_iter->second);
+}
+
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
   // When PageSignalReceiver starts to have observer, construct the mojo
   // channel.
