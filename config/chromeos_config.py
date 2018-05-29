@@ -4094,8 +4094,12 @@ def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
   for c in site_config.itervalues():
-    # We can only run vmtests on baremetal, so ensure we have it.
-    if (c.vm_tests or c.moblab_vm_tests) and c.build_type != 'pre_cq':
+    # We can run vmtests on GCE because we are whitelisted for GCE L2 VM support
+    # and are migrating from baremetal to GCE.
+    if c.vm_tests or c.moblab_vm_tests:
+      # Special case betty-incremental which we want on gce, crbug.com/795976
+      if c['name'] == 'betty-incremental':
+        continue
       c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
 
 
