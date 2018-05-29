@@ -150,6 +150,13 @@ class NameStyleConverterTest(unittest.TestCase):
         converter = NameStyleConverter('feDropShadow')
         self.assertEqual(converter.to_upper_camel_case(), 'FEDropShadow')
 
+    def test_to_class_name(self):
+        self.assertEqual(NameStyleConverter('').to_class_name(), '')
+        self.assertEqual(NameStyleConverter('').to_class_name(prefix='s', suffix='d'), 'SD')
+        self.assertEqual(NameStyleConverter('').to_class_name(prefix='style', suffix='data'), 'StyleData')
+        self.assertEqual(NameStyleConverter('foo').to_class_name(prefix='style', suffix='data'), 'StyleFooData')
+        self.assertEqual(NameStyleConverter('xpath').to_class_name(), 'XPath')
+
     def test_lower_camel_case(self):
         converter = NameStyleConverter('someSuperThing')
         self.assertEqual(converter.to_lower_camel_case(), 'someSuperThing')

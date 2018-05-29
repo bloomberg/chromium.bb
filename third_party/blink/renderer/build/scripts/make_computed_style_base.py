@@ -11,12 +11,9 @@ import make_style_builder
 import keyword_utils
 import bisect
 
-from name_utilities import (
-    enum_value_name, method_name, class_name, join_names
-)
-
 from core.css import css_properties
 from core.style.computed_style_fields import DiffGroup, Enum, Group, Field
+from name_utilities import join_names, method_name
 
 from itertools import chain
 
