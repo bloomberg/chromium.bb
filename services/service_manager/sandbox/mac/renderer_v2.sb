@@ -34,6 +34,7 @@
   (subpath "/System/Library/ColorSync/Profiles")
   (subpath "/System/Library/CoreServices/SystemAppearance.bundle")
   (subpath "/System/Library/CoreServices/SystemVersion.bundle")
+  (subpath "/System/Library/Extensions")  ; https://crbug.com/847518
   (subpath "/System/Library/LinguisticData"))
 
 ; IOKit
