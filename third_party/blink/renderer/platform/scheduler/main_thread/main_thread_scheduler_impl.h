@@ -373,7 +373,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
           is_paused(false),
           is_throttled(false),
           is_blocked(false),
-          is_frozen(false),
           use_virtual_time(false),
           priority(base::sequence_manager::TaskQueue::kNormalPriority) {}
 
@@ -381,7 +380,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool is_paused;
     bool is_throttled;
     bool is_blocked;
-    bool is_frozen;
     bool use_virtual_time;
     base::sequence_manager::TaskQueue::QueuePriority priority;
 
@@ -395,7 +393,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool operator==(const TaskQueuePolicy& other) const {
       return is_enabled == other.is_enabled && is_paused == other.is_paused &&
              is_throttled == other.is_throttled &&
-             is_blocked == other.is_blocked && is_frozen == other.is_frozen &&
+             is_blocked == other.is_blocked &&
              use_virtual_time == other.use_virtual_time &&
              priority == other.priority;
     }
@@ -407,7 +405,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
    public:
     Policy()
         : rail_mode_(v8::PERFORMANCE_ANIMATION),
-          should_disable_throttling_(false) {}
+          should_disable_throttling_(false),
+          frozen_when_backgrounded_(false) {}
     ~Policy() = default;
 
     TaskQueuePolicy& compositor_queue_policy() {
@@ -459,9 +458,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       return should_disable_throttling_;
     }
 
+    bool& frozen_when_backgrounded() { return frozen_when_backgrounded_; }
+    bool frozen_when_backgrounded() const { return frozen_when_backgrounded_; }
+
     bool operator==(const Policy& other) const {
       return policies_ == other.policies_ && rail_mode_ == other.rail_mode_ &&
-             should_disable_throttling_ == other.should_disable_throttling_;
+             should_disable_throttling_ == other.should_disable_throttling_ &&
+             frozen_when_backgrounded_ == other.frozen_when_backgrounded_;
     }
 
     void AsValueInto(base::trace_event::TracedValue* state) const;
@@ -469,6 +472,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
    private:
     v8::RAILMode rail_mode_;
     bool should_disable_throttling_;
+    bool frozen_when_backgrounded_;
 
     std::array<TaskQueuePolicy,
                static_cast<size_t>(MainThreadTaskQueue::QueueClass::kCount)>
@@ -736,7 +740,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         keep_active_fetch_or_worker;
     TraceableState<bool, kTracingCategoryNameInfo>
         freezing_when_backgrounded_enabled;
-    TraceableState<bool, kTracingCategoryNameInfo> frozen_when_backgrounded;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
         loading_task_estimated_cost;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
