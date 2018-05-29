@@ -316,9 +316,15 @@ class TCPSocketTest : public testing::Test {
         std::move(request), std::move(observer),
         base::BindLambdaForTesting(
             [&](int result,
+                const base::Optional<net::IPEndPoint>& actual_local_addr,
+                const base::Optional<net::IPEndPoint>& peer_addr,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                 mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
               net_error = result;
+              if (result == net::OK) {
+                EXPECT_NE(0, actual_local_addr.value().port());
+                EXPECT_EQ(remote_addr, peer_addr.value());
+              }
               *receive_pipe_handle_out = std::move(receive_pipe_handle);
               *send_pipe_handle_out = std::move(send_pipe_handle);
               run_loop.Quit();
@@ -965,6 +971,89 @@ TEST_P(TCPSocketWithMockSocketTest, WriteError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
+}
+
+TEST_F(TCPSocketWithMockSocketTest, SetNoDelayAndKeepAlive) {
+  // Populate with some mock reads, so UpgradeToTLS() won't error out because of
+  // a closed receive pipe.
+  const net::MockRead kReads[] = {
+      net::MockRead(net::ASYNC, "hello", 5 /* length */),
+      net::MockRead(net::ASYNC, net::OK)};
+  net::StaticSocketDataProvider data_provider(kReads,
+                                              base::span<net::MockWrite>());
+  net::SSLSocketDataProvider ssl_socket(net::ASYNC, net::ERR_FAILED);
+
+  mock_client_socket_factory_.AddSocketDataProvider(&data_provider);
+  mock_client_socket_factory_.AddSSLSocketDataProvider(&ssl_socket);
+
+  mojo::ScopedDataPipeConsumerHandle client_socket_receive_handle;
+  mojo::ScopedDataPipeProducerHandle client_socket_send_handle;
+
+  mojom::TCPConnectedSocketPtr client_socket;
+  net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
+  EXPECT_EQ(net::OK,
+            CreateTCPConnectedSocketSync(
+                mojo::MakeRequest(&client_socket), nullptr /*observer*/,
+                base::nullopt, server_addr, &client_socket_receive_handle,
+                &client_socket_send_handle));
+  {
+    base::RunLoop run_loop;
+    client_socket->SetNoDelay(true /* no_delay */,
+                              base::BindLambdaForTesting([&](bool success) {
+                                EXPECT_TRUE(success);
+                                run_loop.Quit();
+                              }));
+    run_loop.Run();
+  }
+  {
+    base::RunLoop run_loop;
+    client_socket->SetKeepAlive(true /* enable */, 123 /* delay */,
+                                base::BindLambdaForTesting([&](bool success) {
+                                  EXPECT_TRUE(success);
+                                  run_loop.Quit();
+                                }));
+    run_loop.Run();
+  }
+
+  // UpgradeToTLS will destroy network::TCPConnectedSocket::|socket_|. Calling
+  // SetNoDelay and SetKeepAlive should error out.
+  mojom::TLSClientSocketPtr tls_socket;
+  client_socket_receive_handle.reset();
+  client_socket_send_handle.reset();
+  {
+    base::RunLoop run_loop;
+    net::HostPortPair host_port_pair("example.org", 443);
+    client_socket->UpgradeToTLS(
+        host_port_pair, nullptr /* ssl_config_ptr */,
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+        mojo::MakeRequest(&tls_socket), nullptr /*observer */,
+        base::BindLambdaForTesting(
+            [&](int result,
+                mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+                mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+              EXPECT_EQ(net::ERR_FAILED, result);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+  {
+    base::RunLoop run_loop;
+    client_socket->SetNoDelay(true /* no_delay */,
+                              base::BindLambdaForTesting([&](bool success) {
+                                EXPECT_FALSE(success);
+                                run_loop.Quit();
+                              }));
+    run_loop.Run();
+  }
+  {
+    base::RunLoop run_loop;
+    client_socket->SetKeepAlive(true /* enable */, 123 /* delay */,
+                                base::BindLambdaForTesting([&](bool success) {
+                                  EXPECT_FALSE(success);
+                                  run_loop.Quit();
+                                }));
+    run_loop.Run();
+  }
 }
 
 // Tests the case where net::ServerSocket::Listen() succeeds but

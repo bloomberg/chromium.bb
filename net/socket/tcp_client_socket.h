@@ -47,6 +47,9 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
 
   // TransportClientSocket implementation.
   int Bind(const IPEndPoint& address) override;
+  bool SetKeepAlive(bool enable, int delay) override;
+  bool SetNoDelay(bool no_delay) override;
+
   // StreamSocket implementation.
   int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
@@ -82,9 +85,6 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
-
-  virtual bool SetKeepAlive(bool enable, int delay);
-  virtual bool SetNoDelay(bool no_delay);
 
  private:
   // State machine for connecting the socket.

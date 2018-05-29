@@ -101,7 +101,8 @@ void TCPServerSocket::OnAcceptCompleted(int result) {
     mojom::TCPConnectedSocketPtr socket;
     auto connected_socket = std::make_unique<TCPConnectedSocket>(
         std::move(pending_accept->observer),
-        base::WrapUnique(accepted_socket_.release()),
+        base::WrapUnique(static_cast<net::TransportClientSocket*>(
+            accepted_socket_.release())),
         std::move(receive_pipe.producer_handle),
         std::move(send_pipe.consumer_handle), traffic_annotation_);
     delegate_->OnAccept(std::move(connected_socket),

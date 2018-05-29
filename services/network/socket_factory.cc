@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
@@ -17,9 +18,9 @@
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/ssl_config_type_converter.h"
 #include "services/network/tcp_connected_socket.h"
 #include "services/network/tls_client_socket.h"
-
 #include "services/network/udp_socket.h"
 
 namespace network {
@@ -89,6 +90,7 @@ void SocketFactory::CreateTCPConnectedSocket(
 
 void SocketFactory::CreateTLSClientSocket(
     const net::HostPortPair& host_port_pair,
+    mojom::TLSClientSocketOptionsPtr socket_options,
     mojom::TLSClientSocketRequest request,
     std::unique_ptr<net::ClientSocketHandle> tcp_socket,
     mojom::SocketObserverPtr observer,
@@ -99,8 +101,15 @@ void SocketFactory::CreateTLSClientSocket(
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
   TLSClientSocket* socket_raw = socket.get();
   tls_socket_bindings_.AddBinding(std::move(socket), std::move(request));
+
   net::SSLConfig ssl_config;
   ssl_config_service_->GetSSLConfig(&ssl_config);
+  if (socket_options) {
+    ssl_config.version_min =
+        mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_min);
+    ssl_config.version_max =
+        mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_max);
+  }
   socket_raw->Connect(host_port_pair, ssl_config, std::move(tcp_socket),
                       ssl_client_socket_context_, client_socket_factory_,
                       std::move(callback));

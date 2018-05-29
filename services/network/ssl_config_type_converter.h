@@ -11,6 +11,8 @@
 
 namespace mojo {
 
+int MojoSSLVersionToNetSSLVersion(network::mojom::SSLVersion mojo_version);
+
 // Converts a net::SSLConfig to network::mojom::SSLConfigPtr. Tested in
 // SSLConfigServiceMojo's unittests.
 template <>

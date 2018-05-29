@@ -56,7 +56,8 @@ class TestHttpClient {
             [](base::RunLoop* run_loop, int* result_out,
                mojo::ScopedDataPipeConsumerHandle* receive_pipe_handle_out,
                mojo::ScopedDataPipeProducerHandle* send_pipe_handle_out,
-               int result,
+               int result, const base::Optional<net::IPEndPoint>& local_addr,
+               const base::Optional<net::IPEndPoint>& peer_addr,
                mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
               *receive_pipe_handle_out = std::move(receive_pipe_handle);

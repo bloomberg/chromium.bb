@@ -32,7 +32,7 @@ TCPConnectedSocket::TCPConnectedSocket(
 
 TCPConnectedSocket::TCPConnectedSocket(
     mojom::SocketObserverPtr observer,
-    std::unique_ptr<net::StreamSocket> socket,
+    std::unique_ptr<net::TransportClientSocket> socket,
     mojo::ScopedDataPipeProducerHandle receive_pipe_handle,
     mojo::ScopedDataPipeConsumerHandle send_pipe_handle,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
@@ -87,6 +87,7 @@ void TCPConnectedSocket::GetLocalAddress(GetLocalAddressCallback callback) {
 
 void TCPConnectedSocket::UpgradeToTLS(
     const net::HostPortPair& host_port_pair,
+    mojom::TLSClientSocketOptionsPtr socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TLSClientSocketRequest request,
     mojom::SocketObserverPtr observer,
@@ -95,8 +96,8 @@ void TCPConnectedSocket::UpgradeToTLS(
   if (socket_data_pump_) {
     pending_upgrade_to_tls_callback_ = base::BindOnce(
         &TCPConnectedSocket::UpgradeToTLS, base::Unretained(this),
-        host_port_pair, traffic_annotation, std::move(request),
-        std::move(observer), std::move(callback));
+        host_port_pair, std::move(socket_options), traffic_annotation,
+        std::move(request), std::move(observer), std::move(callback));
     return;
   }
   if (!socket_ || !socket_->IsConnected()) {
@@ -108,19 +109,47 @@ void TCPConnectedSocket::UpgradeToTLS(
   auto socket_handle = std::make_unique<net::ClientSocketHandle>();
   socket_handle->SetSocket(std::move(socket_));
   delegate_->CreateTLSClientSocket(
-      host_port_pair, std::move(request), std::move(socket_handle),
-      std::move(observer),
+      host_port_pair, std::move(socket_options), std::move(request),
+      std::move(socket_handle), std::move(observer),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(callback));
+}
+
+void TCPConnectedSocket::SetNoDelay(bool no_delay,
+                                    SetNoDelayCallback callback) {
+  if (!socket_) {
+    std::move(callback).Run(false);
+    return;
+  }
+  bool success = socket_->SetNoDelay(no_delay);
+  std::move(callback).Run(success);
+}
+
+void TCPConnectedSocket::SetKeepAlive(bool enable,
+                                      int32_t delay_secs,
+                                      SetKeepAliveCallback callback) {
+  if (!socket_) {
+    std::move(callback).Run(false);
+    return;
+  }
+  bool success = socket_->SetKeepAlive(enable, delay_secs);
+  std::move(callback).Run(success);
 }
 
 void TCPConnectedSocket::OnConnectCompleted(int result) {
   DCHECK(!connect_callback_.is_null());
   DCHECK(!socket_data_pump_);
 
+  net::IPEndPoint peer_addr, local_addr;
+  if (result == net::OK)
+    result = socket_->GetLocalAddress(&local_addr);
+  if (result == net::OK)
+    result = socket_->GetPeerAddress(&peer_addr);
+
   if (result != net::OK) {
     std::move(connect_callback_)
-        .Run(result, mojo::ScopedDataPipeConsumerHandle(),
+        .Run(result, base::nullopt, base::nullopt,
+             mojo::ScopedDataPipeConsumerHandle(),
              mojo::ScopedDataPipeProducerHandle());
     return;
   }
@@ -130,7 +159,8 @@ void TCPConnectedSocket::OnConnectCompleted(int result) {
       socket_.get(), this /*delegate*/, std::move(receive_pipe.producer_handle),
       std::move(send_pipe.consumer_handle), traffic_annotation_);
   std::move(connect_callback_)
-      .Run(net::OK, std::move(receive_pipe.consumer_handle),
+      .Run(net::OK, local_addr, peer_addr,
+           std::move(receive_pipe.consumer_handle),
            std::move(send_pipe.producer_handle));
 }
 

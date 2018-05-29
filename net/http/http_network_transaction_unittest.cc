@@ -6904,6 +6904,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
 
   StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider data_ssl(ASYNC, ERR_CONNECTION_RESET);
+  data_ssl.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_3;
   StaticSocketDataProvider data2(data_reads, data_writes);
   SSLSocketDataProvider data_ssl2(ASYNC, ERR_CONNECTION_RESET);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
