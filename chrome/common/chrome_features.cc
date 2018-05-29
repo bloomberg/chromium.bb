@@ -659,4 +659,9 @@ const base::Feature kCrOSEnableUSMUserService{
 
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+// Enables all upcoming UI features.
+const base::Feature kUiFood{"UiFood", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features

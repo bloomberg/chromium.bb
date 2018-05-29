@@ -3152,6 +3152,13 @@ const char kAutomaticTabDiscardingDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+const char kUiFoodName[] = "Use all upcoming UI features";
+const char kUiFoodDescription[] = "Use all upcoming UI features.";
+
+#endif
+
 // Feature flags --------------------------------------------------------------
 
 #if BUILDFLAG(ENABLE_VR)

@@ -3871,6 +3871,12 @@ const FeatureEntry kFeatureEntries[] = {
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
     // AboutFlagsHistogramTest unit test to verify this process).
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"uifood", flag_descriptions::kUiFoodName,
+     flag_descriptions::kUiFoodDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kUiFood)},
+#endif
 };
 
 class FlagsStateSingleton {
