@@ -334,6 +334,9 @@ void Pointer::OnCursorSizeChanged(ui::CursorSize cursor_size) {
 
 void Pointer::OnCursorDisplayChanged(const display::Display& display) {
   auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
+  // TODO(crbug.com/631103): CursorClient does not exist in mash yet.
+  if (!cursor_client)
+    return;
   if (cursor_ == ui::CursorType::kCustom &&
       cursor_client->GetCursor() == cursor_client->GetCursor()) {
     // If the current cursor is still the one created by us,
@@ -459,6 +462,9 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
 void Pointer::UpdateCursor() {
   auto* helper = WMHelper::GetInstance();
   aura::client::CursorClient* cursor_client = helper->GetCursorClient();
+  // TODO(crbug.com/631103): CursorClient does not exist in mash yet.
+  if (!cursor_client)
+    return;
 
   if (cursor_ == ui::CursorType::kCustom) {
     SkBitmap bitmap = cursor_bitmap_;
