@@ -118,9 +118,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                             ChromeContextMenuItem.OPEN_IN_BROWSER_ID));
 
     private static final List<? extends ContextMenuItem> LINK_GROUP = Collections.unmodifiableList(
-            CollectionUtil.newArrayList(ChromeContextMenuItem.OPEN_IN_OTHER_WINDOW,
-                    ChromeContextMenuItem.OPEN_IN_NEW_TAB,
+            CollectionUtil.newArrayList(ChromeContextMenuItem.OPEN_IN_NEW_TAB,
                     ChromeContextMenuItem.OPEN_IN_INCOGNITO_TAB,
+                    ChromeContextMenuItem.OPEN_IN_OTHER_WINDOW,
                     ChromeContextMenuItem.COPY_LINK_ADDRESS, ChromeContextMenuItem.COPY_LINK_TEXT,
                     ChromeContextMenuItem.SAVE_LINK_AS, SHARE_LINK));
 
