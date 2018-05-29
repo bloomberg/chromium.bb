@@ -9,11 +9,11 @@
 #include "base/files/platform_file.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 

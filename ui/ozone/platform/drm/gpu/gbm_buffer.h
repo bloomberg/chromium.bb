@@ -12,7 +12,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 
 struct gbm_bo;
 

@@ -14,9 +14,9 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/ozone/common/linux/overlay_plane.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
 namespace gfx {
 struct PresentationFeedback;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_OVERLAY_PLANE_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_OVERLAY_PLANE_H_
+#ifndef UI_OZONE_COMMON_LINUX_OVERLAY_PLANE_H_
+#define UI_OZONE_COMMON_LINUX_OVERLAY_PLANE_H_
 
 #include <vector>
 
@@ -56,4 +56,4 @@ struct OverlayPlane {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_OVERLAY_PLANE_H_
+#endif  // UI_OZONE_COMMON_LINUX_OVERLAY_PLANE_H_

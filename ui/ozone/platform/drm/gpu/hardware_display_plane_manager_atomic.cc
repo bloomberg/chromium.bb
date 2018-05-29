@@ -13,11 +13,11 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 

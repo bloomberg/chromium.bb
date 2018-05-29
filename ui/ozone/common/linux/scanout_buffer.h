@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_GPU_SCANOUT_BUFFER_H_
-#define UI_OZONE_PLATFORM_DRM_GPU_SCANOUT_BUFFER_H_
+#ifndef UI_OZONE_COMMON_LINUX_SCANOUT_BUFFER_H_
+#define UI_OZONE_COMMON_LINUX_SCANOUT_BUFFER_H_
 
 #include <stdint.h>
 
@@ -67,4 +67,4 @@ class ScanoutBufferGenerator {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_GPU_SCANOUT_BUFFER_H_
+#endif  // UI_OZONE_COMMON_LINUX_SCANOUT_BUFFER_H_

@@ -5,10 +5,10 @@
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/ozone/common/linux/overlay_plane.h"
+#include "ui/ozone/common/linux/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
-#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 
 namespace ui {
 

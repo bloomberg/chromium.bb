@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_OVERLAY_VALIDATOR_H_
 
 #include "base/containers/mru_cache.h"
-#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
+#include "ui/ozone/common/linux/overlay_plane.h"
 
 namespace ui {
 
