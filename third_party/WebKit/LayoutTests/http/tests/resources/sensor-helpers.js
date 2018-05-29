@@ -400,11 +400,11 @@ async function setMockSensorDataForType(sensor, sensorType, mockDataArray) {
 // Returns a promise that will be resolved when an event equal to the given
 // event is fired.
 function waitForEvent(expectedEvent, targetWindow = window) {
-  let stringify = thing => {
-    if (thing instanceof Object && thing.constructor !== Object) {
+  let stringify = (thing, targetWindow) => {
+    if (thing instanceof targetWindow.Object && thing.constructor !== targetWindow.Object) {
       let str = '{';
       for (let key of Object.keys(Object.getPrototypeOf(thing))) {
-        str += JSON.stringify(key) + ': ' + stringify(thing[key]) + ', ';
+        str += JSON.stringify(key) + ': ' + stringify(thing[key], targetWindow) + ', ';
       }
       return str + '}';
     } else if (thing instanceof Number) {
@@ -417,9 +417,9 @@ function waitForEvent(expectedEvent, targetWindow = window) {
     let events = [];
     let timeoutId = null;
 
-    let expectedEventString = stringify(expectedEvent);
+    let expectedEventString = stringify(expectedEvent, window);
     function listener(event) {
-      let eventString = stringify(event);
+      let eventString = stringify(event, targetWindow);
       if (eventString === expectedEventString) {
         targetWindow.clearTimeout(timeoutId);
         targetWindow.removeEventListener(expectedEvent.type, listener);

@@ -3,72 +3,41 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
 <script>
 'use strict';
 
-async_test(test => {
-  assertTestRunner();
-  var motionData1 = generateMotionData(null, null, null,
-                                       null, null, null,
-                                       null, null, null,
-                                       0);
+sensor_test(async sensor => {
+  const motionData1 = generateMotionData(1, 2, 3,
+                                         null, null, null,
+                                         null, null, null);
 
-  var motionData2 = generateMotionData(1, 2, 3,
-                                       null, null, null,
-                                       null, null, null,
-                                       100);
+  const motionData2 = generateMotionData(null, null, null,
+                                         1, 2, 3,
+                                         null, null, null);
 
-  var motionData3 = generateMotionData(null, null, null,
-                                       1, 2, 3,
-                                       null, null, null,
-                                       100);
+  const motionData3 = generateMotionData(null, null, null,
+                                         null, null, null,
+                                         1, 2, 3);
 
-  var motionData4 = generateMotionData(null, null, null,
-                                       null, null, null,
-                                       1, 2, 3,
-                                       100);
+  const motionData4 = generateMotionData(null, null, null,
+                                         null, null, null,
+                                         null, null, null);
 
-  var firstListener = test.step_func(event => {
-    checkMotion(event, motionData1);
-    window.removeEventListener('devicemotion', firstListener);
-    setTimeout(initSecondListener, 0);
-  });
+  setMockMotionData(sensor, motionData1);
+  await waitForMotion(motionData1);
 
-  function initSecondListener() {
-    setMockMotion(motionData2);
-    window.addEventListener('devicemotion', secondListener);
-  }
+  setMockMotionData(sensor, motionData2);
+  await waitForMotion(motionData2);
 
-  var secondListener = test.step_func(event => {
-    checkMotion(event, motionData2);
-    window.removeEventListener('devicemotion', secondListener);
-    setTimeout(initThirdListener, 0);
-  });
+  setMockMotionData(sensor, motionData3);
+  await waitForMotion(motionData3);
 
-  function initThirdListener() {
-    setMockMotion(motionData3);
-    window.addEventListener('devicemotion', thirdListener);
-  }
-
-  var thirdListener = test.step_func(event => {
-    checkMotion(event, motionData3);
-    window.removeEventListener('devicemotion', thirdListener);
-    setTimeout(initFourthListener, 0);
-  });
-
-  function initFourthListener() {
-    setMockMotion(motionData4);
-    window.addEventListener('devicemotion', fourthListener);
-  }
-
-  var fourthListener = test.step_func(event => {
-    checkMotion(event, motionData4);
-    test.done();
-  });
-
-  setMockMotion(motionData1);
-  window.addEventListener('devicemotion', firstListener);
+  setMockMotionData(sensor, motionData4);
+  return waitForMotion(motionData4);
 }, 'Tests using null values for some or all of the event properties.');
 </script>
 </body>
