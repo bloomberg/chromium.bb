@@ -143,7 +143,8 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   // put focus on the action button. This causes screen readers to
   // immediately announce the text of this view.
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
-  action_button_->RequestFocus();
+  if (action_button_->GetWidget() && action_button_->GetWidget()->IsActive())
+    action_button_->RequestFocus();
 }
 
 SadTabView::~SadTabView() {
