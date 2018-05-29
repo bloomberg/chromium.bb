@@ -13,7 +13,7 @@
 #include "chromecast/common/mojom/media_load_deferrer.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -31,7 +31,6 @@ class CastMediaLoadDeferrer
       public content::RenderFrameObserverTracker<CastMediaLoadDeferrer> {
  public:
   explicit CastMediaLoadDeferrer(content::RenderFrame* render_frame);
-  ~CastMediaLoadDeferrer() override;
 
   // Runs |closure| if the page/frame is switched to foreground. Returns true if
   // the running of |closure| is deferred (not yet in foreground); false
@@ -39,24 +38,23 @@ class CastMediaLoadDeferrer
   bool RunWhenInForeground(base::OnceClosure closure);
 
  private:
+  ~CastMediaLoadDeferrer() override;
+
   // content::RenderFrameObserver implementation:
   void OnDestruct() override;
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   // MediaLoadDeferrer implementation
   void UpdateMediaLoadStatus(bool blocked) override;
 
-  void OnMediaLoadDeferrerRequest(
-      chromecast::shell::mojom::MediaLoadDeferrerRequest request);
+  void OnMediaLoadDeferrerAssociatedRequest(
+      chromecast::shell::mojom::MediaLoadDeferrerAssociatedRequest request);
 
   bool render_frame_action_blocked_;
+
   std::vector<base::OnceClosure> pending_closures_;
 
-  mojo::BindingSet<chromecast::shell::mojom::MediaLoadDeferrer> bindings_;
-
-  service_manager::BinderRegistry registry_;
+  mojo::AssociatedBindingSet<chromecast::shell::mojom::MediaLoadDeferrer>
+      bindings_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
