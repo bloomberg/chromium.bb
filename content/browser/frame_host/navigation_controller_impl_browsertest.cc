@@ -7661,6 +7661,43 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Regression test for https://crbug.com/845923.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       GoBackFromCrossSiteSubFrame) {
+  // Navigate to a page with a cross-site frame.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  GURL initial_subframe_url =
+      root->child_at(0)->current_frame_host()->GetLastCommittedURL();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+
+  // Navigate the subframe to another cross-site location
+  // (this prepares for executing history.back() in a later step).
+  GURL final_subframe_url =
+      embedded_test_server()->GetURL("b.com", "/title1.html");
+  NavigateFrameToURL(root->child_at(0), final_subframe_url);
+  EXPECT_EQ(final_subframe_url,
+            root->child_at(0)->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+
+  // Execute |history.back()| in the subframe.
+  TestNavigationObserver nav_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(root->child_at(0), "history.back()"));
+  nav_observer.Wait();
+  EXPECT_EQ(initial_subframe_url,
+            root->child_at(0)->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+}
+
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        HashNavigationVsBeforeUnloadEvent) {
   GURL main_url(embedded_test_server()->GetURL("/title1.html"));
