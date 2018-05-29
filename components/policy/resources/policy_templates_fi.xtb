@@ -88,6 +88,18 @@
 
       Jos tämän käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei salli kirjautumista vierasprofiililla.</translation>
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
+<translation id="1372267489642113556">
+      Jos tämä käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon
+      nimetyistä alkuperistä suorittavat oman prosessinsa. Tämä eristää myös
+      aliverkkotunnusten mukaan nimetyt alkuperät, esim. jos https://example.com/
+      määritetään, https://foo.example.com/ eristetään myös osana
+      https://example.com/-sivustoa.
+      Jos tämä käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa IsolateOrigins-asetuksen käyttöön manuaalisesti.
+      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
+      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
+
+      HUOM. Tämä käytäntö ei koske Androidia. Jos haluat ottaa IsolateOrigins-asetuksen käyttöön Androidilla, käytä IsolateOriginsAndroid-käytännön asetusta.
+      </translation>
 <translation id="1384459581748403878">Viite: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Luotetaanko Symantec Corporationin vanhaan PKI-infrastruktuuriin vai ei</translation>
 <translation id="1393485621820363363">Käytössä olevat yrityslaitteiden tulostimet</translation>
@@ -165,6 +177,7 @@
 
       Saat lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
+<translation id="1599424828227887013">Ota sivuston eristäminen käyttöön tiettyjen alkuperien kohdalla Android-laitteilla</translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="163200210584085447">Tämän luettelon osoitemalleja verrataan pyytävän URL-osoitteen
@@ -511,6 +524,10 @@
       Jos tätä asetusta ei ole määritetty, käyttäjä voi päättää, käyttääkö tätä toimintoa vai ei.
 
       Tämä asetus on poistettu <ph name="PRODUCT_NAME" /> 29:stä ja uudemmista versioista.</translation>
+<translation id="2438609638493026652">Sallii tärkeistä tapahtumista raportoimisen Googlelle Android-sovelluksen asennuksen aikana. Tapahtumia tallennetaan vain, jos sovelluksen asennus käynnistetään käytännön kautta.
+
+      Jos käytännön arvoksi on asetettu tosi, tapahtumat kirjataan.
+      Jos käytännön arvoksi on asetettu epätosi tai sitä ei ole asetettu, tapahtumia ei kirjata.</translation>
 <translation id="244317009688098048">Salli automaattisen kirjautumisen peruutusnäppäin.
 
       Jos tätä käytäntöä ei ole asetettu tai sen arvo on tosi ja laitteelle on määritetty paikallinen tili viiveettömällä automaattisella kirjautumisella, <ph name="PRODUCT_OS_NAME" /> hyväksyy pikanäppäimen Ctrl+Alt+S, jolla ohitetaan automaattinen kirjautuminen ja tuodaan näkyviin kirjautumisruutu.
@@ -1107,6 +1124,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4309640770189628899">TLS:n DHE-salaustekniikoiden käyttöönotto</translation>
 <translation id="4322842393287974810">Salli automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota</translation>
 <translation id="4325690621216251241">Lisää uloskirjautumispainike järjestelmäpalkkiin</translation>
+<translation id="4332177773549877617">Android-sovellusten asennusten lokitapahtumat</translation>
 <translation id="4346674324214534449">Sallii sinun määrittää, estetäänkö mainokset häiritseviä mainoksia sisältävillä sivustoilla
 
       Jos käytännön arvo on 2, mainokset estetään häiritseviä mainoksia sisältävillä sivustoilla.

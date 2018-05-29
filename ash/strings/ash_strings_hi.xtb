@@ -163,7 +163,7 @@
 <translation id="4351433414020964307">Assistant सेवा लोड हो रही है...</translation>
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4379531060876907730">ये आपके स्टाइलस टूल हैं</translation>
-<translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
+<translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से शेयर किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4450893287417543264">फिर से न दिखाएं</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
@@ -220,7 +220,7 @@
 <translation id="5957083217255311415">मोबाइल डेटा बंद कर दिया गया है.</translation>
 <translation id="5958529069007801266">निगरानी में रखा गया उपयोगकर्ता</translation>
 <translation id="5977415296283489383">हेडफ़ोन</translation>
-<translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा साझा किया जा रहा है.</translation>
+<translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा शेयर किया जा रहा है.</translation>
 <translation id="5980301590375426705">अतिथि सत्र से बाहर निकलें</translation>
 <translation id="598882571027504733">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करें.</translation>
 <translation id="5992218262414051481">उच्च कंट्रास्ट मोड सक्षम है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+H फिर से दबाएं.</translation>
@@ -264,15 +264,18 @@
 <translation id="6723839937902243910">पावर</translation>
 <translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
 <translation id="6803622936009808957">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप में चला गया है.</translation>
+<translation id="6820676911989879663">आज के लिए इतना ही!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> को सक्रिय करें</translation>
 <translation id="6911468394164995108">अन्य में शामिल हों...</translation>
 <translation id="6981982820502123353">पहुंच क्षमता</translation>
 <translation id="698231206551913481">इस उपयोगकर्ता को निकाल दिए जाने पर, इस उपयोगकर्ता से संबद्ध सभी फ़ाइलों और स्थानीय डेटा को स्थायी रूप से हटा दिया जाएगा.</translation>
+<translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> बजे वापस आएं.</translation>
 <translation id="7029814467594812963">सत्र से बाहर निकलें</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7067196344162293536">स्वत: घुमाएं</translation>
+<translation id="7076293881109082629">प्रवेश किया जा रहा है...</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7131634465328662194">आप अपने आप साइन आउट कर जाएंगे.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>

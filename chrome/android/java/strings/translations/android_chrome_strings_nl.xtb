@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Bestaande gegevens verwijderen.</translation>
 <translation id="1146678959555564648">VR activeren</translation>
 <translation id="116280672541001035">Gebruikt</translation>
+<translation id="1172593791219290334">Startpagina</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Bladwijzers en webgeschiedenis</translation>
 <translation id="1513858653616922153">Wachtwoord verwijderen</translation>
 <translation id="1516229014686355813">Met 'Tikken om te zoeken' worden het geselecteerde woord en de huidige pagina als context naar Google Zoeken verzonden. Je kunt deze functie uitschakelen bij <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Populaire content</translation>
 <translation id="1539064842193522527">Link geopend in Chrome</translation>
 <translation id="1549000191223877751">Naar ander venster</translation>
 <translation id="1553358976309200471">Chrome updaten</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Vinden op pagina</translation>
 <translation id="1832521218263067499">Beveiligingsincidenten</translation>
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
+<translation id="1868024384445905608">Chrome downloadt bestanden nu sneller</translation>
 <translation id="1880072593381090678">Populaire pagina's uit Chrome</translation>
+<translation id="1883903952484604915">Mijn bestanden</translation>
 <translation id="1887786770086287077">Locatietoegang is uitgeschakeld voor dit apparaat. Schakel dit in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> wordt geopend in Chrome. Als je doorgaat, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome.</translation>
 <translation id="189172778771606813">Zijmenu sluiten</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">'Desktopsite aanvragen' inschakelen</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB voor andere apps</translation>
 <translation id="2063713494490388661">Tikken om te zoeken</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 download mislukt}other{# downloads mislukt}}</translation>
+<translation id="2074837478271106772"><ph name="COUNT" /> bestanden downloaden (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Log in bij Chrome om suggesties met gepersonaliseerde content van Google te ontvangen.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
 <translation id="3148434565183091099">Log in bij Chrome om al je bladwijzers op al je apparaten te bekijken.</translation>
 <translation id="3157842584138209013">Via de knop 'Meer opties' kun je zien hoeveel data je hebt bespaard</translation>
+<translation id="3165725985537150202">Bestand downloaden (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Sneltoetsen voor tabbladen en vensters</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
@@ -566,6 +573,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="618555311922999635">Navigatievenster geopend op volledige hoogte</translation>
 <translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
+<translation id="6196868727350051527">Je download wordt versneld</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Ontgrendel het apparaat om je wachtwoorden te exporteren</translation>
@@ -637,6 +645,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="6846298663435243399">Laden…</translation>
+<translation id="6850409657436465440">Je download wordt nog uitgevoerd</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabbladen gesloten</translation>
 <translation id="6864459304226931083">Afbeelding downloaden</translation>
 <translation id="6865313869410766144">Formuliergegevens voor Automatisch aanvullen</translation>
@@ -683,6 +692,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7189372733857464326">Wachten tot Google Play-services is geüpdatet</translation>
 <translation id="7189598951263744875">Delen...</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 download in behandeling}other{# downloads in behandeling}}</translation>
 <translation id="723171743924126238">Afbeeldingen selecteren</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> geselecteerd</translation>
@@ -757,6 +767,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7882131421121961860">Geen geschiedenis gevonden</translation>
 <translation id="7882806643839505685">Geluid toestaan voor een specifieke site.</translation>
 <translation id="7929962904089429003">Het menu openen</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 download voltooid}other{# downloads voltooid}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7963646190083259054">Leverancier:</translation>
@@ -799,6 +810,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8266862848225348053">Downloadlocatie</translation>
 <translation id="8283853025636624853">Synchroniseren met <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standaardtabbladen</translation>
+<translation id="8313455859591948645">Startpagina bewerken</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> en meer sites</translation>
 <translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>
 <translation id="8363501664269050863">Navigatievenster. Veeg omlaag om te sluiten.</translation>
@@ -887,6 +899,7 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>
 <translation id="9188680907066685419">Uitloggen van beheerd account</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Bestand wordt gedownload}other{# bestanden downloaden}}</translation>
 <translation id="9204836675896933765">1 bestand over</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Afbeeldingen</translation>

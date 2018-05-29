@@ -87,6 +87,14 @@ Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> haitaruhusu wasifu wa wageni kuanzishwa.</translation>
 <translation id="1363275621236827384">Washa kipengele cha hoja za Seva ya Quirks ya wasifu wa maunzi</translation>
+<translation id="1372267489642113556">
+      Ikiwa sera imewashwa, kila mojawapo ya chanzo kilichotajwa katika orodha inayotenganishwa kwa koma kitatumia mchakato wake. Hatua hii pia itatenga vyanzo vilivyotajwa kulingana na vikoa vidogo; k.m. kubainisha https://example.com/ pia kutasababisha https://foo.example.com/ itengwe ili isiwe sehemu ya tovuti ya https://example.com/.
+      Ikiwa sera imezimwa, hamna dhana ya Utengaji wa Tovuti itakayotumika kwa njia dhahiri na majaribio ya sehemu za IsolateOrigins na SitePerProcess yatazimwa. Bado watumiaji wataweza kuwasha IsolateOrigins wenyewe.
+      Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
+      Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza pia uweke sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kuwa thamani sawa. Ikiwa thamani zilizobainishwa na sera hizo mbili hazilingani, huenda ucheleweshaji ukatokea wakati wa kuweka kipindi cha mtumiaji huku thamani iliyobainishwa na sera ya mtumiaji ikitumika.
+
+      KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe IsolateOrigins kwenye Android, tumia mipangilio ya sera ya IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Marejeleo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ikiwa utaruhusu uaminifu katika sera ya Muundomsingi wa PKI ya Symantec Corporation Legacy</translation>
 <translation id="1393485621820363363">Printa za biashara zinazotumia sera</translation>
@@ -160,6 +168,7 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 
      Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu Kuvinjari Salama.</translation>
 <translation id="1583248206450240930">Tumia <ph name="PRODUCT_FRAME_NAME" /> kwa chaguo msingi</translation>
+<translation id="1599424828227887013">Washa sera ya Utengaji wa Tovuti katika vyanzo vilivyobainishwa kwenye vifaa vya Android</translation>
 <translation id="1608755754295374538">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa sauti bila ushawishi</translation>
 <translation id="1617235075406854669">Washa ufutaji wa historia ya upakuaji na kivinjari</translation>
 <translation id="163200210584085447">Michoro katika orodha hii italinganishwa na asili ya
@@ -510,6 +519,10 @@ Sera hii ikiondolewa, chaguo msingi zitatumika kwa mipangilio yote.</translation
      Ukiwasha au kuzima mipangilio hii, watumiaji hawawezi kubadilisha au kubatilisha mipangilio hii.
      Ikiwa mipangilio hii itaachwa bila kuwekwa mtumiaji anaweza kuamua kutumia au kutotumia chaguo hizi za kukokotoa. 
      Mipangilio hii imeondolewa kwenye <ph name="PRODUCT_NAME" /> 29 na matoleo mapya zaidi.</translation>
+<translation id="2438609638493026652">Huruhusu kuripotiwa kwa matukio muhimu wakati wa kusakinisha programu ya Android kwenye Google. Matukio hurekodiwa tu kwa programu ambazo usakinishaji wake unatokana na sera.
+      
+Ikiwa sera imewekwa kuwa ndivyo, matukio yatarekodiwa.
+Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translation>
 <translation id="244317009688098048">Washa njia mkato ya kibodi ya usaidizi wa uingiaji otomatiki.
 
       Iwapo sera hii haijawekwa au imewekwa kwenye Ruhusu na akaunti ya ndani ya kifaa imesanidiwa kwa kutochelewa wakati wa kuingia otomatiki, <ph name="PRODUCT_OS_NAME" /> itaheshimu njia mkato ya kibodi ya Ctrl+Alt+S kwa kukwepa kuingia otomatiki na kuonyesha skrini ya kuingia.
@@ -1129,6 +1142,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4309640770189628899">Ikiwa mipangilio ya kriptografia ya DHE katika TLS imewashwa</translation>
 <translation id="4322842393287974810">Ruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Ongeza kitufe cha kuondoka kwenye chano la mfumo</translation>
+<translation id="4332177773549877617">Rekodi matukio ya usakinishaji wa programu za Android</translation>
 <translation id="4346674324214534449">Inakuruhusu kubaini ikiwa matangazo yanapaswa kuzuiliwa kwenye tovuti zilizo na matangazo yanayokatiza matumizi. 
 Ikiwa sera hii imewekwa kuwa 2, matangazo yatazuiliwa kwenye tovuti zilizo na matangazo yanayozuia matumizi. 
 Hata hivyo, utendaji huu hautafanyika ikiwa sera ya SafeBrowsingEnabled imewekwa kuwa Sivyo.

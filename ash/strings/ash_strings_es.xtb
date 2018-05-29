@@ -264,15 +264,18 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6723839937902243910">Batería</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
+<translation id="6820676911989879663">Haz una pausa</translation>
 <translation id="683971173229319003">Buscar+L</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Una vez que se haya quitado este usuario, todos los archivos y datos asociados a él se eliminarán de forma permanente.</translation>
+<translation id="7015766095477679451">Hora a la que puedes volver: <ph name="COME_BACK_TIME" /></translation>
 <translation id="7029814467594812963">Cerrar sesión</translation>
 <translation id="7034339000180558234">Enviando <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
+<translation id="7076293881109082629">Iniciando sesión</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
 <translation id="7131634465328662194">Tu sesión se cerrará automáticamente.</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>

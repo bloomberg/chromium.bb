@@ -88,6 +88,17 @@
 
       Om principen är inställd på falskt tillåts ingen användning av gästprofiler i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1363275621236827384">Aktivera frågor till Quirks-servern (servern för maskinvaruspecifik information) om maskinvaruprofiler</translation>
+<translation id="1372267489642113556">
+      Om principen aktiveras körs varje namngivet ursprung i
+      en kommaavgränsad lista som en egen process. Även underdomäner
+      isoleras. Om du exempelvis anger https://example.com/ isoleras även
+      https://foo.example.com/ som en del av webbplatsen https://example.com/.
+      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera IsolateOrigins manuellt.
+      Om principen inte konfigureras kan användaren ändra inställningen.
+      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
+
+      OBS! Den här principen gäller inte Android. Om du vill aktivera IsolateOrigins på Android använder du principen IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Referens: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
@@ -168,6 +179,7 @@
 
       Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
+<translation id="1599424828227887013">Aktivera webbplatsisolering för angivna ursprung på Android-enheter</translation>
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="163200210584085447">Mönster på den här listan kommer att matchas mot den begärande
@@ -528,6 +540,10 @@
       Om ingen inställning anges kan användaren välja att använda eller inte använda denna funktion.
 
       Den här inställningen har tagits bort från och med version 29 av <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2438609638493026652">Aktiverar rapportering av centrala händelser vid installation av Android-appar till Google. Händelser registreras bara för appar som installerats via en princip.
+
+      Om principen är inställd på sant loggas händelser.
+      Om principen är inställd på falskt eller lämnas utan inställning loggas inga händelser.</translation>
 <translation id="244317009688098048">Aktivera kortkommandot för bailout vid automatisk inloggning.
 
       Om den här policyn har inställningen sant eller saknar inställning, och det lokala kontot på enheten konfigureras för automatisk inloggning utan fördröjning kommer <ph name="PRODUCT_OS_NAME" /> att använda kortkommandot Ctrl+Alt+S för att passera skärmen för automatisk inloggning och i stället visa inloggningsskärmen.
@@ -1149,6 +1165,7 @@
 <translation id="4309640770189628899">Om DHE-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="4322842393287974810">Tillåt att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
+<translation id="4332177773549877617">Logga händelser vid installation av Android-appar</translation>
 <translation id="4346674324214534449">Ger dig möjlighet att ställa in om annonser ska blockeras på webbplatser med påträngande annonser.
 
       Om värdet 2 har angetts för principen blockeras annonser på webbplatser med påträngande annonser.

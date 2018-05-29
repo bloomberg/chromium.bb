@@ -264,15 +264,18 @@
 <translation id="6723839937902243910">พลังงาน</translation>
 <translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
+<translation id="6820676911989879663">พักสายตาหน่อย</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">เชื่อมต่อเครือข่ายอื่น...</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="698231206551913481">ระบบจะลบไฟล์ทั้งหมดและข้อมูลในเครื่องที่เชื่อมโยงกับผู้ใช้รายนี้ออกอย่างถาวรหลังจากนำผู้ใช้รายนี้ออกแล้ว</translation>
+<translation id="7015766095477679451">กลับมาเมื่อถึงเวลา <ph name="COME_BACK_TIME" /></translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
 <translation id="7034339000180558234">กำลังแคสต์ <ph name="TAB_NAME" /> ไปยัง <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">ผู้ดูแลระบบปิดใช้เครือข่ายนี้</translation>
 <translation id="7067196344162293536">หมุนอัตโนมัติ</translation>
+<translation id="7076293881109082629">กำลังลงชื่อเข้าใช้</translation>
 <translation id="7098389117866926363">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="7131634465328662194">คุณจะออกจากระบบโดยอัตโนมัติ</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>

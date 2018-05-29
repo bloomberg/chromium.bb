@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Excluir dados já existentes.</translation>
 <translation id="1146678959555564648">Entrar na RV</translation>
 <translation id="116280672541001035">Dados usados</translation>
+<translation id="1172593791219290334">Página de inicialização</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1197267115302279827">Mover favoritos</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
 <translation id="1513858653616922153">Excluir senha</translation>
 <translation id="1516229014686355813">O recurso "Tocar para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. É possível desativá-lo em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Conteúdo em alta</translation>
 <translation id="1539064842193522527">Link aberto no Chrome</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Encontrar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
+<translation id="1868024384445905608">Agora o Chrome faz o download de arquivos mais rapidamente</translation>
 <translation id="1880072593381090678">Páginas conhecidas do Chrome</translation>
+<translation id="1883903952484604915">Meus arquivos</translation>
 <translation id="1887786770086287077">O acesso ao local está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">O app <ph name="APP_NAME" /> será aberto no Chrome. Ao continuar, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Ativar "Ver versão para Web"</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de outros apps</translation>
 <translation id="2063713494490388661">Tocar para pesquisar</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{Falha em 1 download}one{Falha em # download}other{Falha em # downloads}}</translation>
+<translation id="2074837478271106772">Fazendo o download de <ph name="COUNT" /> arquivos (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Para receber conteúdo personalizado sugerido pelo Google, faça login no Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
 <translation id="3148434565183091099">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="3157842584138209013">Veja a quantidade de dados que você salvou no botão Mais opções</translation>
+<translation id="3165725985537150202">Fazendo o download do arquivo (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Atalhos de guias e janelas</translation>
 <translation id="3190152372525844641">Ative as permissões para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
@@ -566,6 +573,7 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="618555311922999635">Painel de navegação aberto no tamanho máximo</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6192792657125177640">Exceções</translation>
+<translation id="6196868727350051527">Acelerando seu download</translation>
 <translation id="6210748933810148297">Não é <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueie para exportar suas senhas</translation>
@@ -637,6 +645,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6846298663435243399">Carregando…</translation>
+<translation id="6850409657436465440">Seu download ainda está em andamento</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> guias fechadas</translation>
 <translation id="6864459304226931083">Fazer o download da imagem</translation>
 <translation id="6865313869410766144">Preenchimento automático dos dados do formulário</translation>
@@ -683,6 +692,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7189372733857464326">Aguardando o fim da atualização do Google Play Services</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7191430249889272776">Guia aberta no plano de fundo.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 download pendente}one{# download pendente}other{# downloads pendentes}}</translation>
 <translation id="723171743924126238">Selecionar imagens</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> itens selecionados</translation>
@@ -757,6 +767,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7882131421121961860">Nenhum histórico encontrado</translation>
 <translation id="7882806643839505685">Permita o som para um site específico.</translation>
 <translation id="7929962904089429003">Abrir o menu</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 download concluído}one{# download concluído}other{# downloads concluídos}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
@@ -799,6 +810,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8266862848225348053">Local de download</translation>
 <translation id="8283853025636624853">Sincronizando com <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Guias padrão</translation>
+<translation id="8313455859591948645">Editar página de inicialização</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> e outros sites</translation>
 <translation id="8339163506404995330">Páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8363501664269050863">Painel de navegação. Deslize para baixo para fechar.</translation>
@@ -886,6 +898,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="9139068048179869749">Perguntar antes de permitir que sites enviem notificações (recomendado)</translation>
 <translation id="9155898266292537608">Você também pode pesquisar com um toque rápido em uma palavra</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Fazendo o download do arquivo}one{Fazendo o download de # arquivo}other{Fazendo o download de # arquivos}}</translation>
 <translation id="9204836675896933765">1 arquivo restante</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>

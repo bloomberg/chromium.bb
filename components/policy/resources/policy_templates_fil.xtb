@@ -88,6 +88,18 @@
 
       Kung itatakda ang patakarang ito sa false, hindi papayagan ng <ph name="PRODUCT_NAME" /> na magsimula ang mga profile ng bisita.</translation>
 <translation id="1363275621236827384">I-enable ang mga query sa Quirks Server para sa mga profile sa hardware</translation>
+<translation id="1372267489642113556">
+      Kung ie-enable ang patakaran, magpapatakbo ang bawat isa sa mga pinangalanang pinagmulan na nasa isang
+      comma-separated list ng sarili nitong proseso. Ia-isolate din nito ang
+      mga pinagmulang pinangalanan ng mga subdomain; hal. kapag isinaad ang https://example.com/,
+      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
+      site na https://example.com/.
+      Kung idi-disable ang patakaran, walang mangyayaring hayagang Pag-isolate ng Site, at madi-disable ang mga trial sa field ng IsolateOrigins at SitePerProcess. Mae-enable pa rin ng mga user ang IsolateOrigins sa manual na paraan.
+      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
+      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomenda ring itakda ang patakaran sa device ng <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa iisang value. Kung hindi magkatugma ang mga value na isinaad ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na isinaad ng patakaran ng user.
+
+      TANDAAN: Hindi nalalapat ang patakarang ito sa Android. Para ma-enable ang IsolateOrigins sa Android, gamitin ang setting ng patakaran ng IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Kung ie-enable ang pagtitiwala sa Legacy PKI Infrastructure ng Symantec Corporation</translation>
 <translation id="1393485621820363363">Mga naka-enable na printer ng device ng enterprise</translation>
@@ -167,6 +179,7 @@
 
       Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon sa Ligtas na Pag-browse.</translation>
 <translation id="1583248206450240930">Gamitin ang <ph name="PRODUCT_FRAME_NAME" /> bilang default</translation>
+<translation id="1599424828227887013">I-enable ang Pag-isolate ng Site para sa mga partikular na pinagmulan sa mga Android device</translation>
 <translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="163200210584085447">Itutugma ang mga pattern na nasa listahang ito sa security
@@ -524,6 +537,10 @@
       Kung iniwang hindi nakatakda ang setting na ito, maaaring magpasya ang user kung gagamitin o hindi ang function na ito.
 
       Inalis ang setting na ito sa <ph name="PRODUCT_NAME" /> 29 at sa mga mas bagong bersyon.</translation>
+<translation id="2438609638493026652">Ine-enable ang pag-uulat ng mahahalagang event sa panahon ng pag-install ng Android app sa Google. Kina-capture lang ang mga event para sa mga app na kung saan na-trigger ng patakaran ang pag-install.
+
+      Kung itatakda ang patakaran sa true, mala-log ang mga event.
+      Kung itatakda ang patakaran sa false o kung hindi ito itatakda, hindi mala-log ang mga event.</translation>
 <translation id="244317009688098048">I-enable ang bailout keyboard shortcut para sa awtomatikong pag-log in.
 
       Kung hindi nakatakda o nakatakda sa True ang patakarang ito at may naka-configure na lokal na account sa device para sa walang pagkaantalang awtomatikong pag-log in, tatanggapin ng <ph name="PRODUCT_OS_NAME" /> ang keyboard shortcut na Ctrl+Alt+S para sa pag-bypass sa awtomatikong pag-log in at pagpapakita ng screen sa pag-log in.
@@ -1138,6 +1155,7 @@
 <translation id="4309640770189628899">Kung naka-enable ang mga DHE na cipher suite sa TLS o hindi</translation>
 <translation id="4322842393287974810">Payagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
+<translation id="4332177773549877617">Mga log event para sa mga pag-install ng Android app</translation>
 <translation id="4346674324214534449">Nagbibigay-daan sa iyong itakda kung dapat i-block ang mga ad sa mga site na may mga nakakasagabal na ad.
 
       Kung nakatakda ang patakarang ito sa 2, iba-block ang mga ad sa mga site na may mga nakakasagabal na ad.

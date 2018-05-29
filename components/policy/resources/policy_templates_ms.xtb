@@ -88,6 +88,18 @@
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
+<translation id="1372267489642113556">
+      Jika dasar didayakan, setiap asal yang dinamakan dalam
+      senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri. Ini turut akan mengasingkan
+      asal yang dinamakan oleh subdomain; mis. tindakan menentukan https://example.com/ turut
+      akan menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada
+      tapak https://example.com/.
+      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang jelas akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
+      Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
+      Pada <ph name="PRODUCT_OS_NAME" />, adalah disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, satu penangguhan mungkin akan berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh pengguna sedang digunakan. 
+
+     NOTA: Dasar ini tidak terpakai pada Android. Untuk mendayakan IsolateOrigins pada Android, gunakan tetapan dasar IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Rujukan: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
@@ -167,6 +179,7 @@
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> secara lalai</translation>
+<translation id="1599424828227887013">Dayakan Pengasingan Tapak untuk asal yang ditentukan pada peranti Android</translation>
 <translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
 <translation id="1617235075406854669">Dayakan pemadaman sejarah penyemak imbas dan muat turun</translation>
 <translation id="163200210584085447">Corak dalam senarai ini akan dipadankan dengan keselamatan
@@ -528,6 +541,10 @@
       Jika tetapan ini dibiarkan tanpa ditetapkan, pengguna boleh memutuskan untuk menggunakan fungsi ini atau tidak.
 
       Tetapan ini telah dialih keluar daripada <ph name="PRODUCT_NAME" /> 29 dan versi yang lebih tinggi.</translation>
+<translation id="2438609638493026652">Mendayakan pelaporan acara penting semasa pemasangan apl Android pada Google. Acara dirakam hanya untuk apl yang dimulakan pemasangannya melalui dasar.
+
+      Jika dasar ditetapkan kepada benar, acara akan dilog.
+      Jika dasar ditetapkan kepada palsu atau tidak ditetapkan, acara tidak akan dilog.</translation>
 <translation id="244317009688098048">Dayakan pintasan papan kekunci keluar untuk log masuk automatik.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada Benar dan akaun peranti setempat dikonfigurasikan untuk log masuk automatik lengah sifar, <ph name="PRODUCT_OS_NAME" /> akan menggunakan pintasan papan kekunci Ctrl+Alt+S untuk memintas log masuk automatik dan memaparkan skrin log masuk.
@@ -1146,6 +1163,7 @@
 <translation id="4309640770189628899">Sama ada suit sifer DHE dalam TLS didayakan</translation>
 <translation id="4322842393287974810">Benarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Tambahkan butang log keluar pada dulang sistem</translation>
+<translation id="4332177773549877617">Log acara untuk pemasangan apl Android</translation>
 <translation id="4346674324214534449">Membenarkan anda menetapkan sama ada iklan harus disekat pada tapak yang mengandungi iklan yang mengganggu.
 
       Jika dasar ini ditetapkan kepada 2, iklan akan disekat pada tapak yang mengandungi iklan yang mengganggu.

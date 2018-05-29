@@ -154,6 +154,7 @@
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
+<translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +171,7 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते.</translation>
 <translation id="453661520163887813">पूर्ण होण्यात <ph name="TIME" /></translation>
 <translation id="4544944664594876241">स्क्रीन लॉक करण्‍याचा शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
+<translation id="4570957409596482333">बोलण्यासाठी निवडा बटण</translation>
 <translation id="4659419629803378708">ChromeVox चालू केले</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
 <translation id="479989351350248267">search</translation>
@@ -270,6 +272,7 @@
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> वर <ph name="TAB_NAME" /> कास्ट करीत आहे</translation>
 <translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
 <translation id="7067196344162293536">स्वयं फिरवा</translation>
+<translation id="7076293881109082629">साइन इन करीत आहे</translation>
 <translation id="7098389117866926363">USB-C डिव्‍हाइस (मागील बाजूचे डावे पोर्ट)</translation>
 <translation id="7131634465328662194">तुम्हाला आपोआप साइन आउट केले जाईल.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
@@ -292,6 +295,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
 <translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डिव्हाइस अनलॉक करा</translation>
 <translation id="7649070708921625228">मदत</translation>
+<translation id="7654687942625752712">बोललेला फीडबॅक बंद करण्यासाठी दोन्ही व्हॉल्युम की पाच सेकंदांसाठी दाबा आणि धरून ठेवा.</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7692480393933218409">कनेक्ट केलेले USB-C डिव्‍हाइसेस चार्ज करीत आहे</translation>
 <translation id="776344839111254542">अपडेट तपशील पाहण्यासाठी क्लिक करा</translation>

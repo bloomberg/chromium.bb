@@ -88,6 +88,18 @@
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
+<translation id="1372267489642113556">
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas
+      į kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
+      bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
+      https://example.com/ dalis.
+      Išjungus politiką nebus taikomas svetainių atskyrimas, o „IsolateOrigins“ ir „SitePerProcess“ bandymai bus išjungti. Naudotojai vis tiek galės neautomatiškai įgalinti „SitePerProcess“.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      Sistemoje „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos nustatytos vertės neatitinka viena kitos, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+
+      PASTABA: ši politika netaikoma sistemoje „Android“. Kad įgalintumėte „IsolateOrigins“ sistemoje „Android“, naudokite politikos nustatymą „IsolateOriginsAndroid“.
+      </translation>
 <translation id="1384459581748403878">Nuoroda: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Nurodoma, ar įgalinti patikimumo nustatymus „Symantec Corporation“ pasenusioje PKI infrastruktūroje</translation>
 <translation id="1393485621820363363">Įgalinti įmonės įrenginių spausdintuvai</translation>
@@ -167,6 +179,7 @@
 
       Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
+<translation id="1599424828227887013">Įgalinti nurodytų šaltinių svetainių atskyrimą „Android“ įrenginiuose</translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="163200210584085447">Šiame sąraše pateikti šablonai bus atitaikomi
@@ -528,6 +541,10 @@
       Jei šis nustatymas nenustatomas, naudotojas galės nuspręsti, ar naudoti šią funkciją, ar ne.
 
       Šis nustatymas pašalintas iš 29 ir naujesnių „<ph name="PRODUCT_NAME" />“ versijų.</translation>
+<translation id="2438609638493026652">Įgalinamas pagrindinių įvykių ataskaitų teikimas sistemoje „Google“ diegiant „Android“ programą. Užfiksuojami tik programų, kurių diegimas suaktyvintas naudojant šią politiką, įvykiai.
+
+      Nustačius politiką į „true“, įvykiai bus registruojami.
+      Nustačius politiką į „false“ arba nenustačius, įvykiai nebus registruojami.</translation>
 <translation id="244317009688098048">Įgalinti laisvuosius sparčiuosius klavišus automatiškai prisijungiant.
 
       Jei ši politika nenustatyta arba nustatyta kaip „Tiesa“ ir įrenginio vietinė paskyra sukonfigūruota automatiškai prisijungti be delsos, „<ph name="PRODUCT_OS_NAME" />“ leidžiami spartieji klavišai „Ctrl“ + „Alt“ + S, skirti apeiti automatinį prisijungimą ir parodyti prisijungimo ekraną.
@@ -1149,6 +1166,7 @@
 <translation id="4309640770189628899">Ar įgalinti DHE šifruotieji programų komplektai TLS</translation>
 <translation id="4322842393287974810">Leisti automatiškai be delsos paleistai viešojo terminalo programai valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją</translation>
 <translation id="4325690621216251241">Pridėti atsijungimo mygtuką prie sistemos dėklo</translation>
+<translation id="4332177773549877617">Registruoti „Android“ programų diegimo įvykius</translation>
 <translation id="4346674324214534449">Leidžiama nustatyti, ar skelbimai turėtų būti blokuojami svetainėse su nepageidaujamais skelbimais.
 
       Jei bus nustatyta šios politikos parinktis 2, skelbimai bus blokuojami svetainėse su nepageidaujamais skelbimais.

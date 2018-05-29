@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">删除现有数据。</translation>
 <translation id="1146678959555564648">进入 VR</translation>
 <translation id="116280672541001035">已耗用</translation>
+<translation id="1172593791219290334">启动页</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1197267115302279827">移动书签</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1513858653616922153">删除密码</translation>
 <translation id="1516229014686355813">“点按搜索”功能会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中关闭该功能。</translation>
+<translation id="1521008027388393450">热门内容</translation>
 <translation id="1539064842193522527">已在 Chrome 中打开此链接</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">在网页中查找</translation>
 <translation id="1832521218263067499">安全事件</translation>
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
+<translation id="1868024384445905608">Chrome 现可更快速地下载文件</translation>
 <translation id="1880072593381090678">Chrome 中的热门网页</translation>
+<translation id="1883903952484604915">我的文件</translation>
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="189172778771606813">关闭抽屉式导航栏</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
 <translation id="2045104531052923016">其他应用已占用的空间：<ph name="GIGABYTES" /> GB</translation>
 <translation id="2063713494490388661">点按搜索</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 项下载失败}other{# 项下载失败}}</translation>
+<translation id="2074837478271106772">正在下载 <ph name="COUNT" /> 个文件（<ph name="MEGABYTES" /> 兆字节）</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2086652334978798447">要获取 Google 推荐的个性化内容，请登录 Chrome。</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3157842584138209013">通过“更多选项”按钮查看您已节省多少数据流量</translation>
+<translation id="3165725985537150202">正在下载文件（<ph name="MEGABYTES" /> 兆字节）</translation>
 <translation id="3166827708714933426">标签页和窗口快捷键</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
@@ -566,6 +573,7 @@
 <translation id="618555311922999635">已全屏打开导航面板</translation>
 <translation id="6192333916571137726">下载文件</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6196868727350051527">正在加快您的下载速度</translation>
 <translation id="6210748933810148297">您的身份不是 <ph name="EMAIL" />？</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
 <translation id="6221633008163990886">需解锁才能导出您的密码</translation>
@@ -637,6 +645,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6846298663435243399">正在加载...</translation>
+<translation id="6850409657436465440">您的下载仍在进行中</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
@@ -683,6 +692,7 @@
 <translation id="7189372733857464326">正在等待 Google Play 服务完成更新</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{有 1 项下载尚待处理}other{有 # 项下载尚待处理}}</translation>
 <translation id="723171743924126238">选择图片</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
@@ -757,6 +767,7 @@
 <translation id="7882131421121961860">未找到任何记录</translation>
 <translation id="7882806643839505685">允许特定网站播放声音。</translation>
 <translation id="7929962904089429003">打开菜单</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{已完成 1 项下载}other{已完成 # 项下载}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 不是最新版本。</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7963646190083259054">供应商：</translation>
@@ -799,6 +810,7 @@
 <translation id="8266862848225348053">下载内容保存位置</translation>
 <translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">标准标签页</translation>
+<translation id="8313455859591948645">修改启动页</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 及更多网站</translation>
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8363501664269050863">导航面板。向下滑动手指即可关闭。</translation>
@@ -887,6 +899,7 @@
 <translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
 <translation id="9155898266292537608">您也可以通过快速点按某个字词进行搜索</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{正在下载文件}other{正在下载 # 个文件}}</translation>
 <translation id="9204836675896933765">还剩 1 个文件</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">图片</translation>

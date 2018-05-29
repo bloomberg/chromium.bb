@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Elimina dati esistenti.</translation>
 <translation id="1146678959555564648">Entra nella VR</translation>
 <translation id="116280672541001035">Utilizzati</translation>
+<translation id="1172593791219290334">Pagina iniziale</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Preferiti e cronologia web</translation>
 <translation id="1513858653616922153">Elimina la password</translation>
 <translation id="1516229014686355813">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Contenuti comuni</translation>
 <translation id="1539064842193522527">Link aperto in Chrome</translation>
 <translation id="1549000191223877751">Passa a un'altra finestra</translation>
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Trova nella pagina</translation>
 <translation id="1832521218263067499">Problemi di sicurezza</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
+<translation id="1868024384445905608">Ora Chrome scarica i file più velocemente</translation>
 <translation id="1880072593381090678">Pagine più visitate di Chrome</translation>
+<translation id="1883903952484604915">I miei file</translation>
 <translation id="1887786770086287077">L'accesso alla posizione è disattivato per questo dispositivo. Attivalo nelle <ph name="BEGIN_LINK" /> Impostazioni Android <ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">L'app <ph name="APP_NAME" /> verrà aperta in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla Privacy<ph name="END_LINK2" /> di Chrome.</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB per altre app</translation>
 <translation id="2063713494490388661">Tocca per cercare</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 download non riuscito}other{# download non riusciti}}</translation>
+<translation id="2074837478271106772">Download di <ph name="COUNT" /> file (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
 <translation id="3148434565183091099">Accedi a Chrome per trovare i tuoi preferiti su tutti i dispositivi.</translation>
 <translation id="3157842584138209013">Scopri la quantità di dati risparmiata usando il pulsante Altre opzioni</translation>
+<translation id="3165725985537150202">Download del file (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Scorciatoie di finestre e schede</translation>
 <translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
@@ -566,6 +573,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="618555311922999635">Riquadro di navigazione aperto a schermo intero</translation>
 <translation id="6192333916571137726">Scarica file</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
+<translation id="6196868727350051527">Accelerazione del download</translation>
 <translation id="6210748933810148297">Non sei <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opzioni <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Sblocca per esportare le tue password</translation>
@@ -637,6 +645,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6846298663435243399">Caricamento in corso…</translation>
+<translation id="6850409657436465440">Il download è ancora in corso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> schede chiuse</translation>
 <translation id="6864459304226931083">Scarica immagine</translation>
 <translation id="6865313869410766144">Dati della Compilazione automatica dei moduli</translation>
@@ -683,6 +692,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7189372733857464326">In attesa che Google Play Services termini l'aggiornamento</translation>
 <translation id="7189598951263744875">Condividi...</translation>
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 download in attesa}other{# download in attesa}}</translation>
 <translation id="723171743924126238">Seleziona immagini</translation>
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
@@ -757,6 +767,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7882131421121961860">Nessuna cronologia trovata</translation>
 <translation id="7882806643839505685">Consenti l'audio per un sito specifico.</translation>
 <translation id="7929962904089429003">Apri il menu</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 download completato}other{# download completati}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> è obsoleto.</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="7963646190083259054">Fornitore:</translation>
@@ -799,6 +810,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8266862848225348053">Percorso di download</translation>
 <translation id="8283853025636624853">Sincronizzazione con <ph name="SYNC_ACCOUNT_USER_NAME" /> in corso</translation>
 <translation id="8310344678080805313">Schede standard</translation>
+<translation id="8313455859591948645">Modifica la pagina iniziale</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> e altri siti</translation>
 <translation id="8339163506404995330">Le pagine in <ph name="LANGUAGE" /> non verranno tradotte</translation>
 <translation id="8363501664269050863">Riquadro di navigazione. Scorri verso il basso per chiudere.</translation>
@@ -887,6 +899,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9139068048179869749">Chiedi conferma prima di consentire ai siti di inviare notifiche (opzione consigliata)</translation>
 <translation id="9155898266292537608">Per eseguire una ricerca, basta un rapido tocco su una parola</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Download del file}other{Download di # file}}</translation>
 <translation id="9204836675896933765">1 file rimanente</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Immagini</translation>

@@ -88,6 +88,18 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke, at der startes gæsteprofiler.</translation>
 <translation id="1363275621236827384">Aktivér forespørgsler til Quirks Server om hardwareprofiler</translation>
+<translation id="1372267489642113556">
+      Hvis politikken er aktiveret, kører hvert af de angivne websites
+      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
+      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
+      isoleres https://foo.eksempel.dk/ også som en del af websitet
+      https://eksempel.dk/.
+      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
+      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
+      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
+
+      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere IsolateOrigins på en Android-enhed, skal du bruge politikindstillingen IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Angiver, om der skal aktiveres tillid til Symantec Corporations forældede PKI-infrastruktur</translation>
 <translation id="1393485621820363363">Aktiverede virksomhedsprintere for enheder</translation>
@@ -165,6 +177,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Brug <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
+<translation id="1599424828227887013">Aktivér isolering af websites for bestemte websites på Android-enheder</translation>
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
 <translation id="163200210584085447">Mønstre på denne liste sammenlignes med sikkerhedskilden
@@ -512,6 +525,10 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling ikke konfigureres, kan brugeren bestemme, om denne funktion skal anvendes eller ej.
 
       Denne indstilling er fjernet fra <ph name="PRODUCT_NAME" />-version 29 og nyere.</translation>
+<translation id="2438609638493026652">Aktivér rapportering af vigtige hændelser under Android-appinstallation til Google. Hændelser registreres kun i forbindelse med apps, hvis installation blev aktiveret via en politik.
+
+      Hvis politikken er angivet som sand, logføres hændelser.
+      Hvis politikken er angivet som falsk eller ikke er angivet, logføres hændelser ikke.</translation>
 <translation id="244317009688098048">Aktivér nødtastaturgenvej til automatisk login.
 
       Hvis denne politik ikke er angivet eller er angivet til Sand, og en lokal konto på enheden er konfigureret til ingen forsinkelse ved automatisk login, indfrier <ph name="PRODUCT_OS_NAME" /> tastaturgenvejen Ctrl+Alt+S til at omgå automatisk login og visning af loginskærmen.
@@ -1113,6 +1130,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="4309640770189628899">Afgør, om DHE-krypteringsprogrammerne i TLS aktiveres</translation>
 <translation id="4322842393287974810">Tillad, at den automatisk startede terminalapp uden forsinkelse kontrollerer <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
+<translation id="4332177773549877617">Logfør hændelser under Android-appinstallationer</translation>
 <translation id="4346674324214534449">Giver dig mulighed for at angive, om annoncer skal blokeres på websites med påtrængende annoncer.
 
       Hvis mulighed 2 er angivet for denne politik, blokeres annoncer på websites med påtrængende annoncer.

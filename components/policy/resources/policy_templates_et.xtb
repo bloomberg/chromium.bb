@@ -88,6 +88,18 @@
 
       Kui selle reegli väärtuseks määratakse Väär, ei luba teenus <ph name="PRODUCT_NAME" /> külaliste profiile käivitada.</translation>
 <translation id="1363275621236827384">Lubatakse riistvaraprofiilide päringud Quirks Serverist</translation>
+<translation id="1372267489642113556">
+      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
+      nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
+      nimetatud lähtekohad; nt aadressi https://example.com/ määramisel
+      isoleeritakse saidi https://example.com/ osana ka aadress
+      https://foo.example.com/.
+      Kui reegel on keelatud, ei toimu selget saidi isoleerimist ning reeglite IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli IsolateOrigins siiski käsitsi lubada.
+      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
+      Teenuses <ph name="PRODUCT_OS_NAME" /> on soovitatav seadistada ka seadmereegel <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> samale väärtusele. Kui kahes reeglis määratud väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
+
+      MÄRKUS. Androidis see reegel ei kehti. Androidis reegli IsolateOrigins lubamiseks kasutage reegli IsolateOriginsAndroid seadet.
+      </translation>
 <translation id="1384459581748403878">Viide: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Määrab, kas usaldada Symantec Corporationi PKI pärandtaristut</translation>
 <translation id="1393485621820363363">Ettevõtte seadmete jaoks lubatud printerid</translation>
@@ -167,6 +179,7 @@
 
       Vaadake ohutu sirvimise kohta lisateavet aadressilt https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Kasuta vaikimisi rakendust <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1599424828227887013">Android-seadmetes saidi isoleerimise lubamine konkreetsete lähtekohtade puhul</translation>
 <translation id="1608755754295374538">URL-id, millele antakse ilma küsimata juurdepääs helijäädvustusseadmetele</translation>
 <translation id="1617235075406854669">Brauseri ja allalaadimiste ajaloo kustutamise lubamine</translation>
 <translation id="163200210584085447">Selles loendis olevaid mustreid võrreldakse taotleva URL-i
@@ -525,6 +538,10 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       Kui jätate seade määramata, saavad kasutajad otsustada, kas seda funktsiooni kasutada või mitte.
 
       Toote <ph name="PRODUCT_NAME" /> 29-st ja uuematest versioonidest on see seade eemaldatud.</translation>
+<translation id="2438609638493026652">Võimaldab Androidi rakenduse installimise ajal saata Google'ile teavitusi oluliste sündmuste kohta. Sündmused jäädvustatakse ainult rakenduste puhul, mille installimine käivitati reegli kaudu.
+
+      Kui reegel on määratud väärtusele Tõene, siis sündmused logitakse.
+      Kui reegel on määratud väärtusele Väär või määramata, siis sündmusi ei logita.</translation>
 <translation id="244317009688098048">Pääsu otsetee lubamine automaatseks sisselogimiseks.
 
       Kui reegel on seadmata või on selle väärtuseks seatud Tõene ja seadmepõhine konto on konfigureeritud nullviivitusega automaatsele sisselogimisele, kasutab <ph name="PRODUCT_OS_NAME" /> automaatse sisselogimise vahelejätmiseks ja sisselogimisekraani näitamiseks klaviatuuri osteteed Ctrl + Alt + S.
@@ -1137,6 +1154,7 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="4309640770189628899">Näitab, kas DHE šifreerimiskomplektid on TLS-is lubatud</translation>
 <translation id="4322842393287974810">Luba automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni</translation>
 <translation id="4325690621216251241">Lisa väljalogimisnupp süsteemisalve</translation>
+<translation id="4332177773549877617">Androidi rakenduse installimiste logisündmused</translation>
 <translation id="4346674324214534449">Võimaldab teil määrata, kas blokeerida reklaamid sekkuvate reklaamidega saitidel.
 
       Kui selle reegli väärtuseks on määratud 2, blokeeritakse reklaamid sekkuvate reklaamidega saitidel.

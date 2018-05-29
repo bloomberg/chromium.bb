@@ -264,15 +264,18 @@
 <translation id="6723839937902243910">Zasilanie</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="6803622936009808957">Nie można wyświetlić odbicia lustrzanego, ponieważ nie znaleziono obsługiwanych rozdzielczości. Zamiast tego został włączony pulpit rozszerzony.</translation>
+<translation id="6820676911989879663">Zrób sobie przerwę</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
 <translation id="6857811139397017780">Aktywuj sieć <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
+<translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="7034339000180558234">Przesyłam kartę <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
+<translation id="7076293881109082629">Loguję</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
 <translation id="7131634465328662194">Nastąpi automatyczne wylogowanie.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>

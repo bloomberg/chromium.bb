@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1146678959555564648">VR を入力</translation>
 <translation id="116280672541001035">使用量</translation>
+<translation id="1172593791219290334">起動ページ</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1197267115302279827">ブックマークを移動</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">ブックマークとウェブ履歴</translation>
 <translation id="1513858653616922153">パスワードを削除</translation>
 <translation id="1516229014686355813">「タップして検索」では選択した単語と現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>
+<translation id="1521008027388393450">人気のコンテンツ</translation>
 <translation id="1539064842193522527">リンクが Chrome で開かれました</translation>
 <translation id="1549000191223877751">他のウィンドウに移動</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">ページ内検索</translation>
 <translation id="1832521218263067499">セキュリティに関する事象</translation>
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
+<translation id="1868024384445905608">Chrome でのファイルのダウンロードがさらに速くなりました</translation>
 <translation id="1880072593381090678">Chrome でよくアクセスするページ</translation>
+<translation id="1883903952484604915">マイファイル</translation>
 <translation id="1887786770086287077">位置情報へのアクセスが端末でオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="1891331835972267886">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="189172778771606813">操作パネルを閉じる</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB を他のアプリで使用中</translation>
 <translation id="2063713494490388661">タップして検索</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました}other{# 件のダウンロードが失敗しました}}</translation>
+<translation id="2074837478271106772"><ph name="COUNT" /> 個のファイルをダウンロードしています（<ph name="MEGABYTES" />）</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2086652334978798447">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、Chrome にログインします。</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">シークレット モードを終了</translation>
 <translation id="3148434565183091099">お使いのどの端末でも同じブックマークを使用するには、Chrome にログインします。</translation>
 <translation id="3157842584138209013">[その他のオプション] からデータ削減量を確認できます</translation>
+<translation id="3165725985537150202">ファイルをダウンロードしています（<ph name="MEGABYTES" />）</translation>
 <translation id="3166827708714933426">タブとウィンドウのショートカット</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
@@ -566,6 +573,7 @@
 <translation id="618555311922999635">画面全体にナビゲーション パネルが開かれています</translation>
 <translation id="6192333916571137726">ダウンロード ファイル</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6196868727350051527">ダウンロード速度が向上しました</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ではありませんか？</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> のオプション</translation>
 <translation id="6221633008163990886">ロックを解除してパスワードをエクスポート</translation>
@@ -637,6 +645,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6846298663435243399">読み込み中...</translation>
+<translation id="6850409657436465440">ダウンロードが進行中です</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
@@ -683,6 +692,7 @@
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 件のダウンロードが保留中です}other{# 件のダウンロードが保留中です}}</translation>
 <translation id="723171743924126238">画像を選択</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
@@ -757,6 +767,7 @@
 <translation id="7882131421121961860">履歴が見つかりません</translation>
 <translation id="7882806643839505685">特定のサイトに対して音声の再生を許可します。</translation>
 <translation id="7929962904089429003">メニューを開く</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 件のダウンロードが完了しました}other{# 件のダウンロードが完了しました}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> は最新ではありません。</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7963646190083259054">ベンダー:</translation>
@@ -799,6 +810,7 @@
 <translation id="8266862848225348053">ダウンロード場所</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> に同期しています</translation>
 <translation id="8310344678080805313">標準のタブ</translation>
+<translation id="8313455859591948645">起動ページの編集</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> とその他のサイト</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
 <translation id="8363501664269050863">ナビゲーション パネルです。閉じるには下にスワイプします。</translation>
@@ -887,6 +899,7 @@
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{ファイルをダウンロードしています}other{# 個のファイルをダウンロードしています}}</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">画像</translation>

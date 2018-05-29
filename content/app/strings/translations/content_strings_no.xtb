@@ -97,7 +97,7 @@
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">En del etterfulgt av «<ph name="ATSIGN" />» kan ikke inneholde symbolet «<ph name="INVALIDCHARACTER" />».</translation>
 <translation id="4668956016107839909">vedlegg</translation>
-<translation id="4742539557769756338">deksel</translation>
+<translation id="4742539557769756338">omslag</translation>
 <translation id="4757246831282535685">fanepanel</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="479989351350248267">søk</translation>
@@ -107,7 +107,7 @@
 <translation id="4992066212339426712">Slå på lyden</translation>
 <translation id="49969490063480558">Skriv inn en del etterfulgt av «<ph name="ATSIGN" />». «<ph name="INVALIDADDRESS" />» er ufullstendig.</translation>
 <translation id="5034860022980953847">fremdriftsindikator</translation>
-<translation id="5093189678851173835">epigrafikk</translation>
+<translation id="5093189678851173835">epigraf</translation>
 <translation id="5117590920725113268">Se neste måned</translation>
 <translation id="512758898067543763">radoverskrift</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -145,7 +145,7 @@
 <translation id="6213469881011901533">ordliste</translation>
 <translation id="6398862346408813489">Se panelet for valg av måned</translation>
 <translation id="6404546809543547843">lydtidslinje</translation>
-<translation id="6453774872122745852">bekreftelser</translation>
+<translation id="6453774872122745852">omtale</translation>
 <translation id="648732519525291180">klokkeslettvelger</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="658823671542763450">gå til fullskjermmodus</translation>
@@ -167,22 +167,22 @@
 <translation id="6941933287844615239">last ned medier</translation>
 <translation id="6989848892321993519">Øk lengden på denne teksten med minst <ph name="MIN_CHARACTERS" /> tegn (du bruker for øyeblikket 1 tegn).</translation>
 <translation id="709897737746224366">Sørg for samsvar med det forespurte formatet.</translation>
-<translation id="7139483182332611405">innledning</translation>
+<translation id="7139483182332611405">forord</translation>
 <translation id="7223624360433298498">brukt tid</translation>
 <translation id="7263440858009898357">Velg en artikkel i listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
-<translation id="7353453495576941748">kreditt</translation>
+<translation id="7353453495576941748">anerkjennelse</translation>
 <translation id="7364796246159120393">Velg fil</translation>
 <translation id="739024184232394898">Andre</translation>
 <translation id="7405738980073107433">sluttnoter</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Last ned</translation>
-<translation id="7529102961911894712">tilbakekobling</translation>
+<translation id="7529102961911894712">tilbakelink</translation>
 <translation id="7647456547678091388">tips</translation>
 <translation id="7661956066982048809">grafikkdokument</translation>
 <translation id="7673697353781729403">Timer</translation>
-<translation id="7681220483256441252">indeks</translation>
+<translation id="7681220483256441252">stikkordregister</translation>
 <translation id="7720026100085573005">tid som gjenstår</translation>
 <translation id="7740016676195725605">slå av tekstingen</translation>
 <translation id="7740050170769002709">HTML-innhold</translation>
@@ -214,7 +214,7 @@
 <translation id="8597182159515967513">overskrift</translation>
 <translation id="860475260694818407">innholdsfortegnelse</translation>
 <translation id="8613126697340063924">kontrollér ekstern avspilling</translation>
-<translation id="862370744433916922">undertekst</translation>
+<translation id="862370744433916922">undertittel</translation>
 <translation id="8741316211671074806">Bilde-i-bilde</translation>
 <translation id="8750798805984357768">Velg ett av følgende alternativer.</translation>
 <translation id="8785498733064193001">start avspillingen</translation>

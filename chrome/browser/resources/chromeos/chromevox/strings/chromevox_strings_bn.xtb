@@ -17,6 +17,7 @@
 <translation id="1082209053475788238">কোনো পূর্ববর্তী স্তর ৬ শিরোনাম নেই৷</translation>
 <translation id="1088219014394087294">কোনো শিরোলেখ নেই৷</translation>
 <translation id="1106741348836243114">শব্দ প্রতিক্রিয়া  (earcons) চালু বা বন্ধ করুন৷</translation>
+<translation id="1108651818222110612">সাবটাইটেল</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1124771028211010580">বর্তমান প্রদর্শন শৈলীটি পাশাপাশি।</translation>
 <translation id="113582498867142724"><ph name="NUM" />টি আইটেমের সঙ্গে <ph name="TAG" /> সংগ্রহ</translation>
@@ -27,12 +28,14 @@
 <translation id="1167230103353892028"><ph name="NAME" />, মেনু আইটেম, উপমেনু সহ</translation>
 <translation id="1177863135347784049">কাস্টম</translation>
 <translation id="1188858454923323853">পরিপূরক</translation>
+<translation id="1195238899008218998">পরিশিষ্ট</translation>
 <translation id="1201402288615127009">পরবর্তী</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome কে ভয়েস প্রদান</translation>
 <translation id="1225437811932752266">অভিনন্দন! আপনি ChromeVox ব্যবহার করার অত্যাবশ্যক বিষয়গুলি শিখে নিয়েছেন। মনে রাখবেন যে, আপনি যেকোনও সময় সার্চ+ফুলস্টপ টিপে ChromeVox কমান্ড মেনু খুলতে পারেন। ChromeVox এবং Chrome OS সম্পর্কে আরও জানার জন্য, নিম্নোক্ত নিবন্ধগুলি দেখুন।
 টিউটোরিয়ালটি শেষ করার পর, ChromeVox ব্যবহার করে বন্ধ করার বোতামে নেভিগেট করে সেটিতে ক্লিক করুন।</translation>
 <translation id="1229276918471378188">পূর্ববর্তী জাম্প</translation>
+<translation id="1236794971743289975">এন্ডনোট</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">পরবর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="1275718070701477396">নির্বাচিত</translation>
@@ -52,6 +55,7 @@
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
+<translation id="146450394670219700">গ্রাফিক্স অবজেক্ট</translation>
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1474557363159888097">কোনো পূর্ববর্তী অ্যাঙ্কর নেই৷</translation>
 <translation id="1480046233931937785">কৃতিত্ব</translation>
@@ -108,6 +112,7 @@
 <translation id="2010555995361223825">ChromeVox মেনুগুলি</translation>
 <translation id="2045490512405922022">চেক লাগানো হয়নি</translation>
 <translation id="20601713649439366">এর পূর্বে কোনো গাণিতিক অভিব্যক্তি নেই৷</translation>
+<translation id="2063539687800151747">এপিগ্রাফ</translation>
 <translation id="207477615537953741">শব্দার্থিক বন্ধ আছে</translation>
 <translation id="2086961585857038472">পরবর্তী শব্দ</translation>
 <translation id="2089387485033699258">bn</translation>
@@ -118,6 +123,7 @@
 <translation id="2121067395472282800">অ্যাক্সেস কী:<ph name="KEY" /></translation>
 <translation id="2138345533858834403">স্ক্রিনের উপরের অংশে ChromeVox এর প্যানেলে
          রিফ্রেশযোগ্য ব্রেইল ডিসপ্লের আউটপুট অনুকরণ করা হয়।</translation>
+<translation id="2163782704988363449">ত্রুটি-বিচ্যুতি</translation>
 <translation id="2169714232367507776">বর্তমান আইটেমে ক্লিক করুন</translation>
 <translation id="2179452035581866348">আপনাকে অপরিহার্য ও অতিরিক্ত তথ্য দিতে ChromeVox সাউন্ড ব্যবহার করে। প্রতিটি সাউন্ড কি বোঝায় তা শিখে নিলে আপনি আরও দ্রুত নেভিগেট করতে পারবেন। আপনি এতে স্বাচ্ছন্দ বোধ করলে, স্পিচে ভারবোস বর্ণনা বন্ধ করে দিতে পারেন এবং কোনো পৃষ্ঠার অপরিহার্য তথ্যের জন্য এই সাউন্ডগুলির উপর নির্ভর করতে পারেন। এখানে সাউন্ডগুলির পুরো তালিকা এবং সেগুলির কোনটির কি কাজ তা দেখতে পাচ্ছেন।</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{ডান বন্ধনী}one{#টি ডান বন্ধনী}other{#টি ডান বন্ধনী}}</translation>
@@ -139,6 +145,7 @@
 <translation id="241124561063364910">এর দ্বারা অনুসরণ করা হয়</translation>
 <translation id="2416512023405990736">একটি টিকচিহ্ন উঠানো চেকবাক্স</translation>
 <translation id="2417569100218200841">সামগ্রীর তথ্য</translation>
+<translation id="2417948780551741035">এন্ডনোট</translation>
 <translation id="2422937916923936891">মেনু আইটেম চেক বাক্স</translation>
 <translation id="2428534162001909979">কমান্ড মেনুগুলি</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -161,6 +168,7 @@
 <translation id="2637227747952042642">গণিত</translation>
 <translation id="2639750663247012216">ChromeVox সংশোধক</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2661530546602071611">বিজ্ঞপ্তি</translation>
 <translation id="2673280813984708147">এডিট করছেন</translation>
 <translation id="267442004702508783">রিফ্রেশ করুন</translation>
 <translation id="2684412629217766642">ChromeVox টিউটোরিয়াল বন্ধ করুন</translation>
@@ -173,6 +181,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">চেক করা</translation>
 <translation id="27527859628328957">পরবর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
+<translation id="276402504937943375">বিষয় সূচি</translation>
 <translation id="2770781857296573485">গ্রুপ অন্বেষণ প্রবেশ করে</translation>
 <translation id="2777845298774924149">বের করা হয়েছে</translation>
 <translation id="2781264313200109999">লিঙ্ক শুরু করুন</translation>
@@ -189,6 +198,7 @@
 <translation id="2844995807198708617">প্রসঙ্গ মেনু</translation>
 <translation id="2849332794118375855">কোনো পরবর্তী চেকবাক্স নেই৷</translation>
 <translation id="2864481629947106776">আগের লিঙ্ক</translation>
+<translation id="2867808975387772810">বিবলিওগ্রাফি</translation>
 <translation id="2873259058405069099">সারণীর শুরুতে যান</translation>
 <translation id="288178314850623291">নির্দিষ্ট ধরনের উপাদানে যাওয়ার জন্য জাম্প কমান্ডগুলি ব্যবহার করুন। শিরোনামের মধ্যে জাম্প করে অগ্রবর্তী হতে অনুসন্ধান + H, পিছনে জাম্প করতে অনুসন্ধান + Shift + H টিপুন।</translation>
 <translation id="2894654529758326923">তথ্য</translation>
@@ -318,7 +328,9 @@
 <translation id="3514822174137761109">{COUNT,plural, =1{ক্যারেট}one{# ক্যারেট}other{# ক্যারেট}}</translation>
 <translation id="352577523970648069">একটি সম্পাদনাযোগ্য পাঠ্য ফিল্ড</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, চেকবাক্স চেকযুক্ত করা হয়নি</translation>
+<translation id="3589661172894441357">শব্দকোষ</translation>
 <translation id="3599054940393788245">গণিত বর্হিভূত</translation>
+<translation id="360241989769010433">কৃতজ্ঞতা স্বীকার</translation>
 <translation id="3616113530831147358">অডিও</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{ব্যাকটিক}one{#টি ব্যাকটিক}other{#টি ব্যাকটিক}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
@@ -348,6 +360,7 @@
 <translation id="3909320334364316587">পূর্ববর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="3914173277599553213">প্রয়োজন</translation>
 <translation id="3914732343065571127">ChromeVox কমান্ড রেফারেন্স</translation>
+<translation id="3930498801443296724">পুলকোট</translation>
 <translation id="3962990492275676168">বর্তমান লোকেশন থেকে পড়া শুরু করুন</translation>
 <translation id="4004802134384979325">চেক করা</translation>
 <translation id="4006140876663370126">img</translation>
@@ -402,6 +415,7 @@
 <translation id="4373197658375206385">এমন কোনো পূর্ববর্তী আইটেম নেই যা লিঙ্ক নয়৷</translation>
 <translation id="4376316291247992553">ব্রেইল হিসাবে গ্রাফিক দেখুন</translation>
 <translation id="4378308539633073595">স্ক্রল করে এগিয়ে যান</translation>
+<translation id="4384583879834880242">প্রশ্ন এবং উত্তর</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">পুনঃসেট করুন</translation>
 <translation id="4457472090507035117">এখনকার ভয়েসটি বেছে নিন:</translation>
@@ -423,6 +437,7 @@
 <translation id="4601367666219428522">সারণী <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">পরবর্তী কি টেপা উপেক্ষা করা হচ্ছে</translation>
 <translation id="461613135510474570">বাক্য</translation>
+<translation id="4623097797855662355">বইয়ের শেষ পৃষ্ঠা</translation>
 <translation id="463135993322337640">নতুন কি আছে তা দেখার জন্য ChromeVox o, n টিপুন</translation>
 <translation id="4647836961514597010">রঙ চয়নকারী</translation>
 <translation id="4652110509054054146">হোম বা এন্ডে যেতে সার্চের সাথে বাঁ অথবা ডান দিকের তীরচিহ্ন টিপুন, কন্ট্রোল হোম অথবা এন্ডের জন্য সার্চ কন্ট্রোলের সাথে বাঁ অথবা ডান দিকের তীরচিহ্ন টিপুন, পেজ আপ ও পেজ ডাউনের জন্য সার্চের সাথে উপরের বা নিচের তীরচিহ্ন টিপুন।</translation>
@@ -457,6 +472,7 @@
 <translation id="4877261390094455813">একটি অনুসন্ধান ক্যোয়ারী লিখুন৷</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">অভ্যন্তরীণ লিঙ্ক</translation>
+<translation id="492295894462528572">মুখবন্ধ</translation>
 <translation id="495170559598752135">ক্রিয়াসমূহ</translation>
 <translation id="4953585991029886728">পাঠ্য সম্পাদনা করুন</translation>
 <translation id="4954534434583049121">পূর্ববর্তী অবরুদ্ধ উদ্ধৃতি</translation>
@@ -491,6 +507,7 @@
 <translation id="5111640677200759579">কলাম শিরোলেখ</translation>
 <translation id="5136967254288895616">কোনো পূর্ববর্তী লিঙ্ক নেই৷</translation>
 <translation id="513774504516943387">lnk</translation>
+<translation id="5158275234811857234">কভার</translation>
 <translation id="517143700877085897">, অনির্বাচিত</translation>
 <translation id="5183440668879371625">ব্রেইল পূর্ববর্তী লাইন</translation>
 <translation id="5184944171021383281">কোনো পূর্ববর্তী ফর্ম ক্ষেত্র নেই৷</translation>
@@ -501,6 +518,7 @@
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5291783959063340370">অবজেক্ট</translation>
+<translation id="5302089807023311274">বিবলিওগ্রাফি রেফারেন্স</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, ট্যাব</translation>
 <translation id="5310788376443009632">সরানো হয়েছে:</translation>
 <translation id="5320727453979144100">স্টিকি মোড সক্ষম</translation>
@@ -508,6 +526,7 @@
 <translation id="532371086589123547"><ph name="VALUE" />, পাঠ্য বাক্স</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, লিঙ্ক</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
+<translation id="5349770431644471053">ফিরে যাওয়ার লিঙ্ক</translation>
 <translation id="536031132345979795">একটানা পড়ার সময় ছেড়ে পিছনে যান</translation>
 <translation id="5368000168321181111">Earcons বন্ধ আছে</translation>
 <translation id="5374320867641260420">কোনো পরবর্তী বোতাম নেই৷</translation>
@@ -523,6 +542,7 @@
 <translation id="5446809554778706307">কোনও ফোকাস নেই। একটি নতুন ট্যাব খুলতে Ctrl+T টিপুন।</translation>
 <translation id="5451268436205074266">ডট <ph name="DOT" /></translation>
 <translation id="5455441614648621694">পরিপূরক</translation>
+<translation id="5462510922370980473">পৃষ্ঠা তালিকা</translation>
 <translation id="5485036206801896268">কোনো পূর্ববর্তী গ্রাফিক নেই৷</translation>
 <translation id="5486947920110100234">কোনো পরবর্তী জাম্প বিন্দু নেই৷</translation>
 <translation id="549602578321198708">শব্দ</translation>
@@ -548,6 +568,7 @@
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">লগ</translation>
 <translation id="5628125749885014029">h4</translation>
+<translation id="5632083598315326067">গ্রাফিক্স চিহ্ন</translation>
 <translation id="5637871198229500030">কোনো পূর্ববর্তী সারণী নেই৷</translation>
 <translation id="5653397561111110475">Chromebook এর স্পর্শ স্ক্রীনের অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি ব্যবহার করুন</translation>
 <translation id="5655682562155942719">মন্তব্যগুলি ছেড়ে যান</translation>
@@ -567,10 +588,12 @@
 <translation id="5732189279857692565">এটি দ্বিতীয় শিরোনাম। সামনে এগোন; অনুসন্ধান+H টিপুন কিংবা অনুসন্ধান+Shift+H টিপুন।</translation>
 <translation id="5748623122140342504">পূর্ববর্তী স্তর ৫ শিরোনাম</translation>
 <translation id="5750633686117194034">কোন সংশোধক টেপা হয়নি; দয়া করে এক বা একাধিক সংশোধকে টিপুন এবং ধরে থাকুন; একবার হয়ে গেলে আপনার আঙুলগুলি তুলে নিন এবং কীগুলি সেট হয়েছে তা আপনি শুনতে পাবেন৷ বেরিয়ে যেতে ট্যাব টিপুন৷</translation>
+<translation id="5760594853119905566">পরিশিষ্ট</translation>
 <translation id="5788275253279308023">ছদ্মবেশী উইন্ডো <ph name="TITLE" /> ট্যাব</translation>
 <translation id="5806206155699461681">নির্দিষ্ট সাইটগুলি (যেমন Google অনুসন্ধান) স্বতঃবৃদ্ধি করুন৷</translation>
 <translation id="5819072574982403430">ট্রি আইটেম</translation>
 <translation id="5826479389509458994">সারি <ph name="ROW" /> কলাম <ph name="COL" /></translation>
+<translation id="5847883414085148048">উতসর্গ</translation>
 <translation id="5850707923114094062">পিছনের দিকে প্যান করুন</translation>
 <translation id="5851548754964597211">ট্যাব তালিকা</translation>
 <translation id="5859752971144398932">পৃষ্ঠায় খোজা থেকে বেরিয়ে গিয়েছে হচ্ছে৷</translation>
@@ -581,6 +604,7 @@
 <translation id="5887397643266327462">ব্রেইল পরিচয়লিপিগুলি সক্ষম করা হয়েছে৷</translation>
 <translation id="5891934789323004067">সারণী</translation>
 <translation id="5899860758576822363">ChromeVox কথা বলতে থাকলে কম ভলিউমে বাজান</translation>
+<translation id="5921587111466148855">অধ্যায়</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{সমান}one{#টি সমান চিহ্ন}other{#টি সমান চিহ্ন}}</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5948123859135882163">কাঠামোগত এবং শব্দার্থিক এর মধ্যে গাণিতিক এক্সপ্রেশনের ব্যাখ্যা টগল করে</translation>
@@ -589,6 +613,7 @@
 <translation id="5963413905009737549">বিভাগ</translation>
 <translation id="5968607524793740041">প্রসঙ্গ মেনু দেখান</translation>
 <translation id="5983179082906765664">নেভিগেশন গ্র্যানুলারিটি বাড়ান</translation>
+<translation id="5992285135956208197">গ্রাফিক্স ডকুমেন্ট</translation>
 <translation id="5999630716831179808">ভয়েসগুলি</translation>
 <translation id="6006050241733874051">রূপ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ব্যাকস্ল্যাশ}one{#টি ব্যাকস্ল্যাশ}other{#টি ব্যাকস্ল্যাশ}}</translation>
@@ -637,6 +662,7 @@
 <translation id="6444046323172968959">সতর্কতা কথোপকথন</translation>
 <translation id="6459511626086141404">ফ্ল্যাট কীম্যাপ</translation>
 <translation id="6468049171101508116">পরবর্তী বোতাম</translation>
+<translation id="646954774886932461">সূচি</translation>
 <translation id="6493991254603208962">উজ্জ্বলতা কমান</translation>
 <translation id="6508059270146105198">পৃষ্ঠার নীচের দিকে ব্রেইল প্রদর্শন সরান</translation>
 <translation id="6536864053412760904">গাণিতিক ML টোকেন</translation>
@@ -646,12 +672,14 @@
 <translation id="6587021927234520429">কোনো পূর্ববর্তী স্তর ৪ শিরোনাম নেই৷</translation>
 <translation id="6601344353291556895">ভার্বোস বিবরণগুলি সক্ষম করুন৷</translation>
 <translation id="6615602925644411249">পৃষ্ঠায় খুঁজুন৷</translation>
+<translation id="6628427060004938651">অংশ</translation>
 <translation id="6633350132811819843">কোনো পরবর্তী সারণী নেই৷</translation>
 <translation id="6637586476836377253">লগ</translation>
 <translation id="6657128831881431364">প্রগতি দণ্ড</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6688209025607531203">একটি অ-মোডাল সতর্কতা</translation>
+<translation id="6696967141280706829">মুখবন্ধ</translation>
 <translation id="6697092096875747123">পূর্ববর্তী কম্বো বাক্স</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{টি বিস্ময়সূচক চিহ্ন}one{#টি বিস্ময়সূচক চিহ্ন}other{#টি বিস্ময়সূচক চিহ্ন}}</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
@@ -666,6 +694,7 @@
 <translation id="6787839852456839824">কীবোর্ড শর্টকাটগুলি</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">পাদলেখ</translation>
+<translation id="6858047746862060282">ভূমিকা</translation>
 <translation id="6871161210040114857">কেস সংবেদনশীলতা উপেক্ষা করছে।</translation>
 <translation id="6877435256196695200">কোনো পরবর্তী গ্রাফিক নেই৷</translation>
 <translation id="6897341342232909480">বামদিকে সরান</translation>
@@ -675,12 +704,21 @@
 <translation id="6911965441508464308">উপরে কোনো কক্ষ নেই৷</translation>
 <translation id="6919104639734799681">সারণী তালিকা দেখান</translation>
 <translation id="6964088412282673743">এর পূর্বে কোনো নিয়ন্ত্রণ নেই৷</translation>
+<translation id="6994042831499278539">শব্দকোষের রেফারেন্স</translation>
 <translation id="6996566555547746822">পরবর্তী কম্বো বাক্স</translation>
+<translation id="700202842116345659">বিবলিওগ্রাফি এন্ট্রি</translation>
 <translation id="7005146664810010831">কোনো URL খুঁজে পাওয়া যায় নি</translation>
 <translation id="7010712454773919705">ChromeVox সংশোধক কী</translation>
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">পূর্ববর্তী তালিকা</translation>
 <translation id="7041173719775863268">নির্বাচন সমাপ্ত করুন</translation>
+<translation id="7048792632163898198">পরবর্তী কয়েকটি শর্টকাট ChromeVox কমান্ড নয়, কিন্তু Chrome থেকে সর্বাধিক সুবিধা পাওয়ার জন্য এটি খুব কার্যকরী।
+বোতাম এবং লিঙ্কগুলির মতো কাজের আইটেমগুলির মাধ্যমে এগিয়ে যাওয়ার জন্য Tab কী প্রেস করুন। পিছন দিকে নেভিগেট করতে Shift+Tab প্রেস করুন।
+Chrome ব্রাউজারে ঠিকানা বক্সে এন্টার করতে, যা omnibox নামেও পরিচিত, Control + L প্রেস করুন।
+নিজে থেকেই একটি নতুন ট্যাব খুলে সেটিতে যাওয়ার জন্য Control+T প্রেস করুন। আপনার কার্সারটি omnibox-এ থাকবে।
+একটি ট্যাব বন্ধ করতে, Control+W প্রেস করুন।
+খোলা থাকা একটি ট্যাব থেকে অন্য একটি ট্যাবে যাওয়ার জন্য Control+Tab ব্যবহার করুন।
+Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রেস করুন।</translation>
 <translation id="7086377898680121060">উজ্জ্বলতা বাড়ান</translation>
 <translation id="7095834689119144465">কেবল পাঠ্য সংখ্যা সম্পাদনা করুন</translation>
 <translation id="7096001299300236431">পূর্ববর্তী মিডিয়া</translation>
@@ -688,6 +726,7 @@
 <translation id="712735679809149106">শব্দ ইকো</translation>
 <translation id="713824876195128146">পরবর্তী অবরুদ্ধ উদ্ধৃতি</translation>
 <translation id="7143034430156387447">৬ এবং ৮ ডট ব্রেলির মধ্যে টগল করুন</translation>
+<translation id="7157306005867877619">বিমূর্ত</translation>
 <translation id="7161425887892204659">টেক্সট ম্যাচিং শেষ</translation>
 <translation id="7161771961008409533">পপ-আপ বোতাম</translation>
 <translation id="7165714724802225287">বর্তমান প্রদর্শন স্টাইল একটি অন্যটির মাঝে সমাবেশিত।</translation>
@@ -706,6 +745,7 @@
 <translation id="725969808843520477">পরবর্তী রেডিও বোতাম</translation>
 <translation id="7269119382257320590">কোনো যতিচিহ্ন নেই</translation>
 <translation id="7273174640290488576">খালি</translation>
+<translation id="7274770952766771364">নোটের রেফারেন্স</translation>
 <translation id="7285387653379749618">সারণীগুলি</translation>
 <translation id="7289186959554153431">শিরোনাম ৩</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
@@ -727,6 +767,7 @@
 <translation id="7420313809195758138">কোনো আইটেমের অন্যান্য তথ্যের আগে এর প্রসঙ্গ প্রদর্শন করুন (যেমন এটির নাম)।</translation>
 <translation id="7425395583360211003">ফিরে যান</translation>
 <translation id="7434509671034404296">ডেভেলপার</translation>
+<translation id="743783356331413498">উদাহরণ</translation>
 <translation id="7439060726180460871">সংকলন</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">ট্যাব</translation>
@@ -740,10 +781,12 @@
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">বর্তমান পৃষ্ঠার URL ঘোষণা করুন</translation>
 <translation id="7609363189280667021">ব্রেইল পরিচয়লিপি টগল করুন</translation>
+<translation id="761303759119251275">স্বীকৃতি</translation>
 <translation id="762020119231868829">বর্তমানে চলছে এমন সমস্ত মিডিয়া উইজেটকে বিরাম দেয়</translation>
 <translation id="7625690649919402823">পরবর্তী সারণী</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), গ্রেড <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">কোনো পূর্ববর্তী স্তর ৩ শিরোনাম নেই৷</translation>
+<translation id="7647456547678091388">পরামর্শ</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, পাঠ্য বাক্স</translation>
 <translation id="7663318257180412551">শিরোনাম ২</translation>
 <translation id="7674576868851035240">পরবর্তী লিঙ্ক</translation>
@@ -756,6 +799,7 @@
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
 <translation id="7773125101284285285">আন্ডারলাইন শেষ</translation>
 <translation id="7776293189010177726">ChromeVox মেনুগুলি খুলুন</translation>
+<translation id="7800558923657349506">উপসংহার</translation>
 <translation id="7805247615045262757">ডিফল্ট নেভিগেশন</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="7810781339813764006">পরবর্তী গ্রুপ</translation>
@@ -777,8 +821,10 @@
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{উদ্ধৃতি}one{#টি উদ্ধৃতি}other{# উদ্ধৃতি}}</translation>
 <translation id="8017588669690167134">ভাষ্য বন্ধ করুন</translation>
+<translation id="801990297710781303">ফুটনোট</translation>
 <translation id="8033827949643255796">নির্বাচিত</translation>
 <translation id="8035962149453661158">সর্বোচ্চ:<ph name="X" /></translation>
+<translation id="8037651341025652929">সিদ্ধান্ত</translation>
 <translation id="8042761080832772327">অনুসন্ধান এন্ট্রি, পাঠ্য সম্পাদনা করুন</translation>
 <translation id="8049189770492311300">টাইমার</translation>
 <translation id="8065607967589909823">নির্বাচনটি</translation>
@@ -795,6 +841,7 @@
 <translation id="820417203470636242">ফাঁকা কক্ষ৷</translation>
 <translation id="820469951249669083">পরের সারিতে যান</translation>
 <translation id="8215202828671303819">একাধিক নির্বাচন</translation>
+<translation id="826825447994856889">পরিচয়</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">পূর্ববর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
 <translation id="8278417001922463147">এর পূর্বে কোনো নিবন্ধ নেই৷</translation>
@@ -869,6 +916,7 @@
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">একটি ৮-ডটের ব্রেইল সারণী বেছে নিন:</translation>
 <translation id="9065283790526219006">+পপআপ</translation>
+<translation id="9067522039955793016">পৃষ্ঠা বিরতি</translation>
 <translation id="9077213568694924680">নির্বাচন থেকে সরিয়ে ফেলা হয়েছে</translation>
 <translation id="9082874451376019682">কোনো পূর্ববর্তী স্লাইডার নেই৷</translation>
 <translation id="9087707351856729768">নিজে থেকে সম্পূর্ণ করার জন্য টাইপ করুন।</translation>

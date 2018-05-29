@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Dzēst esošos datus.</translation>
 <translation id="1146678959555564648">Ieiet virtuālajā realitātē</translation>
 <translation id="116280672541001035">Izmantots</translation>
+<translation id="1172593791219290334">Sākumlapa</translation>
 <translation id="1178581264944972037">Pauzēt</translation>
 <translation id="1181037720776840403">Noņemt</translation>
 <translation id="1197267115302279827">Pārvietot grāmatzīmes</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
 <translation id="1513858653616922153">Dzēst paroli</translation>
 <translation id="1516229014686355813">Izmantojot funkciju “Pieskarties, lai meklētu”, atlasītais vārds tiek nosūtīts pakalpojumam Google meklēšana, pievienojot pašreiz skatīto lapu kā kontekstu. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Populārs saturs</translation>
 <translation id="1539064842193522527">Saite atvērta pārlūkā Chrome</translation>
 <translation id="1549000191223877751">Pārvietot uz citu logu</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Atrast lapā</translation>
 <translation id="1832521218263067499">Drošības problēmas</translation>
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
+<translation id="1868024384445905608">Tagad pārlūkā Chrome faili tiek lejupielādēti ātrāk.</translation>
 <translation id="1880072593381090678">Populārākās lapas no pārlūka Chrome</translation>
+<translation id="1883903952484604915">Mani faili</translation>
 <translation id="1887786770086287077">Piekļuve šīs ierīces atrašanās vietai ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Lietotne <ph name="APP_NAME" /> tiks atvērta pārlūkā Chrome. Turpinot jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Aizvērt navigācijas atvilktni</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Ieslēgt iestatījumu “Pieprasīt datora vietni”</translation>
 <translation id="2045104531052923016">Citas lietotnes: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2063713494490388661">Pieskarties, lai meklētu</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 lejupielāde neizdevās}zero{# lejupielādes neizdevās}one{# lejupielāde neizdevās}other{# lejupielādes neizdevās}}</translation>
+<translation id="2074837478271106772">Tiek lejupielādēti <ph name="COUNT" /> faili (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultāts no <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Lai saņemtu Google ieteikto personalizēto saturu, pierakstieties pārlūkā Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Iziet no inkognito režīma</translation>
 <translation id="3148434565183091099">Pierakstieties pārlūkā Chrome, lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="3157842584138209013">Izmantojiet pogu Vairāk opciju, lai uzzinātu ietaupīto datu apjomu</translation>
+<translation id="3165725985537150202">Tiek lejupielādēts fails (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Ciļņu un logu īsinājumtaustiņi</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļaujas pārlūkam Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> saglabātu datu</translation>
@@ -566,6 +573,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="618555311922999635">Atvērts navigācijas panelis pilnā augstumā</translation>
 <translation id="6192333916571137726">Lejupielāde fails</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
+<translation id="6196868727350051527">Lejupielādes paātrināšana</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> nav mana e-pasta adrese</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: iespējas</translation>
 <translation id="6221633008163990886">Atbloķējiet, lai eksportētu paroles.</translation>
@@ -637,6 +645,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="6846298663435243399">Notiek ielāde…</translation>
+<translation id="6850409657436465440">Joprojām notiek lejupielāde</translation>
 <translation id="6850830437481525139">Aizvērtas <ph name="TAB_COUNT" /> cilnes</translation>
 <translation id="6864459304226931083">Lejupielādēt attēlu</translation>
 <translation id="6865313869410766144">Automātiskās aizpildes veidlapas dati</translation>
@@ -683,6 +692,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7189372733857464326">Gaida, kad tiks pabeigta Google Play pakalpojumu atjaunināšana</translation>
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{Tiek gaidīta 1 lejupielāde}zero{Tiek gaidītas # lejupielādes}one{Tiek gaidīta # lejupielāde}other{Tiek gaidītas # lejupielādes}}</translation>
 <translation id="723171743924126238">Atlasīt attēlus</translation>
 <translation id="7243308994586599757">Opcijas, kas pieejamas ekrāna apakšējā daļā</translation>
 <translation id="7250468141469952378">Atlasīti vienumi: <ph name="ITEM_COUNT" /></translation>
@@ -757,6 +767,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7882131421121961860">Vēsture nav atrasta</translation>
 <translation id="7882806643839505685">Atļaut skaņu konkrētai vietnei</translation>
 <translation id="7929962904089429003">Atvērt izvēlni</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 lejupielāde pabeigta}zero{# lejupielādes pabeigtas}one{# lejupielāde pabeigta}other{# lejupielādes pabeigtas}}</translation>
 <translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
@@ -799,6 +810,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8266862848225348053">Lejupielādes atrašanās vieta</translation>
 <translation id="8283853025636624853">Sinhronizēšana ar <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standarta cilnes</translation>
+<translation id="8313455859591948645">Sākumlapas rediģēšana</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> un citas vietnes</translation>
 <translation id="8339163506404995330">Lapas šādā valodā: <ph name="LANGUAGE" /> netiks tulkotas.</translation>
 <translation id="8363501664269050863">Navigācijas panelis. Velciet uz leju, lai aizvērtu.</translation>
@@ -887,6 +899,7 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="9139068048179869749">Jautāt, pirms atļaut vietnēm sūtīt paziņojumus (ieteicams)</translation>
 <translation id="9155898266292537608">Varat arī meklēt, ātri pieskaroties vārdam</translation>
 <translation id="9188680907066685419">Izrakstīšanās no pārvaldīta konta</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Notiek faila lejupielāde}zero{ Notiek # failu lejupielāde}one{ Notiek # faila lejupielāde}other{ Notiek # failu lejupielāde}}</translation>
 <translation id="9204836675896933765">Atlicis 1 fails</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Attēli</translation>

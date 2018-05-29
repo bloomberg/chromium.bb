@@ -17,7 +17,7 @@
 <translation id="1082209053475788238">Det finnes ikke tidligere overskrifter på nivå 6.</translation>
 <translation id="1088219014394087294">Det fins ingen overskrifter.</translation>
 <translation id="1106741348836243114">Slå tilbakemelding via lydsignaler av eller på.</translation>
-<translation id="1108651818222110612">tekst</translation>
+<translation id="1108651818222110612">undertittel</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu", "æ": "ærlig", "ø": "østen", "å": "Åse"}</translation>
 <translation id="1124771028211010580">Nåværende visningsstil er side om side.</translation>
 <translation id="113582498867142724">Samling av <ph name="TAG" /> med <ph name="NUM" /> elementer</translation>
@@ -112,7 +112,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2010555995361223825">ChromeVox-menyer</translation>
 <translation id="2045490512405922022">ikke avmerket</translation>
 <translation id="20601713649439366">Det finnes ingen tidligere matteuttrykk.</translation>
-<translation id="2063539687800151747">Epigrafikk</translation>
+<translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantikk av</translation>
 <translation id="2086961585857038472">Neste ord</translation>
 <translation id="2089387485033699258">no</translation>
@@ -181,7 +181,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">Avmerket</translation>
 <translation id="27527859628328957">Gå til neste fokuserbare element</translation>
-<translation id="276402504937943375">Innhold</translation>
+<translation id="276402504937943375">innhold</translation>
 <translation id="2770781857296573485">Kjør gruppeutforsking</translation>
 <translation id="2777845298774924149">Lukket</translation>
 <translation id="2781264313200109999">Begynnelsen av linken</translation>
@@ -330,7 +330,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3568702578574425662"><ph name="NAME" />, avmerkingsruten er ikke avmerket</translation>
 <translation id="3589661172894441357">Ordliste</translation>
 <translation id="3599054940393788245">Utenfor matematisk uttrykk</translation>
-<translation id="360241989769010433">Bekreftelser</translation>
+<translation id="360241989769010433">Omtale</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{venstreaksent}other{# venstreaksenter}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
@@ -507,7 +507,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5111640677200759579">Kolonneoverskrift</translation>
 <translation id="5136967254288895616">Det finnes ingen tidligere linker.</translation>
 <translation id="513774504516943387">lnk</translation>
-<translation id="5158275234811857234">Forside</translation>
+<translation id="5158275234811857234">Omslag</translation>
 <translation id="517143700877085897">, ikke valgt</translation>
 <translation id="5183440668879371625">Punktskrift – forrige linje</translation>
 <translation id="5184944171021383281">Det finnes ikke flere skjemafelt.</translation>
@@ -526,7 +526,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="532371086589123547"><ph name="VALUE" />, tekstfelt</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
-<translation id="5349770431644471053">Tilbakekobling</translation>
+<translation id="5349770431644471053">Tilbakelink</translation>
 <translation id="536031132345979795">Hopp bakover under kontinuerlig lesing</translation>
 <translation id="5368000168321181111">Lydsignaler er av</translation>
 <translation id="5374320867641260420">Det finnes ikke flere knapper.</translation>
@@ -662,7 +662,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6444046323172968959">Varseldialog</translation>
 <translation id="6459511626086141404">Flatt tastaturoppsett</translation>
 <translation id="6468049171101508116">Neste-knappen</translation>
-<translation id="646954774886932461">Indeks</translation>
+<translation id="646954774886932461">Stikkordregister</translation>
 <translation id="6493991254603208962">Lysstyrke ned</translation>
 <translation id="6508059270146105198">Flytt leselisten til nederst på siden</translation>
 <translation id="6536864053412760904">MathML-token</translation>
@@ -679,7 +679,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">Et ikke-modalt varsel</translation>
-<translation id="6696967141280706829">Innledning</translation>
+<translation id="6696967141280706829">Forord</translation>
 <translation id="6697092096875747123">Forrige kombinasjonsfelt</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{utropstegn}other{# utropstegn}}</translation>
 <translation id="6710213216561001401">Forrige</translation>
@@ -781,7 +781,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Kunngjør nettadressen til den nåværende siden</translation>
 <translation id="7609363189280667021">Slå punktskriftteksting av eller på</translation>
-<translation id="761303759119251275">Kreditt</translation>
+<translation id="761303759119251275">Anerkjennelse</translation>
 <translation id="762020119231868829">Setter alle mediemoduler som spilles av, på pause</translation>
 <translation id="7625690649919402823">Neste tabell</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), grad <ph name="GRADE" /></translation>

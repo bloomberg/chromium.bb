@@ -342,7 +342,7 @@
 <translation id="1507048939308275033">‏قراءة الرسائل النصية والرد عليها على جهاز Chromebook</translation>
 <translation id="1507170440449692343">تم حظر دخول هذه الصفحة إلى الكاميرا التابعة لك.</translation>
 <translation id="1507246803636407672">إل&amp;غاء</translation>
-<translation id="1508491105858779599">ضع إصبعك على جهاز مستشعر بصمات الإصبع لإلغاء قفل الجهاز.</translation>
+<translation id="1508491105858779599">ضع إصبعك على جهاز جهاز استشعار بصمات الإصبع لإلغاء قفل الجهاز.</translation>
 <translation id="1509281256533087115">‏الوصول إلى أي <ph name="DEVICE_NAME_AND_VENDOR" /> عبر USB</translation>
 <translation id="150962533380566081">‏PUK غير صالح.</translation>
 <translation id="1510030919967934016">تم حظر تتبع هذه الصفحة لموقعك.</translation>
@@ -579,7 +579,7 @@
 <translation id="1852799913675865625">حدث خطأ أثناء محاولة قراءة الملف: <ph name="ERROR_TEXT" />.</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="1856715684130786728">إضافة موقع...</translation>
-<translation id="1856813161013948396">يمكنك تخطي شاشة التأمين بمجرد النقر على مستشعر بصمات الإصبع. انقر للتهيئة.</translation>
+<translation id="1856813161013948396">يمكنك تخطي شاشة التأمين بمجرد النقر على جهاز استشعار بصمات الإصبع. انقر للتهيئة.</translation>
 <translation id="1858585891038687145">الوثوق بهذه الشهادة لتحديد هوية مصممي البرامج</translation>
 <translation id="1861262398884155592">هذا المجلد فارغ</translation>
 <translation id="1864111464094315414">تسجيل الدخول</translation>
@@ -1276,7 +1276,6 @@
 <translation id="2948300991547862301">انتقل إلى <ph name="PAGE_TITLE" /></translation>
 <translation id="2948320633360386059">تم الحظر على المواقع التي تميل إلى عرض إعلانات متداخلة</translation>
 <translation id="29488703364906173">هو متصفح ويب، سريع، وبسيط، وآمن تم إنشاؤه ليتوافق مع إمكانات الويب الحديثة.</translation>
-<translation id="2949037475046662832">سيؤدي هذا إلى مسح ملفات تعريف الارتباط وبيانات الموقع لجميع المواقع، بما في ذلك</translation>
 <translation id="2951247061394563839">توسيط النافذة</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> من ملفات تعريف الارتباط</translation>
 <translation id="2958721676848865875">تحذير حزمة الإضافة</translation>
@@ -2391,7 +2390,7 @@
 <translation id="4748762018725435655">‏يلزم إضافة من سوق Chrome الإلكتروني</translation>
 <translation id="4750394297954878236">الاقتراحات</translation>
 <translation id="475088594373173692">المستخدم الأول</translation>
-<translation id="4751476147751820511">حساسات الإضاءة أو الحركة</translation>
+<translation id="4751476147751820511">أجهزة استشعار الإضاءة أو الحركة</translation>
 <translation id="4756378406049221019">إيقاف/إعادة تحميل</translation>
 <translation id="4756388243121344051">ال&amp;سجل</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
@@ -2584,7 +2583,7 @@
 <translation id="5039512255859636053">$1 تيرابايت</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
-<translation id="5047421709274785093">منع المواقع من استخدام حساسات الإضاءة والحركة</translation>
+<translation id="5047421709274785093">منع المواقع من استخدام أجهزة استشعار الإضاءة والحركة</translation>
 <translation id="5050042263972837708">اسم المجموعة</translation>
 <translation id="5052499409147950210">تعديل موقع ويب</translation>
 <translation id="5053604404986157245">‏كلمة مرور TPM التي تم إنشاؤها عشوائيًا غير متوفرة. هذا أمر عادي بعد إجراء Powerwash.</translation>
@@ -2600,7 +2599,7 @@
 <translation id="5074318175948309511">قد تحتاج هذه الصفحة إلى إعادة التحميل قبل تنفيذ الإعدادات الجديدة.</translation>
 <translation id="5075131525758602494">‏أدخل رمز PIN لشريحة SIM</translation>
 <translation id="5078638979202084724">وضع إشارات على كل علامات التبويب</translation>
-<translation id="5084230410268011727">السماح للمواقع باستخدام حساسات الإضاءة والحركة</translation>
+<translation id="5084230410268011727">السماح للمواقع باستخدام أجهزة استشعار الإضاءة والحركة</translation>
 <translation id="5085162214018721575">جارٍ البحث عن تحديثات</translation>
 <translation id="5086082738160935172">‏جهاز واجهة بشرية (HID)</translation>
 <translation id="5086874064903147617">هل تريد استعادة الصفحة الرئيسية التلقائية؟</translation>
@@ -3468,7 +3467,7 @@
 <translation id="6384275966486438344">تغيير إعدادات البحث لـ: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">يمكن للمواقع أن تحفظ وتقرأ بيانات تعريف ملف الارتباط.</translation>
 <translation id="6388429472088318283">البحث عن اللغات</translation>
-<translation id="6388771388956873507">ابحث عن مستشعر بصمات الإصبع على جهازك والمسه بإصبعك</translation>
+<translation id="6388771388956873507">ابحث عن جهاز استشعار بصمات الإصبع على جهازك والمسه بإصبعك</translation>
 <translation id="6390799748543157332">لن تُظهر الصفحات التي تعرضها في هذه النافذة في سجل المتصفح، ولن تترك أي آثار أخرى، مثل ملفات تعريف الارتباط، في الكمبيوتر بعد إغلاق جميع النوافذ المفتوحة بالضيف. ومع هذا سيتم الاحتفاظ بأي ملفات يتم تنزيلها.</translation>
 <translation id="6395423953133416962">إرسال <ph name="BEGIN_LINK1" />معلومات النظام<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />المقاييس<ph name="END_LINK2" /></translation>
 <translation id="6397094776139756010">خيارات التخصيص والمزامنة</translation>
@@ -3525,7 +3524,6 @@
 <translation id="6459488832681039634">استخدام التحديد للبحث</translation>
 <translation id="6459799433792303855">تم نقل نافذة نشطة إلى شاشة عرض أخرى.</translation>
 <translation id="6460601847208524483">البحث عن التالي</translation>
-<translation id="6462082050341971451">هل ما زلت هناك؟</translation>
 <translation id="6463795194797719782">ت&amp;عديل</translation>
 <translation id="6466988389784393586">ف&amp;تح كل الإشارات المرجعية</translation>
 <translation id="6468485451923838994">الخطوط</translation>
@@ -4159,7 +4157,6 @@
 <translation id="7477347901712410606">‏إذا كنت قد نسيت عبارة المرور، فتوقف وأعد ضبط المزامنة عبر <ph name="BEGIN_LINK" />لوحة تحكم Google<ph name="END_LINK" />.</translation>
 <translation id="7477746269122340519">أوقف المشرف هذا المستخدم.</translation>
 <translation id="7478485216301680444">‏تعذر تثبيت تطبيق Kiosk.</translation>
-<translation id="7479479221494776793">إذا لم تفعل أي شيء، فسيتم تسجيل خروجك خلال <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="748138892655239008">القيود الأساسية على الشهادة</translation>
 <translation id="7484964289312150019">فتح كل الإشارات المرجعية في &amp;نافذة جديدة</translation>
@@ -4191,8 +4188,8 @@
 <translation id="7513029293694390567">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وفي حالة إيقاف هذا الإعداد، سيُطلب منك التأكيد في كل مرة قبل تسجيل الدخول إلى أحد مواقع الويب.</translation>
 <translation id="7515154058529101840">‏<ph name="BEGIN_PARAGRAPH1" />مساعدة التطبيقات في تحديد الموقع الجغرافي. يمكنك استخدام خدمة الموقع الجغرافي من Google للمساعدة في تحسين تحديد الموقع الجغرافي في التطبيقات. ويجوز لشركة Google جمع بيانات الموقع الجغرافي بشكل دوري واستخدامها بدون الكشف عن هويتك للمساعدة في تحسين دقة تحديد المواقع الجغرافية
  والخدمات المستندة إليها.<ph name="END_PARAGRAPH1" />
-    <ph name="BEGIN_PARAGRAPH2" />تستخدم خدمة الموقع الجغرافي من Google المصادر، مثل شبكة Wi-Fi وشبكات الجوَّال والحساسات، للمساعدة في تقدير الموقع الجغرافي لجهازك. ويتم تفعيل هذه الخدمة عند تفعيل إعداد "الموقع الجغرافي" على جهازك.<ph name="END_PARAGRAPH2" />
-    <ph name="BEGIN_PARAGRAPH3" />يمكنك إيقاف ميزة "الموقع الجغرافي" من خلال إيقاف الإعداد الرئيسي للموقع الجغرافي على جهازك. ويمكنك أيضًا إيقاف استخدام شبكة Wi-Fi وشبكات الجوَّال والحساسات للموقع الجغرافي في إعدادات الموقع الجغرافي.<ph name="END_PARAGRAPH3" /></translation>
+    <ph name="BEGIN_PARAGRAPH2" />تستخدم خدمة الموقع الجغرافي من Google المصادر، مثل شبكة Wi-Fi وشبكات الجوَّال وأجهزة الاستشعار، للمساعدة في تقدير الموقع الجغرافي لجهازك. ويتم تفعيل هذه الخدمة عند تفعيل إعداد "الموقع الجغرافي" على جهازك.<ph name="END_PARAGRAPH2" />
+    <ph name="BEGIN_PARAGRAPH3" />يمكنك إيقاف ميزة "الموقع الجغرافي" من خلال إيقاف الإعداد الرئيسي للموقع الجغرافي على جهازك. ويمكنك أيضًا إيقاف استخدام شبكة Wi-Fi وشبكات الجوَّال وأجهزة الاستشعار للموقع الجغرافي في إعدادات الموقع الجغرافي.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="7517569744831774757">إعادة الإعدادات إلى الحالة التلقائية الأصلية.</translation>
 <translation id="7517786267097410259">إنشاء كلمة مرور -</translation>
 <translation id="7518150891539970662">‏سجلات WebRTC‏ (<ph name="WEBRTC_LOG_COUNT" />)</translation>
@@ -4597,7 +4594,6 @@
 <translation id="8086015605808120405">جارٍ تهيئة <ph name="PRINTER_NAME" /> ...</translation>
 <translation id="8090234456044969073">قراءة قائمة بمواقع الويب التي تتردد عليها بكثرة</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> لا يستجيب.</translation>
-<translation id="8093832608898425674">‏يريد <ph name="DOMAIN" /> إثبات هوية جهازك من خلال Google لتحديد الأهلية للتشغيل المحسن للمحتوى المحمي. <ph name="LEARN_MORE" />.</translation>
 <translation id="80974698889265265">أرقام التعريف الشخصية غير متطابقة</translation>
 <translation id="8101987792947961127">‏يتطلب إجراء Powerwash بعد عملية إعادة التشغيل التالية</translation>
 <translation id="8102535138653976669">‏يزامن <ph name="PRODUCT_NAME" /> بياناتك مع حسابك في Google بشكل آمن. يمكنك مزامنة جميع العناصر أو تخصيص أنواع البيانات التي تتم مزامنتها وإعدادات التشفير.</translation>
@@ -5272,7 +5268,6 @@
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="9170884462774788842">‏أضاف برنامج آخر بجهاز الكمبيوتر مظهرًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
 <translation id="9173995187295789444">جارٍ البحث عن أجهزة بلوتوث...</translation>
-<translation id="9174212595744391062">سيؤدي هذا إلى مسح ملفات تعريف الارتباط وذاكرة التخزين المؤقت لجميع المواقع، بما في ذلك</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - جهاز البلوتوث متصل</translation>
 <translation id="9177499212658576372">إنك متصل حاليًا بشبكة <ph name="NETWORK_TYPE" />.</translation>
 <translation id="9180380851667544951">يمكن لموقع الويب مشاركة شاشتك.</translation>

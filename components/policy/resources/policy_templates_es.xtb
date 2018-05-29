@@ -87,6 +87,18 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Si se asigna el valor false a esta política, <ph name="PRODUCT_NAME" /> no permitirá que se inicien los perfiles de invitado.</translation>
 <translation id="1363275621236827384">Habilitar consultas a Quirks Server para los perfiles de hardware</translation>
+<translation id="1372267489642113556">
+      Si se habilita la política, cada uno de los orígenes especificados en una
+      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
+      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/
+      se aislará https://foo.example.com/ como parte del
+      sitio web https://example.com/).
+      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
+      Si no se configura la política, el usuario podrá cambiar esta opción.
+      En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+
+      NOTA: Esta política no se aplica a Android. Para habilitar IsolateOrigins en Android, utiliza la política IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Confiar o no en la infraestructura de clave pública antigua de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
@@ -163,6 +175,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre el servicio Navegación Segura.</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de forma predeterminada</translation>
+<translation id="1599424828227887013">Habilitar el aislamiento de sitios web específicos en dispositivos Android</translation>
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
 <translation id="1617235075406854669">Habilitar eliminación de historial de navegación y de descargas</translation>
 <translation id="163200210584085447">Los patrones de esta lista se compararán con el origen de seguridad
@@ -523,6 +536,10 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta opción, el usuario podrá decidir si quiere o no utilizar esta función.
 
       Esta opción se ha eliminado de la versión 29 y versiones posteriores de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2438609638493026652">Habilita el envío de informes de eventos clave durante la instalación de aplicaciones para Android a Google. Solo se registran eventos de aplicaciones cuya instalación haya provocado la política.
+
+      Si se le asigna el valor "True" a la política, se registrarán los eventos.
+      Si se le asigna el valor "False" o no se le asigna ningún valor, no se registrarán los eventos.</translation>
 <translation id="244317009688098048">Permite habilitar la combinación de teclas de rescate para el inicio de sesión automático.
 
       Si se utiliza el valor True para esta política o no se establece la política y se ha configurado una cuenta local de dispositivo para el inicio de sesión automático sin tiempo de espera, <ph name="PRODUCT_OS_NAME" /> omitirá el inicio de sesión automático y mostrará la pantalla de inicio de sesión al utilizar la combinación de teclas Ctrl+Alt+S.
@@ -1145,6 +1162,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4309640770189628899">Indica si se han habilitado los conjuntos de cifrado DHE en TLS</translation>
 <translation id="4322842393287974810">Permite que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Añadir un botón para cerrar sesión en la bandeja del sistema</translation>
+<translation id="4332177773549877617">Registrar eventos de descargas de aplicaciones para Android</translation>
 <translation id="4346674324214534449">Te permite decidir si se deberían bloquear los anuncios en los sitios web con anuncios invasivos.
 
       Si se le asigna el valor 2 a esta política, se bloquearán los anuncios en los sitios web con anuncios invasivos.

@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
 <translation id="1146678959555564648">Angiv VR</translation>
 <translation id="116280672541001035">Brugt</translation>
+<translation id="1172593791219290334">Opstartsside</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1197267115302279827">Flyt bogmærker</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Bogmærker og webhistorik</translation>
 <translation id="1513858653616922153">Slet adgangskoden</translation>
 <translation id="1516229014686355813">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan deaktivere funktionen i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Populært indhold</translation>
 <translation id="1539064842193522527">Der blev åbnet et link i Chrome</translation>
 <translation id="1549000191223877751">Flyt til et andet vindue</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Find på siden</translation>
 <translation id="1832521218263067499">Sikkerhedshændelser</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
+<translation id="1868024384445905608">Chrome downloader nu filer endnu hurtigere</translation>
 <translation id="1880072593381090678">Populære sider i Chrome</translation>
+<translation id="1883903952484604915">Mine filer</translation>
 <translation id="1887786770086287077">Placeringsadgang er deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Slå computerversionen af websitet til</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB af andre apps</translation>
 <translation id="2063713494490388661">Tryk for at søge</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 download mislykkedes}one{# download mislykkedes}other{# downloads mislykkedes}}</translation>
+<translation id="2074837478271106772">Downloader <ph name="COUNT" /> filer (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Fortryd</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> af <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Log ind på Chrome for at hente brugertilpasset indhold, som er foreslået af Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3148434565183091099">Log ind på Chrome for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="3157842584138209013">Se, hvor meget data du har gemt via knappen Flere valgmuligheder</translation>
+<translation id="3165725985537150202">Downloader filen (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Genveje på faner og i vinduer</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
@@ -566,6 +573,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="618555311922999635">Navigationspanelet er helt åbnet</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
+<translation id="6196868727350051527">Downloader hurtigere</translation>
 <translation id="6210748933810148297">Er det ikke <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Valgmuligheder for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Lås op for at eksportere dine adgangskoder</translation>
@@ -637,6 +645,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6846298663435243399">Indlæser…</translation>
+<translation id="6850409657436465440">Der downloades stadig</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner blev lukket</translation>
 <translation id="6864459304226931083">Download billede</translation>
 <translation id="6865313869410766144">Formulardata for AutoFyld</translation>
@@ -683,6 +692,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7189372733857464326">Venter på, at Google Play-tjenester er opdateret</translation>
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7191430249889272776">Fanen blev åbnet i baggrunden.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 download afventer}one{# download afventer}other{# downloads afventer}}</translation>
 <translation id="723171743924126238">Vælg billeder</translation>
 <translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er markeret</translation>
@@ -757,6 +767,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7882131421121961860">Der blev ikke fundet nogen historik</translation>
 <translation id="7882806643839505685">Tillad, at et bestemt website afspiller lyd.</translation>
 <translation id="7929962904089429003">Åbn menuen</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 download er gennemført}one{# download er gennemført}other{# downloads er gennemført}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er forældet.</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7963646190083259054">Leverandør:</translation>
@@ -799,6 +810,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8266862848225348053">Downloadplacering</translation>
 <translation id="8283853025636624853">Synkroniserer til <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardfaner</translation>
+<translation id="8313455859591948645">Rediger opstartsside</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> og andre websites</translation>
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>
 <translation id="8363501664269050863">Navigationspanel. Stryg nedad for at lukke.</translation>
@@ -887,6 +899,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9139068048179869749">Spørg om tilladelse, før websites sender underretninger (anbefales)</translation>
 <translation id="9155898266292537608">Du kan også søge med et hurtigt tryk på et ord</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Downloader filen}one{Downloader # fil}other{Downloader # filer}}</translation>
 <translation id="9204836675896933765">1 fil tilbage</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Billeder</translation>

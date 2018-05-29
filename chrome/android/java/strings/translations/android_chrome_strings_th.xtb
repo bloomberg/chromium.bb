@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
 <translation id="1146678959555564648">เข้าสู่ VR</translation>
 <translation id="116280672541001035">ใช้ไป</translation>
+<translation id="1172593791219290334">หน้าเริ่มต้นใช้งาน</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">ลบ</translation>
 <translation id="1197267115302279827">ย้ายบุ๊กมาร์ก</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">บุ๊กมาร์กและประวัติเว็บ</translation>
 <translation id="1513858653616922153">ลบรหัสผ่าน</translation>
 <translation id="1516229014686355813">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณปิดฟีเจอร์นี้ในได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
+<translation id="1521008027388393450">เนื้อหายอดนิยม</translation>
 <translation id="1539064842193522527">เปิดลิงก์ใน Chrome แล้ว</translation>
 <translation id="1549000191223877751">ย้ายไปยังหน้าต่างอื่น</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">ค้นหาในหน้าเว็บ</translation>
 <translation id="1832521218263067499">เหตุการณ์ด้านความปลอดภัย</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
+<translation id="1868024384445905608">ตอนนี้ Chrome ดาวน์โหลดไฟล์ได้เร็วขึ้นแล้ว</translation>
 <translation id="1880072593381090678">หน้ายอดนิยมจาก Chrome</translation>
+<translation id="1883903952484604915">ไฟล์ของฉัน</translation>
 <translation id="1887786770086287077">ตอนนี้ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> จะเปิดขึ้นใน Chrome การดำเนินการต่อแสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
 <translation id="2063713494490388661">แตะเพื่อค้นหา</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{ดาวน์โหลด 1 รายการไม่สำเร็จ}other{ดาวน์โหลด # รายการไม่สำเร็จ}}</translation>
+<translation id="2074837478271106772">กำลังดาวน์โหลด <ph name="COUNT" /> ไฟล์ (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
 <translation id="2086652334978798447">หากต้องการรับคำแนะนำเนื้อหาที่เหมาะสำหรับคุณจาก Google ให้ลงชื่อเข้าใช้ Chrome</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3148434565183091099">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3157842584138209013">ดูปริมาณอินเทอร์เน็ตที่คุณประหยัดไปได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
+<translation id="3165725985537150202">กำลังดาวน์โหลดไฟล์ (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">แป้นพิมพ์ลัดสำหรับแท็บและหน้าต่าง</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
@@ -566,6 +573,7 @@
 <translation id="618555311922999635">แผงการนำทางเปิดที่ระดับความสูงเต็มหน้าจอ</translation>
 <translation id="6192333916571137726">ดาวน์โหลดไฟล์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
+<translation id="6196868727350051527">กำลังเพิ่มความเร็วในการดาวน์โหลด</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
 <translation id="6216432067784365534">ตัวเลือกสำหรับ<ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">ปลดล็อกเพื่อส่งออกรหัสผ่าน</translation>
@@ -637,6 +645,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6846298663435243399">กำลังโหลด…</translation>
+<translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
@@ -683,6 +692,7 @@
 <translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
 <translation id="7189598951263744875">แชร์...</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{ดาวน์โหลดรอดำเนินการ 1 รายการ}other{ดาวน์โหลดรอดำเนินการ # รายการ}}</translation>
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7250468141469952378">เลือกไว้ <ph name="ITEM_COUNT" /> รายการ</translation>
@@ -757,6 +767,7 @@
 <translation id="7882131421121961860">ไม่พบประวัติ</translation>
 <translation id="7882806643839505685">อนุญาตให้ไซต์ที่ต้องการเล่นเสียงได้</translation>
 <translation id="7929962904089429003">เปิดเมนู</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{ดาวน์โหลด 1 รายการเสร็จสมบูรณ์}other{ดาวน์โหลด # รายการเสร็จสมบูรณ์}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
@@ -799,6 +810,7 @@
 <translation id="8266862848225348053">ตำแหน่งที่ดาวน์โหลด</translation>
 <translation id="8283853025636624853">กำลังซิงค์กับ <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">แท็บมาตรฐาน</translation>
+<translation id="8313455859591948645">แก้ไขหน้าเริ่มต้นใช้งาน</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> และเว็บไซต์อื่นๆ</translation>
 <translation id="8339163506404995330">ระบบจะไม่แปลหน้าเว็บภาษา<ph name="LANGUAGE" /></translation>
 <translation id="8363501664269050863">แผงการนำทาง เลื่อนลงเพื่อปิด</translation>
@@ -887,6 +899,7 @@
 <translation id="9139068048179869749">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{กำลังดาวน์โหลดไฟล์}other{กำลังดาวน์โหลด # ไฟล์}}</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">ภาพ</translation>

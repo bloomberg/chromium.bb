@@ -660,6 +660,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> ला तुमच्या स्थानिक काँप्युटरवर मोठ्या प्रमाणावर डेटा कायमचा स्टोअर करायचा आहे</translation>
 <translation id="1997616988432401742">तुमची प्रमाणपत्रे</translation>
 <translation id="1999115740519098545">स्टार्टअप वर</translation>
+<translation id="2001796770603320721">ड्राइव्ह मध्ये व्यवस्थापित करा</translation>
 <translation id="2006638907958895361">लिंक <ph name="APP" /> मध्ये उघडा</translation>
 <translation id="2007404777272201486">समस्या नोंदवा...</translation>
 <translation id="2016430552235416146">पारंपारिक</translation>
@@ -1275,7 +1276,6 @@
 <translation id="2948300991547862301"><ph name="PAGE_TITLE" /> वर जा</translation>
 <translation id="2948320633360386059">अनाहूत जाहिराती दाखवणे सुरू ठेवलेल्या साइटवर ब्लॉक केले आहे</translation>
 <translation id="29488703364906173">हे आधुनिक वेबसाठी बनविलेले जलद, सोपे आणि सुरक्षित वेब ब्राउझर आहे.</translation>
-<translation id="2949037475046662832">हे कुकी आणि सर्व साइटसाठींचा साइट डेटा साफ करेल, ज्यात असेल</translation>
 <translation id="2951247061394563839">विंडो मध्यभागी आणा</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> कुकीज</translation>
 <translation id="2958721676848865875">पॅक विस्तार चेतावणी</translation>
@@ -2087,6 +2087,7 @@
 <translation id="42137655013211669">सर्व्हरद्वारे या स्त्रोतामधील प्रवेश निषिद्ध केला होता.</translation>
 <translation id="4215350869199060536">अरेरे, नावात बेकायदेशीर चिन्हे आहेत!</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> चा बॅकअप घेत आहे</translation>
+<translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4225397296022057997">सर्व साइटवर</translation>
 <translation id="4235200303672858594">संपूर्ण स्क्रीन</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" /> साठी खाते जोडा</translation>
@@ -2199,6 +2200,7 @@
 <translation id="4425149324548788773">माझा ड्राइव्ह</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4430369329743628066">बुकमार्क जोडला</translation>
+<translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
 <translation id="443454694385851356">लेगसी (असुरक्षित)</translation>
 <translation id="443464694732789311">सुरु ठेवा</translation>
 <translation id="443475966875174318">कंपॅटिबल नसलेली अॅप्लिकेशन अपडेट करा किंवा काढून टाका</translation>
@@ -3530,7 +3532,6 @@
 <translation id="6459488832681039634">शोधण्यासाठी निवड वापरा</translation>
 <translation id="6459799433792303855">अॅक्टिव्ह विंडो दुसऱ्या डिस्प्लेवर हलवली आहे.</translation>
 <translation id="6460601847208524483">पुढील शोधा</translation>
-<translation id="6462082050341971451">आपण अद्याप तिथे आहात?</translation>
 <translation id="6463795194797719782">&amp;संपादन</translation>
 <translation id="6466988389784393586">सर्व बुकमार्क &amp;उघडा</translation>
 <translation id="6468485451923838994">फॉन्ट</translation>
@@ -3898,6 +3899,7 @@
 <translation id="7052237160939977163">कार्यप्रदर्शन ट्रेस डेटा पाठवा</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
+<translation id="7055152154916055070">रीडिरेक्ट ब्लॉक केले:</translation>
 <translation id="7056526158851679338">&amp;निरीक्षण डिव्हाइसेस</translation>
 <translation id="7059858479264779982">स्वयं-लाँच करा वर सेट करा</translation>
 <translation id="7059893117020417984">खाजगीरीत्या ब्राउझ करण्यासाठी, गुप्त विंडो उघडण्याकरता डॉट्स आयकन मेनुवर क्लिक करा</translation>
@@ -4164,7 +4166,6 @@
 <translation id="7477347901712410606">आपण आपला सांकेतिक वाक्यांश विसरला असल्यास, थांबा आणि <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> द्वारे समक्रमण रीसेट करा.</translation>
 <translation id="7477746269122340519">या वापरकर्त्‍याला तुमच्‍या प्रशासकाने बंद केले आहे.</translation>
 <translation id="7478485216301680444">कियोस्क अॅप्लिकेशन इंस्टॉल केला जाऊ शकला नाही.</translation>
-<translation id="7479479221494776793">आपण काहीच न करणे सुरु ठेवल्यास, आपल्याला <ph name="LOGOUT_TIME_LEFT" /> मध्ये साइन आउट केले जाईल.</translation>
 <translation id="7481312909269577407">पुढील</translation>
 <translation id="748138892655239008">प्रमाणपत्र मूळ प्रतिबंध</translation>
 <translation id="7484964289312150019">सर्व बुकमार्क &amp;नवीन विंडोमध्ये उघडा</translation>
@@ -4263,6 +4264,7 @@
 <translation id="7617366389578322136">"<ph name="DEVICE_NAME" />" यावर कनेक्ट करीत आहे</translation>
 <translation id="7622114377921274169">चार्ज होत आहे.</translation>
 <translation id="7624337243375417909">कॅप्सलॉक बंद आहे</translation>
+<translation id="7625568159987162309">परवानग्या आणि साइटवर स्टोअर केलेला डेटा पहा</translation>
 <translation id="7627790789328695202">अरेरे, <ph name="FILE_NAME" /> आधीपासून अस्तित्वात आहे. हे पुनर्नामित करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="7628127343934101653">डीफॉल्ट PDF दर्शक अनुप्रयोगात PDF फायली उघडा.</translation>
 <translation id="7629827748548208700">टॅब: <ph name="TAB_NAME" /></translation>
@@ -4584,6 +4586,7 @@
 <translation id="806812017500012252">शीर्षकानुसार पुन्हा क्रमवारी लावा</translation>
 <translation id="8068253693380742035">साइन इन साठी स्पर्श करा</translation>
 <translation id="8069615408251337349">Google क्लाउड प्रिंट</translation>
+<translation id="806972267388474605">Linux फायली</translation>
 <translation id="8071432093239591881">इमेज म्हणून प्रिंट करा</translation>
 <translation id="8072988827236813198">पिन टॅब</translation>
 <translation id="8074127646604999664">अलीकडे बंद केलेल्या साइटना डेटा पाठविणे आणि प्राप्त करणे समाप्त करण्याची अनुमती द्या</translation>
@@ -4598,7 +4601,6 @@
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> कॉन्फिगर करत आहे...</translation>
 <translation id="8090234456044969073">आपल्‍या सर्वाधिक वारंवार भेट दिलेल्‍या वेबसाइटची सूची वाचा</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> प्रतिसाद देत नाही</translation>
-<translation id="8093832608898425674">अधिक चांगल्या प्लेबॅकसाठीच्या संरक्षित आशयाची पात्रता ठरवण्यासाठी <ph name="DOMAIN" /> ला तुमच्या डीव्हाइसची Googleकडून ओळख पडताळणी करून हवी आहे. <ph name="LEARN_MORE" />.</translation>
 <translation id="80974698889265265">पिन जुळत नाहीत</translation>
 <translation id="8101987792947961127">पुढील रीबूटवर Powerwash आवश्यक</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME" /> आपल्या Google खात्यासह आपला डेटा सुरक्षितपणे संंकालित करते. सर्वकाही संंकालित केलेले ठेवा किंवा संंकालित डेटा प्रकार आणि कूटबद्धीकरण सेटिंग्ज सानुकूल करा.</translation>
@@ -5274,7 +5276,6 @@
 <translation id="9170848237812810038">&amp;पूर्ववत करा</translation>
 <translation id="9170884462774788842">आपल्या संगणकावरील दुसऱ्या प्रोग्रामने Chrome च्या कार्य करण्याचा मार्ग बदलू शकणारी थीम जोडली.</translation>
 <translation id="9173995187295789444">ब्लूटूथ डिव्हाइससाठी स्कॅन करत आहे...</translation>
-<translation id="9174212595744391062">हे यासह, सर्व साइटसाठी कुकीज आणि कॅशे साफ करेल</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Bluetooth डिव्हाइस कनेक्ट केले</translation>
 <translation id="9177499212658576372">आपण सध्या <ph name="NETWORK_TYPE" /> नेटवर्कशी कनेक्ट केले आहे.</translation>
 <translation id="9180380851667544951">साइट तुमची स्क्रीन शेअर करू शकते</translation>

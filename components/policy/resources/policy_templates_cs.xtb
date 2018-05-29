@@ -87,6 +87,14 @@ Hodnota prodloužení musí být 100 % nebo více.</translation>
 
 Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vytváření profilů hosta nepovolí.</translation>
 <translation id="1363275621236827384">Povolit dotazy na server Quirks pro hardwarové profily</translation>
+<translation id="1372267489642113556">
+      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami poběží ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
+      Pokud tuto zásadu zakážete, nebude docházet k žádné explicitní izolaci webů a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé však zásadu IsolateOrigins budou moci aktivovat ručně.
+      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
+      V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Pokud se hodnoty obou zásad nebudou shodovat, při zahájení uživatelské relace může dojít k prodlevě, zatímco se bude přecházet na hodnotu nastavenou zásadou pro uživatele.
+
+      POZNÁMKA: Tato zásada nefunguje na zařízeních Android. K aktivaci zásady IsolateOrigins na zařízeních Android použijte zásadu IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Zda důvěřovat starší infrastruktuře PKI od společnosti Symantec</translation>
 <translation id="1393485621820363363">Povolené podnikové tiskárny pro zařízení</translation>
@@ -157,6 +165,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 
       Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1599424828227887013">Aktivovat izolaci webů u určených zdrojů na zařízeních Android</translation>
 <translation id="1608755754295374538">Adresy URL, kterým bude udělen přístup pro záznam zvuku bez zobrazení výzvy</translation>
 <translation id="1617235075406854669">Aktivovat smazání historie prohlížeče a stahování</translation>
 <translation id="163200210584085447">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, bude na přihlašovacích stránkách SAML udělen přístup k zařízením pro záznam videa. Pokud shoda nalezena nebude, přístup bude automaticky odepřen. Vzory se zástupnými znaky nejsou povoleny.</translation>
@@ -499,6 +508,10 @@ Pokud tuto zásadu aktivujete nebo deaktivujete, uživatelé je nebudou moci zm�
 Pokud toto nastavení ponecháte nenastavené, uživatelé se budou moci rozhodnout, zda tuto funkci chtějí používat.
 
 Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo toto nastavení odebráno.</translation>
+<translation id="2438609638493026652">Umožňuje hlášení zásadních událostí během instalace aplikací pro Android do Googlu. Události se zaznamenávají pouze pro aplikace, jejichž instalace byla spuštěna prostřednictvím zásady.
+
+      Pokud je tato zásada nastavena na hodnotu true, budou se události protokolovat.
+      Pokud je tato zásada nastavena na hodnotu false nebo není nastavena, události se protokolovat nebudou.</translation>
 <translation id="244317009688098048">Bude aktivována nouzová klávesová zkratka pro automatické přihlašování.
 
       Pokud tato zásada není nastavena nebo má hodnotu True a místní účet v zařízení je nakonfigurován na automatické přihlašování s nulovou prodlevou, systém <ph name="PRODUCT_OS_NAME" /> bude sledovat klávesovou zkratku Ctrl+Alt+S, pomocí které bude možné obejít automatické přihlášení a zobrazit přihlašovací obrazovku.
@@ -1109,6 +1122,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 <translation id="4309640770189628899">Zda jsou v protokolu TLS povoleny šifrovací sady DHE</translation>
 <translation id="4322842393287974810">Povolit automaticky spouštěné terminálové aplikaci s nulovým zpožděním ovládat verzi systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
+<translation id="4332177773549877617">Protokolovat události při instalaci aplikací pro Android</translation>
 <translation id="4346674324214534449">Umožňuje nastavit, zda mají být blokovány reklamy na webech s rušivými reklamami.
 
       Je-li tato zásada nastavena na hodnotu 2, budou reklamy na webech s rušivými reklamami blokovány.

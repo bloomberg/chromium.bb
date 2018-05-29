@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Meglévő adatok törlése.</translation>
 <translation id="1146678959555564648">Virtuális valóság – belépés</translation>
 <translation id="116280672541001035">Használt</translation>
+<translation id="1172593791219290334">Kezdőoldal</translation>
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1197267115302279827">Könyvjelzők áthelyezése</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
 <translation id="1513858653616922153">Jelszó törlése</translation>
 <translation id="1516229014686355813">A Keresés koppintással funkció elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> lehet kikapcsolni.</translation>
+<translation id="1521008027388393450">Népszerű tartalom</translation>
 <translation id="1539064842193522527">Link Chrome-ban megnyitva</translation>
 <translation id="1549000191223877751">Áthelyezés másik ablakba</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
 <translation id="1832521218263067499">Biztonsággal kapcsolatos események</translation>
 <translation id="1853692000353488670">Új inkognitólap</translation>
+<translation id="1868024384445905608">Mostantól a Chrome gyorsabban tölti le a fájlokat</translation>
 <translation id="1880072593381090678">Népszerű oldalak a Chrome-ból</translation>
+<translation id="1883903952484604915">Saját fájlok</translation>
 <translation id="1887786770086287077">A helyhozzáférés ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
 <translation id="1891331835972267886">A(z) <ph name="APP_NAME" /> a Chrome-ban nyílik meg. A folytatással elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />Adatvédelmi közleményét<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB más alkalmazások által</translation>
 <translation id="2063713494490388661">A Keresés koppintással funkció</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 letöltés nem sikerült}other{# letöltés nem sikerült}}</translation>
+<translation id="2074837478271106772"><ph name="COUNT" /> fájl letöltése folyamatban (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="2082238445998314030">Eredmény: <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">A Google által javasolt, személyre szabott tartalmak fogadásához jelentkezzen be a Chrome-ba.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Kilépés inkognitómódból</translation>
 <translation id="3148434565183091099">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chrome-ba.</translation>
 <translation id="3157842584138209013">A További lehetőségek gombra kattintva tekintheti meg, hogy mekkora a megtakarított adatmennyiség</translation>
+<translation id="3165725985537150202">Fájl letöltése folyamatban (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Lapokkal és ablakokkal kapcsolatos billentyűparancsok</translation>
 <translation id="3190152372525844641">A Chrome-ra vonatkozó engedélyek aktiválása az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tárolt adat</translation>
@@ -566,6 +573,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="618555311922999635">Navigációs panel megnyitva teljes magasságban</translation>
 <translation id="6192333916571137726">Fájl letöltése</translation>
 <translation id="6192792657125177640">Kivételek</translation>
+<translation id="6196868727350051527">Felgyorsítja a letöltést</translation>
 <translation id="6210748933810148297">Nem <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – lehetőségek</translation>
 <translation id="6221633008163990886">A zárolás feloldásával exportálhatja a jelszavait</translation>
@@ -637,6 +645,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="6846298663435243399">Betöltés…</translation>
+<translation id="6850409657436465440">A letöltés még mindig folyamatban van</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> lap bezárva</translation>
 <translation id="6864459304226931083">Kép letöltése</translation>
 <translation id="6865313869410766144">Automatikus kitöltési űrlapadatok</translation>
@@ -683,6 +692,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7189372733857464326">Várakozás a Google Play-szolgáltatások frissítésének befejezésére</translation>
 <translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7191430249889272776">A lap megnyílt a háttérben.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 letöltés függőben}other{# letöltés függőben}}</translation>
 <translation id="723171743924126238">Képek kiválasztása</translation>
 <translation id="7243308994586599757">A beállítások a képernyő alsó részén találhatók</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elem kiválasztva</translation>
@@ -757,6 +767,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7882131421121961860">Nincsenek előzmények</translation>
 <translation id="7882806643839505685">Egy adott webhely hangjának engedélyezése.</translation>
 <translation id="7929962904089429003">A menü megnyitása</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 letöltés befejeződött}other{# letöltés befejeződött}}</translation>
 <translation id="7942131818088350342">A(z) <ph name="PRODUCT_NAME" /> elavult.</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
@@ -799,6 +810,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8266862848225348053">Letöltés helye</translation>
 <translation id="8283853025636624853">Szinkronizálás a következővel: <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Szabványos lapok</translation>
+<translation id="8313455859591948645">Kezdőoldal szerkesztése</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> és további webhelyek</translation>
 <translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8363501664269050863">Navigációs panel. Csúsztassa le a bezáráshoz.</translation>
@@ -887,6 +899,7 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="9139068048179869749">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára az értesítések küldését (ajánlott)</translation>
 <translation id="9155898266292537608">Úgy is végrehajthat keresést, hogy gyorsan rákoppint valamelyik szóra</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Fájl letöltése}other{# fájl letöltése}}</translation>
 <translation id="9204836675896933765">1 fájl maradt</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Képek</translation>

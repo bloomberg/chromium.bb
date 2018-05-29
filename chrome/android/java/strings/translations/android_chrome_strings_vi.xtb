@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Xóa dữ liệu hiện có.</translation>
 <translation id="1146678959555564648">Nhập VR</translation>
 <translation id="116280672541001035">Đã sử dụng</translation>
+<translation id="1172593791219290334">Trang khởi động</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
 <translation id="1513858653616922153">Xóa mật khẩu</translation>
 <translation id="1516229014686355813">Tính năng Nhấn để tìm kiếm sẽ gửi từ đã chọn và trang hiện tại dưới dạng ngữ cảnh cho Google Tìm kiếm. Bạn có thể tắt tính năng này trong mục <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Nội dung phổ biến</translation>
 <translation id="1539064842193522527">Đã mở liên kết trong Chrome</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Tìm trong trang</translation>
 <translation id="1832521218263067499">Sự cố bảo mật</translation>
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
+<translation id="1868024384445905608">Giờ đây, Chrome tải tệp xuống còn nhanh hơn nữa</translation>
 <translation id="1880072593381090678">Trang phổ biến từ Chrome</translation>
+<translation id="1883903952484604915">Tệp của tôi</translation>
 <translation id="1887786770086287077">Đã tắt quyền truy cập vị trí đối với thiết bị này. Hãy bật trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="2045104531052923016">Các ứng dụng khác chiếm <ph name="GIGABYTES" /> GB</translation>
 <translation id="2063713494490388661">Nhấn để tìm kiếm</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 tệp tải xuống không thành công}other{# tệp tải xuống không thành công}}</translation>
+<translation id="2074837478271106772">Đang tải <ph name="COUNT" /> tệp xuống (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Để nhận nội dung được cá nhân hóa do Google đề xuất, hãy đăng nhập vào Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
 <translation id="3148434565183091099">Để nhận dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="3157842584138209013">Xem lượng dữ liệu bạn đã tiết kiệm được từ nút Tùy chọn khác</translation>
+<translation id="3165725985537150202">Đang tải tệp xuống (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Phím tắt dành cho tab và cửa sổ</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> dữ liệu được lưu trữ</translation>
@@ -566,6 +573,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="618555311922999635">Đã mở bảng điều hướng trên toàn bộ màn hình</translation>
 <translation id="6192333916571137726">Tải tệp xuống</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
+<translation id="6196868727350051527">Đang tăng tốc độ tải xuống</translation>
 <translation id="6210748933810148297">Không phải là <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Tùy chọn <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Mở khóa để xuất mật khẩu của bạn</translation>
@@ -637,6 +645,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="6846298663435243399">Đang tải…</translation>
+<translation id="6850409657436465440">Vẫn đang tải xuống</translation>
 <translation id="6850830437481525139">Đã đóng <ph name="TAB_COUNT" /> tab</translation>
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu biểu mẫu tự động điền</translation>
@@ -683,6 +692,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7189372733857464326">Đợi Dịch vụ của Google Play cập nhật xong</translation>
 <translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 tệp đang chờ tải xuống}other{# tệp đang chờ tải xuống}}</translation>
 <translation id="723171743924126238">Chọn hình ảnh</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
 <translation id="7250468141469952378">Đã chọn <ph name="ITEM_COUNT" /> mục</translation>
@@ -757,6 +767,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7882131421121961860">Không tìm thấy lịch sử nào</translation>
 <translation id="7882806643839505685">Cho phép phát âm thanh trên một trang web cụ thể.</translation>
 <translation id="7929962904089429003">Mở menu</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 tệp tải xuống đã hoàn tất}other{# tệp tải xuống đã hoàn tất}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> đã lỗi thời.</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="7963646190083259054">Nhà cung cấp:</translation>
@@ -799,6 +810,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8266862848225348053">Vị trí tải xuống</translation>
 <translation id="8283853025636624853">Đang đồng bộ hóa với <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Tab chuẩn</translation>
+<translation id="8313455859591948645">Chỉnh sửa trang khởi động</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> và các trang web khác</translation>
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
 <translation id="8363501664269050863">Bảng điều hướng. Vuốt xuống để đóng.</translation>
@@ -887,6 +899,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9139068048179869749">Hỏi trước khi cho phép trang web gửi thông báo (được đề xuất)</translation>
 <translation id="9155898266292537608">Bạn cũng có thể tìm kiếm bằng cách nhấn nhanh vào một từ</translation>
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Đang tải tệp xuống}other{Đang tải # tệp xuống}}</translation>
 <translation id="9204836675896933765">Còn lại 1 tệp</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>

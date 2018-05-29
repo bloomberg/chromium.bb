@@ -264,15 +264,18 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6723839937902243910">Toide</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
+<translation id="6820676911989879663">Tehke paus!</translation>
 <translation id="683971173229319003">Otsing + L</translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="698231206551913481">Kõik selle kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui see kasutaja eemaldatakse.</translation>
+<translation id="7015766095477679451">Tulge tagasi kell <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Välju seansist</translation>
 <translation id="7034339000180558234">Vahelehe <ph name="TAB_NAME" /> ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">Teie administraator on selle võrgu keelanud.</translation>
 <translation id="7067196344162293536">Automaatne pööramine</translation>
+<translation id="7076293881109082629">Sisselogimine</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
 <translation id="7131634465328662194">Teid logitakse automaatselt välja.</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>

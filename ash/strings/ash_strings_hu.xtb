@@ -264,15 +264,18 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6723839937902243910">Energiaellátás</translation>
 <translation id="6785414152754474415">Az akkumulátor töltöttsége <ph name="PERCENTAGE" />%, és töltődik.</translation>
 <translation id="6803622936009808957">A kijelzők tükrözése sikertelen, mivel nem található támogatott felbontás. Ehelyett kiterjesztett asztal módba váltott a rendszer.</translation>
+<translation id="6820676911989879663">Tartson egy kis szünetet!</translation>
 <translation id="683971173229319003">Keresés+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
 <translation id="6911468394164995108">Csatlakozás másik hálózathoz...</translation>
 <translation id="6981982820502123353">Kisegítő lehetőségek</translation>
 <translation id="698231206551913481">A felhasználó eltávolításakor az összes hozzá tartozó fájl és helyi adat is véglegesen törlődik.</translation>
+<translation id="7015766095477679451">Térjen vissza ekkor: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Kilépés a munkamenetből</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> átküldése ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7067196344162293536">Automatikus forgatás</translation>
+<translation id="7076293881109082629">Bejelentkezés</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
 <translation id="7131634465328662194">A rendszer automatikusan kijelentkezteti.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>

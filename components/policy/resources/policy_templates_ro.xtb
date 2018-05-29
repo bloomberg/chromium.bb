@@ -88,6 +88,18 @@
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea profilurilor pentru invitați.</translation>
 <translation id="1363275621236827384">Activează interogările către Quirks Server pentru profilurile hardware</translation>
+<translation id="1372267489642113556">
+      Dacă politica este activată, fiecare dintre originile indicate
+      într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va
+      izola, de asemenea, originile denumite după subdomenii; de exemplu, specificarea
+      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte a
+      site-ului https://example.com/site.
+      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
+
+      NOTĂ: această politică nu se aplică pentru Android. Pentru a activa IsolateOrigins pe Android, folosește setarea politicii IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Referință: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
@@ -166,6 +178,7 @@
 
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="1583248206450240930">Utilizează <ph name="PRODUCT_FRAME_NAME" /> în mod prestabilit</translation>
+<translation id="1599424828227887013">Activează Izolarea site-ului pentru originile specificate pe dispozitive Android</translation>
 <translation id="1608755754295374538">Adresele URL cărora li se va acorda acces automat la dispozitivele de capturare a conținutului audio</translation>
 <translation id="1617235075406854669">Permite ștergerea istoricului browserului și a istoricului descărcărilor</translation>
 <translation id="163200210584085447">Șabloanele din această listă vor fi comparate cu
@@ -515,6 +528,10 @@
       Dacă această setare nu este configurată, utilizatorul poate alege să folosească sau nu această funcție.
 
       Această setare a fost eliminată din <ph name="PRODUCT_NAME" /> versiunea 29 și din versiunile ulterioare.</translation>
+<translation id="2438609638493026652">Activează raportarea evenimentelor cheie la Google în timpul instalării aplicației pentru Android. Evenimentele sunt înregistrate numai pentru aplicațiile a căror instalare a fost declanșată în baza politicii.
+
+      Dacă politica este activată, vor fi înregistrate evenimente.
+      Dacă politica este dezactivată sau nu este configurată, nu vor fi înregistrate evenimente.</translation>
 <translation id="244317009688098048">Activați comanda rapidă de la tastatură de rezervă pentru conectarea automată.
 
       Dacă această politică nu este configurată sau este activată și un cont local de pe dispozitiv este configurat pentru conectarea automată fără întârziere, <ph name="PRODUCT_OS_NAME" /> va executa comanda rapidă de la tastatură Ctrl+Alt+S pentru a ocoli conectarea automată și pentru a afișa ecranul de conectare.
@@ -875,7 +892,7 @@
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
 <translation id="3653237928288822292">Pictogramă pentru furnizorul de căutare prestabilit</translation>
 <translation id="3660562134618097814">Transferă cookie-urile unui furnizor de identitate SAML în timpul conectării</translation>
-<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Câmpul cu o singură linie este învechit și va fi eliminat în viitor. Începe să folosești caseta text cu mai multe linii de mai jos.)</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Câmpul cu un singur rând este învechit și va fi eliminat în viitor. Începe să folosești caseta text cu mai multe rânduri de mai jos.)</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
 <translation id="3715569262675717862">Autentificare pe baza certificatelor de client</translation>
@@ -1116,6 +1133,7 @@
 <translation id="4309640770189628899">Specifică dacă suitele de codificare DHE din TLS sunt activate</translation>
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
+<translation id="4332177773549877617">Înregistrează evenimente pentru instalările aplicației pentru Android</translation>
 <translation id="4346674324214534449">Îți permite să setezi dacă anunțurile trebuie blocate pe site-urile cu anunțuri deranjante.
 
       Dacă această valoare este setată la 2, anunțurile vor fi blocate pe site-urile cu anunțuri deranjante.
