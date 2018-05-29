@@ -102,13 +102,10 @@ class WorkerThreadForTest : public WorkerThread {
       ParentExecutionContextTaskRunners* parent_execution_context_task_runners,
       const KURL& script_url = KURL("http://fake.url/"),
       WorkerClients* worker_clients = nullptr) {
-    auto headers = std::make_unique<Vector<CSPHeaderAndType>>();
-    CSPHeaderAndType header_and_type("contentSecurityPolicy",
-                                     kContentSecurityPolicyHeaderTypeReport);
-    headers->push_back(header_and_type);
-
+    Vector<CSPHeaderAndType> headers{
+        {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, ScriptType::kClassic, "fake user agent", headers.get(),
+        script_url, ScriptType::kClassic, "fake user agent", headers,
         kReferrerPolicyDefault, security_origin,
         false /* starter_secure_context */, worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,

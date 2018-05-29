@@ -277,7 +277,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
                                                           : ScriptType::kModule;
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, script_type, GetExecutionContext()->UserAgent(),
-      GetExecutionContext()->GetContentSecurityPolicy()->Headers().get(),
+      GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
       kReferrerPolicyDefault, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(), CreateWorkerClients(),
       GetExecutionContext()->GetSecurityContext().AddressSpace(),

@@ -13,7 +13,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
     ScriptType script_type,
     const String& user_agent,
-    const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
+    const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
     ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,
     bool starter_secure_context,
@@ -41,14 +41,11 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       module_responses_map(module_responses_map),
       interface_provider(std::move(interface_provider_info)),
       begin_frame_provider_params(std::move(begin_frame_provider_params)) {
-  this->content_security_policy_parsed_headers =
-      std::make_unique<Vector<CSPHeaderAndType>>();
-  if (content_security_policy_parsed_headers) {
-    for (const auto& header : *content_security_policy_parsed_headers) {
-      CSPHeaderAndType copied_header(header.first.IsolatedCopy(),
-                                     header.second);
-      this->content_security_policy_parsed_headers->push_back(copied_header);
-    }
+  this->content_security_policy_parsed_headers.ReserveInitialCapacity(
+      content_security_policy_parsed_headers.size());
+  for (const auto& header : content_security_policy_parsed_headers) {
+    this->content_security_policy_parsed_headers.emplace_back(
+        header.first.IsolatedCopy(), header.second);
   }
 
   this->origin_trial_tokens = std::make_unique<Vector<String>>();

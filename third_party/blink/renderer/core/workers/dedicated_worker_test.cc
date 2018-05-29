@@ -125,15 +125,13 @@ class DedicatedWorkerMessagingProxyForTest
   void StartWithSourceCode(const String& source) {
     KURL script_url("http://fake.url/");
     security_origin_ = SecurityOrigin::Create(script_url);
-    auto headers = std::make_unique<Vector<CSPHeaderAndType>>();
-    CSPHeaderAndType header_and_type("contentSecurityPolicy",
-                                     kContentSecurityPolicyHeaderTypeReport);
-    headers->push_back(header_and_type);
+    Vector<CSPHeaderAndType> headers{
+        {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
         ToDocument(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, ScriptType::kClassic, "fake user agent", headers.get(),
+            script_url, ScriptType::kClassic, "fake user agent", headers,
             kReferrerPolicyDefault, security_origin_.get(),
             false /* starter_secure_context */, nullptr /* worker_clients */,
             mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,

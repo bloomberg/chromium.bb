@@ -353,7 +353,7 @@ WorkerGlobalScope::WorkerGlobalScope(
   }
   SetSecurityOrigin(std::move(security_origin));
   ApplyContentSecurityPolicyFromVector(
-      *creation_params->content_security_policy_parsed_headers);
+      creation_params->content_security_policy_parsed_headers);
   SetWorkerSettings(std::move(creation_params->worker_settings));
   SetReferrerPolicy(creation_params->referrer_policy);
   SetAddressSpace(creation_params->address_space);

@@ -335,8 +335,8 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
           url_, script_type, document->UserAgent(),
-          content_security_policy ? content_security_policy->Headers().get()
-                                  : nullptr,
+          content_security_policy ? content_security_policy->Headers()
+                                  : Vector<CSPHeaderAndType>(),
           referrer_policy, starter_origin, starter_secure_context,
           worker_clients, main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), devtools_worker_token_,

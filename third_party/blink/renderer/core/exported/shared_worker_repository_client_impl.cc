@@ -121,16 +121,15 @@ void SharedWorkerRepositoryClientImpl::Connect(SharedWorker* worker,
   // when multiple might have been sent. Fix by making the
   // SharedWorkerConnectListener interface take a map that can contain
   // multiple headers.
-  std::unique_ptr<Vector<CSPHeaderAndType>> headers =
+  Vector<CSPHeaderAndType> headers =
       worker->GetExecutionContext()->GetContentSecurityPolicy()->Headers();
   WebString header;
   WebContentSecurityPolicyType header_type =
       kWebContentSecurityPolicyTypeReport;
 
-  if (headers->size() > 0) {
-    header = (*headers)[0].first;
-    header_type =
-        static_cast<WebContentSecurityPolicyType>((*headers)[0].second);
+  if (headers.size() > 0) {
+    header = headers[0].first;
+    header_type = static_cast<WebContentSecurityPolicyType>(headers[0].second);
   }
 
   bool is_secure_context = worker->GetExecutionContext()->IsSecureContext();

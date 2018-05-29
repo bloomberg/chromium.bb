@@ -39,7 +39,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       const KURL& script_url,
       ScriptType script_type,
       const String& user_agent,
-      const Vector<CSPHeaderAndType>* content_security_policy_parsed_headers,
+      const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       bool starter_secure_context,
@@ -63,8 +63,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // |content_security_policy_raw_headers| are mutually exclusive.
   // |content_security_policy_parsed_headers| is an empty vector
   // when |content_security_policy_raw_headers| is set.
-  std::unique_ptr<Vector<CSPHeaderAndType>>
-      content_security_policy_parsed_headers;
+  Vector<CSPHeaderAndType> content_security_policy_parsed_headers;
   base::Optional<ContentSecurityPolicyResponseHeaders>
       content_security_policy_raw_headers;
 

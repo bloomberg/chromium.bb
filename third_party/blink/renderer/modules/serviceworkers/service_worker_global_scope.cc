@@ -84,7 +84,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
           creation_params->script_url)) {
     // CSP headers, referrer policy, and origin trial tokens will be provided by
     // the InstalledScriptsManager in EvaluateClassicScript().
-    DCHECK(creation_params->content_security_policy_parsed_headers->IsEmpty());
+    DCHECK(creation_params->content_security_policy_parsed_headers.IsEmpty());
     DCHECK_EQ(kReferrerPolicyDefault, creation_params->referrer_policy);
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
   }
