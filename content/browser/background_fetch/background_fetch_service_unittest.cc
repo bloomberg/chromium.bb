@@ -205,9 +205,13 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
 
+    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetDefaultStoragePartition(browser_context()));
+
     context_ = new BackgroundFetchContext(
         browser_context(),
-        base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()));
+        base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
+        base::WrapRefCounted(partition->GetCacheStorageContext()));
 
     service_ = std::make_unique<BackgroundFetchServiceImpl>(context_, origin());
   }

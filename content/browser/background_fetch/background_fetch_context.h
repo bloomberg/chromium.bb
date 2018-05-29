@@ -47,7 +47,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   // that it can respond to service worker events such as unregister.
   BackgroundFetchContext(
       BrowserContext* browser_context,
-      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+      const scoped_refptr<content::CacheStorageContextImpl>&
+          cache_storage_context);
 
   // Gets the active Background Fetch registration identified by |developer_id|
   // for the given |service_worker_id| and |origin|. The |callback| will be

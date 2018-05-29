@@ -20,6 +20,7 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/browser/background_fetch/storage/database_task.h"
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
@@ -33,6 +34,7 @@ namespace content {
 class BackgroundFetchRequestInfo;
 struct BackgroundFetchSettledFetch;
 class BrowserContext;
+class CacheStorageManager;
 class ChromeBlobStorageContext;
 class ServiceWorkerContextWrapper;
 
@@ -67,7 +69,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      scoped_refptr<CacheStorageContextImpl> cache_storage_context);
 
   ~BackgroundFetchDataManager() override;
 
@@ -158,6 +161,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
   friend class BackgroundFetchDataManagerTest;
+  friend class BackgroundFetchTestDataManager;
   friend class background_fetch::DatabaseTask;
 
   class RegistrationData;
@@ -172,12 +176,17 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   void OnDatabaseTaskFinished(background_fetch::DatabaseTask* task);
 
+  // Virtual for testing.
+  virtual CacheStorageManager* GetCacheStorageManager();
+
   // Returns true if not aborted/completed/failed.
   bool IsActive(const BackgroundFetchRegistrationId& registration_id);
 
   void Cleanup();
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+
+  scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
 
   // The blob storage request with which response information will be stored.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;

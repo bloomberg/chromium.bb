@@ -22,9 +22,13 @@ namespace content {
 
 BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+    const scoped_refptr<content::CacheStorageContextImpl>&
+        cache_storage_context)
     : browser_context_(browser_context),
-      data_manager_(browser_context, service_worker_context),
+      data_manager_(browser_context,
+                    service_worker_context,
+                    cache_storage_context),
       event_dispatcher_(service_worker_context),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),

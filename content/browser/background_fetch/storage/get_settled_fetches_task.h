@@ -12,6 +12,8 @@
 
 namespace content {
 
+class CacheStorageManager;
+
 namespace background_fetch {
 
 class GetSettledFetchesTask : public DatabaseTask {
@@ -24,6 +26,7 @@ class GetSettledFetchesTask : public DatabaseTask {
 
   GetSettledFetchesTask(BackgroundFetchDataManager* data_manager,
                         BackgroundFetchRegistrationId registration_id,
+                        CacheStorageManager* cache_manager,
                         SettledFetchesCallback callback);
 
   ~GetSettledFetchesTask() override;
@@ -44,6 +47,7 @@ class GetSettledFetchesTask : public DatabaseTask {
   void FinishTaskWithErrorCode(blink::mojom::BackgroundFetchError error);
 
   BackgroundFetchRegistrationId registration_id_;
+  CacheStorageManager* cache_manager_;
   SettledFetchesCallback settled_fetches_callback_;
 
   std::vector<BackgroundFetchSettledFetch> settled_fetches_;
