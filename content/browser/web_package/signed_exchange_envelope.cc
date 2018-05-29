@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 
 #include <utility>
 
@@ -68,7 +68,7 @@ bool IsMethodCacheable(base::StringPiece method) {
 }
 
 bool ParseRequestMap(const cbor::CBORValue& value,
-                     SignedExchangeHeader* out,
+                     SignedExchangeEnvelope* out,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseRequestMap");
   if (!value.is_map()) {
@@ -165,7 +165,7 @@ bool ParseRequestMap(const cbor::CBORValue& value,
 }
 
 bool ParseResponseMap(const cbor::CBORValue& value,
-                      SignedExchangeHeader* out,
+                      SignedExchangeEnvelope* out,
                       SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseResponseMap");
   if (!value.is_map()) {
@@ -259,34 +259,34 @@ bool ParseResponseMap(const cbor::CBORValue& value,
 
 }  // namespace
 
-constexpr size_t SignedExchangeHeader::kEncodedLengthInBytes;
+constexpr size_t SignedExchangeEnvelope::kEncodedLengthInBytes;
 
 // static
-size_t SignedExchangeHeader::ParseEncodedLength(
+size_t SignedExchangeEnvelope::ParseEncodedLength(
     base::span<const uint8_t> input) {
-  DCHECK_EQ(input.size(), SignedExchangeHeader::kEncodedLengthInBytes);
+  DCHECK_EQ(input.size(), SignedExchangeEnvelope::kEncodedLengthInBytes);
   return static_cast<size_t>(input[0]) << 16 |
          static_cast<size_t>(input[1]) << 8 | static_cast<size_t>(input[2]);
 }
 
 // static
-base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
+base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
     base::span<const uint8_t> input,
     SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeHeader::Parse");
+                     "SignedExchangeEnvelope::Parse");
   cbor::CBORReader::DecoderError error;
   base::Optional<cbor::CBORValue> value = cbor::CBORReader::Read(input, &error);
   if (!value.has_value()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         base::StringPrintf("Failed to decode CBORValue. CBOR error: %s",
                            cbor::CBORReader::ErrorCodeToString(error)));
     return base::nullopt;
   }
   if (!value->is_array()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         base::StringPrintf(
             "Expected top-level CBORValue to be an array. Actual type : %d",
             static_cast<int>(value->type())));
@@ -297,24 +297,24 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
   constexpr size_t kTopLevelArraySize = 2;
   if (top_level_array.size() != kTopLevelArraySize) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         base::StringPrintf("Expected top-level array to have 2 elements. "
                            "Actual element count: %" PRIuS,
                            top_level_array.size()));
     return base::nullopt;
   }
 
-  SignedExchangeHeader ret;
+  SignedExchangeEnvelope ret;
 
   if (!ParseRequestMap(top_level_array[0], &ret, devtools_proxy)) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         "Failed to parse request map.");
     return base::nullopt;
   }
   if (!ParseResponseMap(top_level_array[1], &ret, devtools_proxy)) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         "Failed to parse response map.");
     return base::nullopt;
   }
@@ -322,7 +322,7 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
   auto signature_iter = ret.response_headers_.find(kSignature);
   if (signature_iter == ret.response_headers_.end()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         "No signature header found.");
     return base::nullopt;
   }
@@ -332,7 +332,7 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
           signature_iter->second, devtools_proxy);
   if (!signatures || signatures->empty()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeHeader::Parse",
+        devtools_proxy, "SignedExchangeEnvelope::Parse",
         "Failed to parse signature.");
     return base::nullopt;
   }
@@ -340,20 +340,21 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
   ret.signature_ = (*signatures)[0];
 
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeHeader::Parse");
+                   "SignedExchangeEnvelope::Parse");
   return std::move(ret);
 }
 
-SignedExchangeHeader::SignedExchangeHeader() = default;
-SignedExchangeHeader::SignedExchangeHeader(const SignedExchangeHeader&) =
+SignedExchangeEnvelope::SignedExchangeEnvelope() = default;
+SignedExchangeEnvelope::SignedExchangeEnvelope(const SignedExchangeEnvelope&) =
     default;
-SignedExchangeHeader::SignedExchangeHeader(SignedExchangeHeader&&) = default;
-SignedExchangeHeader::~SignedExchangeHeader() = default;
-SignedExchangeHeader& SignedExchangeHeader::operator=(SignedExchangeHeader&&) =
+SignedExchangeEnvelope::SignedExchangeEnvelope(SignedExchangeEnvelope&&) =
     default;
+SignedExchangeEnvelope::~SignedExchangeEnvelope() = default;
+SignedExchangeEnvelope& SignedExchangeEnvelope::operator=(
+    SignedExchangeEnvelope&&) = default;
 
-bool SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
-                                             base::StringPiece value) {
+bool SignedExchangeEnvelope::AddResponseHeader(base::StringPiece name,
+                                               base::StringPiece value) {
   std::string name_str = name.as_string();
   DCHECK_EQ(name_str, base::ToLowerASCII(name))
       << "Response header names should be always lower-cased.";
@@ -365,7 +366,7 @@ bool SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
 }
 
 scoped_refptr<net::HttpResponseHeaders>
-SignedExchangeHeader::BuildHttpResponseHeaders() const {
+SignedExchangeEnvelope::BuildHttpResponseHeaders() const {
   std::string header_str("HTTP/1.1 ");
   header_str.append(base::NumberToString(response_code()));
   header_str.append(" ");

@@ -14,7 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/cbor/cbor_writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_signature_header_field.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/signature_verifier.h"
@@ -44,7 +44,7 @@ constexpr uint8_t kMessageHeader[] =
     "HTTP Exchange";
 
 base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
-    const SignedExchangeHeader& header) {
+    const SignedExchangeEnvelope& header) {
   cbor::CBORValue::MapValue map;
   map.insert_or_assign(
       cbor::CBORValue(kMethodKey, cbor::CBORValue::Type::BYTE_STRING),
@@ -59,7 +59,7 @@ base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
 }
 
 base::Optional<cbor::CBORValue> GenerateCanonicalResponseCBOR(
-    const SignedExchangeHeader& header) {
+    const SignedExchangeEnvelope& header) {
   const auto& headers = header.response_headers();
   cbor::CBORValue::MapValue map;
   std::string response_code_str = base::NumberToString(header.response_code());
@@ -79,7 +79,7 @@ base::Optional<cbor::CBORValue> GenerateCanonicalResponseCBOR(
 // Generate CBORValue from |header| as specified in:
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cbor-representation
 base::Optional<cbor::CBORValue> GenerateCanonicalExchangeHeadersCBOR(
-    const SignedExchangeHeader& header) {
+    const SignedExchangeEnvelope& header) {
   auto req_val = GenerateCanonicalRequestCBOR(header);
   if (!req_val)
     return base::nullopt;
@@ -97,7 +97,7 @@ base::Optional<cbor::CBORValue> GenerateCanonicalExchangeHeadersCBOR(
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
 // Step 7.4.
 base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
-    const SignedExchangeHeader& header) {
+    const SignedExchangeEnvelope& header) {
   auto headers_val = GenerateCanonicalExchangeHeadersCBOR(header);
   if (!headers_val)
     return base::nullopt;
@@ -216,7 +216,7 @@ std::string HexDump(const std::vector<uint8_t>& msg) {
 }
 
 base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
-    const SignedExchangeHeader& header) {
+    const SignedExchangeEnvelope& header) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "GenerateSignedMessage");
 
@@ -259,7 +259,7 @@ base::Time TimeFromSignedExchangeUnixTime(uint64_t t) {
 
 // Implements steps 5-6 of
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
-bool VerifyTimestamps(const SignedExchangeHeader& header,
+bool VerifyTimestamps(const SignedExchangeEnvelope& header,
                       const base::Time& verification_time) {
   base::Time expires_time =
       TimeFromSignedExchangeUnixTime(header.signature().expires);
@@ -282,7 +282,7 @@ bool VerifyTimestamps(const SignedExchangeHeader& header,
 }  // namespace
 
 SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
-    const SignedExchangeHeader& header,
+    const SignedExchangeEnvelope& header,
     scoped_refptr<net::X509Certificate> certificate,
     const base::Time& verification_time,
     SignedExchangeDevToolsProxy* devtools_proxy) {
@@ -357,7 +357,7 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
 
 base::Optional<std::vector<uint8_t>>
 SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(
-    const SignedExchangeHeader& header) {
+    const SignedExchangeEnvelope& header) {
   base::Optional<cbor::CBORValue> cbor_val =
       GenerateCanonicalExchangeHeadersCBOR(header);
   if (!cbor_val)

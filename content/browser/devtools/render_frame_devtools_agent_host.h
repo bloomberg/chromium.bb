@@ -54,7 +54,7 @@ class NavigationHandleImpl;
 class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
-class SignedExchangeHeader;
+class SignedExchangeEnvelope;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -102,7 +102,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response,
-      const base::Optional<SignedExchangeHeader>& header,
+      const base::Optional<SignedExchangeEnvelope>& header,
       const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,
       const std::vector<std::string>& error_messages);

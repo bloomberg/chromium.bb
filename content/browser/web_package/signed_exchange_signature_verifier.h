@@ -21,7 +21,7 @@ class Time;
 
 namespace content {
 
-class SignedExchangeHeader;
+class SignedExchangeEnvelope;
 class SignedExchangeDevToolsProxy;
 
 // SignedExchangeSignatureVerifier verifies the signature of the given
@@ -47,13 +47,13 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrInvalidTimestamp
   };
 
-  static Result Verify(const SignedExchangeHeader& header,
+  static Result Verify(const SignedExchangeEnvelope& header,
                        scoped_refptr<net::X509Certificate> certificate,
                        const base::Time& verification_time,
                        SignedExchangeDevToolsProxy* devtools_proxy);
 
   static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
-      const SignedExchangeHeader& header);
+      const SignedExchangeEnvelope& header);
 };
 
 }  // namespace content

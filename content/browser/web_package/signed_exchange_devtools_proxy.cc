@@ -7,7 +7,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -73,7 +73,7 @@ void OnSignedExchangeReceivedOnUI(
     const GURL& outer_request_url,
     scoped_refptr<network::ResourceResponse> outer_response,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
-    base::Optional<SignedExchangeHeader> header,
+    base::Optional<SignedExchangeEnvelope> header,
     scoped_refptr<net::X509Certificate> certificate,
     base::Optional<net::SSLInfo> ssl_info,
     std::vector<std::string> error_messages) {
@@ -162,7 +162,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
 }
 
 void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
-    const base::Optional<SignedExchangeHeader>& header,
+    const base::Optional<SignedExchangeEnvelope>& header,
     const scoped_refptr<net::X509Certificate>& certificate,
     const net::SSLInfo* ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -32,7 +32,7 @@ cbor::CBORValue CBORByteString(const char* str) {
   return cbor::CBORValue(str, cbor::CBORValue::Type::BYTE_STRING);
 }
 
-base::Optional<SignedExchangeHeader> GenerateHeaderAndParse(
+base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
     const std::map<const char*, const char*>& request_map,
     const std::map<const char*, const char*>& response_map) {
   cbor::CBORValue::MapValue request_cbor_map;
@@ -47,16 +47,16 @@ base::Optional<SignedExchangeHeader> GenerateHeaderAndParse(
   array.push_back(cbor::CBORValue(std::move(response_cbor_map)));
 
   auto serialized = cbor::CBORWriter::Write(cbor::CBORValue(std::move(array)));
-  return SignedExchangeHeader::Parse(
+  return SignedExchangeEnvelope::Parse(
       base::make_span(serialized->data(), serialized->size()),
       nullptr /* devtools_proxy */);
 }
 
 }  // namespace
 
-TEST(SignedExchangeHeaderTest, ParseEncodedLength) {
+TEST(SignedExchangeEnvelopeTest, ParseEncodedLength) {
   constexpr struct {
-    uint8_t bytes[SignedExchangeHeader::kEncodedLengthInBytes];
+    uint8_t bytes[SignedExchangeEnvelope::kEncodedLengthInBytes];
     size_t expected;
   } kTestCases[] = {
       {{0x00, 0x00, 0x01}, 1u}, {{0x01, 0xe2, 0x40}, 123456u},
@@ -65,12 +65,12 @@ TEST(SignedExchangeHeaderTest, ParseEncodedLength) {
   int test_element_index = 0;
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message() << "testing case " << test_element_index++);
-    EXPECT_EQ(SignedExchangeHeader::ParseEncodedLength(test_case.bytes),
+    EXPECT_EQ(SignedExchangeEnvelope::ParseEncodedLength(test_case.bytes),
               test_case.expected);
   }
 }
 
-TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
+TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
   base::FilePath test_htxg_path;
   base::PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
   test_htxg_path = test_htxg_path.AppendASCII("htxg").AppendASCII(
@@ -80,17 +80,18 @@ TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
   ASSERT_TRUE(base::ReadFileToString(test_htxg_path, &contents));
   auto* contents_bytes = reinterpret_cast<const uint8_t*>(contents.data());
 
-  ASSERT_GT(contents.size(), SignedExchangeHeader::kEncodedLengthInBytes);
-  size_t header_size = SignedExchangeHeader::ParseEncodedLength(base::make_span(
-      contents_bytes, SignedExchangeHeader::kEncodedLengthInBytes));
+  ASSERT_GT(contents.size(), SignedExchangeEnvelope::kEncodedLengthInBytes);
+  size_t header_size =
+      SignedExchangeEnvelope::ParseEncodedLength(base::make_span(
+          contents_bytes, SignedExchangeEnvelope::kEncodedLengthInBytes));
   ASSERT_GT(contents.size(),
-            SignedExchangeHeader::kEncodedLengthInBytes + header_size);
+            SignedExchangeEnvelope::kEncodedLengthInBytes + header_size);
 
   const auto cbor_bytes = base::make_span<const uint8_t>(
-      contents_bytes + SignedExchangeHeader::kEncodedLengthInBytes,
+      contents_bytes + SignedExchangeEnvelope::kEncodedLengthInBytes,
       header_size);
-  const base::Optional<SignedExchangeHeader> header =
-      SignedExchangeHeader::Parse(cbor_bytes, nullptr /* devtools_proxy */);
+  const base::Optional<SignedExchangeEnvelope> header =
+      SignedExchangeEnvelope::Parse(cbor_bytes, nullptr /* devtools_proxy */);
   ASSERT_TRUE(header.has_value());
   EXPECT_EQ(header->request_url(), GURL("https://test.example.org/test/"));
   EXPECT_EQ(header->request_method(), "GET");
@@ -100,7 +101,7 @@ TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
             "mi-sha256");
 }
 
-TEST(SignedExchangeHeaderTest, ValidHeader) {
+TEST(SignedExchangeEnvelopeTest, ValidHeader) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
@@ -115,7 +116,7 @@ TEST(SignedExchangeHeaderTest, ValidHeader) {
   EXPECT_EQ(header->response_headers().size(), 1u);
 }
 
-TEST(SignedExchangeHeaderTest, UnsafeMethod) {
+TEST(SignedExchangeEnvelopeTest, UnsafeMethod) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "POST"},
@@ -126,7 +127,7 @@ TEST(SignedExchangeHeaderTest, UnsafeMethod) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, InvalidURL) {
+TEST(SignedExchangeEnvelopeTest, InvalidURL) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https:://test.example.org/test/"}, {kMethodKey, "GET"},
@@ -137,7 +138,7 @@ TEST(SignedExchangeHeaderTest, InvalidURL) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, URLWithFragment) {
+TEST(SignedExchangeEnvelopeTest, URLWithFragment) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https://test.example.org/test/#foo"}, {kMethodKey, "GET"},
@@ -148,7 +149,7 @@ TEST(SignedExchangeHeaderTest, URLWithFragment) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, RelativeURL) {
+TEST(SignedExchangeEnvelopeTest, RelativeURL) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "test/"}, {kMethodKey, "GET"},
@@ -159,7 +160,7 @@ TEST(SignedExchangeHeaderTest, RelativeURL) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, StatefulRequestHeader) {
+TEST(SignedExchangeEnvelopeTest, StatefulRequestHeader) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https://test.example.org/test/"},
@@ -172,7 +173,7 @@ TEST(SignedExchangeHeaderTest, StatefulRequestHeader) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, StatefulResponseHeader) {
+TEST(SignedExchangeEnvelopeTest, StatefulResponseHeader) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
@@ -185,7 +186,7 @@ TEST(SignedExchangeHeaderTest, StatefulResponseHeader) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, UppercaseRequestMap) {
+TEST(SignedExchangeEnvelopeTest, UppercaseRequestMap) {
   auto header = GenerateHeaderAndParse(
       {{kUrlKey, "https://test.example.org/test/"},
        {kMethodKey, "GET"},
@@ -196,7 +197,7 @@ TEST(SignedExchangeHeaderTest, UppercaseRequestMap) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeHeaderTest, UppercaseResponseMap) {
+TEST(SignedExchangeEnvelopeTest, UppercaseResponseMap) {
   auto header = GenerateHeaderAndParse(
       {
           {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
