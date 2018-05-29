@@ -36,18 +36,28 @@ struct LinuxTimestamping {
   struct timespec hwtimeraw;
 };
 
+const int kCmsgSpaceForIpv4 = CMSG_SPACE(sizeof(in_pktinfo));
+const int kCmsgSpaceForIpv6 = CMSG_SPACE(sizeof(in6_pktinfo));
+// kCmsgSpaceForIp should be big enough to hold both IPv4 and IPv6 packet info.
+const int kCmsgSpaceForIp = (kCmsgSpaceForIpv4 < kCmsgSpaceForIpv6)
+                                ? kCmsgSpaceForIpv6
+                                : kCmsgSpaceForIpv4;
+
+const int kCmsgSpaceForSegmentSize = CMSG_SPACE(sizeof(uint16_t));
+
+const int kCmsgSpaceForRecvQueueOverflow = CMSG_SPACE(sizeof(int));
+const int kCmsgSpaceForLinuxTimestamping =
+    CMSG_SPACE(sizeof(LinuxTimestamping));
+const int kCmsgSpaceForTTL = CMSG_SPACE(sizeof(int));
+
+// The minimum cmsg buffer size when receiving a packet. It is possible for a
+// received packet to contain both IPv4 and IPv6 addresses.
+const int kCmsgSpaceForReadPacket =
+    kCmsgSpaceForRecvQueueOverflow + kCmsgSpaceForIpv4 + kCmsgSpaceForIpv6 +
+    kCmsgSpaceForLinuxTimestamping + kCmsgSpaceForTTL;
+
 class QuicSocketUtils {
  public:
-  // The first integer is for overflow. The in6_pktinfo is the larger of the
-  // address structures present. LinuxTimestamping is present for socket
-  // timestamping.  The subsequent int is for ttl.
-  // The final int is a sentinel so the msg_controllen feedback
-  // can be used to detect larger control messages than there is space for.
-  static const int kSpaceForCmsg =
-      CMSG_SPACE(CMSG_LEN(sizeof(int)) + CMSG_LEN(sizeof(in6_pktinfo)) +
-                 CMSG_LEN(sizeof(LinuxTimestamping)) + CMSG_LEN(sizeof(int)) +
-                 CMSG_LEN(sizeof(int)));
-
   // Fills in |address| if |hdr| contains IP_PKTINFO or IPV6_PKTINFO. Fills in
   // |timestamp| if |hdr| contains |SO_TIMESTAMPING|. |address| and |timestamp|
   // must not be null.
