@@ -250,6 +250,9 @@ extern const char kEnableAutofillNativeDropdownViewsDescription[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 
+extern const char kEnableAutoplayIgnoreWebAudioName[];
+extern const char kEnableAutoplayIgnoreWebAudioDescription[];
+
 extern const char kEnableBreakingNewsPushName[];
 extern const char kEnableBreakingNewsPushDescription[];
 

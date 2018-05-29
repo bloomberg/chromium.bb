@@ -3862,6 +3862,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAccessibilityObjectModelDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableAccessibilityObjectModel)},
 
+    {"enable-autoplay-ignore-web-audio",
+     flag_descriptions::kEnableAutoplayIgnoreWebAudioName,
+     flag_descriptions::kEnableAutoplayIgnoreWebAudioDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kAutoplayIgnoreWebAudio)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

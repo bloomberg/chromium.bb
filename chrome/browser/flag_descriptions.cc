@@ -361,6 +361,11 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
 
+const char kEnableAutoplayIgnoreWebAudioName[] =
+    "Autoplay ignores WebAudio playbacks";
+const char kEnableAutoplayIgnoreWebAudioDescription[] =
+    "If enabled, autoplay restrictions will be ignored for WebAudio.";
+
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
     "Listen for breaking news content suggestions (e.g. for New Tab Page) "
