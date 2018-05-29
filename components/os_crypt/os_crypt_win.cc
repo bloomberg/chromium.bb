@@ -34,8 +34,10 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
   DATA_BLOB output;
   BOOL result =
       CryptProtectData(&input, L"", nullptr, nullptr, nullptr, 0, &output);
-  if (!result)
+  if (!result) {
+    PLOG(ERROR) << "Failed to encrypt";
     return false;
+  }
 
   // this does a copy
   ciphertext->assign(reinterpret_cast<std::string::value_type*>(output.pbData),
@@ -55,8 +57,10 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   DATA_BLOB output;
   BOOL result = CryptUnprotectData(&input, nullptr, nullptr, nullptr, nullptr,
                                    0, &output);
-  if (!result)
+  if (!result) {
+    PLOG(ERROR) << "Failed to decrypt";
     return false;
+  }
 
   plaintext->assign(reinterpret_cast<char*>(output.pbData), output.cbData);
   LocalFree(output.pbData);
