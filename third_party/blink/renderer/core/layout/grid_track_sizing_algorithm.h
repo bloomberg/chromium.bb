@@ -99,13 +99,9 @@ class GridTrackSizingAlgorithm final {
   LayoutUnit MinContentSize() const { return min_content_size_; };
   LayoutUnit MaxContentSize() const { return max_content_size_; };
 
-  void UpdateBaselineAlignmentContextIfNeeded(LayoutBox&, GridAxis);
+  void ComputeBaselineAlignmentContext();
   LayoutUnit BaselineOffsetForChild(const LayoutBox&, GridAxis) const;
-  bool BaselineMayAffectIntrinsicSize(
-      GridTrackSizingDirection direction) const {
-    return baseline_alignment_.BaselineMayAffectIntrinsicSize(*this, direction);
-  }
-  void ClearBaselineAlignment() { baseline_alignment_.Clear(); }
+  void ClearBaselineAlignment();
 
   Vector<GridTrack>& Tracks(GridTrackSizingDirection);
   const Vector<GridTrack>& Tracks(GridTrackSizingDirection) const;
@@ -148,8 +144,13 @@ class GridTrackSizingAlgorithm final {
       Vector<GridTrack*>* grow_beyond_growth_limits_tracks,
       LayoutUnit& available_logical_space) const;
   LayoutUnit GridAreaBreadthForChild(const LayoutBox&,
-                                     GridTrackSizingDirection);
+                                     GridTrackSizingDirection) const;
 
+  void UpdateBaselineAlignmentContext(LayoutBox&);
+  void UpdateBaselineAlignmentContext(LayoutBox&, GridAxis);
+  bool CanParticipateInBaselineAlignment(const LayoutBox&, GridAxis) const;
+
+  bool IsIntrinsicSizedGridArea(const LayoutBox&, GridAxis) const;
   void ComputeGridContainerIntrinsicSizes();
 
   // Helper methods for step 4. Strech flexible tracks.
@@ -278,9 +279,6 @@ class GridTrackSizingAlgorithmStrategy {
       GridTrackSizingDirection,
       base::Optional<LayoutUnit> = base::nullopt) const;
   LayoutUnit ComputeTrackBasedSize() const;
-
-  base::Optional<LayoutUnit> ExtentForBaselineAlignment(
-      const LayoutBox& child) const;
 
   GridTrackSizingDirection Direction() const { return algorithm_.direction_; }
   double FindFrUnitSize(const GridSpan& tracks_span,

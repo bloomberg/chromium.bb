@@ -25,32 +25,28 @@ body { margin: 0; }
 .column { grid-auto-flow: row }
 </style>
 
-<p>4x1 with parallel and orthogonal items. Items orthogonal to the baseline-axis will use a synthesized baseline (border-box 'under' edge).<br>No item shares any row-like Baseline Context. All items share 'first-column' Baseline Context.<br>Items participate in both, column and row baseline, but since they only share a column-like Baseline Context only 'justify-self' (row baseline-axis) should apply.<br>The Baseline Alignment may increase size contribution of some items.</p>
+<p>4x1 with parallel and orthogonal items. <br>No item shares any row-like Baseline Context. All items share 'first-column' Baseline Context.<br>Only the parallel items participate in baseline alignment in the column-like Baseline Context; since no item shares row-like Baseline Context, only 'justify-self' (row baseline-axis) should apply.<br>The Baseline Alignment may increase size contribution of some items.</p>
 <div class="block grid column contentStart itemsBaseline">
     <div class="item">A</div>
     <div class="item verticalLR">A</div>
     <div class="item">A</div>
     <div class="item verticalLR">A</div>
 </div>
-<!-- https://crbug.com/704713
 <div class="block grid column contentStart itemsBaseline">
     <div class="item extraRightPadding">A</div>
     <div class="item verticalLR extraLeftPadding">A</div>
     <div class="item">A</div>
     <div class="item verticalLR">A</div>
 </div>
--->
 <div class="block grid column contentStart itemsBaseline">
     <div class="item">A</div>
     <div class="item verticalRL">A</div>
     <div class="item">A</div>
     <div class="item verticalRL">A</div>
 </div>
-<!-- https://crbug.com/704713
 <div class="block grid column contentStart itemsBaseline">
     <div class="item extraRightPadding">A</div>
     <div class="item verticalRL extraLeftPadding">A</div>
     <div class="item">A</div>
     <div class="item verticalRL">A</div>
 </div>
--->

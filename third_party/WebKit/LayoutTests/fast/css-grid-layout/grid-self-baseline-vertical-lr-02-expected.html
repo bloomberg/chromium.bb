@@ -23,10 +23,9 @@ body { margin: 0; }
 .extraLeftPadding { padding-left: 30px; }
 .extraRightPadding { padding-right: 30px; }
 .item { display: inline-block; }
-.item.verticalLR, .item.verticalRL { margin: 10px 6px 0px 12px; }
-.item.horizontalTB  { margin: 10px 6px 4px 0px; }
+.bottom { vertical-align: bottom; }
 </style>
 
-<p>1x4 with parallel and orthogonal items. Items orthogonal to the baseline-axis will use a synthesized baseline (border-box 'under' edge).<br>All items share 'first-row' Baseline Context. No item shares any column-like Baseline Context.<br>Items participate in both, column and row baseline, but since they only share a row-like Baseline Context only 'aling-self' (column baseline-axis) should apply.<br>The Baseline Alignment may increase size contribution of some items.</p>
-<div class="block verticalLR"><div class="item horizontalTB">A</div><div class="item">A</div><div class="item horizontalTB">A</div><div class="item">A</div></div>
-<div class="block verticalLR"><div class="item horizontalTB extraLeftPadding">A</div><div class="item extraRightPadding">A</div><div class="item horizontalTB">A</div><div class="item">A</div></div>
+<p>1x4 with parallel and orthogonal items. <br>All items share 'first-row' Baseline Context. No item shares any column-like Baseline Context.<br>Only the parallel items participate in baseline alignment in the row-like Baseline Context; since no item shares column-like Baseline Context, only 'aling-self' (column baseline-axis) should apply.<br>The Baseline Alignment may increase size contribution of some items.</p>
+<div class="block verticalLR"><div class="item bottom horizontalTB">A</div><div class="item">A</div><div class="item bottom horizontalTB">A</div><div class="item">A</div></div>
+<div class="block verticalLR"><div class="item bottom horizontalTB extraLeftPadding">A</div><div class="item extraRightPadding">A</div><div class="item bottom horizontalTB">A</div><div class="item">A</div></div>

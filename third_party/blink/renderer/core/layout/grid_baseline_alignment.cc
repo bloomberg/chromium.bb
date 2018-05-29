@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/grid_baseline_alignment.h"
 
-#include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -83,13 +82,6 @@ bool GridBaselineAlignment::IsDescentBaselineForChild(
            IsFlippedBlocksWritingMode(block_flow_)));
 }
 
-bool GridBaselineAlignment::IsBaselineContextComputed(
-    GridAxis baseline_axis) const {
-  return baseline_axis == kGridColumnAxis
-             ? !row_axis_alignment_context_.IsEmpty()
-             : !col_axis_alignment_context_.IsEmpty();
-}
-
 bool GridBaselineAlignment::IsHorizontalBaselineAxis(GridAxis axis) const {
   return axis == kGridRowAxis ? IsHorizontalWritingMode(block_flow_)
                               : !IsHorizontalWritingMode(block_flow_);
@@ -122,7 +114,7 @@ const BaselineGroup& GridBaselineAlignment::GetBaselineGroupForChild(
   return context->GetSharedGroup(child, preference);
 }
 
-void GridBaselineAlignment::UpdateBaselineAlignmentContextIfNeeded(
+void GridBaselineAlignment::UpdateBaselineAlignmentContext(
     ItemPosition preference,
     unsigned shared_context,
     LayoutBox& child,
@@ -166,43 +158,6 @@ LayoutUnit GridBaselineAlignment::BaselineOffsetForChild(
     return group.MaxAscent() - LogicalAscentForChild(child, baseline_axis);
   }
   return LayoutUnit();
-}
-
-base::Optional<LayoutUnit> GridBaselineAlignment::ExtentForBaselineAlignment(
-    ItemPosition preference,
-    unsigned shared_context,
-    const LayoutBox& child,
-    GridAxis baseline_axis) const {
-  DCHECK(IsBaselinePosition(preference));
-  if (!IsBaselineContextComputed(baseline_axis))
-    return base::nullopt;
-
-  auto& group = GetBaselineGroupForChild(preference, shared_context, child,
-                                         baseline_axis);
-  return group.MaxAscent() + group.MaxDescent();
-}
-
-bool GridBaselineAlignment::BaselineMayAffectIntrinsicSize(
-    const GridTrackSizingAlgorithm& algorithm,
-    GridTrackSizingDirection direction) const {
-  const auto& contexts_map = direction == kForColumns
-                                 ? col_axis_alignment_context_
-                                 : row_axis_alignment_context_;
-  for (const auto& context : contexts_map) {
-    auto track_size = algorithm.GetGridTrackSize(direction, context.key);
-    // TODO(lajava): Should we consider flexible tracks as well ?
-    if (!track_size.IsContentSized())
-      continue;
-    for (const auto& group : context.value->SharedGroups()) {
-      if (group.size() > 1) {
-        auto grid_area_size =
-            algorithm.Tracks(direction)[context.key].BaseSize();
-        if (group.MaxAscent() + group.MaxDescent() > grid_area_size)
-          return true;
-      }
-    }
-  }
-  return false;
 }
 
 void GridBaselineAlignment::Clear() {

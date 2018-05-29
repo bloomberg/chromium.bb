@@ -26,7 +26,7 @@ body { margin: 0; }
 .row { grid-auto-flow: column; }
 </style>
 
-<p>1x4 with orthogonal items. Items orthogonal to the baseline-axis will use a synthesized baseline (border-box 'under' edge).<br>All items share 'first-row' Baseline Context. No item shares any column-like Baseline Context.<br>Items participate in both, column and row baseline, but since they only share a row-like Baseline Context only 'aling-self' (column baseline-axis) should apply.</p>
+<p>1x4 with orthogonal items. <br>All items share 'first-row' Baseline Context. No item shares any column-like Baseline Context.<br>Orthogonal items don't participate in baseline alignment in the row-like Baseline Context; since no item shares column-like Baseline Context, neither 'aling-self' or 'justify-self' apply.</p>
 <div class="block grid row contentStart itemsBaseline">
     <div class="item verticalLR">A</div>
     <div class="item verticalLR">A</div>

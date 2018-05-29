@@ -107,6 +107,7 @@ class LayoutGrid final : public LayoutBlock {
 
   LayoutUnit GridGap(GridTrackSizingDirection) const;
   LayoutUnit GridItemOffset(GridTrackSizingDirection) const;
+  void SetEstimatedGridAreaLogicalSize(const Grid&, LayoutBox&) const;
 
   LayoutUnit EstimatedGridAreaBreadthForChild(const Grid&,
                                               const LayoutBox&,
