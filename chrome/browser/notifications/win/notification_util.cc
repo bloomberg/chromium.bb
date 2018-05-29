@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_platform_bridge_win_util.h"
+#include "chrome/browser/notifications/win/notification_util.h"
 
 #include <wrl/client.h>
 
 #include "base/win/scoped_hstring.h"
-#include "chrome/browser/notifications/notification_platform_bridge_win_metrics.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
+#include "chrome/browser/notifications/win/notification_metrics.h"
 #include "chrome/browser/notifications/win/notification_template_builder.h"
 
 namespace mswr = Microsoft::WRL;

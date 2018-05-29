@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_WIN_UTIL_H_
-#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_WIN_UTIL_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_UTIL_H_
+#define CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_UTIL_H_
 
 #include <windows.ui.notifications.h>
 
@@ -14,4 +14,4 @@ class NotificationLaunchId;
 NotificationLaunchId GetNotificationLaunchId(
     ABI::Windows::UI::Notifications::IToastNotification* notification);
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PLATFORM_BRIDGE_WIN_UTIL_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_WIN_NOTIFICATION_UTIL_H_
