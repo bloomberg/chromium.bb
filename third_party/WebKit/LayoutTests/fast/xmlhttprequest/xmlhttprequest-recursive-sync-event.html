@@ -11,6 +11,10 @@ function test()
 {
     if (window.testRunner) {
         testRunner.dumpAsText();
+        // This test outputs a RangeError to console due to hitting the maximum
+        // call stack size. The exact error message and number of error messages
+        // depend on the testing environment, so suppress console messages.
+        testRunner.setDumpConsoleMessages(false);
     }
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {

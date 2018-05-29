@@ -558,15 +558,25 @@ Resource* ResourceFetcher::ResourceForStaticData(
 Resource* ResourceFetcher::ResourceForBlockedRequest(
     const FetchParameters& params,
     const ResourceFactory& factory,
-    ResourceRequestBlockedReason blocked_reason) {
+    ResourceRequestBlockedReason blocked_reason,
+    ResourceClient* client) {
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
+  // Sync requests need to be registered as a client before the fetch begins, so
+  // that they can process any redirects as they are received. Async requests,
+  // on the other hand, need to be registered after the fetch begins, because
+  // if the fetch fails during start, registering the client too early may lead
+  // to unexpected synchronous notifications.
+  if (client && params.Options().synchronous_policy == kRequestSynchronously)
+    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
   resource->SetStatus(ResourceStatus::kPending);
   resource->NotifyStartLoad();
   resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
                               params.Url(), blocked_reason),
                           Context().GetLoadingTaskRunner().get());
+  if (client && params.Options().synchronous_policy == kRequestAsynchronously)
+    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
   return resource;
 }
 
@@ -749,22 +759,6 @@ Resource* ResourceFetcher::RequestResource(
     const ResourceFactory& factory,
     ResourceClient* client,
     const SubstituteData& substitute_data) {
-  // Only async requests get ResourceClient callbacks, so sync requests
-  // shouldn't provide a client.
-  DCHECK(!client ||
-         params.Options().synchronous_policy == kRequestAsynchronously);
-  Resource* resource =
-      RequestResourceInternal(params, factory, substitute_data);
-  DCHECK(resource);
-  if (client)
-    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
-  return resource;
-}
-
-Resource* ResourceFetcher::RequestResourceInternal(
-    FetchParameters& params,
-    const ResourceFactory& factory,
-    const SubstituteData& substitute_data) {
   unsigned long identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   network_instrumentation::ScopedResourceLoadTracker
@@ -789,8 +783,10 @@ Resource* ResourceFetcher::RequestResourceInternal(
 
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, substitute_data, identifier);
-  if (blocked_reason)
-    return ResourceForBlockedRequest(params, factory, blocked_reason.value());
+  if (blocked_reason) {
+    return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
+                                     client);
+  }
 
   Resource::Type resource_type = factory.GetType();
 
@@ -815,8 +811,8 @@ Resource* ResourceFetcher::RequestResourceInternal(
       // in the case of data URLs which might have resources such as fonts that
       // need to be decoded only on demand. These data URLs are allowed to be
       // processed using the normal ResourceFetcher machinery.
-      return ResourceForBlockedRequest(params, factory,
-                                       ResourceRequestBlockedReason::kOther);
+      return ResourceForBlockedRequest(
+          params, factory, ResourceRequestBlockedReason::kOther, client);
     }
   }
 
@@ -861,6 +857,14 @@ Resource* ResourceFetcher::RequestResourceInternal(
   if (policy != kUse)
     resource->SetIdentifier(identifier);
 
+  // Sync requests need to be registered as a client before the fetch begins, so
+  // that they can process any redirects as they are received. Async requests,
+  // on the other hand, need to be registered after the fetch begins, because
+  // if the fetch fails during start, registering the client too early may lead
+  // to unexpected synchronous notifications.
+  if (client && params.Options().synchronous_policy == kRequestSynchronously)
+    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
+
   // TODO(yoav): It is not clear why preloads are exempt from this check. Can we
   // remove the exemption?
   if (!params.IsSpeculativePreload() || policy != kUse) {
@@ -898,6 +902,9 @@ Resource* ResourceFetcher::RequestResourceInternal(
 
   if (policy != kUse)
     InsertAsPreloadIfNecessary(resource, params, resource_type);
+
+  if (client && params.Options().synchronous_policy == kRequestAsynchronously)
+    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
 
   return resource;
 }

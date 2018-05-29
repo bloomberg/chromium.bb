@@ -207,9 +207,6 @@ class PLATFORM_EXPORT ResourceFetcher
           FetchParameters::SpeculativePreloadType::kNotSpeculative,
       bool is_link_preload = false);
 
-  Resource* RequestResourceInternal(FetchParameters&,
-                                    const ResourceFactory&,
-                                    const SubstituteData&);
   base::Optional<ResourceRequestBlockedReason> PrepareRequest(
       FetchParameters&,
       const ResourceFactory&,
@@ -221,7 +218,8 @@ class PLATFORM_EXPORT ResourceFetcher
                                   const SubstituteData&);
   Resource* ResourceForBlockedRequest(const FetchParameters&,
                                       const ResourceFactory&,
-                                      ResourceRequestBlockedReason);
+                                      ResourceRequestBlockedReason,
+                                      ResourceClient*);
 
   Resource* MatchPreload(const FetchParameters& params, Resource::Type);
   void InsertAsPreloadIfNecessary(Resource*,

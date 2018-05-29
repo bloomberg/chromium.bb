@@ -113,8 +113,7 @@ SyncLoadContext::SyncLoadContext(
       signals_(std::make_unique<SignalHelper>(this,
                                               redirect_or_response_event,
                                               abort_event,
-                                              timeout)),
-      fetch_request_mode_(request->fetch_request_mode) {
+                                              timeout)) {
   url_loader_factory_ =
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory));
 
@@ -134,23 +133,6 @@ bool SyncLoadContext::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseInfo& info) {
   DCHECK(!Completed());
-  // Synchronous loads in blink aren't associated with a ResourceClient, and
-  // CORS checks are performed by ResourceClient subclasses, so there's
-  // currently no way to perform CORS checks for redirects.
-  // Err on the side of extreme caution and block any cross origin redirect
-  // that might have CORS implications.
-  if (fetch_request_mode_ != network::mojom::FetchRequestMode::kNoCORS &&
-      redirect_info.new_url.GetOrigin() != response_->url.GetOrigin()) {
-    LOG(ERROR) << "Cross origin redirect denied";
-    response_->error_code = net::ERR_ABORTED;
-
-    CompleteRequest(false /* remove_pending_request */);
-
-    // Returning false here will cause the request to be cancelled and this
-    // object deleted.
-    return false;
-  }
-
   response_->url = redirect_info.new_url;
   response_->info = info;
   response_->redirect_info = redirect_info;

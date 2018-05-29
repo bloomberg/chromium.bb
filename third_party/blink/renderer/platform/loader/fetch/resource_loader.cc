@@ -777,11 +777,9 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   if (data_out.size()) {
     data_out.ForEachSegment([this](const char* segment, size_t segment_size,
                                    size_t segment_offset) {
-      Context().DispatchDidReceiveData(resource_->Identifier(), segment,
-                                       segment_size);
+      DidReceiveData(segment, segment_size);
       return true;
     });
-    resource_->SetResourceBuffer(data_out);
   }
 
   if (downloaded_file_length) {
@@ -791,12 +789,9 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   if (request.DownloadToBlob()) {
     auto blob = downloaded_blob.GetBlobHandle();
     if (blob) {
-      Context().DispatchDidReceiveData(resource_->Identifier(), nullptr,
-                                       blob->size());
-      resource_->DidDownloadData(blob->size());
+      DidDownloadData(blob->size(), blob->size());
     }
-    Context().DispatchDidDownloadToBlob(resource_->Identifier(), blob.get());
-    resource_->DidDownloadToBlob(blob);
+    FinishedCreatingBlob(blob);
   }
   DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,
                    decoded_body_length, false);

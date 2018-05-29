@@ -113,8 +113,6 @@ class SyncLoadContext : public RequestPeer {
   class SignalHelper;
   std::unique_ptr<SignalHelper> signals_;
 
-  const network::mojom::FetchRequestMode fetch_request_mode_;
-
   DISALLOW_COPY_AND_ASSIGN(SyncLoadContext);
 };
 
