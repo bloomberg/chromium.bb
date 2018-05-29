@@ -3023,12 +3023,12 @@ jumbo_split_static_library("browser") {
       sources += [
         "notifications/notification_platform_bridge_win.cc",
         "notifications/notification_platform_bridge_win.h",
-        "notifications/notification_platform_bridge_win_metrics.cc",
-        "notifications/notification_platform_bridge_win_metrics.h",
-        "notifications/notification_platform_bridge_win_util.cc",
-        "notifications/notification_platform_bridge_win_util.h",
         "notifications/win/notification_launch_id.cc",
         "notifications/win/notification_launch_id.h",
+        "notifications/win/notification_metrics.cc",
+        "notifications/win/notification_metrics.h",
+        "notifications/win/notification_util.cc",
+        "notifications/win/notification_util.h",
       ]
     }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/notification_platform_bridge_win_metrics.h"
+#include "chrome/browser/notifications/win/notification_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
 

@@ -7,8 +7,8 @@
 #include <wrl/client.h>
 
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
-#include "chrome/browser/notifications/notification_platform_bridge_win_util.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
+#include "chrome/browser/notifications/win/notification_util.h"
 
 namespace winui = ABI::Windows::UI;
 
