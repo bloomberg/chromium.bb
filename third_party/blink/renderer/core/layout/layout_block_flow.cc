@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -3073,7 +3074,8 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
   // So, if our children are currently inline and a block child has to be
   // inserted, we move all our inline children into anonymous block boxes.
   bool child_is_block_level;
-  bool layout_ng_enabled = RuntimeEnabledFeatures::LayoutNGEnabled();
+  bool layout_ng_enabled = RuntimeEnabledFeatures::LayoutNGEnabled() &&
+                           IsLayoutNGContainingBlock(this);
   if (layout_ng_enabled && !FirstChild() &&
       (new_child->IsFloating() ||
        (new_child->IsOutOfFlowPositioned() &&
