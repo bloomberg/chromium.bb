@@ -12,24 +12,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
+import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This {@link PagerAdapter} renders an observable list of {@link KeyboardAccessoryData.Tab}s into a
+ * This {@link PagerAdapter} renders an observable list of {@link Tab}s into a
  * {@link ViewPager}. It instantiates the tab views based on the layout they provide.
  */
-class AccessoryPagerAdapter extends PagerAdapter {
-    private final SimpleListObservable<KeyboardAccessoryData.Tab> mTabList;
-    private final Map<KeyboardAccessoryData.Tab, ViewGroup> mViews;
+class AccessoryPagerAdapter extends PagerAdapter
+        implements ListModelChangeProcessor.ViewBinder<SimpleListObservable<Tab>, ViewPager> {
+    private final SimpleListObservable<Tab> mTabList;
+    private final Map<Tab, ViewGroup> mViews;
 
     /**
      * Creates the PagerAdapter that populates a ViewPager based on a held list of tabs.
      * @param tabList The list that contains the tabs to instantiate.
      */
-    public AccessoryPagerAdapter(SimpleListObservable<KeyboardAccessoryData.Tab> tabList) {
+    public AccessoryPagerAdapter(SimpleListObservable<Tab> tabList) {
         mTabList = tabList;
         mViews = new HashMap<>(mTabList.getItemCount());
     }
@@ -37,7 +40,7 @@ class AccessoryPagerAdapter extends PagerAdapter {
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
-        KeyboardAccessoryData.Tab tab = mTabList.get(position);
+        Tab tab = mTabList.get(position);
         ViewGroup layout = mViews.get(tab);
         if (layout == null) {
             layout = (ViewGroup) LayoutInflater.from(container.getContext())
@@ -53,9 +56,15 @@ class AccessoryPagerAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @Nullable Object object) {
-        if (mViews.get(mTabList.get(position)) == null) return;
-        ViewGroup layout = mViews.get(mTabList.get(position));
-        if (container.indexOfChild(layout) != -1) container.removeView(layout);
+        if (object == null) return; // Nothing to do here.
+        ViewGroup viewToBeDeleted = (ViewGroup) object;
+        if (container.indexOfChild(viewToBeDeleted) != -1) container.removeView(viewToBeDeleted);
+        for (Map.Entry<Tab, ViewGroup> entry : mViews.entrySet()) {
+            if (entry.getValue().equals(viewToBeDeleted)) {
+                mViews.remove(entry.getKey());
+                return; // Every ViewGroup can only be associated to one tab.
+            }
+        }
     }
 
     @Override
@@ -66,5 +75,34 @@ class AccessoryPagerAdapter extends PagerAdapter {
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object o) {
         return view == o;
+    }
+
+    @Override
+    public int getItemPosition(@NonNull Object object) {
+        ViewGroup viewToBeFound = (ViewGroup) object;
+        for (int i = 0; i < mTabList.getItemCount(); i++) {
+            if (mViews.get(mTabList.get(i)).equals(viewToBeFound)) {
+                return i; // The tab the view is connected to still exists and its position is i.
+            }
+        }
+        return POSITION_NONE; // Returning this, invokes |destroyItem| on |object|.
+    }
+
+    @Override
+    public void onItemsInserted(
+            SimpleListObservable<Tab> model, ViewPager view, int index, int count) {
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void onItemsRemoved(
+            SimpleListObservable<Tab> model, ViewPager view, int index, int count) {
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void onItemsChanged(
+            SimpleListObservable<Tab> model, ViewPager view, int index, int count) {
+        notifyDataSetChanged();
     }
 }
