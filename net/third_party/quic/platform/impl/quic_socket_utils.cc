@@ -139,8 +139,7 @@ int QuicSocketUtils::ReadPacket(int fd,
                                 QuicWallTime* walltimestamp,
                                 QuicSocketAddress* peer_address) {
   DCHECK(peer_address != nullptr);
-  char cbuf[kSpaceForCmsg];
-  memset(cbuf, 0, arraysize(cbuf));
+  char cbuf[kCmsgSpaceForReadPacket];
 
   iovec iov = {buffer, buf_len};
   struct sockaddr_storage raw_address;
@@ -168,7 +167,7 @@ int QuicSocketUtils::ReadPacket(int fd,
     return -1;
   }
 
-  if (hdr.msg_controllen >= arraysize(cbuf)) {
+  if (hdr.msg_flags & MSG_CTRUNC) {
     QUIC_BUG << "Incorrectly set control length: " << hdr.msg_controllen
              << ", expected " << arraysize(cbuf);
     return -1;

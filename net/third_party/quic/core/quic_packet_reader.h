@@ -79,7 +79,7 @@ class QuicPacketReader {
     // call on the packets.
     struct sockaddr_storage raw_address;
     // cbuf is used for ancillary data from the kernel on recvmmsg.
-    char cbuf[QuicSocketUtils::kSpaceForCmsg];
+    char cbuf[kCmsgSpaceForReadPacket];
     // buf is used for the data read from the kernel on recvmmsg.
     char buf[kMaxPacketSize];
   };

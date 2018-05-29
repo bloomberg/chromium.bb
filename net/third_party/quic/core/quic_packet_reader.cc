@@ -48,7 +48,7 @@ void QuicPacketReader::Initialize() {
     hdr->msg_iovlen = 1;
 
     hdr->msg_control = packets_[i].cbuf;
-    hdr->msg_controllen = QuicSocketUtils::kSpaceForCmsg;
+    hdr->msg_controllen = kCmsgSpaceForReadPacket;
   }
 #endif
 }
@@ -83,7 +83,8 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
     msghdr* hdr = &mmsg_hdr_[i].msg_hdr;
     hdr->msg_namelen = sizeof(sockaddr_storage);
     DCHECK_EQ(1, hdr->msg_iovlen);
-    hdr->msg_controllen = QuicSocketUtils::kSpaceForCmsg;
+    hdr->msg_controllen = kCmsgSpaceForReadPacket;
+    hdr->msg_flags = 0;
   }
 
   int packets_read =
@@ -99,10 +100,10 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
       continue;
     }
 
-    if (mmsg_hdr_[i].msg_hdr.msg_controllen >= QuicSocketUtils::kSpaceForCmsg) {
+    if (mmsg_hdr_[i].msg_hdr.msg_flags & MSG_CTRUNC) {
       QUIC_BUG << "Incorrectly set control length: "
                << mmsg_hdr_[i].msg_hdr.msg_controllen << ", expected "
-               << QuicSocketUtils::kSpaceForCmsg;
+               << kCmsgSpaceForReadPacket;
       continue;
     }
 
