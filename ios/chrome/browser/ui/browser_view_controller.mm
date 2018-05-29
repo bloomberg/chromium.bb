@@ -1717,9 +1717,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.secondaryToolbarNoFullscreenHeightConstraint.constant =
       [self secondaryToolbarHeightWithInset];
 
-  // Force a layout pass to make sure the toolbar has the correct height.
-  [self.primaryToolbarCoordinator.viewController.view setNeedsLayout];
-  [self.primaryToolbarCoordinator.viewController.view layoutIfNeeded];
+  if (!IsUIRefreshPhase1Enabled()) {
+    // Force a layout pass to make sure the toolbar has the correct height.
+    [self.primaryToolbarCoordinator.viewController.view setNeedsLayout];
+    [self.primaryToolbarCoordinator.viewController.view layoutIfNeeded];
+  }
 }
 
 - (void)viewDidLayoutSubviews {
