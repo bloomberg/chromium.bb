@@ -155,7 +155,7 @@ actions.xml allows you to annotate an action as `not_user_triggered="true"`.  Th
 feature should be used rarely.  If you think you want to annotate your action
 thusly, please re-review the best practices above.
 
-### Deleting User Action Entries
+## Deleting User Action Entries
 
 Do not delete actions from actions.xml.  Instead, mark unused user actions as
 obsolete, annotating them with the associated date or milestone in the obsolete
