@@ -904,7 +904,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
-      allow_overlay = true;
+      // TODO(mcasas): Enable this for ChromeOS https://crbug.com/776093.
+      allow_overlay = false;
       // We've converted the YUV to RGB, fix the color space.
       // TODO(hubbe): The libyuv YUV to RGB conversion may not have
       // honored the color space conversion 100%. We should either fix

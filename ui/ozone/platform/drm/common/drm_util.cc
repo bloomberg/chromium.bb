@@ -540,6 +540,8 @@ int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
       return DRM_FORMAT_XRGB8888;
     case gfx::BufferFormat::BGRX_1010102:
       return DRM_FORMAT_XRGB2101010;
+    case gfx::BufferFormat::RGBX_1010102:
+      return DRM_FORMAT_XBGR2101010;
     case gfx::BufferFormat::BGR_565:
       return DRM_FORMAT_RGB565;
     case gfx::BufferFormat::UYVY_422:
