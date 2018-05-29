@@ -83,12 +83,21 @@ void ActionView::OnInputModalityChanged(InputModality input_modality) {
 }
 
 void ActionView::OnMicStateChanged(MicState mic_state) {
+  is_user_speaking_ = false;
   UpdateState(/*animate=*/true);
 }
 
 void ActionView::OnSpeechLevelChanged(float speech_level_db) {
-  // TODO(wutao): will handle in next cl.
-  NOTIMPLEMENTED();
+  // TODO: Work with UX to determine the threshold.
+  constexpr float kSpeechLevelThreshold = -60.0f;
+  if (speech_level_db < kSpeechLevelThreshold)
+    return;
+
+  voice_action_view_->SetSpeechLevel(speech_level_db);
+  if (!is_user_speaking_) {
+    is_user_speaking_ = true;
+    UpdateState(/*animate=*/true);
+  }
 }
 
 void ActionView::UpdateState(bool animate) {
@@ -110,12 +119,11 @@ void ActionView::UpdateState(bool animate) {
   BaseLogoView::State mic_state;
   switch (interaction_model->mic_state()) {
     case MicState::kClosed:
-      // Do not animate when the first time showing the LogoView in kMic state.
-      // Only animate when changing from kListening or kUserSpeaks states.
       mic_state = BaseLogoView::State::kMicFab;
       break;
     case MicState::kOpen:
-      mic_state = BaseLogoView::State::kListening;
+      mic_state = is_user_speaking_ ? BaseLogoView::State::kUserSpeaks
+                                    : BaseLogoView::State::kListening;
       break;
   }
   voice_action_view_->SetState(mic_state, animate);

@@ -37,6 +37,8 @@ LogoView::LogoView()
   layer()->SetFillsBoundsOpaquely(false);
 
   state_animator_.SetStateAnimatorTimerDelegate(this);
+  state_animator_.SetLogoInputValueProvider(StateModel::State::kUserSpeaks,
+                                            &sound_level_input_value_provider_);
 }
 
 LogoView::~LogoView() {
@@ -49,17 +51,21 @@ void LogoView::SetState(BaseLogoView::State state, bool animate) {
     case BaseLogoView::State::kUndefined:
       animator_state = StateModel::State::kUndefined;
       break;
-    case BaseLogoView::State::kMic:
-      animator_state = StateModel::State::kMic;
-      break;
     case BaseLogoView::State::kMicFab:
       animator_state = StateModel::State::kMicFab;
       break;
     case BaseLogoView::State::kListening:
       animator_state = StateModel::State::kListening;
       break;
+    case BaseLogoView::State::kUserSpeaks:
+      animator_state = StateModel::State::kUserSpeaks;
+      break;
   }
   state_animator_.SwitchStateTo(animator_state, !animate);
+}
+
+void LogoView::SetSpeechLevel(float speech_level) {
+  sound_level_input_value_provider_.set_speech_level(speech_level);
 }
 
 int64_t LogoView::StartTimer() {

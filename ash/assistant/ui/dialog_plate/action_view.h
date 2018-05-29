@@ -61,6 +61,10 @@ class ActionView : public views::View,
   views::ImageView* keyboard_action_view_;  // Owned by view hierarchy.
   BaseLogoView* voice_action_view_;         // Owned by view hierarchy.
 
+  // True when speech level goes above a threshold and sets LogoView in
+  // kUserSpeaks state.
+  bool is_user_speaking_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ActionView);
 };
 
