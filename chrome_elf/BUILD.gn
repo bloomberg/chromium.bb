@@ -290,7 +290,6 @@ test("chrome_elf_unittests") {
     "third_party_dlls/imes_unittest.cc",
     "third_party_dlls/logs_unittest.cc",
     "third_party_dlls/main_unittest.cc",
-    "third_party_dlls/main_unittest_exe.h",
     "third_party_dlls/packed_list_file_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
@@ -321,8 +320,6 @@ test("chrome_elf_unittests") {
     ":blacklist_test_dll_2",
     ":blacklist_test_dll_3",
     ":chrome_elf",
-    ":main_unittest_dll_1",
-    ":main_unittest_dll_2",
     ":third_party_dlls_test_exe",
   ]
 }
@@ -365,36 +362,13 @@ test("chrome_elf_import_unittests") {
   ]
 }
 
-shared_library("main_unittest_dll_1") {
-  testonly = true
-  sources = [
-    "third_party_dlls/main_unittest_dll_1.cc",
-  ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
-  ]
-}
-
-shared_library("main_unittest_dll_2") {
-  testonly = true
-  sources = [
-    "third_party_dlls/main_unittest_dll_2.cc",
-    "third_party_dlls/main_unittest_dll_2.def",
-  ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
-  ]
-}
-
 executable("third_party_dlls_test_exe") {
   testonly = true
   sources = [
     "third_party_dlls/main_unittest_exe.cc",
-    "third_party_dlls/main_unittest_exe.h",
   ]
   deps = [
     ":third_party_dlls",
-    "//base",
     "//build/config:exe_and_shlib_deps",
     "//build/win:default_exe_manifest",
     "//chrome/install_static:install_static_util",

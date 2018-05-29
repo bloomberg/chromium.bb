@@ -13,6 +13,7 @@
 #include <limits>
 
 #include "chrome/install_static/user_data_dir.h"
+#include "chrome_elf/sha1/sha1.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace third_party_dlls {
@@ -56,11 +57,6 @@ FileStatus ReadInArray(HANDLE file,
   if (!::ReadFile(file, &metadata, sizeof(PackedListMetadata), &bytes_read,
                   FALSE) ||
       bytes_read != sizeof(PackedListMetadata)) {
-    // If |bytes_read| is actually 0, then the file was empty.
-    // A decision was made to return kArraySizeZero here, instead of a
-    // full failure.
-    if (!bytes_read)
-      return FileStatus::kArraySizeZero;
     return FileStatus::kMetadataReadFail;
   }
 
@@ -167,6 +163,15 @@ FileStatus InitInternal() {
 //------------------------------------------------------------------------------
 // Public defines & functions
 //------------------------------------------------------------------------------
+
+std::string GetFingerprintHash(DWORD image_size, DWORD time_data_stamp) {
+  // Max hex 32-bit value is 8 characters long.  2*8+1.
+  char buffer[17] = {};
+  ::snprintf(buffer, sizeof(buffer), "%08lX%lx", time_data_stamp, image_size);
+
+  std::string shell(buffer);
+  return elf_sha1::SHA1HashString(shell);
+}
 
 bool IsModuleListed(const std::string& basename_hash,
                     const std::string& fingerprint_hash) {

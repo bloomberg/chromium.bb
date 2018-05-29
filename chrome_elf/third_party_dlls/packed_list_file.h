@@ -27,6 +27,10 @@ enum class FileStatus {
   COUNT
 };
 
+// Utility function that takes required PE fingerprint data and returns a SHA-1
+// fingerprint hash.  To be used with IsModuleListed() and logging APIs.
+std::string GetFingerprintHash(DWORD image_size, DWORD time_data_stamp);
+
 // Look up a binary based on the required data points.
 // - Returns true if match found in the list.
 bool IsModuleListed(const std::string& basename_hash,

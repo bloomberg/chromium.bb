@@ -128,7 +128,7 @@ void* PEImageSafe::RVAToAddr(DWORD rva) {
 
 void* PEImageSafe::GetImageDirectoryEntryAddr(int directory,
                                               DWORD* directory_size) {
-  assert(directory >= 0 && directory < IMAGE_NUMBEROF_DIRECTORY_ENTRIES &&
+  assert(directory > 0 && directory < IMAGE_NUMBEROF_DIRECTORY_ENTRIES &&
          ldr_image_mapping_);
 
   // GetOptionalHeader() validates the optional header.

@@ -45,8 +45,6 @@ class PEImageSafe {
   // Some functions can only be used on images that have been memory mapped by
   // the NT Loader (e.g. LoadLibrary).  This constructor must be used to enable
   // that functionality.
-  // - Note: Full load or LOAD_LIBRARY_AS_IMAGE_RESOURCE required.
-  // LOAD_LIBRARY_AS_DATAFILE* is not sufficient for some APIs.
   PEImageSafe(HMODULE buffer, DWORD buffer_size)
       : image_(buffer), image_size_(buffer_size) {
     ldr_image_mapping_ = !LDR_IS_DATAFILE(buffer);

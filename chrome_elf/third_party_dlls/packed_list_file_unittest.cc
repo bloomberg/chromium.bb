@@ -169,15 +169,13 @@ TEST_F(ThirdPartyFileTest, Success) {
   // Test matching.
   for (const auto& test_module : GetTestArray()) {
     fingerprint_hash =
-        GetFingerprintString(test_module.imagesize, test_module.timedatestamp);
-    fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
+        GetFingerprintHash(test_module.imagesize, test_module.timedatestamp);
     name_hash = elf_sha1::SHA1HashString(test_module.basename);
     EXPECT_TRUE(IsModuleListed(name_hash, fingerprint_hash));
   }
 
   // Test a failure to match.
-  fingerprint_hash = GetFingerprintString(1337, 0x12345678);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
+  fingerprint_hash = GetFingerprintHash(1337, 0x12345678);
   name_hash = elf_sha1::SHA1HashString("booya.dll");
   EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
 }
@@ -186,8 +184,7 @@ TEST_F(ThirdPartyFileTest, Success) {
 TEST_F(ThirdPartyFileTest, NoFiles) {
   ASSERT_EQ(InitFromFile(), FileStatus::kSuccess);
 
-  std::string fingerprint_hash = GetFingerprintString(1337, 0x12345678);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
+  std::string fingerprint_hash = GetFingerprintHash(1337, 0x12345678);
   std::string name_hash = elf_sha1::SHA1HashString("booya.dll");
   EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
 }
