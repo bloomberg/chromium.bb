@@ -5,6 +5,7 @@
 """Holds the constants for pretty printing histograms.xml."""
 
 import os
+import re
 import sys
 
 # Import the metrics/common module for pretty print xml.
@@ -66,6 +67,15 @@ TAGS_THAT_ALLOW_SINGLE_LINE = ['summary', 'int', 'owner']
 
 LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 
+
+def _NaturalSortByName(node):
+  """Sort by name, ordering numbers in the way humans expect."""
+  # See: https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
+  name = node.attributes['name'].value.lower()
+  convert = lambda text: int(text) if text.isdigit() else text
+  return [convert(c) for c in re.split('([0-9]+)', name)]
+
+
 # Tags whose children we want to alphabetize. The key is the parent tag name,
 # and the value is a list of pairs of tag name and key functions that maps each
 # child node to the desired sort key.
@@ -75,7 +85,8 @@ TAGS_ALPHABETIZATION_RULES = {
     'enum': [('int', lambda n: int(n.attributes['value'].value))],
     'histogram_suffixes_list': [('histogram_suffixes', LOWERCASE_NAME_FN)],
     'histogram_suffixes': [
-        ('suffix', LOWERCASE_NAME_FN),
+        ('obsolete', lambda n: None),
+        ('suffix', _NaturalSortByName),
         ('affected-histogram', LOWERCASE_NAME_FN),
     ],
 }
