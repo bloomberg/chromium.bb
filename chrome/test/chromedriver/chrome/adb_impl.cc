@@ -140,9 +140,14 @@ Status AdbImpl::ForwardPort(const std::string& device_serial,
                                      adb_command_status.message());
   base::StringToInt(response, local_port_output);
   if (*local_port_output == 0) {
-    return Status(kUnknownError, "Failed to forward ports to device " +
-                                     device_serial +
-                                     ". No port chosen: " + response + ".");
+    return Status(
+        kUnknownError,
+        "Failed to forward ports to device " + device_serial +
+            ". No port chosen: " + response +
+            ". Perhaps your adb version is out of date. "
+            "ChromeDriver 2.39 and newer require adb version 1.0.38 or newer. "
+            "Run 'adb version' in your terminal of the host device to find "
+            "your version of adb.");
   }
 
   return Status(kOk);
