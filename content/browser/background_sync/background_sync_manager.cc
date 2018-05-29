@@ -794,7 +794,7 @@ void BackgroundSyncManager::DispatchSyncEvent(
         base::BindOnce(&DidStartWorkerForSyncEvent,
                        base::BindOnce(&BackgroundSyncManager::DispatchSyncEvent,
                                       weak_ptr_factory_.GetWeakPtr(), tag,
-                                      std::move(active_version), last_chance),
+                                      active_version, last_chance),
                        std::move(callback)));
     return;
   }
@@ -809,8 +809,8 @@ void BackgroundSyncManager::DispatchSyncEvent(
 
   active_version->event_dispatcher()->DispatchSyncEvent(
       tag, last_chance, parameters_->max_sync_event_duration,
-      base::BindOnce(&OnSyncEventFinished, std::move(active_version),
-                     request_id, std::move(repeating_callback)));
+      base::BindOnce(&OnSyncEventFinished, active_version, request_id,
+                     std::move(repeating_callback)));
 }
 
 void BackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
