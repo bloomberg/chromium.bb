@@ -2004,6 +2004,7 @@ TEST_F(ShelfViewTest, ShelfViewShowsContextMenu) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(shelf_view_->GetBoundsInScreen().CenterPoint());
   generator.PressRightButton();
+  generator.ReleaseRightButton();
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 

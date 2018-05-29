@@ -30,7 +30,7 @@
 #include "ui/views/view_model.h"
 
 namespace ui {
-class MenuModel;
+class SimpleMenuModel;
 }
 
 namespace views {
@@ -49,6 +49,7 @@ class Shelf;
 class ShelfButton;
 class ShelfModel;
 struct ShelfItem;
+class ShelfMenuModelAdapter;
 class ShelfWidget;
 
 enum ShelfAlignmentUmaEnumValue {
@@ -375,7 +376,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // If |context_menu| is set, the displayed menu is a context menu and not
   // a menu listing one or more running applications.
   // The |click_point| is only used for |context_menu|'s.
-  void ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
+  void ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                 views::View* source,
                 const gfx::Point& click_point,
                 bool context_menu,
@@ -462,9 +463,8 @@ class ASH_EXPORT ShelfView : public views::View,
 
   std::unique_ptr<views::FocusSearch> focus_search_;
 
-  // Manages the context menu, and the list menu.
-  std::unique_ptr<ui::MenuModel> menu_model_;
-  std::unique_ptr<views::MenuRunner> launcher_menu_runner_;
+  // Responsible for building and running all menus.
+  std::unique_ptr<ShelfMenuModelAdapter> shelf_menu_model_adapter_;
   std::unique_ptr<ScopedRootWindowForNewWindows>
       scoped_root_window_for_new_windows_;
 
@@ -477,10 +477,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
-
-  // The timestamp of the event which opened the last context menu on a
-  // ShelfButton. Used in metrics.
-  base::TimeTicks shelf_button_context_menu_time_;
 
   // True if a drag and drop operation created/pinned the item in the launcher
   // and it needs to be deleted/unpinned again if the operation gets cancelled.

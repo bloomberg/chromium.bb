@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/views/app_list_view_context_menu.h"
+#include "ui/app_list/views/app_list_menu_model_adapter.h"
 #include "ui/app_list/views/search_result_base_view.h"
 #include "ui/views/context_menu_controller.h"
 
@@ -31,7 +31,7 @@ class PaginationModel;
 class APP_LIST_EXPORT SearchResultTileItemView
     : public SearchResultBaseView,
       public views::ContextMenuController,
-      public AppListViewContextMenu::Delegate {
+      public AppListMenuModelAdapter::Delegate {
  public:
   SearchResultTileItemView(SearchResultContainerView* result_container,
                            AppListViewDelegate* view_delegate,
@@ -69,7 +69,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  // AppListViewContextMenu::Delegate overrides:
+  // AppListMenuModelAdapter::Delegate overrides:
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
@@ -84,6 +84,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void SetTitle(const base::string16& title);
   void SetRating(float rating);
   void SetPrice(const base::string16& price);
+
+  AppListMenuModelAdapter::AppListViewAppType GetAppType() const;
 
   // Whether the tile view is a suggested app.
   bool IsSuggestedAppTile() const;
@@ -118,7 +120,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   const bool is_play_store_app_search_enabled_;
 
-  AppListViewContextMenu context_menu_;
+  std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
   base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_;
 

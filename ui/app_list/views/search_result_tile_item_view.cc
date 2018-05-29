@@ -93,7 +93,6 @@ SearchResultTileItemView::SearchResultTileItemView(
       pagination_model_(pagination_model),
       is_play_store_app_search_enabled_(
           features::IsPlayStoreAppSearchEnabled()),
-      context_menu_(this),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -162,7 +161,7 @@ SearchResultTileItemView::~SearchResultTileItemView() {
 void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   // Handle the case where this may be called from a nested run loop while its
   // context menu is showing. This cancels the menu (it's for the old item).
-  context_menu_.Reset();
+  context_menu_.reset();
 
   SetVisible(!!item);
 
@@ -227,25 +226,6 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
 void SearchResultTileItemView::SetParentBackgroundColor(SkColor color) {
   parent_background_color_ = color;
   UpdateBackgroundColor();
-}
-
-void SearchResultTileItemView::OnContextMenuClosed(
-    const base::TimeTicks& open_time) {
-  base::TimeDelta user_journey_time = base::TimeTicks::Now() - open_time;
-  if (IsSuggestedAppTile()) {
-    if (view_delegate_->GetModel()->state_fullscreen() ==
-        AppListViewState::PEEKING) {
-      UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.SuggestedAppPeeking",
-                          user_journey_time);
-    } else {
-      UMA_HISTOGRAM_TIMES(
-          "Apps.ContextMenuUserJourneyTime.SuggestedAppFullscreen",
-          user_journey_time);
-    }
-  } else {
-    UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.SearchResult",
-                        user_journey_time);
-  }
 }
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
@@ -349,7 +329,7 @@ void SearchResultTileItemView::OnMetadataChanged() {
 
 void SearchResultTileItemView::OnResultDestroying() {
   // The menu comes from |item_|. If we're showing a menu we need to cancel it.
-  context_menu_.Reset();
+  context_menu_.reset();
 
   if (item_)
     item_->RemoveObserver(this);
@@ -377,36 +357,19 @@ void SearchResultTileItemView::OnGetContextMenuModel(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
     std::vector<ash::mojom::MenuItemPtr> menu) {
-  if (menu.empty() || context_menu_.IsRunning())
+  if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
-
-  if (IsSuggestedAppTile()) {
-    if (view_delegate_->GetModel()->state_fullscreen() ==
-        AppListViewState::PEEKING) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Apps.ContextMenuShowSource.SuggestedAppPeeking", source_type,
-          ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Apps.ContextMenuShowSource.SuggestedAppFullscreen", source_type,
-          ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
-    }
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.SearchResult",
-                              source_type,
-                              ui::MenuSourceType::MENU_SOURCE_TYPE_LAST);
-  }
 
   // TODO(warx): This is broken (https://crbug.com/795994).
   if (!HasFocus())
     result_container_->ClearSelectedIndex();
 
   int run_types = views::MenuRunner::HAS_MNEMONICS;
-  views::MenuAnchorPosition anchor_type = views::MENU_ANCHOR_TOPLEFT;
+  views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
   gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
 
   if (::features::IsTouchableAppContextMenuEnabled()) {
-    anchor_type = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
+    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
                  views::MenuRunner::CONTEXT_MENU |
                  views::MenuRunner::FIXED_ANCHOR;
@@ -417,13 +380,11 @@ void SearchResultTileItemView::OnGetContextMenuModel(
           gfx::Size(kGridSelectedSize, kGridSelectedSize));
     }
   }
-  context_menu_.Build(
-      std::move(menu), run_types,
-      base::Bind(&SearchResultTileItemView::OnContextMenuClosed,
-                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
-  context_menu_.Run(GetWidget(), nullptr, anchor_rect, anchor_type,
-                    source_type);
 
+  context_menu_ = std::make_unique<AppListMenuModelAdapter>(
+      item_->id(), this, source_type, this, GetAppType());
+  context_menu_->Build(std::move(menu));
+  context_menu_->Run(anchor_rect, anchor_position, run_types);
   source->RequestFocus();
 }
 
@@ -493,6 +454,28 @@ void SearchResultTileItemView::SetPrice(const base::string16& price) {
 
   price_->SetText(price);
   price_->SetVisible(true);
+}
+
+AppListMenuModelAdapter::AppListViewAppType
+SearchResultTileItemView::GetAppType() const {
+  if (IsSuggestedAppTile()) {
+    if (view_delegate_->GetModel()->state_fullscreen() ==
+        AppListViewState::PEEKING) {
+      return AppListMenuModelAdapter::PEEKING_SUGGESTED;
+    } else {
+      return AppListMenuModelAdapter::FULLSCREEN_SUGGESTED;
+    }
+  } else {
+    if (view_delegate_->GetModel()->state_fullscreen() ==
+        AppListViewState::HALF) {
+      return AppListMenuModelAdapter::HALF_SEARCH_RESULT;
+    } else if (view_delegate_->GetModel()->state_fullscreen() ==
+               AppListViewState::FULLSCREEN_SEARCH) {
+      return AppListMenuModelAdapter::FULLSCREEN_SEARCH_RESULT;
+    }
+  }
+  NOTREACHED();
+  return AppListMenuModelAdapter::APP_LIST_APP_TYPE_LAST;
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTile() const {

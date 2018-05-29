@@ -12,7 +12,6 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -78,7 +77,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       icon_(new views::ImageView),
       title_(new views::Label),
       progress_bar_(new views::ProgressBar),
-      context_menu_(this),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -214,7 +212,8 @@ void AppListItemView::OnTouchDragTimer(
 }
 
 void AppListItemView::CancelContextMenu() {
-  context_menu_.Cancel();
+  if (context_menu_)
+    context_menu_->Cancel();
 }
 
 gfx::ImageSkia AppListItemView::GetDragImage() {
@@ -278,20 +277,12 @@ void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
   progress_bar_->SetValue(percent_downloaded / 100.0);
 }
 
-void AppListItemView::OnContextMenuClosed(const base::TimeTicks& open_time) {
-  UMA_HISTOGRAM_TIMES("Apps.ContextMenuUserJourneyTime.AppGrid",
-                      base::TimeTicks::Now() - open_time);
-}
-
 void AppListItemView::OnContextMenuModelReceived(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
     std::vector<ash::mojom::MenuItemPtr> menu) {
-  if (menu.empty() || context_menu_.IsRunning())
+  if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
-
-  UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.AppGrid", source_type,
-                            ui::MENU_SOURCE_TYPE_LAST);
 
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
@@ -317,12 +308,11 @@ void AppListItemView::OnContextMenuModelReceived(
     }
   }
 
-  context_menu_.Build(
-      std::move(menu), run_types,
-      base::Bind(&AppListItemView::OnContextMenuClosed,
-                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
-  context_menu_.Run(GetWidget(), nullptr, anchor_rect, anchor_position,
-                    source_type);
+  context_menu_ = std::make_unique<AppListMenuModelAdapter>(
+      item_weak_->GetMetadata()->id, this, source_type, this,
+      AppListMenuModelAdapter::FULLSCREEN_APP_GRID);
+  context_menu_->Build(std::move(menu));
+  context_menu_->Run(anchor_rect, anchor_position, run_types);
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,

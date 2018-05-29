@@ -412,8 +412,6 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
   destroyed_flag_ = &destroyed;
 
   Button::ShowContextMenu(p, source_type);
-  UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.ShelfButton",
-                            source_type, ui::MENU_SOURCE_TYPE_LAST);
 
   if (!destroyed) {
     destroyed_flag_ = nullptr;

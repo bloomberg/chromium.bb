@@ -26,6 +26,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_context_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -36,6 +37,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -404,11 +406,13 @@ void ShelfView::UpdatePanelIconPosition(const ShelfID& id,
 }
 
 bool ShelfView::IsShowingMenu() const {
-  return launcher_menu_runner_.get() && launcher_menu_runner_->IsRunning();
+  return shelf_menu_model_adapter_ &&
+         shelf_menu_model_adapter_->IsShowingMenu();
 }
 
 bool ShelfView::IsShowingMenuForView(views::View* view) const {
-  return IsShowingMenu() && menu_owner_ == view;
+  return IsShowingMenu() &&
+         shelf_menu_model_adapter_->IsShowingMenuForView(*view);
 }
 
 bool ShelfView::IsShowingOverflowBubble() const {
@@ -775,7 +779,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
     return;
 
   if (IsShowingMenu())
-    launcher_menu_runner_->Cancel();
+    shelf_menu_model_adapter_->Cancel();
 
   int index = view_model_->GetIndexOfView(view);
   if (index == -1 || view_model_->view_size() <= 1)
@@ -1800,8 +1804,8 @@ void ShelfView::ShelfItemAdded(int model_index) {
 }
 
 void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
-  if (old_item.id == context_menu_id_)
-    launcher_menu_runner_->Cancel();
+  if (old_item.id == context_menu_id_ && shelf_menu_model_adapter_)
+    shelf_menu_model_adapter_->Cancel();
 
   views::View* view = view_model_->view_at(model_index);
   view_model_->Remove(model_index);
@@ -1970,8 +1974,6 @@ void ShelfView::ShowContextMenuForView(views::View* source,
   const ShelfItem* item = ShelfItemForView(source);
   const int64_t display_id = GetDisplayIdForView(this);
   if (!item || !model_->GetShelfItemDelegate(item->id)) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Shelf", source_type,
-                              ui::MENU_SOURCE_TYPE_LAST);
     context_menu_id_ = ShelfID();
     std::unique_ptr<ShelfContextMenuModel> menu_model =
         std::make_unique<ShelfContextMenuModel>(
@@ -1981,10 +1983,6 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
 
-  // Record the current time for the shelf button context menu user journey
-  // histogram.
-  shelf_button_context_menu_time_ = base::TimeTicks::Now();
-
   // Get any custom entries; show the context menu in AfterGetContextMenuItems.
   model_->GetShelfItemDelegate(item->id)->GetContextMenuItems(
       display_id, base::Bind(&ShelfView::AfterGetContextMenuItems,
@@ -1992,7 +1990,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
                              source, source_type));
 }
 
-void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
+void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                          views::View* source,
                          const gfx::Point& click_point,
                          bool context_menu,
@@ -2002,13 +2000,16 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     return;
   menu_owner_ = source;
 
-  menu_model_ = std::move(menu_model);
   closing_event_time_ = base::TimeTicks();
+
+  // NOTE: If you convert to HAS_MNEMONICS be sure to update menu building code.
   int run_types = 0;
   if (context_menu) {
     run_types |=
         views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR;
   }
+
+  // Only use the touchable layout if the menu is for an app.
   if (features::IsTouchableAppContextMenuEnabled())
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT;
 
@@ -2019,36 +2020,26 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
 
-  launcher_menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(), run_types,
-      base::Bind(&ShelfView::OnMenuClosed, base::Unretained(this), source));
-
-  // NOTE: if you convert to HAS_MNEMONICS be sure to update menu building code.
-  launcher_menu_runner_->RunMenuAt(
-      GetWidget(), nullptr,
+  shelf_menu_model_adapter_ = std::make_unique<ShelfMenuModelAdapter>(
+      item ? item->id.app_id : std::string(), std::move(menu_model), source,
+      source_type,
+      base::BindOnce(&ShelfView::OnMenuClosed, base::Unretained(this), source));
+  shelf_menu_model_adapter_->Run(
       GetMenuAnchorRect(source, click_point, source_type, context_menu),
-      GetMenuAnchorPosition(item, context_menu), source_type);
+      GetMenuAnchorPosition(item, context_menu), run_types);
 }
 
 void ShelfView::OnMenuClosed(views::View* source) {
   menu_owner_ = nullptr;
   context_menu_id_ = ShelfID();
 
-  closing_event_time_ = launcher_menu_runner_->closing_event_time();
+  closing_event_time_ = shelf_menu_model_adapter_->GetClosingEventTime();
 
-  if (shelf_button_context_menu_time_ != base::TimeTicks()) {
-    // If the context menu came from a ShelfButton.
-    UMA_HISTOGRAM_TIMES(
-        "Apps.ContextMenuUserJourneyTime.ShelfButton",
-        base::TimeTicks::Now() - shelf_button_context_menu_time_);
-    shelf_button_context_menu_time_ = base::TimeTicks();
-  }
   const ShelfItem* item = ShelfItemForView(source);
   if (item)
     static_cast<ShelfButton*>(source)->OnMenuClosed();
 
-  launcher_menu_runner_.reset();
-  menu_model_.reset();
+  shelf_menu_model_adapter_.reset();
 
   // Auto-hide or alignment might have changed, but only for this shelf.
   shelf_->UpdateVisibilityState();
