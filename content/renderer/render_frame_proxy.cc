@@ -141,8 +141,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     // be updated, as the OnSwapOut flow which normally does this won't happen
     // in that case.  See https://crbug.com/653746 and
     // https://crbug.com/651980.
-    if (!render_view->is_swapped_out())
-      render_view->SetSwappedOut(true);
+    if (!render_widget->is_swapped_out())
+      render_widget->SetSwappedOut(true);
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames

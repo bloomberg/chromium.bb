@@ -45,7 +45,9 @@ class MouseLockDispatcherTest : public RenderViewTest {
  protected:
   RenderViewImpl* view() { return static_cast<RenderViewImpl*>(view_); }
   RenderWidget* widget() { return view()->GetWidget(); }
-  MouseLockDispatcher* dispatcher() { return view()->mouse_lock_dispatcher(); }
+  MouseLockDispatcher* dispatcher() {
+    return widget()->mouse_lock_dispatcher();
+  }
   int route_id_;
   MockLockTarget* target_;
   MockLockTarget* alternate_target_;

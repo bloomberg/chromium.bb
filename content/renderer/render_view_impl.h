@@ -107,7 +107,7 @@ class CreateViewParams;
 //
 // For context, please see https://crbug.com/467770 and
 // https://www.chromium.org/developers/design-documents/site-isolation.
-class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
+class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                                       public blink::WebViewClient,
                                       public RenderWidgetOwnerDelegate,
                                       public RenderView {

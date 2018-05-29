@@ -280,11 +280,11 @@ void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
 
   if (!render_frame_)
     return;
-  RenderViewImpl* render_view = render_frame_->render_view();
+  RenderWidget* window_widget = render_frame_->render_view()->GetWidget();
   HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->SelectRange(
-      render_view->ConvertWindowPointToViewport(base),
-      render_view->ConvertWindowPointToViewport(extent));
+      window_widget->ConvertWindowPointToViewport(base),
+      window_widget->ConvertWindowPointToViewport(extent));
 }
 
 void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(
@@ -334,7 +334,8 @@ void FrameInputHandlerImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
     return;
   HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->MoveRangeSelectionExtent(
-      render_frame_->render_view()->ConvertWindowPointToViewport(extent));
+      render_frame_->render_view()->GetWidget()->ConvertWindowPointToViewport(
+          extent));
 }
 
 void FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect(
@@ -362,9 +363,9 @@ void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
   if (!render_frame_)
     return;
 
-  RenderViewImpl* render_view = render_frame_->render_view();
   render_frame_->GetWebFrame()->MoveCaretSelection(
-      render_view->ConvertWindowPointToViewport(point));
+      render_frame_->render_view()->GetWidget()->ConvertWindowPointToViewport(
+          point));
 }
 
 void FrameInputHandlerImpl::GetWidgetInputHandler(
