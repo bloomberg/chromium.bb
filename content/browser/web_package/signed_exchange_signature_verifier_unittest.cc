@@ -5,7 +5,7 @@
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 
 #include "base/callback.h"
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_signature_header_field.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,7 +15,7 @@ namespace content {
 namespace {
 
 TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
-  SignedExchangeHeader header;
+  SignedExchangeEnvelope header;
   header.set_request_method("GET");
   header.set_request_url(GURL("https://example.com/index.html"));
   header.set_response_code(net::HTTP_OK);
@@ -190,7 +190,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
   }
 
   void TestVerifierGivenValidInput(
-      const SignedExchangeHeader& header,
+      const SignedExchangeEnvelope& header,
       scoped_refptr<net::X509Certificate> certificate) {
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
               SignedExchangeSignatureVerifier::Verify(
@@ -221,7 +221,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeHeader invalid_expires_header(header);
+    SignedExchangeEnvelope invalid_expires_header(header);
     auto invalid_expires_signature =
         SignedExchangeSignatureHeaderField::ParseSignature(
             kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
@@ -235,7 +235,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeHeader corrupted_header(header);
+    SignedExchangeEnvelope corrupted_header(header);
     corrupted_header.set_request_url(GURL("https://example.com/bad.html"));
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
                   kErrSignatureVerificationFailed,
@@ -244,7 +244,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeHeader badsig_header(header);
+    SignedExchangeEnvelope badsig_header(header);
     SignedExchangeSignatureHeaderField::Signature badsig = header.signature();
     badsig.sig[0]++;
     badsig_header.SetSignatureForTesting(badsig);
@@ -255,7 +255,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeHeader badsigsha256_header(header);
+    SignedExchangeEnvelope badsigsha256_header(header);
     SignedExchangeSignatureHeaderField::Signature badsigsha256 =
         header.signature();
     badsigsha256.cert_sha256->data[0]++;
@@ -281,7 +281,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
           net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeHeader header;
+  SignedExchangeEnvelope header;
   header.set_request_method("GET");
   header.set_request_url(GURL("https://example.com/index.html"));
   header.set_response_code(net::HTTP_OK);
@@ -306,7 +306,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
           net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeHeader header;
+  SignedExchangeEnvelope header;
   header.set_request_method("GET");
   header.set_request_url(GURL("https://test.example.org/test/"));
   header.set_response_code(net::HTTP_OK);
@@ -332,7 +332,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
           net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeHeader header;
+  SignedExchangeEnvelope header;
   header.set_request_method("GET");
   header.set_request_url(GURL("https://test.example.org/test/"));
   header.set_response_code(net::HTTP_OK);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_HEADER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_HEADER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_ENVELOPE_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_ENVELOPE_H_
 
 #include <map>
 #include <string>
@@ -23,10 +23,10 @@ namespace content {
 
 class SignedExchangeDevToolsProxy;
 
-// SignedExchangeHeader contains all information captured in signed exchange
-// envelope but the payload.
+// SignedExchangeEnvelope contains all information captured in
+// the "application/signed-exchange" format but the payload.
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
-class CONTENT_EXPORT SignedExchangeHeader {
+class CONTENT_EXPORT SignedExchangeEnvelope {
  public:
   static constexpr size_t kEncodedLengthInBytes = 3;
   // Parse encoded length of the variable-length field in the signed exchange.
@@ -41,14 +41,14 @@ class CONTENT_EXPORT SignedExchangeHeader {
   //
   // This also performs the step 3 and 4 of "Cross-origin trust" validation.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
-  static base::Optional<SignedExchangeHeader> Parse(
+  static base::Optional<SignedExchangeEnvelope> Parse(
       base::span<const uint8_t> input,
       SignedExchangeDevToolsProxy* devtools_proxy);
-  SignedExchangeHeader();
-  SignedExchangeHeader(const SignedExchangeHeader&);
-  SignedExchangeHeader(SignedExchangeHeader&&);
-  SignedExchangeHeader& operator=(SignedExchangeHeader&&);
-  ~SignedExchangeHeader();
+  SignedExchangeEnvelope();
+  SignedExchangeEnvelope(const SignedExchangeEnvelope&);
+  SignedExchangeEnvelope(SignedExchangeEnvelope&&);
+  SignedExchangeEnvelope& operator=(SignedExchangeEnvelope&&);
+  ~SignedExchangeEnvelope();
 
   // AddResponseHeader returns false on duplicated keys. |name| must be
   // lower-cased.
@@ -87,4 +87,4 @@ class CONTENT_EXPORT SignedExchangeHeader {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_HEADER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_ENVELOPE_H_

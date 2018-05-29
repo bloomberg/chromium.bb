@@ -33,7 +33,7 @@ struct URLLoaderCompletionStatus;
 }  // namespace network
 
 namespace content {
-class SignedExchangeHeader;
+class SignedExchangeEnvelope;
 
 // SignedExchangeDevToolsProxy lives on the IO thread and sends messages to
 // DevTools via the UI thread to show signed exchange related information.
@@ -68,7 +68,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
       const network::URLLoaderCompletionStatus& status);
 
   void OnSignedExchangeReceived(
-      const base::Optional<SignedExchangeHeader>& header,
+      const base::Optional<SignedExchangeEnvelope>& header,
       const scoped_refptr<net::X509Certificate>& certificate,
       const net::SSLInfo* ssl_info);
 

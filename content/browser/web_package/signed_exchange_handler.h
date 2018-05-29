@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
@@ -109,7 +109,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
   size_t headers_length_ = 0;
 
-  base::Optional<SignedExchangeHeader> header_;
+  base::Optional<SignedExchangeEnvelope> header_;
 
   std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory_;
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher_;

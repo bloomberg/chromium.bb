@@ -47,7 +47,7 @@ class InterceptionHandle;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
-class SignedExchangeHeader;
+class SignedExchangeEnvelope;
 class StoragePartition;
 struct GlobalRequestID;
 struct InterceptedRequestInfo;
@@ -166,7 +166,7 @@ class NetworkHandler : public DevToolsDomainHandler,
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response,
-      const base::Optional<SignedExchangeHeader>& header,
+      const base::Optional<SignedExchangeEnvelope>& header,
       const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,
       const std::vector<std::string>& error_messages);

@@ -99,9 +99,9 @@ proto_library("html_tree_proto") {
   testonly = true
 }
 
-fuzzer_test("signed_exchange_header_fuzzer") {
+fuzzer_test("signed_exchange_envelope_fuzzer") {
   sources = [
-    "signed_exchange_header_fuzzer.cc",
+    "signed_exchange_envelope_fuzzer.cc",
   ]
   deps = [
     "//base:i18n",

@@ -11,7 +11,7 @@
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
-#include "content/browser/web_package/signed_exchange_header.h"
+#include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,7 +108,7 @@ SignedExchangeHandler::SignedExchangeHandler(
   }
 
   // Triggering the read (asynchronously) for the encoded header length.
-  SetupBuffers(SignedExchangeHeader::kEncodedLengthInBytes);
+  SetupBuffers(SignedExchangeEnvelope::kEncodedLengthInBytes);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
@@ -206,9 +206,9 @@ bool SignedExchangeHandler::ParseHeadersLength() {
                      "SignedExchangeHandler::ParseEncodedLength");
   DCHECK_EQ(state_, State::kReadingHeadersLength);
 
-  headers_length_ = SignedExchangeHeader::ParseEncodedLength(
+  headers_length_ = SignedExchangeEnvelope::ParseEncodedLength(
       base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
-                      SignedExchangeHeader::kEncodedLengthInBytes));
+                      SignedExchangeEnvelope::kEncodedLengthInBytes));
   if (headers_length_ == 0 || headers_length_ > kMaxHeadersCBORLength) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::ParseEncodedLength",
@@ -229,7 +229,7 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
                      "SignedExchangeHandler::ParseHeadersAndFetchCertificate");
   DCHECK_EQ(state_, State::kReadingHeaders);
 
-  header_ = SignedExchangeHeader::Parse(
+  header_ = SignedExchangeEnvelope::Parse(
       base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
                       headers_length_),
       devtools_proxy_.get());
