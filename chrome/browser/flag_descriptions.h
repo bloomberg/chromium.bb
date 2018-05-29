@@ -1933,6 +1933,13 @@ extern const char kWarnBeforeQuittingFlagDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+extern const char kUiFoodName[];
+extern const char kUiFoodDescription[];
+
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 extern const char kAutomaticTabDiscardingName[];
