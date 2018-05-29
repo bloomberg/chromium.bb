@@ -12007,7 +12007,7 @@
           }
         }
       },
-      'supported_on': ['chrome_os:68-'],
+      'supported_on': ['chrome_os:69-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True
