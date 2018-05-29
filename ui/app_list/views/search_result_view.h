@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/views/app_list_view_context_menu.h"
+#include "ui/app_list/views/app_list_menu_model_adapter.h"
 #include "ui/app_list/views/search_result_actions_view_delegate.h"
 #include "ui/app_list/views/search_result_base_view.h"
 #include "ui/views/context_menu_controller.h"
@@ -45,7 +45,7 @@ class APP_LIST_EXPORT SearchResultView
     : public SearchResultBaseView,
       public views::ContextMenuController,
       public SearchResultActionsViewDelegate,
-      public AppListViewContextMenu::Delegate {
+      public AppListMenuModelAdapter::Delegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -69,7 +69,7 @@ class APP_LIST_EXPORT SearchResultView
 
   void set_is_last_result(bool is_last) { is_last_result_ = is_last; }
 
-  // AppListViewContextMenu::Delegate overrides:
+  // AppListMenuModelAdapter::Delegate overrides:
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
@@ -136,7 +136,7 @@ class APP_LIST_EXPORT SearchResultView
   SearchResultActionsView* actions_view_;  // Owned by the views hierarchy.
   views::ProgressBar* progress_bar_;       // Owned by views hierarchy.
 
-  AppListViewContextMenu context_menu_;
+  std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
   // Whether this view is selected.
   bool selected_ = false;

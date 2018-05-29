@@ -61,7 +61,6 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar),
-      context_menu_(this),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   icon_->set_can_process_events_within_subtree(false);
@@ -424,13 +423,15 @@ void SearchResultView::OnGetContextMenu(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
     std::vector<ash::mojom::MenuItemPtr> menu) {
-  if (menu.empty() || context_menu_.IsRunning())
+  if (menu.empty() || context_menu_->IsShowingMenu())
     return;
 
-  context_menu_.Build(std::move(menu), views::MenuRunner::HAS_MNEMONICS);
-  context_menu_.Run(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-                    views::MENU_ANCHOR_TOPLEFT, source_type);
-
+  context_menu_ = std::make_unique<AppListMenuModelAdapter>(
+      std::string(), this, source_type, this,
+      AppListMenuModelAdapter::SEARCH_RESULT);
+  context_menu_->Build(std::move(menu));
+  context_menu_->Run(gfx::Rect(point, gfx::Size()), views::MENU_ANCHOR_TOPLEFT,
+                     views::MenuRunner::HAS_MNEMONICS);
   source->RequestFocus();
 }
 

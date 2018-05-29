@@ -16,7 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/views/app_list_view_context_menu.h"
+#include "ui/app_list/views/app_list_menu_model_adapter.h"
 #include "ui/app_list/views/image_shadow_animator.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -38,7 +38,7 @@ class APP_LIST_EXPORT AppListItemView
       public views::ContextMenuController,
       public AppListItemObserver,
       public ImageShadowAnimator::Delegate,
-      public AppListViewContextMenu::Delegate {
+      public AppListMenuModelAdapter::Delegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -132,9 +132,6 @@ class APP_LIST_EXPORT AppListItemView
   void OnTouchDragTimer(const gfx::Point& tap_down_location,
                         const gfx::Point& tap_down_root_location);
 
-  // Records the context menu user journey time.
-  void OnContextMenuClosed(const base::TimeTicks& open_time);
-
   // Callback invoked when a context menu is received after calling
   // |AppListViewDelegate::GetContextMenuModel|.
   void OnContextMenuModelReceived(const gfx::Point& point,
@@ -169,7 +166,7 @@ class APP_LIST_EXPORT AppListItemView
   void ItemPercentDownloadedChanged() override;
   void ItemBeingDestroyed() override;
 
-  // AppListViewContextMenu::Delegate overrides;
+  // AppListMenuModelAdapter::Delegate overrides;
   void ExecuteCommand(int command_id, int event_flags) override;
 
   const bool is_folder_;
@@ -183,7 +180,7 @@ class APP_LIST_EXPORT AppListItemView
   views::Label* title_;               // Strongly typed child view.
   views::ProgressBar* progress_bar_;  // Strongly typed child view.
 
-  AppListViewContextMenu context_menu_;
+  std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
   UIState ui_state_ = UI_STATE_NORMAL;
 
