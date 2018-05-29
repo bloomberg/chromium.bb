@@ -63,5 +63,11 @@ message UpgradeArcContainerRequest {
   // expects this to be a path loaded by the imageloader service.
   optional string demo_session_apps_path = 6;
 
-  // Next ID to use: 7
+  // Locale to set in Android container during the boot.
+  optional string locale = 7;
+
+  // Preferred languages to set in Android container during the boot.
+  repeated string preferred_languages = 8;
+
+  // Next ID to use: 9
 }
