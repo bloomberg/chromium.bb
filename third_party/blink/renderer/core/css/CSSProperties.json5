@@ -81,13 +81,6 @@
       valid_type: "dict"
     },
 
-    // Set this to true if we do not support generation of style builder
-    // functions in the CSSProperty subclasses (yet).
-    style_builder_legacy: {
-      default: false,
-      value_type: "bool"
-    },
-
     // - is_descriptor
     // Whether it is a CSS descriptor. Descriptors define the characteristics of
     // an at-rule. E.g. @viewport is an at-rule, and width is a valid descriptor
@@ -276,8 +269,8 @@
     // The remaining arguments are used for the StyleBuilder and allow us to
     // succinctly describe how to apply properties. When default handlers are
     // not sufficient, we should prefer to use converter, and failing that
-    // define custom property handlers in StyleBuilderCustom.cpp. We only should
-    // use style_builder_functions.cc.tmpl to define handlers when there are
+    // define custom property handlers in CSSProperty subclasses. We should only
+    // use style_builder_functions.tmpl to define handlers when there are
     // multiple properties requiring the same handling, but converter doesn't
     // suffice.
 

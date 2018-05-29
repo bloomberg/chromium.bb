@@ -1130,20 +1130,6 @@ css_properties("make_core_generated_style_property_shorthand") {
   ]
 }
 
-css_properties("make_core_generated_style_builder") {
-  script = "../build/scripts/make_style_builder.py"
-  other_inputs = [
-    "../build/scripts/templates/style_builder.cc.tmpl",
-    "../build/scripts/templates/style_builder_functions.cc.tmpl",
-    "../build/scripts/templates/style_builder_functions.h.tmpl",
-  ]
-  outputs = [
-    "$blink_core_output_dir/style_builder.cc",
-    "$blink_core_output_dir/style_builder_functions.h",
-    "$blink_core_output_dir/style_builder_functions.cc",
-  ]
-}
-
 css_properties("make_core_generated_cssom_types") {
   script = "../build/scripts/core/css/make_cssom_types.py"
   other_inputs = [
@@ -1531,7 +1517,6 @@ targets_generating_sources = [
   ":make_core_generated_media_feature_names",
   ":make_core_generated_media_type_names",
   ":make_core_generated_origin_trials",
-  ":make_core_generated_style_builder",
   ":make_core_generated_style_property_shorthand",
   ":make_core_generated_svg_names",
   ":make_core_generated_xlink_names",

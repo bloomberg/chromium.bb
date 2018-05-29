@@ -42,49 +42,11 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
-#include "third_party/blink/renderer/core/css/css_counter_value.h"
-#include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
-#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
-#include "third_party/blink/renderer/core/css/css_function_value.h"
-#include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
-#include "third_party/blink/renderer/core/css/css_image_set_value.h"
-#include "third_party/blink/renderer/core/css/css_layout_function_value.h"
-#include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
-#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
-#include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css/css_resolution_units.h"
-#include "third_party/blink/renderer/core/css/css_value_id_mappings.h"
-#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
-#include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
-#include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
-#include "third_party/blink/renderer/core/css/resolver/element_style_resources.h"
-#include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
-#include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
-#include "third_party/blink/renderer/core/css/style_rule.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
-#include "third_party/blink/renderer/core/css_value_keywords.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/core/style/content_data.h"
-#include "third_party/blink/renderer/core/style/counter_content.h"
-#include "third_party/blink/renderer/core/style/quotes_data.h"
-#include "third_party/blink/renderer/core/style/style_generated_image.h"
-#include "third_party/blink/renderer/core/style/style_inherited_variables.h"
-#include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
-#include "third_party/blink/renderer/core/style/svg_computed_style.h"
-#include "third_party/blink/renderer/core/style_builder_functions.h"
-#include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/platform/fonts/font_description.h"
-#include "third_party/blink/renderer/platform/wtf/math_extras.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -166,7 +128,16 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
       is_initial = true;
   }
 
-  StyleBuilder::ApplyProperty(property, state, value, is_initial, is_inherit);
+  // CSSPropertyVariable currently handles initial/inherit inside ApplyValue.
+  DCHECK(id != CSSPropertyVariable || !is_initial);
+  DCHECK(id != CSSPropertyVariable || !is_inherit);
+
+  if (is_initial)
+    ToLonghand(property).ApplyInitial(state);
+  else if (is_inherit)
+    ToLonghand(property).ApplyInherit(state);
+  else
+    ToLonghand(property).ApplyValue(state, value);
 }
 
 }  // namespace blink

@@ -32,28 +32,18 @@ import types
 
 from core.css import css_properties
 import json5_generator
-import template_expander
-
 
 def calculate_apply_functions_to_declare(property_):
     property_['should_declare_functions'] = \
         not property_['longhands'] \
         and property_['is_property']
     property_['use_property_class_in_stylebuilder'] = \
-        property_['should_declare_functions'] \
-        and not property_['style_builder_legacy']
-
+        property_['should_declare_functions']
 
 class StyleBuilderWriter(json5_generator.Writer):
 
     def __init__(self, json5_file_paths, output_dir):
         super(StyleBuilderWriter, self).__init__([], output_dir)
-        self._outputs = {
-            'style_builder_functions.h': self.generate_style_builder_functions_h,
-            'style_builder_functions.cc':
-                self.generate_style_builder_functions_cpp,
-            'style_builder.cc': self.generate_style_builder,
-        }
 
         self._json5_properties = css_properties.CSSProperties(json5_file_paths)
         self._input_files = json5_file_paths
@@ -65,30 +55,6 @@ class StyleBuilderWriter(json5_generator.Writer):
     @property
     def css_properties(self):
         return self._json5_properties
-
-    @template_expander.use_jinja('templates/style_builder_functions.h.tmpl')
-    def generate_style_builder_functions_h(self):
-        return {
-            'input_files': self._input_files,
-            'properties': self._properties,
-        }
-
-    @template_expander.use_jinja('templates/style_builder_functions.cc.tmpl')
-    def generate_style_builder_functions_cpp(self):
-        return {
-            'input_files': self._input_files,
-            'properties': self._properties,
-            'properties_by_id': self._json5_properties.properties_by_id,
-        }
-
-    @template_expander.use_jinja('templates/style_builder.cc.tmpl')
-    def generate_style_builder(self):
-        return {
-            'input_files': self._input_files,
-            'properties': self._properties,
-            'properties_by_id': self._json5_properties.properties_by_id,
-        }
-
 
 if __name__ == '__main__':
     json5_generator.Maker(StyleBuilderWriter).main()
