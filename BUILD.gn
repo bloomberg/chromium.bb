@@ -3,7 +3,12 @@
 # found in the LICENSE file.
 
 group("gn_all") {
-  deps = [ "//platform" ]
+  testonly = true
+
+  deps = [
+    "//base:base_unittests",
+    "//platform",
+  ]
 }
 
 executable("hello") {
