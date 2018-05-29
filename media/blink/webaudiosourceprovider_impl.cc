@@ -4,6 +4,7 @@
 
 #include "media/blink/webaudiosourceprovider_impl.h"
 
+#include <atomic>
 #include <utility>
 #include <vector>
 
@@ -35,8 +36,7 @@ namespace {
 class AutoTryLock {
  public:
   explicit AutoTryLock(base::Lock& lock)
-      : lock_(lock),
-        acquired_(lock_.Try()) {}
+      : lock_(lock), acquired_(lock_.Try()) {}
 
   bool locked() const { return acquired_; }
 
@@ -61,7 +61,7 @@ class AutoTryLock {
 class WebAudioSourceProviderImpl::TeeFilter
     : public AudioRendererSink::RenderCallback {
  public:
-  TeeFilter() : renderer_(nullptr), channels_(0), sample_rate_(0) {}
+  TeeFilter() : copy_required_(false) {}
   ~TeeFilter() override = default;
 
   void Initialize(AudioRendererSink::RenderCallback* renderer,
@@ -82,18 +82,25 @@ class WebAudioSourceProviderImpl::TeeFilter
              AudioBus* dest) override;
   void OnRenderError() override;
 
-  bool IsInitialized() const { return !!renderer_; }
+  bool initialized() const { return !!renderer_; }
   int channels() const { return channels_; }
   int sample_rate() const { return sample_rate_; }
-  void set_copy_audio_bus_callback(const CopyAudioCB& callback) {
-    copy_audio_bus_callback_ = callback;
+
+  void SetCopyAudioCallback(CopyAudioCB callback) {
+    copy_required_ = !callback.is_null();
+    base::AutoLock auto_lock(copy_lock_);
+    copy_audio_bus_callback_ = std::move(callback);
   }
 
  private:
-  AudioRendererSink::RenderCallback* renderer_;
-  int channels_;
-  int sample_rate_;
+  AudioRendererSink::RenderCallback* renderer_ = nullptr;
+  int channels_ = 0;
+  int sample_rate_ = 0;
 
+  // The vast majority of the time we're operating in passthrough mode. So only
+  // acquire a lock to read |copy_audio_bus_callback_| when necessary.
+  std::atomic<bool> copy_required_;
+  base::Lock copy_lock_;
   CopyAudioCB copy_audio_bus_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TeeFilter);
@@ -135,7 +142,7 @@ void WebAudioSourceProviderImpl::SetClient(
     // |client_| the current format info. Otherwise |set_format_cb_| will get
     // called when Initialize() is called. Note: Always using |set_format_cb_|
     // ensures we have the same locking order when calling into |client_|.
-    if (tee_filter_->IsInitialized())
+    if (tee_filter_->initialized())
       base::ResetAndReturn(&set_format_cb_).Run();
     return;
   }
@@ -278,23 +285,13 @@ void WebAudioSourceProviderImpl::SwitchOutputDevice(
     sink_->SwitchOutputDevice(device_id, callback);
 }
 
-void WebAudioSourceProviderImpl::SetCopyAudioCallback(
-    const CopyAudioCB& callback) {
+void WebAudioSourceProviderImpl::SetCopyAudioCallback(CopyAudioCB callback) {
   DCHECK(!callback.is_null());
-
-  // Use |sink_lock_| to protect |tee_filter_| too since they go in lockstep.
-  base::AutoLock auto_lock(sink_lock_);
-
-  DCHECK(tee_filter_);
-  tee_filter_->set_copy_audio_bus_callback(callback);
+  tee_filter_->SetCopyAudioCallback(std::move(callback));
 }
 
 void WebAudioSourceProviderImpl::ClearCopyAudioCallback() {
-  // Use |sink_lock_| to protect |tee_filter_| too since they go in lockstep.
-  base::AutoLock auto_lock(sink_lock_);
-
-  DCHECK(tee_filter_);
-  tee_filter_->set_copy_audio_bus_callback(CopyAudioCB());
+  tee_filter_->SetCopyAudioCallback(CopyAudioCB());
 }
 
 int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
@@ -322,26 +319,30 @@ int WebAudioSourceProviderImpl::TeeFilter::Render(
     base::TimeTicks delay_timestamp,
     int prior_frames_skipped,
     AudioBus* audio_bus) {
-  DCHECK(IsInitialized());
+  DCHECK(initialized());
 
   const int num_rendered_frames = renderer_->Render(
       delay, delay_timestamp, prior_frames_skipped, audio_bus);
 
-  if (!copy_audio_bus_callback_.is_null()) {
-    const int64_t frames_delayed =
-        AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
-    std::unique_ptr<AudioBus> bus_copy =
-        AudioBus::Create(audio_bus->channels(), audio_bus->frames());
-    audio_bus->CopyTo(bus_copy.get());
-    copy_audio_bus_callback_.Run(std::move(bus_copy), frames_delayed,
-                                 sample_rate_);
+  // Avoid taking the copy lock for the vast majority of cases.
+  if (copy_required_) {
+    base::AutoLock auto_lock(copy_lock_);
+    if (!copy_audio_bus_callback_.is_null()) {
+      const int64_t frames_delayed =
+          AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
+      std::unique_ptr<AudioBus> bus_copy =
+          AudioBus::Create(audio_bus->channels(), audio_bus->frames());
+      audio_bus->CopyTo(bus_copy.get());
+      copy_audio_bus_callback_.Run(std::move(bus_copy), frames_delayed,
+                                   sample_rate_);
+    }
   }
 
   return num_rendered_frames;
 }
 
 void WebAudioSourceProviderImpl::TeeFilter::OnRenderError() {
-  DCHECK(IsInitialized());
+  DCHECK(initialized());
   renderer_->OnRenderError();
 }
 
