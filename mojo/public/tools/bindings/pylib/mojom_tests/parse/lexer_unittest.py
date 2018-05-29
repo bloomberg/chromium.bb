@@ -17,10 +17,7 @@ def _GetDirAbove(dirname):
     if tail == dirname:
       return path
 
-try:
-  imp.find_module("ply")
-except ImportError:
-  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+sys.path.insert(1, os.path.join(_GetDirAbove("mojo"), "third_party"))
 from ply import lex
 
 try:

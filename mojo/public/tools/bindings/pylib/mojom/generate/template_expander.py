@@ -4,27 +4,14 @@
 
 # Based on third_party/WebKit/Source/build/scripts/template_expander.py.
 
-import imp
 import os.path
 import sys
 
-# Disable lint check for finding modules:
-# pylint: disable=F0401
-
-def _GetDirAbove(dirname):
-  """Returns the directory "above" this file containing |dirname| (which must
-  also be "above" this file)."""
-  path = os.path.abspath(__file__)
-  while True:
-    path, tail = os.path.split(path)
-    assert tail
-    if tail == dirname:
-      return path
-
-try:
-  imp.find_module("jinja2")
-except ImportError:
-  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+_current_dir = os.path.dirname(os.path.realpath(__file__))
+# jinja2 is in chromium's third_party directory
+# Insert at front to override system libraries, and after path[0] == script dir
+sys.path.insert(
+    1, os.path.join(_current_dir, *([os.pardir] * 7 + ['third_party'])))
 import jinja2
 
 

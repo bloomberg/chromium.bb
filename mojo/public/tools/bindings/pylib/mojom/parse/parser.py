@@ -4,24 +4,12 @@
 
 """Generates a syntax tree from a Mojo IDL file."""
 
-import imp
 import os.path
 import sys
 
-def _GetDirAbove(dirname):
-  """Returns the directory "above" this file containing |dirname| (which must
-  also be "above" this file)."""
-  path = os.path.abspath(__file__)
-  while True:
-    path, tail = os.path.split(path)
-    assert tail
-    if tail == dirname:
-      return path
-
-try:
-  imp.find_module("ply")
-except ImportError:
-  sys.path.append(os.path.join(_GetDirAbove("mojo"), "third_party"))
+_current_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(
+    1, os.path.join(_current_dir, *([os.pardir] * 7 + ['third_party'])))
 from ply import lex
 from ply import yacc
 
