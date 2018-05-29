@@ -137,7 +137,8 @@ Polymer({
     pairs.forEach(pair => {
       const route = pair[0];
       const id = pair[1];
-      this.focusConfig.set(route.path, '* /deep/ #' + id + ' .subpage-arrow');
+      this.focusConfig.set(
+          route.path, '* /deep/ #' + id + ' .subpage-arrow button');
     });
   },
 
