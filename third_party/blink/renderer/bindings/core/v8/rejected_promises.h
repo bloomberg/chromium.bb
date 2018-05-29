@@ -8,7 +8,6 @@
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
-#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -46,9 +45,9 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
 
   RejectedPromises();
 
-  using MessageQueue = Deque<std::unique_ptr<Message>>;
+  using MessageQueue = Vector<std::unique_ptr<Message>>;
 
-  void ProcessQueueNow(std::unique_ptr<MessageQueue>);
+  void ProcessQueueNow(MessageQueue);
   void RevokeNow(std::unique_ptr<Message>);
 
   MessageQueue queue_;

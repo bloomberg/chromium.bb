@@ -208,7 +208,7 @@ void RejectedPromises::RejectedWithNoHandler(
 void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
   // First look it up in the pending messages and fast return, it'll be covered
   // by processQueue().
-  for (auto it = queue_.begin(); it != queue_.end(); ++it) {
+  for (auto* it = queue_.begin(); it != queue_.end(); ++it) {
     if (!(*it)->IsCollected() && (*it)->HasPromise(data.GetPromise())) {
       queue_.erase(it);
       return;
@@ -235,46 +235,35 @@ void RejectedPromises::Dispose() {
   if (queue_.IsEmpty())
     return;
 
-  std::unique_ptr<MessageQueue> queue = std::make_unique<MessageQueue>();
-  queue->Swap(queue_);
-  ProcessQueueNow(std::move(queue));
+  ProcessQueueNow(std::move(queue_));
+  queue_.clear();
 }
 
 void RejectedPromises::ProcessQueue() {
   if (queue_.IsEmpty())
     return;
 
-  std::map<ExecutionContext*, std::unique_ptr<MessageQueue>> queues;
-  while (!queue_.IsEmpty()) {
-    std::unique_ptr<Message> message = queue_.TakeFirst();
-    ExecutionContext* context = message->GetContext();
-    if (queues.find(context) == queues.end()) {
-      queues.emplace(context, std::make_unique<MessageQueue>());
-    }
-    queues[context]->emplace_back(std::move(message));
-  }
+  std::map<ExecutionContext*, MessageQueue> queues;
+  for (auto& message : queue_)
+    queues[message->GetContext()].push_back(std::move(message));
+  queue_.clear();
 
   for (auto& kv : queues) {
-    std::unique_ptr<MessageQueue> queue = std::make_unique<MessageQueue>();
-    queue->Swap(*kv.second);
     kv.first->GetTaskRunner(blink::TaskType::kDOMManipulation)
         ->PostTask(FROM_HERE, WTF::Bind(&RejectedPromises::ProcessQueueNow,
                                         scoped_refptr<RejectedPromises>(this),
-                                        WTF::Passed(std::move(queue))));
+                                        WTF::Passed(std::move(kv.second))));
   }
 }
 
-void RejectedPromises::ProcessQueueNow(std::unique_ptr<MessageQueue> queue) {
+void RejectedPromises::ProcessQueueNow(MessageQueue queue) {
   // Remove collected handlers.
-  for (size_t i = 0; i < reported_as_errors_.size();) {
-    if (reported_as_errors_.at(i)->IsCollected())
-      reported_as_errors_.EraseAt(i);
-    else
-      ++i;
-  }
+  auto* new_end = std::remove_if(
+      reported_as_errors_.begin(), reported_as_errors_.end(),
+      [](const auto& message) { return message->IsCollected(); });
+  reported_as_errors_.Shrink(new_end - reported_as_errors_.begin());
 
-  while (!queue->IsEmpty()) {
-    std::unique_ptr<Message> message = queue->TakeFirst();
+  for (auto& message : queue) {
     if (message->IsCollected())
       continue;
     if (!message->HasHandler()) {
