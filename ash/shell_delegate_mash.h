@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELL_DELEGATE_MUS_H_
-#define ASH_SHELL_DELEGATE_MUS_H_
+#ifndef ASH_SHELL_DELEGATE_MASH_H_
+#define ASH_SHELL_DELEGATE_MASH_H_
 
 #include <memory>
 
@@ -16,11 +16,10 @@ class Connector;
 
 namespace ash {
 
-// TODO(jamescook): Rename to ShellDelegateMash.
-class ShellDelegateMus : public ShellDelegate {
+class ShellDelegateMash : public ShellDelegate {
  public:
-  explicit ShellDelegateMus(service_manager::Connector* connector);
-  ~ShellDelegateMus() override;
+  explicit ShellDelegateMash(service_manager::Connector* connector);
+  ~ShellDelegateMash() override;
 
   // ShellDelegate:
   service_manager::Connector* GetShellConnector() const override;
@@ -40,9 +39,9 @@ class ShellDelegateMus : public ShellDelegate {
   std::unique_ptr<ui::InputDeviceControllerClient>
       input_device_controller_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
+  DISALLOW_COPY_AND_ASSIGN(ShellDelegateMash);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELL_DELEGATE_MUS_H_
+#endif  // ASH_SHELL_DELEGATE_MASH_H_

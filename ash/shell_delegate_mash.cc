@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell_delegate_mus.h"
+#include "ash/shell_delegate_mash.h"
 
 #include <memory>
 #include <utility>
@@ -42,34 +42,34 @@ class ScreenshotDelegateMash : public ScreenshotDelegate {
 
 }  // namespace
 
-ShellDelegateMus::ShellDelegateMus(service_manager::Connector* connector)
+ShellDelegateMash::ShellDelegateMash(service_manager::Connector* connector)
     : connector_(connector) {}
 
-ShellDelegateMus::~ShellDelegateMus() = default;
+ShellDelegateMash::~ShellDelegateMash() = default;
 
-service_manager::Connector* ShellDelegateMus::GetShellConnector() const {
+service_manager::Connector* ShellDelegateMash::GetShellConnector() const {
   return connector_;
 }
 
-bool ShellDelegateMus::CanShowWindowForUser(aura::Window* window) const {
+bool ShellDelegateMash::CanShowWindowForUser(aura::Window* window) const {
   NOTIMPLEMENTED_LOG_ONCE();
   return true;
 }
 
-void ShellDelegateMus::PreInit() {
+void ShellDelegateMash::PreInit() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMus::CreateKeyboardUI() {
+std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMash::CreateKeyboardUI() {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
-void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
+void ShellDelegateMash::OpenUrlFromArc(const GURL& url) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
+NetworkingConfigDelegate* ShellDelegateMash::GetNetworkingConfigDelegate() {
   // TODO(mash): Provide a real implementation, perhaps by folding its behavior
   // into an ash-side network information cache. http://crbug.com/651157
   NOTIMPLEMENTED_LOG_ONCE();
@@ -77,16 +77,16 @@ NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
 }
 
 std::unique_ptr<ScreenshotDelegate>
-ShellDelegateMus::CreateScreenshotDelegate() {
+ShellDelegateMash::CreateScreenshotDelegate() {
   return std::make_unique<ScreenshotDelegateMash>();
 }
 
-AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
+AccessibilityDelegate* ShellDelegateMash::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
 }
 
 ui::InputDeviceControllerClient*
-ShellDelegateMus::GetInputDeviceControllerClient() {
+ShellDelegateMash::GetInputDeviceControllerClient() {
   if (!connector_)
     return nullptr;  // Happens in tests.
 

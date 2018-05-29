@@ -23,7 +23,7 @@
 #include "ash/root_window_settings.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate_mus.h"
+#include "ash/shell_delegate_mash.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_port_mash.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -157,7 +157,7 @@ void WindowManager::CreateShell() {
       this, pointer_watcher_event_router_.get());
   init_params.delegate = shell_delegate_
                              ? std::move(shell_delegate_)
-                             : std::make_unique<ShellDelegateMus>(connector_);
+                             : std::make_unique<ShellDelegateMash>(connector_);
   init_params.initial_display_prefs = std::move(initial_display_prefs_);
   Shell::CreateInstance(std::move(init_params));
 }
