@@ -1897,6 +1897,8 @@ crbug.com/771118 virtual/service-worker-servicification/external/wpt/service-wor
 
 crbug.com/846237 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/import-scripts-updated-flag.https.html [ Crash ]
 
+crbug.com/847565 [ Mac ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event.https.html [ Pass Timeout ]
+
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-embed-002.html [ Failure ]
