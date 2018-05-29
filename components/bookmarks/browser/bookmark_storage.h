@@ -104,7 +104,7 @@ class BookmarkLoadDetails {
   bool ids_reassigned() const { return ids_reassigned_; }
 
   void CreateUrlIndex();
-  std::unique_ptr<UrlIndex> owned_url_index() { return std::move(url_index_); }
+  std::unique_ptr<UrlIndex> owned_url_index();
 
  private:
   // Creates one of the possible permanent nodes (bookmark bar node, other node
