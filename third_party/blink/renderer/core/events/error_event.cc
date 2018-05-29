@@ -99,9 +99,4 @@ void ErrorEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 
-void ErrorEvent::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(error_);
-  Event::TraceWrappers(visitor);
-}
-
 }  // namespace blink

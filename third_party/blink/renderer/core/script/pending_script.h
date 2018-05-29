@@ -84,7 +84,6 @@ class CORE_EXPORT PendingScript
   virtual ScriptType GetScriptType() const = 0;
 
   virtual void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const override {}
   const char* NameInHeapSnapshot() const override { return "PendingScript"; }
 
   virtual Script* GetSource(const KURL& document_url,

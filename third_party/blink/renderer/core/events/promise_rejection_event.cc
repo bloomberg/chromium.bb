@@ -65,11 +65,4 @@ void PromiseRejectionEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 
-void PromiseRejectionEvent::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(promise_);
-  visitor->TraceWrappers(reason_);
-  Event::TraceWrappers(visitor);
-}
-
 }  // namespace blink
