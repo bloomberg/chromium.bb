@@ -5019,9 +5019,17 @@ IN_PROC_BROWSER_TEST_F(
   DoReplaceStateWhilePending(shell(), url, url, "x");
 }
 
+// Flaky on Linux Tsan: https://crbug.com/847326
+#if defined(THREAD_SANITIZER)
+#define MAYBE_NavigationTypeClassification_On1SameDocumentTo1While1Pending \
+  DISABLED_NavigationTypeClassification_On1SameDocumentTo1While1Pending
+#else
+#define MAYBE_NavigationTypeClassification_On1SameDocumentTo1While1Pending \
+  NavigationTypeClassification_On1SameDocumentTo1While1Pending
+#endif
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
+    MAYBE_NavigationTypeClassification_On1SameDocumentTo1While1Pending) {
   GURL url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   DoReplaceStateWhilePending(shell(), url, url, "simple_page_1.html");
