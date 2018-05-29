@@ -62,6 +62,7 @@
         "border_image",
         "color",
         "counter",
+        "empty",
         "grid",
         // The legacy template means that regular code generation should not be
         // be performed, and that the property is hard-coded in
@@ -328,13 +329,6 @@
     // StyleBuilderConverter to convert a CSSValue to an appropriate platform
     // value
     converter: {
-    },
-
-    // - builder_skip
-    // Ignore this property in the StyleBuilder
-    builder_skip: {
-      default: false,
-      valid_type: "bool",
     },
 
     // - logical_side
@@ -4327,23 +4321,23 @@
     {
       name: "all",
       affected_by_all: false,
-      builder_skip: true,
+      style_builder_template: "empty",
     },
     {
       name: "page",
       property_methods: ["ParseSingleValue"],
-      builder_skip: true,
+      style_builder_template: "empty",
     },
     {
       name: "-webkit-font-size-delta",
       property_methods: ["ParseSingleValue"],
-      builder_skip: true,
+      style_builder_template: "empty",
     },
     {
       name: "-webkit-text-decorations-in-effect",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
-      builder_skip: true,
+      style_builder_template: "empty",
     },
 
     // Descriptor only names

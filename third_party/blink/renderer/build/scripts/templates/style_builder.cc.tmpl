@@ -61,10 +61,6 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
       ApplyProperty(resolved_property, state, value);
       return;
     }
-    {% for input_property in properties if input_property.builder_skip %}
-    case {{input_property.property_id}}:
-    {% endfor %}
-      return;
     default:
       NOTREACHED();
   }
