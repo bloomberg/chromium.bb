@@ -53,6 +53,11 @@ MATCHER_P(HasEncryptionKeyName, expected_key_name, "") {
   return arg.encryption_key_name() == expected_key_name;
 }
 
+// Matcher for sync_pb::ModelTypeState: verifies that initial sync is done.
+MATCHER(HasInitialSyncDone, "") {
+  return arg.initial_sync_done();
+}
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_TEST_TEST_MATCHERS_H_
