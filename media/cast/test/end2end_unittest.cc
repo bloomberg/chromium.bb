@@ -957,7 +957,13 @@ void End2EndTest::Create() {
       kSoundFrequency, kSoundVolume));
 }
 
-TEST_F(End2EndTest, LoopWithLosslessEncoding) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_LoopWithLosslessEncoding DISABLED_LoopWithLosslessEncoding
+#else
+#define MAYBE_LoopWithLosslessEncoding LoopWithLosslessEncoding
+#endif
+TEST_F(End2EndTest, MAYBE_LoopWithLosslessEncoding) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
 
@@ -1071,7 +1077,13 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
   EXPECT_EQ(10, test_receiver_video_callback_->number_times_called());
 }
 
-TEST_F(End2EndTest, BasicFakeSoftwareVideo) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_BasicFakeSoftwareVideo DISABLED_BasicFakeSoftwareVideo
+#else
+#define MAYBE_BasicFakeSoftwareVideo BasicFakeSoftwareVideo
+#endif
+TEST_F(End2EndTest, MAYBE_BasicFakeSoftwareVideo) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1106,7 +1118,13 @@ const int kLongTestIterations = 10000;
 const int kLongTestIterations = 1000;
 #endif
 
-TEST_F(End2EndTest, ReceiverClockFast) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_ReceiverClockFast DISABLED_ReceiverClockFast
+#else
+#define MAYBE_ReceiverClockFast ReceiverClockFast
+#endif
+TEST_F(End2EndTest, MAYBE_ReceiverClockFast) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1121,7 +1139,13 @@ TEST_F(End2EndTest, ReceiverClockFast) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-TEST_F(End2EndTest, ReceiverClockSlow) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_ReceiverClockSlow DISABLED_ReceiverClockSlow
+#else
+#define MAYBE_ReceiverClockSlow ReceiverClockSlow
+#endif
+TEST_F(End2EndTest, MAYBE_ReceiverClockSlow) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1136,7 +1160,15 @@ TEST_F(End2EndTest, ReceiverClockSlow) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-TEST_F(End2EndTest, SmoothPlayoutWithFivePercentClockRateSkew) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_SmoothPlayoutWithFivePercentClockRateSkew \
+  DISABLED_SmoothPlayoutWithFivePercentClockRateSkew
+#else
+#define MAYBE_SmoothPlayoutWithFivePercentClockRateSkew \
+  SmoothPlayoutWithFivePercentClockRateSkew
+#endif
+TEST_F(End2EndTest, MAYBE_SmoothPlayoutWithFivePercentClockRateSkew) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1157,7 +1189,13 @@ TEST_F(End2EndTest, SmoothPlayoutWithFivePercentClockRateSkew) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-TEST_F(End2EndTest, EvilNetwork) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_EvilNetwork DISABLED_EvilNetwork
+#else
+#define MAYBE_EvilNetwork EvilNetwork
+#endif
+TEST_F(End2EndTest, MAYBE_EvilNetwork) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   receiver_to_sender_->SetPacketPipe(test::EvilNetwork());
   sender_to_receiver_->SetPacketPipe(test::EvilNetwork());
@@ -1179,7 +1217,14 @@ TEST_F(End2EndTest, EvilNetwork) {
 
 // Tests that a system configured for 30 FPS drops frames when input is provided
 // at a much higher frame rate.
-TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_ShoveHighFrameRateDownYerThroat \
+  DISABLED_ShoveHighFrameRateDownYerThroat
+#else
+#define MAYBE_ShoveHighFrameRateDownYerThroat ShoveHighFrameRateDownYerThroat
+#endif
+TEST_F(End2EndTest, MAYBE_ShoveHighFrameRateDownYerThroat) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   receiver_to_sender_->SetPacketPipe(test::EvilNetwork());
   sender_to_receiver_->SetPacketPipe(test::EvilNetwork());
@@ -1200,7 +1245,13 @@ TEST_F(End2EndTest, ShoveHighFrameRateDownYerThroat) {
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
-TEST_F(End2EndTest, OldPacketNetwork) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_OldPacketNetwork DISABLED_OldPacketNetwork
+#else
+#define MAYBE_OldPacketNetwork OldPacketNetwork
+#endif
+TEST_F(End2EndTest, MAYBE_OldPacketNetwork) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   sender_to_receiver_->SetPacketPipe(test::NewRandomDrop(0.01));
   std::unique_ptr<test::PacketPipe> echo_chamber(
@@ -1233,7 +1284,13 @@ TEST_F(End2EndTest, OldPacketNetwork) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-TEST_F(End2EndTest, TestSetPlayoutDelay) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_TestSetPlayoutDelay DISABLED_TestSetPlayoutDelay
+#else
+#define MAYBE_TestSetPlayoutDelay TestSetPlayoutDelay
+#endif
+TEST_F(End2EndTest, MAYBE_TestSetPlayoutDelay) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   video_sender_config_.min_playout_delay =
       video_sender_config_.max_playout_delay;
