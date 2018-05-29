@@ -33,6 +33,20 @@ TEST_F(JankTrackerTest, SimpleBlockMovement) {
   EXPECT_FLOAT_EQ(60.0, GetJankTracker().MaxDistance());
 }
 
+TEST_F(JankTrackerTest, GranularitySnapping) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #j { position: relative; width: 304px; height: 104px; }
+    </style>
+    <div id='j'></div>
+  )HTML");
+  GetDocument().getElementById("j")->setAttribute(HTMLNames::styleAttr,
+                                                  AtomicString("top: 58px"));
+  GetFrameView().UpdateAllLifecyclePhases();
+  // Rect locations and sizes should snap to multiples of 600 / 60 = 10.
+  EXPECT_FLOAT_EQ(0.1, GetJankTracker().Score());
+}
+
 TEST_F(JankTrackerTest, Transform) {
   SetBodyInnerHTML(R"HTML(
     <style>
