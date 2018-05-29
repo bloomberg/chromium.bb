@@ -312,7 +312,6 @@ class CORE_EXPORT StyleEngine final
       const AtomicString& animation_name);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
  private:

@@ -1523,13 +1523,4 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   FontSelectorClient::Trace(visitor);
 }
 
-void StyleEngine::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (const auto& sheet : injected_user_style_sheets_) {
-    visitor->TraceWrappers(sheet.second);
-  }
-  for (const auto& sheet : injected_author_style_sheets_) {
-    visitor->TraceWrappers(sheet.second);
-  }
-  visitor->TraceWrappers(document_style_sheet_collection_);
-}
 }  // namespace blink

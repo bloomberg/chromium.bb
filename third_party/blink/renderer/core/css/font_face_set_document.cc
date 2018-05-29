@@ -207,11 +207,6 @@ void FontFaceSetDocument::Trace(blink::Visitor* visitor) {
   FontFaceSet::Trace(visitor);
 }
 
-void FontFaceSetDocument::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  FontFaceSet::TraceWrappers(visitor);
-  Supplement<Document>::TraceWrappers(visitor);
-}
-
 void FontFaceSetDocument::FontLoadHistogram::UpdateStatus(FontFace* font_face) {
   if (status_ == kReported)
     return;

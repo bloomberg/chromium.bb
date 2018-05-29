@@ -45,7 +45,6 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   void Reattach(MutableCSSPropertyValueSet&);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   StyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&, CSSRule*);

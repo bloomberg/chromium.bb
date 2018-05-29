@@ -67,11 +67,4 @@ void StyleSheetCollection::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_sheets_for_style_sheet_list_);
 }
 
-void StyleSheetCollection::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto sheet : style_sheets_for_style_sheet_list_) {
-    visitor->TraceWrappers(sheet);
-  }
-}
-
 }  // namespace blink

@@ -67,7 +67,6 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
   void SetParentRule(CSSRule*);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
   CSSStyleSheet* parentStyleSheet() const {
     if (parent_is_rule_)
