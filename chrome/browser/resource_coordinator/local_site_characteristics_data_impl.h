@@ -26,6 +26,9 @@ class LocalSiteCharacteristicsDataStore;
 class LocalSiteCharacteristicsDataReaderTest;
 class LocalSiteCharacteristicsDataWriterTest;
 
+FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
+                     FreeingReaderDoesntCauseWriteOperation);
+
 namespace internal {
 
 FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataImplTest,
@@ -139,6 +142,9 @@ class LocalSiteCharacteristicsDataImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
                            LateAsyncReadDoesntBypassClearEvent);
+  FRIEND_TEST_ALL_PREFIXES(
+      resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
+      FreeingReaderDoesntCauseWriteOperation);
 
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
@@ -217,6 +223,10 @@ class LocalSiteCharacteristicsDataImpl
   // Indicates if this object is in a state where it can be written to the
   // database without erasing some data.
   bool safe_to_write_to_db_;
+
+  // Dirty bit, indicates if any of the fields in |site_characteristics_| has
+  // changed since it has been initialized.
+  bool is_dirty_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

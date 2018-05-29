@@ -14,6 +14,58 @@
 
 namespace resource_coordinator {
 
+namespace {
+
+class MockLocalSiteCharacteristicsDatabase
+    : public testing::NoopLocalSiteCharacteristicsDatabase {
+ public:
+  MockLocalSiteCharacteristicsDatabase() = default;
+  ~MockLocalSiteCharacteristicsDatabase() = default;
+
+  // Note: As move-only parameters (e.g. OnceCallback) aren't supported by mock
+  // methods, add On... methods to pass a non-const reference to OnceCallback.
+  void ReadSiteCharacteristicsFromDB(
+      const std::string& origin_str,
+      LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
+          callback) override {
+    OnReadSiteCharacteristicsFromDB(origin_str, callback);
+  }
+  MOCK_METHOD2(OnReadSiteCharacteristicsFromDB,
+               void(const std::string&,
+                    LocalSiteCharacteristicsDatabase::
+                        ReadSiteCharacteristicsFromDBCallback&));
+
+  MOCK_METHOD2(WriteSiteCharacteristicsIntoDB,
+               void(const std::string& site_origin,
+                    const SiteCharacteristicsProto& site_characteristic_proto));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
+};
+
+void InitializeSiteCharacteristicsProto(
+    SiteCharacteristicsProto* site_characteristics) {
+  DCHECK(site_characteristics);
+  site_characteristics->set_last_loaded(42);
+
+  SiteCharacteristicsFeatureProto used_feature_proto;
+  used_feature_proto.set_observation_duration(0U);
+  used_feature_proto.set_use_timestamp(1U);
+
+  site_characteristics->mutable_updates_favicon_in_background()->CopyFrom(
+      used_feature_proto);
+  site_characteristics->mutable_updates_title_in_background()->CopyFrom(
+      used_feature_proto);
+  site_characteristics->mutable_uses_audio_in_background()->CopyFrom(
+      used_feature_proto);
+  site_characteristics->mutable_uses_notifications_in_background()->CopyFrom(
+      used_feature_proto);
+
+  DCHECK(site_characteristics->IsInitialized());
+}
+
+}  // namespace
+
 class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
  protected:
   // The constructors needs to call 'new' directly rather than using the
@@ -88,6 +140,44 @@ TEST_F(LocalSiteCharacteristicsDataReaderTest, TestAccessors) {
             reader_->UsesAudioInBackground());
   EXPECT_EQ(SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UsesNotificationsInBackground());
+}
+
+TEST_F(LocalSiteCharacteristicsDataReaderTest,
+       FreeingReaderDoesntCauseWriteOperation) {
+  const char* kOrigin = "foo.com";
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> database;
+
+  // Override the read callback to simulate a successful read from the
+  // database.
+  SiteCharacteristicsProto proto = {};
+  InitializeSiteCharacteristicsProto(&proto);
+  auto read_from_db_mock_impl =
+      [&](const std::string& site_origin,
+          LocalSiteCharacteristicsDatabase::
+              ReadSiteCharacteristicsFromDBCallback& callback) {
+        std::move(callback).Run(
+            base::Optional<SiteCharacteristicsProto>(proto));
+      };
+
+  EXPECT_CALL(database, OnReadSiteCharacteristicsFromDB(kOrigin, ::testing::_))
+      .WillOnce(::testing::Invoke(read_from_db_mock_impl));
+
+  std::unique_ptr<LocalSiteCharacteristicsDataReader> reader =
+      base::WrapUnique(new LocalSiteCharacteristicsDataReader(
+          base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
+              kOrigin, &delegate_, &database))));
+  ::testing::Mock::VerifyAndClear(&database);
+
+  EXPECT_TRUE(reader->impl_for_testing()
+                  ->site_characteristics_for_testing()
+                  .IsInitialized());
+
+  // Resetting the reader shouldn't cause any write operation to the database.
+  EXPECT_CALL(database,
+              WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_))
+      .Times(0);
+  reader.reset();
+  ::testing::Mock::VerifyAndClear(&database);
 }
 
 }  // namespace resource_coordinator
