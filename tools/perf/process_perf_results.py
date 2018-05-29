@@ -303,7 +303,7 @@ def _handle_perf_results(
     logdog_dict = {}
     logdog_stream = None
     logdog_label = 'Results Dashboard'
-    upload_fail = False
+    upload_failure = False
     with oauth_api.with_access_token(service_account_file) as oauth_file:
       for benchmark_name, directories in benchmark_directory_map.iteritems():
         if not benchmark_enabled_map[benchmark_name]:
@@ -327,16 +327,17 @@ def _handle_perf_results(
             benchmark_name, results_filename, configuration_name,
             build_properties, oauth_file, tmpfile_dir, logdog_dict,
             ('.reference' in benchmark_name))
+        upload_failure = upload_failure or upload_fail
 
     logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
     logdog_stream = logdog_helper.text(logdog_file_name,
         json.dumps(logdog_dict, sort_keys=True,
                    indent=4, separators=(',', ': ')),
         content_type=JSON_CONTENT_TYPE)
-    if upload_fail:
+    if upload_failure:
       logdog_label += ' Upload Failure'
     extra_links[logdog_label] = logdog_stream
-    if upload_fail:
+    if upload_failure:
       return 1
     return 0
   finally:
