@@ -746,6 +746,7 @@ class CacheStorageCacheTest : public testing::Test {
 
 class CacheStorageCacheTestP : public CacheStorageCacheTest,
                                public testing::WithParamInterface<bool> {
+ public:
   bool MemoryOnly() override { return !GetParam(); }
 };
 
@@ -1824,10 +1825,19 @@ TEST_F(CacheStorageCacheTest, TestDoubleOpaquePut) {
 }
 
 TEST_P(CacheStorageCacheTestP, GetSizeThenClose) {
+  // Create the backend and put something in it.
   EXPECT_TRUE(Put(body_request_, body_response_));
+  // Get a reference to the response in the cache.
+  EXPECT_TRUE(Match(body_request_));
+  blink::mojom::BlobPtr blob = callback_response_->blob->TakeBlobPtr();
+  callback_response_ = nullptr;
+
   int64_t cache_size = Size();
   EXPECT_EQ(cache_size, GetSizeThenClose());
   VerifyAllOpsFail();
+
+  // Reading blob should fail.
+  EXPECT_TRUE(ResponseBodiesEqual("", blob.get()));
 }
 
 TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackend) {
@@ -1835,6 +1845,30 @@ TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackend) {
   EXPECT_TRUE(Put(body_request_, body_response_));
   EXPECT_TRUE(Close());
   VerifyAllOpsFail();
+}
+
+TEST_P(CacheStorageCacheTestP, BlobReferenceDelaysClose) {
+  // Create the backend and put something in it.
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  // Get a reference to the response in the cache.
+  EXPECT_TRUE(Match(body_request_));
+  blink::mojom::BlobPtr blob = callback_response_->blob->TakeBlobPtr();
+  callback_response_ = nullptr;
+
+  base::RunLoop loop;
+  cache_->Close(base::BindOnce(&CacheStorageCacheTest::CloseCallback,
+                               base::Unretained(this),
+                               base::Unretained(&loop)));
+  browser_thread_bundle_.RunUntilIdle();
+  // If MemoryOnly closing does succeed right away.
+  EXPECT_EQ(MemoryOnly(), callback_closed_);
+
+  // Reading blob should succeed.
+  EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, blob.get()));
+  blob.reset();
+
+  loop.Run();
+  EXPECT_TRUE(callback_closed_);
 }
 
 TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
