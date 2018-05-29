@@ -25,7 +25,8 @@ function verifyClickEvent(entry) {
   assert_true(entry.cancelable);
   assert_equals(entry.name, 'click');
   assert_equals(entry.entryType, 'event');
-  assert_true(entry.duration > 50);
+  assert_greater_than(entry.duration, 50,
+      "The entry's duration should be greater than 50ms.");
 }
 
 function wait() {

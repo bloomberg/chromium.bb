@@ -26,10 +26,14 @@ registration are lost
     assert_equals(observedEntries.length, 1, "Long latency task after observer start should be observed.");
     const entry = observedEntries[0];
     verifyClickEvent(entry);
-    assert_true(entry.processingStart > processingStartMin);
-    assert_true(entry.processingStart < callbackTime);
-    assert_true(entry.startTime > observerStart);
-    assert_true(entry.startTime < callbackTime);
+    assert_greater_than(entry.processingStart, processingStartMin,
+        "The entry's processing start should be later than processingStartMin.");
+    assert_greater_than(callbackTime, entry.processingStart,
+        "The callback time should be later than the entry's processing start.");
+    assert_greater_than(entry.startTime, observerStart,
+        "The entry's start time should be later than observer start.");
+    assert_greater_than(callbackTime, entry.startTime,
+        "The callback time should be later than entry's start time.");
   }
 
   function startObserver(t) {

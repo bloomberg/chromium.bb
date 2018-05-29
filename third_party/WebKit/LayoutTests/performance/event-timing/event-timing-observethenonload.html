@@ -14,37 +14,44 @@
 
   function verifyBuffer(bufferedEntries) {
     const loadStart =
-      performance.timing.loadEventStart - performance.timeOrigin;
+        performance.timing.loadEventStart - performance.timeOrigin;
     assert_equals(bufferedEntries.length, 1,
-      "Only events before onload should be buffered");
+        "Only events before onload should be buffered.");
     const entry = bufferedEntries[0];
-    assert_true(entry.startTime < loadStart);
-    assert_true(entry.processingStart > processingStartMin);
+    assert_greater_than(loadStart, entry.startTime,
+        "onload should be later than entry's start time.");
+    assert_greater_than(entry.processingStart, processingStartMin,
+        "The entry's processing start should be later than processingStartMin.");
     verifyClickEvent(entry);
   }
 
   function verifyObserverEntries(observedEntries) {
-    const observedEntriesHappenAfterObserver = observedEntries.filter(e => e.startTime >
-      observerStart);
+    const observedEntriesHappenAfterObserver = observedEntries.filter(
+        e => e.startTime > observerStart);
     assert_equals(observedEntriesHappenAfterObserver.length, 1,
-      'Events DISPATCHED after observer start should be observed.');
+        'Events DISPATCHED after observer start should be observed.');
     const entry1 = observedEntriesHappenAfterObserver[0];
     verifyClickEvent(entry1);
-    assert_true(entry1.processingStart > processingStartMin);
-    assert_true(entry1.startTime > observerStart);
+    assert_greater_than(entry1.processingStart, processingStartMin,
+        "entry1's processing start should be later than processingStartMin.");
+    assert_greater_than(entry1.startTime, observerStart,
+        "entry1's start time should be later than observer start.");
 
     // This case is tricky in that the click happened before observer,
     // but the dispatching of it is delayed until after observer start
     // due to busy mainthread. The observer is thus able to observe the click.
     const observedEntriesHappenBeforeObserver =
-      observedEntries.filter(e => e.startTime < observerStart);
+        observedEntries.filter(e => e.startTime < observerStart);
     assert_equals(observedEntriesHappenBeforeObserver.length, 1,
-      'Events HAPPENING before observer but DISPATCHED after observer start should be observed.'
+        'Events HAPPENING before observer but DISPATCHED after observer start \
+        should be observed.'
     );
     const entry2 = observedEntriesHappenBeforeObserver[0];
     verifyClickEvent(entry2);
-    assert_true(entry2.processingStart > processingStartMin);
-    assert_true(entry2.startTime < observerStart);
+    assert_greater_than(entry2.processingStart, processingStartMin,
+        "entry2's processing start should be later than processingStartMin.");
+    assert_greater_than(observerStart, entry2.startTime,
+        "observer start should be later than entry2's start time.");
   }
 
   /* Timeline:
