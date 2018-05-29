@@ -14,7 +14,7 @@ specified, only those directories of the source will be analyzed.
 Run `traffic_annotation_auditor --help` for options.
 
 Example:
-  `traffic_annotation_auditor --build-dir=out/Debug`
+  `traffic_annotation_auditor --build-path=out/Debug`
 
 The binaries of this file and the clang tool are checked out into
 `tools/traffic_annotation/bin/[platform]`. This is only done for Linux and
