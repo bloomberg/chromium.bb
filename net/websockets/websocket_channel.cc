@@ -227,7 +227,13 @@ class WebSocketChannel::PendingReceivedFrame {
         offset_(offset),
         size_(size) {}
   PendingReceivedFrame(const PendingReceivedFrame& other) = default;
+  PendingReceivedFrame(PendingReceivedFrame&& other) = default;
   ~PendingReceivedFrame() = default;
+
+  // PendingReceivedFrame is placed in a base::queue and so needs to be copyable
+  // and movable.
+  PendingReceivedFrame& operator=(const PendingReceivedFrame& other) = default;
+  PendingReceivedFrame& operator=(PendingReceivedFrame&& other) = default;
 
   bool final() const { return final_; }
   WebSocketFrameHeader::OpCode opcode() const { return opcode_; }
@@ -247,10 +253,6 @@ class WebSocketChannel::PendingReceivedFrame {
     DCHECK_LE(bytes, size_ - offset_);
     offset_ += bytes;
   }
-
-  // This object needs to be copyable and assignable, since it will be placed
-  // in a base::queue. The compiler-generated copy constructor and assignment
-  // operator will do the right thing.
 
  private:
   bool final_;
