@@ -11,16 +11,19 @@
 #include <utility>
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -767,10 +770,15 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
         server_.base_url().Resolve("/tbproxy/af/").spec().c_str());
 
     // Intialize the autofill driver.
-    request_context_ = base::MakeRefCounted<net::TestURLRequestContextGetter>(
-        scoped_task_environment_.GetMainThreadTaskRunner());
+    request_context_getter_ =
+        base::MakeRefCounted<net::TestURLRequestContextGetter>(
+            scoped_task_environment_.GetMainThreadTaskRunner());
+    request_context_getter_->GetURLRequestContext()
+        ->http_transaction_factory()
+        ->GetCache()
+        ->SetClockForTesting(&clock_);
     driver_ = std::make_unique<TestAutofillDriver>();
-    driver_->SetURLRequestContext(request_context_.get());
+    driver_->SetURLRequestContext(request_context_getter_.get());
   }
 
   void TearDown() override {
@@ -800,7 +808,10 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
     response->set_code(net::HTTP_OK);
     response->set_content(proto.SerializeAsString());
     response->set_content_type("text/proto");
-    response->AddCustomHeader("Cache-Control", "max-age=86400");
+    response->AddCustomHeader(
+        "Cache-Control",
+        base::StringPrintf("max-age=%" PRId64,
+                           base::TimeDelta::FromDays(2).InSeconds()));
     return response;
   }
 
@@ -823,7 +834,8 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
   EmbeddedTestServer server_;
   std::unique_ptr<base::RunLoop> run_loop_;
   size_t call_count_ = 0;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  base::SimpleTestClock clock_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   std::unique_ptr<TestAutofillDriver> driver_;
 };
 
@@ -841,10 +853,13 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
   std::vector<std::unique_ptr<FormStructure>> form_structures;
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
+  clock_.SetNow(base::Time::Now());
+
   // Query for the form. This should go to the embedded server.
   {
-    SCOPED_TRACE("Firstl Query");
+    SCOPED_TRACE("First Query");
     base::HistogramTester histogram;
+    call_count_ = 0;
     ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
     EXPECT_EQ(1u, call_count_);
     histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
@@ -853,14 +868,35 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
     histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
   }
 
-  // Query again for the form. This should go to the local cache.
+  // Query again the next day. This should go to the cache, since the max-age
+  // for the cached response is 2 days.
   {
+    clock_.Advance(base::TimeDelta::FromDays(1));
     SCOPED_TRACE("Second Query");
     base::HistogramTester histogram;
+    call_count_ = 0;
     ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
-    EXPECT_EQ(1u, call_count_);
+    EXPECT_EQ(0u, call_count_);
+    histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                AutofillMetrics::QUERY_SENT, 1);
     histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
     histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_HIT, 1);
+  }
+
+  // Query after another 2 days (a total of 3 days since the entry was cached).
+  // The cache entry had a max age of 2 days, so it should be expired. This
+  // should go to the embedded server.
+  {
+    clock_.Advance(base::TimeDelta::FromDays(2));
+    SCOPED_TRACE("Third Query");
+    base::HistogramTester histogram;
+    call_count_ = 0;
+    ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
+    EXPECT_EQ(1u, call_count_);
+    histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                AutofillMetrics::QUERY_SENT, 1);
+    histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
+    histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
   }
 }
 
