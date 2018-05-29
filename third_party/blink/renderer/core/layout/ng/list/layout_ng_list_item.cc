@@ -287,7 +287,7 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
   }
 }
 
-LayoutObject* LayoutNGListItem::GetSymbolOfMarker() const {
+LayoutObject* LayoutNGListItem::SymbolMarkerLayoutText() const {
   if (marker_type_ != kSymbolValue)
     return nullptr;
   DCHECK(marker_);

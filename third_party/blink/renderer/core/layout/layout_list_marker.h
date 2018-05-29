@@ -67,9 +67,8 @@ class LayoutListMarker final : public LayoutBox {
       LayoutUnit marker_inline_size);
 
   LayoutRect GetRelativeMarkerRect() const;
-  static LayoutRect GetRelativeSymbolMarkerRect(const ComputedStyle&,
-                                                LayoutUnit);
-  static LayoutUnit GetWidthOfSymbol(const ComputedStyle&);
+  static LayoutRect RelativeSymbolMarkerRect(const ComputedStyle&, LayoutUnit);
+  static LayoutUnit WidthOfSymbol(const ComputedStyle&);
 
   bool IsImage() const override;
   const StyleImage* GetImage() const { return image_.Get(); }

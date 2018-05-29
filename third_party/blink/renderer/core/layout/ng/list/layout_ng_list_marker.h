@@ -33,7 +33,7 @@ class CORE_EXPORT LayoutNGListMarker final
 
   bool IsContentImage() const;
 
-  LayoutObject* GetSymbolOfMarker() const;
+  LayoutObject* SymbolMarkerLayoutText() const;
 
   const char* GetName() const override { return "LayoutNGListMarker"; }
 

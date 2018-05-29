@@ -327,8 +327,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
     BreakText(item_result, item, available_width - line_.position, line_info);
 
     if (item.IsSymbolMarker()) {
-      LayoutUnit symbol_width =
-          LayoutListMarker::GetWidthOfSymbol(*item.Style());
+      LayoutUnit symbol_width = LayoutListMarker::WidthOfSymbol(*item.Style());
       if (symbol_width > 0)
         item_result->inline_size = symbol_width;
     }
@@ -360,7 +359,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   BreakText(item_result, item, LayoutUnit::Max(), line_info);
 
   if (item.IsSymbolMarker()) {
-    LayoutUnit symbol_width = LayoutListMarker::GetWidthOfSymbol(*item.Style());
+    LayoutUnit symbol_width = LayoutListMarker::WidthOfSymbol(*item.Style());
     if (symbol_width > 0)
       item_result->inline_size = symbol_width;
   }

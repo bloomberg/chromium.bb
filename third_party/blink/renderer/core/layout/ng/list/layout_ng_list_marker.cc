@@ -60,8 +60,8 @@ bool LayoutNGListMarker::IsContentImage() const {
   return ListItem()->IsMarkerImage();
 }
 
-LayoutObject* LayoutNGListMarker::GetSymbolOfMarker() const {
-  return ListItem()->GetSymbolOfMarker();
+LayoutObject* LayoutNGListMarker::SymbolMarkerLayoutText() const {
+  return ListItem()->SymbolMarkerLayoutText();
 }
 
 }  // namespace blink
