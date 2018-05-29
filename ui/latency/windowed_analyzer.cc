@@ -8,6 +8,7 @@ namespace ui {
 
 void FrameRegionResult::AsValueInto(
     base::trace_event::TracedValue* state) const {
+  // We don't report sample_count, since that is reported at a higher level.
   state->SetDouble("value", value);
   state->SetDouble("start", window_begin.since_origin().InMillisecondsF());
   state->SetDouble("duration", (window_end - window_begin).InMillisecondsF());
@@ -120,26 +121,6 @@ FrameRegionResult WindowedAnalyzer::ComputeWorstSMR() const {
   result.value = client_->TransformResult((result.value * result.value) /
                                           kFixedPointRootMultiplier);
   return result;
-}
-
-void WindowedAnalyzer::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  FrameRegionResult region;
-
-  region = ComputeWorstMean();
-  state->BeginDictionary("worst_mean");
-  region.AsValueInto(state);
-  state->EndDictionary();
-
-  region = ComputeWorstSMR();
-  state->BeginDictionary("worst_smr");
-  region.AsValueInto(state);
-  state->EndDictionary();
-
-  region = ComputeWorstRMS();
-  state->BeginDictionary("worst_rms");
-  region.AsValueInto(state);
-  state->EndDictionary();
 }
 
 }  // namespace frame_metrics

@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_argument.h"
 
 namespace ui {
 namespace frame_metrics {
@@ -34,13 +35,55 @@ class LatencyAccelerationClient : public frame_metrics::StreamAnalyzerClient {
 
 }  // namespace frame_metrics
 
+enum class FrameMetricsSource {
+  Unknown = 0,
+  UnitTest = 1,
+  Thread = 2,
+};
+
+enum class FrameMetricsSourceThread {
+  Unknown = 0,
+  Blink = 1,
+  RendererCompositor = 2,
+  Ui = 3,
+  UiCompositor = 4,
+  VizCompositor = 5,
+};
+
+enum class FrameMetricsCompileTarget {
+  Unknown = 0,
+  Chromium = 1,
+  SynchronousCompositor = 2,
+  Headless = 3,
+};
+
 struct FrameMetricsSettings {
+  FrameMetricsSettings() = default;
+
+  FrameMetricsSettings(FrameMetricsSource source,
+                       FrameMetricsSourceThread source_thread,
+                       FrameMetricsCompileTarget compile_target,
+                       bool trace_results_every_frame = false,
+                       size_t max_window_size = 60)
+      : source(source),
+        source_thread(source_thread),
+        compile_target(compile_target),
+        trace_results_every_frame(trace_results_every_frame),
+        max_window_size(max_window_size) {}
+
+  // Source configuration.
+  FrameMetricsSource source;
+  FrameMetricsSourceThread source_thread;
+  FrameMetricsCompileTarget compile_target;
+
   // This is needed for telemetry results.
-  bool trace_results_every_frame = false;
+  bool trace_results_every_frame;
 
   // Maximum window size in number of samples.
   // This is forwarded to each WindowAnalyzer.
-  size_t max_window_size = 60;
+  size_t max_window_size;
+
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 };
 
 // Calculates all metrics for a frame source.
@@ -51,9 +94,7 @@ struct FrameMetricsSettings {
 // the last call to StartNewReportPeriod.
 class FrameMetrics {
  public:
-  // |source_name| must have a global lifetime for tracing and reporting
-  // purposes.
-  FrameMetrics(const FrameMetricsSettings& settings, const char* source_name);
+  explicit FrameMetrics(FrameMetricsSettings settings);
   virtual ~FrameMetrics();
 
   // Resets all data and history as if the class were just created.
@@ -76,8 +117,7 @@ class FrameMetrics {
                          base::TimeTicks display_timestamp);
 
  protected:
-  void TraceProducedStats();
-  void TraceDisplayedStats();
+  void TraceStats() const;
 
   // virtual for testing.
   virtual base::TimeDelta ReportPeriod();

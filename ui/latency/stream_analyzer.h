@@ -38,9 +38,12 @@ struct StreamAnalysis {
   std::vector<ThresholdResult> thresholds;
   PercentileResults percentiles;
 
+  size_t worst_sample_count = 0;
   FrameRegionResult worst_mean;
   FrameRegionResult worst_rms;
   FrameRegionResult worst_smr;
+
+  void AsValueInto(base::trace_event::TracedValue* state) const;
 
   DISALLOW_COPY_AND_ASSIGN(StreamAnalysis);
 };
@@ -115,8 +118,6 @@ class StreamAnalyzer {
   const WindowedAnalyzer& window() const { return windowed_analyzer_; }
 
   void ComputeSummary(StreamAnalysis* results) const;
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::trace_event::TracedValue* state) const;
 
  protected:
   double VarianceHelper(double accum, double square_accum) const;

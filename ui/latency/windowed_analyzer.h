@@ -103,8 +103,6 @@ class WindowedAnalyzer {
   FrameRegionResult ComputeWorstRMS() const;
   FrameRegionResult ComputeWorstSMR() const;
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
-
  protected:
   struct QueueEntry {
     uint32_t value = 0;
