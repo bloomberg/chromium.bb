@@ -35,7 +35,7 @@ const SkColor kBorderColor = SK_ColorBLUE;
 
 class TestView : public views::View {
  public:
-  TestView(const char* name) : views::View(), name_(name) {}
+  TestView(const char* name) : name_(name) {}
 
   const char* GetClassName() const override { return name_; }
 

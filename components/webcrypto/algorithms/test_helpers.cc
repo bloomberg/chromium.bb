@@ -163,7 +163,7 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
 
   // Parse the JSON to a dictionary.
   *value = base::JSONReader::Read(file_contents);
-  if (!value->get()) {
+  if (!*value) {
     return ::testing::AssertionFailure()
            << "Couldn't parse test file JSON: " << file_path.value();
   }
@@ -453,7 +453,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::string& k_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
   std::unique_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
-  if (!dict.get() || dict->empty())
+  if (!dict || dict->empty())
     return ::testing::AssertionFailure() << "JSON parsing failed";
 
   // ---- k
@@ -480,7 +480,7 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::string& e_expected_hex,
     blink::WebCryptoKeyUsageMask use_mask_expected) {
   std::unique_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
-  if (!dict.get() || dict->empty())
+  if (!dict || dict->empty())
     return ::testing::AssertionFailure() << "JSON parsing failed";
 
   // ---- n

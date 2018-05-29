@@ -117,10 +117,10 @@ TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
   std::unique_ptr<base::DictionaryValue> key_jwk_copy(key_jwk->DeepCopy());
   key_jwk_copy->Remove("d", nullptr);
   blink::WebCryptoKey public_key;
-  ASSERT_EQ(Status::Success(),
-            ImportKeyJwkFromDict(*key_jwk_copy.get(),
-                                 CreateEcdsaImportAlgorithm(curve), true,
-                                 blink::kWebCryptoKeyUsageVerify, &public_key));
+  ASSERT_EQ(
+      Status::Success(),
+      ImportKeyJwkFromDict(*key_jwk_copy, CreateEcdsaImportAlgorithm(curve),
+                           true, blink::kWebCryptoKeyUsageVerify, &public_key));
 
   // Sign twice
   std::vector<uint8_t> message(10);

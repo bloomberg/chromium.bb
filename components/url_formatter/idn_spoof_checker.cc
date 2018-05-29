@@ -313,8 +313,8 @@ bool IDNSpoofChecker::SimilarToTopDomains(base::StringPiece16 hostname) {
   // there is no point in getting rid of diacritics because combining marks
   // attached to non-LGC characters are already blocked.
   if (lgc_letters_n_ascii_.span(host, 0, USET_SPAN_CONTAINED) == host.length())
-    diacritic_remover_.get()->transliterate(host);
-  extra_confusable_mapper_.get()->transliterate(host);
+    diacritic_remover_->transliterate(host);
+  extra_confusable_mapper_->transliterate(host);
 
   UErrorCode status = U_ZERO_ERROR;
   icu::UnicodeString skeleton;

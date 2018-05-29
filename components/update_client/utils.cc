@@ -75,7 +75,7 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
         })");
   std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, url_fetcher_delegate, traffic_annotation);
-  if (!url_fetcher.get())
+  if (!url_fetcher)
     return url_fetcher;
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
@@ -249,7 +249,7 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
   JSONFileValueDeserializer deserializer(manifest);
   std::string error;
   std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, &error);
-  if (!root.get())
+  if (!root)
     return std::unique_ptr<base::DictionaryValue>();
   if (!root->is_dict())
     return std::unique_ptr<base::DictionaryValue>();

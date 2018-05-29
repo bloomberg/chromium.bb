@@ -74,27 +74,27 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
       matcher.condition_factory(), &invalid_condition, 1, &error);
   EXPECT_FALSE(error.empty());
-  EXPECT_FALSE(result.get());
+  EXPECT_FALSE(result);
 
   // Test wrong datatype in hostSuffix.
   error.clear();
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
       matcher.condition_factory(), &invalid_condition2, 2, &error);
   EXPECT_FALSE(error.empty());
-  EXPECT_FALSE(result.get());
+  EXPECT_FALSE(result);
 
   // Test invalid regex in urlMatches.
   error.clear();
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
       matcher.condition_factory(), &invalid_condition3, 3, &error);
   EXPECT_FALSE(error.empty());
-  EXPECT_FALSE(result.get());
+  EXPECT_FALSE(result);
 
   error.clear();
   result = URLMatcherFactory::CreateFromURLFilterDictionary(
       matcher.condition_factory(), &invalid_condition4, 4, &error);
   EXPECT_FALSE(error.empty());
-  EXPECT_FALSE(result.get());
+  EXPECT_FALSE(result);
 
   // Test success.
   error.clear();
@@ -160,7 +160,7 @@ TEST(URLMatcherFactoryTest, UpperCase) {
     result = URLMatcherFactory::CreateFromURLFilterDictionary(
         matcher.condition_factory(), invalid_conditions[i], 1, &error);
     EXPECT_FALSE(error.empty()) << "in iteration " << i;
-    EXPECT_FALSE(result.get()) << "in iteration " << i;
+    EXPECT_FALSE(result) << "in iteration " << i;
   }
 }
 
@@ -250,7 +250,7 @@ void UrlConditionCaseTest::CheckCondition(
       matcher.condition_factory(), &condition, 1, &error);
   if (expected_result == CREATE_FAILURE) {
     EXPECT_FALSE(error.empty());
-    EXPECT_FALSE(result.get());
+    EXPECT_FALSE(result);
     return;
   }
   EXPECT_EQ("", error);

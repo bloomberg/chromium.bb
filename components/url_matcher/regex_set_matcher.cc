@@ -43,7 +43,7 @@ bool RegexSetMatcher::Match(const std::string& text,
   size_t old_number_of_matches = matches->size();
   if (regexes_.empty())
     return false;
-  if (!filtered_re2_.get()) {
+  if (!filtered_re2_) {
     LOG(ERROR) << "RegexSetMatcher was not initialized";
     return false;
   }

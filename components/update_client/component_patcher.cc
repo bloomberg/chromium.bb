@@ -66,7 +66,7 @@ void ComponentPatcher::Start(Callback callback) {
 
 void ComponentPatcher::StartPatching() {
   commands_.reset(ReadCommands(input_dir_));
-  if (!commands_.get()) {
+  if (!commands_) {
     DonePatching(UnpackerError::kDeltaBadCommands, 0);
   } else {
     next_command_ = commands_->begin();
@@ -90,7 +90,7 @@ void ComponentPatcher::PatchNextFile() {
     current_operation_ = CreateDeltaUpdateOp(operation, connector_.get());
   }
 
-  if (!current_operation_.get()) {
+  if (!current_operation_) {
     DonePatching(UnpackerError::kDeltaUnsupportedCommand, 0);
     return;
   }

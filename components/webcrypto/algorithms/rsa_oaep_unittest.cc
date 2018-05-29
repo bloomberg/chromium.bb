@@ -72,7 +72,7 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithNoAlg) {
   ASSERT_EQ(
       Status::Success(),
       ImportKeyJwkFromDict(
-          *jwk.get(),
+          *jwk,
           CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaOaep,
                                          blink::kWebCryptoAlgorithmIdSha1),
           true, blink::kWebCryptoKeyUsageEncrypt, &public_key));
@@ -86,7 +86,7 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMatchingAlg) {
   ASSERT_EQ(
       Status::Success(),
       ImportKeyJwkFromDict(
-          *jwk.get(),
+          *jwk,
           CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaOaep,
                                          blink::kWebCryptoAlgorithmIdSha1),
           true, blink::kWebCryptoKeyUsageEncrypt, &public_key));
@@ -100,7 +100,7 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedAlgFails) {
   ASSERT_EQ(
       Status::ErrorJwkAlgorithmInconsistent(),
       ImportKeyJwkFromDict(
-          *jwk.get(),
+          *jwk,
           CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaOaep,
                                          blink::kWebCryptoAlgorithmIdSha1),
           true, blink::kWebCryptoKeyUsageEncrypt, &public_key));
@@ -115,7 +115,7 @@ TEST_F(WebCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
   ASSERT_EQ(
       Status::ErrorJwkUnexpectedKty("RSA"),
       ImportKeyJwkFromDict(
-          *jwk.get(),
+          *jwk,
           CreateRsaHashedImportAlgorithm(blink::kWebCryptoAlgorithmIdRsaOaep,
                                          blink::kWebCryptoAlgorithmIdSha1),
           true, blink::kWebCryptoKeyUsageEncrypt, &public_key));
@@ -140,7 +140,7 @@ TEST_F(WebCryptoRsaOaepTest, ExportPublicJwk) {
     blink::WebCryptoKey public_key;
     ASSERT_EQ(Status::Success(),
               ImportKeyJwkFromDict(
-                  *jwk.get(),
+                  *jwk,
                   CreateRsaHashedImportAlgorithm(
                       blink::kWebCryptoAlgorithmIdRsaOaep, test_data.hash_alg),
                   true, blink::kWebCryptoKeyUsageEncrypt, &public_key));
@@ -213,7 +213,7 @@ TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeMessageFails) {
   blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(
-                *jwk.get(),
+                *jwk,
                 CreateRsaHashedImportAlgorithm(
                     blink::kWebCryptoAlgorithmIdRsaOaep, kHash),
                 true, blink::kWebCryptoKeyUsageEncrypt, &public_key));
@@ -269,7 +269,7 @@ TEST_F(WebCryptoRsaOaepTest, EncryptWithLargeDigestFails) {
   blink::WebCryptoKey public_key;
   ASSERT_EQ(Status::Success(),
             ImportKeyJwkFromDict(
-                *jwk.get(),
+                *jwk,
                 CreateRsaHashedImportAlgorithm(
                     blink::kWebCryptoAlgorithmIdRsaOaep, kHash),
                 true, blink::kWebCryptoKeyUsageEncrypt, &public_key));

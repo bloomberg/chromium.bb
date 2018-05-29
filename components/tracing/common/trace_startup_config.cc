@@ -49,8 +49,7 @@ TraceStartupConfig* TraceStartupConfig::GetInstance() {
 TraceStartupConfig::TraceStartupConfig()
     : is_enabled_(false),
       trace_config_(base::trace_event::TraceConfig()),
-      startup_duration_(0),
-      result_file_() {
+      startup_duration_(0) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kTraceStartup)) {

@@ -200,7 +200,7 @@ Status JwkReader::Init(const CryptoData& bytes,
   std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
   base::DictionaryValue* dict_value = nullptr;
 
-  if (!value.get() || !value->GetAsDictionary(&dict_value) || !dict_value)
+  if (!value || !value->GetAsDictionary(&dict_value) || !dict_value)
     return Status::ErrorJwkNotDictionary();
 
   // Release |value|, as ownership will be transferred to |dict| via

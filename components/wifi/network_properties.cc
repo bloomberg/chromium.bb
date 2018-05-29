@@ -66,7 +66,7 @@ std::unique_ptr<base::DictionaryValue> NetworkProperties::ToValue(
 }
 
 bool NetworkProperties::UpdateFromValue(const base::DictionaryValue& value) {
-  const base::DictionaryValue* wifi = NULL;
+  const base::DictionaryValue* wifi = nullptr;
   std::string network_type;
   // Get network type and make sure that it is WiFi (if specified).
   if (value.GetString(onc::network_config::kType, &network_type)) {

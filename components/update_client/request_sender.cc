@@ -105,7 +105,7 @@ void RequestSender::SendInternal() {
 
   url_fetcher_ = SendProtocolRequest(url, request_extra_headers_, request_body_,
                                      this, config_->RequestContext());
-  if (!url_fetcher_.get())
+  if (!url_fetcher_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&RequestSender::SendInternalComplete,
                                   base::Unretained(this), -1, std::string(),
@@ -125,7 +125,7 @@ void RequestSender::SendInternalComplete(int error,
     }
 
     DCHECK(use_signing_);
-    DCHECK(signer_.get());
+    DCHECK(signer_);
     if (signer_->ValidateResponse(response_body, response_etag)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(request_sender_callback_), 0,

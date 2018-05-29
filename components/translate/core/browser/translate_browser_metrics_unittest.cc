@@ -101,10 +101,10 @@ class MetricsRecorder {
 
   HistogramBase::Count GetTotalCount() {
     Snapshot();
-    if (!samples_.get())
+    if (!samples_)
       return 0;
     HistogramBase::Count count = samples_->TotalCount();
-    if (!base_samples_.get())
+    if (!base_samples_)
       return count;
     return count - base_samples_->TotalCount();
   }
@@ -123,10 +123,10 @@ class MetricsRecorder {
   }
 
   HistogramBase::Count GetCountWithoutSnapshot(HistogramBase::Sample value) {
-    if (!samples_.get())
+    if (!samples_)
       return 0;
     HistogramBase::Count count = samples_->GetCount(value);
-    if (!base_samples_.get())
+    if (!base_samples_)
       return count;
     return count - base_samples_->GetCount(value);
   }

@@ -132,7 +132,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
 #if defined(OS_WIN)
   if (parsed_command_line.HasSwitch("debug"))
-    MessageBoxA(NULL, __FUNCTION__, "Debug Me!", MB_OK);
+    MessageBoxA(nullptr, __FUNCTION__, "Debug Me!", MB_OK);
 #endif
 
   base::MessageLoopForIO loop;

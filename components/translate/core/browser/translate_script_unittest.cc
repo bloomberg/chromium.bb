@@ -25,12 +25,11 @@ namespace translate {
 
 class TranslateScriptTest : public testing::Test {
  public:
-  TranslateScriptTest() : testing::Test() {}
+  TranslateScriptTest() {}
 
  protected:
   void SetUp() override {
     script_.reset(new TranslateScript);
-    DCHECK(script_.get());
     TranslateDownloadManager::GetInstance()->set_application_locale("en");
     TranslateDownloadManager::GetInstance()->set_request_context(
         new net::TestURLRequestContextGetter(

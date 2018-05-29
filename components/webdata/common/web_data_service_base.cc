@@ -30,38 +30,38 @@ WebDataServiceBase::WebDataServiceBase(
 void WebDataServiceBase::ShutdownOnUISequence() {}
 
 void WebDataServiceBase::Init() {
-  DCHECK(wdbs_.get());
+  DCHECK(wdbs_);
   wdbs_->RegisterDBErrorCallback(profile_error_callback_);
   wdbs_->LoadDatabase();
 }
 
 void WebDataServiceBase::ShutdownDatabase() {
-  if (!wdbs_.get())
+  if (!wdbs_)
     return;
   wdbs_->ShutdownDatabase();
 }
 
 void WebDataServiceBase::CancelRequest(Handle h) {
-  if (!wdbs_.get())
+  if (!wdbs_)
     return;
   wdbs_->CancelRequest(h);
 }
 
 bool WebDataServiceBase::IsDatabaseLoaded() {
-  if (!wdbs_.get())
+  if (!wdbs_)
     return false;
   return wdbs_->db_loaded();
 }
 
 void WebDataServiceBase::RegisterDBLoadedCallback(
     const DBLoadedCallback& callback) {
-  if (!wdbs_.get())
+  if (!wdbs_)
     return;
   wdbs_->RegisterDBLoadedCallback(callback);
 }
 
 WebDatabase* WebDataServiceBase::GetDatabase() {
-  if (!wdbs_.get())
+  if (!wdbs_)
     return nullptr;
   return wdbs_->GetDatabaseOnDB();
 }

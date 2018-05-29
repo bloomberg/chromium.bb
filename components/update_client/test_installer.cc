@@ -83,7 +83,7 @@ void VersionedTestInstaller::Install(const base::FilePath& unpack_path,
   const auto manifest = update_client::ReadManifest(unpack_path);
   std::string version_string;
   manifest->GetStringASCII("version", &version_string);
-  const base::Version version(version_string.c_str());
+  const base::Version version(version_string);
 
   const base::FilePath path =
       install_directory_.AppendASCII(version.GetString());

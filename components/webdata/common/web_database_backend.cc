@@ -30,7 +30,7 @@ WebDatabaseBackend::WebDatabaseBackend(
       delegate_(delegate) {}
 
 void WebDatabaseBackend::AddTable(std::unique_ptr<WebDatabaseTable> table) {
-  DCHECK(!db_.get());
+  DCHECK(!db_);
   tables_.push_back(std::move(table));
 }
 

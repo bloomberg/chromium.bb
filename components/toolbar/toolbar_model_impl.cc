@@ -126,7 +126,7 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
 
   // Note: cert is guaranteed non-NULL or the security level would be NONE.
   scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
-  DCHECK(cert.get());
+  DCHECK(cert);
 
   // EV are required to have an organization name and country.
   DCHECK(!cert->subject().organization_names.empty());

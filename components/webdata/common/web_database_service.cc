@@ -48,14 +48,14 @@ WebDatabaseService::WebDatabaseService(
       db_task_runner_(db_task_runner),
       weak_ptr_factory_(this) {
   DCHECK(ui_task_runner->RunsTasksInCurrentSequence());
-  DCHECK(db_task_runner_.get());
+  DCHECK(db_task_runner_);
 }
 
 WebDatabaseService::~WebDatabaseService() {
 }
 
 void WebDatabaseService::AddTable(std::unique_ptr<WebDatabaseTable> table) {
-  if (!web_db_backend_.get()) {
+  if (!web_db_backend_) {
     web_db_backend_ = new WebDatabaseBackend(
         path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()),
         db_task_runner_);
@@ -64,7 +64,7 @@ void WebDatabaseService::AddTable(std::unique_ptr<WebDatabaseTable> table) {
 }
 
 void WebDatabaseService::LoadDatabase() {
-  DCHECK(web_db_backend_.get());
+  DCHECK(web_db_backend_);
   db_task_runner_->PostTask(
       FROM_HERE, Bind(&WebDatabaseBackend::InitDatabase, web_db_backend_));
 }
@@ -74,7 +74,7 @@ void WebDatabaseService::ShutdownDatabase() {
   loaded_callbacks_.clear();
   error_callbacks_.clear();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  if (!web_db_backend_.get())
+  if (!web_db_backend_)
     return;
   db_task_runner_->PostTask(
       FROM_HERE, Bind(&WebDatabaseBackend::ShutdownDatabase, web_db_backend_));
@@ -82,7 +82,7 @@ void WebDatabaseService::ShutdownDatabase() {
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  return web_db_backend_.get() ? web_db_backend_->database() : nullptr;
+  return web_db_backend_ ? web_db_backend_->database() : nullptr;
 }
 
 scoped_refptr<WebDatabaseBackend> WebDatabaseService::GetBackend() const {
@@ -91,7 +91,7 @@ scoped_refptr<WebDatabaseBackend> WebDatabaseService::GetBackend() const {
 
 void WebDatabaseService::ScheduleDBTask(const base::Location& from_here,
                                         const WriteTask& task) {
-  DCHECK(web_db_backend_.get());
+  DCHECK(web_db_backend_);
   std::unique_ptr<WebDataRequest> request =
       web_db_backend_->request_manager()->NewRequest(nullptr);
   db_task_runner_->PostTask(
@@ -104,7 +104,7 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
     const ReadTask& task,
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
-  DCHECK(web_db_backend_.get());
+  DCHECK(web_db_backend_);
   std::unique_ptr<WebDataRequest> request =
       web_db_backend_->request_manager()->NewRequest(consumer);
   WebDataServiceBase::Handle handle = request->GetHandle();
@@ -115,7 +115,7 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
 }
 
 void WebDatabaseService::CancelRequest(WebDataServiceBase::Handle h) {
-  if (!web_db_backend_.get())
+  if (!web_db_backend_)
     return;
   web_db_backend_->request_manager()->CancelRequest(h);
 }
