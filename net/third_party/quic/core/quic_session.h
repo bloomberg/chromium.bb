@@ -238,6 +238,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // headers and crypto streams, and never counting unfinished streams.
   size_t GetNumActiveStreams() const;
 
+  // Returns the number of currently draining streams.
+  size_t GetNumDrainingStreams() const;
+
   // Returns the number of currently open peer initiated streams, excluding the
   // reserved headers and crypto streams.
   size_t GetNumOpenIncomingStreams() const;
