@@ -28,5 +28,7 @@
 
   [MeasureAs=XRSessionGetInputSources] FrozenArray<XRInputSource> getInputSources();
 
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<FrozenArray<XRHitResult>> requestHitTest(Float32Array origin, Float32Array direction, XRCoordinateSystem coordinateSystem);
+
   [CallWith=ScriptState] Promise<void> end();
 };

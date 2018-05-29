@@ -22,12 +22,14 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame_of_reference.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_of_reference_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
@@ -243,6 +245,79 @@ HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
   }
 
   return source_array;
+}
+
+ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
+                                        NotShared<DOMFloat32Array> origin,
+                                        NotShared<DOMFloat32Array> direction,
+                                        XRCoordinateSystem* coordinate_system) {
+  if (ended_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError, kSessionEnded));
+  }
+
+  if (!coordinate_system) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          "The coordinateSystem parameter is empty."));
+  }
+
+  if (origin.View()->length() != 3 || direction.View()->length() != 3) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kNotSupportedError, "Invalid ray!"));
+  }
+
+  // TODO(https://crbug.com/846411): use coordinate_system.
+
+  // TODO(https://crbug.com/843376): Reject the promise if device doesn't
+  // support the hit-test API.
+
+  device::mojom::blink::XRRayPtr ray = device::mojom::blink::XRRay::New();
+  ray->origin.resize(3);
+  ray->origin[0] = origin.View()->Data()[0];
+  ray->origin[1] = origin.View()->Data()[1];
+  ray->origin[2] = origin.View()->Data()[2];
+  ray->direction.resize(3);
+  ray->direction[0] = direction.View()->Data()[0];
+  ray->direction[1] = direction.View()->Data()[1];
+  ray->direction[2] = direction.View()->Data()[2];
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // TODO(https://crbug.com/845520): Promise should be rejected if session
+  // is deleted.
+  device_->xrMagicWindowProviderPtr()->RequestHitTest(
+      std::move(ray),
+      WTF::Bind(&XRSession::OnHitTestResults, WrapWeakPersistent(this),
+                WrapPersistent(resolver)));
+
+  return promise;
+}
+
+void XRSession::OnHitTestResults(
+    ScriptPromiseResolver* resolver,
+    base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>> results) {
+  if (!results) {
+    resolver->Reject();
+    return;
+  }
+
+  HeapVector<Member<XRHitResult>> hit_results;
+  for (const auto& mojom_result : results.value()) {
+    XRHitResult* hit_result = new XRHitResult(TransformationMatrix::Create(
+        mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
+        mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
+        mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],
+        mojom_result->hit_matrix[6], mojom_result->hit_matrix[7],
+        mojom_result->hit_matrix[8], mojom_result->hit_matrix[9],
+        mojom_result->hit_matrix[10], mojom_result->hit_matrix[11],
+        mojom_result->hit_matrix[12], mojom_result->hit_matrix[13],
+        mojom_result->hit_matrix[14], mojom_result->hit_matrix[15]));
+    hit_results.push_back(hit_result);
+  }
+  resolver->Resolve(hit_results);
 }
 
 ScriptPromise XRSession::end(ScriptState* script_state) {

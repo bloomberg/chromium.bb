@@ -47,6 +47,18 @@ void inline ScopedGenericArObject<ArCamera*>::Free(ArCamera* ar_camera) {
   // Do nothing - ArCamera has no destroy method and is managed by ARCore.
 }
 
+template <>
+void inline ScopedGenericArObject<ArHitResultList*>::Free(
+    ArHitResultList* ar_hit_result_list) {
+  ArHitResultList_destroy(ar_hit_result_list);
+}
+
+template <>
+void inline ScopedGenericArObject<ArHitResult*>::Free(
+    ArHitResult* ar_hit_result) {
+  ArHitResult_destroy(ar_hit_result);
+}
+
 template <class T>
 using ScopedArCoreObject = base::ScopedGeneric<T, ScopedGenericArObject<T>>;
 
@@ -68,7 +80,18 @@ class ARCoreImpl : public ARCore {
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update() override;
 
+  bool RequestHitTest(const mojom::XRRayPtr& ray,
+                      const gfx::Size& image_size,
+                      std::vector<mojom::XRHitResultPtr>* hit_results) override;
+
  private:
+  bool TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
+                                 const gfx::Size& image_size,
+                                 gfx::PointF* screen_point);
+
+  bool ArHitResultToXRHitResult(ArHitResult* ar_hit,
+                                mojom::XRHitResult* hit_result);
+
   bool IsOnGlThread();
   base::WeakPtr<ARCoreImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

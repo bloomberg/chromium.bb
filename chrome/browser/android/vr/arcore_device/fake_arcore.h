@@ -35,6 +35,10 @@ class FakeARCore : public ARCore {
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update() override;
 
+  bool RequestHitTest(const mojom::XRRayPtr& ray,
+                      const gfx::Size& image_size,
+                      std::vector<mojom::XRHitResultPtr>* hit_results) override;
+
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }
 
  private:

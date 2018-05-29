@@ -9,6 +9,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
@@ -21,8 +23,10 @@ namespace blink {
 
 class Element;
 class ResizeObserver;
+class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
 class XRCanvasInputProvider;
+class XRCoordinateSystem;
 class XRDevice;
 class XRFrameOfReferenceOptions;
 class XRInputSourceEvent;
@@ -72,6 +76,11 @@ class XRSession final : public EventTargetWithInlineData {
       HeapHashMap<uint32_t, TraceWrapperMember<XRInputSource>>;
 
   HeapVector<Member<XRInputSource>> getInputSources() const;
+
+  ScriptPromise requestHitTest(ScriptState* script_state,
+                               NotShared<DOMFloat32Array> origin,
+                               NotShared<DOMFloat32Array> direction,
+                               XRCoordinateSystem* coordinate_system);
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);
@@ -138,6 +147,11 @@ class XRSession final : public EventTargetWithInlineData {
   void OnFocus();
   void OnBlur();
   bool HasAppropriateFocus();
+
+  void OnHitTestResults(
+      ScriptPromiseResolver* resolver,
+      base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
+          results);
 
   const Member<XRDevice> device_;
   const bool exclusive_;

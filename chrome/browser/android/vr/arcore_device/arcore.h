@@ -31,7 +31,13 @@ class ARCore {
   virtual std::vector<float> TransformDisplayUvCoords(
       const base::span<const float> uvs) = 0;
   virtual gfx::Transform GetProjectionMatrix(float near, float far) = 0;
+
   virtual mojom::VRPosePtr Update() = 0;
+
+  virtual bool RequestHitTest(
+      const mojom::XRRayPtr& ray,
+      const gfx::Size& image_size,
+      std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
 };
 
 }  // namespace device

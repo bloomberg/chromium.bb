@@ -43,13 +43,15 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   void RequestSession(mojom::VRDisplayHost::RequestSessionCallback callback);
 
  private:
+  bool IsPrivilegedOperationAllowed();
+
   // mojom::VRMagicWindowProvider
   void GetPose(GetPoseCallback callback) override;
   void GetFrameData(const gfx::Size& frame_size,
                     display::Display::Rotation rotation,
                     GetFrameDataCallback callback) override;
-
-  bool CanStartNewSession();
+  void RequestHitTest(mojom::XRRayPtr ray,
+                      RequestHitTestCallback callback) override;
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   device::VRDeviceBase* device_;

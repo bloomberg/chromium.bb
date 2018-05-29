@@ -39,9 +39,9 @@ class ARCoreDevice : public VRDeviceBase {
       const gfx::Size& frame_size,
       display::Display::Rotation frame_rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
-  void OnMagicWindowFrameDataRequestComplete(
-      mojom::VRMagicWindowProvider::GetFrameDataCallback callback,
-      mojom::VRMagicWindowFrameDataPtr frame_data);
+  void RequestHitTest(
+      mojom::XRRayPtr ray,
+      mojom::VRMagicWindowProvider::RequestHitTestCallback callback) override;
   void OnMailboxBridgeReady();
   void OnARCoreGlThreadInitialized(bool success);
 

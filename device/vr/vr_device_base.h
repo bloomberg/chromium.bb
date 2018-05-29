@@ -53,6 +53,9 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
       const gfx::Size& frame_size,
       display::Display::Rotation display_rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
+  virtual void RequestHitTest(
+      mojom::XRRayPtr ray,
+      mojom::VRMagicWindowProvider::RequestHitTestCallback callback);
 
  protected:
   void SetIsPresenting();

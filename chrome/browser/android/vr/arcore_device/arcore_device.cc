@@ -85,7 +85,7 @@ void ARCoreDevice::OnMailboxBridgeReady() {
   // TODO(https://crbug.com/836553): use same GL thread as GVR.
   arcore_gl_thread_ = std::make_unique<ARCoreGlThread>(
       std::move(mailbox_bridge_),
-      CreateMainThreadCallback<bool>(base::BindOnce(
+      CreateMainThreadCallback(base::BindOnce(
           &ARCoreDevice::OnARCoreGlThreadInitialized, GetWeakPtr())));
   arcore_gl_thread_->Start();
 }
@@ -132,8 +132,17 @@ void ARCoreDevice::OnMagicWindowFrameDataRequest(
   PostTaskToGlThread(base::BindOnce(
       &ARCoreGl::ProduceFrame, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr(),
       frame_size, display_rotation,
-      CreateMainThreadCallback<mojom::VRMagicWindowFrameDataPtr>(
-          std::move(callback))));
+      CreateMainThreadCallback(std::move(callback))));
+}
+
+void ARCoreDevice::RequestHitTest(
+    mojom::XRRayPtr ray,
+    mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
+  DCHECK(IsOnMainThread());
+
+  PostTaskToGlThread(base::BindOnce(
+      &ARCoreGl::RequestHitTest, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr(),
+      std::move(ray), CreateMainThreadCallback(std::move(callback))));
 }
 
 bool ARCoreDevice::IsOnMainThread() {
