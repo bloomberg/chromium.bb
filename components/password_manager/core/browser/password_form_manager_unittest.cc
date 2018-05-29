@@ -843,6 +843,7 @@ class PasswordFormManagerTest : public testing::Test {
                   UploadedGenerationTypesAre(expected_generation_types,
                                              generated_password_changed)),
             false, expected_available_field_types, std::string(), true));
+    base::HistogramTester histogram_tester;
 
     form_manager.ProvisionallySave(submitted_form);
     switch (interaction) {
@@ -855,6 +856,11 @@ class PasswordFormManagerTest : public testing::Test {
       case NO_INTERACTION:
         form_manager.OnNoInteraction(false /* not an update prompt*/);
         break;
+    }
+    if (has_generated_password) {
+      histogram_tester.ExpectUniqueSample(
+          "PasswordGeneration.GeneratedPasswordWasEdited",
+          generated_password_changed /* sample */, 1);
     }
     Mock::VerifyAndClearExpectations(
         client()->mock_driver()->mock_autofill_download_manager());
