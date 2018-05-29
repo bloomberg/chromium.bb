@@ -22,9 +22,6 @@ class SubresourceFilterClient {
   // blocked.
   virtual void ShowNotification() = 0;
 
-  // Called when the component is starting to observe a new navigation.
-  virtual void OnNewNavigationStarted() = 0;
-
   // Called when the activation decision is otherwise completely computed by the
   // subresource filter. At this point, the embedder still has a chance to
   // return false to suppress the activation. Returns whether the activation
@@ -34,8 +31,6 @@ class SubresourceFilterClient {
   virtual bool OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
       bool activated) = 0;
-
-  virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
 
   // Returns whether this navigation should be forced to be activated. This is
   // currently only used for devtools.
