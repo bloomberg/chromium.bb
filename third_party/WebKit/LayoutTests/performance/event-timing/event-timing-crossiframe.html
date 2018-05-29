@@ -29,10 +29,14 @@
     const entry = entries[0];
     verifyClickEvent(entry);
 
-    assert_true(entry.processingStart > processingStartMin);
-    assert_true(entry.processingStart < onloadTime);
-    assert_true(entry.startTime > clickTimeMin);
-    assert_true(entry.startTime < onloadTime);
+    assert_greater_than(entry.processingStart, processingStartMin,
+        "The entry's processing start should be later than processingStartMin.");
+    assert_greater_than(onloadTime, entry.processingStart,
+        "onload should occur later than the entry's procesisng start.");
+    assert_greater_than(entry.startTime, clickTimeMin,
+        "The entry's start time should be later than clickTimeMin.");
+    assert_greater_than(onloadTime, entry.startTime,
+        "onload should occur later than the entry's start time.");
   }
 
   function validateChildFrameEntries(msg) {
@@ -43,12 +47,20 @@
     const entry = entries[0];
     verifyClickEvent(entry);
 
-    assert_true(entry.processingStart > childFrameData.processingStartMin);
-    assert_true(entry.processingStart < childFrameData.onloadTime);
-    assert_true(entry.startTime > childFrameData.clickTimeMin);
-    assert_true(entry.startTime < childFrameData.onloadTime);
+    assert_greater_than(entry.processingStart, childFrameData.processingStartMin,
+        "The entry's processing start should be later than the child frame's processingStartMin.");
+    assert_greater_than(childFrameData.onloadTime, entry.processingStart,
+        "Child frame's onload should occur later than the entry's processing \
+        start.");
+    assert_greater_than(entry.startTime, childFrameData.clickTimeMin,
+        "The entry's start time should be later than the child frame's \
+        clickTimeMin.");
+    assert_greater_than(childFrameData.onloadTime, entry.startTime,
+        "Child frame's onload should be later than the entry's start time.");
 
-    assert_array_equals(childFrameData.observedEntries, childFrameData.bufferedEntries);
+    assert_array_equals(childFrameData.observedEntries,
+        childFrameData.bufferedEntries,
+        "The child frame's observed entries should be buffered as well.");
   }
 
   async_test(function(t) {

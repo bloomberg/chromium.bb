@@ -15,23 +15,26 @@
     const entries = performance.getEntriesByName('click');
     const onloadTime = performance.timing.loadEventStart - performance.timeOrigin;
 
-    const entriesBeforeOnload = entries.filter(e => e.startTime <
-      onloadTime);
+    const entriesBeforeOnload = entries.filter(
+        e => e.startTime < onloadTime);
     assert_equals(entriesBeforeOnload.length, 1,
-      "Long latency events before onload should be buffered."
-    );
+        "Long latency events before onload should be buffered.");
     const entry = entriesBeforeOnload[0];
     verifyClickEvent(entry);
 
-    assert_greater_than(entry.processingStart, processingStartMin);
-    assert_greater_than(onloadTime, entry.processingStart);
-    assert_greater_than(entry.startTime, clickTimeMin);
-    assert_greater_than(onloadTime, entry.startTime);
+    assert_greater_than(entry.processingStart, processingStartMin,
+        "The entry should be processed later than processingStartMin.");
+    assert_greater_than(onloadTime, entry.processingStart,
+        "Onload should occur later than the entry's processing start.");
+    assert_greater_than(entry.startTime, clickTimeMin,
+        "The entry's start time should be later than clickTimeMin.");
+    assert_greater_than(onloadTime, entry.startTime,
+        "onload should occur later than the entry's start time.");
 
-    const entriesAfterOnload = entries.filter(e => e.startTime >
-      onloadTime);
+    const entriesAfterOnload = entries.filter(
+        e => e.startTime > onloadTime);
     assert_equals(entriesAfterOnload.length, 0,
-      "Events after onload shouldn't be buffered.");
+        "Events after onload shouldn't be buffered.");
   }
 
   /* Timeline:
