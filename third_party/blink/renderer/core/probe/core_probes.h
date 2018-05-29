@@ -31,19 +31,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_CORE_PROBES_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_CORE_PROBES_H_
 
-#include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/html/html_slot_element.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/probe/platform_probes.h"
 
 namespace blink {
 
 class CoreProbeSink;
-class Resource;
 class ThreadDebugger;
 
 namespace probe {
@@ -101,18 +96,7 @@ CORE_EXPORT void AsyncTaskCanceled(v8::Isolate*, void*);
 CORE_EXPORT void AsyncTaskCanceledBreakable(ExecutionContext*,
                                             const char* name,
                                             void*);
-
 CORE_EXPORT void AllAsyncTasksCanceled(ExecutionContext*);
-CORE_EXPORT void CanceledAfterReceivedResourceResponse(LocalFrame*,
-                                                       DocumentLoader*,
-                                                       unsigned long identifier,
-                                                       const ResourceResponse&,
-                                                       Resource*);
-CORE_EXPORT void ContinueWithPolicyIgnore(LocalFrame*,
-                                          DocumentLoader*,
-                                          unsigned long identifier,
-                                          const ResourceResponse&,
-                                          Resource*);
 
 }  // namespace probe
 }  // namespace blink

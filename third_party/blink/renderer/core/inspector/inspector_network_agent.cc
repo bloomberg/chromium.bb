@@ -1107,28 +1107,7 @@ void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
 }
 
-void InspectorNetworkAgent::DidFailXHRLoading(ExecutionContext* context,
-                                              XMLHttpRequest* xhr,
-                                              ThreadableLoaderClient* client,
-                                              const AtomicString& method,
-                                              const String& url) {
-  DidFinishXHRInternal(context, xhr, client, method, url, false);
-}
-
-void InspectorNetworkAgent::DidFinishXHRLoading(ExecutionContext* context,
-                                                XMLHttpRequest* xhr,
-                                                ThreadableLoaderClient* client,
-                                                const AtomicString& method,
-                                                const String& url) {
-  DidFinishXHRInternal(context, xhr, client, method, url, true);
-}
-
-void InspectorNetworkAgent::DidFinishXHRInternal(ExecutionContext* context,
-                                                 XMLHttpRequest* xhr,
-                                                 ThreadableLoaderClient* client,
-                                                 const AtomicString& method,
-                                                 const String& url,
-                                                 bool success) {
+void InspectorNetworkAgent::DidFinishXHR(XMLHttpRequest* xhr) {
   // This method will be called from the XHR.
   // We delay deleting the replay XHR, as deleting here may delete the caller.
   if (!replay_xhrs_.Contains(xhr))
