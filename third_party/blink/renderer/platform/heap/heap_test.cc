@@ -5815,11 +5815,6 @@ TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
   a->Verify();
 }
 
-static RecursiveMutex& GetRecursiveMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, recursive_mutex, ());
-  return recursive_mutex;
-}
-
 class DestructorLockingObject
     : public GarbageCollectedFinalized<DestructorLockingObject> {
  public:
@@ -5828,7 +5823,6 @@ class DestructorLockingObject
   }
 
   virtual ~DestructorLockingObject() {
-    RecursiveMutexLocker lock(GetRecursiveMutex());
     ++destructor_calls_;
   }
 
@@ -6524,23 +6518,15 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
   CrossThreadWeakPersistent<DestructorLockingObject>
       cross_thread_weak_persistent(object);
   object = nullptr;
-  {
-    RecursiveMutexLocker recursive_mutex_locker(GetRecursiveMutex());
-    EXPECT_EQ(0, DestructorLockingObject::destructor_calls_);
-  }
+  EXPECT_EQ(0, DestructorLockingObject::destructor_calls_);
 
-  {
-    // Pretend we have no pointers on stack during the step 4.
-    WakeWorkerThread();
-    ParkMainThread();
-  }
+  // Pretend we have no pointers on stack during the step 4.
+  WakeWorkerThread();
+  ParkMainThread();
 
   // Step 5: Make sure the weak persistent is cleared.
   EXPECT_FALSE(cross_thread_weak_persistent.Get());
-  {
-    RecursiveMutexLocker recursive_mutex_locker(GetRecursiveMutex());
-    EXPECT_EQ(1, DestructorLockingObject::destructor_calls_);
-  }
+  EXPECT_EQ(1, DestructorLockingObject::destructor_calls_);
 
   WakeWorkerThread();
   ParkMainThread();
