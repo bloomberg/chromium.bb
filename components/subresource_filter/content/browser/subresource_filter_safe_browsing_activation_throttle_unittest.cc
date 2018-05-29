@@ -72,24 +72,13 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   MockSubresourceFilterClient() = default;
   ~MockSubresourceFilterClient() override = default;
 
-  // Mocks have trouble with move-only types passed in the constructor.
-  void set_ruleset_dealer(
-      std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer) {
-    ruleset_dealer_ = std::move(ruleset_dealer);
-  }
-
   bool OnPageActivationComputed(content::NavigationHandle* handle,
                                 bool activated) override {
     DCHECK(handle->IsInMainFrame());
     return whitelisted_hosts_.count(handle->GetURL().host());
   }
 
-  VerifiedRulesetDealer::Handle* GetRulesetDealer() override {
-    return ruleset_dealer_.get();
-  }
-
   MOCK_METHOD0(ShowNotification, void());
-  MOCK_METHOD0(OnNewNavigationStarted, void());
   MOCK_METHOD0(ForceActivationInCurrentWebContents, bool());
 
   void WhitelistInCurrentWebContents(const GURL& url) {
@@ -101,8 +90,6 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
  private:
   std::set<std::string> whitelisted_hosts_;
-
-  std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
 };
@@ -175,21 +162,26 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair_));
-    auto ruleset_dealer = std::make_unique<VerifiedRulesetDealer::Handle>(
+    ruleset_dealer_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoopCurrent::Get()->task_runner());
-    ruleset_dealer->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
-                                             base::DoNothing());
+    ruleset_dealer_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
+                                              base::DoNothing());
+
+    auto* contents = RenderViewHostTestHarness::web_contents();
     client_ =
         std::make_unique<::testing::NiceMock<MockSubresourceFilterClient>>();
-    client_->set_ruleset_dealer(std::move(ruleset_dealer));
-    ContentSubresourceFilterDriverFactory::CreateForWebContents(
-        RenderViewHostTestHarness::web_contents(), client_.get());
+    ContentSubresourceFilterDriverFactory::CreateForWebContents(contents,
+                                                                client_.get());
+    auto* driver_factory =
+        ContentSubresourceFilterDriverFactory::FromWebContents(contents);
+    throttle_manager_ =
+        std::make_unique<ContentSubresourceFilterThrottleManager>(
+            driver_factory, ruleset_dealer_.get(), contents);
     fake_safe_browsing_database_ = new FakeSafeBrowsingDatabaseManager();
     NavigateAndCommit(GURL("https://test.com"));
-    Observe(RenderViewHostTestHarness::web_contents());
+    Observe(contents);
 
-    observer_ = std::make_unique<TestSubresourceFilterObserver>(
-        RenderViewHostTestHarness::web_contents());
+    observer_ = std::make_unique<TestSubresourceFilterObserver>(contents);
   }
 
   virtual void Configure() {
@@ -199,7 +191,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   }
 
   void TearDown() override {
-    client_.reset();
+    ruleset_dealer_.reset();
 
     // RunUntilIdle() must be called multiple times to flush any outstanding
     // cross-thread interactions.
@@ -226,10 +218,8 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
               fake_safe_browsing_database_));
     }
     std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
-    auto* factory = ContentSubresourceFilterDriverFactory::FromWebContents(
-        navigation_handle->GetWebContents());
-    factory->throttle_manager()->MaybeAppendNavigationThrottles(
-        navigation_handle, &throttles);
+    throttle_manager_->MaybeAppendNavigationThrottles(navigation_handle,
+                                                      &throttles);
     for (auto& it : throttles) {
       navigation_handle->RegisterThrottleForTesting(std::move(it));
     }
@@ -356,6 +346,10 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
 
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
+
+  std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
+
+  std::unique_ptr<ContentSubresourceFilterThrottleManager> throttle_manager_;
 
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
   std::unique_ptr<MockSubresourceFilterClient> client_;
@@ -562,7 +556,6 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
        NotificationVisibility) {
   GURL url(kURL);
   ConfigureForMatch(url);
-  EXPECT_CALL(*client(), OnNewNavigationStarted()).Times(1);
   content::RenderFrameHost* rfh = SimulateNavigateAndCommit({url}, main_rfh());
 
   EXPECT_CALL(*client(), ShowNotification()).Times(1);

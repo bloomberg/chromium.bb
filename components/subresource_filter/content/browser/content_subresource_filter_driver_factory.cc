@@ -28,12 +28,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(
 
 namespace subresource_filter {
 
-namespace {
-
-// Returns true with a probability given by |performance_measurement_rate| if
-// ThreadTicks is supported, otherwise returns false.
-}  // namespace
-
 // static
 void ContentSubresourceFilterDriverFactory::CreateForWebContents(
     content::WebContents* web_contents,
@@ -49,13 +43,7 @@ void ContentSubresourceFilterDriverFactory::CreateForWebContents(
 ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     content::WebContents* web_contents,
     SubresourceFilterClient* client)
-    : content::WebContentsObserver(web_contents),
-      client_(client),
-      throttle_manager_(
-          std::make_unique<ContentSubresourceFilterThrottleManager>(
-              this,
-              client_->GetRulesetDealer(),
-              web_contents)) {}
+    : content::WebContentsObserver(web_contents), client_(client) {}
 
 ContentSubresourceFilterDriverFactory::
     ~ContentSubresourceFilterDriverFactory() {}
@@ -124,7 +112,6 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
   if (navigation_handle->IsInMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     activation_decision_ = ActivationDecision::UNKNOWN;
-    client_->OnNewNavigationStarted();
   }
 }
 

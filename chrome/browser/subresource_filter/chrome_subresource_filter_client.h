@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class GURL;
@@ -23,6 +24,10 @@ class NavigationHandle;
 class NavigationThrottle;
 class WebContents;
 }  // namespace content
+
+namespace subresource_filter {
+class ContentSubresourceFilterThrottleManager;
+}  // namespace subresource_filter
 
 // This enum backs a histogram. Make sure new elements are only added to the
 // end. Keep histograms.xml up to date with any changes.
@@ -94,10 +99,9 @@ enum SubresourceFilterAction {
 };
 
 // Chrome implementation of SubresourceFilterClient.
-// TODO(csharrison): Make this a WebContentsObserver and own the throttle
-// manager directly.
 class ChromeSubresourceFilterClient
-    : public content::WebContentsUserData<ChromeSubresourceFilterClient>,
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<ChromeSubresourceFilterClient>,
       public subresource_filter::SubresourceFilterClient {
  public:
   explicit ChromeSubresourceFilterClient(content::WebContents* web_contents);
@@ -109,13 +113,14 @@ class ChromeSubresourceFilterClient
 
   void OnReloadRequested();
 
+  // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
   // SubresourceFilterClient:
   void ShowNotification() override;
-  void OnNewNavigationStarted() override;
   bool OnPageActivationComputed(content::NavigationHandle* navigation_handle,
                                 bool activated) override;
-  subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()
-      override;
   bool ForceActivationInCurrentWebContents() override;
 
   // Should be called by devtools in response to a protocol command to enable ad
@@ -139,10 +144,12 @@ class ChromeSubresourceFilterClient
 
   std::set<std::string> whitelisted_hosts_;
 
+  std::unique_ptr<subresource_filter::ContentSubresourceFilterThrottleManager>
+      throttle_manager_;
+
   // Owned by the profile.
   SubresourceFilterContentSettingsManager* settings_manager_ = nullptr;
 
-  content::WebContents* web_contents_ = nullptr;
   bool did_show_ui_for_navigation_ = false;
 
   // Corresponds to a devtools command which triggers filtering on all page

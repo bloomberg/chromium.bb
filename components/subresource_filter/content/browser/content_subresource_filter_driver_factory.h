@@ -56,10 +56,6 @@ class ContentSubresourceFilterDriverFactory
   // ContentSubresourceFilterThrottleManager::Delegate:
   void OnFirstSubresourceLoadDisallowed() override;
 
-  ContentSubresourceFilterThrottleManager* throttle_manager() {
-    return throttle_manager_.get();
-  }
-
   SubresourceFilterClient* client() { return client_; }
 
  private:
@@ -74,8 +70,6 @@ class ContentSubresourceFilterDriverFactory
 
   // Must outlive this class.
   SubresourceFilterClient* client_;
-
-  std::unique_ptr<ContentSubresourceFilterThrottleManager> throttle_manager_;
 
   // The activation decision corresponding to the most recently _started_
   // non-same-document navigation in the main frame.

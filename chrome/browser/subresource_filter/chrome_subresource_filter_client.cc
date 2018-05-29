@@ -23,6 +23,7 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_level.h"
@@ -39,17 +40,39 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSubresourceFilterClient);
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(web_contents);
   SubresourceFilterProfileContext* context =
       SubresourceFilterProfileContextFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   settings_manager_ = context->settings_manager();
   subresource_filter::ContentSubresourceFilterDriverFactory::
       CreateForWebContents(web_contents, this);
+
+  auto* driver_factory = subresource_filter::
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+
+  subresource_filter::ContentRulesetService* ruleset_service =
+      g_browser_process->subresource_filter_ruleset_service();
+  subresource_filter::VerifiedRulesetDealer::Handle* dealer =
+      ruleset_service ? ruleset_service->ruleset_dealer() : nullptr;
+  throttle_manager_ = std::make_unique<
+      subresource_filter::ContentSubresourceFilterThrottleManager>(
+      driver_factory, dealer, web_contents);
 }
 
 ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
+
+void ChromeSubresourceFilterClient::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() &&
+      !navigation_handle->IsSameDocument()) {
+    // TODO(csharrison): This should probably be reset at commit time, not at
+    // navigation start.
+    did_show_ui_for_navigation_ = false;
+    LogAction(kActionNavigationStarted);
+  }
+}
 
 void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     content::NavigationHandle* navigation_handle,
@@ -66,16 +89,13 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
             safe_browsing_service->database_manager()));
   }
 
-  auto* driver_factory =
-      subresource_filter::ContentSubresourceFilterDriverFactory::
-          FromWebContents(navigation_handle->GetWebContents());
-  driver_factory->throttle_manager()->MaybeAppendNavigationThrottles(
-      navigation_handle, throttles);
+  throttle_manager_->MaybeAppendNavigationThrottles(navigation_handle,
+                                                    throttles);
 }
 
 void ChromeSubresourceFilterClient::OnReloadRequested() {
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
-  const GURL& whitelist_url = web_contents_->GetLastCommittedURL();
+  const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
 
   // Only whitelist via content settings when using the experimental UI,
   // otherwise could get into a situation where content settings cannot be
@@ -86,24 +106,19 @@ void ChromeSubresourceFilterClient::OnReloadRequested() {
   } else {
     WhitelistInCurrentWebContents(whitelist_url);
   }
-  web_contents_->GetController().Reload(content::ReloadType::NORMAL, true);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
 void ChromeSubresourceFilterClient::ShowNotification() {
   if (did_show_ui_for_navigation_)
     return;
 
-  const GURL& top_level_url = web_contents_->GetLastCommittedURL();
+  const GURL& top_level_url = web_contents()->GetLastCommittedURL();
   if (settings_manager_->ShouldShowUIForSite(top_level_url)) {
     ShowUI(top_level_url);
   } else {
     LogAction(kActionUISuppressed);
   }
-}
-
-void ChromeSubresourceFilterClient::OnNewNavigationStarted() {
-  did_show_ui_for_navigation_ = false;
-  LogAction(kActionNavigationStarted);
 }
 
 bool ChromeSubresourceFilterClient::OnPageActivationComputed(
@@ -157,22 +172,15 @@ void ChromeSubresourceFilterClient::LogAction(SubresourceFilterAction action) {
                             kActionLastEntry);
 }
 
-subresource_filter::VerifiedRulesetDealer::Handle*
-ChromeSubresourceFilterClient::GetRulesetDealer() {
-  subresource_filter::ContentRulesetService* ruleset_service =
-      g_browser_process->subresource_filter_ruleset_service();
-  return ruleset_service ? ruleset_service->ruleset_dealer() : nullptr;
-}
-
 void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
   DCHECK(!activated_via_devtools_);
 #if defined(OS_ANDROID)
   InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
+      InfoBarService::FromWebContents(web_contents());
   AdsBlockedInfobarDelegate::Create(infobar_service);
 #endif
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
+      TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
 
   LogAction(kActionUIShown);
