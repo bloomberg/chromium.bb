@@ -40,6 +40,7 @@ TestOptionsProvider::TestOptionsProvider()
                          &strike_server_,
                          color_space_.get(),
                          can_use_lcd_text_,
+                         context_supports_distance_field_text_,
                          SkMatrix::I()),
       deserialize_options_(this, &strike_client_) {}
 

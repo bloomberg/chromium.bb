@@ -35,7 +35,8 @@ class TestContextProvider
       public ContextProvider,
       public RasterContextProvider {
  public:
-  static scoped_refptr<TestContextProvider> Create();
+  static scoped_refptr<TestContextProvider> Create(
+      std::string additional_extensions = std::string());
   // Creates a worker context provider that can be used on any thread. This is
   // equivalent to: Create(); BindToCurrentThread().
   static scoped_refptr<TestContextProvider> CreateWorker();

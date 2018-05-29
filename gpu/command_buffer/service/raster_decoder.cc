@@ -959,10 +959,15 @@ ContextResult RasterDecoderImpl::Initialize(
     }
 
     if (supports_oop_raster_) {
+      // If you make any changes to the GrContext::Options here that could
+      // affect text rendering, make sure to match the capabilities initialized
+      // in GetCapabilities and ensuring these are also used by the
+      // PaintOpBufferSerializer.
       GrContextOptions options;
       options.fDriverBugWorkarounds =
           GrDriverBugWorkarounds(workarounds().ToIntSet());
       gr_context_ = GrContext::MakeGL(std::move(interface), options);
+
       if (gr_context_) {
         // TODO(enne): This cache is for this decoder only and each decoder has
         // its own cache.  This is pretty unfortunate.  This really needs to be
@@ -1118,6 +1123,10 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   // TODO(backer): If this feature is not turned on, CPU raster gives us random
   // junk, which is a bug (https://crbug.com/828578).
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
+
+  if (gr_context_)
+    caps.context_supports_distance_field_text =
+        gr_context_->supportsDistanceFieldText();
   return caps;
 }
 

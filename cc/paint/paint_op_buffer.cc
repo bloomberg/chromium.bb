@@ -325,6 +325,7 @@ PaintOp::SerializeOptions::SerializeOptions(
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
     bool can_use_lcd_text,
+    bool context_supports_distance_field_text,
     const SkMatrix& original_ctm)
     : image_provider(image_provider),
       transfer_cache(transfer_cache),
@@ -332,6 +333,8 @@ PaintOp::SerializeOptions::SerializeOptions(
       strike_server(strike_server),
       color_space(color_space),
       can_use_lcd_text(can_use_lcd_text),
+      context_supports_distance_field_text(
+          context_supports_distance_field_text),
       original_ctm(original_ctm) {}
 
 PaintOp::DeserializeOptions::DeserializeOptions(
