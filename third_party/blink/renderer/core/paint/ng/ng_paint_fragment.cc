@@ -10,8 +10,7 @@
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
@@ -28,6 +27,37 @@ namespace blink {
 
 namespace {
 
+NGLogicalRect ComputeLogicalRectFor(const NGPhysicalOffsetRect& physical_rect,
+                                    const NGPaintFragment& paint_fragment) {
+  const WritingMode writing_mode = paint_fragment.Style().GetWritingMode();
+  const TextDirection text_direction =
+      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment())
+          .ResolvedDirection();
+  const NGPhysicalSize outer_size = paint_fragment.Size();
+  const NGLogicalOffset logical_offset = physical_rect.offset.ConvertToLogical(
+      writing_mode, text_direction, outer_size, paint_fragment.Size());
+  const NGLogicalSize logical_size =
+      physical_rect.size.ConvertToLogical(writing_mode);
+  return {logical_offset, logical_size};
+}
+
+NGPhysicalOffsetRect ComputePhysicalRectFor(
+    const NGLogicalRect& logical_rect,
+    const NGPaintFragment& paint_fragment) {
+  const WritingMode writing_mode = paint_fragment.Style().GetWritingMode();
+  const TextDirection text_direction =
+      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment())
+          .ResolvedDirection();
+  const NGPhysicalSize outer_size = paint_fragment.Size();
+  const NGPhysicalSize physical_size =
+      logical_rect.size.ConvertToPhysical(writing_mode);
+  const NGPhysicalOffset physical_offset =
+      logical_rect.offset.ConvertToPhysical(writing_mode, text_direction,
+                                            outer_size, physical_size);
+
+  return {physical_offset, physical_size};
+}
+
 NGPhysicalOffsetRect ExpandedSelectionRectForLineBreakIfNeeded(
     const NGPhysicalOffsetRect& rect,
     const NGPaintFragment& paint_fragment,
@@ -41,20 +71,15 @@ NGPhysicalOffsetRect ExpandedSelectionRectForLineBreakIfNeeded(
           ->ShouldTruncateOverflowingText())
     return rect;
   // Copy from InlineTextBoxPainter.
-  const NGPaintFragment* container_line_box = paint_fragment.ContainerLineBox();
-  DCHECK(container_line_box);
-  const NGPhysicalLineBoxFragment& physical_line_box =
-      ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
+  const NGLogicalRect logical_rect =
+      ComputeLogicalRectFor(rect, paint_fragment);
   const LayoutUnit space_width(paint_fragment.Style().GetFont().SpaceWidth());
-  const NGPhysicalSize expanded_size(rect.size.width + space_width,
-                                     rect.size.height);
-  // TODO(yoichio): Support vertical writing mode.
-  // Consider sharing physical directional algorithm with ng_caret_rect.cc.
-  if (IsLtr(physical_line_box.BaseDirection()))
-    return NGPhysicalOffsetRect(rect.offset, expanded_size);
-  return NGPhysicalOffsetRect(
-      NGPhysicalOffset(rect.offset.left - space_width, rect.offset.top),
-      expanded_size);
+  const NGLogicalSize logical_expanded_size(
+      logical_rect.size.inline_size + space_width,
+      logical_rect.size.block_size);
+  const NGPhysicalOffsetRect physical_rect = ComputePhysicalRectFor(
+      {logical_rect.offset, logical_expanded_size}, paint_fragment);
+  return physical_rect;
 }
 
 NGLogicalOffset ChildLogicalOffsetInParent(const NGPaintFragment& child) {
