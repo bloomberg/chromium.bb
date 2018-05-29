@@ -53,6 +53,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   void OnNativeWidgetWorkspaceChanged() override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::internal::NativeWidgetDelegate:
   void OnNativeFocus() override;
@@ -76,6 +77,11 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
 
   // Updates the controls view::Views to reflect |is_visible|.
   void UpdateControlsVisibility(bool is_visible);
+
+  // Toggles the play/pause control through the |controller_| and updates the
+  // |play_pause_controls_view_| toggled state to reflect the current playing
+  // state.
+  void TogglePlayPause();
 
   // Not owned; |controller_| owns |this|.
   content::PictureInPictureWindowController* controller_;

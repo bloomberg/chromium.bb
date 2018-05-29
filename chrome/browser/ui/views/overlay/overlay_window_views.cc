@@ -423,11 +423,7 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     event->SetHandled();
   } else if (event->key_code() == ui::VKEY_RETURN) {
     if (focused_control_button_ == CONTROL_PLAY_PAUSE) {
-      // Retrieve expected active state based on what command was sent in
-      // TogglePlayPause() since the IPC message may not have been propogated
-      // the media player yet.
-      bool is_active = controller_->TogglePlayPause();
-      play_pause_controls_view_->SetToggled(is_active);
+      TogglePlayPause();
     } else /* CONTROL_CLOSE */ {
       controller_->Close();
     }
@@ -437,8 +433,6 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
-  // TODO(apacible): Handle touch screen events.
-  // http://crbug.com/836389
   switch (event->type()) {
     // Only show the media controls when the mouse is hovering over the window.
     case ui::ET_MOUSE_ENTERED:
@@ -459,17 +453,26 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
         controller_->Close();
         event->SetHandled();
       } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
-        // Retrieve expected active state based on what command was sent in
-        // TogglePlayPause() since the IPC message may not have been propogated
-        // the media player yet.
-        bool is_active = controller_->TogglePlayPause();
-        play_pause_controls_view_->SetToggled(is_active);
+        TogglePlayPause();
         event->SetHandled();
       }
       break;
 
     default:
       break;
+  }
+}
+
+void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() != ui::ET_GESTURE_TAP)
+    return;
+
+  if (GetCloseControlsBounds().Contains(event->location())) {
+    controller_->Close();
+    event->SetHandled();
+  } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
+    TogglePlayPause();
+    event->SetHandled();
   }
 }
 
@@ -514,4 +517,12 @@ void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   UpdateCurrentSizeWithAspectRatio(new_size);
   SetBounds(current_bounds_);
   views::Widget::OnNativeWidgetSizeChanged(current_bounds_.size());
+}
+
+void OverlayWindowViews::TogglePlayPause() {
+  // Retrieve expected active state based on what command was sent in
+  // TogglePlayPause() since the IPC message may not have been propogated
+  // the media player yet.
+  bool is_active = controller_->TogglePlayPause();
+  play_pause_controls_view_->SetToggled(is_active);
 }
