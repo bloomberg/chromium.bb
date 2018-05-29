@@ -37,7 +37,11 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   MockWebMediaPlayer()  = default;
   ~MockWebMediaPlayer() override = default;
 
-  void Load(LoadType, const blink::WebMediaPlayerSource&, CORSMode) override {}
+  LoadTiming Load(LoadType,
+                  const blink::WebMediaPlayerSource&,
+                  CORSMode) override {
+    return LoadTiming::kImmediate;
+  }
   void Play() override {}
   void Pause() override {}
   void Seek(double seconds) override {}

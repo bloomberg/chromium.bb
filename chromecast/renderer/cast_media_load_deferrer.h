@@ -33,8 +33,10 @@ class CastMediaLoadDeferrer
   explicit CastMediaLoadDeferrer(content::RenderFrame* render_frame);
   ~CastMediaLoadDeferrer() override;
 
-  // Runs |closure| if the page/frame is switched to foreground.
-  void RunWhenInForeground(const base::RepeatingClosure& closure);
+  // Runs |closure| if the page/frame is switched to foreground. Returns true if
+  // the running of |closure| is deferred (not yet in foreground); false
+  // |closure| can be run immediately.
+  bool RunWhenInForeground(base::OnceClosure closure);
 
  private:
   // content::RenderFrameObserver implementation:
@@ -50,7 +52,7 @@ class CastMediaLoadDeferrer
       chromecast::shell::mojom::MediaLoadDeferrerRequest request);
 
   bool render_frame_action_blocked_;
-  std::vector<base::RepeatingClosure> pending_closures_;
+  std::vector<base::OnceClosure> pending_closures_;
 
   mojo::BindingSet<chromecast::shell::mojom::MediaLoadDeferrer> bindings_;
 

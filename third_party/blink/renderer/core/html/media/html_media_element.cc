@@ -1289,7 +1289,13 @@ void HTMLMediaElement::StartPlayerLoad() {
   web_media_player_->RequestRemotePlaybackDisabled(
       FastHasAttribute(disableremoteplaybackAttr));
 
-  web_media_player_->Load(GetLoadType(), source, CorsMode());
+  auto load_timing = web_media_player_->Load(GetLoadType(), source, CorsMode());
+  if (load_timing == WebMediaPlayer::LoadTiming::kDeferred) {
+    // Deferred media loading is not part of the spec, but intuition is that
+    // this should not hold up the Window's "load" event (similar to user
+    // gesture requirements).
+    SetShouldDelayLoadEvent(false);
+  }
 
   if (IsFullscreen())
     web_media_player_->EnteredFullscreen();
@@ -1923,7 +1929,13 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
     sent_stalled_event_ = false;
     if (GetLayoutObject())
       GetLayoutObject()->UpdateFromElement();
-  } else if (timedelta > 3.0 && !sent_stalled_event_) {
+  } else if (!media_source_ && timedelta > 3.0 && !sent_stalled_event_) {
+    // Note the !media_source_ condition above. The 'stalled' event is not
+    // fired when using MSE. MSE's resource is considered 'local' (we don't
+    // manage the donwload - the app does), so the HTML5 spec text around
+    // 'stalled' does not apply. See discussion in https://crbug.com/517240
+    // We also don't need to take any action wrt delaying-the-load-event.
+    // MediaSource disables the delayed load when first attached.
     ScheduleEvent(EventTypeNames::stalled);
     sent_stalled_event_ = true;
     SetShouldDelayLoadEvent(false);

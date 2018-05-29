@@ -108,6 +108,10 @@ class WebMediaPlayer {
     kTexSubImage3D
   };
 
+  // Returned by Load() to signal when a players choose to defer (e.g. as part
+  // of pre-rendering)
+  enum LoadTiming { kImmediate, kDeferred };
+
   // For last-uploaded-frame-metadata API. https://crbug.com/639174
   struct VideoFrameUploadMetadata {
     int frame_id = -1;
@@ -126,7 +130,7 @@ class WebMediaPlayer {
 
   virtual ~WebMediaPlayer() = default;
 
-  virtual void Load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
+  virtual LoadTiming Load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
 
   // Playback controls.
   virtual void Play() = 0;

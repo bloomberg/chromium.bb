@@ -323,9 +323,10 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   delegate_->RemoveObserver(delegate_id_);
 }
 
-void WebMediaPlayerMS::Load(LoadType load_type,
-                            const blink::WebMediaPlayerSource& source,
-                            CORSMode /*cors_mode*/) {
+blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
+    LoadType load_type,
+    const blink::WebMediaPlayerSource& source,
+    CORSMode /*cors_mode*/) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -376,7 +377,7 @@ void WebMediaPlayerMS::Load(LoadType load_type,
 
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::kNetworkStateNetworkError);
-    return;
+    return blink::WebMediaPlayer::LoadTiming::kImmediate;
   }
 
   if (audio_renderer_) {
@@ -413,6 +414,8 @@ void WebMediaPlayerMS::Load(LoadType load_type,
     SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
     SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
   }
+
+  return blink::WebMediaPlayer::LoadTiming::kImmediate;
 }
 
 void WebMediaPlayerMS::TrackAdded(const blink::WebMediaStreamTrack& track) {
