@@ -27,15 +27,7 @@ namespace vr {
 template <typename T>
 class Binding : public BindingBase {
  public:
-  Binding(const base::RepeatingCallback<T()>& getter,
-          const base::RepeatingCallback<void(const T&)>& setter)
-      : getter_(getter), setter_(setter) {}
-
-  Binding(const base::RepeatingCallback<T()>& getter,
-          const base::RepeatingCallback<void(const base::Optional<T>&,
-                                             const T&)>& setter)
-      : getter_(getter), historic_setter_(setter) {}
-
+#ifndef NDEBUG
   Binding(const base::RepeatingCallback<T()>& getter,
           const std::string& getter_text,
           const base::RepeatingCallback<void(const T&)>& setter,
@@ -54,6 +46,17 @@ class Binding : public BindingBase {
         historic_setter_(setter),
         getter_text_(getter_text),
         setter_text_(setter_text) {}
+#else
+  Binding(const base::RepeatingCallback<T()>& getter,
+          const base::RepeatingCallback<void(const T&)>& setter)
+      : getter_(getter), setter_(setter) {}
+
+  Binding(const base::RepeatingCallback<T()>& getter,
+          const base::RepeatingCallback<void(const base::Optional<T>&,
+                                             const T&)>& setter)
+      : getter_(getter), historic_setter_(setter) {}
+#endif
+
   ~Binding() override = default;
 
   // This function will check if the getter is producing a different value than
@@ -72,11 +75,15 @@ class Binding : public BindingBase {
   }
 
   std::string ToString() override {
+#ifndef NDEBUG
     if (getter_text_.empty() && setter_text_.empty())
       return "";
 
     return base::StringPrintf("%s => %s", getter_text_.c_str(),
                               setter_text_.c_str());
+#else
+    return "";
+#endif
   }
 
  private:
@@ -86,8 +93,10 @@ class Binding : public BindingBase {
       historic_setter_;
   base::Optional<T> last_value_;
 
+#ifndef NDEBUG
   std::string getter_text_;
   std::string setter_text_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(Binding);
 };
@@ -148,7 +157,11 @@ class Binding : public BindingBase {
 #define VR_BIND_FIELD(T, M, m, Get, V, v, f) \
   VR_BIND(T, M, m, Get, V, v, view->f = value)
 
+#ifndef NDEBUG
 #define VR_BIND_LAMBDA(...) base::BindRepeating(__VA_ARGS__), #__VA_ARGS__
+#else
+#define VR_BIND_LAMBDA(...) base::BindRepeating(__VA_ARGS__)
+#endif
 
 }  // namespace vr
 

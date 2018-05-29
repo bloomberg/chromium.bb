@@ -444,9 +444,9 @@ TEST(UiElement, CoordinatedVisibilityTransitions) {
   parent->SetVisible(false);
   parent->SetTransitionedProperties({OPACITY});
   parent->AddBinding(std::make_unique<Binding<bool>>(
-      base::BindRepeating([](bool* value) { return *value; },
-                          base::Unretained(&value)),
-      base::BindRepeating(
+      VR_BIND_LAMBDA([](bool* value) { return *value; },
+                     base::Unretained(&value)),
+      VR_BIND_LAMBDA(
           [](UiElement* e, const bool& value) { e->SetVisible(value); },
           parent_ptr)));
 
@@ -455,9 +455,9 @@ TEST(UiElement, CoordinatedVisibilityTransitions) {
   child->SetVisible(false);
   child->SetTransitionedProperties({OPACITY});
   child->AddBinding(std::make_unique<Binding<bool>>(
-      base::BindRepeating([](bool* value) { return *value; },
-                          base::Unretained(&value)),
-      base::BindRepeating(
+      VR_BIND_LAMBDA([](bool* value) { return *value; },
+                     base::Unretained(&value)),
+      VR_BIND_LAMBDA(
           [](UiElement* e, const bool& value) { e->SetVisible(value); },
           child_ptr)));
 

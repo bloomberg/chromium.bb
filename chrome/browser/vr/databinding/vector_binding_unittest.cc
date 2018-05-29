@@ -56,8 +56,11 @@ void OnModelAdded(ViewRegistry* registry, ElemBinding* element) {
   std::unique_ptr<View> view = std::make_unique<View>();
   element->set_view(view.get());
   element->bindings().push_back(std::make_unique<Binding<int>>(
-      base::BindRepeating(&GetValue, base::Unretained(element)),
-      base::BindRepeating(&SetValue, base::Unretained(element))));
+      VR_BIND_LAMBDA([](ElemBinding* e) { return GetValue(e); },
+                     base::Unretained(element)),
+      VR_BIND_LAMBDA(
+          [](ElemBinding* e, const int& value) { SetValue(e, value); },
+          base::Unretained(element))));
   registry->AddView(std::move(view));
 }
 
