@@ -282,11 +282,24 @@ class AudioManagerForControllerTest : public media::FakeAudioManager {
     return last_closed_stream_;
   }
 
+  AudioOutputStream* MakeAudioOutputStream(const AudioParameters& params,
+                                           const std::string& device_id,
+                                           const LogCallback& cb) final {
+    last_created_stream_ = new NiceMock<MockAudioOutputStream>(
+        media::FakeAudioManager::MakeAudioOutputStream(params, device_id, cb),
+        params.format());
+    last_created_stream_->set_close_callback(
+        base::BindOnce(&AudioManagerForControllerTest::SetLastClosedStream,
+                       base::Unretained(this), last_created_stream_));
+    return last_created_stream_;
+  }
+
   AudioOutputStream* MakeAudioOutputStreamProxy(
       const AudioParameters& params,
       const std::string& device_id) final {
     last_created_stream_ = new NiceMock<MockAudioOutputStream>(
-        media::FakeAudioManager::MakeAudioOutputStreamProxy(params, device_id),
+        media::FakeAudioManager::MakeAudioOutputStream(params, device_id,
+                                                       base::DoNothing()),
         params.format());
     last_created_stream_->set_close_callback(
         base::BindOnce(&AudioManagerForControllerTest::SetLastClosedStream,

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -150,8 +151,9 @@ bool OutputController::Create(bool is_for_device_change) {
     // will freeze otherwise.
     media::AudioParameters mute_params = params_;
     mute_params.set_format(media::AudioParameters::AUDIO_FAKE);
-    stream_ =
-        audio_manager_->MakeAudioOutputStreamProxy(mute_params, std::string());
+    stream_ = audio_manager_->MakeAudioOutputStream(
+        mute_params, std::string(),
+        /*log_callback, not used*/ base::DoNothing());
   } else {
     stream_ =
         audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_);
