@@ -226,7 +226,7 @@ bool PinBackend::ShouldUseCryptohome(const AccountId& account_id) {
   // the prefs backend from a previous version. If that's the case, we should
   // talk to the prefs backend instead of the cryptohome backend.
   QuickUnlockStorage* storage = GetPrefsBackend(account_id);
-  return !storage->pin_storage_prefs()->IsPinSet();
+  return !storage || !storage->pin_storage_prefs()->IsPinSet();
 }
 
 }  // namespace quick_unlock
