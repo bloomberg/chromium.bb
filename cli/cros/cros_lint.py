@@ -158,7 +158,7 @@ def _JsonLintFile(path, _output_format, _debug):
   return result
 
 
-def _ShellLintFile(path, output_format, debug):
+def _ShellLintFile(path, output_format, debug, gentoo_format=False):
   """Returns result of running lint checks on |path|."""
   # TODO: Try using `checkbashisms`.
   syntax_check = _LinterRunCommand(['bash', '-n', path], debug)
@@ -174,8 +174,7 @@ def _ShellLintFile(path, output_format, debug):
   cmd = [shellcheck]
   if output_format != 'default':
     cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
-  extension = os.path.splitext(path)[1]
-  if extension in GENTOO_SHELL_EXTENSIONS:
+  if gentoo_format:
     # ebuilds don't explicitly export variables or contain a shebang.
     cmd.append('--exclude=SC2034,SC2148')
     # ebuilds always use bash.
@@ -207,6 +206,11 @@ def _ShellLintFile(path, output_format, debug):
   return lint_result
 
 
+def _GentooShellLintFile(path, output_format, debug):
+  """Run shell checks with Gentoo rules."""
+  return _ShellLintFile(path, output_format, debug, gentoo_format=True)
+
+
 def _BreakoutDataByLinter(map_to_return, path):
   """Maps a linter method to the content of the |path|."""
   # Detect by content of the file itself.
@@ -236,11 +240,6 @@ def _BreakoutDataByLinter(map_to_return, path):
     logging.debug('%s: reading initial data failed: %s', path, e)
 
 
-# These are split into two groups so that we can apply the general shell
-# linter to all shell-like files while still keeping slightly separate rules for
-# ebuild files.
-GENTOO_SHELL_EXTENSIONS = frozenset(['.ebuild', '.eclass', '.bashrc'])
-
 # Map file extensions to a linter function.
 _EXT_TO_LINTER_MAP = {
     # Note these are defined to keep in line with cpplint.py. Technically, we
@@ -248,7 +247,8 @@ _EXT_TO_LINTER_MAP = {
     frozenset({'.cc', '.cpp', '.h'}): _CpplintFile,
     frozenset({'.json'}): _JsonLintFile,
     frozenset({'.py'}): _PylintFile,
-    frozenset({'.sh'} | GENTOO_SHELL_EXTENSIONS): _ShellLintFile,
+    frozenset({'.sh'}): _ShellLintFile,
+    frozenset({'.ebuild', '.eclass', '.bashrc'}): _GentooShellLintFile,
 }
 
 
