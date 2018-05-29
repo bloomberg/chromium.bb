@@ -818,6 +818,7 @@ jumbo_component("platform") {
     "graphics/canvas_metrics.h",
     "graphics/canvas_resource.cc",
     "graphics/canvas_resource.h",
+    "graphics/canvas_resource_host.cc",
     "graphics/canvas_resource_host.h",
     "graphics/canvas_resource_provider.cc",
     "graphics/canvas_resource_provider.h",

@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -39,6 +41,46 @@ void CanvasRenderingContextHost::RestoreCanvasMatrixClipStack(
     PaintCanvas* canvas) const {
   if (RenderingContext())
     RenderingContext()->RestoreCanvasMatrixClipStack(canvas);
+}
+
+bool CanvasRenderingContextHost::Is3d() const {
+  return RenderingContext() && RenderingContext()->Is3d();
+}
+
+bool CanvasRenderingContextHost::Is2d() const {
+  return RenderingContext() && RenderingContext()->Is2d();
+}
+
+CanvasResourceProvider*
+CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider() {
+  if (!ResourceProvider() && !did_fail_to_create_resource_provider_) {
+    resource_provider_is_clear_ = true;
+    if (IsValidImageSize(Size())) {
+      if (Is3d()) {
+        ReplaceResourceProvider(CanvasResourceProvider::Create(
+            Size(),
+            Platform::Current()->IsGpuCompositingDisabled()
+                ? CanvasResourceProvider::kSoftwareResourceUsage
+                : CanvasResourceProvider::kAcceleratedResourceUsage,
+            SharedGpuContext::ContextProviderWrapper(), 0, ColorParams()));
+      } else {
+        // 2d context
+        // TODO: move resource provider ownership from canvas 2d layer bridge
+        // to here.
+        NOTREACHED();
+      }
+    }
+    if (!ResourceProvider()) {
+      did_fail_to_create_resource_provider_ = true;
+    }
+  }
+  return ResourceProvider();
+}
+
+CanvasColorParams CanvasRenderingContextHost::ColorParams() const {
+  if (RenderingContext())
+    return RenderingContext()->ColorParams();
+  return CanvasColorParams();
 }
 
 }  // namespace blink

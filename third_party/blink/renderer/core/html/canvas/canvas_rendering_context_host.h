@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class CanvasColorParams;
 class CanvasRenderingContext;
 class FontSelector;
 class StaticBitmapImage;
@@ -75,10 +76,18 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   // Partial CanvasResourceHost implementation
   void RestoreCanvasMatrixClipStack(PaintCanvas*) const final;
 
+  bool Is3d() const;
+  bool Is2d() const;
+  CanvasColorParams ColorParams() const;
+  CanvasResourceProvider* GetOrCreateCanvasResourceProvider();
+
  protected:
   ~CanvasRenderingContextHost() override {}
 
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
+
+  bool did_fail_to_create_resource_provider_ = false;
+  bool resource_provider_is_clear_ = false;
 };
 
 }  // namespace blink
