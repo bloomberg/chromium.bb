@@ -195,27 +195,18 @@ if (enable_av1_decoder) {
     }
   }
 
-  if (cpu_arch_full == "arm-neon-cpu-detect") {
+  if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
     static_library("libaom_intrinsics_neon") {
       configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
       configs += [ ":libaom_config" ]
       cflags = [ "-mfpu=neon" ]
-      sources = libaom_srcs_arm_neon_cpu_detect_neon
+      sources = aom_av1_common_intrin_neon
+      sources += aom_dsp_common_intrin_neon
     }
-  }
 
-  if (current_cpu == "arm") {
-    if (cpu_arch_full == "arm-neon") {
-      arm_assembly_sources = aom_dsp_common_asm_neon
-    } else if (cpu_arch_full == "arm-neon-cpu-detect") {
-      arm_assembly_sources = libaom_srcs_arm_neon_cpu_detect_assembly
-    } else {
-      arm_assembly_sources = libaom_srcs_arm_assembly
-    }
-  }
+    arm_assembly_sources = aom_dsp_common_asm_neon
 
-  # Converts ARM assembly files to GAS style.
-  if (current_cpu == "arm" && arm_assembly_sources != []) {
+    # Converts ARM assembly files to GAS style.
     action_foreach("convert_arm_assembly") {
       script = "//third_party/libvpx/run_perl.py"
       sources = arm_assembly_sources
@@ -288,23 +279,15 @@ if (enable_av1_decoder) {
     } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
       sources = libaom_srcs_mips
     } else if (current_cpu == "arm") {
-      if (arm_use_neon) {
-        sources = aom_av1_common_sources
-        sources += aom_av1_decoder_sources
-        sources += aom_dsp_common_sources
-        sources += aom_dsp_decoder_sources
-        sources += aom_mem_sources
-        sources += aom_rtcd_sources
-        sources += aom_scale_sources
-        sources += aom_sources
-        sources += aom_util_sources
-        sources += aom_av1_common_intrin_neon
-        sources += aom_dsp_common_intrin_neon
-      } else if (is_android) {
-        sources = libaom_srcs_arm_neon_cpu_detect
-      } else {
-        sources = libaom_srcs_arm
-      }
+      sources = aom_av1_common_sources
+      sources += aom_av1_decoder_sources
+      sources += aom_dsp_common_sources
+      sources += aom_dsp_decoder_sources
+      sources += aom_mem_sources
+      sources += aom_rtcd_sources
+      sources += aom_scale_sources
+      sources += aom_sources
+      sources += aom_util_sources
     } else if (current_cpu == "arm64") {
       sources = libaom_srcs_arm64
     }
@@ -324,14 +307,14 @@ if (enable_av1_decoder) {
         ":libaom_yasm",
       ]
     }
-    if (cpu_arch_full == "arm-neon-cpu-detect") {
-      deps += [ ":libaom_intrinsics_neon" ]
+    if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
+      deps += [
+        ":libaom_intrinsics_neon",
+        ":libaom_assembly_arm",
+      ]
     }
     if (is_android) {
       deps += [ "//third_party/android_tools:cpu_features" ]
-    }
-    if (current_cpu == "arm" && arm_assembly_sources != []) {
-      deps += [ ":libaom_assembly_arm" ]
     }
 
     public_configs = [ ":libaom_external_config" ]
