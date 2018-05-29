@@ -248,6 +248,45 @@ TEST(WindowServiceClientTest, MovePressDragRelease) {
                 window_tree_client->PopInputEvent().event.get()));
 }
 
+// Used to verify destruction with a touch pointer down doesn't crash.
+TEST(WindowServiceClientTest, ShutdownWithTouchDown) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+
+  test::EventGenerator event_generator(setup.root());
+  event_generator.set_current_location(gfx::Point(50, 51));
+  event_generator.PressTouch();
+}
+
+TEST(WindowServiceClientTest, TouchPressDragRelease) {
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 11, 100, 100));
+
+  test::EventGenerator event_generator(setup.root());
+  event_generator.set_current_location(gfx::Point(50, 51));
+  event_generator.PressTouch();
+  EXPECT_EQ("POINTER_DOWN 40,40",
+            LocatedEventToEventTypeAndLocation(
+                window_tree_client->PopInputEvent().event.get()));
+
+  event_generator.MoveTouch(gfx::Point(5, 6));
+  EXPECT_EQ("POINTER_MOVED -5,-5",
+            LocatedEventToEventTypeAndLocation(
+                window_tree_client->PopInputEvent().event.get()));
+
+  event_generator.ReleaseTouch();
+  EXPECT_EQ("POINTER_UP -5,-5",
+            LocatedEventToEventTypeAndLocation(
+                window_tree_client->PopInputEvent().event.get()));
+}
+
 class EventRecordingWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   EventRecordingWindowDelegate() = default;
@@ -354,6 +393,42 @@ TEST(WindowServiceClientTest, MoveFromClientToNonClient) {
                 window_tree_client->PopInputEvent().event.get()));
 
   ASSERT_FALSE(window_delegate.PopEvent().get());
+}
+
+TEST(WindowServiceClientTest, MouseDownInNonClientWithChildWindow) {
+  EventRecordingWindowDelegate window_delegate;
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+  setup.client_test_helper()->SetClientArea(top_level,
+                                            gfx::Insets(10, 0, 0, 0));
+
+  // Add a child Window that is sized to fill the top-level.
+  aura::Window* window = setup.client_test_helper()->NewWindow(2);
+  ASSERT_TRUE(window);
+  window->Show();
+  window->SetBounds(gfx::Rect(top_level->bounds().size()));
+  top_level->AddChild(window);
+
+  window_delegate.ClearEvents();
+
+  // Move the mouse over the non-client area.
+  test::EventGenerator event_generator(setup.root());
+  event_generator.MoveMouseTo(15, 16);
+  EXPECT_EQ("POINTER_MOVED 5,6",
+            LocatedEventToEventTypeAndLocation(
+                window_tree_client->PopInputEvent().event.get()));
+
+  // Press over the non-client. The client should not be notified as the event
+  // should be handled locally.
+  event_generator.PressLeftButton();
+  ASSERT_FALSE(window_tree_client->PopInputEvent().event.get());
+  EXPECT_EQ("MOUSE_PRESSED 5,6", LocatedEventToEventTypeAndLocation(
+                                     window_delegate.PopEvent().get()));
 }
 
 TEST(WindowServiceClientTest, PointerWatcher) {
@@ -563,12 +638,14 @@ TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
   ASSERT_TRUE(top_level_client_window);
   ClientWindowTestHelper top_level_client_window_helper(
       top_level_client_window);
-  EXPECT_TRUE(top_level_client_window_helper.IsInPointerPressed());
+  EXPECT_TRUE(top_level_client_window_helper.IsHandlingPointerPress(
+      MouseEvent::kMousePointerId));
 
   // Set capture on |window|, top_level should no longer be in pointer-down
   // (because capture changed).
   EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
-  EXPECT_FALSE(top_level_client_window_helper.IsInPointerPressed());
+  EXPECT_FALSE(top_level_client_window_helper.IsHandlingPointerPress(
+      MouseEvent::kMousePointerId));
 }
 
 TEST(WindowServiceClientTest, PointerDownResetOnHide) {
@@ -587,11 +664,13 @@ TEST(WindowServiceClientTest, PointerDownResetOnHide) {
   ASSERT_TRUE(top_level_client_window);
   ClientWindowTestHelper top_level_client_window_helper(
       top_level_client_window);
-  EXPECT_TRUE(top_level_client_window_helper.IsInPointerPressed());
+  EXPECT_TRUE(top_level_client_window_helper.IsHandlingPointerPress(
+      MouseEvent::kMousePointerId));
 
   // Hiding should implicitly cancel capture.
   top_level->Hide();
-  EXPECT_FALSE(top_level_client_window_helper.IsInPointerPressed());
+  EXPECT_FALSE(top_level_client_window_helper.IsHandlingPointerPress(
+      MouseEvent::kMousePointerId));
 }
 
 TEST(WindowServiceClientTest, DeleteWindow) {

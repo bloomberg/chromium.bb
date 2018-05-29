@@ -287,9 +287,6 @@ void WindowServiceClient::AddWindowToKnownWindows(aura::Window* window,
 void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window,
                                                        bool delete_if_owned) {
   DCHECK(IsWindowKnown(window));
-  auto iter = window_to_client_window_id_map_.find(window);
-  client_window_id_to_window_map_.erase(iter->second);
-  window_to_client_window_id_map_.erase(iter);
   auto client_iter = client_created_windows_.find(window);
   if (client_iter != client_created_windows_.end()) {
     window->RemoveObserver(this);
@@ -300,6 +297,11 @@ void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window,
     }
     client_created_windows_.erase(client_iter);
   }
+  // Remove from these maps after destruction. This is necessary as destruction
+  // may end up expecting to find a ClientWindow.
+  auto iter = window_to_client_window_id_map_.find(window);
+  client_window_id_to_window_map_.erase(iter->second);
+  window_to_client_window_id_map_.erase(iter);
 }
 
 bool WindowServiceClient::IsValidIdForNewWindow(
