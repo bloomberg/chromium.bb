@@ -132,16 +132,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                    bool async,
                    const HTTPHeaderMap& headers,
                    bool include_crendentials);
-  void DidFailXHRLoading(ExecutionContext*,
-                         XMLHttpRequest*,
-                         ThreadableLoaderClient*,
-                         const AtomicString&,
-                         const String&);
-  void DidFinishXHRLoading(ExecutionContext*,
-                           XMLHttpRequest*,
-                           ThreadableLoaderClient*,
-                           const AtomicString&,
-                           const String&);
+  void DidFinishXHR(XMLHttpRequest*);
 
   void WillStartFetch(ThreadableLoaderClient*);
 

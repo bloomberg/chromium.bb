@@ -1330,7 +1330,7 @@ void XMLHttpRequest::HandleRequestError(ExceptionCode exception_code,
                                         long long expected_length) {
   NETWORK_DVLOG(1) << this << " handleRequestError()";
 
-  probe::didFailXHRLoading(GetExecutionContext(), this, this, method_, url_);
+  probe::didFinishXHR(GetExecutionContext(), this);
 
   send_flag_ = false;
   if (!async_) {
@@ -1705,7 +1705,7 @@ void XMLHttpRequest::NotifyParserStopped() {
 }
 
 void XMLHttpRequest::EndLoading() {
-  probe::didFinishXHRLoading(GetExecutionContext(), this, this, method_, url_);
+  probe::didFinishXHR(GetExecutionContext(), this);
 
   if (loader_) {
     // Set |m_error| in order to suppress the cancel notification (see

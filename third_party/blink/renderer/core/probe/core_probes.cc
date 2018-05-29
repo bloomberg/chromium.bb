@@ -31,21 +31,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/CoreProbeSink.h"
-#include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
-#include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
-#include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 
 namespace blink {
 namespace probe {
@@ -124,31 +112,6 @@ void AsyncTaskCanceledBreakable(ExecutionContext* context,
 void AllAsyncTasksCanceled(ExecutionContext* context) {
   if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
     debugger->AllAsyncTasksCanceled();
-}
-
-void DidReceiveResourceResponseButCanceled(LocalFrame* frame,
-                                           DocumentLoader* loader,
-                                           unsigned long identifier,
-                                           const ResourceResponse& r,
-                                           Resource* resource) {
-  didReceiveResourceResponse(frame->GetDocument(), identifier, loader, r,
-                             resource);
-}
-
-void CanceledAfterReceivedResourceResponse(LocalFrame* frame,
-                                           DocumentLoader* loader,
-                                           unsigned long identifier,
-                                           const ResourceResponse& r,
-                                           Resource* resource) {
-  DidReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
-}
-
-void ContinueWithPolicyIgnore(LocalFrame* frame,
-                              DocumentLoader* loader,
-                              unsigned long identifier,
-                              const ResourceResponse& r,
-                              Resource* resource) {
-  DidReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
 }  // namespace probe
