@@ -557,6 +557,20 @@ const IDNTestCase idn_cases[] = {
     // ฟรฟร.com (made of two Thai characters. similar to wsws.com in
     // some fonts)
     {"xn--w3calb.com", L"\x0e1f\x0e23\x0e1f\x0e23.com", false},
+    // พรบ.com
+    {"xn--r3chp.com", L"\x0e1e\x0e23\x0e1a.com", false},
+    // ฟรบ.com
+    {"xn--r3cjm.com", L"\x0e1f\x0e23\x0e1a.com", false},
+
+    // Lao characters that look like w, s, o, and u.
+    // ພຣບ.com
+    {"xn--f7chp.com", L"\x0e9e\x0ea3\x0e9a.com", false},
+    // ຟຣບ.com
+    {"xn--f7cjm.com", L"\x0e9f\x0ea3\x0e9a.com", false},
+    // ຟຮບ.com
+    {"xn--f7cj9b.com", L"\x0e9f\x0eae\x0e9a.com", false},
+    // ຟຮ໐ບ.com
+    {"xn--f7cj9b5h.com", L"\x0e9f\x0eae" L"\x0ed0\x0e9a.com", false},
 
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
