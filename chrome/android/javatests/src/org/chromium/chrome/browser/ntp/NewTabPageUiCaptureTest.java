@@ -56,8 +56,6 @@ public class NewTabPageUiCaptureTest {
             Arrays.asList(new ParameterSet().value(false).name("DisableNTPModernLayout"),
                     new ParameterSet().value(true).name("EnableNTPModernLayout"));
     @Rule
-    public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
-    @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();

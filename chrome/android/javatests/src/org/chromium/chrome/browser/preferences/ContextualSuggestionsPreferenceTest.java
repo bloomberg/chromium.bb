@@ -14,7 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -33,9 +32,6 @@ public class ContextualSuggestionsPreferenceTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
-    @Rule
-    public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
-
     private ContextualSuggestionsPreference mFragment;
     private FakeEnabledStateMonitor mTestMonitor;
     private ChromeSwitchPreference mSwitch;
@@ -43,12 +39,12 @@ public class ContextualSuggestionsPreferenceTest {
 
     @Before
     public void setUp() {
+        mTestMonitor = new FakeEnabledStateMonitor();
+        ContextualSuggestionsPreference.setEnabledStateMonitorForTesting(mTestMonitor);
         Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         ContextualSuggestionsPreference.class.getName());
         mFragment = (ContextualSuggestionsPreference) preferences.getFragmentForTest();
-        mTestMonitor = new FakeEnabledStateMonitor();
-        ContextualSuggestionsPreference.setEnabledStateMonitorForTesting(mTestMonitor);
         mTestMonitor.setObserver(mFragment);
         mSwitch = (ChromeSwitchPreference) mFragment.findPreference(
                 ContextualSuggestionsPreference.PREF_CONTEXTUAL_SUGGESTIONS_SWITCH);

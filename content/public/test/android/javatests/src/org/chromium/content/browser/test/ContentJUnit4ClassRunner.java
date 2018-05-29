@@ -8,8 +8,6 @@ import android.support.test.InstrumentationRegistry;
 
 import org.junit.runners.model.InitializationError;
 
-import org.chromium.base.CollectionUtil;
-import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
@@ -18,7 +16,6 @@ import org.chromium.base.test.util.SkipCheck;
 import org.chromium.ui.test.util.UiDisableIfSkipCheck;
 import org.chromium.ui.test.util.UiRestrictionSkipCheck;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -31,22 +28,22 @@ public class ContentJUnit4ClassRunner extends BaseJUnit4ClassRunner {
      * @throws InitializationError if the test class malformed
      */
     public ContentJUnit4ClassRunner(final Class<?> klass) throws InitializationError {
-        super(klass, defaultSkipChecks(), defaultPreTestHooks());
+        super(klass);
     }
 
-    private static List<SkipCheck> defaultSkipChecks() {
-        CommandLine.init(null);
-        return CollectionUtil.newArrayList(
+    @Override
+    protected List<SkipCheck> getSkipChecks() {
+        return addToList(super.getSkipChecks(),
                 new UiRestrictionSkipCheck(InstrumentationRegistry.getTargetContext()),
                 new UiDisableIfSkipCheck(InstrumentationRegistry.getTargetContext()));
     }
     /**
      * Change this static function to add default {@code PreTestHook}s.
      */
-    private static List<PreTestHook> defaultPreTestHooks() {
-        return Arrays.asList(new PreTestHook[] {
-            CommandLineFlags.getRegistrationHook(),
-            new ChildProcessAllocatorSettingsHook()});
+    @Override
+    protected List<PreTestHook> getPreTestHooks() {
+        return addToList(super.getPreTestHooks(), CommandLineFlags.getRegistrationHook(),
+                new ChildProcessAllocatorSettingsHook());
     }
 
     @Override
