@@ -452,6 +452,26 @@
             ]
         }
     ],
+    "AutofillRestrictUnownedFieldsToFormlessCheckout": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "AutofillRestrictUnownedFieldsToFormlessCheckout"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSingleClick": [
         {
             "platforms": [
