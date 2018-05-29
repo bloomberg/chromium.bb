@@ -54,8 +54,7 @@ void RemoveAppFromSelector(const std::string& app_id,
 
 namespace drive {
 
-DriveAppInfo::DriveAppInfo() {
-}
+DriveAppInfo::DriveAppInfo() = default;
 
 DriveAppInfo::DriveAppInfo(
     const std::string& app_id,
@@ -76,8 +75,7 @@ DriveAppInfo::DriveAppInfo(
 
 DriveAppInfo::DriveAppInfo(const DriveAppInfo& other) = default;
 
-DriveAppInfo::~DriveAppInfo() {
-}
+DriveAppInfo::~DriveAppInfo() = default;
 
 DriveAppRegistry::DriveAppRegistry(DriveServiceInterface* drive_service)
     : drive_service_(drive_service),
@@ -85,8 +83,7 @@ DriveAppRegistry::DriveAppRegistry(DriveServiceInterface* drive_service)
       weak_ptr_factory_(this) {
 }
 
-DriveAppRegistry::~DriveAppRegistry() {
-}
+DriveAppRegistry::~DriveAppRegistry() = default;
 
 void DriveAppRegistry::GetAppsForFile(
     const base::FilePath::StringType& file_extension,

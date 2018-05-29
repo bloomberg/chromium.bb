@@ -113,8 +113,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatch(
                  google_apis::CreateRelayCallback(on_write_callback)));
 }
 
-FileWriteWatcher::FileWriteWatcherImpl::~FileWriteWatcherImpl() {
-}
+FileWriteWatcher::FileWriteWatcherImpl::~FileWriteWatcherImpl() = default;
 
 void FileWriteWatcher::FileWriteWatcherImpl::DestroyOnBlockingThread() {
   delete this;

@@ -20,8 +20,7 @@ LocalFileReader::LocalFileReader(
       weak_ptr_factory_(this) {
 }
 
-LocalFileReader::~LocalFileReader() {
-}
+LocalFileReader::~LocalFileReader() = default;
 
 void LocalFileReader::Open(const base::FilePath& file_path,
                            int64_t offset,

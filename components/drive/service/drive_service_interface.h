@@ -32,7 +32,7 @@ class DriveServiceObserver {
   virtual void OnRefreshTokenInvalid() {}
 
  protected:
-  virtual ~DriveServiceObserver() {}
+  virtual ~DriveServiceObserver() = default;
 };
 
 // Optional parameters for AddNewDirectory().
@@ -111,7 +111,7 @@ struct UploadExistingFileOptions {
 // Interface where we define operations that can be sent in batch requests.
 class DriveServiceBatchOperationsInterface {
  public:
-  virtual ~DriveServiceBatchOperationsInterface() {}
+  virtual ~DriveServiceBatchOperationsInterface() = default;
 
   // Uploads a file by a single request with multipart body. It's more efficient
   // for small files than using |InitiateUploadNewFile| and |ResumeUpload|.
@@ -145,7 +145,7 @@ class DriveServiceBatchOperationsInterface {
 class BatchRequestConfiguratorInterface
     : public DriveServiceBatchOperationsInterface {
  public:
-  ~BatchRequestConfiguratorInterface() override {}
+  ~BatchRequestConfiguratorInterface() override = default;
 
   // Commits and sends the batch request.
   virtual void Commit() = 0;
@@ -158,7 +158,7 @@ class BatchRequestConfiguratorInterface
 // URLFetcher that runs on UI thread.
 class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
  public:
-  ~DriveServiceInterface() override {}
+  ~DriveServiceInterface() override = default;
 
   // Common service:
 

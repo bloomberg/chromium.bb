@@ -39,7 +39,7 @@ DriveNotificationManager::DriveNotificationManager(
   RestartPollingTimer();
 }
 
-DriveNotificationManager::~DriveNotificationManager() {}
+DriveNotificationManager::~DriveNotificationManager() = default;
 
 void DriveNotificationManager::Shutdown() {
   // Unregister for Drive notifications.

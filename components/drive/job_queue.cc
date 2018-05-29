@@ -17,8 +17,7 @@ JobQueue::Item::Item() : batchable(false), size(0) {
 JobQueue::Item::Item(JobID id, bool batchable, uint64_t size)
     : id(id), batchable(batchable), size(size) {}
 
-JobQueue::Item::~Item() {
-}
+JobQueue::Item::~Item() = default;
 
 JobQueue::JobQueue(size_t num_max_concurrent_jobs,
                    size_t num_priority_levels,
@@ -30,8 +29,7 @@ JobQueue::JobQueue(size_t num_max_concurrent_jobs,
       max_batch_size_(max_batch_size) {
 }
 
-JobQueue::~JobQueue() {
-}
+JobQueue::~JobQueue() = default;
 
 void JobQueue::PopForRun(int accepted_priority, std::vector<JobID>* jobs) {
   DCHECK_LT(accepted_priority, static_cast<int>(queue_.size()));

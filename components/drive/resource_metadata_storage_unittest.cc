@@ -30,8 +30,8 @@ namespace internal {
 
 class ResourceMetadataStorageTest : public testing::Test {
  protected:
-  ResourceMetadataStorageTest() {}
-  ~ResourceMetadataStorageTest() override {}
+  ResourceMetadataStorageTest() = default;
+  ~ResourceMetadataStorageTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

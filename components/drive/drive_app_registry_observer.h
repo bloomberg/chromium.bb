@@ -13,7 +13,7 @@ class DriveAppRegistryObserver {
   virtual void OnDriveAppRegistryUpdated() = 0;
 
  protected:
-  virtual ~DriveAppRegistryObserver() {}
+  virtual ~DriveAppRegistryObserver() = default;
 };
 
 }  // namespace drive

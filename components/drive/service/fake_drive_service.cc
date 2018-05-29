@@ -163,8 +163,8 @@ void CallFileResouceCallback(const FileResourceCallback& callback,
 }
 
 struct CallResumeUpload {
-  CallResumeUpload() {}
-  ~CallResumeUpload() {}
+  CallResumeUpload() = default;
+  ~CallResumeUpload() = default;
 
   void Run(DriveApiErrorCode code, const GURL& upload_url) {
     if (service) {

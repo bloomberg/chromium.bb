@@ -1023,7 +1023,7 @@ FileError ResourceMetadataStorage::GetIdByResourceId(
 ResourceMetadataStorage::RecoveredCacheInfo::RecoveredCacheInfo()
     : is_dirty(false) {}
 
-ResourceMetadataStorage::RecoveredCacheInfo::~RecoveredCacheInfo() {}
+ResourceMetadataStorage::RecoveredCacheInfo::~RecoveredCacheInfo() = default;
 
 ResourceMetadataStorage::~ResourceMetadataStorage() {
   base::AssertBlockingAllowed();

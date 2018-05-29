@@ -42,7 +42,7 @@ class FakeDriveService : public DriveServiceInterface {
  public:
   class ChangeObserver {
    public:
-    virtual ~ChangeObserver() {}
+    virtual ~ChangeObserver() = default;
     virtual void OnNewChangeAvailable() = 0;
   };
 
