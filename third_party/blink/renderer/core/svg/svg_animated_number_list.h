@@ -55,11 +55,6 @@ class SVGAnimatedNumberList final : public ScriptWrappable,
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    SVGAnimatedProperty<SVGNumberList>::TraceWrappers(visitor);
-    ScriptWrappable::TraceWrappers(visitor);
-  }
-
  protected:
   SVGAnimatedNumberList(SVGElement* context_element,
                         const QualifiedName& attribute_name)

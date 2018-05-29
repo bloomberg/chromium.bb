@@ -63,8 +63,6 @@ class SVGAnimatedAngle final : public ScriptWrappable,
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
  protected:
   explicit SVGAnimatedAngle(SVGElement* context_element);
 
