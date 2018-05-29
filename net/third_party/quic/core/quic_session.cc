@@ -944,6 +944,10 @@ size_t QuicSession::GetNumActiveStreams() const {
   return dynamic_stream_map_.size() - draining_streams_.size();
 }
 
+size_t QuicSession::GetNumDrainingStreams() const {
+  return draining_streams_.size();
+}
+
 size_t QuicSession::GetNumAvailableStreams() const {
   return available_streams_.size();
 }
