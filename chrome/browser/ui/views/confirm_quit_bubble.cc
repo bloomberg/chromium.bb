@@ -8,6 +8,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -50,6 +52,12 @@ void ConfirmQuitBubble::AnimationProgressed(const gfx::Animation* animation) {
 
       popup_ = std::make_unique<views::Widget>();
       views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+
+      // Set the bounds to that of the active browser window so that the widget
+      // will be centered on the nearest monitor.
+      params.bounds = BrowserView::GetBrowserViewForBrowser(
+                          BrowserList::GetInstance()->GetLastActive())
+                          ->GetBounds();
       params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
       params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
       params.accept_events = false;
@@ -61,9 +69,7 @@ void ConfirmQuitBubble::AnimationProgressed(const gfx::Animation* animation) {
       view->UpdateContent(
           base::WideToUTF16(L"Hold |Ctrl|+|Shift|+|Q| to quit"));
 
-      gfx::Size size = view->GetPreferredSize();
-      view->SetSize(size);
-      popup_->CenterWindow(size);
+      popup_->CenterWindow(view->GetPreferredSize());
 
       popup_->ShowInactive();
     }
