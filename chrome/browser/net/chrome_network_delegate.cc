@@ -202,7 +202,9 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
 ChromeNetworkDelegate::ChromeNetworkDelegate(
     extensions::EventRouterForwarder* event_router,
     BooleanPrefMember* enable_referrers)
-    : profile_(nullptr),
+    : extensions_delegate_(
+          ChromeExtensionsNetworkDelegate::Create(event_router)),
+      profile_(nullptr),
       enable_referrers_(enable_referrers),
       force_google_safe_search_(nullptr),
       force_youtube_restrict_(nullptr),
@@ -213,8 +215,6 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       data_use_aggregator_(nullptr),
       is_data_usage_off_the_record_(true) {
   DCHECK(enable_referrers);
-  extensions_delegate_.reset(
-      ChromeExtensionsNetworkDelegate::Create(event_router));
 }
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
