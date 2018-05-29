@@ -2,24 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/video_resource_updater.h"
+#include "media/renderers/video_resource_updater.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "cc/test/fake_layer_tree_frame_sink.h"
-#include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_resource_provider.h"
+#include "base/message_loop/message_loop.h"
 #include "components/viz/client/client_resource_provider.h"
+#include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cc {
+namespace media {
 namespace {
+
+class FakeSharedBitmapReporter : public viz::SharedBitmapReporter {
+ public:
+  FakeSharedBitmapReporter() = default;
+  ~FakeSharedBitmapReporter() override = default;
+
+  // viz::SharedBitmapReporter implementation.
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                               const viz::SharedBitmapId& id) override {
+    DCHECK_EQ(shared_bitmaps_.count(id), 0u);
+    shared_bitmaps_.insert(id);
+  }
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override {
+    DCHECK_EQ(shared_bitmaps_.count(id), 1u);
+    shared_bitmaps_.erase(id);
+  }
+
+  const base::flat_set<viz::SharedBitmapId> shared_bitmaps() const {
+    return shared_bitmaps_;
+  }
+
+ private:
+  base::flat_set<viz::SharedBitmapId> shared_bitmaps_;
+};
 
 class UploadCounterGLES2Interface : public viz::TestGLES2Interface {
  public:
@@ -78,25 +101,21 @@ class VideoResourceUpdaterTest : public testing::Test {
   // testing::Test implementation.
   void SetUp() override {
     testing::Test::SetUp();
-    layer_tree_frame_sink_software_ = FakeLayerTreeFrameSink::CreateSoftware();
-    resource_provider3d_ = FakeResourceProvider::CreateClientResourceProvider(
-        context_provider_.get());
-    resource_provider_software_ =
-        FakeResourceProvider::CreateClientResourceProvider(nullptr);
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
+        context_provider_.get(), /*delegated_sync_points_required=*/true);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForHardware(
       bool use_stream_video_draw_quad = false) {
     return std::make_unique<VideoResourceUpdater>(
-        context_provider_.get(), nullptr, resource_provider3d_.get(),
+        context_provider_.get(), nullptr, resource_provider_.get(),
         use_stream_video_draw_quad, /*use_gpu_memory_buffer_resources=*/false,
         /*use_r16_texture=*/use_r16_texture_, /*max_resource_size=*/10000);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForSoftware() {
     return std::make_unique<VideoResourceUpdater>(
-        nullptr, layer_tree_frame_sink_software_.get(),
-        resource_provider_software_.get(),
+        nullptr, &shared_bitmap_reporter_, resource_provider_.get(),
         /*use_stream_video_draw_quad=*/false,
         /*use_gpu_memory_buffer_resources=*/false,
         /*use_r16_texture=*/false,
@@ -186,8 +205,8 @@ class VideoResourceUpdaterTest : public testing::Test {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapNativeTextures(
             format, mailbox_holders,
-            base::Bind(&VideoResourceUpdaterTest::SetReleaseSyncToken,
-                       base::Unretained(this)),
+            base::BindOnce(&VideoResourceUpdaterTest::SetReleaseSyncToken,
+                           base::Unretained(this)),
             size,                // coded_size
             gfx::Rect(size),     // visible_rect
             size,                // natural_size
@@ -227,8 +246,8 @@ class VideoResourceUpdaterTest : public testing::Test {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapNativeTextures(
             format, mailbox_holders,
-            base::Bind(&VideoResourceUpdaterTest::SetReleaseSyncToken,
-                       base::Unretained(this)),
+            base::BindOnce(&VideoResourceUpdaterTest::SetReleaseSyncToken,
+                           base::Unretained(this)),
             size,                // coded_size
             gfx::Rect(size),     // visible_rect
             size,                // natural_size
@@ -239,11 +258,13 @@ class VideoResourceUpdaterTest : public testing::Test {
 
   static const gpu::SyncToken kMailboxSyncToken;
 
+  // VideoResourceUpdater registers as a MemoryDumpProvider, which requires
+  // a TaskRunner.
+  base::MessageLoop message_loop_;
   UploadCounterGLES2Interface* gl_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
-  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_software_;
-  std::unique_ptr<viz::ClientResourceProvider> resource_provider3d_;
-  std::unique_ptr<viz::ClientResourceProvider> resource_provider_software_;
+  FakeSharedBitmapReporter shared_bitmap_reporter_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
   gpu::SyncToken release_sync_token_;
   bool use_r16_texture_ = false;
 };
@@ -430,8 +451,8 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
   EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
   // Expect exactly one allocated shared bitmap.
-  EXPECT_EQ(1u, layer_tree_frame_sink_software_->shared_bitmaps().size());
-  auto shared_bitmaps = layer_tree_frame_sink_software_->shared_bitmaps();
+  EXPECT_EQ(1u, shared_bitmap_reporter_.shared_bitmaps().size());
+  auto shared_bitmaps_copy = shared_bitmap_reporter_.shared_bitmaps();
 
   // Simulate the ResourceProvider releasing the resource back to the video
   // updater.
@@ -444,7 +465,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceSoftwareCompositor) {
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
   // Ensure that the same shared bitmap was reused.
-  EXPECT_EQ(layer_tree_frame_sink_software_->shared_bitmaps(), shared_bitmaps);
+  EXPECT_EQ(shared_bitmap_reporter_.shared_bitmaps(), shared_bitmaps_copy);
 }
 
 TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
@@ -459,8 +480,8 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
   EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
   // Expect exactly one allocated shared bitmap.
-  EXPECT_EQ(1u, layer_tree_frame_sink_software_->shared_bitmaps().size());
-  auto shared_bitmaps = layer_tree_frame_sink_software_->shared_bitmaps();
+  EXPECT_EQ(1u, shared_bitmap_reporter_.shared_bitmaps().size());
+  auto shared_bitmaps_copy = shared_bitmap_reporter_.shared_bitmaps();
 
   // Allocate resources for the same frame.
   resources = updater->CreateExternalResourcesFromVideoFrame(video_frame);
@@ -469,7 +490,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResourceNoDeleteSoftwareCompositor) {
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
   // Ensure that the same shared bitmap was reused.
-  EXPECT_EQ(layer_tree_frame_sink_software_->shared_bitmaps(), shared_bitmaps);
+  EXPECT_EQ(shared_bitmap_reporter_.shared_bitmaps(), shared_bitmaps_copy);
 }
 
 TEST_F(VideoResourceUpdaterTest, ChangeResourceSizeSoftwareCompositor) {
@@ -483,8 +504,8 @@ TEST_F(VideoResourceUpdaterTest, ChangeResourceSizeSoftwareCompositor) {
       updater->CreateExternalResourcesFromVideoFrame(
           CreateTestYUVVideoFrame(kSize1));
   // Expect exactly one allocated shared bitmap.
-  EXPECT_EQ(1u, layer_tree_frame_sink_software_->shared_bitmaps().size());
-  auto shared_bitmaps = layer_tree_frame_sink_software_->shared_bitmaps();
+  EXPECT_EQ(1u, shared_bitmap_reporter_.shared_bitmaps().size());
+  auto shared_bitmaps_copy = shared_bitmap_reporter_.shared_bitmaps();
 
   // Simulate the ResourceProvider releasing the resource back to the video
   // updater.
@@ -497,8 +518,8 @@ TEST_F(VideoResourceUpdaterTest, ChangeResourceSizeSoftwareCompositor) {
   // The first resource was released, so it can be reused but it's the wrong
   // size. We should expect the first shared bitmap to be deleted and a new
   // shared bitmap to be allocated.
-  EXPECT_EQ(1u, layer_tree_frame_sink_software_->shared_bitmaps().size());
-  EXPECT_NE(layer_tree_frame_sink_software_->shared_bitmaps(), shared_bitmaps);
+  EXPECT_EQ(1u, shared_bitmap_reporter_.shared_bitmaps().size());
+  EXPECT_NE(shared_bitmap_reporter_.shared_bitmaps(), shared_bitmaps_copy);
 }
 
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
@@ -729,4 +750,4 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace media

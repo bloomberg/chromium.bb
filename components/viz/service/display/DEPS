@@ -35,6 +35,7 @@ specific_include_rules = {
     "+components/viz/service/frame_sinks",
     "+components/viz/test",
     "+gpu/GLES2",
+    "+media",
     "+third_party/libyuv",
   ],
 }

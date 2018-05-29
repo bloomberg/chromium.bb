@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_VIDEO_RESOURCE_UPDATER_H_
-#define CC_RESOURCES_VIDEO_RESOURCE_UPDATER_H_
+#ifndef MEDIA_RENDERERS_VIDEO_RESOURCE_UPDATER_H_
+#define MEDIA_RENDERERS_VIDEO_RESOURCE_UPDATER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,18 +17,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "cc/cc_export.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "media/base/media_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace media {
-class PaintCanvasVideoRenderer;
-class VideoFrame;
-}
 
 namespace gfx {
 class Rect;
@@ -40,9 +35,11 @@ class ClientResourceProvider;
 class ContextProvider;
 class RenderPass;
 class SharedBitmapReporter;
-}
+}  // namespace viz
 
-namespace cc {
+namespace media {
+class PaintCanvasVideoRenderer;
+class VideoFrame;
 
 // Specifies what type of data is contained in the mailboxes, as well as how
 // many mailboxes will be present.
@@ -55,7 +52,7 @@ enum class VideoFrameResourceType {
   STREAM_TEXTURE,
 };
 
-class CC_EXPORT VideoFrameExternalResources {
+class MEDIA_EXPORT VideoFrameExternalResources {
  public:
   VideoFrameResourceType type = VideoFrameResourceType::NONE;
   std::vector<viz::TransferableResource> resources;
@@ -74,8 +71,8 @@ class CC_EXPORT VideoFrameExternalResources {
 };
 
 // VideoResourceUpdater is used by the video system to produce frame content as
-// resources consumable by the compositor.
-class CC_EXPORT VideoResourceUpdater
+// resources consumable by the display compositor.
+class MEDIA_EXPORT VideoResourceUpdater
     : public base::trace_event::MemoryDumpProvider {
  public:
   // For GPU compositing |context_provider| should be provided and for software
@@ -98,10 +95,10 @@ class CC_EXPORT VideoResourceUpdater
   // 2. AppendQuads(): Add DrawQuads to CompositorFrame for video.
   // 3. ReleaseFrameResources(): After the CompositorFrame has been submitted,
   //    remove imported resources from viz::ClientResourceProvider.
-  void ObtainFrameResources(scoped_refptr<media::VideoFrame> video_frame);
+  void ObtainFrameResources(scoped_refptr<VideoFrame> video_frame);
   void ReleaseFrameResources();
   void AppendQuads(viz::RenderPass* render_pass,
-                   scoped_refptr<media::VideoFrame> frame,
+                   scoped_refptr<VideoFrame> frame,
                    gfx::Transform transform,
                    gfx::Size rotated_size,
                    gfx::Rect visible_layer_rect,
@@ -114,7 +111,7 @@ class CC_EXPORT VideoResourceUpdater
 
   // TODO(kylechar): This is only public for testing, make private.
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
-      scoped_refptr<media::VideoFrame> video_frame);
+      scoped_refptr<VideoFrame> video_frame);
 
   viz::ResourceFormat YuvResourceFormat(int bits_per_channel);
 
@@ -153,7 +150,7 @@ class CC_EXPORT VideoResourceUpdater
   // texture. This is used when there are multiple GPU threads (Android WebView)
   // and the source video frame texture can't be used on the output GL context.
   // https://crbug.com/582170
-  void CopyHardwarePlane(media::VideoFrame* video_frame,
+  void CopyHardwarePlane(VideoFrame* video_frame,
                          const gfx::ColorSpace& resource_color_space,
                          const gpu::MailboxHolder& mailbox_holder,
                          VideoFrameExternalResources* external_resources);
@@ -162,18 +159,18 @@ class CC_EXPORT VideoResourceUpdater
   // compositing most of the time, except for the cases mentioned in
   // CreateForSoftwarePlanes().
   VideoFrameExternalResources CreateForHardwarePlanes(
-      scoped_refptr<media::VideoFrame> video_frame);
+      scoped_refptr<VideoFrame> video_frame);
 
   // Get resources ready to be appended into DrawQuads. This is always used for
   // software compositing. This is also used for GPU compositing when the input
   // video frame has no textures.
   VideoFrameExternalResources CreateForSoftwarePlanes(
-      scoped_refptr<media::VideoFrame> video_frame);
+      scoped_refptr<VideoFrame> video_frame);
 
   void RecycleResource(uint32_t plane_resource_id,
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
-  void ReturnTexture(const scoped_refptr<media::VideoFrame>& video_frame,
+  void ReturnTexture(const scoped_refptr<VideoFrame>& video_frame,
                      const gpu::SyncToken& sync_token,
                      bool lost_resource);
 
@@ -190,7 +187,7 @@ class CC_EXPORT VideoResourceUpdater
   const bool use_r16_texture_;
   const int max_resource_size_;
   const int tracing_id_;
-  std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
+  std::unique_ptr<PaintCanvasVideoRenderer> video_renderer_;
   uint32_t next_plane_resource_id_ = 1;
 
   // Temporary pixel buffer when converting between formats.
@@ -215,6 +212,6 @@ class CC_EXPORT VideoResourceUpdater
   DISALLOW_COPY_AND_ASSIGN(VideoResourceUpdater);
 };
 
-}  // namespace cc
+}  // namespace media
 
-#endif  // CC_RESOURCES_VIDEO_RESOURCE_UPDATER_H_
+#endif  // MEDIA_RENDERERS_VIDEO_RESOURCE_UPDATER_H_

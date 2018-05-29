@@ -12,7 +12,6 @@
 #include "cc/base/math_util.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "cc/resources/video_resource_updater.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/pixel_test.h"
@@ -29,6 +28,7 @@
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
+#include "media/renderers/video_resource_updater.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -346,7 +346,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
     uint8_t alpha_value,
     const gfx::RectF& tex_coord_rect,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     DisplayResourceProvider* resource_provider,
@@ -365,11 +365,11 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
                video_frame->rows(media::VideoFrame::kAPlane));
   }
 
-  cc::VideoFrameExternalResources resources =
+  media::VideoFrameExternalResources resources =
       video_resource_updater->CreateExternalResourcesFromVideoFrame(
           video_frame);
 
-  EXPECT_EQ(cc::VideoFrameResourceType::YUV, resources.type);
+  EXPECT_EQ(media::VideoFrameResourceType::YUV, resources.type);
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
             resources.resources.size());
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
@@ -465,17 +465,17 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame,
     const gfx::RectF& tex_coord_rect,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     DisplayResourceProvider* resource_provider,
     ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
-  cc::VideoFrameExternalResources resources =
+  media::VideoFrameExternalResources resources =
       video_resource_updater->CreateExternalResourcesFromVideoFrame(
           video_frame);
 
-  EXPECT_EQ(cc::VideoFrameResourceType::RGBA, resources.type);
+  EXPECT_EQ(media::VideoFrameResourceType::RGBA, resources.type);
   EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
@@ -550,7 +550,7 @@ void CreateTestYUVVideoDrawQuad_Striped(
     bool highbit,
     const gfx::RectF& tex_coord_rect,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     DisplayResourceProvider* resource_provider,
@@ -616,7 +616,7 @@ void CreateTestYUVVideoDrawQuad_TwoColor(
     uint8_t u_foreground,
     uint8_t v_foreground,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     DisplayResourceProvider* resource_provider,
     ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider) {
@@ -676,7 +676,7 @@ void CreateTestYUVVideoDrawQuad_Solid(
     uint8_t u,
     uint8_t v,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     DisplayResourceProvider* resource_provider,
@@ -715,7 +715,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
     uint8_t u,
     uint8_t v,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     DisplayResourceProvider* resource_provider,
@@ -779,7 +779,7 @@ void CreateTestY16TextureDrawQuad_TwoColor(
     uint8_t g_foreground,
     uint8_t g_background,
     RenderPass* render_pass,
-    cc::VideoResourceUpdater* video_resource_updater,
+    media::VideoResourceUpdater* video_resource_updater,
     const gfx::Rect& rect,
     const gfx::Rect& visible_rect,
     const gfx::Rect& foreground_rect,
@@ -1228,19 +1228,19 @@ class IntersectingQuadGLPixelTest
     constexpr bool kUseR16Texture = false;
     constexpr int kMaxResourceSize = 10000;
 
-    video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
+    video_resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
         kUseGpuMemoryBufferResources, kUseR16Texture, kMaxResourceSize);
-    video_resource_updater2_ = std::make_unique<cc::VideoResourceUpdater>(
+    video_resource_updater2_ = std::make_unique<media::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
         kUseGpuMemoryBufferResources, kUseR16Texture, kMaxResourceSize);
   }
 
  protected:
-  std::unique_ptr<cc::VideoResourceUpdater> video_resource_updater_;
-  std::unique_ptr<cc::VideoResourceUpdater> video_resource_updater2_;
+  std::unique_ptr<media::VideoResourceUpdater> video_resource_updater_;
+  std::unique_ptr<media::VideoResourceUpdater> video_resource_updater2_;
 };
 
 template <typename TypeParam>
@@ -1583,13 +1583,13 @@ class VideoGLRendererPixelTest : public cc::GLRendererPixelTest {
     constexpr bool kUseGpuMemoryBufferResources = false;
     constexpr bool kUseR16Texture = false;
     constexpr int kMaxResourceSize = 10000;
-    video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
+    video_resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
         child_context_provider_.get(), nullptr, child_resource_provider_.get(),
         kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources, kUseR16Texture,
         kMaxResourceSize);
   }
 
-  std::unique_ptr<cc::VideoResourceUpdater> video_resource_updater_;
+  std::unique_ptr<media::VideoResourceUpdater> video_resource_updater_;
 };
 
 class VideoGLRendererPixelHiLoTest : public VideoGLRendererPixelTest,

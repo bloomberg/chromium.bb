@@ -20,6 +20,7 @@
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "media/base/video_frame.h"
+#include "media/renderers/video_resource_updater.h"
 #include "ui/gfx/color_space.h"
 
 namespace cc {
@@ -103,7 +104,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
 
   if (!updater_) {
     const LayerTreeSettings& settings = layer_tree_impl()->settings();
-    updater_ = std::make_unique<VideoResourceUpdater>(
+    updater_ = std::make_unique<media::VideoResourceUpdater>(
         layer_tree_impl()->context_provider(),
         layer_tree_impl()->layer_tree_frame_sink(),
         layer_tree_impl()->resource_provider(),

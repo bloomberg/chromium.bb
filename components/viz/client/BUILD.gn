@@ -17,6 +17,8 @@ viz_component("client") {
     "hit_test_data_provider_draw_quad.h",
     "local_surface_id_provider.cc",
     "local_surface_id_provider.h",
+    "shared_bitmap_reporter.cc",
+    "shared_bitmap_reporter.h",
   ]
 
   defines = [ "VIZ_CLIENT_IMPLEMENTATION" ]
@@ -24,6 +26,7 @@ viz_component("client") {
   public_deps = [
     "//base",
     "//components/viz/common",
+    "//mojo/public/cpp/system",
     "//skia",
   ]
   deps = [
