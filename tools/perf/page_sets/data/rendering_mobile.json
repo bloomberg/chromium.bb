@@ -431,6 +431,18 @@
         },
         "google_image_search_desktop_gpu_raster": {
             "DEFAULT": "top_25_007.wprgo"
+        },
+	"filter_terrain_svg": {
+            "DEFAULT": "tough_filters_cases_002.wprgo"
+        },
+        "motion_mark_focus": {
+            "DEFAULT": "tough_filters_cases_002.wprgo"
+        },
+        "analog_clock_svg": {
+            "DEFAULT": "tough_filters_cases_002.wprgo"
+        },
+        "ie_pirate_mark": {
+            "DEFAULT": "tough_filters_cases_002.wprgo"
         }
     },
     "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
