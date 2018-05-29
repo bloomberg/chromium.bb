@@ -167,7 +167,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //     U+0525 and U+0153.
   //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
-  //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1F (ฟ)} => w
+  //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1E (พ),
+  //      U+0E1F (ฟ), U+0E9E (ພ), U+0E9F (ຟ)} => w
   //   - {U+043C (м), U+04CE (ӎ)} => m
   //   - {U+0454 (є), U+04BD (ҽ), U+04BF (ҿ), U+1054 (ၔ)} => e
   //   - U+0491 (ґ) => r
@@ -177,19 +178,20 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ) => x
   //   - U+0503 (ԃ) => d
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
-  //   - {U+0D1F (ട), U+0E23 (ร)} => s
+  //   - {U+0D1F (ട), U+0E23 (ร), U+0EA3 (ຣ), U+0EAE (ຮ)} => s
   //   - U+1042 (၂) => j
   //   - {U+0437 (з), U+0499 (ҙ), U+04E1 (ӡ)} => 3
+  //   - {U+0E1A (บ), U+0E9A (ບ)} => u
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
       icu::UnicodeString::fromUTF8(
           "[æӕ] > ae; [þϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
           "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥ] > n; œ > ce;"
-          "[ŧтҭԏ] > t; [ƅьҍв] > b;  [ωшщฟ] > w;"
+          "[ŧтҭԏ] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
           "[ҫင] > c; ұ > y; [χҳӽӿ] > x;"
-          "ԃ  > d; [ԍဌ] > g; [ടร] > s; ၂ > j;"
-          "[зҙӡ] > 3"),
+          "ԃ  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
+          "[зҙӡ] > 3; [บບ] > u"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "
