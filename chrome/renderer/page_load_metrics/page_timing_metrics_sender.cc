@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_constants.h"
@@ -16,6 +18,8 @@ namespace page_load_metrics {
 
 namespace {
 const int kInitialTimerDelayMillis = 50;
+const base::Feature kPageLoadMetricsTimerDelayFeature{
+    "PageLoadMetricsTimerDelay", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace
 
 PageTimingMetricsSender::PageTimingMetricsSender(
@@ -26,7 +30,11 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       timer_(std::move(timer)),
       last_timing_(std::move(initial_timing)),
       metadata_(mojom::PageLoadMetadata::New()),
-      new_features_(mojom::PageLoadFeatures::New()) {
+      new_features_(mojom::PageLoadFeatures::New()),
+      buffer_timer_delay_ms_(kBufferTimerDelayMillis) {
+  buffer_timer_delay_ms_ = base::GetFieldTrialParamByFeatureAsInt(
+      kPageLoadMetricsTimerDelayFeature, "BufferTimerDelayMillis",
+      kBufferTimerDelayMillis /* default value */);
   if (!IsEmpty(*last_timing_)) {
     EnsureSendTimer();
   }
@@ -93,7 +101,7 @@ void PageTimingMetricsSender::EnsureSendTimer() {
     // Send the first IPC eagerly to make sure the receiving side knows we're
     // sending metrics as soon as possible.
     int delay_ms =
-        have_sent_ipc_ ? kBufferTimerDelayMillis : kInitialTimerDelayMillis;
+        have_sent_ipc_ ? buffer_timer_delay_ms_ : kInitialTimerDelayMillis;
     timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
         base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));

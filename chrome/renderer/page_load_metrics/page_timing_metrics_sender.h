@@ -64,6 +64,10 @@ class PageTimingMetricsSender {
 
   bool have_sent_ipc_ = false;
 
+  // Field trial for alternating page timing metrics sender buffer timer delay.
+  // https://crbug.com/847269.
+  int buffer_timer_delay_ms_;
+
   DISALLOW_COPY_AND_ASSIGN(PageTimingMetricsSender);
 };
 
