@@ -366,6 +366,9 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       case PopupMenuTypeTabGrid:
         [self createTabGridMenuItems];
         break;
+      case PopupMenuTypeTabStripTabGrid:
+        [self createTabGridMenuItems];
+        break;
       case PopupMenuTypeSearch:
         [self createSearchMenuItems];
         break;
