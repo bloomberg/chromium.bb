@@ -872,6 +872,30 @@ void StyleEngine::PseudoStateChangedForElement(
                                                          element);
 }
 
+void StyleEngine::PartChangedForElement(Element& element) {
+  if (ShouldSkipInvalidationFor(element))
+    return;
+  if (element.GetTreeScope() == document_)
+    return;
+  if (!GetRuleFeatureSet().InvalidatesParts())
+    return;
+  element.SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::FromAttribute(HTMLNames::partAttr));
+}
+
+void StyleEngine::PartmapChangedForElement(Element& element) {
+  if (ShouldSkipInvalidationFor(element))
+    return;
+  if (!element.GetShadowRoot())
+    return;
+
+  InvalidationLists invalidation_lists;
+  GetRuleFeatureSet().CollectPartInvalidationSet(invalidation_lists);
+  pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
+                                                         element);
+}
+
 void StyleEngine::ScheduleSiblingInvalidationsForElement(
     Element& element,
     ContainerNode& scheduling_parent,

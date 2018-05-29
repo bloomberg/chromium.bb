@@ -207,6 +207,10 @@ class CORE_EXPORT InvalidationSet
   static InvalidationSet* SelfInvalidationSet();
   bool IsSelfInvalidationSet() const { return this == SelfInvalidationSet(); }
 
+  // Returns a singleton DescendantInvalidationSet which invalidates all
+  // shadow-including descendants with part attributes.
+  static InvalidationSet* PartInvalidationSet();
+
  protected:
   explicit InvalidationSet(InvalidationType);
 

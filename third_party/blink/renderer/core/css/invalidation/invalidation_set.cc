@@ -291,10 +291,22 @@ scoped_refptr<DescendantInvalidationSet> CreateSelfInvalidationSet() {
   return new_set;
 }
 
+scoped_refptr<DescendantInvalidationSet> CreatePartInvalidationSet() {
+  auto new_set = DescendantInvalidationSet::Create();
+  new_set->SetInvalidatesParts();
+  new_set->SetTreeBoundaryCrossing();
+  return new_set;
+}
+
 }  // namespace
 
 InvalidationSet* InvalidationSet::SelfInvalidationSet() {
   DEFINE_STATIC_REF(InvalidationSet, singleton_, CreateSelfInvalidationSet());
+  return singleton_;
+}
+
+InvalidationSet* InvalidationSet::PartInvalidationSet() {
+  DEFINE_STATIC_REF(InvalidationSet, singleton_, CreatePartInvalidationSet());
   return singleton_;
 }
 
