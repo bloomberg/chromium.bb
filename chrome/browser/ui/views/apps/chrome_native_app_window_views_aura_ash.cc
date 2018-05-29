@@ -175,14 +175,14 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
       [ui::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
   if (HasFrameColor()) {
-    init_params->mus_properties
-        [ui::mojom::WindowManager::kActiveFrameColor_InitProperty] =
+    init_params
+        ->mus_properties[ui::mojom::WindowManager::kFrameActiveColor_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(ActiveFrameColor()));
+            static_cast<int64_t>(ActiveFrameColor()));
     init_params->mus_properties
-        [ui::mojom::WindowManager::kInactiveFrameColor_InitProperty] =
+        [ui::mojom::WindowManager::kFrameInactiveColor_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(InactiveFrameColor()));
+            static_cast<int64_t>(InactiveFrameColor()));
   }
   init_params
       ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =

@@ -170,8 +170,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   WmNativeWidgetAura(views::internal::NativeWidgetDelegate* delegate,
                      aura::WindowManagerClient* window_manager_client,
                      bool remove_standard_frame,
-                     base::Optional<SkColor> active_frame_color,
-                     base::Optional<SkColor> inactive_frame_color,
                      bool enable_immersive,
                      mojom::WindowStyle window_style)
       // The NativeWidget is mirroring the real Widget created in client code.
@@ -180,13 +178,9 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
             delegate,
             true /* is_parallel_widget_in_window_manager */),
         remove_standard_frame_(remove_standard_frame),
-        active_frame_color_(active_frame_color),
-        inactive_frame_color_(inactive_frame_color),
         enable_immersive_(enable_immersive),
         window_style_(window_style),
-        window_manager_client_(window_manager_client) {
-    DCHECK_EQ(!!active_frame_color_, !!inactive_frame_color_);
-  }
+        window_manager_client_(window_manager_client) {}
   ~WmNativeWidgetAura() override = default;
 
   void SetHeaderHeight(int height) {
@@ -214,11 +208,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
         new CustomFrameViewAsh(GetWidget(), immersive_delegate_.get(),
                                enable_immersive_, window_style_);
 
-    if (active_frame_color_) {
-      custom_frame_view_->SetFrameColors(*active_frame_color_,
-                                         *inactive_frame_color_);
-    }
-
     // Only the header actually paints any content. So the rest of the region is
     // marked as transparent content (see below in NonClientFrameController()
     // ctor). So, it is necessary to provide a texture-layer for the header
@@ -232,8 +221,6 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
 
  private:
   const bool remove_standard_frame_;
-  const base::Optional<SkColor> active_frame_color_;
-  const base::Optional<SkColor> inactive_frame_color_;
   const bool enable_immersive_;
   const mojom::WindowStyle window_style_;
 
@@ -311,7 +298,6 @@ NonClientFrameController::NonClientFrameController(
   params.layer_type = ui::LAYER_SOLID_COLOR;
   WmNativeWidgetAura* native_widget = new WmNativeWidgetAura(
       widget_, window_manager_client_, ShouldRemoveStandardFrame(*properties),
-      GetFrameColor(*properties, true), GetFrameColor(*properties, false),
       ShouldEnableImmersive(*properties), GetWindowStyle(*properties));
   window_ = native_widget->GetNativeView();
   window_->SetProperty(aura::client::kEmbedType,
