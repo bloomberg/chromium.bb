@@ -434,7 +434,7 @@ check_hyphenation(const char *tableList, const char *str, const char *expected) 
 		goto fail;
 	}
 
-	if (strlen(expected) != (int)hyphenatedlen ||
+	if (strlen(expected) != hyphenatedlen ||
 			strncmp(expected, (const char *)hyphenated, hyphenatedlen)) {
 		fprintf(stderr, "Input:    '%s'\n", str);
 		fprintf(stderr, "Expected: '%s'\n", expected);
