@@ -31,7 +31,7 @@
             android:layout_marginStart="6dp"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textAppearance="@style/BlackTitle3" />
+            android:textAppearance="@style/BlackTitle1" />
         <TextView
             android:id="@+id/description"
             android:layout_width="match_parent"
@@ -39,7 +39,7 @@
             android:layout_marginStart="6dp"
             android:maxLines="1"
             android:ellipsize="end"
-            android:textAppearance="@style/BlackSummary" />
+            android:textAppearance="@style/BlackBody" />
     </LinearLayout>
 
 </LinearLayout>
