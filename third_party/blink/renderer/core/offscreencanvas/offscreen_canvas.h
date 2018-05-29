@@ -102,7 +102,7 @@ class CORE_EXPORT OffscreenCanvas final
   uint32_t SinkId() const { return sink_id_; }
 
   // CanvasRenderingContextHost implementation.
-  void FinalizeFrame() override{};
+  void FinalizeFrame() override {}
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
   void PushFrame(scoped_refptr<StaticBitmapImage> image,
@@ -113,9 +113,10 @@ class CORE_EXPORT OffscreenCanvas final
               const SkIRect& damage_rect) override;
 
   // Partial CanvasResourceHost implementation
-  void NotifyGpuContextLost() override{};
-  void SetNeedsCompositingUpdate() override{};
-  void UpdateMemoryUsage() override{/*TODO(crbug.com/842693): implement*/};
+  void NotifyGpuContextLost() override {}
+  void SetNeedsCompositingUpdate() override {}
+  void UpdateMemoryUsage() override { /*TODO(crbug.com/842693): implement*/
+  }
 
   // EventTarget implementation
   const AtomicString& InterfaceName() const final {
