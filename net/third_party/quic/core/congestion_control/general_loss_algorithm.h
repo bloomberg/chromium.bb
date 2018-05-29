@@ -15,7 +15,7 @@
 #include "net/third_party/quic/core/quic_unacked_packet_map.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Class which can be configured to implement's TCP's approach of detecting loss
 // when 3 nacks have been received for a packet or with a time threshold.
@@ -82,6 +82,6 @@ class QUIC_EXPORT_PRIVATE GeneralLossAlgorithm : public LossDetectionInterface {
   DISALLOW_COPY_AND_ASSIGN(GeneralLossAlgorithm);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_GENERAL_LOSS_ALGORITHM_H_

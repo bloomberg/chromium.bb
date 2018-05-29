@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-namespace net {
+namespace quic {
 namespace test {
 
 MockRandom::MockRandom() : base_(0xDEADBEEF), increment_(0) {}
@@ -28,4 +28,4 @@ void MockRandom::ChangeValue() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -4,8 +4,8 @@
 
 #include "net/third_party/quic/core/quic_buffer_allocator.h"
 
-namespace net {
+namespace quic {
 
 QuicBufferAllocator::~QuicBufferAllocator() = default;
 
-}  // namespace net
+}  // namespace quic

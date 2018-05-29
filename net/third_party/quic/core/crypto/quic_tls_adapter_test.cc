@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -113,4 +113,4 @@ TEST_P(QuicTlsAdapterTest, BIOWrite) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

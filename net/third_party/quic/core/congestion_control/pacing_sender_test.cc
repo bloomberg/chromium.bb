@@ -22,7 +22,7 @@ using testing::IsEmpty;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 
 const QuicByteCount kBytesInFlight = 1024;
@@ -462,4 +462,4 @@ TEST_F(PacingSenderTest, LumpyPacingWithInitialBurstToken) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

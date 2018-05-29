@@ -29,14 +29,14 @@ class TransportSecurityState;
 // ProofVerifyDetailsChromium is the implementation-specific information that a
 // ProofVerifierChromium returns about a certificate verification.
 class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
-    : public ProofVerifyDetails {
+    : public quic::ProofVerifyDetails {
  public:
   ProofVerifyDetailsChromium();
   ProofVerifyDetailsChromium(const ProofVerifyDetailsChromium&);
   ~ProofVerifyDetailsChromium() override;
 
-  // ProofVerifyDetails implementation
-  ProofVerifyDetails* Clone() const override;
+  // quic::ProofVerifyDetails implementation
+  quic::ProofVerifyDetails* Clone() const override;
 
   CertVerifyResult cert_verify_result;
   ct::CTVerifyResult ct_verify_result;
@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
 
 // ProofVerifyContextChromium is the implementation-specific information that a
 // ProofVerifierChromium needs in order to log correctly.
-struct ProofVerifyContextChromium : public ProofVerifyContext {
+struct ProofVerifyContextChromium : public quic::ProofVerifyContext {
  public:
   ProofVerifyContextChromium(int cert_verify_flags,
                              const NetLogWithSource& net_log)
@@ -66,9 +66,9 @@ struct ProofVerifyContextChromium : public ProofVerifyContext {
   NetLogWithSource net_log;
 };
 
-// ProofVerifierChromium implements the QUIC ProofVerifier interface.  It is
-// capable of handling multiple simultaneous requests.
-class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
+// ProofVerifierChromium implements the QUIC quic::ProofVerifier interface.  It
+// is capable of handling multiple simultaneous requests.
+class NET_EXPORT_PRIVATE ProofVerifierChromium : public quic::ProofVerifier {
  public:
   ProofVerifierChromium(CertVerifier* cert_verifier,
                         CTPolicyEnforcer* ct_policy_enforcer,
@@ -76,27 +76,27 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
                         CTVerifier* cert_transparency_verifier);
   ~ProofVerifierChromium() override;
 
-  // ProofVerifier interface
-  QuicAsyncStatus VerifyProof(
+  // quic::ProofVerifier interface
+  quic::QuicAsyncStatus VerifyProof(
       const std::string& hostname,
       const uint16_t port,
       const std::string& server_config,
-      QuicTransportVersion quic_version,
-      QuicStringPiece chlo_hash,
+      quic::QuicTransportVersion quic_version,
+      quic::QuicStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
-      const ProofVerifyContext* verify_context,
+      const quic::ProofVerifyContext* verify_context,
       std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* verify_details,
-      std::unique_ptr<ProofVerifierCallback> callback) override;
-  QuicAsyncStatus VerifyCertChain(
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback) override;
+  quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
       const std::vector<std::string>& certs,
-      const ProofVerifyContext* verify_context,
+      const quic::ProofVerifyContext* verify_context,
       std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* verify_details,
-      std::unique_ptr<ProofVerifierCallback> callback) override;
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback) override;
 
  private:
   class Job;

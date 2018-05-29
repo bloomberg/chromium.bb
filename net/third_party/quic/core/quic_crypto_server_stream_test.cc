@@ -33,24 +33,23 @@
 #include "net/third_party/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 class QuicConnection;
 class QuicStream;
-}  // namespace net
+}  // namespace quic
 
 using std::string;
 using testing::NiceMock;
 using testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicCryptoServerStreamPeer {
  public:
   static bool DoesPeerSupportStatelessRejects(
       const CryptoHandshakeMessage& message) {
-    return net::QuicCryptoServerStream::DoesPeerSupportStatelessRejects(
-        message);
+    return QuicCryptoServerStream::DoesPeerSupportStatelessRejects(message);
   }
 };
 
@@ -72,7 +71,7 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
                               TlsServerHandshaker::CreateSslCtx()),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
-        server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
+        server_id_(kServerHostname, kServerPort, net::PRIVACY_MODE_DISABLED),
         client_crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                               TlsClientHandshaker::CreateSslCtx()) {
     SetQuicReloadableFlag(enable_quic_stateless_reject_support, false);
@@ -599,4 +598,4 @@ TEST_P(QuicCryptoServerStreamTestWithFakeProofSource, MultipleChlo) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

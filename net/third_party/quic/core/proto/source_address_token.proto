@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 import "cached_network_parameters.proto";
 
-package net;
+package quic;
 
 // A SourceAddressToken is serialised, encrypted and sent to clients so that
 // they can prove ownership of an IP address.

@@ -33,14 +33,14 @@
 #define MMSG_MORE 0
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 }  // namespace
 
 QuicClientEpollNetworkHelper::QuicClientEpollNetworkHelper(
-    EpollServer* epoll_server,
+    net::EpollServer* epoll_server,
     QuicClientBase* client)
     : epoll_server_(epoll_server),
       packets_dropped_(0),
@@ -122,14 +122,14 @@ void QuicClientEpollNetworkHelper::RunEventLoop() {
   epoll_server_->WaitForEventsAndExecuteCallbacks();
 }
 
-void QuicClientEpollNetworkHelper::OnRegistration(EpollServer* eps,
+void QuicClientEpollNetworkHelper::OnRegistration(net::EpollServer* eps,
                                                   int fd,
                                                   int event_mask) {}
 void QuicClientEpollNetworkHelper::OnModification(int fd, int event_mask) {}
 void QuicClientEpollNetworkHelper::OnUnregistration(int fd, bool replaced) {}
-void QuicClientEpollNetworkHelper::OnShutdown(EpollServer* eps, int fd) {}
+void QuicClientEpollNetworkHelper::OnShutdown(net::EpollServer* eps, int fd) {}
 
-void QuicClientEpollNetworkHelper::OnEvent(int fd, EpollEvent* event) {
+void QuicClientEpollNetworkHelper::OnEvent(int fd, net::EpollEvent* event) {
   DCHECK_EQ(fd, GetLatestFD());
 
   if (event->in_events & EPOLLIN) {
@@ -201,4 +201,4 @@ int QuicClientEpollNetworkHelper::CreateUDPSocket(
       /*receive_buffer_size =*/kDefaultSocketReceiveBuffer,
       /*send_buffer_size =*/kDefaultSocketReceiveBuffer, overflow_supported);
 }
-}  // namespace net
+}  // namespace quic

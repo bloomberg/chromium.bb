@@ -5,7 +5,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicSocketAddress::QuicSocketAddress(QuicIpAddress address, uint16_t port)
     : impl_(address.impl(), port) {}
@@ -55,4 +55,4 @@ sockaddr_storage QuicSocketAddress::generic_address() const {
   return impl_.generic_address();
 }
 
-}  // namespace net
+}  // namespace quic

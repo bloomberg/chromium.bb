@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_containers_impl.h"
 
-namespace net {
+namespace quic {
 
 // A general-purpose unordered map.
 template <typename Key,
@@ -56,6 +56,6 @@ using QuicQueue = QuicQueueImpl<T>;
 template <typename T>
 using QuicDeque = QuicDequeImpl<T>;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_CONTAINERS_H_

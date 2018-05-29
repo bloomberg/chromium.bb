@@ -19,7 +19,7 @@
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-namespace net {
+namespace quic {
 
 class ChannelIDSource;
 class CommonCertSets;
@@ -272,6 +272,6 @@ std::string GenerateClientPublicValuesHex();
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_CRYPTO_TEST_UTILS_H_

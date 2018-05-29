@@ -54,7 +54,7 @@ QuicChromiumClientStream::Handle::~Handle() {
     stream_->ClearHandle();
     // TODO(rch): If stream_ is still valid, it should probably be Reset()
     // so that it does not leak.
-    // stream_->Reset(QUIC_STREAM_CANCELLED);
+    // stream_->Reset(quic::QUIC_STREAM_CANCELLED);
   }
 }
 
@@ -102,8 +102,9 @@ void QuicChromiumClientStream::Handle::OnCanWrite() {
 
 void QuicChromiumClientStream::Handle::OnClose() {
   if (net_error_ == ERR_UNEXPECTED) {
-    if (stream_error() == QUIC_STREAM_NO_ERROR &&
-        connection_error() == QUIC_NO_ERROR && fin_sent() && fin_received()) {
+    if (stream_error() == quic::QUIC_STREAM_NO_ERROR &&
+        connection_error() == quic::QUIC_NO_ERROR && fin_sent() &&
+        fin_received()) {
       net_error_ = ERR_CONNECTION_CLOSED;
     } else {
       net_error_ = ERR_QUIC_PROTOCOL_ERROR;
@@ -197,7 +198,7 @@ int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
 int QuicChromiumClientStream::Handle::WriteHeaders(
     spdy::SpdyHeaderBlock header_block,
     bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface>
+    quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
         ack_notifier_delegate) {
   if (!stream_)
     return 0;
@@ -260,24 +261,25 @@ void QuicChromiumClientStream::Handle::SetPriority(
 }
 
 void QuicChromiumClientStream::Handle::Reset(
-    QuicRstStreamErrorCode error_code) {
+    quic::QuicRstStreamErrorCode error_code) {
   if (stream_)
     stream_->Reset(error_code);
 }
 
-QuicStreamId QuicChromiumClientStream::Handle::id() const {
+quic::QuicStreamId QuicChromiumClientStream::Handle::id() const {
   if (!stream_)
     return id_;
   return stream_->id();
 }
 
-QuicErrorCode QuicChromiumClientStream::Handle::connection_error() const {
+quic::QuicErrorCode QuicChromiumClientStream::Handle::connection_error() const {
   if (!stream_)
     return connection_error_;
   return stream_->connection_error();
 }
 
-QuicRstStreamErrorCode QuicChromiumClientStream::Handle::stream_error() const {
+quic::QuicRstStreamErrorCode QuicChromiumClientStream::Handle::stream_error()
+    const {
   if (!stream_)
     return stream_error_;
   return stream_->stream_error();
@@ -332,9 +334,9 @@ bool QuicChromiumClientStream::Handle::IsFirstStream() const {
 }
 
 void QuicChromiumClientStream::Handle::OnPromiseHeaderList(
-    QuicStreamId promised_id,
+    quic::QuicStreamId promised_id,
     size_t frame_len,
-    const QuicHeaderList& header_list) {
+    const quic::QuicHeaderList& header_list) {
   stream_->OnPromiseHeaderList(promised_id, frame_len, header_list);
 }
 
@@ -385,8 +387,8 @@ int QuicChromiumClientStream::Handle::HandleIOComplete(int rv) {
   if (rv < 0 || stream_)
     return rv;
 
-  if (stream_error_ == QUIC_STREAM_NO_ERROR &&
-      connection_error_ == QUIC_NO_ERROR && fin_sent_ && fin_received_) {
+  if (stream_error_ == quic::QUIC_STREAM_NO_ERROR &&
+      connection_error_ == quic::QUIC_NO_ERROR && fin_sent_ && fin_received_) {
     return rv;
   }
 
@@ -394,11 +396,11 @@ int QuicChromiumClientStream::Handle::HandleIOComplete(int rv) {
 }
 
 QuicChromiumClientStream::QuicChromiumClientStream(
-    QuicStreamId id,
-    QuicSpdyClientSessionBase* session,
+    quic::QuicStreamId id,
+    quic::QuicSpdyClientSessionBase* session,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag& traffic_annotation)
-    : QuicSpdyStream(id, session),
+    : quic::QuicSpdyStream(id, session),
       net_log_(net_log),
       handle_(nullptr),
       headers_delivered_(false),
@@ -417,15 +419,16 @@ QuicChromiumClientStream::~QuicChromiumClientStream() {
 void QuicChromiumClientStream::OnInitialHeadersComplete(
     bool fin,
     size_t frame_len,
-    const QuicHeaderList& header_list) {
-  QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len, header_list);
+    const quic::QuicHeaderList& header_list) {
+  quic::QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len, header_list);
 
   spdy::SpdyHeaderBlock header_block;
   int64_t length = -1;
-  if (!SpdyUtils::CopyAndValidateHeaders(header_list, &length, &header_block)) {
+  if (!quic::SpdyUtils::CopyAndValidateHeaders(header_list, &length,
+                                               &header_block)) {
     DLOG(ERROR) << "Failed to parse header list: " << header_list.DebugString();
     ConsumeHeaderList();
-    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    Reset(quic::QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
 
@@ -445,8 +448,8 @@ void QuicChromiumClientStream::OnInitialHeadersComplete(
 void QuicChromiumClientStream::OnTrailingHeadersComplete(
     bool fin,
     size_t frame_len,
-    const QuicHeaderList& header_list) {
-  QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len, header_list);
+    const quic::QuicHeaderList& header_list) {
+  quic::QuicSpdyStream::OnTrailingHeadersComplete(fin, frame_len, header_list);
   trailing_headers_frame_len_ = frame_len;
   if (handle_) {
     // The handle will be notified of the headers via a posted task.
@@ -455,16 +458,16 @@ void QuicChromiumClientStream::OnTrailingHeadersComplete(
 }
 
 void QuicChromiumClientStream::OnPromiseHeaderList(
-    QuicStreamId promised_id,
+    quic::QuicStreamId promised_id,
     size_t frame_len,
-    const QuicHeaderList& header_list) {
+    const quic::QuicHeaderList& header_list) {
   spdy::SpdyHeaderBlock promise_headers;
   int64_t content_length = -1;
-  if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length,
-                                         &promise_headers)) {
+  if (!quic::SpdyUtils::CopyAndValidateHeaders(header_list, &content_length,
+                                               &promise_headers)) {
     DLOG(ERROR) << "Failed to parse header list: " << header_list.DebugString();
     ConsumeHeaderList();
-    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    Reset(quic::QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
   ConsumeHeaderList();
@@ -495,11 +498,11 @@ void QuicChromiumClientStream::OnClose() {
     handle_->OnClose();
     handle_ = nullptr;
   }
-  QuicStream::OnClose();
+  quic::QuicStream::OnClose();
 }
 
 void QuicChromiumClientStream::OnCanWrite() {
-  QuicStream::OnCanWrite();
+  quic::QuicStream::OnCanWrite();
 
   if (!HasBufferedData() && handle_)
     handle_->OnCanWrite();
@@ -508,7 +511,8 @@ void QuicChromiumClientStream::OnCanWrite() {
 size_t QuicChromiumClientStream::WriteHeaders(
     spdy::SpdyHeaderBlock header_block,
     bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+    quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
+        ack_listener) {
   if (!session()->IsCryptoHandshakeConfirmed()) {
     auto entry = header_block.find(":method");
     DCHECK(entry != header_block.end());
@@ -517,13 +521,14 @@ size_t QuicChromiumClientStream::WriteHeaders(
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
       base::Bind(&QuicRequestNetLogCallback, id(), &header_block, priority()));
-  size_t len = QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
-                                            std::move(ack_listener));
+  size_t len = quic::QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
+                                                  std::move(ack_listener));
   initial_headers_sent_ = true;
   return len;
 }
 
-bool QuicChromiumClientStream::WriteStreamData(QuicStringPiece data, bool fin) {
+bool QuicChromiumClientStream::WriteStreamData(quic::QuicStringPiece data,
+                                               bool fin) {
   // Must not be called when data is buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
@@ -540,7 +545,7 @@ bool QuicChromiumClientStream::WritevStreamData(
   // Writes the data, or buffers it.
     for (size_t i = 0; i < buffers.size(); ++i) {
       bool is_fin = fin && (i == buffers.size() - 1);
-      QuicStringPiece string_data(buffers[i]->data(), lengths[i]);
+      quic::QuicStringPiece string_data(buffers[i]->data(), lengths[i]);
       WriteOrBufferData(string_data, is_fin, nullptr);
     }
   return !HasBufferedData();  // Was all data written?
@@ -675,7 +680,7 @@ void QuicChromiumClientStream::DisableConnectionMigration() {
 }
 
 bool QuicChromiumClientStream::IsFirstStream() {
-  return id() == kHeadersStreamId + 2;
+  return id() == quic::kHeadersStreamId + 2;
 }
 
 }  // namespace net

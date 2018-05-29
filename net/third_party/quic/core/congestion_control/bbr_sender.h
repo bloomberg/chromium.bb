@@ -22,7 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 class RttStats;
 
@@ -360,6 +360,6 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& os,
     const BbrSender::DebugState& state);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_BBR_SENDER_H_

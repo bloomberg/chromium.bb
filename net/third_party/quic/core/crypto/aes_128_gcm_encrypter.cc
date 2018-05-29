@@ -6,7 +6,7 @@
 
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -27,4 +27,4 @@ Aes128GcmEncrypter::Aes128GcmEncrypter()
 
 Aes128GcmEncrypter::~Aes128GcmEncrypter() {}
 
-}  // namespace net
+}  // namespace quic

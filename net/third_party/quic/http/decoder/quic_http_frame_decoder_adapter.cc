@@ -50,7 +50,7 @@ using ::SpdySettingsIds;
 #endif
 using base::nullopt;
 
-namespace net {
+namespace quic {
 
 using SpdyFramerError = http2::Http2DecoderAdapter::SpdyFramerError;
 
@@ -984,4 +984,4 @@ void QuicHttpDecoderAdapter::CommonHpackFragmentEnd() {
   }
 }
 
-}  // namespace net
+}  // namespace quic

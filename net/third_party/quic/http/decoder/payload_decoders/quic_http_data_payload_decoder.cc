@@ -17,7 +17,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_fallthrough.h"
 
-namespace net {
+namespace quic {
 
 std::ostream& operator<<(std::ostream& out,
                          QuicHttpDataQuicHttpPayloadDecoder::PayloadState v) {
@@ -132,4 +132,4 @@ QuicHttpDecodeStatus QuicHttpDataQuicHttpPayloadDecoder::ResumeDecodingPayload(
   return QuicHttpDecodeStatus::kDecodeError;
 }
 
-}  // namespace net
+}  // namespace quic

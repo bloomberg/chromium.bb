@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -301,4 +301,4 @@ TEST(QuicHttpConstantsTest, QuicHttpSettingsParameterToString) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

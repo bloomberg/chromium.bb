@@ -7,10 +7,10 @@
 #include "net/third_party/quic/core/quic_stream_send_buffer.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 
-namespace net {
+namespace quic {
 
 QuicMemSliceSpanImpl::QuicMemSliceSpanImpl(
-    const scoped_refptr<IOBuffer>* buffers,
+    const scoped_refptr<net::IOBuffer>* buffers,
     const int* lengths,
     size_t num_buffers)
     : buffers_(buffers), lengths_(lengths), num_buffers_(num_buffers) {}
@@ -41,4 +41,4 @@ QuicByteCount QuicMemSliceSpanImpl::SaveMemSlicesInSendBuffer(
   return saved_length;
 }
 
-}  // namespace net
+}  // namespace quic

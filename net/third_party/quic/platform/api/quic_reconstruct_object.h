@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_reconstruct_object_impl.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Reconstruct an object so that it is initialized as when it was first
@@ -27,6 +27,6 @@ void QuicDefaultReconstructObject(T* ptr, QuicTestRandomBase* rng) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_RECONSTRUCT_OBJECT_H_

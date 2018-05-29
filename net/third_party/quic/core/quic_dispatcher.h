@@ -29,7 +29,7 @@
 #include "net/third_party/quic/core/quic_time_wait_list_manager.h"
 #include "net/third_party/quic/core/stateless_rejector.h"
 
-namespace net {
+namespace quic {
 namespace test {
 class QuicDispatcherPeer;
 }  // namespace test
@@ -443,6 +443,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_DISPATCHER_H_

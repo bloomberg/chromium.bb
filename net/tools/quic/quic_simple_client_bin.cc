@@ -69,10 +69,10 @@
 using net::CertVerifier;
 using net::CTVerifier;
 using net::MultiLogCTVerifier;
-using net::ProofVerifier;
+using quic::ProofVerifier;
 using net::ProofVerifierChromium;
-using net::QuicStringPiece;
-using net::QuicTextUtils;
+using quic::QuicStringPiece;
+using quic::QuicTextUtils;
 using net::TransportSecurityState;
 using spdy::SpdyHeaderBlock;
 using std::cout;
@@ -105,32 +105,32 @@ bool FLAGS_redirect_is_success = true;
 // Initial MTU of the connection.
 int32_t FLAGS_initial_mtu = 0;
 
-class FakeProofVerifier : public ProofVerifier {
+class FakeProofVerifier : public quic::ProofVerifier {
  public:
-  net::QuicAsyncStatus VerifyProof(
+  quic::QuicAsyncStatus VerifyProof(
       const string& hostname,
       const uint16_t port,
       const string& server_config,
-      net::QuicTransportVersion quic_version,
-      QuicStringPiece chlo_hash,
+      quic::QuicTransportVersion quic_version,
+      quic::QuicStringPiece chlo_hash,
       const std::vector<string>& certs,
       const string& cert_sct,
       const string& signature,
-      const net::ProofVerifyContext* context,
+      const quic::ProofVerifyContext* context,
       string* error_details,
-      std::unique_ptr<net::ProofVerifyDetails>* details,
-      std::unique_ptr<net::ProofVerifierCallback> callback) override {
-    return net::QUIC_SUCCESS;
+      std::unique_ptr<quic::ProofVerifyDetails>* details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback) override {
+    return quic::QUIC_SUCCESS;
   }
 
-  net::QuicAsyncStatus VerifyCertChain(
+  quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
       const std::vector<std::string>& certs,
-      const net::ProofVerifyContext* verify_context,
+      const quic::ProofVerifyContext* verify_context,
       std::string* error_details,
-      std::unique_ptr<net::ProofVerifyDetails>* verify_details,
-      std::unique_ptr<net::ProofVerifierCallback> callback) override {
-    return net::QUIC_SUCCESS;
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback) override {
+    return quic::QUIC_SUCCESS;
   }
 };
 
@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
   base::MessageLoopForIO message_loop;
 
   // Determine IP address to connect to from supplied hostname.
-  net::QuicIpAddress ip_addr;
+  quic::QuicIpAddress ip_addr;
 
   GURL url(urls[0]);
   string host = FLAGS_host;
@@ -244,21 +244,21 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     ip_addr =
-        net::QuicIpAddress(net::QuicIpAddressImpl(addresses[0].address()));
+        quic::QuicIpAddress(quic::QuicIpAddressImpl(addresses[0].address()));
   }
 
-  string host_port = net::QuicStrCat(ip_addr.ToString(), ":", port);
+  string host_port = quic::QuicStrCat(ip_addr.ToString(), ":", port);
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
-  net::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
-                              net::PRIVACY_MODE_DISABLED);
-  net::ParsedQuicVersionVector versions = net::AllSupportedVersions();
+  quic::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
+                               net::PRIVACY_MODE_DISABLED);
+  quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
-    versions.push_back(net::ParsedQuicVersion(
-        net::PROTOCOL_QUIC_CRYPTO,
-        static_cast<net::QuicTransportVersion>(FLAGS_quic_version)));
+    versions.push_back(quic::ParsedQuicVersion(
+        quic::PROTOCOL_QUIC_CRYPTO,
+        static_cast<quic::QuicTransportVersion>(FLAGS_quic_version)));
   }
   // For secure QUIC we need to verify the cert chain.
   std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
@@ -267,7 +267,7 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<MultiLogCTVerifier> ct_verifier(new MultiLogCTVerifier());
   std::unique_ptr<net::CTPolicyEnforcer> ct_policy_enforcer(
       new net::DefaultCTPolicyEnforcer());
-  std::unique_ptr<ProofVerifier> proof_verifier;
+  std::unique_ptr<quic::ProofVerifier> proof_verifier;
   if (line->HasSwitch("disable-certificate-verification")) {
     proof_verifier.reset(new FakeProofVerifier());
   } else {
@@ -275,17 +275,17 @@ int main(int argc, char* argv[]) {
         cert_verifier.get(), ct_policy_enforcer.get(),
         transport_security_state.get(), ct_verifier.get()));
   }
-  net::QuicSimpleClient client(net::QuicSocketAddress(ip_addr, port), server_id,
-                               versions, std::move(proof_verifier));
+  net::QuicSimpleClient client(quic::QuicSocketAddress(ip_addr, port),
+                               server_id, versions, std::move(proof_verifier));
   client.set_initial_max_packet_length(
-      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
+      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : quic::kDefaultMaxPacketSize);
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
     return 1;
   }
   if (!client.Connect()) {
-    net::QuicErrorCode error = client.session()->error();
-    if (FLAGS_version_mismatch_ok && error == net::QUIC_INVALID_VERSION) {
+    quic::QuicErrorCode error = client.session()->error();
+    if (FLAGS_version_mismatch_ok && error == quic::QUIC_INVALID_VERSION) {
       cout << "Server talks QUIC, but none of the versions supported by "
            << "this client: " << ParsedQuicVersionVectorToString(versions)
            << endl;
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
       return 0;
     }
     cerr << "Failed to connect to " << host_port
-         << ". Error: " << net::QuicErrorCodeToString(error) << endl;
+         << ". Error: " << quic::QuicErrorCodeToString(error) << endl;
     return 1;
   }
   cout << "Connected to " << host_port << endl;
@@ -302,7 +302,7 @@ int main(int argc, char* argv[]) {
   string body = FLAGS_body;
   if (!FLAGS_body_hex.empty()) {
     DCHECK(FLAGS_body.empty()) << "Only set one of --body and --body_hex.";
-    body = QuicTextUtils::HexDecode(FLAGS_body_hex);
+    body = quic::QuicTextUtils::HexDecode(FLAGS_body_hex);
   }
 
   // Construct a GET or POST request for supplied URL.
@@ -313,14 +313,15 @@ int main(int argc, char* argv[]) {
   header_block[":path"] = url.path();
 
   // Append any additional headers supplied on the command line.
-  for (QuicStringPiece sp : QuicTextUtils::Split(FLAGS_headers, ';')) {
-    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&sp);
+  for (quic::QuicStringPiece sp :
+       quic::QuicTextUtils::Split(FLAGS_headers, ';')) {
+    quic::QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&sp);
     if (sp.empty()) {
       continue;
     }
-    std::vector<QuicStringPiece> kv = QuicTextUtils::Split(sp, ':');
-    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[0]);
-    QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[1]);
+    std::vector<quic::QuicStringPiece> kv = quic::QuicTextUtils::Split(sp, ':');
+    quic::QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[0]);
+    quic::QuicTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[1]);
     header_block[kv[0]] = kv[1];
   }
 
@@ -337,7 +338,8 @@ int main(int argc, char* argv[]) {
     if (!FLAGS_body_hex.empty()) {
       // Print the user provided hex, rather than binary body.
       cout << "body:\n"
-           << QuicTextUtils::HexDump(QuicTextUtils::HexDecode(FLAGS_body_hex))
+           << quic::QuicTextUtils::HexDump(
+                  quic::QuicTextUtils::HexDecode(FLAGS_body_hex))
            << endl;
     } else {
       cout << "body: " << body << endl;
@@ -348,7 +350,7 @@ int main(int argc, char* argv[]) {
     string response_body = client.latest_response_body();
     if (!FLAGS_body_hex.empty()) {
       // Assume response is binary data.
-      cout << "body:\n" << QuicTextUtils::HexDump(response_body) << endl;
+      cout << "body:\n" << quic::QuicTextUtils::HexDump(response_body) << endl;
     } else {
       cout << "body: " << response_body << endl;
     }

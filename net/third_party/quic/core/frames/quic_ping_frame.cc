@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_ping_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicPingFrame::QuicPingFrame() {}
 
@@ -16,4 +16,4 @@ std::ostream& operator<<(std::ostream& os, const QuicPingFrame& ping_frame) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

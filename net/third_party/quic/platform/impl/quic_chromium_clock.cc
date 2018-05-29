@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 
-namespace net {
+namespace quic {
 
 QuicChromiumClock* QuicChromiumClock::GetInstance() {
   return base::Singleton<QuicChromiumClock>::get();
@@ -36,4 +36,4 @@ QuicWallTime QuicChromiumClock::WallNow() const {
   return QuicWallTime::FromUNIXMicroseconds(time_since_unix_epoch_micro);
 }
 
-}  // namespace net
+}  // namespace quic

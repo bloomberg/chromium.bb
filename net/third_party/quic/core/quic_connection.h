@@ -47,7 +47,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QuicClock;
 class QuicConfig;
@@ -1336,6 +1336,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONNECTION_H_

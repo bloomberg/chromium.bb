@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -136,4 +136,4 @@ bool QuicSessionPeer::IsStreamWriteBlocked(QuicSession* session,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

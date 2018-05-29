@@ -16,7 +16,7 @@
 #include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 class QuicConnection;
 class QuicServerId;
@@ -93,6 +93,6 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientSession);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SPDY_CLIENT_SESSION_H_

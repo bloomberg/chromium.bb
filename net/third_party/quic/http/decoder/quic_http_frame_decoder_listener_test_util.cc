@@ -10,7 +10,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 
 FailingQuicHttpFrameDecoderListener::FailingQuicHttpFrameDecoderListener() {}
 FailingQuicHttpFrameDecoderListener::~FailingQuicHttpFrameDecoderListener() {}
@@ -489,4 +489,4 @@ void LoggingQuicHttpFrameDecoderListener::OnFrameSizeError(
   }
 }
 
-}  // namespace net
+}  // namespace quic

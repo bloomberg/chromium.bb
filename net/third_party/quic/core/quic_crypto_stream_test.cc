@@ -25,7 +25,7 @@ using testing::InSequence;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -251,4 +251,4 @@ TEST_F(QuicCryptoStreamTest, RetransmitStreamData) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

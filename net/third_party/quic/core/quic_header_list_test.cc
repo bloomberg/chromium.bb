@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 
 class QuicHeaderListTest : public QuicTest {};
 
@@ -65,4 +65,4 @@ TEST_F(QuicHeaderListTest, IsCopyableAndAssignable) {
   EXPECT_EQ("{ foo=bar, april=fools, beep=, }", headers3.DebugString());
 }
 
-}  // namespace net
+}  // namespace quic

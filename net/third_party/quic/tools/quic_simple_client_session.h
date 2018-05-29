@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_spdy_client_session.h"
 #include "net/third_party/quic/tools/quic_simple_client_stream.h"
 
-namespace net {
+namespace quic {
 
 class QuicSimpleClientSession : public QuicSpdyClientSession {
  public:
@@ -31,6 +31,6 @@ class QuicSimpleClientSession : public QuicSpdyClientSession {
   const bool drop_response_body_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_CLIENT_SESSION_H_

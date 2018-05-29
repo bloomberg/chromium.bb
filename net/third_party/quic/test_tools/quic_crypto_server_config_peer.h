@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Peer for accessing otherwise private members of a QuicCryptoServerConfig.
@@ -93,6 +93,6 @@ class QuicCryptoServerConfigPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_CRYPTO_SERVER_CONFIG_PEER_H_

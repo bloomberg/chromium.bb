@@ -23,7 +23,7 @@
 
 #define QUICTIME_CONSTEXPR inline
 
-namespace net {
+namespace quic {
 
 class QuicClock;
 
@@ -269,6 +269,6 @@ inline std::ostream& operator<<(std::ostream& output,
   output << delta.ToDebugValue();
   return output;
 }
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TIME_H_

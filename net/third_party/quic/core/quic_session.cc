@@ -19,7 +19,7 @@
 
 using spdy::SpdyPriority;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -1227,4 +1227,4 @@ bool QuicSession::session_decides_what_to_write() const {
   return connection_->session_decides_what_to_write();
 }
 
-}  // namespace net
+}  // namespace quic

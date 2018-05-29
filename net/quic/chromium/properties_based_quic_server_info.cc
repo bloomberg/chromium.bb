@@ -24,7 +24,7 @@ void RecordQuicServerInfoFailure(net::QuicServerInfo::FailureReason failure) {
 namespace net {
 
 PropertiesBasedQuicServerInfo::PropertiesBasedQuicServerInfo(
-    const QuicServerId& server_id,
+    const quic::QuicServerId& server_id,
     HttpServerProperties* http_server_properties)
     : QuicServerInfo(server_id),
       http_server_properties_(http_server_properties) {

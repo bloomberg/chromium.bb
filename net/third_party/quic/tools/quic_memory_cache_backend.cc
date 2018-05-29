@@ -19,7 +19,7 @@
 using base::FilePath;
 using base::IntToString;
 
-namespace net {
+namespace quic {
 
 QuicMemoryCacheBackend::ResourceFile::ResourceFile(
     const base::FilePath& file_name)
@@ -408,4 +408,4 @@ bool QuicMemoryCacheBackend::PushResourceExistsInCache(
   return false;
 }
 
-}  // namespace net
+}  // namespace quic

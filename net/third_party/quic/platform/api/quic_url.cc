@@ -5,7 +5,7 @@
 #include "net/third_party/quic/platform/api/quic_url.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicUrl::QuicUrl(QuicStringPiece url) : impl_(url) {}
 
@@ -46,4 +46,4 @@ uint16_t QuicUrl::port() const {
   return impl_.port();
 }
 
-}  // namespace net
+}  // namespace quic

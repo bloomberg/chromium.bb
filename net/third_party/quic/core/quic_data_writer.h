@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 // VarInt64 encoding masks
 // If a uint64_t anded with a mask is not 0 then the value is encoded
 // using that length (or is too big, in the case of
@@ -126,6 +126,6 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   DISALLOW_COPY_AND_ASSIGN(QuicDataWriter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_DATA_WRITER_H_

@@ -10,7 +10,7 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // A padding frame contains no payload.
 struct QUIC_EXPORT_PRIVATE QuicPaddingFrame {
@@ -27,6 +27,6 @@ struct QUIC_EXPORT_PRIVATE QuicPaddingFrame {
   int num_padding_bytes;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_PADDING_FRAME_H_

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
-namespace net {
+namespace quic {
 
 QuicHeaderList::QuicHeaderList()
     : max_header_list_size_(kDefaultMaxUncompressedHeaderSize),
@@ -69,4 +69,4 @@ QuicString QuicHeaderList::DebugString() const {
   return s;
 }
 
-}  // namespace net
+}  // namespace quic

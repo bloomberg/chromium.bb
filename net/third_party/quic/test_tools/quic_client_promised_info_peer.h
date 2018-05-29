@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_client_promised_info.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicClientPromisedInfoPeer {
@@ -19,6 +19,6 @@ class QuicClientPromisedInfoPeer {
   DISALLOW_COPY_AND_ASSIGN(QuicClientPromisedInfoPeer);
 };
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_CLIENT_PROMISED_INFO_PEER_H_

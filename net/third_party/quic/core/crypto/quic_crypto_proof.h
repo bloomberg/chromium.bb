@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // Contains the crypto-related data provided by ProofSource
 struct QUIC_EXPORT_PRIVATE QuicCryptoProof {
@@ -23,6 +23,6 @@ struct QUIC_EXPORT_PRIVATE QuicCryptoProof {
   bool send_expect_ct_header;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_CRYPTO_PROOF_H_

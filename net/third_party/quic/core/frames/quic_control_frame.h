@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicControlFrame {
   QuicControlFrame() : control_frame_id(kInvalidControlFrameId) {}
@@ -20,6 +20,6 @@ struct QUIC_EXPORT_PRIVATE QuicControlFrame {
   QuicControlFrameId control_frame_id;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_CONTROL_FRAME_H_

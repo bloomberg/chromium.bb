@@ -24,7 +24,7 @@
 // If true, enforce that QUIC CHLOs fit in one packet.
 bool FLAGS_quic_enforce_single_packet_chlo = true;
 
-namespace net {
+namespace quic {
 
 #define ENDPOINT \
   (framer_->perspective() == Perspective::IS_SERVER ? "Server: " : "Client: ")
@@ -690,4 +690,4 @@ bool QuicPacketCreator::HasIetfLongHeader() const {
          packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
 }
 
-}  // namespace net
+}  // namespace quic

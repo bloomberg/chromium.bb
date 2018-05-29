@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/http/decoder/quic_http_frame_decoder_state.h"
 
-namespace net {
+namespace quic {
 
 QuicHttpDecodeStatus QuicHttpFrameDecoderState::ReadPadLength(
     QuicHttpDecodeBuffer* db,
@@ -79,4 +79,4 @@ QuicHttpDecodeStatus QuicHttpFrameDecoderState::ReportFrameSizeError() {
   return QuicHttpDecodeStatus::kDecodeError;
 }
 
-}  // namespace net
+}  // namespace quic

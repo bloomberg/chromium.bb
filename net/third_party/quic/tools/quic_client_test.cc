@@ -20,7 +20,7 @@
 #include "net/tools/epoll_server/epoll_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -49,10 +49,11 @@ size_t NumOpenSocketFDs() {
 
 // Creates a new QuicClient and Initializes it. Caller is responsible for
 // deletion.
-QuicClient* CreateAndInitializeQuicClient(EpollServer* eps, uint16_t port) {
+QuicClient* CreateAndInitializeQuicClient(net::EpollServer* eps,
+                                          uint16_t port) {
   QuicSocketAddress server_address(QuicSocketAddress(TestLoopback(), port));
   QuicServerId server_id("hostname", server_address.port(),
-                         PRIVACY_MODE_DISABLED);
+                         net::PRIVACY_MODE_DISABLED);
   ParsedQuicVersionVector versions = AllSupportedVersions();
   QuicClient* client =
       new QuicClient(server_address, server_id, versions, eps,
@@ -71,8 +72,8 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
   // around some memory corruption detector weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
 
-  // Record initial number of FDs, after creation of EpollServer.
-  EpollServer eps;
+  // Record initial number of FDs, after creation of net::EpollServer.
+  net::EpollServer eps;
   size_t number_of_open_fds = NumOpenSocketFDs();
 
   // Create a number of clients, initialize them, and verify this has resulted
@@ -80,7 +81,7 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
   const int kNumClients = 50;
   for (int i = 0; i < kNumClients; ++i) {
     std::unique_ptr<QuicClient> client(
-        CreateAndInitializeQuicClient(&eps, net::test::kTestPort + i));
+        CreateAndInitializeQuicClient(&eps, kTestPort + i));
 
     // Initializing the client will create a new FD.
     EXPECT_LT(number_of_open_fds, NumOpenSocketFDs());
@@ -95,11 +96,11 @@ TEST_F(QuicClientTest, CreateAndCleanUpUDPSockets) {
   // around some memory corruption detector weirdness.
   crypto_test_utils::ProofVerifierForTesting().reset();
 
-  EpollServer eps;
+  net::EpollServer eps;
   size_t number_of_open_fds = NumOpenSocketFDs();
 
   std::unique_ptr<QuicClient> client(
-      CreateAndInitializeQuicClient(&eps, net::test::kTestPort));
+      CreateAndInitializeQuicClient(&eps, kTestPort));
   EXPECT_EQ(number_of_open_fds + 1, NumOpenSocketFDs());
   // Create more UDP sockets.
   EXPECT_TRUE(QuicClientPeer::CreateUDPSocketAndBind(client.get()));
@@ -116,4 +117,4 @@ TEST_F(QuicClientTest, CreateAndCleanUpUDPSockets) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

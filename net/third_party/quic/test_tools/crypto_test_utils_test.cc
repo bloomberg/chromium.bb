@@ -15,7 +15,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class ShloVerifier {
@@ -174,4 +174,4 @@ TEST(CryptoTestUtilsTest, TestGenerateFullCHLO) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

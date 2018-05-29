@@ -12,7 +12,7 @@
 #include "net/third_party/quic/core/crypto/proof_source.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Implementation of ProofSource which delegates to a ProofSourceForTesting,
@@ -112,6 +112,6 @@ class FakeProofSource : public ProofSource {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_PROOF_SOURCE_H_

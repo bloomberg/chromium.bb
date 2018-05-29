@@ -21,7 +21,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-namespace net {
+namespace quic {
 
 class QuicRandom;
 
@@ -223,6 +223,6 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   DISALLOW_COPY_AND_ASSIGN(CryptoUtils);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CRYPTO_UTILS_H_

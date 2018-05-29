@@ -8,7 +8,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 TrafficPolicer::TrafficPolicer(Simulator* simulator,
@@ -59,4 +59,4 @@ bool TrafficPolicer::FilterPacket(const Packet& packet) {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

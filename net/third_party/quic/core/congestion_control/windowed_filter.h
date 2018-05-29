@@ -33,7 +33,7 @@
 
 #include "net/third_party/quic/core/quic_time.h"
 
-namespace net {
+namespace quic {
 
 // Compares two values and returns true if the first is less than or equal
 // to the second.
@@ -162,6 +162,6 @@ class WindowedFilter {
   Sample estimates_[3];       // Best estimate is element 0.
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_WINDOWED_FILTER_H_

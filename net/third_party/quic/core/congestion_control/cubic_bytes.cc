@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -188,4 +188,4 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
   return target_congestion_window;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -22,7 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -354,4 +354,4 @@ QuicUint128 QuicTimeWaitListManager::GetStatelessResetToken(
   return kStatelessResetToken;
 }
 
-}  // namespace net
+}  // namespace quic

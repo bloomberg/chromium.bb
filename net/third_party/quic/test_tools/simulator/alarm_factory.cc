@@ -8,7 +8,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // Alarm is an implementation of QuicAlarm which can schedule alarms in the
@@ -79,4 +79,4 @@ QuicArenaScopedPtr<QuicAlarm> AlarmFactory::CreateAlarm(
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

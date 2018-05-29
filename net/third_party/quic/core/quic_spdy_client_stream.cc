@@ -15,7 +15,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
                                            QuicSpdyClientSession* session)
@@ -145,4 +145,4 @@ size_t QuicSpdyClientStream::SendRequest(spdy::SpdyHeaderBlock headers,
   return bytes_sent;
 }
 
-}  // namespace net
+}  // namespace quic

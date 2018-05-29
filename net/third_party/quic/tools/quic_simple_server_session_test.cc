@@ -44,7 +44,7 @@ using testing::InSequence;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 typedef QuicSimpleServerSession::PromisedStreamInfo PromisedStreamInfo;
@@ -654,4 +654,4 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

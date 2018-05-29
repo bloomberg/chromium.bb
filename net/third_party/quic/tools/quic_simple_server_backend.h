@@ -10,7 +10,7 @@
 namespace spdy {
 class SpdyHeaderBlock;
 }  // namespace spdy
-namespace net {
+namespace quic {
 
 // This interface implements the functionality to fetch a response
 // from the backend (such as cache, http-proxy etc) to serve
@@ -54,6 +54,6 @@ class QuicSimpleServerBackend {
   virtual void CloseBackendResponseStream(RequestHandler* request_handler) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_SERVER_BACKEND_H_

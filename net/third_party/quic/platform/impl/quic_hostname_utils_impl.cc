@@ -10,7 +10,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 // static
 bool QuicHostnameUtilsImpl::IsValidSNI(QuicStringPiece sni) {
@@ -20,16 +20,16 @@ bool QuicHostnameUtilsImpl::IsValidSNI(QuicStringPiece sni) {
   // would consider valid. By far the most common hostname character NOT
   // accepted by the above spec is '_'.
   url::CanonHostInfo host_info;
-  string canonicalized_host(CanonicalizeHost(sni.as_string(), &host_info));
+  string canonicalized_host(net::CanonicalizeHost(sni.as_string(), &host_info));
   return !host_info.IsIPAddress() &&
-         IsCanonicalizedHostCompliant(canonicalized_host) &&
+         net::IsCanonicalizedHostCompliant(canonicalized_host) &&
          sni.find_last_of('.') != string::npos;
 }
 
 // static
 char* QuicHostnameUtilsImpl::NormalizeHostname(char* hostname) {
   url::CanonHostInfo host_info;
-  string host(CanonicalizeHost(hostname, &host_info));
+  string host(net::CanonicalizeHost(hostname, &host_info));
 
   // Walk backwards over the string, stopping at the first trailing dot.
   size_t host_end = host.length();
@@ -48,4 +48,4 @@ char* QuicHostnameUtilsImpl::NormalizeHostname(char* hostname) {
   return hostname;
 }
 
-}  // namespace net
+}  // namespace quic

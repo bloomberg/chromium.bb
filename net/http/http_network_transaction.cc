@@ -1661,7 +1661,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   establishing_tunnel_ = false;
   remote_endpoint_ = IPEndPoint();
   net_error_details_.quic_broken = false;
-  net_error_details_.quic_connection_error = QUIC_NO_ERROR;
+  net_error_details_.quic_connection_error = quic::QUIC_NO_ERROR;
   provided_token_binding_key_.reset();
   referred_token_binding_key_.reset();
 }

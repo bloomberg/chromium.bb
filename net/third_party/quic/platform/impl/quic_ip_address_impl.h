@@ -11,13 +11,13 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_ip_address_family.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicIpAddressImpl {
  public:
   enum : size_t {
-    kIPv4AddressSize = IPAddress::kIPv4AddressSize,
-    kIPv6AddressSize = IPAddress::kIPv6AddressSize
+    kIPv4AddressSize = net::IPAddress::kIPv4AddressSize,
+    kIPv6AddressSize = net::IPAddress::kIPv6AddressSize
   };
   static QuicIpAddressImpl Loopback4();
   static QuicIpAddressImpl Loopback6();
@@ -26,7 +26,7 @@ class QUIC_EXPORT_PRIVATE QuicIpAddressImpl {
 
   QuicIpAddressImpl() = default;
   QuicIpAddressImpl(const QuicIpAddressImpl& other) = default;
-  explicit QuicIpAddressImpl(const IPAddress& addr);
+  explicit QuicIpAddressImpl(const net::IPAddress& addr);
   QuicIpAddressImpl& operator=(const QuicIpAddressImpl& other) = default;
   QuicIpAddressImpl& operator=(QuicIpAddressImpl&& other) = default;
   friend bool operator==(QuicIpAddressImpl lhs, QuicIpAddressImpl rhs);
@@ -45,12 +45,12 @@ class QUIC_EXPORT_PRIVATE QuicIpAddressImpl {
   bool IsIPv6() const;
 
   bool InSameSubnet(const QuicIpAddressImpl& other, int subnet_length);
-  const IPAddress& ip_address() const { return ip_address_; }
+  const net::IPAddress& ip_address() const { return ip_address_; }
 
  private:
-  IPAddress ip_address_;
+  net::IPAddress ip_address_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_IP_ADDRESS_IMPL_H_

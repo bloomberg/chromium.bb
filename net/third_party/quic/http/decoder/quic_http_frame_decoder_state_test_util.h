@@ -9,7 +9,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/http/tools/quic_http_random_decoder_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicHttpFrameDecoderStatePeer {
@@ -24,6 +24,6 @@ class QuicHttpFrameDecoderStatePeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_FRAME_DECODER_STATE_TEST_UTIL_H_

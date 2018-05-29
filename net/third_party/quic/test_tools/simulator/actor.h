@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 class Simulator;
@@ -61,6 +61,6 @@ class Actor {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_ACTOR_H_

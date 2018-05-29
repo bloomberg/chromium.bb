@@ -23,7 +23,7 @@
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicDispatcherPeer;
@@ -219,6 +219,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TIME_WAIT_LIST_MANAGER_H_

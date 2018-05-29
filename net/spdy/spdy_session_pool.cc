@@ -51,7 +51,7 @@ SpdySessionPool::SpdySessionPool(
     SSLConfigService* ssl_config_service,
     HttpServerProperties* http_server_properties,
     TransportSecurityState* transport_security_state,
-    const QuicTransportVersionVector& quic_supported_versions,
+    const quic::QuicTransportVersionVector& quic_supported_versions,
     bool enable_ping_based_connection_checking,
     bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,

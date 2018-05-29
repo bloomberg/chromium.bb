@@ -69,11 +69,11 @@
 using net::CertVerifier;
 using net::CTVerifier;
 using net::MultiLogCTVerifier;
-using net::ProofVerifier;
 using net::ProofVerifierChromium;
-using net::QuicStringPiece;
-using net::QuicTextUtils;
-using net::QuicUrl;
+using quic::ProofVerifier;
+using quic::QuicStringPiece;
+using quic::QuicTextUtils;
+using quic::QuicUrl;
 using spdy::SpdyHeaderBlock;
 using net::TransportSecurityState;
 using std::cout;
@@ -110,30 +110,30 @@ bool FLAGS_drop_response_body = false;
 
 class FakeProofVerifier : public ProofVerifier {
  public:
-  net::QuicAsyncStatus VerifyProof(
+  quic::QuicAsyncStatus VerifyProof(
       const string& /*hostname*/,
       const uint16_t /*port*/,
       const string& /*server_config*/,
-      net::QuicTransportVersion /*quic_version*/,
+      quic::QuicTransportVersion /*quic_version*/,
       QuicStringPiece /*chlo_hash*/,
       const std::vector<string>& /*certs*/,
       const string& /*cert_sct*/,
       const string& /*signature*/,
-      const net::ProofVerifyContext* /*context*/,
+      const quic::ProofVerifyContext* /*context*/,
       string* /*error_details*/,
-      std::unique_ptr<net::ProofVerifyDetails>* /*details*/,
-      std::unique_ptr<net::ProofVerifierCallback> /*callback*/) override {
-    return net::QUIC_SUCCESS;
+      std::unique_ptr<quic::ProofVerifyDetails>* /*details*/,
+      std::unique_ptr<quic::ProofVerifierCallback> /*callback*/) override {
+    return quic::QUIC_SUCCESS;
   }
 
-  net::QuicAsyncStatus VerifyCertChain(
+  quic::QuicAsyncStatus VerifyCertChain(
       const std::string& /*hostname*/,
       const std::vector<std::string>& /*certs*/,
-      const net::ProofVerifyContext* /*verify_context*/,
+      const quic::ProofVerifyContext* /*verify_context*/,
       std::string* /*error_details*/,
-      std::unique_ptr<net::ProofVerifyDetails>* /*verify_details*/,
-      std::unique_ptr<net::ProofVerifierCallback> /*callback*/) override {
-    return net::QUIC_SUCCESS;
+      std::unique_ptr<quic::ProofVerifyDetails>* /*verify_details*/,
+      std::unique_ptr<quic::ProofVerifierCallback> /*callback*/) override {
+    return quic::QUIC_SUCCESS;
   }
 };
 
@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
   base::MessageLoopForIO message_loop;
 
   // Determine IP address to connect to from supplied hostname.
-  net::QuicIpAddress ip_addr;
+  quic::QuicIpAddress ip_addr;
 
   QuicUrl url(urls[0], "https");
   string host = FLAGS_host;
@@ -250,22 +250,22 @@ int main(int argc, char* argv[]) {
       return 1;
     }
     ip_addr =
-        net::QuicIpAddress(net::QuicIpAddressImpl(addresses[0].address()));
+        quic::QuicIpAddress(quic::QuicIpAddressImpl(addresses[0].address()));
   }
 
-  string host_port = net::QuicStrCat(ip_addr.ToString(), ":", port);
+  string host_port = quic::QuicStrCat(ip_addr.ToString(), ":", port);
   VLOG(1) << "Resolved " << host << " to " << host_port << endl;
 
   // Build the client, and try to connect.
   net::EpollServer epoll_server;
-  net::QuicServerId server_id(url.host(), url.port(),
-                              net::PRIVACY_MODE_DISABLED);
-  net::ParsedQuicVersionVector versions = net::CurrentSupportedVersions();
+  quic::QuicServerId server_id(url.host(), url.port(),
+                               net::PRIVACY_MODE_DISABLED);
+  quic::ParsedQuicVersionVector versions = quic::CurrentSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
-    versions.push_back(net::ParsedQuicVersion(
-        net::PROTOCOL_QUIC_CRYPTO,
-        static_cast<net::QuicTransportVersion>(FLAGS_quic_version)));
+    versions.push_back(quic::ParsedQuicVersion(
+        quic::PROTOCOL_QUIC_CRYPTO,
+        static_cast<quic::QuicTransportVersion>(FLAGS_quic_version)));
   }
   // For secure QUIC we need to verify the cert chain.
   std::unique_ptr<CertVerifier> cert_verifier(CertVerifier::CreateDefault());
@@ -276,24 +276,24 @@ int main(int argc, char* argv[]) {
       new net::DefaultCTPolicyEnforcer());
   std::unique_ptr<ProofVerifier> proof_verifier;
   if (line->HasSwitch("disable-certificate-verification")) {
-    proof_verifier = net::QuicMakeUnique<FakeProofVerifier>();
+    proof_verifier = quic::QuicMakeUnique<FakeProofVerifier>();
   } else {
-    proof_verifier = net::QuicMakeUnique<ProofVerifierChromium>(
+    proof_verifier = quic::QuicMakeUnique<ProofVerifierChromium>(
         cert_verifier.get(), ct_policy_enforcer.get(),
         transport_security_state.get(), ct_verifier.get());
   }
-  net::QuicClient client(net::QuicSocketAddress(ip_addr, port), server_id,
-                         versions, &epoll_server, std::move(proof_verifier));
+  quic::QuicClient client(quic::QuicSocketAddress(ip_addr, port), server_id,
+                          versions, &epoll_server, std::move(proof_verifier));
   client.set_initial_max_packet_length(
-      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
+      FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : quic::kDefaultMaxPacketSize);
   client.set_drop_response_body(FLAGS_drop_response_body);
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
     return 1;
   }
   if (!client.Connect()) {
-    net::QuicErrorCode error = client.session()->error();
-    if (error == net::QUIC_INVALID_VERSION) {
+    quic::QuicErrorCode error = client.session()->error();
+    if (error == quic::QUIC_INVALID_VERSION) {
       cout << "Server talks QUIC, but none of the versions supported by "
            << "this client: " << ParsedQuicVersionVectorToString(versions)
            << endl;
@@ -302,7 +302,7 @@ int main(int argc, char* argv[]) {
       return FLAGS_version_mismatch_ok ? 0 : 20;
     }
     cerr << "Failed to connect to " << host_port
-         << ". Error: " << net::QuicErrorCodeToString(error) << endl;
+         << ". Error: " << quic::QuicErrorCodeToString(error) << endl;
     return 1;
   }
   cout << "Connected to " << host_port << endl;

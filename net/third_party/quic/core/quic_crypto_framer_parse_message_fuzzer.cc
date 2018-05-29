@@ -10,10 +10,10 @@
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  net::QuicStringPiece crypto_input(reinterpret_cast<const char*>(data), size);
-  std::unique_ptr<net::CryptoHandshakeMessage> handshake_message(
-      net::CryptoFramer::ParseMessage(crypto_input,
-                                      net::Perspective::IS_CLIENT));
+  quic::QuicStringPiece crypto_input(reinterpret_cast<const char*>(data), size);
+  std::unique_ptr<quic::CryptoHandshakeMessage> handshake_message(
+      quic::CryptoFramer::ParseMessage(crypto_input,
+                                       quic::Perspective::IS_CLIENT));
 
   return 0;
 }

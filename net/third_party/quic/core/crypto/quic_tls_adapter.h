@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 
-namespace net {
+namespace quic {
 
 // QuicTlsAdapter provides an implementation of CryptoMessageParser that takes
 // incoming messages and provides them to be read in a BIO (used by the TLS
@@ -157,6 +157,6 @@ class QUIC_EXPORT QuicTlsAdapter : public CryptoMessageParser {
   QuicString error_detail_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_TLS_ADAPTER_H_

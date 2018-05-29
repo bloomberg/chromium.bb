@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/impl/quic_epoll_clock.h"
 #include "net/third_party/quic/test_tools/mock_epoll_server.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -137,4 +137,4 @@ TEST_P(QuicEpollAlarmFactoryTest, CreateAlarmAndUpdate) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

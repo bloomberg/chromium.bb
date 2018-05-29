@@ -17,7 +17,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -351,4 +351,4 @@ bool CryptoFramer::WritePadTag(QuicDataWriter* writer,
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

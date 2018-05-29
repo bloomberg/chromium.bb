@@ -17,7 +17,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // Reads the value corresponding to |name_| from |msg| into |out|. If the
 // |name_| is absent in |msg| and |presence| is set to OPTIONAL |out| is set
@@ -764,4 +764,4 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
   return error;
 }
 
-}  // namespace net
+}  // namespace quic

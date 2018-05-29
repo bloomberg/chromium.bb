@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test_random.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Returns a random integer in the range [lo, hi).
@@ -28,6 +28,6 @@ QuicString GenerateWebSafeString(size_t lo, size_t hi, QuicTestRandomBase* rng);
 size_t GenerateRandomSizeSkewedLow(size_t max, QuicTestRandomBase* rng);
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_TOOLS_QUIC_HTTP_RANDOM_UTIL_H_

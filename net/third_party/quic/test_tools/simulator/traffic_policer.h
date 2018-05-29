@@ -9,7 +9,7 @@
 #include "net/third_party/quic/test_tools/simulator/packet_filter.h"
 #include "net/third_party/quic/test_tools/simulator/port.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // Traffic policer uses a token bucket to limit the bandwidth of the traffic
@@ -49,6 +49,6 @@ class TrafficPolicer : public PacketFilter {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_TRAFFIC_POLICER_H_

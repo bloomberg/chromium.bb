@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_pcc_sender.h"
 
-namespace net {
+namespace quic {
 
 class RttStats;
 
@@ -52,4 +52,4 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
   return nullptr;
 }
 
-}  // namespace net
+}  // namespace quic

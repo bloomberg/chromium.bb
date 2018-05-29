@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 bool QuicHttpFramePartsCollectorListener::OnFrameHeader(
@@ -233,4 +233,4 @@ void QuicHttpFramePartsCollectorListener::OnFrameSizeError(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

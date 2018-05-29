@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // Used for reading QUIC data. Though there isn't really anything terribly
 // QUIC-specific here, it's a helper class that's useful when doing QUIC
@@ -162,6 +162,6 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   DISALLOW_COPY_AND_ASSIGN(QuicDataReader);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_DATA_READER_H_

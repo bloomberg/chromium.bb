@@ -73,7 +73,7 @@
 using base::IntToString;
 using base::WaitableEvent;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -262,7 +262,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   ~ClientDelegate() override = default;
   void OnCanWrite() override {
-    EpollEvent event(EPOLLOUT);
+    net::EpollEvent event(EPOLLOUT);
     client_->epoll_network_helper()->OnEvent(client_->GetLatestFD(), &event);
   }
 
@@ -271,7 +271,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
 };
 
 class EndToEndTest : public QuicTestWithParam<TestParams>,
-                     public WithScopedTaskEnvironment {
+                     public net::WithScopedTaskEnvironment {
  protected:
   EndToEndTest()
       : initialized_(false),
@@ -417,7 +417,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
     StartServer();
 
     CreateClientWithWriter();
-    static EpollEvent event(EPOLLOUT);
+    static net::EpollEvent event(EPOLLOUT);
     if (client_writer_ != nullptr) {
       client_writer_->Initialize(
           QuicConnectionPeer::GetHelper(
@@ -1148,8 +1148,8 @@ TEST_P(EndToEndTestWithTls,
   // Regression test for b/14677858.
   // Test that the resume write alarm is not set in QuicConnection::OnCanWrite
   // if currently connection level flow control blocked. If set, this results in
-  // an infinite loop in the EpollServer, as the alarm fires and is immediately
-  // rescheduled.
+  // an infinite loop in the net::EpollServer, as the alarm fires and is
+  // immediately rescheduled.
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
@@ -1646,7 +1646,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
 
   // Register the new FD for epoll events.
   int new_fd = client_->client()->GetLatestFD();
-  EpollServer* eps = client_->epoll_server();
+  net::EpollServer* eps = client_->epoll_server();
   eps->RegisterFD(new_fd, client_->client()->epoll_network_helper(),
                   EPOLLIN | EPOLLOUT | EPOLLET);
 
@@ -2841,7 +2841,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   client->UseWriter(client_writer_);
   client->Connect();
   client_.reset(client);
-  static EpollEvent event(EPOLLOUT);
+  static net::EpollEvent event(EPOLLOUT);
   client_writer_->Initialize(
       QuicConnectionPeer::GetHelper(
           client_->client()->client_session()->connection()),
@@ -3133,4 +3133,4 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

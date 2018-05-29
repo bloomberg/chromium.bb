@@ -43,14 +43,14 @@ class TransportSocketParams;
 // types.  The other param must be NULL.  When using an HTTP proxy,
 // |transport_params| must be set.  When using an HTTPS proxy or QUIC proxy,
 // |ssl_params| must be set. Also, if using a QUIC proxy, |quic_version| must
-// not be QUIC_VERSION_UNSUPPORTED.
+// not be quic::QUIC_VERSION_UNSUPPORTED.
 class NET_EXPORT_PRIVATE HttpProxySocketParams
     : public base::RefCounted<HttpProxySocketParams> {
  public:
   HttpProxySocketParams(
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
-      QuicTransportVersion quic_version,
+      quic::QuicTransportVersion quic_version,
       const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const scoped_refptr<SSLSocketParams>& ssl_params() const {
     return ssl_params_;
   }
-  QuicTransportVersion quic_version() const { return quic_version_; }
+  quic::QuicTransportVersion quic_version() const { return quic_version_; }
   const std::string& user_agent() const { return user_agent_; }
   const HostPortPair& endpoint() const { return endpoint_; }
   HttpAuthCache* http_auth_cache() const { return http_auth_cache_; }
@@ -93,7 +93,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
-  QuicTransportVersion quic_version_;
+  quic::QuicTransportVersion quic_version_;
   SpdySessionPool* spdy_session_pool_;
   QuicStreamFactory* quic_stream_factory_;
   const std::string user_agent_;

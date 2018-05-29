@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/quic_constants.h"
 
-namespace net {
+namespace quic {
 
 QuicStopWaitingFrame::QuicStopWaitingFrame() : least_unacked(0) {}
 
@@ -18,4 +18,4 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

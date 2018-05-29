@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 
-namespace net {
+namespace quic {
 
 #define RETURN_STRING_LITERAL(x) \
   case x:                        \
@@ -152,4 +152,4 @@ void RecordInternalErrorLocation(QuicInternalErrorLocation location) {
                             INTERNAL_ERROR_LOCATION_MAX);
 }
 
-}  // namespace net
+}  // namespace quic

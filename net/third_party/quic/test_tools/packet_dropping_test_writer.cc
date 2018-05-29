@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // An alarm that is scheduled if a blocked socket is simulated to indicate
@@ -242,4 +242,4 @@ PacketDroppingTestWriter::DelayedWrite::DelayedWrite(
 PacketDroppingTestWriter::DelayedWrite::~DelayedWrite() = default;
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

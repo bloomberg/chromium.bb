@@ -117,7 +117,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
 
     session_params_.enable_quic = true;
     if (GetParam().use_stateless_rejects) {
-      session_params_.quic_connection_options.push_back(kSREJ);
+      session_params_.quic_connection_options.push_back(quic::kSREJ);
     }
 
     session_context_.quic_random = nullptr;
@@ -175,14 +175,15 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   void StartServer() {
     server_address_ = IPEndPoint(IPAddress(127, 0, 0, 1), 0);
     server_config_.SetInitialStreamFlowControlWindowToSend(
-        kInitialStreamFlowControlWindowForTest);
+        quic::test::kInitialStreamFlowControlWindowForTest);
     server_config_.SetInitialSessionFlowControlWindowToSend(
-        kInitialSessionFlowControlWindowForTest);
-    server_config_options_.token_binding_params = QuicTagVector{kTB10, kP256};
-    server_.reset(
-        new QuicSimpleServer(crypto_test_utils::ProofSourceForTesting(),
-                             server_config_, server_config_options_,
-                             AllSupportedVersions(), &memory_cache_backend_));
+        quic::test::kInitialSessionFlowControlWindowForTest);
+    server_config_options_.token_binding_params =
+        quic::QuicTagVector{quic::kTB10, quic::kP256};
+    server_.reset(new QuicSimpleServer(
+        quic::test::crypto_test_utils::ProofSourceForTesting(), server_config_,
+        server_config_options_, quic::AllSupportedVersions(),
+        &memory_cache_backend_));
     server_->Listen(server_address_);
     server_address_ = server_->server_address();
     server_->StartReading();
@@ -191,10 +192,10 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
 
   // Adds an entry to the cache used by the QUIC server to serve
   // responses.
-  void AddToCache(QuicStringPiece path,
+  void AddToCache(quic::QuicStringPiece path,
                   int response_code,
-                  QuicStringPiece response_detail,
-                  QuicStringPiece body) {
+                  quic::QuicStringPiece response_detail,
+                  quic::QuicStringPiece body) {
     memory_cache_backend_.AddSimpleResponse("test.example.com", path,
                                             response_code, body);
   }
@@ -252,11 +253,11 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
   std::string request_body_;
   std::unique_ptr<UploadDataStream> upload_data_stream_;
   std::unique_ptr<QuicSimpleServer> server_;
-  QuicMemoryCacheBackend memory_cache_backend_;
+  quic::QuicMemoryCacheBackend memory_cache_backend_;
   IPEndPoint server_address_;
   std::string server_hostname_;
-  QuicConfig server_config_;
-  QuicCryptoServerConfig::ConfigOptions server_config_options_;
+  quic::QuicConfig server_config_;
+  quic::QuicCryptoServerConfig::ConfigOptions server_config_options_;
   bool server_started_;
   bool strike_register_no_startup_period_;
 };

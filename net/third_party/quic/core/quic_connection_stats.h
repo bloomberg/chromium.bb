@@ -15,7 +15,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 // Structure to hold stats for a QuicConnection.
 struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   QuicConnectionStats();
@@ -94,6 +94,6 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   uint64_t num_connectivity_probing_received;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONNECTION_STATS_H_

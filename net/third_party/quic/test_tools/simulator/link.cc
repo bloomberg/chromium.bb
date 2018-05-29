@@ -9,7 +9,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // Parameters for random noise delay.
@@ -120,4 +120,4 @@ SymmetricLink::SymmetricLink(Endpoint* endpoint_a,
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

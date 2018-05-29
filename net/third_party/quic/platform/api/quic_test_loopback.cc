@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/platform/api/quic_test_loopback.h"
 
-namespace net {
+namespace quic {
 
 IpAddressFamily AddressFamilyUnderTest() {
   return AddressFamilyUnderTestImpl();
@@ -26,4 +26,4 @@ QuicIpAddress TestLoopback(int index) {
   return TestLoopbackImpl(index);
 }
 
-}  // namespace net
+}  // namespace quic

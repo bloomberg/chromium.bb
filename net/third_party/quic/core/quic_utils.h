@@ -18,7 +18,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicUtils {
  public:
@@ -92,6 +92,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_UTILS_H_

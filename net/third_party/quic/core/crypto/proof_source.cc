@@ -5,11 +5,11 @@
 #include "net/third_party/quic/core/crypto/proof_source.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 ProofSource::Chain::Chain(const std::vector<QuicString>& certs)
     : certs(certs) {}
 
 ProofSource::Chain::~Chain() {}
 
-}  // namespace net
+}  // namespace quic

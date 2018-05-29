@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/bad_packet_writer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 BadPacketWriter::BadPacketWriter(size_t packet_causing_write_error,
@@ -33,4 +33,4 @@ WriteResult BadPacketWriter::WritePacket(const char* buffer,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

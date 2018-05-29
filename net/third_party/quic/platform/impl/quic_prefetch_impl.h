@@ -9,7 +9,7 @@
 #include <intrin.h>
 #endif
 
-namespace net {
+namespace quic {
 
 inline void QuicPrefetchT0Impl(const void* addr) {
 #if defined(__GNUC__)
@@ -19,6 +19,6 @@ inline void QuicPrefetchT0Impl(const void* addr) {
 #endif
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_PREFETCH_IMPL_H_

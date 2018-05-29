@@ -13,7 +13,7 @@
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-namespace net {
+namespace quic {
 
 TlsServerHandshaker::SignatureCallback::SignatureCallback(
     TlsServerHandshaker* handshaker)
@@ -335,4 +335,4 @@ int TlsServerHandshaker::SelectCertificate() {
   return SSL_TLSEXT_ERR_OK;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 
-namespace net {
+namespace quic {
 
 // IETF format BLOCKED frame.
 // The sender uses the BLOCKED frame to inform the receiver that the
@@ -27,6 +27,6 @@ struct QUIC_EXPORT_PRIVATE QuicIetfBlockedFrame : public QuicControlFrame {
   QuicStreamOffset offset;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_IETF_BLOCKED_FRAME_H_

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/crypto/aead_base_encrypter.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // A ChaCha20Poly1305Encrypter is a QuicEncrypter that implements the
 // AEAD_CHACHA20_POLY1305 algorithm specified in RFC 7539, except that
@@ -31,6 +31,6 @@ class QUIC_EXPORT_PRIVATE ChaCha20Poly1305Encrypter : public AeadBaseEncrypter {
   DISALLOW_COPY_AND_ASSIGN(ChaCha20Poly1305Encrypter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CHACHA20_POLY1305_ENCRYPTER_H_

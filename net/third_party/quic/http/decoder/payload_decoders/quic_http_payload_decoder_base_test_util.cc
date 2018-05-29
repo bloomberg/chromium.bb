@@ -13,7 +13,7 @@
 #include "net/third_party/quic/http/tools/quic_http_random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 QuicHttpPayloadDecoderBaseTest::QuicHttpPayloadDecoderBaseTest() {
   // If the test adds more data after the frame payload,
@@ -102,4 +102,4 @@ QuicHttpPayloadDecoderBaseTest::DecodePayloadAndValidateSeveralWays(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

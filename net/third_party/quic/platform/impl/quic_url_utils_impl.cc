@@ -6,7 +6,7 @@
 
 #include "url/gurl.h"
 
-namespace net {
+namespace quic {
 
 // static
 std::string QuicUrlUtilsImpl::HostName(QuicStringPiece url) {
@@ -151,4 +151,4 @@ std::string QuicUrlUtilsImpl::GetPushPromiseUrl(QuicStringPiece scheme,
   return full_url.spec();
 }
 
-}  // namespace net
+}  // namespace quic

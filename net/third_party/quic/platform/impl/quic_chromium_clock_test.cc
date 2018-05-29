@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 TEST(QuicChromiumClockTest, Now) {
@@ -35,4 +35,4 @@ TEST(QuicChromiumClockTest, WallNow) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

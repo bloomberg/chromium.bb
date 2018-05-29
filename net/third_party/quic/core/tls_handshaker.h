@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
-namespace net {
+namespace quic {
 
 class QuicCryptoStream;
 class QuicSession;
@@ -85,6 +85,6 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public QuicTlsAdapter::Visitor {
   DISALLOW_COPY_AND_ASSIGN(TlsHandshaker);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_TLS_HANDSHAKER_H_

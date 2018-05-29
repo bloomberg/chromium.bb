@@ -13,7 +13,7 @@
 using std::max;
 using std::min;
 
-namespace net {
+namespace quic {
 
 namespace {
 const QuicPacketNumber kMaxPrintRange = 128;
@@ -67,10 +67,10 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
   // Check if the deque is empty
   if (packet_number_deque_.empty()) {
     packet_number_deque_.push_front(
-        Interval<QuicPacketNumber>(packet_number, packet_number + 1));
+        net::Interval<QuicPacketNumber>(packet_number, packet_number + 1));
     return;
   }
-  Interval<QuicPacketNumber> back = packet_number_deque_.back();
+  net::Interval<QuicPacketNumber> back = packet_number_deque_.back();
 
   // Check for the typical case,
   // when the next packet in order is acked
@@ -81,15 +81,15 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
   // Check if the next packet in order is skipped
   if (back.max() < packet_number) {
     packet_number_deque_.push_back(
-        Interval<QuicPacketNumber>(packet_number, packet_number + 1));
+        net::Interval<QuicPacketNumber>(packet_number, packet_number + 1));
     return;
   }
 
-  Interval<QuicPacketNumber> front = packet_number_deque_.front();
+  net::Interval<QuicPacketNumber> front = packet_number_deque_.front();
   // Check if the packet can be  popped on the front
   if (front.min() > packet_number + 1) {
     packet_number_deque_.push_front(
-        Interval<QuicPacketNumber>(packet_number, packet_number + 1));
+        net::Interval<QuicPacketNumber>(packet_number, packet_number + 1));
     return;
   }
   if (front.min() == packet_number + 1) {
@@ -101,7 +101,7 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
   // Iterating through the queue backwards
   // to find a proper place for the packet
   while (i >= 0) {
-    Interval<QuicPacketNumber> packet_interval = packet_number_deque_[i];
+    net::Interval<QuicPacketNumber> packet_interval = packet_number_deque_[i];
     DCHECK(packet_interval.min() < packet_interval.max());
     // Check if the packet is contained in an interval already
     if (packet_interval.Contains(packet_number)) {
@@ -130,7 +130,7 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
     if (packet_interval.max() < packet_number + 1) {
       packet_number_deque_.insert(
           packet_number_deque_.begin() + i + 1,
-          Interval<QuicPacketNumber>(packet_number, packet_number + 1));
+          net::Interval<QuicPacketNumber>(packet_number, packet_number + 1));
       return;
     }
     i--;
@@ -143,10 +143,11 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
     return;
   }
   if (packet_number_deque_.empty()) {
-    packet_number_deque_.push_front(Interval<QuicPacketNumber>(lower, higher));
+    packet_number_deque_.push_front(
+        net::Interval<QuicPacketNumber>(lower, higher));
     return;
   }
-  Interval<QuicPacketNumber> back = packet_number_deque_.back();
+  net::Interval<QuicPacketNumber> back = packet_number_deque_.back();
 
   if (back.max() == lower) {
     // Check for the typical case,
@@ -156,15 +157,17 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
   }
   if (back.max() < lower) {
     // Check if the next packet in order is skipped
-    packet_number_deque_.push_back(Interval<QuicPacketNumber>(lower, higher));
+    packet_number_deque_.push_back(
+        net::Interval<QuicPacketNumber>(lower, higher));
     return;
   }
-  Interval<QuicPacketNumber> front = packet_number_deque_.front();
+  net::Interval<QuicPacketNumber> front = packet_number_deque_.front();
   // Check if the packets are being added in reverse order
   if (front.min() == higher) {
     packet_number_deque_.front().SetMin(lower);
   } else if (front.min() > higher) {
-    packet_number_deque_.push_front(Interval<QuicPacketNumber>(lower, higher));
+    packet_number_deque_.push_front(
+        net::Interval<QuicPacketNumber>(lower, higher));
 
   } else {
     // Ranges must be above or below all existing ranges.
@@ -180,7 +183,7 @@ bool PacketNumberQueue::RemoveUpTo(QuicPacketNumber higher) {
   }
   const QuicPacketNumber old_min = Min();
   while (!packet_number_deque_.empty()) {
-    Interval<QuicPacketNumber> front = packet_number_deque_.front();
+    net::Interval<QuicPacketNumber> front = packet_number_deque_.front();
     if (front.max() < higher) {
       packet_number_deque_.pop_front();
     } else if (front.min() < higher && front.max() >= higher) {
@@ -216,7 +219,7 @@ bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {
       packet_number_deque_.back().max() <= packet_number) {
     return false;
   }
-  for (Interval<QuicPacketNumber> interval : packet_number_deque_) {
+  for (net::Interval<QuicPacketNumber> interval : packet_number_deque_) {
     if (interval.Contains(packet_number)) {
       return true;
     }
@@ -240,7 +243,7 @@ QuicPacketNumber PacketNumberQueue::Max() const {
 
 size_t PacketNumberQueue::NumPacketsSlow() const {
   int n_packets = 0;
-  for (Interval<QuicPacketNumber> interval : packet_number_deque_) {
+  for (net::Interval<QuicPacketNumber> interval : packet_number_deque_) {
     n_packets += interval.Length();
   }
   return n_packets;
@@ -276,7 +279,7 @@ QuicPacketNumber PacketNumberQueue::LastIntervalLength() const {
 // than [a b c d]
 
 std::ostream& operator<<(std::ostream& os, const PacketNumberQueue& q) {
-  for (const Interval<QuicPacketNumber>& interval : q) {
+  for (const net::Interval<QuicPacketNumber>& interval : q) {
     // Print as a range if there is a pathological condition.
     if ((interval.min() >= interval.max()) ||
         (interval.max() - interval.min() > kMaxPrintRange)) {
@@ -298,4 +301,4 @@ std::ostream& operator<<(std::ostream& os, const PacketNumberQueue& q) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

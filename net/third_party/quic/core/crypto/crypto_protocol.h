@@ -22,7 +22,7 @@
 #define TAG(a, b, c, d) \
   static_cast<QuicTag>((d << 24) + (c << 16) + (b << 8) + a)
 
-namespace net {
+namespace quic {
 
 typedef QuicString ServerConfigID;
 
@@ -292,6 +292,6 @@ const char kProofSignatureLabel[] = "QUIC CHLO and server config signature";
 // rejection message.
 const size_t kClientHelloMinimumSize = 1024;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CRYPTO_PROTOCOL_H_

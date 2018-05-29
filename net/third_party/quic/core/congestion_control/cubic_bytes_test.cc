@@ -13,7 +13,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -387,4 +387,4 @@ TEST_F(CubicBytesTest, BelowOrigin) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

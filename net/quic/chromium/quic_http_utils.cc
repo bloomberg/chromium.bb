@@ -37,7 +37,7 @@ RequestPriority ConvertQuicPriorityToRequestPriority(
 }
 
 std::unique_ptr<base::Value> QuicRequestNetLogCallback(
-    QuicStreamId stream_id,
+    quic::QuicStreamId stream_id,
     const spdy::SpdyHeaderBlock* headers,
     spdy::SpdyPriority priority,
     NetLogCaptureMode capture_mode) {
@@ -49,17 +49,17 @@ std::unique_ptr<base::Value> QuicRequestNetLogCallback(
   return std::move(dict);
 }
 
-QuicTransportVersionVector FilterSupportedAltSvcVersions(
+quic::QuicTransportVersionVector FilterSupportedAltSvcVersions(
     const spdy::SpdyAltSvcWireFormat::AlternativeService& quic_alt_svc,
-    const QuicTransportVersionVector& supported_versions,
+    const quic::QuicTransportVersionVector& supported_versions,
     bool support_ietf_format_quic_altsvc) {
-  QuicTransportVersionVector supported_alt_svc_versions;
+  quic::QuicTransportVersionVector supported_alt_svc_versions;
   if (support_ietf_format_quic_altsvc && quic_alt_svc.protocol_id == "hq") {
     // Using IETF format for advertising QUIC. In this case,
     // |alternative_service_entry.version| will store QUIC version labels.
     for (uint32_t quic_version_label : quic_alt_svc.version) {
-      for (QuicTransportVersion supported : supported_versions) {
-        QuicVersionLabel supported_version_label_network_order =
+      for (quic::QuicTransportVersion supported : supported_versions) {
+        quic::QuicVersionLabel supported_version_label_network_order =
             QuicVersionToQuicVersionLabel(supported);
         if (supported_version_label_network_order == quic_version_label) {
           supported_alt_svc_versions.push_back(supported);
@@ -69,7 +69,7 @@ QuicTransportVersionVector FilterSupportedAltSvcVersions(
     }
   } else if (quic_alt_svc.protocol_id == "quic") {
     for (uint32_t quic_version : quic_alt_svc.version) {
-      for (QuicTransportVersion supported : supported_versions) {
+      for (quic::QuicTransportVersion supported : supported_versions) {
         if (static_cast<uint32_t>(supported) == quic_version) {
           supported_alt_svc_versions.push_back(supported);
           RecordAltSvcFormat(GOOGLE_FORMAT);

@@ -4,27 +4,27 @@
 
 #include "net/third_party/quic/platform/impl/quic_test_loopback_impl.h"
 
-namespace net {
+namespace quic {
 
 IpAddressFamily AddressFamilyUnderTestImpl() {
   return IpAddressFamily::IP_V4;
 }
 
 QuicIpAddress TestLoopback4Impl() {
-  return QuicIpAddress(QuicIpAddressImpl(IPAddress::IPv4Localhost()));
+  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress::IPv4Localhost()));
 }
 
 QuicIpAddress TestLoopback6Impl() {
-  return QuicIpAddress(QuicIpAddressImpl(IPAddress::IPv6Localhost()));
+  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress::IPv6Localhost()));
 }
 
 QuicIpAddress TestLoopbackImpl() {
-  return QuicIpAddress(QuicIpAddressImpl(IPAddress::IPv4Localhost()));
+  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress::IPv4Localhost()));
 }
 
 QuicIpAddress TestLoopbackImpl(int index) {
   const uint8_t kLocalhostIPv4[] = {127, 0, 0, index};
-  return QuicIpAddress(QuicIpAddressImpl(IPAddress(kLocalhostIPv4)));
+  return QuicIpAddress(QuicIpAddressImpl(net::IPAddress(kLocalhostIPv4)));
 }
 
-}  // namespace net
+}  // namespace quic

@@ -37,7 +37,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 namespace {
@@ -1148,4 +1148,4 @@ TEST_P(CryptoServerTestOldVersion, XlctNotRequired) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -25,7 +25,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 namespace test {
 class QuicHttpFrameDecoderStatePeer;
 }  // namespace test
@@ -254,6 +254,6 @@ class QUIC_EXPORT_PRIVATE QuicHttpFrameDecoderState {
   QuicHttpStructureDecoder structure_decoder_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_FRAME_DECODER_STATE_H_

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_url.h"
 
-namespace net {
+namespace quic {
 
 // Container for HTTP response header/body pairs
 // fetched by the QuicSimpleServerBackend
@@ -70,6 +70,6 @@ class QuicBackendResponse {
   QuicString body_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_BACKEND_RESPONSE_H_

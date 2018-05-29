@@ -22,7 +22,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -829,4 +829,4 @@ TEST_F(QuartcSessionTest, CloseConnection) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace quic

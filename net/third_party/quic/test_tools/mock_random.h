@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class MockRandom : public QuicRandom {
@@ -38,6 +38,6 @@ class MockRandom : public QuicRandom {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_RANDOM_H_

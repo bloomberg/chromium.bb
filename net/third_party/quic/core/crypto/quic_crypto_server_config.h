@@ -30,7 +30,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
-namespace net {
+namespace quic {
 
 class CryptoHandshakeMessage;
 class EphemeralKeySource;
@@ -791,6 +791,6 @@ struct QUIC_EXPORT_PRIVATE QuicSignedServerConfig
   ~QuicSignedServerConfig() override;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_CRYPTO_SERVER_CONFIG_H_

@@ -18,7 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -351,4 +351,4 @@ TEST_F(QuartcStreamTest, CloseOnFins) {
 
 }  // namespace
 
-}  // namespace net
+}  // namespace quic

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/impl/quic_test_output_impl.h"
 
-namespace net {
+namespace quic {
 
 // Records a QUIC test output file into a directory specified by QUIC_TRACE_DIR
 // environment variable.  Assumes that it's called from a unit test.
@@ -21,5 +21,5 @@ inline void QuicRecordTestOutput(QuicStringPiece identifier,
   QuicRecordTestOutputImpl(identifier, data);
 }
 
-}  // namespace net
+}  // namespace quic
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_TEST_OUTPUT_H_

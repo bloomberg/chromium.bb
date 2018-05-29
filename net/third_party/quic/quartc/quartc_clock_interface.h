@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-namespace net {
+namespace quic {
 
 // Implemented by the Quartc API user to provide a timebase.
 class QuartcClockInterface {
@@ -16,6 +16,6 @@ class QuartcClockInterface {
   virtual int64_t NowMicroseconds() = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_CLOCK_INTERFACE_H_

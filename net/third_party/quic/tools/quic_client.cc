@@ -34,12 +34,12 @@
 #define MMSG_MORE 0
 using std::string;
 
-namespace net {
+namespace quic {
 
 QuicClient::QuicClient(QuicSocketAddress server_address,
                        const QuicServerId& server_id,
                        const ParsedQuicVersionVector& supported_versions,
-                       EpollServer* epoll_server,
+                       net::EpollServer* epoll_server,
                        std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicClient(
           server_address,
@@ -54,7 +54,7 @@ QuicClient::QuicClient(
     QuicSocketAddress server_address,
     const QuicServerId& server_id,
     const ParsedQuicVersionVector& supported_versions,
-    EpollServer* epoll_server,
+    net::EpollServer* epoll_server,
     std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
     std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicClient(server_address,
@@ -70,7 +70,7 @@ QuicClient::QuicClient(
     const QuicServerId& server_id,
     const ParsedQuicVersionVector& supported_versions,
     const QuicConfig& config,
-    EpollServer* epoll_server,
+    net::EpollServer* epoll_server,
     std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
     std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicSpdyClientBase(
@@ -101,4 +101,4 @@ const QuicClientEpollNetworkHelper* QuicClient::epoll_network_helper() const {
   return static_cast<const QuicClientEpollNetworkHelper*>(network_helper());
 }
 
-}  // namespace net
+}  // namespace quic

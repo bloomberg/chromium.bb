@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_stream_id_blocked_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicStreamIdBlockedFrame::QuicStreamIdBlockedFrame() {}
 
@@ -20,4 +20,4 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

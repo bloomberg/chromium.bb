@@ -24,13 +24,13 @@
 // The port the quic server will listen on.
 int32_t FLAGS_port = 6121;
 // Mode of operations: currently only support in-memory cache
-net::QuicString FLAGS_quic_mode = "cache";
+quic::QuicString FLAGS_quic_mode = "cache";
 // Specifies the directory used during QuicHttpResponseCache
 // construction to seed the cache. Cache directory can be
 // generated using `wget -p --save-headers <url>`
-net::QuicString FLAGS_quic_response_cache_dir = "";
+quic::QuicString FLAGS_quic_response_cache_dir = "";
 
-std::unique_ptr<net::ProofSource> CreateProofSource(
+std::unique_ptr<quic::ProofSource> CreateProofSource(
     const base::FilePath& cert_path,
     const base::FilePath& key_path) {
   std::unique_ptr<net::ProofSourceChromium> proof_source(
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     exit(0);
   }
 
-  net::QuicMemoryCacheBackend memory_cache_backend;
+  quic::QuicMemoryCacheBackend memory_cache_backend;
   if (line->HasSwitch("mode")) {
     FLAGS_quic_mode = line->GetSwitchValueASCII("mode");
   }
@@ -108,15 +108,15 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  net::QuicConfig config;
-  net::QuicServer server(
+  quic::QuicConfig config;
+  quic::QuicServer server(
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
-      config, net::QuicCryptoServerConfig::ConfigOptions(),
-      net::AllSupportedVersions(), &memory_cache_backend);
+      config, quic::QuicCryptoServerConfig::ConfigOptions(),
+      quic::AllSupportedVersions(), &memory_cache_backend);
 
   int rc = server.CreateUDPSocketAndListen(
-      net::QuicSocketAddress(net::QuicIpAddress::Any6(), FLAGS_port));
+      quic::QuicSocketAddress(quic::QuicIpAddress::Any6(), FLAGS_port));
   if (rc < 0) {
     return 1;
   }

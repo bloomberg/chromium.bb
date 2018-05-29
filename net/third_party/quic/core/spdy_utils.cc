@@ -19,7 +19,7 @@
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
-namespace net {
+namespace quic {
 
 // static
 bool SpdyUtils::ExtractContentLengthFromHeaders(
@@ -216,4 +216,4 @@ bool SpdyUtils::PopulateHeaderBlockFromUrl(const QuicString url,
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

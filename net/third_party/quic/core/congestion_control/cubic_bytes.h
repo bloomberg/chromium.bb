@@ -17,7 +17,7 @@
 #include "net/third_party/quic/platform/api/quic_clock.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class CubicBytesTest;
@@ -98,6 +98,6 @@ class QUIC_EXPORT_PRIVATE CubicBytes {
   DISALLOW_COPY_AND_ASSIGN(CubicBytes);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_CUBIC_BYTES_H_

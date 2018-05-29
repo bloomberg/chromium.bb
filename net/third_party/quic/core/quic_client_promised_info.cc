@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
-namespace net {
+namespace quic {
 
 QuicClientPromisedInfo::QuicClientPromisedInfo(
     QuicSpdyClientSessionBase* session,
@@ -142,4 +142,4 @@ void QuicClientPromisedInfo::Cancel() {
   Reset(QUIC_STREAM_CANCELLED);
 }
 
-}  // namespace net
+}  // namespace quic

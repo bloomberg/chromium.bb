@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/quic_buffered_packet_store.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -22,4 +22,4 @@ void QuicBufferedPacketStorePeer::set_clock(QuicBufferedPacketStore* store,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -18,7 +18,7 @@ using testing::Return;
 using testing::StrictMock;
 using testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -30,7 +30,7 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
       : QuicSpdyClientSession(
             DefaultQuicConfig(),
             connection,
-            QuicServerId("example.com", 443, PRIVACY_MODE_DISABLED),
+            QuicServerId("example.com", 443, net::PRIVACY_MODE_DISABLED),
             &crypto_config_,
             push_promise_index),
         crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
@@ -111,4 +111,4 @@ TEST_F(QuicClientPushPromiseIndexTest, GetPromise) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

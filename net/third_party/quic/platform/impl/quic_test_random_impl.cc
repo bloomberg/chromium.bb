@@ -8,7 +8,7 @@
 
 #include "base/rand_util.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 bool QuicTestRandom::OneIn(int n) {
@@ -55,4 +55,4 @@ QuicString QuicTestRandom::RandString(int length) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

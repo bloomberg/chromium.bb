@@ -15,7 +15,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 #define ENDPOINT                                                   \
   (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
@@ -202,4 +202,4 @@ bool QuicCryptoStream::RetransmitStreamData(QuicStreamOffset offset,
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

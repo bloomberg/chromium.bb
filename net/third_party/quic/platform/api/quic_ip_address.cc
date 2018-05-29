@@ -5,7 +5,7 @@
 #include "net/third_party/quic/platform/api/quic_ip_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicIpAddress QuicIpAddress::Loopback4() {
   return QuicIpAddress(QuicIpAddressImpl::Loopback4());
@@ -82,4 +82,4 @@ bool QuicIpAddress::InSameSubnet(const QuicIpAddress& other,
   return impl_.InSameSubnet(other.impl(), subnet_length);
 }
 
-}  // namespace net
+}  // namespace quic

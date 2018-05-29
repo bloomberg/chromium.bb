@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/platform/api/quic_clock.h"
 
-namespace net {
+namespace quic {
 
 QuicClock::QuicClock() {}
 
@@ -28,4 +28,4 @@ QuicTime QuicClock::ConvertWallTimeToQuicTime(
                          .ToUNIXMicroseconds());
 }
 
-}  // namespace net
+}  // namespace quic

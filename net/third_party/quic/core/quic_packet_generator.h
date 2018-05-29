@@ -51,7 +51,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicPacketGeneratorPeer;
@@ -241,6 +241,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   DISALLOW_COPY_AND_ASSIGN(QuicPacketGenerator);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKET_GENERATOR_H_

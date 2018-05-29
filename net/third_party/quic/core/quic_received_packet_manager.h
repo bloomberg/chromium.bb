@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicConnectionPeer;
@@ -96,6 +96,6 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacketManager);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_RECEIVED_PACKET_MANAGER_H_

@@ -14,7 +14,7 @@
 #include "net/third_party/quic/http/quic_http_constants.h"
 #include "net/third_party/quic/http/quic_http_structures.h"
 
-namespace net {
+namespace quic {
 
 QuicHttpDecodeStatus
 QuicHttpContinuationQuicHttpPayloadDecoder::StartDecodingPayload(
@@ -62,4 +62,4 @@ QuicHttpContinuationQuicHttpPayloadDecoder::ResumeDecodingPayload(
   return QuicHttpDecodeStatus::kDecodeInProgress;
 }
 
-}  // namespace net
+}  // namespace quic

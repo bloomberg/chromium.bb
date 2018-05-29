@@ -16,7 +16,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 // Defined kKeySize for GetKeySize() and SetKey().
 static const size_t kKeySize = 16;
@@ -131,4 +131,4 @@ bool CryptoSecretBoxer::Unbox(QuicStringPiece in_ciphertext,
   return false;
 }
 
-}  // namespace net
+}  // namespace quic

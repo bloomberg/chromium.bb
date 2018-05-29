@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/quic_alarm.h"
 
-namespace net {
+namespace quic {
 
 QuicAlarm::QuicAlarm(QuicArenaScopedPtr<Delegate> delegate)
     : delegate_(std::move(delegate)), deadline_(QuicTime::Zero()) {}
@@ -70,4 +70,4 @@ void QuicAlarm::UpdateImpl() {
   SetImpl();
 }
 
-}  // namespace net
+}  // namespace quic

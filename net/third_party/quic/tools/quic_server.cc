@@ -37,7 +37,7 @@
 #define SO_RXQ_OVFL 40
 #endif
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -183,7 +183,7 @@ void QuicServer::Shutdown() {
   fd_ = -1;
 }
 
-void QuicServer::OnEvent(int fd, EpollEvent* event) {
+void QuicServer::OnEvent(int fd, net::EpollEvent* event) {
   DCHECK_EQ(fd, fd_);
   event->out_ready_mask = 0;
 
@@ -214,4 +214,4 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   }
 }
 
-}  // namespace net
+}  // namespace quic

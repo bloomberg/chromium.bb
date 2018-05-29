@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/http/decoder/quic_http_structure_decoder_test_util.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 void QuicHttpStructureDecoderPeer::Randomize(QuicHttpStructureDecoder* p,
@@ -16,4 +16,4 @@ void QuicHttpStructureDecoderPeer::Randomize(QuicHttpStructureDecoder* p,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

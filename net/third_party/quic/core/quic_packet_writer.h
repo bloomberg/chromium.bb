@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 
-namespace net {
+namespace quic {
 
 struct WriteResult;
 
@@ -68,6 +68,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketWriter {
       const QuicSocketAddress& peer_address) const = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKET_WRITER_H_

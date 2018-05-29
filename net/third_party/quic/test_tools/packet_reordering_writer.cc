@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/packet_reordering_writer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 PacketReorderingWriter::PacketReorderingWriter() = default;
@@ -50,4 +50,4 @@ void PacketReorderingWriter::SetDelay(size_t num_packets_to_wait) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

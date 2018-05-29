@@ -7,7 +7,7 @@
 
 #include "base/sys_byteorder.h"
 
-namespace net {
+namespace quic {
 
 class QuicEndianImpl {
  public:
@@ -33,6 +33,6 @@ class QuicEndianImpl {
   }
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_ENDIAN_IMPL_H_

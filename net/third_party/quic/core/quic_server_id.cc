@@ -10,20 +10,20 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
-QuicServerId::QuicServerId() : privacy_mode_(PRIVACY_MODE_DISABLED) {}
+QuicServerId::QuicServerId() : privacy_mode_(net::PRIVACY_MODE_DISABLED) {}
 
-QuicServerId::QuicServerId(const HostPortPair& host_port_pair,
-                           PrivacyMode privacy_mode)
+QuicServerId::QuicServerId(const net::HostPortPair& host_port_pair,
+                           net::PrivacyMode privacy_mode)
     : host_port_pair_(host_port_pair), privacy_mode_(privacy_mode) {}
 
 QuicServerId::QuicServerId(const QuicString& host, uint16_t port)
-    : host_port_pair_(host, port), privacy_mode_(PRIVACY_MODE_DISABLED) {}
+    : host_port_pair_(host, port), privacy_mode_(net::PRIVACY_MODE_DISABLED) {}
 
 QuicServerId::QuicServerId(const QuicString& host,
                            uint16_t port,
-                           PrivacyMode privacy_mode)
+                           net::PrivacyMode privacy_mode)
     : host_port_pair_(host, port), privacy_mode_(privacy_mode) {}
 
 QuicServerId::~QuicServerId() {}
@@ -39,12 +39,13 @@ bool QuicServerId::operator==(const QuicServerId& other) const {
 }
 
 QuicString QuicServerId::ToString() const {
-  return QuicStrCat("https://", host_port_pair_.ToString(),
-                    (privacy_mode_ == PRIVACY_MODE_ENABLED ? "/private" : ""));
+  return QuicStrCat(
+      "https://", host_port_pair_.ToString(),
+      (privacy_mode_ == net::PRIVACY_MODE_ENABLED ? "/private" : ""));
 }
 
 size_t QuicServerId::EstimateMemoryUsage() const {
   return QuicEstimateMemoryUsage(host_port_pair_);
 }
 
-}  // namespace net
+}  // namespace quic

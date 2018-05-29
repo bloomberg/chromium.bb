@@ -41,7 +41,7 @@
 using testing::_;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicServerSessionBasePeer {
@@ -652,4 +652,4 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

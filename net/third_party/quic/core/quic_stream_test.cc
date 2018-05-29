@@ -37,7 +37,7 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -1281,4 +1281,4 @@ TEST_F(QuicStreamTest, RetransmitStreamData) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

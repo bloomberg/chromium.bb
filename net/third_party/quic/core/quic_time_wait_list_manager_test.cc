@@ -37,7 +37,7 @@ using testing::ReturnPointee;
 using testing::StrictMock;
 using testing::Truly;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -77,7 +77,8 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
  public:
   MOCK_METHOD2(RegisterAlarm,
-               void(int64_t timeout_in_us, EpollAlarmCallbackInterface* alarm));
+               void(int64_t timeout_in_us,
+                    net::EpollAlarmCallbackInterface* alarm));
 };
 
 class QuicTimeWaitListManagerTest : public QuicTest {
@@ -135,8 +136,8 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   QuicEncryptedPacket* ConstructEncryptedPacket(
       QuicConnectionId connection_id,
       QuicPacketNumber packet_number) {
-    return net::test::ConstructEncryptedPacket(connection_id, false, false,
-                                               packet_number, "data");
+    return quic::test::ConstructEncryptedPacket(connection_id, false, false,
+                                                packet_number, "data");
   }
 
   NiceMock<MockFakeTimeEpollServer> epoll_server_;
@@ -523,4 +524,4 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

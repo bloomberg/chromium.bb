@@ -23,7 +23,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicSentPacketManagerPeer;
@@ -99,6 +99,6 @@ class QUIC_EXPORT_PRIVATE PacingSender {
   DISALLOW_COPY_AND_ASSIGN(PacingSender);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_PACING_SENDER_H_

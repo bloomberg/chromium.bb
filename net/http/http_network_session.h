@@ -59,7 +59,11 @@ class NetLog;
 class NetworkQualityProvider;
 class ProxyDelegate;
 class ProxyResolutionService;
+}  // namespace net
+namespace quic {
 class QuicClock;
+}  // namespace quic
+namespace net {
 class QuicCryptoClientStreamFactory;
 class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
@@ -123,7 +127,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // QUIC runtime configuration options.
 
     // Versions of QUIC which may be used.
-    QuicTransportVersionVector quic_supported_versions;
+    quic::QuicTransportVersionVector quic_supported_versions;
     // User agent description to send in the QUIC handshake.
     std::string quic_user_agent_id;
     // Limit on the size of QUIC packets.
@@ -134,10 +138,10 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // QUIC will be used for all connections in this set.
     std::set<HostPortPair> origins_to_force_quic_on;
     // Set of QUIC tags to send in the handshake's connection options.
-    QuicTagVector quic_connection_options;
+    quic::QuicTagVector quic_connection_options;
     // Set of QUIC tags to send in the handshake's connection options that only
     // affect the client.
-    QuicTagVector quic_client_connection_options;
+    quic::QuicTagVector quic_client_connection_options;
     // Enables experimental optimization for receiving data in UDPSocket.
     bool quic_enable_socket_recv_optimization;
 
@@ -240,9 +244,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     NetworkQualityProvider* network_quality_provider;
 
     // Source of time for QUIC connections.
-    QuicClock* quic_clock;
+    quic::QuicClock* quic_clock;
     // Source of entropy for QUIC connections.
-    QuicRandom* quic_random;
+    quic::QuicRandom* quic_random;
     // Optional factory to use for creating QuicCryptoClientStreams.
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
 

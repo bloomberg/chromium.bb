@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The Chrome-specific helper for QuicConnection which uses
+// The Chrome-specific helper for quic::QuicConnection which uses
 // a TaskRunner for alarms, and uses a DatagramClientSocket for writing data.
 
 #ifndef NET_QUIC_CHROMIUM_QUIC_CHROMIUM_CONNECTION_HELPER_H_
@@ -17,27 +17,29 @@
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_time.h"
 
+namespace quic {
+class QuicClock;
+
+class QuicRandom;
+}  // namespace quic
 namespace net {
 
-class QuicClock;
-class QuicRandom;
-
 class NET_EXPORT_PRIVATE QuicChromiumConnectionHelper
-    : public QuicConnectionHelperInterface {
+    : public quic::QuicConnectionHelperInterface {
  public:
-  QuicChromiumConnectionHelper(const QuicClock* clock,
-                               QuicRandom* random_generator);
+  QuicChromiumConnectionHelper(const quic::QuicClock* clock,
+                               quic::QuicRandom* random_generator);
   ~QuicChromiumConnectionHelper() override;
 
-  // QuicConnectionHelperInterface
-  const QuicClock* GetClock() const override;
-  QuicRandom* GetRandomGenerator() override;
-  QuicBufferAllocator* GetStreamSendBufferAllocator() override;
+  // quic::QuicConnectionHelperInterface
+  const quic::QuicClock* GetClock() const override;
+  quic::QuicRandom* GetRandomGenerator() override;
+  quic::QuicBufferAllocator* GetStreamSendBufferAllocator() override;
 
  private:
-  const QuicClock* clock_;
-  QuicRandom* random_generator_;
-  SimpleBufferAllocator buffer_allocator_;
+  const quic::QuicClock* clock_;
+  quic::QuicRandom* random_generator_;
+  quic::SimpleBufferAllocator buffer_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumConnectionHelper);
 };

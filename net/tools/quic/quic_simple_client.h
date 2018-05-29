@@ -35,13 +35,13 @@ namespace test {
 class QuicClientPeer;
 }  // namespace test
 
-class QuicSimpleClient : public QuicSpdyClientBase {
+class QuicSimpleClient : public quic::QuicSpdyClientBase {
  public:
   // Create a quic client, which will have events managed by the message loop.
-  QuicSimpleClient(QuicSocketAddress server_address,
-                   const QuicServerId& server_id,
-                   const ParsedQuicVersionVector& supported_versions,
-                   std::unique_ptr<ProofVerifier> proof_verifier);
+  QuicSimpleClient(quic::QuicSocketAddress server_address,
+                   const quic::QuicServerId& server_id,
+                   const quic::ParsedQuicVersionVector& supported_versions,
+                   std::unique_ptr<quic::ProofVerifier> proof_verifier);
 
   ~QuicSimpleClient() override;
 
@@ -52,7 +52,7 @@ class QuicSimpleClient : public QuicSpdyClientBase {
   QuicChromiumConnectionHelper* CreateQuicConnectionHelper();
 
   //  Used by |helper_| to time alarms.
-  QuicChromiumClock clock_;
+  quic::QuicChromiumClock clock_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_crypto_server_stream.h"
 
-namespace net {
+namespace quic {
 
 // Simple helper for server crypto streams which generates a new random
 // connection ID for stateless rejects.
@@ -32,6 +32,6 @@ class QuicSimpleCryptoServerStreamHelper
   QuicRandom* random_;  // Unowned.
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_CRYPTO_SERVER_STREAM_HELPER_H_

@@ -9,7 +9,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 Queue::ListenerInterface::~ListenerInterface() {}
@@ -122,4 +122,4 @@ void Queue::ScheduleNextPacketDequeue() {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

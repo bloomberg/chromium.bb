@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_singleton_impl.h"
 
-namespace net {
+namespace quic {
 
 // Singleton utility. Example usage:
 //
@@ -19,12 +19,12 @@ namespace net {
 //    void Bar() { ... }
 //   private:
 //    Foo() { ... }
-//    friend net::QuicSingletonFriend<Foo>;
+//    friend quic::QuicSingletonFriend<Foo>;
 //  };
 //
 // In your source file:
 //  Foo* Foo::GetInstance() {
-//    return net::QuicSingleton<Foo>::get();
+//    return quic::QuicSingleton<Foo>::get();
 //  }
 //
 // To use the singleton:
@@ -43,6 +43,6 @@ using QuicSingleton = QuicSingletonImpl<T>;
 template <typename T>
 using QuicSingletonFriend = QuicSingletonFriendImpl<T>;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_SINGLETON_H_

@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/mock_epoll_server.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 FakeTimeEpollServer::FakeTimeEpollServer() : now_in_usec_(0) {}
@@ -46,7 +46,7 @@ int MockEpollServer::epoll_wait_impl(int epfd,
       set_now_in_usec(until_in_usec_);
       // And reset until_in_usec_ to signal no waiting (as
       // the AdvanceByExactly* stuff is meant to be one-shot,
-      // as are all similar EpollServer functions)
+      // as are all similar net::EpollServer functions)
       until_in_usec_ = -1;
     }
   }
@@ -57,4 +57,4 @@ int MockEpollServer::epoll_wait_impl(int epfd,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

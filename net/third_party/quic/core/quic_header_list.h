@@ -17,7 +17,7 @@
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/third_party/spdy/core/spdy_headers_handler_interface.h"
 
-namespace net {
+namespace quic {
 
 // A simple class that accumulates header pairs
 class QUIC_EXPORT_PRIVATE QuicHeaderList
@@ -83,6 +83,6 @@ inline bool operator==(const QuicHeaderList& l1, const QuicHeaderList& l2) {
   return std::equal(l1.begin(), l1.end(), l2.begin(), pred);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_HEADER_LIST_H_

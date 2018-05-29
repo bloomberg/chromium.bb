@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // A MockEncrypter is a QuicEncrypter that returns a plaintext
 // unmodified. No encryption or MAC is applied. This is used
@@ -47,6 +47,6 @@ class MockEncrypter : public QuicEncrypter {
   DISALLOW_COPY_AND_ASSIGN(MockEncrypter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_ENCRYPTER_H_

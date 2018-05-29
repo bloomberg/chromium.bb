@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/quic_per_connection_packet_writer.h"
 
-namespace net {
+namespace quic {
 
 QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
     QuicPacketWriter* shared_writer)
@@ -39,4 +39,4 @@ QuicByteCount QuicPerConnectionPacketWriter::GetMaxPacketSize(
   return shared_writer_->GetMaxPacketSize(peer_address);
 }
 
-}  // namespace net
+}  // namespace quic

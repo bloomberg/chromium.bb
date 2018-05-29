@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
-namespace net {
+namespace quic {
 
 class QuicCryptoServerHandshaker::ProcessClientHelloCallback
     : public ProcessClientHelloResultCallback {
@@ -22,12 +22,12 @@ class QuicCryptoServerHandshaker::ProcessClientHelloCallback
           ValidateClientHelloResultCallback::Result>& result)
       : parent_(parent), result_(result) {}
 
-  void Run(QuicErrorCode error,
-           const QuicString& error_details,
-           std::unique_ptr<CryptoHandshakeMessage> message,
-           std::unique_ptr<DiversificationNonce> diversification_nonce,
-           std::unique_ptr<net::ProofSource::Details> proof_source_details)
-      override {
+  void Run(
+      QuicErrorCode error,
+      const QuicString& error_details,
+      std::unique_ptr<CryptoHandshakeMessage> message,
+      std::unique_ptr<DiversificationNonce> diversification_nonce,
+      std::unique_ptr<ProofSource::Details> proof_source_details) override {
     if (parent_ == nullptr) {
       return;
     }
@@ -470,4 +470,4 @@ const QuicSocketAddress QuicCryptoServerHandshaker::GetClientAddress() {
   return session()->connection()->peer_address();
 }
 
-}  // namespace net
+}  // namespace quic

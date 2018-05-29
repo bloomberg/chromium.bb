@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_mem_slice_impl.h"
 
-namespace net {
+namespace quic {
 
 // QuicMemSlice is an internally reference counted data buffer used as the
 // source buffers for write operations. QuicMemSlice implicitly maintains a
@@ -56,6 +56,6 @@ class QUIC_EXPORT_PRIVATE QuicMemSlice {
   QuicMemSliceImpl impl_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_MEM_SLICE_H_

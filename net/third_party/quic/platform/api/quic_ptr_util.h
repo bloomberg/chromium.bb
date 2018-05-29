@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_ptr_util_impl.h"
 
-namespace net {
+namespace quic {
 
 template <typename T, typename... Args>
 std::unique_ptr<T> QuicMakeUnique(Args&&... args) {
@@ -21,6 +21,6 @@ std::unique_ptr<T> QuicWrapUnique(T* ptr) {
   return QuicWrapUniqueImpl<T>(ptr);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_PTR_UTIL_H_

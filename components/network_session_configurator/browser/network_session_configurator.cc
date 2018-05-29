@@ -168,23 +168,23 @@ bool ShouldSupportIetfFormatQuicAltSvc(
       "true");
 }
 
-net::QuicTagVector GetQuicConnectionOptions(
+quic::QuicTagVector GetQuicConnectionOptions(
     const VariationParameters& quic_trial_params) {
   VariationParameters::const_iterator it =
       quic_trial_params.find("connection_options");
   if (it == quic_trial_params.end()) {
-    return net::QuicTagVector();
+    return quic::QuicTagVector();
   }
 
   return net::ParseQuicConnectionOptions(it->second);
 }
 
-net::QuicTagVector GetQuicClientConnectionOptions(
+quic::QuicTagVector GetQuicClientConnectionOptions(
     const VariationParameters& quic_trial_params) {
   VariationParameters::const_iterator it =
       quic_trial_params.find("client_connection_options");
   if (it == quic_trial_params.end()) {
-    return net::QuicTagVector();
+    return quic::QuicTagVector();
   }
 
   return net::ParseQuicConnectionOptions(it->second);
@@ -327,7 +327,7 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
   return 0;
 }
 
-net::QuicTransportVersionVector GetQuicVersions(
+quic::QuicTransportVersionVector GetQuicVersions(
     const VariationParameters& quic_trial_params) {
   return network_session_configurator::ParseQuicVersions(
       GetVariationParam(quic_trial_params, "quic_version"));
@@ -377,7 +377,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     int reduced_ping_timeout_seconds =
         GetQuicReducedPingTimeoutSeconds(quic_trial_params);
     if (reduced_ping_timeout_seconds > 0 &&
-        reduced_ping_timeout_seconds < net::kPingTimeoutSecs) {
+        reduced_ping_timeout_seconds < quic::kPingTimeoutSecs) {
       params->quic_reduced_ping_timeout_seconds = reduced_ping_timeout_seconds;
     }
     int max_time_before_crypto_handshake_seconds =
@@ -427,7 +427,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->quic_user_agent_id = quic_user_agent_id;
 
-  net::QuicTransportVersionVector supported_versions =
+  quic::QuicTransportVersionVector supported_versions =
       GetQuicVersions(quic_trial_params);
   if (!supported_versions.empty())
     params->quic_supported_versions = supported_versions;
@@ -437,17 +437,17 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
 namespace network_session_configurator {
 
-net::QuicTransportVersionVector ParseQuicVersions(
+quic::QuicTransportVersionVector ParseQuicVersions(
     const std::string& quic_versions) {
-  net::QuicTransportVersionVector supported_versions;
-  net::QuicTransportVersionVector all_supported_versions =
-      net::AllSupportedTransportVersions();
+  quic::QuicTransportVersionVector supported_versions;
+  quic::QuicTransportVersionVector all_supported_versions =
+      quic::AllSupportedTransportVersions();
 
   for (const base::StringPiece& version : base::SplitStringPiece(
            quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     auto it = all_supported_versions.begin();
     while (it != all_supported_versions.end()) {
-      if (net::QuicVersionToString(*it) == version) {
+      if (quic::QuicVersionToString(*it) == version) {
         supported_versions.push_back(*it);
         // Remove the supported version to deduplicate versions extracted from
         // |quic_versions|.
@@ -509,7 +509,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     }
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
-      net::QuicTransportVersionVector supported_versions =
+      quic::QuicTransportVersionVector supported_versions =
           network_session_configurator::ParseQuicVersions(
               command_line.GetSwitchValueASCII(switches::kQuicVersion));
       if (!supported_versions.empty())

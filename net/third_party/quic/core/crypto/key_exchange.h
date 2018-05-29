@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QuicRandom;
 
@@ -41,6 +41,6 @@ class QUIC_EXPORT_PRIVATE KeyExchange {
   virtual QuicTag tag() const = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_KEY_EXCHANGE_H_

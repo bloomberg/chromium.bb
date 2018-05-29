@@ -34,7 +34,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -558,7 +558,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetVector(kKEXS, QuicTagVector{out_params->key_exchange});
 
   if (!tb_key_params.empty() &&
-      server_id.privacy_mode() == PRIVACY_MODE_DISABLED) {
+      server_id.privacy_mode() == net::PRIVACY_MODE_DISABLED) {
     QuicTagVector their_tbkps;
     switch (scfg->GetTaglist(kTBKP, &their_tbkps)) {
       case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -1005,4 +1005,4 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

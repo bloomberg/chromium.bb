@@ -23,7 +23,7 @@
 #define SO_RXQ_OVFL 40
 #endif
 
-namespace net {
+namespace quic {
 
 QuicPacketReader::QuicPacketReader() {
   Initialize();
@@ -189,4 +189,4 @@ bool QuicPacketReader::ReadAndDispatchSinglePacket(
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

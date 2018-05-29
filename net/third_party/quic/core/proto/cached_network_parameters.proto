@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package net;
+package quic;
 
 // CachedNetworkParameters contains data that can be used to choose appropriate
 // connection parameters (initial RTT, initial CWND, etc.) in new connections.

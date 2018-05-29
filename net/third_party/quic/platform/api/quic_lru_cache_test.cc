@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -75,4 +75,4 @@ TEST_F(QuicLRUCacheTest, Eviction) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

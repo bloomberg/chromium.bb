@@ -30,7 +30,7 @@ using testing::AnyNumber;
 using testing::Invoke;
 using testing::Truly;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -89,7 +89,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
                                              SupportedVersions(GetParam()));
     session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
         DefaultQuicConfig(), connection_,
-        QuicServerId(kServerHostname, kPort, PRIVACY_MODE_DISABLED),
+        QuicServerId(kServerHostname, kPort, net::PRIVACY_MODE_DISABLED),
         &crypto_config_, &push_promise_index_);
     session_->Initialize();
     push_promise_[":path"] = "/bar";
@@ -644,4 +644,4 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseInvalidHost) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

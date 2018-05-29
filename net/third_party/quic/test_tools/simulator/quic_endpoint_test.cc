@@ -15,7 +15,7 @@ using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::Return;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 const QuicBandwidth kDefaultBandwidth =
@@ -197,4 +197,4 @@ TEST_F(QuicEndpointTest, Competition) {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

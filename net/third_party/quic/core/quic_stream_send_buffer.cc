@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -159,7 +159,7 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
     is_disjoint =
         bytes_acked_.Empty() || offset >= bytes_acked_.rbegin()->max();
   }
-  if (is_disjoint || bytes_acked_.IsDisjoint(Interval<QuicStreamOffset>(
+  if (is_disjoint || bytes_acked_.IsDisjoint(net::Interval<QuicStreamOffset>(
                          offset, offset + data_length))) {
     // Optimization for the typical case, when all data is newly acked.
     if (stream_bytes_outstanding_ < data_length) {
@@ -311,4 +311,4 @@ size_t QuicStreamSendBuffer::size() const {
   return buffered_slices_.size();
 }
 
-}  // namespace net
+}  // namespace quic

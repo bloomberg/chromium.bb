@@ -123,7 +123,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,
                                       NULL,
-                                      QUIC_VERSION_UNSUPPORTED,
+                                      quic::QUIC_VERSION_UNSUPPORTED,
                                       std::string(),
                                       HostPortPair("host", 80),
                                       session_->http_auth_cache(),

@@ -11,7 +11,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/platform/api/quic_test_random.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 void Randomize(QuicHttpFrameHeader* p, QuicTestRandomBase* rng) {
@@ -106,4 +106,4 @@ bool FrameCanHaveHpackPayload(const QuicHttpFrameHeader& header) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

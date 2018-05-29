@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_max_stream_id_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicMaxStreamIdFrame::QuicMaxStreamIdFrame() {}
 
@@ -18,4 +18,4 @@ std::ostream& operator<<(std::ostream& os, const QuicMaxStreamIdFrame& frame) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

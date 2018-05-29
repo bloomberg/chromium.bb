@@ -7,7 +7,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicTestUtilsTest : public QuicTest {};
@@ -48,4 +48,4 @@ TEST_F(QuicTestUtilsTest, SimpleRandomStability) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

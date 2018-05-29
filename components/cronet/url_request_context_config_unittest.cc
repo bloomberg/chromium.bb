@@ -91,10 +91,10 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
   // Check Quic Connection options.
-  net::QuicTagVector quic_connection_options;
-  quic_connection_options.push_back(net::kTIME);
-  quic_connection_options.push_back(net::kTBBR);
-  quic_connection_options.push_back(net::kREJ);
+  quic::QuicTagVector quic_connection_options;
+  quic_connection_options.push_back(quic::kTIME);
+  quic_connection_options.push_back(quic::kTBBR);
+  quic_connection_options.push_back(quic::kREJ);
   EXPECT_EQ(quic_connection_options, params->quic_connection_options);
 
   // Check Custom QUIC User Agent Id.
@@ -403,15 +403,15 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  net::QuicTagVector connection_options;
-  connection_options.push_back(net::kTIME);
-  connection_options.push_back(net::kTBBR);
-  connection_options.push_back(net::kREJ);
+  quic::QuicTagVector connection_options;
+  connection_options.push_back(quic::kTIME);
+  connection_options.push_back(quic::kTBBR);
+  connection_options.push_back(quic::kREJ);
   EXPECT_EQ(connection_options, params->quic_connection_options);
 
-  net::QuicTagVector client_connection_options;
-  client_connection_options.push_back(net::kTBBR);
-  client_connection_options.push_back(net::k1RTT);
+  quic::QuicTagVector client_connection_options;
+  client_connection_options.push_back(quic::kTBBR);
+  client_connection_options.push_back(quic::k1RTT);
   EXPECT_EQ(client_connection_options, params->quic_client_connection_options);
 }
 

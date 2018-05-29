@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_alarm.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 
-namespace net {
+namespace quic {
 
 class QuicBufferedPacketStore;
 
@@ -28,6 +28,6 @@ class QuicBufferedPacketStorePeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_BUFFERED_PACKET_STORE_PEER_H_

@@ -6,7 +6,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 PacketFilter::PacketFilter(Simulator* simulator, string name, Endpoint* input)
@@ -37,4 +37,4 @@ void PacketFilter::SetTxPort(ConstrainedPortInterface* port) {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

@@ -15,7 +15,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 // We know that >= GCC 4.8 and Clang have a __uint128_t intrinsic. Other
@@ -321,4 +321,4 @@ bool QuicUtils::IsIetfPacketHeader(uint8_t first_byte) {
          !(first_byte & FLAGS_DEMULTIPLEXING_BIT);
 }
 
-}  // namespace net
+}  // namespace quic

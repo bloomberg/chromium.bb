@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/impl/quic_test_random_impl.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 using QuicTestRandomBase = QuicTestRandomBaseImpl;
@@ -20,6 +20,6 @@ using QuicTestRandomBase = QuicTestRandomBaseImpl;
 using QuicTestRandom = QuicTestRandomImpl;
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_TEST_RANDOM_H_

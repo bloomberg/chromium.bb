@@ -15,7 +15,7 @@
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -457,4 +457,4 @@ TEST_F(GeneralLossAlgorithmTest, IncreaseThresholdUponSpuriousLoss) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

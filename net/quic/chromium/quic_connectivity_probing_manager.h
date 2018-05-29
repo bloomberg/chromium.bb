@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
     // of |socket|, |writer| and |reader| for |network| to delegate.
     virtual void OnProbeNetworkSucceeded(
         NetworkChangeNotifier::NetworkHandle network,
-        const QuicSocketAddress& self_address,
+        const quic::QuicSocketAddress& self_address,
         std::unique_ptr<DatagramClientSocket> socket,
         std::unique_ptr<QuicChromiumPacketWriter> writer,
         std::unique_ptr<QuicChromiumPacketReader> reader) = 0;
@@ -43,7 +43,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
     // written by the |writer|.
     virtual bool OnSendConnectivityProbingPacket(
         QuicChromiumPacketWriter* writer,
-        const QuicSocketAddress& peer_address) = 0;
+        const quic::QuicSocketAddress& peer_address) = 0;
   };
 
   QuicConnectivityProbingManager(Delegate* delegate,
@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   // probing packet response is received from the peer by |reader| or final
   // time out.
   void StartProbing(NetworkChangeNotifier::NetworkHandle network,
-                    const QuicSocketAddress& peer_address,
+                    const quic::QuicSocketAddress& peer_address,
                     std::unique_ptr<DatagramClientSocket> socket,
                     std::unique_ptr<QuicChromiumPacketWriter> writer,
                     std::unique_ptr<QuicChromiumPacketReader> reader,
@@ -78,13 +78,14 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
 
   // Called when a connectivity probing packet has been received from
   // |peer_address| on a socket with |self_address|.
-  void OnConnectivityProbingReceived(const QuicSocketAddress& self_address,
-                                     const QuicSocketAddress& peer_address);
+  void OnConnectivityProbingReceived(
+      const quic::QuicSocketAddress& self_address,
+      const quic::QuicSocketAddress& peer_address);
 
   // Returns true if the manager is currently probing |network| to
   // |peer_address|.
   bool IsUnderProbing(NetworkChangeNotifier::NetworkHandle network,
-                      const QuicSocketAddress& peer_address) {
+                      const quic::QuicSocketAddress& peer_address) {
     return (network == network_ && peer_address == peer_address_);
   }
 
@@ -110,7 +111,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   // NetworkChangeNotifier::kInvalidNetwork when probing results has been
   // delivered to |delegate_|.
   NetworkChangeNotifier::NetworkHandle network_;
-  QuicSocketAddress peer_address_;
+  quic::QuicSocketAddress peer_address_;
 
   std::unique_ptr<DatagramClientSocket> socket_;
   std::unique_ptr<QuicChromiumPacketWriter> writer_;

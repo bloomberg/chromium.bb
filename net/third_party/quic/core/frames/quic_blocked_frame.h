@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 
-namespace net {
+namespace quic {
 
 // The BLOCKED frame is used to indicate to the remote endpoint that this
 // endpoint believes itself to be flow-control blocked but otherwise ready to
@@ -39,6 +39,6 @@ struct QUIC_EXPORT_PRIVATE QuicBlockedFrame : public QuicControlFrame {
   QuicStreamOffset offset;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_BLOCKED_FRAME_H_

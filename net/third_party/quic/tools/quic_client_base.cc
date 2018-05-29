@@ -15,7 +15,7 @@
 using base::StringToInt;
 using std::string;
 
-namespace net {
+namespace quic {
 
 QuicClientBase::NetworkHelper::~NetworkHelper() = default;
 
@@ -304,4 +304,4 @@ QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
   return QuicRandom::GetInstance()->RandUint64();
 }
 
-}  // namespace net
+}  // namespace quic

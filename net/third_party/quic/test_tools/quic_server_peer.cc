@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_packet_reader.h"
 #include "net/third_party/quic/tools/quic_server.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -29,4 +29,4 @@ void QuicServerPeer::SetReader(QuicServer* server, QuicPacketReader* reader) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

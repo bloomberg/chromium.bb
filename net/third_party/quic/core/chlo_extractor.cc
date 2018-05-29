@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -212,4 +212,4 @@ bool ChloExtractor::Extract(const QuicEncryptedPacket& packet,
   return visitor.found_chlo() || visitor.chlo_contains_tags();
 }
 
-}  // namespace net
+}  // namespace quic

@@ -12,7 +12,7 @@
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -103,6 +103,6 @@ class ImmediateGoAwaySession : public QuicSimpleServerSession {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_TEST_SERVER_H_

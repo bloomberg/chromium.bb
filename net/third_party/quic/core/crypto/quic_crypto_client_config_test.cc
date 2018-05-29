@@ -17,7 +17,7 @@
 
 using testing::StartsWith;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -182,7 +182,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
-  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
   MockRandom rand;
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
@@ -217,7 +217,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
-  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
   MockRandom rand;
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
@@ -248,7 +248,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCIDNoEXPY) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
-  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
   MockRandom rand;
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
@@ -276,7 +276,7 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params(
       new QuicCryptoNegotiatedParameters);
   CryptoHandshakeMessage msg;
-  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
   MockRandom rand;
   config.FillInchoateClientHello(server_id, QuicVersionMax(), &state, &rand,
                                  /* demand_x509_proof= */ true, params, &msg);
@@ -296,7 +296,7 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
   QuicString error_details;
   MockRandom rand;
   CryptoHandshakeMessage chlo;
-  QuicServerId server_id("www.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
   config.FillClientHello(server_id, kConnectionId, QuicVersionMax(), &state,
                          QuicWallTime::Zero(), &rand,
                          nullptr,  // channel_id_key
@@ -341,14 +341,15 @@ TEST_F(QuicCryptoClientConfigTest, InitializeFrom) {
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
                                 TlsClientHandshaker::CreateSslCtx());
   QuicServerId canonical_server_id("www.google.com", 443,
-                                   PRIVACY_MODE_DISABLED);
+                                   net::PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
       config.LookupOrCreate(canonical_server_id);
   // TODO(rch): Populate other fields of |state|.
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
 
-  QuicServerId other_server_id("mail.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId other_server_id("mail.google.com", 443,
+                               net::PRIVACY_MODE_DISABLED);
   config.InitializeFrom(other_server_id, canonical_server_id, &config);
   QuicCryptoClientConfig::CachedState* other =
       config.LookupOrCreate(other_server_id);
@@ -363,8 +364,9 @@ TEST_F(QuicCryptoClientConfigTest, Canonical) {
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
                                 TlsClientHandshaker::CreateSslCtx());
   config.AddCanonicalSuffix(".google.com");
-  QuicServerId canonical_id1("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  QuicServerId canonical_id2("mail.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId canonical_id1("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
+  QuicServerId canonical_id2("mail.google.com", 443,
+                             net::PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
       config.LookupOrCreate(canonical_id1);
   // TODO(rch): Populate other fields of |state|.
@@ -380,7 +382,7 @@ TEST_F(QuicCryptoClientConfigTest, Canonical) {
   EXPECT_EQ(state->certs(), other->certs());
   EXPECT_EQ(1u, other->generation_counter());
 
-  QuicServerId different_id("mail.google.org", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId different_id("mail.google.org", 443, net::PRIVACY_MODE_DISABLED);
   EXPECT_TRUE(config.LookupOrCreate(different_id)->IsEmpty());
 }
 
@@ -388,8 +390,9 @@ TEST_F(QuicCryptoClientConfigTest, CanonicalNotUsedIfNotValid) {
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
                                 TlsClientHandshaker::CreateSslCtx());
   config.AddCanonicalSuffix(".google.com");
-  QuicServerId canonical_id1("www.google.com", 443, PRIVACY_MODE_DISABLED);
-  QuicServerId canonical_id2("mail.google.com", 443, PRIVACY_MODE_DISABLED);
+  QuicServerId canonical_id1("www.google.com", 443, net::PRIVACY_MODE_DISABLED);
+  QuicServerId canonical_id2("mail.google.com", 443,
+                             net::PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
       config.LookupOrCreate(canonical_id1);
   // TODO(rch): Populate other fields of |state|.
@@ -407,7 +410,7 @@ TEST_F(QuicCryptoClientConfigTest, ClearCachedStates) {
   // Create two states on different origins.
   struct TestCase {
     TestCase(const QuicString& host, QuicCryptoClientConfig* config)
-        : server_id(host, 443, PRIVACY_MODE_DISABLED),
+        : server_id(host, 443, net::PRIVACY_MODE_DISABLED),
           state(config->LookupOrCreate(server_id)) {
       // TODO(rch): Populate other fields of |state|.
       CryptoHandshakeMessage scfg;
@@ -604,4 +607,4 @@ TEST_F(QuicCryptoClientConfigTest, ServerNonceinSHLO) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -75,12 +75,17 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
 };
 
 }  // namespace
+}  // namespace test
+}  // namespace
 
+namespace quic {
+namespace test {
 namespace crypto_test_utils {
 
-std::unique_ptr<ProofSource> ProofSourceForTesting() {
-  std::unique_ptr<ProofSourceChromium> source(new ProofSourceChromium());
-  base::FilePath certs_dir = GetTestCertsDirectory();
+std::unique_ptr<quic::ProofSource> ProofSourceForTesting() {
+  std::unique_ptr<net::ProofSourceChromium> source(
+      new net::ProofSourceChromium());
+  base::FilePath certs_dir = net::GetTestCertsDirectory();
   CHECK(source->Initialize(
       certs_dir.AppendASCII("quic-chain.pem"),
       certs_dir.AppendASCII("quic-leaf-cert.key"),
@@ -88,23 +93,25 @@ std::unique_ptr<ProofSource> ProofSourceForTesting() {
   return std::move(source);
 }
 
-std::unique_ptr<ProofVerifier> ProofVerifierForTesting() {
+std::unique_ptr<quic::ProofVerifier> ProofVerifierForTesting() {
   // TODO(rch): use a real cert verifier?
-  std::unique_ptr<MockCertVerifier> cert_verifier(new MockCertVerifier());
+  std::unique_ptr<net::MockCertVerifier> cert_verifier(
+      new net::MockCertVerifier());
   net::CertVerifyResult verify_result;
   verify_result.verified_cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "quic-chain.pem");
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "quic-chain.pem");
   cert_verifier->AddResultForCertAndHost(verify_result.verified_cert.get(),
-                                         "test.example.com", verify_result, OK);
-  return std::make_unique<TestProofVerifierChromium>(
-      std::move(cert_verifier), std::make_unique<TransportSecurityState>(),
-      std::make_unique<MultiLogCTVerifier>(),
-      std::make_unique<DefaultCTPolicyEnforcer>(), "quic-root.pem");
+                                         "test.example.com", verify_result,
+                                         net::OK);
+  return std::make_unique<net::test::TestProofVerifierChromium>(
+      std::move(cert_verifier), std::make_unique<net::TransportSecurityState>(),
+      std::make_unique<net::MultiLogCTVerifier>(),
+      std::make_unique<net::DefaultCTPolicyEnforcer>(), "quic-root.pem");
 }
 
-ProofVerifyContext* ProofVerifyContextForTesting() {
-  return new ProofVerifyContextChromium(/*cert_verify_flags=*/0,
-                                        NetLogWithSource());
+quic::ProofVerifyContext* ProofVerifyContextForTesting() {
+  return new net::ProofVerifyContextChromium(/*cert_verify_flags=*/0,
+                                             net::NetLogWithSource());
 }
 
 }  // namespace crypto_test_utils

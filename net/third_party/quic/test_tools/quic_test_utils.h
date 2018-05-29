@@ -39,7 +39,7 @@
 // For external QUIC, EXPECT_QUIC_BUG should be #defined to EXPECT_DFATAL.
 #define EXPECT_QUIC_BUG EXPECT_DFATAL
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -1078,6 +1078,6 @@ QuicStreamId GetNthClientInitiatedStreamId(QuicTransportVersion version, int n);
 QuicStreamId GetNthServerInitiatedStreamId(QuicTransportVersion version, int n);
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_

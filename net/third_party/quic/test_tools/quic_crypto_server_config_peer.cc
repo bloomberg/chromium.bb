@@ -10,7 +10,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
@@ -161,4 +161,4 @@ uint32_t QuicCryptoServerConfigPeer::source_address_token_lifetime_secs() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

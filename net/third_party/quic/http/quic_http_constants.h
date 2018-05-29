@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // TODO(jamessynge): create http2_simple_types for types similar to
 // spdy::SpdyStreamId, but not for structures like QuicHttpFrameHeader. Then
@@ -257,6 +257,6 @@ class QuicHttpSettingsInfo {
   static constexpr uint32_t MaximumMaxFrameSize() { return (1 << 24) - 1; }
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_QUIC_HTTP_CONSTANTS_H_

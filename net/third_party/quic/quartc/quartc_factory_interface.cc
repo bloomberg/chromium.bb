@@ -4,9 +4,9 @@
 
 #include "net/third_party/quic/quartc/quartc_factory_interface.h"
 
-namespace net {
+namespace quic {
 
 QuartcFactoryInterface::QuartcSessionConfig::QuartcSessionConfig() = default;
 QuartcFactoryInterface::QuartcSessionConfig::~QuartcSessionConfig() = default;
 
-}  // namespace net
+}  // namespace quic

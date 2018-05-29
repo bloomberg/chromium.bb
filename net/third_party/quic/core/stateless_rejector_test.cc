@@ -23,7 +23,7 @@
 #include "net/third_party/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -287,4 +287,4 @@ TEST_P(StatelessRejectorTest, AcceptChlo) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

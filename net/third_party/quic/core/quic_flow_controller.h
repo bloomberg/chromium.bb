@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicFlowControllerPeer;
@@ -199,6 +199,6 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
   DISALLOW_COPY_AND_ASSIGN(QuicFlowController);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_FLOW_CONTROLLER_H_

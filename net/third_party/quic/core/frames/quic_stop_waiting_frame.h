@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicStopWaitingFrame {
   QuicStopWaitingFrame();
@@ -24,6 +24,6 @@ struct QUIC_EXPORT_PRIVATE QuicStopWaitingFrame {
   QuicPacketNumber least_unacked;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_STOP_WAITING_FRAME_H_

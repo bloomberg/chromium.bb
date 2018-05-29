@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/quic_connection_stats.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -143,4 +143,4 @@ TEST_P(QuicReceivedPacketManagerTest, LimitAckRanges) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

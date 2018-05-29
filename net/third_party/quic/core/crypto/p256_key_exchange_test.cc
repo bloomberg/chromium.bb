@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class P256KeyExchangeTest : public QuicTest {};
@@ -42,4 +42,4 @@ TEST_F(P256KeyExchangeTest, SharedKey) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

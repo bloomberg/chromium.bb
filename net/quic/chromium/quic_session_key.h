@@ -10,7 +10,8 @@
 
 namespace net {
 
-// The key used to identify sessions. Includes the QuicServerId and socket tag.
+// The key used to identify sessions. Includes the quic::QuicServerId and socket
+// tag.
 class QUIC_EXPORT_PRIVATE QuicSessionKey {
  public:
   QuicSessionKey() = default;
@@ -21,7 +22,8 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
                  uint16_t port,
                  PrivacyMode privacy_mode,
                  const SocketTag& socket_tag);
-  QuicSessionKey(const QuicServerId& server_id, const SocketTag& socket_tag);
+  QuicSessionKey(const quic::QuicServerId& server_id,
+                 const SocketTag& socket_tag);
   ~QuicSessionKey() = default;
 
   // Needed to be an element of std::set.
@@ -32,14 +34,14 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
 
   PrivacyMode privacy_mode() const { return server_id_.privacy_mode(); }
 
-  const QuicServerId& server_id() const { return server_id_; }
+  const quic::QuicServerId& server_id() const { return server_id_; }
 
   SocketTag socket_tag() const { return socket_tag_; }
 
   size_t EstimateMemoryUsage() const;
 
  private:
-  QuicServerId server_id_;
+  quic::QuicServerId server_id_;
   SocketTag socket_tag_;
 };
 

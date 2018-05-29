@@ -9,13 +9,13 @@
 
 #include "net/third_party/quic/platform/impl/quic_estimate_memory_usage_impl.h"
 
-namespace net {
+namespace quic {
 
 template <class T>
 size_t QuicEstimateMemoryUsage(const T& object) {
   return QuicEstimateMemoryUsageImpl(object);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_ESTIMATE_MEMORY_USAGE_H_

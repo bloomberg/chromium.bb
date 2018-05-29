@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quic/platform/impl/quic_pcc_sender_impl.h"
 
-namespace net {
+namespace quic {
 
 // Interface for creating a PCC SendAlgorithmInterface
 SendAlgorithmInterface* CreatePccSender(
@@ -23,6 +23,6 @@ SendAlgorithmInterface* CreatePccSender(
                              initial_congestion_window, max_congestion_window);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_PCC_SENDER_H_

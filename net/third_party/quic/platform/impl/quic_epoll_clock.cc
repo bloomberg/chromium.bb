@@ -6,9 +6,9 @@
 
 #include "net/tools/epoll_server/epoll_server.h"
 
-namespace net {
+namespace quic {
 
-QuicEpollClock::QuicEpollClock(EpollServer* epoll_server)
+QuicEpollClock::QuicEpollClock(net::EpollServer* epoll_server)
     : epoll_server_(epoll_server) {}
 
 QuicEpollClock::~QuicEpollClock() = default;
@@ -34,4 +34,4 @@ QuicTime QuicEpollClock::ConvertWallTimeToQuicTime(
          QuicTime::Delta::FromMicroseconds(walltime.ToUNIXMicroseconds());
 }
 
-}  // namespace net
+}  // namespace quic

@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/limited_mtu_test_writer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 LimitedMtuTestWriter::LimitedMtuTestWriter(QuicByteCount mtu) : mtu_(mtu) {}
@@ -27,4 +27,4 @@ WriteResult LimitedMtuTestWriter::WritePacket(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

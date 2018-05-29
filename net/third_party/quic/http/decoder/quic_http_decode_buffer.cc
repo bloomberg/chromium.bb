@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/http/decoder/quic_http_decode_buffer.h"
 
-namespace net {
+namespace quic {
 
 #ifndef NDEBUG
 // These are part of validating during tests that there is at most one
@@ -57,4 +57,4 @@ void QuicHttpDecodeBufferSubset::DebugTearDown() {
 }
 #endif
 
-}  // namespace net
+}  // namespace quic

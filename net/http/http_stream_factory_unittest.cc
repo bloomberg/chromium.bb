@@ -887,7 +887,7 @@ class MockQuicData {
 
   ~MockQuicData() = default;
 
-  void AddRead(std::unique_ptr<QuicEncryptedPacket> packet) {
+  void AddRead(std::unique_ptr<quic::QuicEncryptedPacket> packet) {
     reads_.push_back(
         MockRead(ASYNC, packet->data(), packet->length(), packet_number_++));
     packets_.push_back(std::move(packet));
@@ -897,7 +897,7 @@ class MockQuicData {
     reads_.push_back(MockRead(mode, rv, packet_number_++));
   }
 
-  void AddWrite(std::unique_ptr<QuicEncryptedPacket> packet) {
+  void AddWrite(std::unique_ptr<quic::QuicEncryptedPacket> packet) {
     writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
                                 packet_number_++));
     packets_.push_back(std::move(packet));
@@ -909,7 +909,7 @@ class MockQuicData {
   }
 
  private:
-  std::vector<std::unique_ptr<QuicEncryptedPacket>> packets_;
+  std::vector<std::unique_ptr<quic::QuicEncryptedPacket>> packets_;
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   size_t packet_number_;
@@ -2335,7 +2335,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 class HttpStreamFactoryBidirectionalQuicTest
     : public TestWithScopedTaskEnvironment,
       public ::testing::WithParamInterface<
-          std::tuple<QuicTransportVersion, bool>> {
+          std::tuple<quic::QuicTransportVersion, bool>> {
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : default_url_(kDefaultUrl),
@@ -2345,18 +2345,18 @@ class HttpStreamFactoryBidirectionalQuicTest
                              0,
                              &clock_,
                              "www.example.org",
-                             Perspective::IS_CLIENT,
+                             quic::Perspective::IS_CLIENT,
                              client_headers_include_h2_stream_dependency_),
         server_packet_maker_(version_,
                              0,
                              &clock_,
                              "www.example.org",
-                             Perspective::IS_SERVER,
+                             quic::Perspective::IS_SERVER,
                              false),
         random_generator_(0),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults) {
-    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+    clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
   }
 
   void TearDown() override { session_.reset(); }
@@ -2370,7 +2370,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   void Initialize() {
     params_.enable_quic = true;
     params_.quic_supported_versions =
-        test::SupportedTransportVersions(version_);
+        quic::test::SupportedTransportVersions(version_);
     params_.quic_headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 
@@ -2387,7 +2387,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     verify_details_.cert_verify_result.is_issued_by_known_root = true;
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
     crypto_client_stream_factory_.set_handshake_mode(
-        MockCryptoClientStream::CONFIRM_HANDSHAKE);
+        quic::MockCryptoClientStream::CONFIRM_HANDSHAKE);
     session_context.cert_verifier = &cert_verifier_;
     session_context.quic_crypto_client_stream_factory =
         &crypto_client_stream_factory_;
@@ -2424,19 +2424,19 @@ class HttpStreamFactoryBidirectionalQuicTest
 
   const GURL default_url_;
 
-  QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return test::GetNthClientInitiatedStreamId(version_, n);
+  quic::QuicStreamId GetNthClientInitiatedStreamId(int n) {
+    return quic::test::GetNthClientInitiatedStreamId(version_, n);
   }
 
  private:
-  const QuicTransportVersion version_;
+  const quic::QuicTransportVersion version_;
   const bool client_headers_include_h2_stream_dependency_;
-  MockClock clock_;
+  quic::MockClock clock_;
   test::QuicTestPacketMaker client_packet_maker_;
   test::QuicTestPacketMaker server_packet_maker_;
   MockTaggingClientSocketFactory socket_factory_;
   std::unique_ptr<HttpNetworkSession> session_;
-  test::MockRandom random_generator_;
+  quic::test::MockRandom random_generator_;
   MockCertVerifier cert_verifier_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
@@ -2453,8 +2453,9 @@ class HttpStreamFactoryBidirectionalQuicTest
 INSTANTIATE_TEST_CASE_P(
     VersionIncludeStreamDependencySequence,
     HttpStreamFactoryBidirectionalQuicTest,
-    ::testing::Combine(::testing::ValuesIn(AllSupportedTransportVersions()),
-                       ::testing::Bool()));
+    ::testing::Combine(
+        ::testing::ValuesIn(quic::AllSupportedTransportVersions()),
+        ::testing::Bool()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {
@@ -2462,7 +2463,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  QuicStreamOffset header_stream_offset = 0;
+  quic::QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
@@ -2593,7 +2594,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  QuicStreamOffset header_stream_offset = 0;
+  quic::QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
@@ -2873,7 +2874,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  QuicStreamOffset header_stream_offset = 0;
+  quic::QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
@@ -2892,7 +2893,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
 
   // Prepare mock QUIC data for a second session establishment.
   MockQuicData mock_quic_data2;
-  QuicStreamOffset header_stream_offset2 = 0;
+  quic::QuicStreamOffset header_stream_offset2 = 0;
   mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset2));
   mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(

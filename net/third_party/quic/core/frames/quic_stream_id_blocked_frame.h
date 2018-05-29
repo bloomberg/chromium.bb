@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 
-namespace net {
+namespace quic {
 
 // IETF format STREAM_ID_BLOCKED frame.
 // The sender uses this to inform the peer that the sender wished to
@@ -27,6 +27,6 @@ struct QUIC_EXPORT_PRIVATE QuicStreamIdBlockedFrame : public QuicControlFrame {
   QuicStreamId stream_id;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_STREAM_ID_BLOCKED_FRAME_H_

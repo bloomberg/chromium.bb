@@ -10,7 +10,7 @@
 
 #include "net/third_party/quic/http/quic_http_constants.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Returns a vector of all supported frame types.
@@ -37,6 +37,6 @@ uint8_t KnownFlagsMaskForFrameType(QuicHttpFrameType type);
 uint8_t InvalidFlagMaskForFrameType(QuicHttpFrameType type);
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_QUIC_HTTP_CONSTANTS_TEST_UTIL_H_

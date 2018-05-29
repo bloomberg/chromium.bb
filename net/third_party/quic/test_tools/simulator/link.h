@@ -11,7 +11,7 @@
 #include "net/third_party/quic/test_tools/simulator/actor.h"
 #include "net/third_party/quic/test_tools/simulator/port.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // A reliable simplex link between two endpoints with constrained bandwidth.  A
@@ -86,6 +86,6 @@ class SymmetricLink {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_LINK_H_

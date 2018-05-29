@@ -18,16 +18,17 @@ QuicSimplePerConnectionPacketWriter::QuicSimplePerConnectionPacketWriter(
 QuicSimplePerConnectionPacketWriter::~QuicSimplePerConnectionPacketWriter() =
     default;
 
-QuicPacketWriter* QuicSimplePerConnectionPacketWriter::shared_writer() const {
+quic::QuicPacketWriter* QuicSimplePerConnectionPacketWriter::shared_writer()
+    const {
   return shared_writer_;
 }
 
-WriteResult QuicSimplePerConnectionPacketWriter::WritePacket(
+quic::WriteResult QuicSimplePerConnectionPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const QuicIpAddress& self_address,
-    const QuicSocketAddress& peer_address,
-    PerPacketOptions* options) {
+    const quic::QuicIpAddress& self_address,
+    const quic::QuicSocketAddress& peer_address,
+    quic::PerPacketOptions* options) {
   return shared_writer_->WritePacketWithCallback(
       buffer, buf_len, self_address, peer_address, options,
       base::Bind(&QuicSimplePerConnectionPacketWriter::OnWriteComplete,
@@ -46,14 +47,15 @@ void QuicSimplePerConnectionPacketWriter::SetWritable() {
   shared_writer_->SetWritable();
 }
 
-void QuicSimplePerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
-  if (connection_ && result.status == WRITE_STATUS_ERROR) {
+void QuicSimplePerConnectionPacketWriter::OnWriteComplete(
+    quic::WriteResult result) {
+  if (connection_ && result.status == quic::WRITE_STATUS_ERROR) {
     connection_->OnWriteError(result.error_code);
   }
 }
 
-QuicByteCount QuicSimplePerConnectionPacketWriter::GetMaxPacketSize(
-    const QuicSocketAddress& peer_address) const {
+quic::QuicByteCount QuicSimplePerConnectionPacketWriter::GetMaxPacketSize(
+    const quic::QuicSocketAddress& peer_address) const {
   return shared_writer_->GetMaxPacketSize(peer_address);
 }
 

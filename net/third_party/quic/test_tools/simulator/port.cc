@@ -6,7 +6,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 Packet::Packet()
@@ -20,4 +20,4 @@ Endpoint::Endpoint(Simulator* simulator, string name)
     : Actor(simulator, name) {}
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

@@ -12,7 +12,7 @@
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
-namespace net {
+namespace quic {
 
 // static
 const char ChannelIDVerifier::kContextStr[] = "QUIC ChannelID";
@@ -86,4 +86,4 @@ bool ChannelIDVerifier::VerifyRaw(QuicStringPiece key,
   return ECDSA_do_verify(digest, sizeof(digest), &sig, ecdsa_key.get()) == 1;
 }
 
-}  // namespace net
+}  // namespace quic

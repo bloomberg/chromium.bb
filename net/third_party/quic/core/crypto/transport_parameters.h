@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_versions.h"
 
-namespace net {
+namespace quic {
 
 // TransportParameters contains parameters for QUIC's transport layer that are
 // indicated during the TLS handshake. This struct is a mirror of the struct in
@@ -83,6 +83,6 @@ QUIC_EXPORT_PRIVATE bool ParseTransportParameters(const uint8_t* in,
                                                   Perspective perspective,
                                                   TransportParameters* out);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_TRANSPORT_PARAMETERS_H_

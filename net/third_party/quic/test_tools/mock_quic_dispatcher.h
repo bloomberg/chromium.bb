@@ -13,7 +13,7 @@
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class MockQuicDispatcher : public QuicSimpleDispatcher {
@@ -39,6 +39,6 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_QUIC_DISPATCHER_H_

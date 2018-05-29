@@ -7,7 +7,7 @@
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 // The estimated system alarm granularity.
@@ -183,4 +183,4 @@ QuicBandwidth PacingSender::PacingRate(QuicByteCount bytes_in_flight) const {
   return sender_->PacingRate(bytes_in_flight);
 }
 
-}  // namespace net
+}  // namespace quic

@@ -10,7 +10,7 @@
 #include "net/third_party/quic/http/quic_http_structures_test_util.h"
 #include "net/third_party/quic/http/tools/quic_http_random_decoder_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -22,4 +22,4 @@ void QuicHttpFrameDecoderStatePeer::set_frame_header(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

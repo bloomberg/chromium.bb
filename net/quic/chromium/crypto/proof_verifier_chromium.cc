@@ -39,7 +39,7 @@ ProofVerifyDetailsChromium::~ProofVerifyDetailsChromium() {}
 ProofVerifyDetailsChromium::ProofVerifyDetailsChromium(
     const ProofVerifyDetailsChromium&) = default;
 
-ProofVerifyDetails* ProofVerifyDetailsChromium::Clone() const {
+quic::ProofVerifyDetails* ProofVerifyDetailsChromium::Clone() const {
   ProofVerifyDetailsChromium* other = new ProofVerifyDetailsChromium;
   other->cert_verify_result = cert_verify_result;
   other->ct_verify_result = ct_verify_result;
@@ -47,8 +47,8 @@ ProofVerifyDetails* ProofVerifyDetailsChromium::Clone() const {
 }
 
 // A Job handles the verification of a single proof.  It is owned by the
-// ProofVerifier. If the verification can not complete synchronously, it
-// will notify the ProofVerifier upon completion.
+// quic::ProofVerifier. If the verification can not complete synchronously, it
+// will notify the quic::ProofVerifier upon completion.
 class ProofVerifierChromium::Job {
  public:
   Job(ProofVerifierChromium* proof_verifier,
@@ -60,30 +60,30 @@ class ProofVerifierChromium::Job {
       const NetLogWithSource& net_log);
   ~Job();
 
-  // Starts the proof verification.  If |QUIC_PENDING| is returned, then
+  // Starts the proof verification.  If |quic::QUIC_PENDING| is returned, then
   // |callback| will be invoked asynchronously when the verification completes.
-  QuicAsyncStatus VerifyProof(
+  quic::QuicAsyncStatus VerifyProof(
       const std::string& hostname,
       const uint16_t port,
       const std::string& server_config,
-      QuicTransportVersion quic_version,
-      QuicStringPiece chlo_hash,
+      quic::QuicTransportVersion quic_version,
+      quic::QuicStringPiece chlo_hash,
       const std::vector<std::string>& certs,
       const std::string& cert_sct,
       const std::string& signature,
       std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* verify_details,
-      std::unique_ptr<ProofVerifierCallback> callback);
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback);
 
-  // Starts the certificate chain verification of |certs|.  If |QUIC_PENDING| is
-  // returned, then |callback| will be invoked asynchronously when the
-  // verification completes.
-  QuicAsyncStatus VerifyCertChain(
+  // Starts the certificate chain verification of |certs|.  If
+  // |quic::QUIC_PENDING| is returned, then |callback| will be invoked
+  // asynchronously when the verification completes.
+  quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
       const std::vector<std::string>& certs,
       std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* verify_details,
-      std::unique_ptr<ProofVerifierCallback> callback);
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback);
 
  private:
   enum State {
@@ -93,17 +93,18 @@ class ProofVerifierChromium::Job {
   };
 
   // Convert |certs| to |cert_|(X509Certificate). Returns true if successful.
-  bool GetX509Certificate(const std::vector<string>& certs,
-                          std::string* error_details,
-                          std::unique_ptr<ProofVerifyDetails>* verify_details);
+  bool GetX509Certificate(
+      const std::vector<string>& certs,
+      std::string* error_details,
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details);
 
   // Start the cert verification.
-  QuicAsyncStatus VerifyCert(
+  quic::QuicAsyncStatus VerifyCert(
       const string& hostname,
       const uint16_t port,
       std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* verify_details,
-      std::unique_ptr<ProofVerifierCallback> callback);
+      std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+      std::unique_ptr<quic::ProofVerifierCallback> callback);
 
   int DoLoop(int last_io_result);
   void OnIOComplete(int result);
@@ -111,8 +112,8 @@ class ProofVerifierChromium::Job {
   int DoVerifyCertComplete(int result);
 
   bool VerifySignature(const std::string& signed_data,
-                       QuicTransportVersion quic_version,
-                       QuicStringPiece chlo_hash,
+                       quic::QuicTransportVersion quic_version,
+                       quic::QuicStringPiece chlo_hash,
                        const std::string& signature,
                        const std::string& cert);
 
@@ -134,7 +135,7 @@ class ProofVerifierChromium::Job {
   // |port| specifies the target port for the connection.
   uint16_t port_;
 
-  std::unique_ptr<ProofVerifierCallback> callback_;
+  std::unique_ptr<quic::ProofVerifierCallback> callback_;
   std::unique_ptr<ProofVerifyDetailsChromium> verify_details_;
   std::string error_details_;
 
@@ -193,18 +194,18 @@ ProofVerifierChromium::Job::~Job() {
   }
 }
 
-QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
+quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const string& hostname,
     const uint16_t port,
     const string& server_config,
-    QuicTransportVersion quic_version,
-    QuicStringPiece chlo_hash,
+    quic::QuicTransportVersion quic_version,
+    quic::QuicStringPiece chlo_hash,
     const std::vector<string>& certs,
     const std::string& cert_sct,
     const string& signature,
     std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+    std::unique_ptr<quic::ProofVerifierCallback> callback) {
   DCHECK(error_details);
   DCHECK(verify_details);
   DCHECK(callback);
@@ -214,14 +215,14 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
   if (STATE_NONE != next_state_) {
     *error_details = "Certificate is already set and VerifyProof has begun";
     DLOG(DFATAL) << *error_details;
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
   }
 
   verify_details_.reset(new ProofVerifyDetailsChromium);
 
   // Converts |certs| to |cert_|.
   if (!GetX509Certificate(certs, error_details, verify_details))
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
 
   // Note that this is a completely synchronous operation: The CT Log Verifier
   // gets all the data it needs for SCT verification and does not do any
@@ -239,7 +240,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
     *verify_details = std::move(verify_details_);
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
   }
 
   DCHECK(enforce_policy_checking_);
@@ -247,12 +248,12 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
                     std::move(callback));
 }
 
-QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
+quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
     const string& hostname,
     const std::vector<string>& certs,
     std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+    std::unique_ptr<quic::ProofVerifierCallback> callback) {
   DCHECK(error_details);
   DCHECK(verify_details);
   DCHECK(callback);
@@ -262,14 +263,14 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
   if (STATE_NONE != next_state_) {
     *error_details = "Certificate is already set and VerifyCertChain has begun";
     DLOG(DFATAL) << *error_details;
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
   }
 
   verify_details_.reset(new ProofVerifyDetailsChromium);
 
   // Converts |certs| to |cert_|.
   if (!GetX509Certificate(certs, error_details, verify_details))
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
 
   enforce_policy_checking_ = false;
   // |port| is not needed because |enforce_policy_checking_| is false.
@@ -280,7 +281,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
 bool ProofVerifierChromium::Job::GetX509Certificate(
     const std::vector<string>& certs,
     std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details) {
+    std::unique_ptr<quic::ProofVerifyDetails>* verify_details) {
   if (certs.empty()) {
     *error_details = "Failed to create certificate chain. Certs are empty.";
     DLOG(WARNING) << *error_details;
@@ -290,9 +291,9 @@ bool ProofVerifierChromium::Job::GetX509Certificate(
   }
 
   // Convert certs to X509Certificate.
-  std::vector<QuicStringPiece> cert_pieces(certs.size());
+  std::vector<quic::QuicStringPiece> cert_pieces(certs.size());
   for (unsigned i = 0; i < certs.size(); i++) {
-    cert_pieces[i] = QuicStringPiece(certs[i]);
+    cert_pieces[i] = quic::QuicStringPiece(certs[i]);
   }
   cert_ = X509Certificate::CreateFromDERCertChain(cert_pieces);
   if (!cert_.get()) {
@@ -305,12 +306,12 @@ bool ProofVerifierChromium::Job::GetX509Certificate(
   return true;
 }
 
-QuicAsyncStatus ProofVerifierChromium::Job::VerifyCert(
+quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCert(
     const string& hostname,
     const uint16_t port,
     std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+    std::unique_ptr<quic::ProofVerifierCallback> callback) {
   hostname_ = hostname;
   port_ = port;
 
@@ -318,14 +319,14 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyCert(
   switch (DoLoop(OK)) {
     case OK:
       *verify_details = std::move(verify_details_);
-      return QUIC_SUCCESS;
+      return quic::QUIC_SUCCESS;
     case ERR_IO_PENDING:
       callback_ = std::move(callback);
-      return QUIC_PENDING;
+      return quic::QUIC_PENDING;
     default:
       *error_details = error_details_;
       *verify_details = std::move(verify_details_);
-      return QUIC_FAILURE;
+      return quic::QUIC_FAILURE;
   }
 }
 
@@ -355,9 +356,9 @@ int ProofVerifierChromium::Job::DoLoop(int last_result) {
 void ProofVerifierChromium::Job::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
-    std::unique_ptr<ProofVerifierCallback> callback(std::move(callback_));
-    // Callback expects ProofVerifyDetails not ProofVerifyDetailsChromium.
-    std::unique_ptr<ProofVerifyDetails> verify_details(
+    std::unique_ptr<quic::ProofVerifierCallback> callback(std::move(callback_));
+    // Callback expects quic::ProofVerifyDetails not ProofVerifyDetailsChromium.
+    std::unique_ptr<quic::ProofVerifyDetails> verify_details(
         std::move(verify_details_));
     callback->Run(rv == OK, error_details_, &verify_details);
     // Will delete |this|.
@@ -509,8 +510,8 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
 bool ProofVerifierChromium::Job::VerifySignature(
     const string& signed_data,
-    QuicTransportVersion quic_version,
-    QuicStringPiece chlo_hash,
+    quic::QuicTransportVersion quic_version,
+    quic::QuicStringPiece chlo_hash,
     const string& signature,
     const string& cert) {
   size_t size_bits;
@@ -537,7 +538,8 @@ bool ProofVerifierChromium::Job::VerifySignature(
     return false;
   }
 
-  verifier.VerifyUpdate(base::as_bytes(base::make_span(kProofSignatureLabel)));
+  verifier.VerifyUpdate(
+      base::as_bytes(base::make_span(quic::kProofSignatureLabel)));
   uint32_t len = chlo_hash.length();
   verifier.VerifyUpdate(base::as_bytes(base::make_span(&len, 1)));
   verifier.VerifyUpdate(base::as_bytes(base::make_span(chlo_hash)));
@@ -570,22 +572,22 @@ ProofVerifierChromium::ProofVerifierChromium(
 ProofVerifierChromium::~ProofVerifierChromium() {
 }
 
-QuicAsyncStatus ProofVerifierChromium::VerifyProof(
+quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const std::string& hostname,
     const uint16_t port,
     const std::string& server_config,
-    QuicTransportVersion quic_version,
-    QuicStringPiece chlo_hash,
+    quic::QuicTransportVersion quic_version,
+    quic::QuicStringPiece chlo_hash,
     const std::vector<std::string>& certs,
     const std::string& cert_sct,
     const std::string& signature,
-    const ProofVerifyContext* verify_context,
+    const quic::ProofVerifyContext* verify_context,
     std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+    std::unique_ptr<quic::ProofVerifierCallback> callback) {
   if (!verify_context) {
     *error_details = "Missing context";
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
   }
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
@@ -593,26 +595,26 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
       this, cert_verifier_, ct_policy_enforcer_, transport_security_state_,
       cert_transparency_verifier_, chromium_context->cert_verify_flags,
       chromium_context->net_log);
-  QuicAsyncStatus status = job->VerifyProof(
+  quic::QuicAsyncStatus status = job->VerifyProof(
       hostname, port, server_config, quic_version, chlo_hash, certs, cert_sct,
       signature, error_details, verify_details, std::move(callback));
-  if (status == QUIC_PENDING) {
+  if (status == quic::QUIC_PENDING) {
     Job* job_ptr = job.get();
     active_jobs_[job_ptr] = std::move(job);
   }
   return status;
 }
 
-QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
+quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     const std::string& hostname,
     const std::vector<std::string>& certs,
-    const ProofVerifyContext* verify_context,
+    const quic::ProofVerifyContext* verify_context,
     std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
+    std::unique_ptr<quic::ProofVerifierCallback> callback) {
   if (!verify_context) {
     *error_details = "Missing context";
-    return QUIC_FAILURE;
+    return quic::QUIC_FAILURE;
   }
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
@@ -620,9 +622,9 @@ QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
       this, cert_verifier_, ct_policy_enforcer_, transport_security_state_,
       cert_transparency_verifier_, chromium_context->cert_verify_flags,
       chromium_context->net_log);
-  QuicAsyncStatus status = job->VerifyCertChain(
+  quic::QuicAsyncStatus status = job->VerifyCertChain(
       hostname, certs, error_details, verify_details, std::move(callback));
-  if (status == QUIC_PENDING) {
+  if (status == quic::QUIC_PENDING) {
     Job* job_ptr = job.get();
     active_jobs_[job_ptr] = std::move(job);
   }

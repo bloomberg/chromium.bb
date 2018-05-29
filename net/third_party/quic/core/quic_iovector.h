@@ -10,7 +10,7 @@
 #include "net/base/iovec.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Convenience wrapper to wrap an iovec array and the total length, which must
 // be less than or equal to the actual total length of the iovecs.
@@ -23,6 +23,6 @@ struct QUIC_EXPORT_PRIVATE QuicIOVector {
   const size_t total_length;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_IOVECTOR_H_

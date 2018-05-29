@@ -15,7 +15,7 @@ using testing::_;
 using testing::HasSubstr;
 using testing::Message;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class RttStatsTest : public QuicTest {
@@ -228,4 +228,4 @@ TEST_F(RttStatsTest, ResetAfterConnectionMigrations) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

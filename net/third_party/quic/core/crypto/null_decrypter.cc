@@ -13,7 +13,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 NullDecrypter::NullDecrypter(Perspective perspective)
     : perspective_(perspective) {}
@@ -121,4 +121,4 @@ QuicUint128 NullDecrypter::ComputeHash(QuicTransportVersion version,
   return correct_hash;
 }
 
-}  // namespace net
+}  // namespace quic

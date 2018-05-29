@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicCryptoHandshaker
     : public CryptoFramerVisitorInterface {
@@ -45,6 +45,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoHandshaker
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoHandshaker);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CRYPTO_HANDSHAKER_H_

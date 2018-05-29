@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Interface for retreiving the current time.
 class QUIC_EXPORT_PRIVATE QuicClock {
@@ -41,6 +41,6 @@ class QUIC_EXPORT_PRIVATE QuicClock {
   }
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_CLOCK_H_

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/quartc/quartc_session.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -237,4 +237,4 @@ std::unique_ptr<QuartcFactoryInterface> CreateQuartcFactory(
       new QuartcFactory(factory_config));
 }
 
-}  // namespace net
+}  // namespace quic

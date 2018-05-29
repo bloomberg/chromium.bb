@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_flow_controller.h"
 #include "net/third_party/quic/core/quic_packets.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -65,4 +65,4 @@ QuicByteCount QuicFlowControllerPeer::WindowUpdateThreshold(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

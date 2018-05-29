@@ -15,7 +15,7 @@
 #include "net/third_party/quic/quartc/quartc_session_interface.h"
 #include "net/third_party/quic/quartc/quartc_task_runner_interface.h"
 
-namespace net {
+namespace quic {
 
 // Algorithm to use for congestion control.
 enum class QuartcCongestionControl {
@@ -102,6 +102,6 @@ struct QuartcFactoryConfig {
 std::unique_ptr<QuartcFactoryInterface> CreateQuartcFactory(
     const QuartcFactoryConfig& factory_config);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_FACTORY_INTERFACE_H_

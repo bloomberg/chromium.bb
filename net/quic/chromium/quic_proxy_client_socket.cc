@@ -115,7 +115,7 @@ void QuicProxyClientSocket::Disconnect() {
 
   next_state_ = STATE_DISCONNECTED;
 
-  stream_->Reset(QUIC_STREAM_CANCELLED);
+  stream_->Reset(quic::QUIC_STREAM_CANCELLED);
 }
 
 bool QuicProxyClientSocket::IsConnected() const {
@@ -221,7 +221,7 @@ int QuicProxyClientSocket::Write(
                                 buf->data());
 
   int rv = stream_->WriteStreamData(
-      QuicStringPiece(buf->data(), buf_len), false,
+      quic::QuicStringPiece(buf->data(), buf_len), false,
       base::Bind(&QuicProxyClientSocket::OnWriteComplete,
                  weak_factory_.GetWeakPtr()));
   if (rv == OK)

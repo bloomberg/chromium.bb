@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 
-namespace net {
+namespace quic {
 
 char* SimpleBufferAllocator::New(size_t size) {
   return new char[size];
@@ -18,4 +18,4 @@ void SimpleBufferAllocator::Delete(char* buffer) {
   delete[] buffer;
 }
 
-}  // namespace net
+}  // namespace quic

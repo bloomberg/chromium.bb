@@ -10,7 +10,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -443,4 +443,4 @@ QuartcStream* QuartcSession::ActivateDataStream(
   return raw;
 }
 
-}  // namespace net
+}  // namespace quic

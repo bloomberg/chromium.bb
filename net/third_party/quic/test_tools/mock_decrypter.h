@@ -15,7 +15,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // A MockDecrypter is a QuicDecrypter that does no validation of
 // the given ciphertext and returns it untouched, ignoring the
@@ -50,6 +50,6 @@ class MockDecrypter : public QuicDecrypter {
   DISALLOW_COPY_AND_ASSIGN(MockDecrypter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_DECRYPTER_H_

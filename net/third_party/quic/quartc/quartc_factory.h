@@ -13,7 +13,7 @@
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 #include "net/third_party/quic/quartc/quartc_task_runner_interface.h"
 
-namespace net {
+namespace quic {
 
 // Implements the QuartcFactoryInterface to create the instances of
 // QuartcSessionInterface. Implements the QuicAlarmFactory to create alarms
@@ -58,6 +58,6 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuartcFactoryInterface,
   SimpleBufferAllocator buffer_allocator_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_FACTORY_H_

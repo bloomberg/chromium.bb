@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 
-namespace net {
+namespace quic {
 
 QuicCryptoNegotiatedParameters::QuicCryptoNegotiatedParameters()
     : key_exchange(0),
@@ -38,4 +38,4 @@ QuicCryptoConfig::QuicCryptoConfig()
 
 QuicCryptoConfig::~QuicCryptoConfig() {}
 
-}  // namespace net
+}  // namespace quic

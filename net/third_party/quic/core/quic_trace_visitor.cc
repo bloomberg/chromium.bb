@@ -8,7 +8,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 quic_trace::EncryptionLevel EncryptionLevelToProto(EncryptionLevel level) {
   switch (level) {
@@ -290,4 +290,4 @@ void QuicTraceVisitor::PopulateTransportState(
                                  .ToBitsPerSecond());
 }
 
-};  // namespace net
+};  // namespace quic

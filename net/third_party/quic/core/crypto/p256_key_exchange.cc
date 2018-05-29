@@ -15,7 +15,7 @@
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-namespace net {
+namespace quic {
 
 P256KeyExchange::P256KeyExchange(bssl::UniquePtr<EC_KEY> private_key,
                                  const uint8_t* public_key)
@@ -119,4 +119,4 @@ QuicTag P256KeyExchange::tag() const {
   return kP256;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -63,7 +63,7 @@
 
 #define QUIC_PLOG_IMPL(severity) DVLOG(1)
 
-namespace net {
+namespace quic {
 template <typename T>
 NET_EXPORT_PRIVATE inline std::ostream& operator<<(std::ostream& out,
                                                    const std::vector<T>& v) {
@@ -75,6 +75,6 @@ NET_EXPORT_PRIVATE inline std::ostream& operator<<(std::ostream& out,
   }
   return out << "]";
 }
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_LOGGING_IMPL_H_

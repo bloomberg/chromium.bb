@@ -32,7 +32,7 @@ using testing::InSequence;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -1223,4 +1223,4 @@ TEST_F(QuicPacketGeneratorTest,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

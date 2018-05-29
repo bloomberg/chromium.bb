@@ -19,33 +19,44 @@
 namespace net {
 
 class NetLogWithSource;
+}  // namespace net
+namespace quic {
 class QuicAlarmFactory;
+}  // namespace quic
+namespace net {
 class QuicChromiumClientSession;
+}  // namespace net
+namespace quic {
 class QuicClientPushPromiseIndex;
+
 class QuicConfig;
+
 class QuicCryptoClientConfig;
+}  // namespace quic
+namespace net {
 class QuicStreamFactory;
 
 namespace test {
 
 class QuicStreamFactoryPeer {
  public:
-  static const QuicConfig* GetConfig(QuicStreamFactory* factory);
+  static const quic::QuicConfig* GetConfig(QuicStreamFactory* factory);
 
-  static QuicCryptoClientConfig* GetCryptoConfig(QuicStreamFactory* factory);
+  static quic::QuicCryptoClientConfig* GetCryptoConfig(
+      QuicStreamFactory* factory);
 
   static bool HasActiveSession(QuicStreamFactory* factory,
-                               const QuicServerId& server_id);
+                               const quic::QuicServerId& server_id);
 
   static bool HasActiveJob(QuicStreamFactory* factory,
-                           const QuicServerId& server_id);
+                           const quic::QuicServerId& server_id);
 
   static bool HasActiveCertVerifierJob(QuicStreamFactory* factory,
-                                       const QuicServerId& server_id);
+                                       const quic::QuicServerId& server_id);
 
   static QuicChromiumClientSession* GetActiveSession(
       QuicStreamFactory* factory,
-      const QuicServerId& server_id);
+      const quic::QuicServerId& server_id);
 
   static bool IsLiveSession(QuicStreamFactory* factory,
                             QuicChromiumClientSession* session);
@@ -53,41 +64,44 @@ class QuicStreamFactoryPeer {
   static void SetTaskRunner(QuicStreamFactory* factory,
                             base::SequencedTaskRunner* task_runner);
 
-  static QuicTime::Delta GetPingTimeout(QuicStreamFactory* factory);
+  static quic::QuicTime::Delta GetPingTimeout(QuicStreamFactory* factory);
 
   static bool GetRaceCertVerification(QuicStreamFactory* factory);
 
   static void SetRaceCertVerification(QuicStreamFactory* factory,
                                       bool race_cert_verification);
 
-  static QuicAsyncStatus StartCertVerifyJob(QuicStreamFactory* factory,
-                                            const QuicServerId& server_id,
-                                            int cert_verify_flags,
-                                            const NetLogWithSource& net_log);
+  static quic::QuicAsyncStatus StartCertVerifyJob(
+      QuicStreamFactory* factory,
+      const quic::QuicServerId& server_id,
+      int cert_verify_flags,
+      const NetLogWithSource& net_log);
 
   static void SetYieldAfterPackets(QuicStreamFactory* factory,
                                    int yield_after_packets);
 
   static void SetYieldAfterDuration(QuicStreamFactory* factory,
-                                    QuicTime::Delta yield_after_duration);
+                                    quic::QuicTime::Delta yield_after_duration);
 
   static size_t GetNumberOfActiveJobs(QuicStreamFactory* factory,
-                                      const QuicServerId& server_id);
+                                      const quic::QuicServerId& server_id);
 
-  static bool CryptoConfigCacheIsEmpty(QuicStreamFactory* factory,
-                                       const QuicServerId& quic_server_id);
+  static bool CryptoConfigCacheIsEmpty(
+      QuicStreamFactory* factory,
+      const quic::QuicServerId& quic_server_id);
 
   // Creates a dummy QUIC server config and caches it.
   static void CacheDummyServerConfig(QuicStreamFactory* factory,
-                                     const QuicServerId& quic_server_id);
+                                     const quic::QuicServerId& quic_server_id);
 
-  static QuicClientPushPromiseIndex* GetPushPromiseIndex(
+  static quic::QuicClientPushPromiseIndex* GetPushPromiseIndex(
       QuicStreamFactory* factory);
 
   static int GetNumPushStreamsCreated(QuicStreamFactory* factory);
 
-  static void SetAlarmFactory(QuicStreamFactory* factory,
-                              std::unique_ptr<QuicAlarmFactory> alarm_factory);
+  static void SetAlarmFactory(
+      QuicStreamFactory* factory,
+      std::unique_ptr<quic::QuicAlarmFactory> alarm_factory);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFactoryPeer);

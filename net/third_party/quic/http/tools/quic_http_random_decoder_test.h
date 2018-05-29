@@ -29,7 +29,7 @@
 #include "net/third_party/quic/platform/api/quic_test_random.h"  // IWYU pragma: export
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Some helpers.
@@ -274,6 +274,6 @@ class QuicHttpRandomDecoderTest : public QuicTest {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_TOOLS_QUIC_HTTP_RANDOM_DECODER_TEST_H_

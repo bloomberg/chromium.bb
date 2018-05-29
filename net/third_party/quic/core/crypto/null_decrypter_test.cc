@@ -7,7 +7,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class NullDecrypterTest : public QuicTestWithParam<bool> {};
@@ -121,4 +121,4 @@ TEST_F(NullDecrypterTest, ShortInput) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

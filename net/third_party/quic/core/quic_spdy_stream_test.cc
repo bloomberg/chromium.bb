@@ -30,7 +30,7 @@ using testing::Return;
 using testing::StrictMock;
 using testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -1064,4 +1064,4 @@ TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 
-namespace net {
+namespace quic {
 
 // A class to process each incoming packet.
 class ProcessPacketInterface {
@@ -20,6 +20,6 @@ class ProcessPacketInterface {
                              const QuicReceivedPacket& packet) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PROCESS_PACKET_INTERFACE_H_

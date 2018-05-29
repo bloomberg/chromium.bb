@@ -19,7 +19,7 @@
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // TODO(ianswett): A number of theses tests were written with the assumption of
@@ -826,4 +826,4 @@ TEST_F(TcpCubicSenderBytesTest, LimitCwndIncreaseInCongestionAvoidance) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

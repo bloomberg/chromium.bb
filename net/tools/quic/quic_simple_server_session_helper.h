@@ -12,23 +12,24 @@ namespace net {
 
 // Simple helper for server sessions which generates a new random
 // connection ID for stateless rejects.
-class QuicSimpleServerSessionHelper : public QuicCryptoServerStream::Helper {
+class QuicSimpleServerSessionHelper
+    : public quic::QuicCryptoServerStream::Helper {
  public:
-  explicit QuicSimpleServerSessionHelper(QuicRandom* random);
+  explicit QuicSimpleServerSessionHelper(quic::QuicRandom* random);
 
   ~QuicSimpleServerSessionHelper() override;
 
-  QuicConnectionId GenerateConnectionIdForReject(
-      QuicConnectionId /*connection_id*/) const override;
+  quic::QuicConnectionId GenerateConnectionIdForReject(
+      quic::QuicConnectionId /*connection_id*/) const override;
 
-  bool CanAcceptClientHello(const CryptoHandshakeMessage& message,
-                            const QuicSocketAddress& client_address,
-                            const QuicSocketAddress& peer_address,
-                            const QuicSocketAddress& self_address,
+  bool CanAcceptClientHello(const quic::CryptoHandshakeMessage& message,
+                            const quic::QuicSocketAddress& client_address,
+                            const quic::QuicSocketAddress& peer_address,
+                            const quic::QuicSocketAddress& self_address,
                             std::string* error_details) const override;
 
  private:
-  QuicRandom* random_;  // Unowned.
+  quic::QuicRandom* random_;  // Unowned.
 };
 
 }  // namespace net

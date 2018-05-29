@@ -13,7 +13,7 @@
 #include "net/third_party/quic/test_tools/quic_buffered_packet_store_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 
 typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
 typedef QuicBufferedPacketStore::EnqueuePacketResult EnqueuePacketResult;
@@ -422,4 +422,4 @@ TEST_F(QuicBufferedPacketStoreTest, DiscardPacketsEmpty) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

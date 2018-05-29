@@ -18,7 +18,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 namespace test {
 class QuicHttpGoAwayQuicHttpPayloadDecoderPeer;
 }  // namespace test
@@ -64,6 +64,6 @@ class QUIC_EXPORT_PRIVATE QuicHttpGoAwayQuicHttpPayloadDecoder {
   PayloadState payload_state_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_PAYLOAD_DECODERS_QUIC_HTTP_GOAWAY_PAYLOAD_DECODER_H_

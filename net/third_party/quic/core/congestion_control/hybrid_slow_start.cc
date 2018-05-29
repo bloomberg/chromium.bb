@@ -8,7 +8,7 @@
 
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 // Note(pwestin): the magic clamping numbers come from the original code in
 // tcp_cubic.c.
@@ -103,4 +103,4 @@ bool HybridSlowStart::ShouldExitSlowStart(QuicTime::Delta latest_rtt,
          hystart_found_ != NOT_FOUND;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -9,7 +9,7 @@
 #include "third_party/boringssl/src/include/openssl/aead.h"
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -34,4 +34,4 @@ uint32_t ChaCha20Poly1305TlsDecrypter::cipher_id() const {
   return TLS1_CK_CHACHA20_POLY1305_SHA256;
 }
 
-}  // namespace net
+}  // namespace quic

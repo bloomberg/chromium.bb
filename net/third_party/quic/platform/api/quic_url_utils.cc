@@ -5,7 +5,7 @@
 #include "net/third_party/quic/platform/api/quic_url_utils.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // static
 QuicString QuicUrlUtils::HostName(QuicStringPiece url) {
@@ -24,4 +24,4 @@ QuicString QuicUrlUtils::GetPushPromiseUrl(QuicStringPiece scheme,
   return QuicUrlUtilsImpl::GetPushPromiseUrl(scheme, authority, path);
 }
 
-}  // namespace net
+}  // namespace quic

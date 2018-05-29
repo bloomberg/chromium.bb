@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 #include "net/third_party/quic/core/quic_error_codes.h"
 
-namespace net {
+namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicStopSendingFrame : public QuicControlFrame {
   QuicStopSendingFrame();
@@ -26,6 +26,6 @@ struct QUIC_EXPORT_PRIVATE QuicStopSendingFrame : public QuicControlFrame {
   QuicApplicationErrorCode application_error_code;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_STOP_SENDING_FRAME_H_

@@ -16,7 +16,7 @@
 
 // Definitions of constant values used throughout the QUIC code.
 
-namespace net {
+namespace quic {
 
 // Simple time constants.
 const uint64_t kNumSecondsPerMinute = 60;
@@ -212,6 +212,6 @@ const QuicStreamId kMaxQuicStreamId = 0xffffffff;
 // Number of bytes reserved for packet header type.
 const size_t kPacketHeaderTypeSize = 1;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONSTANTS_H_

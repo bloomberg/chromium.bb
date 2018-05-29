@@ -6,7 +6,7 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 Simulator::Simulator()
@@ -144,4 +144,4 @@ void Simulator::HandleNextScheduledActor() {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

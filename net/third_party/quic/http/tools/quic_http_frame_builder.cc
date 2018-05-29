@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 QuicHttpFrameBuilder::QuicHttpFrameBuilder(QuicHttpFrameType type,
@@ -178,4 +178,4 @@ size_t QuicHttpFrameBuilder::SetPayloadLength() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/mock_clock.h"
 
-namespace net {
+namespace quic {
 
 MockClock::MockClock() : now_(QuicTime::Zero()) {}
 
@@ -32,4 +32,4 @@ base::TimeTicks MockClock::NowInTicks() const {
                      (now_ - QuicTime::Zero()).ToMicroseconds());
 }
 
-}  // namespace net
+}  // namespace quic

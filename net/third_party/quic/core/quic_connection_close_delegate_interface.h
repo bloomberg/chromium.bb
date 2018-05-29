@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // Pure virtual class to close connection on unrecoverable errors.
 class QUIC_EXPORT_PRIVATE QuicConnectionCloseDelegateInterface {
@@ -23,6 +23,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionCloseDelegateInterface {
                                     ConnectionCloseSource source) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONNECTION_CLOSE_DELEGATE_INTERFACE_H_

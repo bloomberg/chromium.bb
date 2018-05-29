@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 QuicServerSessionBase::QuicServerSessionBase(
     const QuicConfig& config,
@@ -242,4 +242,4 @@ int32_t QuicServerSessionBase::BandwidthToCachedParameterBytesPerSecond(
               : static_cast<int32_t>(bytes_per_second));
 }
 
-}  // namespace net
+}  // namespace quic

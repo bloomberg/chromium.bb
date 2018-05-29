@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 
-namespace net {
+namespace quic {
 
 class QuicSpdySession;
 
@@ -91,6 +91,6 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
   DISALLOW_COPY_AND_ASSIGN(QuicHeadersStream);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_HEADERS_STREAM_H_

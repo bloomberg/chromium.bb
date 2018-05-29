@@ -15,7 +15,7 @@
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-namespace net {
+namespace quic {
 
 // An implementation of QuicCryptoServerStream::HandshakerDelegate which uses
 // TLS 1.3 for the crypto handshake protocol.
@@ -157,6 +157,6 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   DISALLOW_COPY_AND_ASSIGN(TlsServerHandshaker);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_TLS_SERVER_HANDSHAKER_H_

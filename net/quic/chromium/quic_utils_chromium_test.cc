@@ -14,14 +14,15 @@ namespace test {
 namespace {
 
 TEST(QuicUtilsChromiumTest, ParseQuicConnectionOptions) {
-  QuicTagVector empty_options = ParseQuicConnectionOptions("");
+  quic::QuicTagVector empty_options = ParseQuicConnectionOptions("");
   EXPECT_TRUE(empty_options.empty());
 
-  QuicTagVector parsed_options = ParseQuicConnectionOptions("TIMER,TBBR,REJ");
-  QuicTagVector expected_options;
-  expected_options.push_back(kTIME);
-  expected_options.push_back(kTBBR);
-  expected_options.push_back(kREJ);
+  quic::QuicTagVector parsed_options =
+      ParseQuicConnectionOptions("TIMER,TBBR,REJ");
+  quic::QuicTagVector expected_options;
+  expected_options.push_back(quic::kTIME);
+  expected_options.push_back(quic::kTBBR);
+  expected_options.push_back(quic::kREJ);
   EXPECT_EQ(expected_options, parsed_options);
 }
 

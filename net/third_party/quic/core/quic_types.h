@@ -14,7 +14,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 typedef uint16_t QuicPacketLength;
 typedef uint32_t QuicControlFrameId;
@@ -456,6 +456,6 @@ enum QuicPacketHeaderTypeFlags : uint8_t {
   FLAGS_LONG_HEADER = 1 << 7,
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TYPES_H_

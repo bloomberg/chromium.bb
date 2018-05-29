@@ -6,17 +6,17 @@
 
 #include "net/third_party/quic/core/quic_buffer_allocator.h"
 
-namespace net {
+namespace quic {
 
 QuicMemSliceImpl::QuicMemSliceImpl() = default;
 
 QuicMemSliceImpl::QuicMemSliceImpl(QuicBufferAllocator* /*allocator*/,
                                    size_t length) {
-  io_buffer_ = new IOBuffer(length);
+  io_buffer_ = new net::IOBuffer(length);
   length_ = length;
 }
 
-QuicMemSliceImpl::QuicMemSliceImpl(scoped_refptr<IOBuffer> io_buffer,
+QuicMemSliceImpl::QuicMemSliceImpl(scoped_refptr<net::IOBuffer> io_buffer,
                                    size_t length)
     : io_buffer_(std::move(io_buffer)), length_(length) {}
 
@@ -46,4 +46,4 @@ const char* QuicMemSliceImpl::data() const {
   return io_buffer_->data();
 }
 
-}  // namespace net
+}  // namespace quic

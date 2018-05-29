@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 #include "net/third_party/quic/core/quic_error_codes.h"
 
-namespace net {
+namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicRstStreamFrame : public QuicControlFrame {
   QuicRstStreamFrame();
@@ -45,6 +45,6 @@ struct QUIC_EXPORT_PRIVATE QuicRstStreamFrame : public QuicControlFrame {
   QuicStreamOffset byte_offset;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_RST_STREAM_FRAME_H_

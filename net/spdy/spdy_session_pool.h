@@ -56,16 +56,17 @@ class NET_EXPORT SpdySessionPool
  public:
   typedef base::TimeTicks (*TimeFunc)(void);
 
-  SpdySessionPool(HostResolver* host_resolver,
-                  SSLConfigService* ssl_config_service,
-                  HttpServerProperties* http_server_properties,
-                  TransportSecurityState* transport_security_state,
-                  const QuicTransportVersionVector& quic_supported_versions,
-                  bool enable_ping_based_connection_checking,
-                  bool support_ietf_format_quic_altsvc,
-                  size_t session_max_recv_window_size,
-                  const spdy::SettingsMap& initial_settings,
-                  SpdySessionPool::TimeFunc time_func);
+  SpdySessionPool(
+      HostResolver* host_resolver,
+      SSLConfigService* ssl_config_service,
+      HttpServerProperties* http_server_properties,
+      TransportSecurityState* transport_security_state,
+      const quic::QuicTransportVersionVector& quic_supported_versions,
+      bool enable_ping_based_connection_checking,
+      bool support_ietf_format_quic_altsvc,
+      size_t session_max_recv_window_size,
+      const spdy::SettingsMap& initial_settings,
+      SpdySessionPool::TimeFunc time_func);
   ~SpdySessionPool() override;
 
   // In the functions below, a session is "available" if this pool has
@@ -258,7 +259,7 @@ class NET_EXPORT SpdySessionPool
   HostResolver* const resolver_;
 
   // Versions of QUIC which may be used.
-  const QuicTransportVersionVector quic_supported_versions_;
+  const quic::QuicTransportVersionVector quic_supported_versions_;
 
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
   bool enable_sending_initial_data_;

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicString QuicBandwidth::ToDebugValue() const {
   if (bits_per_second_ < 80000) {
@@ -37,4 +37,4 @@ QuicString QuicBandwidth::ToDebugValue() const {
                           bytes_per_second_with_unit, unit);
 }
 
-}  // namespace net
+}  // namespace quic

@@ -7,21 +7,21 @@
 namespace net {
 
 QuicChromiumConnectionHelper::QuicChromiumConnectionHelper(
-    const QuicClock* clock,
-    QuicRandom* random_generator)
+    const quic::QuicClock* clock,
+    quic::QuicRandom* random_generator)
     : clock_(clock), random_generator_(random_generator) {}
 
 QuicChromiumConnectionHelper::~QuicChromiumConnectionHelper() {}
 
-const QuicClock* QuicChromiumConnectionHelper::GetClock() const {
+const quic::QuicClock* QuicChromiumConnectionHelper::GetClock() const {
   return clock_;
 }
 
-QuicRandom* QuicChromiumConnectionHelper::GetRandomGenerator() {
+quic::QuicRandom* QuicChromiumConnectionHelper::GetRandomGenerator() {
   return random_generator_;
 }
 
-QuicBufferAllocator*
+quic::QuicBufferAllocator*
 QuicChromiumConnectionHelper::GetStreamSendBufferAllocator() {
   return &buffer_allocator_;
 }

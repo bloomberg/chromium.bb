@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 MockQuicDispatcher::MockQuicDispatcher(
@@ -28,4 +28,4 @@ MockQuicDispatcher::MockQuicDispatcher(
 MockQuicDispatcher::~MockQuicDispatcher() {}
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

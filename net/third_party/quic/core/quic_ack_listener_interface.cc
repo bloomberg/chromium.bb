@@ -4,8 +4,8 @@
 
 #include "net/third_party/quic/core/quic_ack_listener_interface.h"
 
-namespace net {
+namespace quic {
 
 QuicAckListenerInterface::~QuicAckListenerInterface() {}
 
-}  // namespace net
+}  // namespace quic

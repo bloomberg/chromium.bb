@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicSpdyClientSessionBase::QuicSpdyClientSessionBase(
     QuicConnection* connection,
@@ -188,4 +188,4 @@ bool QuicSpdyClientSessionBase::ShouldReleaseHeadersStreamSequencerBuffer() {
   return num_active_requests() == 0 && promised_by_id_.empty();
 }
 
-}  // namespace net
+}  // namespace quic

@@ -77,7 +77,7 @@ int32_t GetInt32Param(const std::string& param_name, int32_t default_value) {
 HttpProxySocketParams::HttpProxySocketParams(
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
-    QuicTransportVersion quic_version,
+    quic::QuicTransportVersion quic_version,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     HttpAuthCache* http_auth_cache,
@@ -99,11 +99,12 @@ HttpProxySocketParams::HttpProxySocketParams(
       is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
       traffic_annotation_(traffic_annotation) {
-  // If doing a QUIC proxy, |quic_version| must not be QUIC_VERSION_UNSUPPORTED,
-  // and |ssl_params| must be valid while |transport_params| is null.
-  // Otherwise, |quic_version| must be QUIC_VERSION_UNSUPPORTED, and exactly
-  // one of |transport_params| or |ssl_params| must be set.
-  DCHECK(quic_version_ == QUIC_VERSION_UNSUPPORTED
+  // If doing a QUIC proxy, |quic_version| must not be
+  // quic::QUIC_VERSION_UNSUPPORTED, and |ssl_params| must be valid while
+  // |transport_params| is null. Otherwise, |quic_version| must be
+  // quic::QUIC_VERSION_UNSUPPORTED, and exactly one of |transport_params| or
+  // |ssl_params| must be set.
+  DCHECK(quic_version_ == quic::QUIC_VERSION_UNSUPPORTED
              ? (bool)transport_params != (bool)ssl_params
              : !transport_params && ssl_params);
   // Exactly one of |transport_params_| and |ssl_params_| must be non-null.

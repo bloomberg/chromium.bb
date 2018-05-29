@@ -13,9 +13,9 @@
 #include "net/third_party/quic/core/crypto/crypto_utils.h"
 
 using base::CommandLine;
-using net::HandshakeFailureReason;
-using net::CryptoUtils;
-using net::MAX_FAILURE_REASON;
+using quic::HandshakeFailureReason;
+using quic::CryptoUtils;
+using quic::MAX_FAILURE_REASON;
 
 int main(int argc, char* argv[]) {
   CommandLine::Init(argc, argv);

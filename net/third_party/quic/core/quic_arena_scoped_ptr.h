@@ -17,7 +17,7 @@
 #include "net/third_party/quic/platform/api/quic_aligned.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 template <typename T>
 class QuicArenaScopedPtr {
@@ -204,6 +204,6 @@ QuicArenaScopedPtr<T>::QuicArenaScopedPtr(void* value, ConstructFrom from_arena)
   }
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_ARENA_SCOPED_PTR_H_

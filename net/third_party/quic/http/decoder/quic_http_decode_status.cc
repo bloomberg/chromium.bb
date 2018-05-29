@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 
-namespace net {
+namespace quic {
 
 std::ostream& operator<<(std::ostream& out, QuicHttpDecodeStatus v) {
   switch (v) {
@@ -25,4 +25,4 @@ std::ostream& operator<<(std::ostream& out, QuicHttpDecodeStatus v) {
   return out << "QuicHttpDecodeStatus(" << unknown << ")";
 }
 
-}  // namespace net
+}  // namespace quic

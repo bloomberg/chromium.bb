@@ -16,7 +16,7 @@ using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 using ::testing::ContainerEq;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -425,18 +425,20 @@ void QuicHttpFrameParts::OnFrameSizeError(const QuicHttpFrameHeader& header) {
 void QuicHttpFrameParts::OutputTo(std::ostream& out) const {
   out << "QuicHttpFrameParts{\n  frame_header: " << frame_header << "\n";
   if (!payload.empty()) {
-    out << "  payload=\"" << EscapeQueryParamValue(payload, false) << "\"\n";
+    out << "  payload=\"" << net::EscapeQueryParamValue(payload, false)
+        << "\"\n";
   }
   if (!padding.empty()) {
-    out << "  padding=\"" << EscapeQueryParamValue(padding, false) << "\"\n";
+    out << "  padding=\"" << net::EscapeQueryParamValue(padding, false)
+        << "\"\n";
   }
   if (!altsvc_origin.empty()) {
-    out << "  altsvc_origin=\"" << EscapeQueryParamValue(altsvc_origin, false)
-        << "\"\n";
+    out << "  altsvc_origin=\""
+        << net::EscapeQueryParamValue(altsvc_origin, false) << "\"\n";
   }
   if (!altsvc_value.empty()) {
-    out << "  altsvc_value=\"" << EscapeQueryParamValue(altsvc_value, false)
-        << "\"\n";
+    out << "  altsvc_value=\""
+        << net::EscapeQueryParamValue(altsvc_value, false) << "\"\n";
   }
   if (opt_priority) {
     out << "  priority=" << opt_priority.value() << "\n";
@@ -539,4 +541,4 @@ std::ostream& operator<<(std::ostream& out, const QuicHttpFrameParts& v) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicCryptoClientHandshaker::ChannelIDSourceCallbackImpl::
     ChannelIDSourceCallbackImpl(QuicCryptoClientHandshaker* parent)
@@ -677,7 +677,7 @@ void QuicCryptoClientHandshaker::SetCachedProofValid(
 
 bool QuicCryptoClientHandshaker::RequiresChannelID(
     QuicCryptoClientConfig::CachedState* cached) {
-  if (server_id_.privacy_mode() == PRIVACY_MODE_ENABLED ||
+  if (server_id_.privacy_mode() == net::PRIVACY_MODE_ENABLED ||
       !crypto_config_->channel_id_source()) {
     return false;
   }
@@ -697,4 +697,4 @@ bool QuicCryptoClientHandshaker::RequiresChannelID(
   return false;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -7,7 +7,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_sustained_bandwidth_recorder.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -31,4 +31,4 @@ void QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_stop_sending_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicStopSendingFrame::QuicStopSendingFrame()
     : stream_id(0), application_error_code(0) {}
@@ -24,4 +24,4 @@ std::ostream& operator<<(std::ostream& os, const QuicStopSendingFrame& frame) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

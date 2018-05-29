@@ -20,7 +20,7 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/spdy/core/http2_frame_decoder_adapter.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -625,4 +625,4 @@ void QuicSpdySession::CloseConnectionWithDetails(QuicErrorCode error,
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-}  // namespace net
+}  // namespace quic

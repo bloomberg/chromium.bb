@@ -10,15 +10,17 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 
+namespace quic {}  // namespace quic
 namespace net {
-
 class EpollServer;
+}  // namespace net
+namespace quic {
 
 // Clock to efficiently retrieve an approximately accurate time from an
-// EpollServer.
+// net::EpollServer.
 class QuicEpollClock : public QuicClock {
  public:
-  explicit QuicEpollClock(EpollServer* epoll_server);
+  explicit QuicEpollClock(net::EpollServer* epoll_server);
   ~QuicEpollClock() override;
 
   // Returns the approximate current time as a QuicTime object.
@@ -38,12 +40,12 @@ class QuicEpollClock : public QuicClock {
       const QuicWallTime& walltime) const override;
 
  protected:
-  EpollServer* epoll_server_;
+  net::EpollServer* epoll_server_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicEpollClock);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_EPOLL_CLOCK_H_

@@ -112,7 +112,7 @@ HttpNetworkSession::Params::Params()
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
       enable_quic(false),
-      quic_max_packet_length(kDefaultMaxPacketSize),
+      quic_max_packet_length(quic::kDefaultMaxPacketSize),
       quic_max_server_configs_stored_in_properties(0u),
       quic_enable_socket_recv_optimization(false),
       mark_quic_broken_when_network_blackholes(false),
@@ -120,11 +120,11 @@ HttpNetworkSession::Params::Params()
       support_ietf_format_quic_altsvc(false),
       quic_close_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
-      quic_reduced_ping_timeout_seconds(kPingTimeoutSecs),
+      quic_reduced_ping_timeout_seconds(quic::kPingTimeoutSecs),
       quic_max_time_before_crypto_handshake_seconds(
-          kMaxTimeForCryptoHandshakeSecs),
+          quic::kMaxTimeForCryptoHandshakeSecs),
       quic_max_idle_time_before_crypto_handshake_seconds(
-          kInitialIdleTimeoutSecs),
+          quic::kInitialIdleTimeoutSecs),
       quic_migrate_sessions_on_network_change(false),
       quic_migrate_sessions_early(false),
       quic_migrate_sessions_on_network_change_v2(false),
@@ -144,7 +144,7 @@ HttpNetworkSession::Params::Params()
       enable_channel_id(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
-  quic_supported_versions.push_back(QUIC_VERSION_43);
+  quic_supported_versions.push_back(quic::QUIC_VERSION_43);
 }
 
 HttpNetworkSession::Params::Params(const Params& other) = default;
@@ -202,9 +202,10 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           context.cert_transparency_verifier,
           context.socket_performance_watcher_factory,
           context.quic_crypto_client_stream_factory,
-          context.quic_random ? context.quic_random : QuicRandom::GetInstance(),
+          context.quic_random ? context.quic_random
+                              : quic::QuicRandom::GetInstance(),
           context.quic_clock ? context.quic_clock
-                             : QuicChromiumClock::GetInstance(),
+                             : quic::QuicChromiumClock::GetInstance(),
           params.quic_max_packet_length,
           params.quic_user_agent_id,
           params.quic_max_server_configs_stored_in_properties > 0,
@@ -343,7 +344,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
 
   auto connection_options(std::make_unique<base::ListValue>());
   for (const auto& option : params_.quic_connection_options)
-    connection_options->AppendString(QuicTagToString(option));
+    connection_options->AppendString(quic::QuicTagToString(option));
   dict->Set("connection_options", std::move(connection_options));
 
   auto supported_versions(std::make_unique<base::ListValue>());
@@ -400,7 +401,7 @@ void HttpNetworkSession::CloseAllConnections() {
   normal_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   websocket_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   spdy_session_pool_.CloseCurrentSessions(ERR_ABORTED);
-  quic_stream_factory_.CloseAllSessions(ERR_ABORTED, QUIC_INTERNAL_ERROR);
+  quic_stream_factory_.CloseAllSessions(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR);
 }
 
 void HttpNetworkSession::CloseIdleConnections() {

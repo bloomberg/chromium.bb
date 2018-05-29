@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicChromiumClientSessionPeer;
@@ -237,6 +237,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientHandshaker
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientHandshaker);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CRYPTO_CLIENT_HANDSHAKER_H_

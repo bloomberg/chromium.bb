@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/tools/quic_simple_client_stream.h"
 
-namespace net {
+namespace quic {
 
 void QuicSimpleClientStream::OnDataAvailable() {
   if (!drop_response_body_) {
@@ -26,4 +26,4 @@ void QuicSimpleClientStream::OnDataAvailable() {
   }
 }
 
-}  // namespace net
+}  // namespace quic

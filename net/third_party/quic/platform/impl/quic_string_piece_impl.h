@@ -7,10 +7,10 @@
 
 #include "base/strings/string_piece.h"
 
-namespace net {
+namespace quic {
 
 using QuicStringPieceImpl = base::StringPiece;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_STRING_PIECE_IMPL_H_

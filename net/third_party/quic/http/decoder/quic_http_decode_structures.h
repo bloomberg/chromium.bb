@@ -11,7 +11,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // DoDecode(STRUCTURE* out, QuicHttpDecodeBuffer* b) decodes the structure from
 // start to end, advancing the cursor by STRUCTURE::EncodedSize(). The decode
@@ -37,6 +37,6 @@ QUIC_EXPORT_PRIVATE void DoDecode(QuicHttpWindowUpdateFields* out,
 QUIC_EXPORT_PRIVATE void DoDecode(QuicHttpAltSvcFields* out,
                                   QuicHttpDecodeBuffer* b);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_DECODE_STRUCTURES_H_

@@ -10,7 +10,7 @@
 // using spdy::kV3HighestPriority;
 // using spdy::kV3LowestPriority;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -241,4 +241,4 @@ TEST_P(QuicWriteBlockedListTest, Ceding) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

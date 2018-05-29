@@ -15,7 +15,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 
-namespace net {
+namespace quic {
 
 #define ENDPOINT \
   (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
@@ -297,4 +297,4 @@ void QuicFlowController::SendWindowUpdate() {
   session_->SendWindowUpdate(id_, receive_window_offset_);
 }
 
-}  // namespace net
+}  // namespace quic

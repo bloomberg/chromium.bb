@@ -16,7 +16,7 @@
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -296,4 +296,4 @@ TEST_F(QuicConfigTest, HasClientRequestedIndependentOption) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

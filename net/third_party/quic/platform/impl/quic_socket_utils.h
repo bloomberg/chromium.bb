@@ -19,7 +19,7 @@
 #include "net/third_party/quic/core/quic_bandwidth.h"
 #include "net/third_party/quic/core/quic_types.h"
 
-namespace net {
+namespace quic {
 class QuicIpAddress;
 class QuicSocketAddress;
 
@@ -138,6 +138,6 @@ class QuicSocketUtils {
   DISALLOW_COPY_AND_ASSIGN(QuicSocketUtils);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SOCKET_UTILS_H_

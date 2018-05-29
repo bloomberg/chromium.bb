@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
 
-namespace net {
+namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicNewConnectionIdFrame : public QuicControlFrame {
   QuicNewConnectionIdFrame();
@@ -29,6 +29,6 @@ struct QUIC_EXPORT_PRIVATE QuicNewConnectionIdFrame : public QuicControlFrame {
   QuicUint128 stateless_reset_token;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_NEW_CONNECTION_ID_FRAME_H_

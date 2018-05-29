@@ -29,39 +29,39 @@ namespace net {
 
 class UDPClientSocket;
 
-// An implementation of the QuicClientBase::NetworkHelper based off
+// An implementation of the quic::QuicClientBase::NetworkHelper based off
 // the chromium epoll server.
 class QuicClientMessageLooplNetworkHelper
-    : public QuicClientBase::NetworkHelper,
+    : public quic::QuicClientBase::NetworkHelper,
       public QuicChromiumPacketReader::Visitor {
  public:
   // Create a quic client, which will have events managed by an externally owned
   // EpollServer.
-  QuicClientMessageLooplNetworkHelper(QuicChromiumClock* clock,
-                                      QuicClientBase* client);
+  QuicClientMessageLooplNetworkHelper(quic::QuicChromiumClock* clock,
+                                      quic::QuicClientBase* client);
 
   ~QuicClientMessageLooplNetworkHelper() override;
 
   // QuicChromiumPacketReader::Visitor
   void OnReadError(int result, const DatagramClientSocket* socket) override;
-  bool OnPacket(const QuicReceivedPacket& packet,
-                const QuicSocketAddress& local_address,
-                const QuicSocketAddress& peer_address) override;
+  bool OnPacket(const quic::QuicReceivedPacket& packet,
+                const quic::QuicSocketAddress& local_address,
+                const quic::QuicSocketAddress& peer_address) override;
 
   // From NetworkHelper.
   void RunEventLoop() override;
-  bool CreateUDPSocketAndBind(QuicSocketAddress server_address,
-                              QuicIpAddress bind_to_address,
+  bool CreateUDPSocketAndBind(quic::QuicSocketAddress server_address,
+                              quic::QuicIpAddress bind_to_address,
                               int bind_to_port) override;
   void CleanUpAllUDPSockets() override;
-  QuicSocketAddress GetLatestClientAddress() const override;
-  QuicPacketWriter* CreateQuicPacketWriter() override;
+  quic::QuicSocketAddress GetLatestClientAddress() const override;
+  quic::QuicPacketWriter* CreateQuicPacketWriter() override;
 
  private:
   void StartPacketReaderIfNotStarted();
 
   // Address of the client if the client is connected to the server.
-  QuicSocketAddress client_address_;
+  quic::QuicSocketAddress client_address_;
 
   // UDP socket connected to the server.
   std::unique_ptr<UDPClientSocket> socket_;
@@ -73,8 +73,8 @@ class QuicClientMessageLooplNetworkHelper
 
   bool packet_reader_started_;
 
-  QuicChromiumClock* clock_;
-  QuicClientBase* client_;
+  quic::QuicChromiumClock* clock_;
+  quic::QuicClientBase* client_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientMessageLooplNetworkHelper);
 };

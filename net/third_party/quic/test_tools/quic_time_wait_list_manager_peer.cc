@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/quic_time_wait_list_manager_peer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 bool QuicTimeWaitListManagerPeer::ShouldSendResponse(
@@ -37,4 +37,4 @@ void QuicTimeWaitListManagerPeer::set_clock(QuicTimeWaitListManager* manager,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

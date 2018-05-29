@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_mem_slice_span.h"
 
-namespace net {
+namespace quic {
 
 // Sends and receives data with a particular QUIC stream ID, reliably and
 // in-order. To send/receive data out of order, use separate streams. To
@@ -87,6 +87,6 @@ class QUIC_EXPORT_PRIVATE QuartcStreamInterface {
   virtual void SetDelegate(Delegate* delegate) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_STREAM_INTERFACE_H_

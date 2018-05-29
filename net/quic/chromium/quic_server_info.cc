@@ -32,7 +32,7 @@ void QuicServerInfo::State::Clear() {
   base::STLClearObject(&certs);
 }
 
-QuicServerInfo::QuicServerInfo(const QuicServerId& server_id)
+QuicServerInfo::QuicServerInfo(const quic::QuicServerId& server_id)
     : server_id_(server_id) {}
 
 QuicServerInfo::~QuicServerInfo() {}

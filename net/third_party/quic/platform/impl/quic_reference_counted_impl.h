@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicReferenceCountedImpl
     : public base::RefCountedThreadSafe<QuicReferenceCountedImpl> {
@@ -109,6 +109,6 @@ class QuicReferenceCountedPointerImpl {
   scoped_refptr<T> refptr_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_REFERENCE_COUNTED_IMPL_H_

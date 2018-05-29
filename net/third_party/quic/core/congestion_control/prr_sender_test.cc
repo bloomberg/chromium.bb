@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 namespace {
@@ -120,4 +120,4 @@ TEST_F(PrrSenderTest, BurstLossResultsInSlowStart) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

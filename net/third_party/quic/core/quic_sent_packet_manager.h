@@ -29,7 +29,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicConnectionPeer;
@@ -516,6 +516,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SENT_PACKET_MANAGER_H_

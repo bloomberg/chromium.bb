@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 std::ostream& operator<<(std::ostream& out, QuicHttpFrameDecoder::State v) {
   switch (v) {
@@ -452,4 +452,4 @@ QuicHttpDecodeStatus QuicHttpFrameDecoder::DiscardPayload(
   return QuicHttpDecodeStatus::kDecodeInProgress;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -7,7 +7,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 Actor::Actor(Simulator* simulator, string name)
@@ -28,4 +28,4 @@ void Actor::Unschedule() {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

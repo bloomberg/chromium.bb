@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -187,4 +187,4 @@ void GeneralLossAlgorithm::SpuriousRetransmitDetected(
   } while (proposed_extra_time < extra_time_needed && reordering_shift_ > 0);
 }
 
-}  // namespace net
+}  // namespace quic

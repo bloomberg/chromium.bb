@@ -111,7 +111,7 @@ int InitSocketHandleForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    QuicTransportVersion quic_version,
+    quic::QuicTransportVersion quic_version,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,

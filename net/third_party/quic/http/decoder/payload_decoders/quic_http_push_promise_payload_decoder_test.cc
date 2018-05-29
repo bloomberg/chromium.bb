@@ -20,7 +20,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Provides friend access to an instance of the payload decoder, and also
@@ -144,4 +144,4 @@ TEST_P(QuicHttpPushPromiseQuicHttpPayloadDecoderTest, PaddingTooLong) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

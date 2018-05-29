@@ -6,13 +6,13 @@
 
 #include "net/tools/epoll_server/epoll_server.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
 class QuicEpollAlarm : public QuicAlarm {
  public:
-  QuicEpollAlarm(EpollServer* epoll_server,
+  QuicEpollAlarm(net::EpollServer* epoll_server,
                  QuicArenaScopedPtr<Delegate> delegate)
       : QuicAlarm(std::move(delegate)),
         epoll_server_(epoll_server),
@@ -31,12 +31,12 @@ class QuicEpollAlarm : public QuicAlarm {
   }
 
  private:
-  class EpollAlarmImpl : public EpollAlarm {
+  class EpollAlarmImpl : public net::EpollAlarm {
    public:
     explicit EpollAlarmImpl(QuicEpollAlarm* alarm) : alarm_(alarm) {}
 
     int64_t OnAlarm() override {
-      EpollAlarm::OnAlarm();
+      net::EpollAlarm::OnAlarm();
       alarm_->Fire();
       // Fire will take care of registering the alarm, if needed.
       return 0;
@@ -46,13 +46,13 @@ class QuicEpollAlarm : public QuicAlarm {
     QuicEpollAlarm* alarm_;
   };
 
-  EpollServer* epoll_server_;
+  net::EpollServer* epoll_server_;
   EpollAlarmImpl epoll_alarm_impl_;
 };
 
 }  // namespace
 
-QuicEpollAlarmFactory::QuicEpollAlarmFactory(EpollServer* epoll_server)
+QuicEpollAlarmFactory::QuicEpollAlarmFactory(net::EpollServer* epoll_server)
     : epoll_server_(epoll_server) {}
 
 QuicEpollAlarmFactory::~QuicEpollAlarmFactory() = default;
@@ -73,4 +73,4 @@ QuicArenaScopedPtr<QuicAlarm> QuicEpollAlarmFactory::CreateAlarm(
   }
 }
 
-}  // namespace net
+}  // namespace quic

@@ -15,7 +15,7 @@
 #undef QUIC_FLAG
 
 // API compatibility with new-style flags.
-namespace net {
+namespace quic {
 
 inline bool GetQuicFlagImpl(bool flag) {
   return flag;
@@ -74,5 +74,5 @@ inline void SetQuicFlagImpl(std::string* f, const std::string& v) {
 #define SetQuicRestartFlagImpl(flag, value) \
   SetQuicFlag(&RESTART_FLAG(flag), value)
 
-}  // namespace net
+}  // namespace quic
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_FLAGS_IMPL_H_

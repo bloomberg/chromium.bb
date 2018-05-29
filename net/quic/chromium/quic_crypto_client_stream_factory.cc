@@ -15,14 +15,14 @@ namespace {
 
 class DefaultCryptoStreamFactory : public QuicCryptoClientStreamFactory {
  public:
-  QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      const QuicServerId& server_id,
+  quic::QuicCryptoClientStream* CreateQuicCryptoClientStream(
+      const quic::QuicServerId& server_id,
       QuicChromiumClientSession* session,
-      std::unique_ptr<ProofVerifyContext> proof_verify_context,
-      QuicCryptoClientConfig* crypto_config) override {
-    return new QuicCryptoClientStream(server_id, session,
-                                      proof_verify_context.release(),
-                                      crypto_config, session);
+      std::unique_ptr<quic::ProofVerifyContext> proof_verify_context,
+      quic::QuicCryptoClientConfig* crypto_config) override {
+    return new quic::QuicCryptoClientStream(server_id, session,
+                                            proof_verify_context.release(),
+                                            crypto_config, session);
   }
 };
 

@@ -15,9 +15,10 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_time.h"
 
-namespace net {
-
+namespace quic {
 class QuicClock;
+}  // namespace quic
+namespace net {
 
 // If more than this many packets have been read or more than that many
 // milliseconds have passed, QuicChromiumPacketReader::StartReading() yields by
@@ -32,21 +33,21 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
     virtual ~Visitor() {}
     virtual void OnReadError(int result,
                              const DatagramClientSocket* socket) = 0;
-    virtual bool OnPacket(const QuicReceivedPacket& packet,
-                          const QuicSocketAddress& local_address,
-                          const QuicSocketAddress& peer_address) = 0;
+    virtual bool OnPacket(const quic::QuicReceivedPacket& packet,
+                          const quic::QuicSocketAddress& local_address,
+                          const quic::QuicSocketAddress& peer_address) = 0;
   };
 
   QuicChromiumPacketReader(DatagramClientSocket* socket,
-                           QuicClock* clock,
+                           quic::QuicClock* clock,
                            Visitor* visitor,
                            int yield_after_packets,
-                           QuicTime::Delta yield_after_duration,
+                           quic::QuicTime::Delta yield_after_duration,
                            const NetLogWithSource& net_log);
   virtual ~QuicChromiumPacketReader();
 
   // Causes the QuicConnectionHelper to start reading from the socket
-  // and passing the data along to the QuicConnection.
+  // and passing the data along to the quic::QuicConnection.
   void StartReading();
 
   // Returns the estimate of dynamically allocated memory in bytes.
@@ -62,10 +63,10 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   Visitor* visitor_;
   bool read_pending_;
   int num_packets_read_;
-  QuicClock* clock_;  // Owned by QuicStreamFactory
+  quic::QuicClock* clock_;  // Owned by QuicStreamFactory
   int yield_after_packets_;
-  QuicTime::Delta yield_after_duration_;
-  QuicTime yield_after_;
+  quic::QuicTime::Delta yield_after_duration_;
+  quic::QuicTime yield_after_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
   NetLogWithSource net_log_;
 

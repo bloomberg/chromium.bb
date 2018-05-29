@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 
-namespace net {
+namespace quic {
 
 class QuicDispatcher;
 class QuicServer;
@@ -26,6 +26,6 @@ class QuicServerPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_SERVER_PEER_H_

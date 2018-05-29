@@ -30,7 +30,7 @@ std::unique_ptr<base::Value> NetLogQuicConnectivityProbingTriggerCallback(
 std::unique_ptr<base::Value> NetLogQuicConnectivityProbingResponseCallback(
     NetworkChangeNotifier::NetworkHandle network,
     IPEndPoint* self_address,
-    QuicSocketAddress* peer_address,
+    quic::QuicSocketAddress* peer_address,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("network", base::Int64ToString(network));
@@ -91,7 +91,7 @@ void QuicConnectivityProbingManager::CancelProbingIfAny() {
         NetLog::Int64Callback("network", network_));
   }
   network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
-  peer_address_ = QuicSocketAddress();
+  peer_address_ = quic::QuicSocketAddress();
   socket_.reset();
   writer_.reset();
   reader_.reset();
@@ -103,7 +103,7 @@ void QuicConnectivityProbingManager::CancelProbingIfAny() {
 
 void QuicConnectivityProbingManager::StartProbing(
     NetworkChangeNotifier::NetworkHandle network,
-    const QuicSocketAddress& peer_address,
+    const quic::QuicSocketAddress& peer_address,
     std::unique_ptr<DatagramClientSocket> socket,
     std::unique_ptr<QuicChromiumPacketWriter> writer,
     std::unique_ptr<QuicChromiumPacketReader> reader,
@@ -141,8 +141,8 @@ void QuicConnectivityProbingManager::StartProbing(
 }
 
 void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
-    const QuicSocketAddress& self_address,
-    const QuicSocketAddress& peer_address) {
+    const quic::QuicSocketAddress& self_address,
+    const quic::QuicSocketAddress& peer_address) {
   if (!socket_) {
     DVLOG(1) << "Probing response is ignored as probing was cancelled "
              << "or succeeded.";
@@ -156,7 +156,7 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
            << local_address.ToString() << ", to peer ip:port "
            << peer_address_.ToString();
 
-  if (QuicSocketAddressImpl(local_address) != self_address.impl() ||
+  if (quic::QuicSocketAddressImpl(local_address) != self_address.impl() ||
       peer_address_ != peer_address) {
     DVLOG(1) << "Received probing response from peer ip:port "
              << peer_address.ToString() << ", to self ip:port "

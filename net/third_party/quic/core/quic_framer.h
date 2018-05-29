@@ -18,7 +18,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicFramerPeer;
@@ -704,6 +704,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_FRAMER_H_

@@ -10,7 +10,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -301,4 +301,4 @@ void QuicFramerPeer::SetLastPacketIsIetfQuic(QuicFramer* framer,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

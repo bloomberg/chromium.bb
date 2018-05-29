@@ -292,7 +292,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   SpdySession(const SpdySessionKey& spdy_session_key,
               HttpServerProperties* http_server_properties,
               TransportSecurityState* transport_security_state,
-              const QuicTransportVersionVector& quic_supported_versions,
+              const quic::QuicTransportVersionVector& quic_supported_versions,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
               bool support_ietf_format_quic_altsvc,
@@ -1090,7 +1090,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   NetLogWithSource net_log_;
 
   // Versions of QUIC which may be used.
-  const QuicTransportVersionVector quic_supported_versions_;
+  const quic::QuicTransportVersionVector quic_supported_versions_;
 
   // Outside of tests, these should always be true.
   bool enable_sending_initial_data_;

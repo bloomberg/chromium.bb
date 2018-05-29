@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -100,4 +100,4 @@ void RttStats::OnConnectionMigration() {
   max_ack_delay_ = QuicTime::Delta::Zero();
 }
 
-}  // namespace net
+}  // namespace quic

@@ -15,13 +15,13 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 template <typename... Args>
 inline void QuicStrAppendImpl(QuicString* output, const Args&... args) {
   output->append(QuicStrCatImpl(args...));
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_STRING_UTILS_IMPL_H_

@@ -29,7 +29,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class MockStream : public QuicStream {
@@ -653,4 +653,4 @@ TEST_F(QuicStreamSequencerTest, OnStreamFrameWithNullSource) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -41,7 +41,7 @@
 #define SHARED_LOCKS_REQUIRED(...)
 #endif
 
-namespace net {
+namespace quic {
 
 // A class wrapping a non-reentrant mutex.
 class QUIC_EXPORT_PRIVATE QuicLockImpl {
@@ -69,6 +69,6 @@ class QUIC_EXPORT_PRIVATE QuicLockImpl {
   DISALLOW_COPY_AND_ASSIGN(QuicLockImpl);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_MUTEX_IMPL_H_

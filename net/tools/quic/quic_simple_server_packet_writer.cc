@@ -17,7 +17,7 @@ namespace net {
 
 QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
     UDPServerSocket* socket,
-    QuicDispatcher* dispatcher)
+    quic::QuicDispatcher* dispatcher)
     : socket_(socket),
       dispatcher_(dispatcher),
       write_blocked_(false),
@@ -25,18 +25,18 @@ QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
 
 QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() = default;
 
-WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
+quic::WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
     const char* buffer,
     size_t buf_len,
-    const QuicIpAddress& self_address,
-    const QuicSocketAddress& peer_address,
-    PerPacketOptions* options,
+    const quic::QuicIpAddress& self_address,
+    const quic::QuicSocketAddress& peer_address,
+    quic::PerPacketOptions* options,
     WriteCallback callback) {
   DCHECK(callback_.is_null());
   callback_ = callback;
-  WriteResult result =
+  quic::WriteResult result =
       WritePacket(buffer, buf_len, self_address, peer_address, options);
-  if (result.status != WRITE_STATUS_BLOCKED) {
+  if (result.status != quic::WRITE_STATUS_BLOCKED) {
     callback_.Reset();
   }
   return result;
@@ -45,7 +45,8 @@ WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
 void QuicSimpleServerPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   write_blocked_ = false;
-  WriteResult result(rv < 0 ? WRITE_STATUS_ERROR : WRITE_STATUS_OK, rv);
+  quic::WriteResult result(
+      rv < 0 ? quic::WRITE_STATUS_ERROR : quic::WRITE_STATUS_OK, rv);
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(result);
   }
@@ -65,12 +66,12 @@ void QuicSimpleServerPacketWriter::SetWritable() {
   write_blocked_ = false;
 }
 
-WriteResult QuicSimpleServerPacketWriter::WritePacket(
+quic::WriteResult QuicSimpleServerPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const QuicIpAddress& self_address,
-    const QuicSocketAddress& peer_address,
-    PerPacketOptions* options) {
+    const quic::QuicIpAddress& self_address,
+    const quic::QuicSocketAddress& peer_address,
+    quic::PerPacketOptions* options) {
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(buffer, buf_len)));
   DCHECK(!IsWriteBlocked());
@@ -84,22 +85,22 @@ WriteResult QuicSimpleServerPacketWriter::WritePacket(
   } else {
     rv = ERR_MSG_TOO_BIG;
   }
-  WriteStatus status = WRITE_STATUS_OK;
+  quic::WriteStatus status = quic::WRITE_STATUS_OK;
   if (rv < 0) {
     if (rv != ERR_IO_PENDING) {
-      base::UmaHistogramSparse("Net.QuicSession.WriteError", -rv);
-      status = WRITE_STATUS_ERROR;
+      base::UmaHistogramSparse("Net.quic::QuicSession.WriteError", -rv);
+      status = quic::WRITE_STATUS_ERROR;
     } else {
-      status = WRITE_STATUS_BLOCKED;
+      status = quic::WRITE_STATUS_BLOCKED;
       write_blocked_ = true;
     }
   }
-  return WriteResult(status, rv);
+  return quic::WriteResult(status, rv);
 }
 
-QuicByteCount QuicSimpleServerPacketWriter::GetMaxPacketSize(
-    const QuicSocketAddress& peer_address) const {
-  return kMaxPacketSize;
+quic::QuicByteCount QuicSimpleServerPacketWriter::GetMaxPacketSize(
+    const quic::QuicSocketAddress& peer_address) const {
+  return quic::kMaxPacketSize;
 }
 
 }  // namespace net

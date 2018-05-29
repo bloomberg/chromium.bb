@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_reference_counted.h"
 
-namespace net {
+namespace quic {
 
 // Pure virtual class to listen for packet acknowledgements.
 class QUIC_EXPORT_PRIVATE QuicAckListenerInterface
@@ -32,6 +32,6 @@ class QUIC_EXPORT_PRIVATE QuicAckListenerInterface
   ~QuicAckListenerInterface() override;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_ACK_LISTENER_INTERFACE_H_

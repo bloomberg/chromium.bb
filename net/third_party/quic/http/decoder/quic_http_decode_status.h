@@ -12,7 +12,7 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 enum class QuicHttpDecodeStatus {
   // Decoding is done.
@@ -29,6 +29,6 @@ enum class QuicHttpDecodeStatus {
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                              QuicHttpDecodeStatus v);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_DECODE_STATUS_H_
