@@ -721,7 +721,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
                                   &MainThreadSchedulerImpl::UseCaseToString);
   }
 
-  static scoped_refptr<TaskQueue> ThrottableTaskQueue(
+  static scoped_refptr<TaskQueue> ThrottleableTaskQueue(
       FrameSchedulerImpl* scheduler) {
     return scheduler->ThrottleableTaskQueue();
   }
@@ -2519,6 +2519,18 @@ TEST_F(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
+  std::unique_ptr<PageSchedulerImpl> page_scheduler = base::WrapUnique(
+      new PageSchedulerImpl(nullptr, scheduler_.get(),
+                            false /* disable_background_timer_throttling */));
+  scheduler_->AddPageScheduler(page_scheduler.get());
+
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kMainFrame);
+
+  // Use the |frame_scheduler|'s timer task queue in PostTestTasks().
+  timer_task_runner_ = ThrottleableTaskQueue(frame_scheduler.get());
+
   scheduler_->SetFreezingWhenBackgroundedEnabled(true);
 
   std::vector<std::string> run_order;
@@ -3587,7 +3599,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
       page_scheduler->CreateFrameSchedulerImpl(
           nullptr, FrameScheduler::FrameType::kSubframe);
 
-  TaskQueue* timer_tq = ThrottableTaskQueue(frame_scheduler.get()).get();
+  TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
 
   frame_scheduler->SetCrossOrigin(true);
   frame_scheduler->SetFrameVisible(false);
