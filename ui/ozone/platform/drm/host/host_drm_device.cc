@@ -315,18 +315,25 @@ bool HostDrmDevice::GpuSetHDCPState(int64_t display_id,
   return true;
 }
 
-bool HostDrmDevice::GpuSetColorCorrection(
-    int64_t id,
-    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
+bool HostDrmDevice::GpuSetColorMatrix(int64_t display_id,
+                                      const std::vector<float>& color_matrix) {
   DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
   if (!IsConnected())
     return false;
 
-  drm_device_ptr_->SetColorCorrection(id, degamma_lut, gamma_lut,
-                                      correction_matrix);
+  drm_device_ptr_->SetColorMatrix(display_id, color_matrix);
+  return true;
+}
 
+bool HostDrmDevice::GpuSetGammaCorrection(
+    int64_t display_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
+  if (!IsConnected())
+    return false;
+
+  drm_device_ptr_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
   return true;
 }
 

@@ -93,13 +93,19 @@ void TestNativeDisplayDelegate::SetHDCPState(const DisplaySnapshot& output,
   std::move(callback).Run(set_hdcp_expectation_);
 }
 
-bool TestNativeDisplayDelegate::SetColorCorrection(
-    const DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
-  log_->AppendAction(SetColorCorrectionAction(output, degamma_lut, gamma_lut,
-                                              correction_matrix));
+bool TestNativeDisplayDelegate::SetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
+  log_->AppendAction(SetColorMatrixAction(display_id, color_matrix));
+  return true;
+}
+
+bool TestNativeDisplayDelegate::SetGammaCorrection(
+    int64_t display_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  log_->AppendAction(
+      SetGammaCorrectionAction(display_id, degamma_lut, gamma_lut));
   return true;
 }
 

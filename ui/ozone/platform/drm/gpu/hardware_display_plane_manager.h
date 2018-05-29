@@ -79,11 +79,13 @@ class HardwareDisplayPlaneManager {
   void BeginFrame(HardwareDisplayPlaneList* plane_list);
 
   // TODO(dnicoara): Split this into atomic and legacy implementation.
-  bool SetColorCorrection(
+  bool SetColorMatrix(uint32_t crtc_id, const std::vector<float>& color_matrix);
+
+  // TODO(dnicoara): Split this into atomic and legacy implementation.
+  bool SetGammaCorrection(
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix);
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut);
 
   // Assign hardware planes from the |planes_| list to |overlay_list| entries,
   // recording the plane IDs in the |plane_list|. Only planes compatible with

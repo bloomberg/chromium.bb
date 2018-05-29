@@ -64,11 +64,17 @@ void WaylandNativeDisplayDelegate::SetHDCPState(
   NOTREACHED();
 }
 
-bool WaylandNativeDisplayDelegate::SetColorCorrection(
-    const display::DisplaySnapshot& output,
+bool WaylandNativeDisplayDelegate::SetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
+  NOTREACHED();
+  return false;
+}
+
+bool WaylandNativeDisplayDelegate::SetGammaCorrection(
+    int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   NOTREACHED();
   return false;
 }

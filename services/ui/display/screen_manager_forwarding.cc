@@ -186,18 +186,24 @@ void ScreenManagerForwarding::SetHDCPState(int64_t display_id,
   native_display_delegate_->SetHDCPState(*snapshot, state, std::move(callback));
 }
 
-void ScreenManagerForwarding::SetColorCorrection(
+void ScreenManagerForwarding::SetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
+  DCHECK(native_display_delegate_);
+  DCHECK(snapshot_map_.count(display_id));
+
+  native_display_delegate_->SetColorMatrix(display_id, color_matrix);
+}
+
+void ScreenManagerForwarding::SetGammaCorrection(
     int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   DCHECK(native_display_delegate_);
-  const DisplaySnapshot* snapshot = snapshot_map_[display_id];
-  if (!snapshot)
-    return;
+  DCHECK(snapshot_map_.count(display_id));
 
-  native_display_delegate_->SetColorCorrection(*snapshot, degamma_lut,
-                                               gamma_lut, correction_matrix);
+  native_display_delegate_->SetGammaCorrection(display_id, degamma_lut,
+                                               gamma_lut);
 }
 
 void ScreenManagerForwarding::ToggleAddRemoveDisplay() {

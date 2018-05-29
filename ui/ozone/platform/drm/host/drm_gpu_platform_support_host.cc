@@ -357,13 +357,18 @@ bool DrmGpuPlatformSupportHost::GpuSetHDCPState(int64_t display_id,
   return Send(new OzoneGpuMsg_SetHDCPState(display_id, state));
 }
 
-bool DrmGpuPlatformSupportHost::GpuSetColorCorrection(
+bool DrmGpuPlatformSupportHost::GpuSetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
+  return Send(new OzoneGpuMsg_SetColorMatrix(display_id, color_matrix));
+}
+
+bool DrmGpuPlatformSupportHost::GpuSetGammaCorrection(
     int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
-  return Send(new OzoneGpuMsg_SetColorCorrection(display_id, degamma_lut,
-                                                 gamma_lut, correction_matrix));
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  return Send(
+      new OzoneGpuMsg_SetGammaCorrection(display_id, degamma_lut, gamma_lut));
 }
 
 bool DrmGpuPlatformSupportHost::GpuDestroyWindow(

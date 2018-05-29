@@ -284,12 +284,17 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Returns true if there is at least one display on.
   bool IsDisplayOn() const;
 
-  // Sets the gamma, degamma and correction matrix for |display_id| to the
-  // values in |degamma_lut|, |gamma_lut| and |correction_matrix|.
-  bool SetColorCorrection(int64_t display_id,
+  // Sets the given 3x3 |color_matrix| on the display with |display_id|.
+  // This doesn't affect gamma or degamma. It returns true if the color matrix
+  // was sent to the GPU process successfully.
+  bool SetColorMatrix(int64_t display_id,
+                      const std::vector<float>& color_matrix);
+
+  // Sets the given |gamma_lut| and |degamma_lut| on the display with
+  // |display_id|.
+  bool SetGammaCorrection(int64_t display_id,
                           const std::vector<GammaRampRGBEntry>& degamma_lut,
-                          const std::vector<GammaRampRGBEntry>& gamma_lut,
-                          const std::vector<float>& correction_matrix);
+                          const std::vector<GammaRampRGBEntry>& gamma_lut);
 
   // Returns the requested power state if set or the default power state.
   chromeos::DisplayPowerState GetRequestedPowerState() const;

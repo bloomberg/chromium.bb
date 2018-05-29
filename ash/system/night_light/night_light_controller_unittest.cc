@@ -867,7 +867,7 @@ class NightLightCrtcTest : public NightLightTest {
     const float green_scale =
         NightLightController::GreenColorScaleFromTemperature(temperature);
     std::stringstream pattern_stream;
-    pattern_stream << "*set_color_correction(id=" << display_id
+    pattern_stream << "*set_color_matrix(id=" << display_id
                    << ",ctm[0]=" << kRedScale << "*ctm[4]=" << green_scale
                    << "*ctm[8]=" << blue_scale << "*)*";
     return base::MatchPattern(logger_actions_string, pattern_stream.str());

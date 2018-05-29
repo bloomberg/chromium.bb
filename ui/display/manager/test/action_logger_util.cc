@@ -38,11 +38,20 @@ std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
                             output.display_id(), state);
 }
 
-std::string SetColorCorrectionAction(
-    const DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
+std::string SetColorMatrixAction(int64_t display_id,
+                                 const std::vector<float>& color_matrix) {
+  std::string ctm;
+  for (size_t i = 0; i < color_matrix.size(); ++i)
+    ctm += base::StringPrintf(",ctm[%" PRIuS "]=%f", i, color_matrix[i]);
+
+  return base::StringPrintf("set_color_matrix(id=%" PRId64 "%s)", display_id,
+                            ctm.c_str());
+}
+
+std::string SetGammaCorrectionAction(
+    int64_t display_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
   std::string degamma_table;
   for (size_t i = 0; i < degamma_lut.size(); ++i) {
     degamma_table += base::StringPrintf(",degamma[%" PRIuS "]=%04x%04x%04x", i,
@@ -56,14 +65,9 @@ std::string SetColorCorrectionAction(
                            gamma_lut[i].g, gamma_lut[i].b);
   }
 
-  std::string ctm;
-  for (size_t i = 0; i < correction_matrix.size(); ++i) {
-    ctm += base::StringPrintf(",ctm[%" PRIuS "]=%f", i, correction_matrix[i]);
-  }
-
-  return base::StringPrintf("set_color_correction(id=%" PRId64 "%s%s%s)",
-                            output.display_id(), degamma_table.c_str(),
-                            gamma_table.c_str(), ctm.c_str());
+  return base::StringPrintf("set_gamma_correction(id=%" PRId64 "%s%s)",
+                            display_id, degamma_table.c_str(),
+                            gamma_table.c_str());
 }
 
 std::string JoinActions(const char* action, ...) {

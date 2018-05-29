@@ -72,12 +72,19 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
                             HDCPState state,
                             SetHDCPStateCallback callback) = 0;
 
-  // Set the gamma tables and corection matrix for the display.
-  virtual bool SetColorCorrection(
-      const DisplaySnapshot& output,
+  // Sets the given 3x3 |color_matrix| on the display with |display_id|.
+  // This doesn't affect gamma or degamma. It returns true the color matrix was
+  // sent to the GPU process successfully.
+  virtual bool SetColorMatrix(int64_t display_id,
+                              const std::vector<float>& color_matrix) = 0;
+
+  // Sets the given |gamma_lut| and |degamma_lut| on the display with
+  // |display_id|. Returns true if the given tables were sent to the GPU process
+  // successfully.
+  virtual bool SetGammaCorrection(
+      int64_t display_id,
       const std::vector<GammaRampRGBEntry>& degamma_lut,
-      const std::vector<GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) = 0;
+      const std::vector<GammaRampRGBEntry>& gamma_lut) = 0;
 
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 

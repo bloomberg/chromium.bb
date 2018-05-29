@@ -334,13 +334,16 @@ void DrmThread::SetHDCPState(int64_t display_id,
                           display_manager_->SetHDCPState(display_id, state));
 }
 
-void DrmThread::SetColorCorrection(
+void DrmThread::SetColorMatrix(int64_t display_id,
+                               const std::vector<float>& color_matrix) {
+  display_manager_->SetColorMatrix(display_id, color_matrix);
+}
+
+void DrmThread::SetGammaCorrection(
     int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
-  display_manager_->SetColorCorrection(display_id, degamma_lut, gamma_lut,
-                                       correction_matrix);
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
 }
 
 void DrmThread::StartDrmDevice(StartDrmDeviceCallback callback) {

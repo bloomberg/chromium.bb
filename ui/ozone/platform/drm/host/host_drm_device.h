@@ -86,11 +86,12 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   bool GpuDisableNativeDisplay(int64_t display_id) override;
   bool GpuGetHDCPState(int64_t display_id) override;
   bool GpuSetHDCPState(int64_t display_id, display::HDCPState state) override;
-  bool GpuSetColorCorrection(
+  bool GpuSetColorMatrix(int64_t display_id,
+                         const std::vector<float>& color_matrix) override;
+  bool GpuSetGammaCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) override;
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
 
   // Services needed by DrmWindowHost
   bool GpuDestroyWindow(gfx::AcceleratedWidget widget) override;

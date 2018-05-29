@@ -66,11 +66,12 @@ class ScreenManagerForwarding : public ScreenManager,
   void SetHDCPState(int64_t display_id,
                     display::HDCPState state,
                     SetHDCPStateCallback callback) override;
-  void SetColorCorrection(
+  void SetColorMatrix(int64_t display_id,
+                      const std::vector<float>& color_matrix) override;
+  void SetGammaCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) override;
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
 
   // mojom::DevDisplayController:
   void ToggleAddRemoveDisplay() override;

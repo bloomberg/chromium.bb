@@ -46,13 +46,18 @@ std::string GetCrtcAction(const DisplaySnapshot& output,
 std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
                                   HDCPState state);
 
-// Returns a string describing a TestNativeDisplayDelegate::SetColorCorrection()
-// call;
-std::string SetColorCorrectionAction(
-    const DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix);
+// Returns a string describing a TestNativeDisplayDelegate::SetColorMatrix()
+// call.
+std::string SetColorMatrixAction(int64_t display_id,
+                                 const std::vector<float>& color_matrix);
+
+// Returns a string describing a TestNativeDisplayDelegate::SetGammaCorrection()
+// call.
+std::string SetGammaCorrectionAction(
+    int64_t display_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut);
+
 // Joins a sequence of strings describing actions (e.g. kScreenDim) such
 // that they can be compared against a string returned by
 // ActionLogger::GetActionsAndClear().  The list of actions must be

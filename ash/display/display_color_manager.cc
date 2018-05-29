@@ -222,8 +222,7 @@ bool DisplayColorManager::SetDisplayColorMatrix(
     }
 
     ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
-    return configurator_->SetColorCorrection(
-        display_id, {} /* degamma_lut */, {} /* gamma_lut */, matrix_buffer_);
+    return configurator_->SetColorMatrix(display_id, matrix_buffer_);
   }
 
   LOG(ERROR) << "Display ID: " << display_id << " cannot be found.";
@@ -279,10 +278,13 @@ void DisplayColorManager::ApplyDisplayColorCalibration(
     final_matrix = &matrix_buffer_;
   }
 
-  if (!configurator_->SetColorCorrection(
-          display_id, calibration_data.degamma_lut, calibration_data.gamma_lut,
-          *final_matrix)) {
-    LOG(WARNING) << "Error applying color correction data";
+  if (!configurator_->SetColorMatrix(display_id, *final_matrix))
+    LOG(WARNING) << "Error applying the color matrix.";
+
+  if (!configurator_->SetGammaCorrection(display_id,
+                                         calibration_data.degamma_lut,
+                                         calibration_data.gamma_lut)) {
+    LOG(WARNING) << "Error applying gamma correction data.";
   }
 }
 
