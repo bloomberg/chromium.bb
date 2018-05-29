@@ -42,6 +42,8 @@ class ClearKeyCdmProxy : public CdmProxy, public CdmContext {
   Decryptor* GetDecryptor() final;
 
  private:
+  void CreateDecryptor();
+
   scoped_refptr<AesDecryptor> aes_decryptor_;
 
   base::WeakPtrFactory<ClearKeyCdmProxy> weak_factory_;

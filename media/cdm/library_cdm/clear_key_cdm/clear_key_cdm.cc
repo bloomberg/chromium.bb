@@ -483,8 +483,6 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
     ReportVerifyCdmHostTestResult();
   } else if (key_system_ == kExternalClearKeyStorageIdTestKeySystem) {
     StartStorageIdTest();
-  } else if (key_system_ == kExternalClearKeyCdmProxyTestKeySystem) {
-    ReportCdmProxyTestResult();
   }
 }
 
@@ -514,6 +512,7 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
                                 uint32_t response_size) {
   DVLOG(1) << __func__;
   std::string web_session_str(session_id, session_id_length);
+  std::vector<uint8_t> response_vector(response, response + response_size);
 
   std::unique_ptr<media::SimpleCdmPromise> promise(
       new media::CdmCallbackPromise<>(
@@ -521,9 +520,11 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
                      promise_id, web_session_str),
           base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                      promise_id)));
-  cdm_->UpdateSession(web_session_str,
-                      std::vector<uint8_t>(response, response + response_size),
-                      std::move(promise));
+  cdm_->UpdateSession(web_session_str, response_vector, std::move(promise));
+
+  // Also push the license to CdmProxy
+  if (cdm_proxy_test_)
+    cdm_proxy_test_->SetKey(response_vector);
 }
 
 void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
@@ -649,6 +650,10 @@ cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
   DVLOG(1) << __func__;
   DCHECK(encrypted_buffer.data);
 
+  // When CdmProxy is used, the CDM cannot do any decryption or decoding.
+  if (key_system_ == kExternalClearKeyCdmProxyTestKeySystem)
+    return cdm::kDecryptError;
+
   scoped_refptr<DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
 
@@ -683,8 +688,10 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig_2& audio_decoder_config) {
-  if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
+  if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem ||
+      key_system_ == kExternalClearKeyCdmProxyTestKeySystem) {
     return cdm::kInitializationError;
+  }
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
@@ -715,8 +722,10 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig_2& video_decoder_config) {
-  if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
+  if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem ||
+      key_system_ == kExternalClearKeyCdmProxyTestKeySystem) {
     return cdm::kInitializationError;
+  }
 
   if (video_decoder_ && video_decoder_->is_initialized()) {
     DCHECK(!video_decoder_->is_initialized());
@@ -1084,16 +1093,7 @@ void ClearKeyCdm::OnCdmProxyTestComplete(bool success) {
   DVLOG(1) << __func__;
   DCHECK(cdm_proxy_test_);
 
-  cdm_proxy_test_.reset();
-  has_cdm_proxy_test_passed_ = success;
-
-  // Ignore test result here. It will be reported in ReportCdmProxyTestResult().
-  cdm_host_proxy_->OnInitialized(true);
-}
-
-void ClearKeyCdm::ReportCdmProxyTestResult() {
-  // StartCdmProxyTest() should have already been called and finished.
-  OnUnitTestComplete(has_cdm_proxy_test_passed_);
+  cdm_host_proxy_->OnInitialized(success);
 }
 
 }  // namespace media

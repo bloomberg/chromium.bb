@@ -686,7 +686,10 @@ Decryptor* CdmAdapter::GetDecryptor() {
 
   // When using HW secure codecs, we cannot and should not use the CDM instance
   // to do decrypt and/or decode. Instead, we should use the CdmProxy.
-  if (cdm_config_.use_hw_secure_codecs)
+  // TODO(xhwang): Fix External Clear Key key system to be able to set
+  // |use_hw_secure_codecs| so that we don't have to check both.
+  // TODO(xhwang): Update this logic to support transcryption.
+  if (cdm_config_.use_hw_secure_codecs || cdm_proxy_created_)
     return nullptr;
 
   return this;

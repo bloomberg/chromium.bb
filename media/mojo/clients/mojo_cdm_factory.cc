@@ -64,8 +64,9 @@ void MojoCdmFactory::Create(
   interface_factory_->CreateCdm(key_system, mojo::MakeRequest(&cdm_ptr));
 
   MojoCdm::Create(key_system, security_origin, cdm_config, std::move(cdm_ptr),
-                  session_message_cb, session_closed_cb, session_keys_change_cb,
-                  session_expiration_update_cb, cdm_created_cb);
+                  interface_factory_, session_message_cb, session_closed_cb,
+                  session_keys_change_cb, session_expiration_update_cb,
+                  cdm_created_cb);
 }
 
 }  // namespace media

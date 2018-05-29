@@ -23,6 +23,8 @@ class CdmProxyTest : public cdm::CdmProxyClient {
   // Runs the test and returns the test result through |completion_cb|.
   void Run(CompletionCB completion_cb);
 
+  void SetKey(const std::vector<uint8_t>& response);
+
  private:
   void OnTestComplete(bool success);
 
@@ -41,6 +43,7 @@ class CdmProxyTest : public cdm::CdmProxyClient {
   CdmHostProxy* const cdm_host_proxy_ = nullptr;
   CompletionCB completion_cb_;
   cdm::CdmProxy* cdm_proxy_ = nullptr;
+  uint32_t crypto_session_id_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(CdmProxyTest);
 };

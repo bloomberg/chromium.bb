@@ -11,6 +11,26 @@
 
 namespace media {
 
+namespace {
+
+constexpr char kDummySessionId[] = "dummy session id";
+
+class IgnoreResponsePromise : public SimpleCdmPromise {
+ public:
+  IgnoreResponsePromise() = default;
+  ~IgnoreResponsePromise() override = default;
+
+  // SimpleCdmPromise implementation.
+  void resolve() final { MarkPromiseSettled(); }
+  void reject(CdmPromise::Exception exception_code,
+              uint32_t system_code,
+              const std::string& error_message) final {
+    MarkPromiseSettled();
+  }
+};
+
+}  // namespace
+
 ClearKeyCdmProxy::ClearKeyCdmProxy() : weak_factory_(this) {}
 
 ClearKeyCdmProxy::~ClearKeyCdmProxy() {}
@@ -67,7 +87,15 @@ void ClearKeyCdmProxy::CreateMediaCryptoSession(
 
 void ClearKeyCdmProxy::SetKey(uint32_t crypto_session_id,
                               const std::vector<uint8_t>& key_id,
-                              const std::vector<uint8_t>& key_blob) {}
+                              const std::vector<uint8_t>& key_blob) {
+  DVLOG(1) << __func__;
+
+  if (!aes_decryptor_)
+    CreateDecryptor();
+
+  aes_decryptor_->UpdateSession(kDummySessionId, key_blob,
+                                std::make_unique<IgnoreResponsePromise>());
+}
 
 void ClearKeyCdmProxy::RemoveKey(uint32_t crypto_session_id,
                                  const std::vector<uint8_t>& key_id) {}
@@ -75,13 +103,23 @@ void ClearKeyCdmProxy::RemoveKey(uint32_t crypto_session_id,
 Decryptor* ClearKeyCdmProxy::GetDecryptor() {
   DVLOG(1) << __func__;
 
-  if (!aes_decryptor_) {
-    aes_decryptor_ = base::MakeRefCounted<AesDecryptor>(
-        base::DoNothing(), base::DoNothing(), base::DoNothing(),
-        base::DoNothing());
-  }
+  if (!aes_decryptor_)
+    CreateDecryptor();
 
   return aes_decryptor_.get();
+}
+
+void ClearKeyCdmProxy::CreateDecryptor() {
+  DVLOG(1) << __func__;
+  DCHECK(!aes_decryptor_);
+
+  aes_decryptor_ =
+      base::MakeRefCounted<AesDecryptor>(base::DoNothing(), base::DoNothing(),
+                                         base::DoNothing(), base::DoNothing());
+
+  // Also create a dummy session to be used for SetKey().
+  aes_decryptor_->CreateSession(kDummySessionId,
+                                CdmSessionType::TEMPORARY_SESSION);
 }
 
 }  // namespace media

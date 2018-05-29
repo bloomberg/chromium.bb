@@ -32,6 +32,11 @@ void CdmProxyTest::Run(CompletionCB completion_cb) {
   cdm_proxy_->Initialize();
 }
 
+void CdmProxyTest::SetKey(const std::vector<uint8_t>& response) {
+  cdm_proxy_->SetKey(crypto_session_id_, nullptr, 0, response.data(),
+                     response.size());
+}
+
 void CdmProxyTest::OnTestComplete(bool success) {
   DVLOG(1) << __func__ << ": success = " << success;
   std::move(completion_cb_).Run(success);
