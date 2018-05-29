@@ -199,3 +199,19 @@ class NameStyleConverter(object):
         lower_prefix = prefix.lower() + '_' if prefix else ''
         lower_suffix = suffix.lower() + '_' if suffix else ''
         return lower_prefix + self.to_snake_case() + '_' + lower_suffix
+
+    def to_function_name(self, prefix=None, suffix=None):
+        """Represents this name as a function name in Blink C++ style.
+
+        i.e. UpperCamelCase
+        Note that this function should not be used for IDL operation names and
+        C++ functions implementing IDL operations and attributes.
+        """
+        camel_prefix = prefix[0].upper() + prefix[1:].lower() if prefix else ''
+        camel_suffix = ''
+        if type(suffix) is list:
+            for item in suffix:
+                camel_suffix += item[0].upper() + item[1:].lower()
+        elif suffix:
+            camel_suffix = suffix[0].upper() + suffix[1:].lower()
+        return camel_prefix + self.to_upper_camel_case() + camel_suffix

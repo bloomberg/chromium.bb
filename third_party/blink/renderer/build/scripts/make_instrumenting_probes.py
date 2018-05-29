@@ -26,7 +26,6 @@ sys.path.insert(1, _THIRD_PARTY_DIR)
 import jinja2
 
 from blinkbuild.name_style_converter import NameStyleConverter
-from name_utilities import method_name
 
 
 def _json5_loads(lines):
@@ -249,7 +248,7 @@ def main():
         "files": files,
         "agents": build_observers(config, files),
         "config": config,
-        "method_name": method_name,
+        "method_name": lambda name: NameStyleConverter(name).to_function_name(),
         "name": base_name,
         "input_files": [os.path.basename(input_path)],
         "output_path_in_gen_dir": output_path_in_gen_dir

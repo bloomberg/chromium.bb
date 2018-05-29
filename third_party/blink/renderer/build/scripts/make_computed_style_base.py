@@ -11,9 +11,9 @@ import make_style_builder
 import keyword_utils
 import bisect
 
+from blinkbuild.name_style_converter import NameStyleConverter
 from core.css import css_properties
 from core.style.computed_style_fields import DiffGroup, Enum, Group, Field
-from name_utilities import join_names, method_name
 
 from itertools import chain
 
@@ -289,8 +289,8 @@ def _create_inherited_flag_field(property_):
     Create the field used for an inheritance fast path from an independent CSS
     property, and return the Field object.
     """
-    name_for_methods = join_names(
-        property_['name_for_methods'], 'is', 'inherited')
+    name_for_methods = NameStyleConverter(property_['name_for_methods']).to_function_name(suffix=['is', 'inherited'])
+    name_source = NameStyleConverter(name_for_methods)
     return Field(
         'inherited_flag',
         name_for_methods,
@@ -303,9 +303,9 @@ def _create_inherited_flag_field(property_):
         custom_copy=False,
         custom_compare=False,
         mutable=False,
-        getter_method_name=method_name(name_for_methods),
-        setter_method_name=method_name(['set', name_for_methods]),
-        initial_method_name=method_name(['initial', name_for_methods]),
+        getter_method_name=name_source.to_function_name(),
+        setter_method_name=name_source.to_function_name(prefix='set'),
+        initial_method_name=name_source.to_function_name(prefix='initial'),
         computed_style_custom_functions=property_[
             "computed_style_custom_functions"],
     )

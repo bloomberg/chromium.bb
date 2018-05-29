@@ -74,14 +74,6 @@ def enum_for_css_property_alias(property_name):
 # API below instead.
 
 
-def join_names(*names):
-    """Given a list of names, join them into a single space-separated name."""
-    result = []
-    for name in names:
-        result.extend(tokenize_name(name))
-    return ' '.join(result)
-
-
 def naming_style(f):
     """Decorator for name utility functions.
 
@@ -120,8 +112,3 @@ def enum_type_name(words):
 @naming_style
 def enum_value_name(words):
     return 'k' + _upper_camel_case(words)
-
-
-@naming_style
-def method_name(words):
-    return _upper_camel_case(words)

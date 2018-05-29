@@ -157,6 +157,14 @@ class NameStyleConverterTest(unittest.TestCase):
         self.assertEqual(NameStyleConverter('foo').to_class_name(prefix='style', suffix='data'), 'StyleFooData')
         self.assertEqual(NameStyleConverter('xpath').to_class_name(), 'XPath')
 
+    def test_to_function_name(self):
+        converter = NameStyleConverter('fooBar')
+        self.assertEqual(converter.to_function_name(), 'FooBar')
+        self.assertEqual(converter.to_function_name(prefix='is'), 'IsFooBar')
+        self.assertEqual(converter.to_function_name(suffix='BAZ'), 'FooBarBaz')
+        self.assertEqual(converter.to_function_name(prefix='IS', suffix='baz'), 'IsFooBarBaz')
+        self.assertEqual(converter.to_function_name(prefix='prefixPrefix', suffix=['a', 'b']), 'PrefixprefixFooBarAB')
+
     def test_lower_camel_case(self):
         converter = NameStyleConverter('someSuperThing')
         self.assertEqual(converter.to_lower_camel_case(), 'someSuperThing')
