@@ -42,8 +42,7 @@ class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
   // This map will contain null pointers if variables are invalid due to
   // cycles or referencing invalid variables without using a fallback.
   // Note that this method is slow as a new map is constructed.
-  std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
-  GetVariables() const;
+  HashMap<AtomicString, scoped_refptr<CSSVariableData>> GetVariables() const;
 
  private:
   StyleInheritedVariables() : root_(nullptr) {}
