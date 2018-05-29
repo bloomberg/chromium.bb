@@ -10,32 +10,32 @@ Tests that audits panel works when only performance category is selected.
 [x] Clear storage
 Run audits: enabled visible
 
-=============== Lighthouse Results ===============
-bootup-time: true
-consistently-interactive: false
-critical-request-chains: true
-dom-size: true
-estimated-input-latency: false
-first-interactive: false
-first-meaningful-paint: false
-font-display: true
-link-blocking-first-paint: false
-mainthread-work-breakdown: true
-offscreen-images: false
-redirects: false
-screenshot-thumbnails: false
-script-blocking-first-paint: false
-speed-index-metric: false
-time-to-first-byte: true
-total-byte-weight: true
-unminified-css: false
-unminified-javascript: false
-unused-css-rules: false
-user-timings: true
-uses-long-cache-ttl: false
-uses-optimized-images: false
-uses-rel-preload: false
-uses-request-compression: false
-uses-responsive-images: false
-uses-webp-images: false
+=============== Audits run ===============
+bootup-time
+consistently-interactive
+critical-request-chains
+dom-size
+estimated-input-latency
+first-interactive
+first-meaningful-paint
+font-display
+link-blocking-first-paint
+mainthread-work-breakdown
+offscreen-images
+redirects
+screenshot-thumbnails
+script-blocking-first-paint
+speed-index-metric
+time-to-first-byte
+total-byte-weight
+unminified-css
+unminified-javascript
+unused-css-rules
+user-timings
+uses-long-cache-ttl
+uses-optimized-images
+uses-rel-preload
+uses-request-compression
+uses-responsive-images
+uses-webp-images
 
