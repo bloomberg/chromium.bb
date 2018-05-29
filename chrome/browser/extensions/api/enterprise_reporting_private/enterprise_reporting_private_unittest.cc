@@ -21,7 +21,6 @@ namespace {
 const char kFakeDMToken[] = "fake-dm-token";
 const char kFakeClientId[] = "fake-client-id";
 const char kFakeMachineNameReport[] = "{\"computername\":\"name\"}";
-const char kFakeInvalidMachineNameReport[] = "\"invalid\"";
 
 class MockCloudPolicyClient : public policy::MockCloudPolicyClient {
  public:
@@ -73,6 +72,14 @@ class EnterpriseReportingPrivateTest : public ExtensionApiUnittest {
     return base::StringPrintf("[{\"machineName\":%s}]", name);
   }
 
+  std::string GenerateInvalidReport() {
+    // This report is invalid as the chromeSignInUser dictionary should not be
+    // wrapped in a list.
+    return std::string(
+        "[{\"browserReport\": "
+        "{\"chromeUserProfileReport\":[{\"chromeSignInUser\":\"Name\"}]}}]");
+  }
+
   MockCloudPolicyClient* client_;
 
  private:
@@ -90,7 +97,7 @@ TEST_F(EnterpriseReportingPrivateTest, ReportIsNotValid) {
   ASSERT_EQ(enterprise_reporting::kInvalidInputErrorMessage,
             RunFunctionAndReturnError(
                 CreateChromeDesktopReportingFunction(kFakeDMToken),
-                GenerateArgs(kFakeInvalidMachineNameReport)));
+                GenerateInvalidReport()));
 }
 
 TEST_F(EnterpriseReportingPrivateTest, UploadFailed) {
