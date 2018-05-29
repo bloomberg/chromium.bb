@@ -99,30 +99,20 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         // http://crbug.com/429364
         LinearLayout wrapper = (LinearLayout) layout.findViewById(R.id.dropdown_label_wrapper);
         if (item.isMultilineLabel()) height = LayoutParams.WRAP_CONTENT;
-        if (item.isLabelAndSublabelOnSameLine()) {
-            wrapper.setOrientation(LinearLayout.HORIZONTAL);
-        } else {
-            wrapper.setOrientation(LinearLayout.VERTICAL);
-        }
-
+        wrapper.setOrientation(LinearLayout.VERTICAL);
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(0, height, 1));
 
         // Layout of the main label view.
         TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
         labelView.setText(item.getLabel());
         labelView.setSingleLine(!item.isMultilineLabel());
-        if (item.isLabelAndSublabelOnSameLine()) {
-            labelView.setLayoutParams(
-                    new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
-        } else {
-            if (item.isMultilineLabel()) {
-                // If there is a multiline label, we add extra padding at the top and bottom because
-                // WRAP_CONTENT, defined above for multiline labels, leaves none.
-                int existingStart = ApiCompatibilityUtils.getPaddingStart(labelView);
-                int existingEnd = ApiCompatibilityUtils.getPaddingEnd(labelView);
-                ApiCompatibilityUtils.setPaddingRelative(
-                        labelView, existingStart, mLabelMargin, existingEnd, mLabelMargin);
-            }
+        if (item.isMultilineLabel()) {
+            // If there is a multiline label, we add extra padding at the top and bottom because
+            // WRAP_CONTENT, defined above for multiline labels, leaves none.
+            int existingStart = ApiCompatibilityUtils.getPaddingStart(labelView);
+            int existingEnd = ApiCompatibilityUtils.getPaddingEnd(labelView);
+            ApiCompatibilityUtils.setPaddingRelative(
+                    labelView, existingStart, mLabelMargin, existingEnd, mLabelMargin);
         }
 
         labelView.setEnabled(item.isEnabled());
@@ -135,7 +125,7 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         labelView.setTextColor(ApiCompatibilityUtils.getColor(
                 mContext.getResources(), item.getLabelFontColorResId()));
         labelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
-                mContext.getResources().getDimension(item.getLabelFontSizeResId()));
+                mContext.getResources().getDimension(R.dimen.text_size_large));
 
         // Layout of the sublabel view, which has a smaller font and usually sits below the main
         // label.
@@ -144,16 +134,6 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         if (TextUtils.isEmpty(sublabel)) {
             sublabelView.setVisibility(View.GONE);
         } else {
-            if (item.isLabelAndSublabelOnSameLine()) {
-                // Use the layout params in |dropdown_item.xml| for the sublabel if it is on the
-                // same line as the label. We regenerate the layout params in case the view is
-                // reused and the label and sublabel are on the same line when the view is reused.
-                LinearLayout.LayoutParams subLabelLayoutParams = new LinearLayout.LayoutParams(
-                        LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                ApiCompatibilityUtils.setMarginStart(subLabelLayoutParams, mLabelMargin);
-                ApiCompatibilityUtils.setMarginEnd(subLabelLayoutParams, mLabelMargin);
-                sublabelView.setLayoutParams(subLabelLayoutParams);
-            }
             sublabelView.setText(sublabel);
             sublabelView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     mContext.getResources().getDimension(item.getSublabelFontSizeResId()));
