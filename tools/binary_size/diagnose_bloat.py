@@ -62,7 +62,8 @@ class BaseDiff(object):
 
   @property
   def summary_stat(self):
-    return None
+    """Returns a tuple of (name, value, units) for the most important metric."""
+    raise NotImplementedError()
 
   def Summary(self):
     """A short description that summarizes the source of binary size bloat."""
@@ -85,7 +86,7 @@ class BaseDiff(object):
 class NativeDiff(BaseDiff):
   # E.g.: Section Sizes (Total=1.2 kb (1222 bytes)):
   _RE_SUMMARY_STAT = re.compile(
-      r'Section Sizes \(Total=(?P<value>\d+) ?(?P<units>\w+)')
+      r'Section Sizes \(Total=(?P<value>-?[0-9\.]+) ?(?P<units>\w+)')
   _SUMMARY_STAT_NAME = 'Native Library Delta'
 
   def __init__(self, size_name, supersize_path):
@@ -100,7 +101,7 @@ class NativeDiff(BaseDiff):
     if m:
       return _DiffResult(
           NativeDiff._SUMMARY_STAT_NAME, m.group('value'), m.group('units'))
-    return None
+    raise Exception('Could not extract total from:\n' + self._diff)
 
   def DetailedResults(self):
     return self._diff.splitlines()
@@ -135,7 +136,7 @@ class ResourceSizesDiff(BaseDiff):
         if 'normalized' in subsection_name:
           full_name = '{} {}'.format(section_name, subsection_name)
           return _DiffResult(full_name, value, units)
-    return None
+    raise Exception('Could not find "normalized" in: ' + repr(self._diff))
 
   def DetailedResults(self):
     return self._ResultLines()
@@ -833,17 +834,13 @@ def _DiffMain(args):
     supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
     diff = NativeDiff(args.apk_name + '.size', supersize_path)
   else:
-    diff = ResourceSizesDiff(args.apk_name, args.apk_name + '.json')
+    diff = ResourceSizesDiff(args.apk_name)
 
   diff.ProduceDiff(args.before_dir, args.after_dir)
   with open(args.diff_output, 'w') as f:
     f.writelines(l + '\n' for l in diff.DetailedResults())
-
-  stat = diff.summary_stat
-  if stat:
-    print 'Summary: {} {} {}'.format(*stat)
-  else:
-    print 'Missing Summary!'
+    stat = diff.summary_stat
+    f.write('{}={}\n'.format(*stat[:2]))
 
 
 def main():
