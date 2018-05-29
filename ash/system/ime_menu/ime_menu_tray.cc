@@ -267,6 +267,7 @@ class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
     return native_theme->GetSystemColor(
         ui::NativeTheme::kColorId_BubbleBackground);
   }
+  bool IsOverflowIndicatorEnabled() const override { return true; }
 
  protected:
   void Layout() override {

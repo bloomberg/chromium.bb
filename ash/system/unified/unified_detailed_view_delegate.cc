@@ -27,4 +27,8 @@ SkColor UnifiedDetailedViewDelegate::GetBackgroundColor(
   return SK_ColorTRANSPARENT;
 }
 
+bool UnifiedDetailedViewDelegate::IsOverflowIndicatorEnabled() const {
+  return false;
+}
+
 }  // namespace ash

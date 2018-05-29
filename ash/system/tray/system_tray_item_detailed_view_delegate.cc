@@ -48,4 +48,8 @@ void SystemTrayItemDetailedViewDelegate::DoTransitionToMainView() {
   owner_->set_restore_focus(false);
 }
 
+bool SystemTrayItemDetailedViewDelegate::IsOverflowIndicatorEnabled() const {
+  return true;
+}
+
 }  // namespace ash

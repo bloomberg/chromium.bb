@@ -29,6 +29,9 @@ class DetailedViewDelegate {
 
   // Get the background color of the detailed view.
   virtual SkColor GetBackgroundColor(ui::NativeTheme* native_theme) = 0;
+
+  // Return true if overflow indicator of ScrollView is enabled.
+  virtual bool IsOverflowIndicatorEnabled() const = 0;
 };
 
 }  // namespace ash

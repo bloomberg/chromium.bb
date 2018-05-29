@@ -25,6 +25,7 @@ class ASH_EXPORT SystemTrayItemDetailedViewDelegate
   void TransitionToMainView(bool restore_focus) override;
   void CloseBubble() override;
   SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override;
+  bool IsOverflowIndicatorEnabled() const override;
 
  private:
   // Actually transitions to the main view. The actual transition is
