@@ -74,6 +74,11 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
       const gfx::Rect& layer_bounds,
       const PropertyTreeState&);
 
+  const RasterInvalidationTracking* GetRasterInvalidationTrackingForTesting()
+      const {
+    return raster_invalidator_.GetTracking();
+  }
+
  private:
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;

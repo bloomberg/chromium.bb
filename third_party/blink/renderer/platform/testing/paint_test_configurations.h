@@ -37,10 +37,10 @@ class PaintTestConfigurations
   }
 };
 
-#define INSTANTIATE_PAINT_TEST_CASE_P(test_class)                      \
-  INSTANTIATE_TEST_CASE_P(                                             \
-      All, test_class,                                                 \
-      ::testing::Values(0, kSlimmingPaintV175, kBlinkGenPropertyTrees, \
+#define INSTANTIATE_PAINT_TEST_CASE_P(test_class)                   \
+  INSTANTIATE_TEST_CASE_P(                                          \
+      All, test_class,                                              \
+      ::testing::Values(kSlimmingPaintV175, kBlinkGenPropertyTrees, \
                         kSlimmingPaintV2))
 
 #define INSTANTIATE_SPV2_TEST_CASE_P(test_class) \

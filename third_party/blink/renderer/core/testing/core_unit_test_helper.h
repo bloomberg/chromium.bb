@@ -59,6 +59,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   // FrameClient overrides:
   void Detached(FrameDetachType) override;
   LocalFrame* Parent() const override { return parent_.Get(); }
+  LocalFrame* Top() const override { return parent_.Get(); }
 
  private:
   explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
