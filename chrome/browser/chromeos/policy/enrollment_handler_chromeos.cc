@@ -507,11 +507,8 @@ void EnrollmentHandlerChromeOS::SetFirmwareManagementParametersData() {
 void EnrollmentHandlerChromeOS::OnFirmwareManagementParametersDataSet(
     base::Optional<cryptohome::BaseReply> reply) {
   DCHECK_EQ(STEP_SET_FWMP_DATA, enrollment_step_);
-  if (!reply.has_value()) {
-    LOG(ERROR)
-        << "Failed to update firmware management parameters in TPM, error: "
-        << reply->error();
-  }
+  if (!reply.has_value())
+    LOG(ERROR) << "Failed to update firmware management parameters in TPM.";
 
   SetStep(STEP_LOCK_DEVICE);
   StartLockDevice();
