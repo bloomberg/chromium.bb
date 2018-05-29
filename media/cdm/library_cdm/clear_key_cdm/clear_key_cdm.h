@@ -161,7 +161,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
 
   void StartCdmProxyTest();
   void OnCdmProxyTestComplete(bool success);
-  void ReportCdmProxyTestResult();
 
   int host_interface_version_ = 0;
 
@@ -194,7 +193,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   bool is_running_output_protection_test_ = false;
   bool is_running_platform_verification_test_ = false;
   bool is_running_storage_id_test_ = false;
-  bool has_cdm_proxy_test_passed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClearKeyCdm);
 };

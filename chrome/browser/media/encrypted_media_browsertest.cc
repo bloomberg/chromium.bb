@@ -855,8 +855,10 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
     return;
   }
 
-  TestNonPlaybackCases(kExternalClearKeyCdmProxyTestKeySystem,
-                       kUnitTestSuccess);
+  // ClearKeyCdmProxy only supports decrypt-only.
+  RunSimpleEncryptedMediaTest("bear-a_enc-a.webm", kWebMVorbisAudioOnly,
+                              kExternalClearKeyCdmProxyTestKeySystem,
+                              SrcType::MSE);
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

@@ -33,6 +33,10 @@ class Origin;
 
 namespace media {
 
+namespace mojom {
+class InterfaceFactory;
+}
+
 class MojoDecryptor;
 
 // A ContentDecryptionModule that proxies to a mojom::ContentDecryptionModule.
@@ -49,6 +53,7 @@ class MojoCdm : public ContentDecryptionModule,
       const url::Origin& security_origin,
       const CdmConfig& cdm_config,
       mojom::ContentDecryptionModulePtr remote_cdm,
+      mojom::InterfaceFactory* interface_factory,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
@@ -84,6 +89,7 @@ class MojoCdm : public ContentDecryptionModule,
 
  private:
   MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
+          mojom::InterfaceFactory* interface_factory,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
@@ -132,6 +138,7 @@ class MojoCdm : public ContentDecryptionModule,
   THREAD_CHECKER(thread_checker_);
 
   mojom::ContentDecryptionModulePtr remote_cdm_;
+  mojom::InterfaceFactory* interface_factory_;
   mojo::Binding<ContentDecryptionModuleClient> client_binding_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

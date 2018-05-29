@@ -286,6 +286,7 @@ PlayerUtils.createPlayer = function(video, testConfig) {
     switch (keySystem) {
       case WIDEVINE_KEYSYSTEM:
         return WidevinePlayer;
+      case CDM_PROXY_TEST_KEYSYSTEM:
       case CLEARKEY:
       case EXTERNAL_CLEARKEY:
       case MESSAGE_TYPE_TEST_KEYSYSTEM:
@@ -296,7 +297,6 @@ PlayerUtils.createPlayer = function(video, testConfig) {
       case PLATFORM_VERIFICATION_TEST_KEYSYSTEM:
       case VERIFY_HOST_FILES_TEST_KEYSYSTEM:
       case STORAGE_ID_TEST_KEYSYSTEM:
-      case CDM_PROXY_TEST_KEYSYSTEM:
         return UnitTestPlayer;
       default:
         Utils.timeLog(keySystem + ' is not a known key system');
