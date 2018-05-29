@@ -422,13 +422,12 @@ void ContentSecurityPolicy::SetOverrideURLForSelf(const KURL& url) {
                     String(), CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 }
 
-std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::Headers()
-    const {
-  std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-      std::make_unique<Vector<CSPHeaderAndType>>();
+Vector<CSPHeaderAndType> ContentSecurityPolicy::Headers() const {
+  Vector<CSPHeaderAndType> headers;
+  headers.ReserveInitialCapacity(policies_.size());
   for (const auto& policy : policies_) {
-    CSPHeaderAndType header_and_type(policy->Header(), policy->HeaderType());
-    headers->push_back(header_and_type);
+    headers.UncheckedAppend(
+        CSPHeaderAndType(policy->Header(), policy->HeaderType()));
   }
   return headers;
 }

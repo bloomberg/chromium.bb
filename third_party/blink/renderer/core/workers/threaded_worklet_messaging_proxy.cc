@@ -56,7 +56,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
           document->Url(), ScriptType::kModule, document->UserAgent(),
-          csp->Headers().get(), document->GetReferrerPolicy(),
+          csp->Headers(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),
           worker_clients, document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),

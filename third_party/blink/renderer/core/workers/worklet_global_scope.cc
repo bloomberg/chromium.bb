@@ -52,7 +52,7 @@ WorkletGlobalScope::WorkletGlobalScope(
   // Step 6: "Invoke the initialize a global object's CSP list algorithm given
   // workletGlobalScope."
   ApplyContentSecurityPolicyFromVector(
-      *creation_params->content_security_policy_parsed_headers);
+      creation_params->content_security_policy_parsed_headers);
   // CSP checks should resolve self based on the 'fetch client settings object'
   // (i.e., the document's origin), not the 'module map settings object' (i.e.,
   // the opaque origin of this worklet global scope). The current implementation

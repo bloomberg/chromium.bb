@@ -63,7 +63,7 @@ class MainThreadWorkletTest : public PageTestBase {
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         document->Url(), ScriptType::kModule, document->UserAgent(),
-        document->GetContentSecurityPolicy()->Headers().get(),
+        document->GetContentSecurityPolicy()->Headers(),
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         document->IsSecureContext(), nullptr /* worker_clients */,
         document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),

@@ -298,15 +298,13 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
   EXPECT_CALL(*lifecycle_observer_, ContextDestroyed(_)).Times(1);
 
-  auto headers = std::make_unique<Vector<CSPHeaderAndType>>();
-  CSPHeaderAndType header_and_type("contentSecurityPolicy",
-                                   kContentSecurityPolicyHeaderTypeReport);
-  headers->push_back(header_and_type);
+  Vector<CSPHeaderAndType> headers{
+      {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
           KURL("http://fake.url/"), ScriptType::kClassic, "fake user agent",
-          headers.get(), kReferrerPolicyDefault, security_origin_.get(),
+          headers, kReferrerPolicyDefault, security_origin_.get(),
           false /* starter_secure_context */, nullptr /* workerClients */,
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
           base::UnguessableToken::Create(),

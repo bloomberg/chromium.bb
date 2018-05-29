@@ -151,7 +151,7 @@ class CORE_EXPORT ContentSecurityPolicy
                                 ContentSecurityPolicyHeaderSource);
   void ReportAccumulatedHeaders(LocalFrameClient*) const;
 
-  std::unique_ptr<Vector<CSPHeaderAndType>> Headers() const;
+  Vector<CSPHeaderAndType> Headers() const;
 
   // |element| will not be present for navigations to javascript URLs,
   // as those checks happen in the middle of the navigation algorithm,

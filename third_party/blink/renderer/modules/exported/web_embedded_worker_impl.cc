@@ -370,7 +370,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, script_type,
         worker_start_data_.user_agent,
-        document->GetContentSecurityPolicy()->Headers().get(),
+        document->GetContentSecurityPolicy()->Headers(),
         document->GetReferrerPolicy(), starter_origin, starter_secure_context,
         worker_clients, main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
@@ -387,7 +387,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // script.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, script_type,
-        worker_start_data_.user_agent, nullptr /* ContentSecurityPolicy */,
+        worker_start_data_.user_agent, Vector<CSPHeaderAndType>(),
         kReferrerPolicyDefault, starter_origin, starter_secure_context,
         worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
