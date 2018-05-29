@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -503,17 +504,24 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
         PixelSnappedIntRect(
             LayoutRect(LayoutPoint(subpixel_accumulation), contents_size))
             .Size();
-    // The scrolling contents layer must be at least as large as the clip.
-    scroll_contents_size = scroll_contents_size.ExpandedTo(IntSize(
-        container_layer->bounds().width(), container_layer->bounds().height()));
-    cc_layer->SetBounds(static_cast<gfx::Size>(scroll_contents_size));
-    // VisualViewport scrolling may involve pinch zoom and gets routed through
-    // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
-    // since it needs to be set in tandem with the page scale delta.
+
     if (scrollable_area != &page_->GetVisualViewport()) {
+      // The scrolling contents layer must be at least as large as its clip.
+      // The visual viewport is special because the size of its scrolling
+      // content depends on the page scale factor. Its scrollable content is
+      // the layout viewport which is sized based on the minimum allowed page
+      // scale so it actually can be smaller than its clip.
+      scroll_contents_size =
+          scroll_contents_size.ExpandedTo(IntSize(container_layer->bounds()));
+
+      // VisualViewport scrolling may involve pinch zoom and gets routed through
+      // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
+      // since it needs to be set in tandem with the page scale delta.
       cc_layer->set_did_scroll_callback(WTF::BindRepeating(
           &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
     }
+
+    cc_layer->SetBounds(static_cast<gfx::Size>(scroll_contents_size));
   }
   if (ScrollbarLayerGroup* scrollbar_layer_group =
           GetScrollbarLayerGroup(scrollable_area, kHorizontalScrollbar)) {
