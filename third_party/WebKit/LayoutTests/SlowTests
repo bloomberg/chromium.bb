@@ -373,7 +373,6 @@ crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-fillPath-patte
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-filter-origin-clean.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Slow ]
-crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-filter-removed.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Slow ]
