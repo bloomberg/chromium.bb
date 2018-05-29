@@ -18,7 +18,9 @@ namespace headless {
 
 // static
 std::unique_ptr<HeadlessDevToolsClient> HeadlessDevToolsClient::Create() {
-  return std::make_unique<HeadlessDevToolsClientImpl>();
+  auto result = std::make_unique<HeadlessDevToolsClientImpl>();
+  result->InitBrowserMainThread();
+  return result;
 }
 
 // static
@@ -71,8 +73,6 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       service_worker_domain_(this),
       target_domain_(this),
       tracing_domain_(this),
-      browser_main_thread_(content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI)),
       weak_ptr_factory_(this) {}
 
 HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() = default;
@@ -88,6 +88,11 @@ void HeadlessDevToolsClientImpl::AttachToExternalHost(
     ExternalHost* external_host) {
   DCHECK(!agent_host_ && !external_host_);
   external_host_ = external_host;
+}
+
+void HeadlessDevToolsClientImpl::InitBrowserMainThread() {
+  browser_main_thread_ = content::BrowserThread::GetTaskRunnerForThread(
+      content::BrowserThread::UI);
 }
 
 void HeadlessDevToolsClientImpl::DetachFromHost(
@@ -191,35 +196,47 @@ bool HeadlessDevToolsClientImpl::DispatchMessageReply(
   if (!callback.callback_with_result.is_null()) {
     const base::DictionaryValue* result_dict;
     if (message_dict.GetDictionary("result", &result_dict)) {
-      browser_main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
-              weak_ptr_factory_.GetWeakPtr(), std::move(owning_message),
-              std::move(callback.callback_with_result), result_dict));
+      if (browser_main_thread_) {
+        browser_main_thread_->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
+                weak_ptr_factory_.GetWeakPtr(), std::move(owning_message),
+                std::move(callback.callback_with_result), result_dict));
+      } else {
+        std::move(callback.callback_with_result).Run(*result_dict);
+      }
     } else if (message_dict.GetDictionary("error", &result_dict)) {
       auto null_value = std::make_unique<base::Value>();
       DLOG(ERROR) << "Error in method call result: " << *result_dict;
-      browser_main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
-              weak_ptr_factory_.GetWeakPtr(), std::move(null_value),
-              std::move(callback.callback_with_result), null_value.get()));
+      if (browser_main_thread_) {
+        browser_main_thread_->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &HeadlessDevToolsClientImpl::DispatchMessageReplyWithResultTask,
+                weak_ptr_factory_.GetWeakPtr(), std::move(null_value),
+                std::move(callback.callback_with_result), null_value.get()));
+      } else {
+        std::move(callback.callback_with_result).Run(*null_value);
+      }
     } else {
       NOTREACHED() << "Reply has neither result nor error";
       return false;
     }
   } else if (!callback.callback.is_null()) {
-    browser_main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](base::WeakPtr<HeadlessDevToolsClientImpl> self,
-               base::OnceClosure callback) {
-              if (self)
-                std::move(callback).Run();
-            },
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback.callback)));
+    if (browser_main_thread_) {
+      browser_main_thread_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](base::WeakPtr<HeadlessDevToolsClientImpl> self,
+                 base::OnceClosure callback) {
+                if (self)
+                  std::move(callback).Run();
+              },
+              weak_ptr_factory_.GetWeakPtr(), std::move(callback.callback)));
+    } else {
+      std::move(callback.callback).Run();
+    }
   }
   return true;
 }
