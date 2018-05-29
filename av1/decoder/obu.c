@@ -536,6 +536,7 @@ aom_codec_err_t aom_read_obu_header_and_size(const uint8_t *data,
   return AOM_CODEC_OK;
 }
 
+#define EXT_TILE_DEBUG 0
 int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                const uint8_t *data_end,
                                const uint8_t **p_data_end) {
@@ -634,13 +635,25 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         }
         decoded_payload_size = frame_header_size;
 
-        // In large scale tile coding, decode the common camera frame header
-        // before any tile list OBU.
-        if (cm->show_existing_frame || pbi->camera_frame_header_ready) {
+        if (cm->show_existing_frame) {
           frame_decoding_finished = 1;
           pbi->seen_frame_header = 0;
           break;
         }
+
+#if !EXT_TILE_DEBUG
+        // In large scale tile coding, decode the common camera frame header
+        // before any tile list OBU.
+        if (pbi->camera_frame_header_ready) {
+          frame_decoding_finished = 1;
+          // Skip the rest of the frame data.
+          decoded_payload_size = payload_size;
+          // Update data_end.
+          *p_data_end = data_end;
+          break;
+        }
+#endif  // EXT_TILE_DEBUG
+
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
@@ -716,3 +729,4 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 
   return frame_decoding_finished;
 }
+#undef EXT_TILE_DEBUG
