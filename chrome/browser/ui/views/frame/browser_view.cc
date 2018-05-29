@@ -2316,20 +2316,35 @@ void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
   // its bounds.  If it did, we would need to change how ink drops are drawn.
   // TODO(bruthig): Consider a more general mechanism for manipulating the
   // z-order of the ink drops.
+  // TODO(lgrey): Remove this comment when non-MD-refresh code path is removed.
+  // We will still need to order the detached bookmark bar below the infobar
+  // so that the infobar's shadow can draw on top of it, but in MD refresh, the
+  // ink drops in the toolbar mask to their buttons' bounds.
 
   if (new_parent == this) {
     // BookmarkBarView is detached.
-    const int top_container_index = GetIndexOf(top_container_);
-    DCHECK_GE(top_container_index, 0);
+    views::View* target_view = nullptr;
+    if (ui::MaterialDesignController::IsRefreshUi()) {
+      target_view = infobar_container_;
+    } else {
+      target_view = top_container_;
+    }
+    const int target_index = GetIndexOf(target_view);
+    DCHECK_GE(target_index, 0);
     // |top_container_| contains the toolbar, so putting the bookmark bar ahead
     // of it will ensure it's drawn before the toolbar.
-    AddChildViewAt(bookmark_bar_view_.get(), top_container_index);
+    // In MD refresh, the same applies, but for the infobar.
+    AddChildViewAt(bookmark_bar_view_.get(), target_index);
   } else if (new_parent == top_container_) {
     // BookmarkBarView is attached.
 
-    // The toolbar is a child of |top_container_|, so making the bookmark bar
-    // the first child ensures it's drawn before the toolbar.
-    new_parent->AddChildViewAt(bookmark_bar_view_.get(), 0);
+    if (ui::MaterialDesignController::IsRefreshUi()) {
+      new_parent->AddChildView(bookmark_bar_view_.get());
+    } else {
+      // The toolbar is a child of |top_container_|, so making the bookmark bar
+      // the first child ensures it's drawn before the toolbar.
+      new_parent->AddChildViewAt(bookmark_bar_view_.get(), 0);
+    }
   } else {
     DCHECK(!new_parent);
     // Bookmark bar is being detached from all views because it is hidden.
