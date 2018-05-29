@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/ozone/common/linux/gbm_device_linux.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmEventContext drmEventContext;
@@ -37,7 +38,8 @@ class HardwareDisplayPlaneManager;
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
 // would be called. In unit tests this interface would be stubbed.
-class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
+class DrmDevice : public GbmDeviceLinux,
+                  public base::RefCountedThreadSafe<DrmDevice> {
  public:
   using PageFlipCallback =
       base::OnceCallback<void(unsigned int /* frame */,
@@ -210,7 +212,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
  protected:
   friend class base::RefCountedThreadSafe<DrmDevice>;
 
-  virtual ~DrmDevice();
+  ~DrmDevice() override;
 
   std::unique_ptr<HardwareDisplayPlaneManager> plane_manager_;
 
