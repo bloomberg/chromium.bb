@@ -258,13 +258,13 @@ aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,
 }
 
 /* If any buffer updating is signaled it should be done here. */
-static void swap_frame_buffers(AV1Decoder *pbi) {
+static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
   int ref_index = 0, mask;
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
-  if (!pbi->dropped_obus) {
+  if (frame_decoded) {
     lock_buffer_pool(pool);
     for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
       const int old_idx = cm->ref_frame_map[ref_index];
@@ -405,7 +405,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   cm->error.setjmp = 1;
 
-  aom_decode_frame_from_obus(pbi, source, source + size, psource);
+  int frame_decoded =
+      aom_decode_frame_from_obus(pbi, source, source + size, psource);
 
   if (cm->error.error_code != AOM_CODEC_OK) return 1;
 
@@ -418,7 +419,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   cm->txb_count = 0;
 #endif
 
-  swap_frame_buffers(pbi);
+  swap_frame_buffers(pbi, frame_decoded);
 
   aom_clear_system_state();
 
@@ -442,7 +443,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   cm->last_tile_rows = cm->tile_rows;
   cm->error.setjmp = 0;
 
-  if (!pbi->dropped_obus) pbi->ready_for_new_data = 0;
+  if (frame_decoded) pbi->ready_for_new_data = 0;
   return 0;
 }
 

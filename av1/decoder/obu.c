@@ -536,9 +536,9 @@ aom_codec_err_t aom_read_obu_header_and_size(const uint8_t *data,
   return AOM_CODEC_OK;
 }
 
-void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
-                                const uint8_t *data_end,
-                                const uint8_t **p_data_end) {
+int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
+                               const uint8_t *data_end,
+                               const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
   int frame_decoding_finished = 0;
   int is_first_tg_obu_received = 1;
@@ -547,11 +547,10 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   size_t seq_header_size = 0;
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
-  pbi->dropped_obus = 0;
 
   if (data_end < data) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-    return;
+    return -1;
   }
 
   // Reset pbi->camera_frame_header_ready to 0 if cm->large_scale_tile = 0.
@@ -567,8 +566,9 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     const size_t bytes_available = data_end - data;
 
     if (bytes_available == 0 && !pbi->seen_frame_header) {
+      *p_data_end = data;
       cm->error.error_code = AOM_CODEC_OK;
-      return;
+      break;
     }
 
     aom_codec_err_t status =
@@ -576,7 +576,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                      &obu_header, &payload_size, &bytes_read);
     if (status != AOM_CODEC_OK) {
       cm->error.error_code = status;
-      return;
+      return -1;
     }
 
     // Note: aom_read_obu_header_and_size() takes care of checking that this
@@ -592,8 +592,6 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       // don't decode obu if it's not in current operating mode
       if (!is_obu_in_current_operating_point(pbi, obu_header)) {
         data += payload_size;
-        *p_data_end = data;
-        pbi->dropped_obus++;
         continue;
       }
     }
@@ -608,7 +606,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_SEQUENCE_HEADER:
         if (!seq_header_received) {
           decoded_payload_size = read_sequence_header_obu(pbi, &rb);
-          if (cm->error.error_code != AOM_CODEC_OK) return;
+          if (cm->error.error_code != AOM_CODEC_OK) return -1;
 
           seq_header_size = decoded_payload_size;
           seq_header_received = 1;
@@ -617,7 +615,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           // are required to be identical.
           if (payload_size != seq_header_size) {
             cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-            return;
+            return -1;
           }
           decoded_payload_size = seq_header_size;
         }
@@ -629,7 +627,6 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (!pbi->seen_frame_header ||
             (cm->large_scale_tile && !pbi->camera_frame_header_ready)) {
           pbi->seen_frame_header = 1;
-          pbi->dropped_obus = 0;
           av1_init_read_bit_buffer(pbi, &rb, data, data_end);
           frame_header_size = read_frame_header_obu(
               pbi, &rb, data, p_data_end, obu_header.type != OBU_FRAME);
@@ -650,12 +647,12 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_TILE_GROUP:
         if (!pbi->seen_frame_header) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-          return;
+          return -1;
         }
         if (data_end < data + obu_payload_offset ||
             data_end < data + payload_size) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-          return;
+          return -1;
         }
         decoded_payload_size += read_one_tile_group_obu(
             pbi, &rb, is_first_tg_obu_received, data + obu_payload_offset,
@@ -667,7 +664,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       case OBU_METADATA:
         if (data_end < data + payload_size) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-          return;
+          return -1;
         }
         decoded_payload_size = read_metadata(data, payload_size);
         break;
@@ -681,7 +678,7 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         // The common camera frame header has to be already decoded.
         if (!pbi->camera_frame_header_ready) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-          return;
+          return -1;
         }
 
         // Place holder: Process the tile list.
@@ -697,12 +694,12 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     // Check that the signalled OBU size matches the actual amount of data read
     if (decoded_payload_size > payload_size) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-      return;
+      return -1;
     }
 
     if (data_end < data + payload_size) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-      return;
+      return -1;
     }
 
     // If there are extra padding bytes, they should all be zero
@@ -710,10 +707,12 @@ void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       uint8_t padding_byte = data[decoded_payload_size++];
       if (padding_byte != 0) {
         cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-        return;
+        return -1;
       }
     }
 
     data += payload_size;
   }
+
+  return frame_decoding_finished;
 }

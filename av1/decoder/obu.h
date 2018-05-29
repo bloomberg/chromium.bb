@@ -35,9 +35,14 @@ aom_codec_err_t aom_read_obu_header_and_size(const uint8_t *data,
                                              size_t *const payload_size,
                                              size_t *const bytes_read);
 
-void aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
-                                const uint8_t *data_end,
-                                const uint8_t **p_data_end);
+// Try to decode one frame from a buffer.
+// Returns 1 if we decoded a frame,
+//         0 if we didn't decode a frame but that's okay
+//           (eg, if there was a frame but we skipped it),
+//     or -1 on error
+int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
+                               const uint8_t *data_end,
+                               const uint8_t **p_data_end);
 
 aom_codec_err_t aom_get_num_layers_from_operating_point_idc(
     int operating_point_idc, unsigned int *num_spatial_layers,
