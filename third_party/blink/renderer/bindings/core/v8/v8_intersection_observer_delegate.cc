@@ -38,10 +38,4 @@ void V8IntersectionObserverDelegate::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void V8IntersectionObserverDelegate::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_);
-  IntersectionObserverDelegate::TraceWrappers(visitor);
-}
-
 }  // namespace blink
