@@ -513,14 +513,26 @@ void AutoEnrollmentController::UpdateState(
   }
 
   if (state_ == policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT) {
-    StartRemoveFirmwareManagementParameters();
+    // Cryptohome D-Bus service may not be available yet. See
+    // https://crbug.com/841627.
+    DBusThreadManager::Get()
+        ->GetCryptohomeClient()
+        ->WaitForServiceToBeAvailable(base::BindOnce(
+            &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
+            weak_ptr_factory_.GetWeakPtr()));
   } else {
     progress_callbacks_.Notify(state_);
   }
 }
 
-void AutoEnrollmentController::StartRemoveFirmwareManagementParameters() {
+void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
+    bool service_is_ready) {
   DCHECK_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  if (!service_is_ready) {
+    LOG(ERROR) << "Failed waiting for cryptohome D-Bus service availability.";
+    progress_callbacks_.Notify(state_);
+    return;
+  }
 
   cryptohome::RemoveFirmwareManagementParametersRequest request;
   DBusThreadManager::Get()
@@ -534,10 +546,8 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters() {
 
 void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
     base::Optional<cryptohome::BaseReply> reply) {
-  if (!reply.has_value()) {
-    LOG(ERROR) << "Failed to remove firmware management parameters, error: "
-               << reply->error();
-  }
+  if (!reply.has_value())
+    LOG(ERROR) << "Failed to remove firmware management parameters.";
 
   progress_callbacks_.Notify(state_);
 }

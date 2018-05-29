@@ -166,8 +166,9 @@ class AutoEnrollmentController {
   // the user might try to switch to devmode. In this case, if block_devmode is
   // in FWMP and the clear operation didn't finish, the switch would be denied.
   // Also the safeguard timer has to be active until the FWMP is cleared to
-  // avoid the risk of blocked flow.
-  void StartRemoveFirmwareManagementParameters();
+  // avoid the risk of blocked flow. |service_is_ready| indicates if cryptohome
+  // D-Bus service is ready.
+  void StartRemoveFirmwareManagementParameters(bool service_is_ready);
 
   // Callback for RemoveFirmwareManagementParameters(). If an error is received
   // here, it is logged only, without changing the flow after that, because
