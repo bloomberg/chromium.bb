@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -518,17 +519,34 @@ bool ValidateProcessMmaps(base::Value* process_mmaps,
                           bool should_have_contents) {
   base::Value* vm_regions = process_mmaps->FindKey("vm_regions");
   size_t count = vm_regions->GetList().size();
-  if (should_have_contents) {
-    if (count == 0) {
-      LOG(ERROR) << "vm_regions should have contents, but doesn't";
-      return false;
-    }
-  } else {
+  if (!should_have_contents) {
     if (count != 0) {
       LOG(ERROR) << "vm_regions should be empty, but has contents";
       return false;
     }
+    return true;
   }
+
+  if (count == 0) {
+    LOG(ERROR) << "vm_regions should have contents, but doesn't";
+    return false;
+  }
+
+  // File paths may contain PII. Make sure that "mf" entries only contain the
+  // basename, rather than a full path.
+  for (const base::Value& vm_region : vm_regions->GetList()) {
+    const base::Value* file_path_value = vm_region.FindKey("mf");
+    if (file_path_value) {
+      std::string file_path = file_path_value->GetString();
+
+      base::FilePath::StringType path(file_path.begin(), file_path.end());
+      if (base::FilePath(path).BaseName().AsUTF8Unsafe() != file_path) {
+        LOG(ERROR) << "vm_region should not contain file path: " << file_path;
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -830,7 +848,7 @@ void TestDriver::CollectResults(bool synchronous) {
   Supervisor::GetInstance()->RequestTraceWithHeapDump(
       base::Bind(&TestDriver::TraceFinished, base::Unretained(this),
                  std::move(finish_tracing_closure)),
-      false /* strip_path_from_mapped_files */);
+      /* anonymize= */ true);
 
   if (synchronous)
     run_loop->Run();
@@ -1029,6 +1047,11 @@ void TestDriver::WaitForProfilingToStartForAllRenderersUIThreadCallback(
     wait_for_ui_thread_.Signal();
     return;
   }
+
+  // Brief sleep to prevent spamming the task queue, since this code is called
+  // in a tight loop.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(100));
+
   WaitForProfilingToStartForAllRenderersUIThreadAndSignal();
 }
 
