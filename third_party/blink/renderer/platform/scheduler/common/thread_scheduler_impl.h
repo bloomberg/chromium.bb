@@ -25,9 +25,14 @@ namespace scheduler {
 // Scheduler-internal interface for the common methods between
 // MainThreadSchedulerImpl and NonMainThreadSchedulerImpl which should
 // not be exposed outside the scheduler.
-class PLATFORM_EXPORT ThreadSchedulerImpl : virtual public ThreadScheduler,
-                                            virtual public WebThreadScheduler {
+class PLATFORM_EXPORT ThreadSchedulerImpl : public ThreadScheduler,
+                                            public WebThreadScheduler {
  public:
+  // This type is defined in both ThreadScheduler and WebThreadScheduler,
+  // so the use of this type causes ambiguous lookup. Redefine this again
+  // to hide the base classes' ones.
+  using RendererPauseHandle = WebThreadScheduler::RendererPauseHandle;
+
   virtual scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() = 0;
 
   virtual void RegisterTimeDomain(

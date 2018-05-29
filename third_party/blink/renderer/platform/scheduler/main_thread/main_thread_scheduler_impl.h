@@ -21,7 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
@@ -64,8 +64,7 @@ class TaskQueueThrottler;
 class WebRenderWidgetSchedulingState;
 
 class PLATFORM_EXPORT MainThreadSchedulerImpl
-    : public WebMainThreadScheduler,
-      public ThreadSchedulerImpl,
+    : public ThreadSchedulerImpl,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
@@ -106,7 +105,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   ~MainThreadSchedulerImpl() override;
 
-  // WebMainThreadScheduler implementation:
+  // WebThreadScheduler implementation:
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
@@ -159,12 +158,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()
       override;
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
-  WebMainThreadScheduler* GetWebMainThreadSchedulerForTest() override;
+  WebThreadScheduler* GetWebMainThreadSchedulerForTest() override;
   NonMainThreadScheduler* AsNonMainThreadScheduler() override {
     return nullptr;
   }
 
-  // WebMainThreadScheduler implementation:
+  // WebThreadScheduler implementation:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
 

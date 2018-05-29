@@ -19,7 +19,7 @@
 
 namespace blink {
 namespace scheduler {
-class WebMainThreadScheduler;
+class WebThreadScheduler;
 }
 }  // namespace blink
 
@@ -41,7 +41,7 @@ class CONTENT_EXPORT DOMStorageCachedArea
       const std::string& namespace_id,
       const GURL& origin,
       DOMStorageProxy* proxy,
-      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
+      blink::scheduler::WebThreadScheduler* main_thread_scheduler);
 
   const std::string& namespace_id() const { return namespace_id_; }
   const GURL& origin() const { return origin_; }
@@ -104,7 +104,7 @@ class CONTENT_EXPORT DOMStorageCachedArea
   scoped_refptr<DOMStorageProxy> proxy_;
 
   // Not owned.
-  blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
 
   base::WeakPtrFactory<DOMStorageCachedArea> weak_factory_;
 };

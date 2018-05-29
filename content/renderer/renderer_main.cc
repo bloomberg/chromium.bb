@@ -34,7 +34,7 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #include "ui/base/ui_base_switches.h"
@@ -200,8 +200,8 @@ int RendererMain(const MainFunctionParams& parameters) {
       initial_virtual_time = base::Time::FromDoubleT(initial_time);
     }
   }
-  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
-      main_thread_scheduler(blink::scheduler::WebMainThreadScheduler::Create(
+  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler(
+      blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
           initial_virtual_time));
 
   // PlatformInitialize uses FieldTrials, so this must happen later.

@@ -17,14 +17,14 @@
 namespace blink {
 namespace scheduler {
 
-std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests() {
+std::unique_ptr<WebThreadScheduler> CreateWebMainThreadSchedulerForTests() {
   return std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::make_unique<base::sequence_manager::TaskQueueManagerForTest>(
           std::make_unique<LazyThreadControllerForTest>()),
       base::nullopt);
 }
 
-void RunIdleTasksForTesting(WebMainThreadScheduler* scheduler,
+void RunIdleTasksForTesting(WebThreadScheduler* scheduler,
                             base::OnceClosure callback) {
   MainThreadSchedulerImpl* scheduler_impl =
       static_cast<MainThreadSchedulerImpl*>(scheduler);

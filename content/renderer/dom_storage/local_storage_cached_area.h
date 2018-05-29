@@ -21,7 +21,7 @@
 
 namespace blink {
 namespace scheduler {
-class WebMainThreadScheduler;
+class WebThreadScheduler;
 }
 }  // namespace blink
 
@@ -52,12 +52,12 @@ class CONTENT_EXPORT LocalStorageCachedArea
       const url::Origin& origin,
       mojom::SessionStorageNamespace* session_namespace,
       LocalStorageCachedAreas* cached_areas,
-      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
+      blink::scheduler::WebThreadScheduler* main_thread_scheduler);
   LocalStorageCachedArea(
       const url::Origin& origin,
       mojom::StoragePartitionService* storage_partition_service,
       LocalStorageCachedAreas* cached_areas,
-      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
+      blink::scheduler::WebThreadScheduler* main_thread_scheduler);
 
   // These correspond to blink::WebStorageArea.
   unsigned GetLength();
@@ -152,7 +152,7 @@ class CONTENT_EXPORT LocalStorageCachedArea
   std::map<std::string, LocalStorageArea*> areas_;
 
   // Not owned.
-  blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
+  blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
 
   base::WeakPtrFactory<LocalStorageCachedArea> weak_factory_;
 

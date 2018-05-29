@@ -15,7 +15,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -123,7 +123,7 @@ class SynchronousCompositorProxyRegistry
 scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
     base::WeakPtr<RenderWidget> render_widget,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler) {
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler) {
   scoped_refptr<WidgetInputHandlerManager> manager =
       new WidgetInputHandlerManager(std::move(render_widget),
                                     std::move(compositor_task_runner),
@@ -135,7 +135,7 @@ scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
 WidgetInputHandlerManager::WidgetInputHandlerManager(
     base::WeakPtr<RenderWidget> render_widget,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : render_widget_(render_widget),
       main_thread_scheduler_(main_thread_scheduler),
       input_event_queue_(render_widget->GetInputEventQueue()),
@@ -457,12 +457,12 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
   InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
   if (ack_state == INPUT_EVENT_ACK_STATE_CONSUMED) {
     main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
-        *input_event, blink::scheduler::WebMainThreadScheduler::
-                          InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+        *input_event, blink::scheduler::WebThreadScheduler::InputEventState::
+                          EVENT_CONSUMED_BY_COMPOSITOR);
   } else if (MainThreadEventQueue::IsForwardedAndSchedulerKnown(ack_state)) {
     main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
-        *input_event, blink::scheduler::WebMainThreadScheduler::
-                          InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+        *input_event, blink::scheduler::WebThreadScheduler::InputEventState::
+                          EVENT_FORWARDED_TO_MAIN_THREAD);
   }
 
   if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||

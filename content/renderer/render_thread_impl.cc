@@ -150,7 +150,7 @@
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
 #include "third_party/blink/public/platform/web_memory_coordinator.h"
@@ -648,9 +648,8 @@ RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params,
     base::MessageLoop* unowned_message_loop) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
-  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
-      main_thread_scheduler =
-          blink::scheduler::WebMainThreadScheduler::Create();
+  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
+      blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
   return new RenderThreadImpl(params, std::move(main_thread_scheduler),
                               test_task_counter, unowned_message_loop);
@@ -659,7 +658,7 @@ RenderThreadImpl* RenderThreadImpl::Create(
 // static
 RenderThreadImpl* RenderThreadImpl::Create(
     std::unique_ptr<base::MessageLoop> main_message_loop,
-    std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+    std::unique_ptr<blink::scheduler::WebThreadScheduler>
         main_thread_scheduler) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Create");
   return new RenderThreadImpl(std::move(main_message_loop),
@@ -710,7 +709,7 @@ RenderThreadImpl::DeprecatedGetMainTaskRunner() {
 // the browser
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
-    std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler,
+    std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler,
     const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
     base::MessageLoop* unowned_message_loop)
     : ChildThreadImpl(
@@ -734,7 +733,7 @@ RenderThreadImpl::RenderThreadImpl(
 // which means that we need to make the render thread pump UI events.
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> owned_message_loop,
-    std::unique_ptr<blink::scheduler::WebMainThreadScheduler> scheduler)
+    std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler)
     : ChildThreadImpl(
           Options::Builder()
               .AutoStartServiceManagerConnection(false)
@@ -1125,7 +1124,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     }
   }
 
-  std::unique_ptr<blink::scheduler::WebMainThreadScheduler::RendererPauseHandle>
+  std::unique_ptr<blink::scheduler::WebThreadScheduler::RendererPauseHandle>
       renderer_paused_handle;
 
   if (pumping_events) {
@@ -1657,7 +1656,7 @@ gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
   return gpu_->gpu_memory_buffer_manager();
 }
 
-blink::scheduler::WebMainThreadScheduler*
+blink::scheduler::WebThreadScheduler*
 RenderThreadImpl::GetWebMainThreadScheduler() {
   return main_thread_scheduler_.get();
 }

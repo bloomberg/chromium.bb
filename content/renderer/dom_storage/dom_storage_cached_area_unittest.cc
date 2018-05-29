@@ -160,8 +160,7 @@ class DOMStorageCachedAreaTest : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;  // Needed to construct a RendererScheduler.
-  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
-      main_thread_scheduler_;
+  std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   scoped_refptr<MockProxy> mock_proxy_;
 };
 

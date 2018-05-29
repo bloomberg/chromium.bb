@@ -9,12 +9,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {
 
-class FakeRendererScheduler : public WebMainThreadScheduler {
+class FakeRendererScheduler : public WebThreadScheduler {
  public:
   FakeRendererScheduler();
   ~FakeRendererScheduler() override;

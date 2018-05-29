@@ -298,7 +298,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       &MainThreadSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
   // Compositor task queue and default task queue should be managed by
-  // WebMainThreadScheduler. Control task queue should not.
+  // WebThreadScheduler. Control task queue should not.
   task_runners_.insert(
       std::make_pair(helper_.DefaultMainThreadTaskQueue(), nullptr));
   task_runners_.insert(
@@ -2484,7 +2484,7 @@ base::TimeTicks MainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
   return GetActiveTimeDomain()->Now();
 }
 
-WebMainThreadScheduler*
+WebThreadScheduler*
 MainThreadSchedulerImpl::GetWebMainThreadSchedulerForTest() {
   return this;
 }

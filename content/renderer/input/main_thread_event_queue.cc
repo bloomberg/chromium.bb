@@ -209,7 +209,7 @@ MainThreadEventQueue::SharedState::~SharedState() {}
 MainThreadEventQueue::MainThreadEventQueue(
     MainThreadEventQueueClient* client,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler,
+    blink::scheduler::WebThreadScheduler* main_thread_scheduler,
     bool allow_raf_aligned_input)
     : client_(client),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
