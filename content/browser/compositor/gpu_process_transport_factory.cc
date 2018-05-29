@@ -187,7 +187,6 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
       compositing_mode_reporter_(compositing_mode_reporter),
       callback_factory_(this) {
   DCHECK(gpu_channel_factory_);
-  cc::SetClientNameForMetrics("Browser");
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableFrameRateLimit))
