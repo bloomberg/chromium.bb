@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -22,17 +24,21 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_error.h"
-#include "components/sync/model/recording_model_type_change_processor.h"
+#include "components/sync/model_impl/client_tag_based_model_type_processor.h"
+#include "components/sync/test/test_matchers.h"
 #include "components/webdata/common/web_database.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::UTF8ToUTF16;
 using base::ScopedTempDir;
 using base::Time;
 using base::TimeDelta;
+using base::UTF8ToUTF16;
 using sync_pb::AutofillSpecifics;
 using sync_pb::EntityMetadata;
 using sync_pb::EntitySpecifics;
@@ -42,13 +48,18 @@ using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
 using syncer::EntityDataPtr;
-using syncer::FakeModelTypeChangeProcessor;
+using syncer::HasInitialSyncDone;
+using syncer::IsEmptyMetadataBatch;
 using syncer::KeyAndData;
 using syncer::ModelError;
 using syncer::ModelType;
 using syncer::ModelTypeChangeProcessor;
 using syncer::ModelTypeSyncBridge;
-using syncer::RecordingModelTypeChangeProcessor;
+using syncer::MockModelTypeChangeProcessor;
+using testing::_;
+using testing::IsEmpty;
+using testing::Not;
+using testing::SizeIs;
 
 namespace autofill {
 
@@ -57,32 +68,56 @@ namespace {
 const char kNameFormat[] = "name %d";
 const char kValueFormat[] = "value %d";
 
-void VerifyEqual(const AutofillSpecifics& s1, const AutofillSpecifics& s2) {
-  // Instead of just comparing serialized strings, manually check fields to show
-  // differences on failure.
-  EXPECT_EQ(s1.name(), s2.name());
-  EXPECT_EQ(s1.value(), s2.value());
-  EXPECT_EQ(s1.usage_timestamp().size(), s2.usage_timestamp().size());
+MATCHER_P(HasSpecifics, expected, "") {
+  const AutofillSpecifics& s1 = arg->specifics.autofill();
+  const AutofillSpecifics& s2 = expected;
+
+  if (s1.usage_timestamp().size() != s2.usage_timestamp().size()) {
+    *result_listener << "usage_timstamp().size() not equal: "
+                     << s1.usage_timestamp().size()
+                     << "!=" << s2.usage_timestamp().size();
+    return false;
+  }
   int size = std::min(s1.usage_timestamp().size(), s2.usage_timestamp().size());
   for (int i = 0; i < size; ++i) {
-    EXPECT_EQ(s1.usage_timestamp(i), s2.usage_timestamp(i))
-        << "Values differ at index " << i;
+    if (s1.usage_timestamp(i) != s2.usage_timestamp(i)) {
+      *result_listener << "usage_timstamp(" << i
+                       << ") not equal: " << s1.usage_timestamp(i)
+                       << "!=" << s2.usage_timestamp(i);
+      return false;
+    }
   }
-  // Neither should have any profile data, so we don't have to compare it.
-  EXPECT_FALSE(s1.has_profile());
-  EXPECT_FALSE(s2.has_profile());
+
+  if (s1.name() != s2.name()) {
+    *result_listener << "name() not equal: " << s1.name() << "!=" << s2.name();
+    return false;
+  }
+
+  if (s1.value() != s2.value()) {
+    *result_listener << "value() not equal: " << s1.value()
+                     << "!=" << s2.value();
+    return false;
+  }
+
+  if (s1.has_profile() != s2.has_profile()) {
+    *result_listener << "has_profile() not equal: " << s1.has_profile()
+                     << "!=" << s2.has_profile();
+    return false;
+  }
+
+  return true;
 }
 
 void VerifyDataBatch(std::map<std::string, AutofillSpecifics> expected,
                      std::unique_ptr<DataBatch> batch) {
   while (batch->HasNext()) {
-    const KeyAndData& pair = batch->Next();
-    auto iter = expected.find(pair.first);
-    ASSERT_NE(iter, expected.end());
-    VerifyEqual(iter->second, pair.second->specifics.autofill());
+    const KeyAndData& data_pair = batch->Next();
+    auto expected_iter = expected.find(data_pair.first);
+    ASSERT_NE(expected_iter, expected.end());
+    EXPECT_THAT(data_pair.second, HasSpecifics(expected_iter->second));
     // Removing allows us to verify we don't see the same item multiple times,
     // and that we saw everything we expected.
-    expected.erase(iter);
+    expected.erase(expected_iter);
   }
   EXPECT_TRUE(expected.empty());
 }
@@ -98,13 +133,6 @@ AutofillEntry CreateAutofillEntry(const AutofillSpecifics& autofill_specifics) {
     date_last_used = Time::FromInternalValue(*timestamps.rbegin());
   }
   return AutofillEntry(key, date_created, date_last_used);
-}
-
-EntityDataPtr SpecificsToEntity(const AutofillSpecifics& specifics) {
-  EntityData data;
-  data.client_tag_hash = "ignored";
-  *data.specifics.mutable_autofill() = specifics;
-  return data.PassToPtr();
 }
 
 class FakeAutofillBackend : public AutofillWebDataBackend {
@@ -131,21 +159,49 @@ class FakeAutofillBackend : public AutofillWebDataBackend {
 
 class AutocompleteSyncBridgeTest : public testing::Test {
  public:
-  AutocompleteSyncBridgeTest() {
-    if (temp_dir_.CreateUniqueTempDir()) {
-      db_.AddTable(&table_);
-      db_.Init(temp_dir_.GetPath().AppendASCII("SyncTestWebDatabase"));
-      backend_.SetWebDatabase(&db_);
-      ResetBridge();
-    }
-  }
+  AutocompleteSyncBridgeTest() {}
   ~AutocompleteSyncBridgeTest() override {}
 
-  void ResetBridge(bool expect_error = false) {
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    db_.AddTable(&table_);
+    db_.Init(temp_dir_.GetPath().AppendASCII("SyncTestWebDatabase"));
+    backend_.SetWebDatabase(&db_);
+    ResetProcessor();
+    ResetBridge();
+  }
+
+  void ResetProcessor() {
+    real_processor_ =
+        std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+            syncer::AUTOFILL, /*dump_stack=*/base::DoNothing(),
+            /*commit_only=*/false);
+    mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
+  }
+
+  void ResetBridge() {
     bridge_.reset(new AutocompleteSyncBridge(
-        &backend_,
-        RecordingModelTypeChangeProcessor::CreateProcessorAndAssignRawPointer(
-            &processor_, expect_error)));
+        &backend_, mock_processor_.CreateForwardingProcessor()));
+  }
+
+  void StartSyncing(const std::vector<AutofillSpecifics>& remote_data = {}) {
+    base::RunLoop loop;
+    real_processor_->OnSyncStarting(
+        /*error_handler=*/base::DoNothing(),
+        base::BindLambdaForTesting(
+            [&loop](std::unique_ptr<syncer::ActivationContext>) {
+              loop.Quit();
+            }));
+    loop.Run();
+
+    // Initialize the processor with initial_sync_done.
+    sync_pb::ModelTypeState state;
+    state.set_initial_sync_done(true);
+    syncer::UpdateResponseDataList initial_updates;
+    for (const AutofillSpecifics& specifics : remote_data) {
+      initial_updates.push_back(SpecificsToUpdateResponse(specifics));
+    }
+    real_processor_->OnUpdateReceived(state, initial_updates);
   }
 
   void SaveSpecificsToTable(
@@ -205,20 +261,29 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return changes;
   }
 
-  void VerifyApplyChanges(const EntityChangeList& changes) {
+  EntityDataPtr SpecificsToEntity(const AutofillSpecifics& specifics) {
+    EntityData data;
+    *data.specifics.mutable_autofill() = specifics;
+    data.client_tag_hash = syncer::GenerateSyncableHash(
+        syncer::AUTOFILL, bridge()->GetClientTag(data));
+    return data.PassToPtr();
+  }
+
+  syncer::UpdateResponseData SpecificsToUpdateResponse(
+      const AutofillSpecifics& specifics) {
+    syncer::UpdateResponseData data;
+    data.entity = SpecificsToEntity(specifics);
+    return data;
+  }
+
+  void ApplyChanges(const EntityChangeList& changes) {
     const auto error = bridge()->ApplySyncChanges(
         bridge()->CreateMetadataChangeList(), changes);
     EXPECT_FALSE(error);
   }
 
-  void VerifyApplyAdds(const std::vector<AutofillSpecifics>& specifics) {
-    VerifyApplyChanges(CreateEntityAddList(specifics));
-  }
-
-  void VerifyMerge(const std::vector<AutofillSpecifics>& specifics) {
-    const auto error = bridge()->MergeSyncData(
-        bridge()->CreateMetadataChangeList(), CreateEntityAddList(specifics));
-    EXPECT_FALSE(error);
+  void ApplyAdds(const std::vector<AutofillSpecifics>& specifics) {
+    ApplyChanges(CreateEntityAddList(specifics));
   }
 
   std::map<std::string, AutofillSpecifics> ExpectedMap(
@@ -234,27 +299,11 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     bridge()->GetAllData(base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
-  void VerifyProcessorRecordedPut(const AutofillSpecifics& specifics,
-                                  int position = 0) {
-    const std::string storage_key = GetStorageKey(specifics);
-    auto recorded_specifics_iterator =
-        processor().put_multimap().find(storage_key);
-
-    EXPECT_NE(processor().put_multimap().end(), recorded_specifics_iterator);
-    while (position > 0) {
-      recorded_specifics_iterator++;
-      EXPECT_NE(processor().put_multimap().end(), recorded_specifics_iterator);
-      position--;
-    }
-
-    AutofillSpecifics recorded_specifics =
-        recorded_specifics_iterator->second->specifics.autofill();
-    VerifyEqual(recorded_specifics, specifics);
-  }
-
   AutocompleteSyncBridge* bridge() { return bridge_.get(); }
 
-  const RecordingModelTypeChangeProcessor& processor() { return *processor_; }
+  syncer::MockModelTypeChangeProcessor& mock_processor() {
+    return mock_processor_;
+  }
 
   AutofillTable* table() { return &table_; }
 
@@ -267,9 +316,8 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   AutofillTable table_;
   WebDatabase db_;
   std::unique_ptr<AutocompleteSyncBridge> bridge_;
-  // A non-owning pointer to the processor given to the bridge. Will be null
-  // before being given to the bridge, to make ownership easier.
-  RecordingModelTypeChangeProcessor* processor_ = nullptr;
+  testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
+  std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncBridgeTest);
 };
@@ -397,7 +445,7 @@ TEST_F(AutocompleteSyncBridgeTest, GetAllData) {
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesEmpty) {
   // TODO(skym, crbug.com/672619): Ideally would like to verify that the db is
   // not accessed.
-  VerifyApplyAdds(std::vector<AutofillSpecifics>());
+  ApplyAdds(std::vector<AutofillSpecifics>());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
@@ -406,10 +454,10 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
   ASSERT_NE(specifics1.SerializeAsString(), specifics2.SerializeAsString());
   ASSERT_NE(GetStorageKey(specifics1), GetStorageKey(specifics2));
 
-  VerifyApplyAdds({specifics1, specifics2});
+  ApplyAdds({specifics1, specifics2});
   VerifyAllData({specifics1, specifics2});
 
-  VerifyApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics1))});
+  ApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics1))});
   VerifyAllData({specifics2});
 }
 
@@ -417,43 +465,43 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
 // existing ones.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesWrongChangeType) {
   AutofillSpecifics specifics = CreateSpecifics(1, {1});
-  VerifyApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics))});
+  ApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics))});
   VerifyAllData(std::vector<AutofillSpecifics>());
 
-  VerifyApplyChanges({EntityChange::CreateUpdate(
-      GetStorageKey(specifics), SpecificsToEntity(specifics))});
+  ApplyChanges({EntityChange::CreateUpdate(GetStorageKey(specifics),
+                                           SpecificsToEntity(specifics))});
   VerifyAllData({specifics});
 
   specifics.add_usage_timestamp(Time::FromTimeT(2).ToInternalValue());
-  VerifyApplyAdds({specifics});
+  ApplyAdds({specifics});
   VerifyAllData({specifics});
 }
 
 // The format in the table has a fixed 2 timestamp format. Round tripping is
 // lossy and the middle value should be thrown out.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesThreeTimestamps) {
-  VerifyApplyAdds({CreateSpecifics(1, {1, 2, 3})});
+  ApplyAdds({CreateSpecifics(1, {1, 2, 3})});
   VerifyAllData({CreateSpecifics(1, {1, 3})});
 }
 
 // The correct format of timestamps is that the first should be smaller and the
 // second should be larger. Bad foreign data should be repaired.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesWrongOrder) {
-  VerifyApplyAdds({CreateSpecifics(1, {3, 2})});
+  ApplyAdds({CreateSpecifics(1, {3, 2})});
   VerifyAllData({CreateSpecifics(1, {2, 3})});
 }
 
 // In a minor attempt to save bandwidth, we only send one of the two timestamps
 // when they share a value.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesRepeatedTime) {
-  VerifyApplyAdds({CreateSpecifics(1, {2, 2})});
+  ApplyAdds({CreateSpecifics(1, {2, 2})});
   VerifyAllData({CreateSpecifics(1, {2})});
 }
 
 // Again, the format in the table is lossy, and cannot distinguish between no
 // time, and valid time zero.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesNoTime) {
-  VerifyApplyAdds({CreateSpecifics(1, std::vector<int>())});
+  ApplyAdds({CreateSpecifics(1, std::vector<int>())});
   VerifyAllData({CreateSpecifics(1, {0})});
 }
 
@@ -462,7 +510,7 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesNoTime) {
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesNoValue) {
   AutofillSpecifics input = CreateSpecifics(1, {2, 3});
   input.clear_value();
-  VerifyApplyAdds({input});
+  ApplyAdds({input});
   VerifyAllData(std::vector<AutofillSpecifics>());
 }
 
@@ -471,7 +519,7 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesNoValue) {
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesNoName) {
   AutofillSpecifics input = CreateSpecifics(1, {2, 3});
   input.clear_name();
-  VerifyApplyAdds({input});
+  ApplyAdds({input});
   VerifyAllData({input});
 }
 
@@ -480,7 +528,7 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesNoName) {
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesUTF) {
   const AutofillSpecifics specifics =
       CreateSpecifics(std::string("\n\0\x12\0", 4), "\xEC\xA4\x91", {1});
-  VerifyApplyAdds({specifics});
+  ApplyAdds({specifics});
   VerifyAllData({specifics});
 }
 
@@ -488,13 +536,13 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesUTF) {
 // usage time.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesMinMaxTimestamps) {
   const AutofillSpecifics initial = CreateSpecifics(1, {3, 6});
-  VerifyApplyAdds({initial});
+  ApplyAdds({initial});
   VerifyAllData({initial});
 
-  VerifyApplyAdds({CreateSpecifics(1, {2, 5})});
+  ApplyAdds({CreateSpecifics(1, {2, 5})});
   VerifyAllData({CreateSpecifics(1, {2, 6})});
 
-  VerifyApplyAdds({CreateSpecifics(1, {4, 7})});
+  ApplyAdds({CreateSpecifics(1, {4, 7})});
   VerifyAllData({CreateSpecifics(1, {2, 7})});
 }
 
@@ -514,6 +562,7 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesDatabaseFailure) {
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LocalEntriesAdded) {
+  StartSyncing();
   const AutofillSpecifics added_specifics1 = CreateSpecifics(1, {2, 3});
   const AutofillSpecifics added_specifics2 = CreateSpecifics(2, {2, 3});
 
@@ -522,56 +571,44 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntriesAdded) {
 
   table()->UpdateAutofillEntries({added_entry1, added_entry2});
 
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(added_specifics1), _));
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(added_specifics2), _));
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::ADD, added_entry1.key()),
        AutofillChange(AutofillChange::ADD, added_entry2.key())});
-
-  EXPECT_EQ(2u, processor().put_multimap().size());
-
-  VerifyProcessorRecordedPut(added_specifics1);
-  VerifyProcessorRecordedPut(added_specifics2);
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LocalEntryAddedThenUpdated) {
+  StartSyncing();
   const AutofillSpecifics added_specifics = CreateSpecifics(1, {2, 3});
   const AutofillEntry added_entry = CreateAutofillEntry(added_specifics);
   table()->UpdateAutofillEntries({added_entry});
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(added_specifics), _));
 
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::ADD, added_entry.key())});
 
-  EXPECT_EQ(1u, processor().put_multimap().size());
-
-  VerifyProcessorRecordedPut(added_specifics);
-
   const AutofillSpecifics updated_specifics = CreateSpecifics(1, {2, 4});
   const AutofillEntry updated_entry = CreateAutofillEntry(updated_specifics);
   table()->UpdateAutofillEntries({updated_entry});
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(updated_specifics), _));
 
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::UPDATE, updated_entry.key())});
-
-  VerifyProcessorRecordedPut(updated_specifics, 1);
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LocalEntryDeleted) {
+  StartSyncing();
   const AutofillSpecifics deleted_specifics = CreateSpecifics(1, {2, 3});
   const AutofillEntry deleted_entry = CreateAutofillEntry(deleted_specifics);
   const std::string storage_key = GetStorageKey(deleted_specifics);
 
+  EXPECT_CALL(mock_processor(), Delete(storage_key, _));
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::REMOVE, deleted_entry.key())});
-
-  EXPECT_EQ(1u, processor().delete_set().size());
-  EXPECT_NE(processor().delete_set().end(),
-            processor().delete_set().find(storage_key));
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
-  EXPECT_NE(nullptr, processor().metadata());
-  EXPECT_FALSE(processor().metadata()->GetModelTypeState().initial_sync_done());
-  EXPECT_EQ(0u, processor().metadata()->TakeAllMetadata().size());
-
   ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
   EXPECT_TRUE(
@@ -579,51 +616,53 @@ TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
   EXPECT_TRUE(
       table()->UpdateSyncMetadata(syncer::AUTOFILL, "key", EntityMetadata()));
 
+  ResetProcessor();
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(MetadataBatchContains(
+                                    /*state=*/HasInitialSyncDone(),
+                                    /*entities=*/SizeIs(1))));
   ResetBridge();
-
-  EXPECT_NE(nullptr, processor().metadata());
-  EXPECT_TRUE(processor().metadata()->GetModelTypeState().initial_sync_done());
-  EXPECT_EQ(1u, processor().metadata()->TakeAllMetadata().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LoadMetadataReportsErrorForMissingDB) {
   backend()->SetWebDatabase(nullptr);
-  // The processor's destructor will verify that an error has occured.
-  ResetBridge(/*expect_error=*/true);
+  EXPECT_CALL(mock_processor(), ReportError(_));
+  ResetBridge();
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataEmpty) {
-  VerifyMerge(std::vector<AutofillSpecifics>());
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+
+  StartSyncing(/*remote_data=*/std::vector<AutofillSpecifics>());
 
   VerifyAllData(std::vector<AutofillSpecifics>());
-  EXPECT_EQ(0u, processor().delete_set().size());
-  EXPECT_EQ(0u, processor().put_multimap().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataRemoteOnly) {
   const AutofillSpecifics specifics1 = CreateSpecifics(1, {2});
   const AutofillSpecifics specifics2 = CreateSpecifics(2, {3, 4});
 
-  VerifyMerge({specifics1, specifics2});
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+
+  StartSyncing(/*remote_data=*/{specifics1, specifics2});
 
   VerifyAllData({specifics1, specifics2});
-  EXPECT_EQ(0u, processor().delete_set().size());
-  EXPECT_EQ(0u, processor().put_multimap().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataLocalOnly) {
   const AutofillSpecifics specifics1 = CreateSpecifics(1, {2});
   const AutofillSpecifics specifics2 = CreateSpecifics(2, {3, 4});
-  VerifyApplyAdds({specifics1, specifics2});
+
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(specifics1), _));
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(specifics2), _));
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+
+  ApplyAdds({specifics1, specifics2});
   VerifyAllData({specifics1, specifics2});
 
-  VerifyMerge(std::vector<AutofillSpecifics>());
-
+  StartSyncing(/*remote_data=*/{});
   VerifyAllData({specifics1, specifics2});
-  EXPECT_EQ(2u, processor().put_multimap().size());
-  VerifyProcessorRecordedPut(specifics1);
-  VerifyProcessorRecordedPut(specifics2);
-  EXPECT_EQ(0u, processor().delete_set().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataAllMerged) {
@@ -645,17 +684,18 @@ TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataAllMerged) {
   const AutofillSpecifics merged4 = CreateSpecifics(4, {5, 8});
   const AutofillSpecifics merged5 = local5;
   const AutofillSpecifics merged6 = CreateSpecifics(6, {7, 10});
-  VerifyApplyAdds({local1, local2, local3, local4, local5, local6});
 
-  VerifyMerge({remote1, remote2, remote3, remote4, remote5, remote6});
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(merged3), _));
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(merged4), _));
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(merged5), _));
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(merged6), _));
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
 
+  ApplyAdds({local1, local2, local3, local4, local5, local6});
+
+  StartSyncing(
+      /*remote_data=*/{remote1, remote2, remote3, remote4, remote5, remote6});
   VerifyAllData({merged1, merged2, merged3, merged4, merged5, merged6});
-  EXPECT_EQ(4u, processor().put_multimap().size());
-  VerifyProcessorRecordedPut(merged3);
-  VerifyProcessorRecordedPut(merged4);
-  VerifyProcessorRecordedPut(merged5);
-  VerifyProcessorRecordedPut(merged6);
-  EXPECT_EQ(0u, processor().delete_set().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataMixed) {
@@ -666,15 +706,15 @@ TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataMixed) {
   const AutofillSpecifics remote4 = CreateSpecifics(4, {2, 4});
   const AutofillSpecifics merged4 = CreateSpecifics(4, {1, 4});
 
-  VerifyApplyAdds({local1, specifics3, local4});
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(local1), _));
+  EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(merged4), _));
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
 
-  VerifyMerge({remote2, specifics3, remote4});
+  ApplyAdds({local1, specifics3, local4});
+
+  StartSyncing(/*remote_data=*/{remote2, specifics3, remote4});
 
   VerifyAllData({local1, remote2, specifics3, merged4});
-  EXPECT_EQ(2u, processor().put_multimap().size());
-  VerifyProcessorRecordedPut(local1);
-  VerifyProcessorRecordedPut(merged4);
-  EXPECT_EQ(0u, processor().delete_set().size());
 }
 
 }  // namespace autofill
