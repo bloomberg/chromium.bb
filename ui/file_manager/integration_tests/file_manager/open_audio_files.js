@@ -31,8 +31,18 @@ function getTrackText(audioAppId, query) {
 }
 
 /**
- * Tests opening then closing the Audio Player from Files app. TODO(noel): move the fileSystemURL
- * helper out of this routine and use it everywhere in this file?
+ * Converts a file name to a file system scheme URL for a given volume path.
+ *
+ * @param {string} path Directory path: Downloads or Drive.
+ * @param {string} fileName The file name.
+ */
+function audioFileSystemURL(path, fileName) {
+  return 'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/external'
+      + path + '/' + self.encodeURIComponent(fileName);
+}
+
+/**
+ * Tests opening then closing the Audio Player from Files app.
  *
  * @param {string} path Directory path to be tested: Downloads or Drive.
  */
@@ -40,10 +50,6 @@ function audioOpenClose(path) {
   let audioAppId;
   let appId;
 
-  function audioFileSystemURL(directory, audioFile) {
-    return 'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID +
-        '/external' + directory + '/' + self.encodeURIComponent(audioFile);
-  }
 
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
@@ -137,12 +143,14 @@ function audioOpen(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
+      this.next();
+    },
+    // Verify the track 0 is active, verify the track titles.
+    function(element) {
       var query1 = 'audio-player /deep/ .track[index="0"][active]';
       var query2 = 'audio-player /deep/ .track[index="1"]:not([active])';
       repeatUntil(function() {
@@ -174,12 +182,14 @@ function audioOpen(path) {
                   '[currenttrackurl$="newly%20added%20file.ogg"]';
       audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
-    // Get the source file name.
+    // Check: newly added file.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/newly%20added%20file.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'newly added file.ogg'),
           element.attributes.currenttrackurl);
+      this.next();
+    },
+    // Verify the track 1 is active, verify the track titles.
+    function() {
       var query1 = 'audio-player /deep/ .track[index="0"]:not([active])';
       var query2 = 'audio-player /deep/ .track[index="1"][active]';
       repeatUntil(function() {
@@ -251,11 +261,9 @@ function audioAutoAdvance(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
 
       // Wait for next song.
@@ -264,11 +272,9 @@ function audioAutoAdvance(path) {
                   '[currenttrackurl$="newly%20added%20file.ogg"]';
       audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
-    // Get the source file name.
+    // Check: newly added file.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/newly%20added%20file.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'newly added file.ogg'),
           element.attributes.currenttrackurl);
       this.next();
     },
@@ -309,11 +315,9 @@ function audioRepeatAllModeSingleFile(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
 
       audioPlayerApp.callRemoteTestUtil(
@@ -328,11 +332,9 @@ function audioRepeatAllModeSingleFile(path) {
       var selector = 'audio-player[playing][playcount="1"]';
       audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
       this.next();
     },
@@ -373,11 +375,9 @@ function audioNoRepeatModeSingleFile(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
 
       var selector = 'audio-player[playcount="1"]:not([playing])';
@@ -420,11 +420,9 @@ function audioRepeatOneModeSingleFile(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
 
       audioPlayerApp.callRemoteTestUtil(
@@ -446,11 +444,9 @@ function audioRepeatOneModeSingleFile(path) {
       var selector = 'audio-player[playing][playcount="1"]';
       audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
       this.next();
     },
@@ -505,11 +501,9 @@ function audioRepeatAllModeMultipleFile(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: newly added file.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/newly%20added%20file.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'newly added file.ogg'),
           element.attributes.currenttrackurl);
 
       audioPlayerApp.callRemoteTestUtil(
@@ -527,11 +521,9 @@ function audioRepeatAllModeMultipleFile(path) {
                   '[currenttrackurl$="Beautiful%20Song.ogg"]';
       audioPlayerApp.waitForElement(audioAppId, query).then(this.next);
     },
-    // Get the source file name.
+    // Check: Beautiful Song.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/Beautiful%20Song.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'Beautiful Song.ogg'),
           element.attributes.currenttrackurl);
       this.next();
     },
@@ -586,11 +578,9 @@ function audioNoRepeatModeMultipleFile(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: newly added file.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/newly%20added%20file.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'newly added file.ogg'),
           element.attributes.currenttrackurl);
 
       // Wait for next song.
@@ -648,11 +638,9 @@ function audioRepeatOneModeMultipleFile(path) {
       audioPlayerApp.waitForElement(audioAppId, 'audio-player[playing]').
           then(this.next);
     },
-    // Get the source file name.
+    // Check: newly added file.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/newly%20added%20file.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'newly added file.ogg'),
           element.attributes.currenttrackurl);
 
       audioPlayerApp.callRemoteTestUtil(
@@ -674,11 +662,9 @@ function audioRepeatOneModeMultipleFile(path) {
       var selector = 'audio-player[playing][playcount="1"]';
       audioPlayerApp.waitForElement(audioAppId, selector).then(this.next);
     },
-    // Get the source file name.
+    // Check: newly added file.ogg should be playing.
     function(element) {
-      chrome.test.assertEq(
-          'filesystem:chrome-extension://' + AUDIO_PLAYER_APP_ID + '/' +
-              'external' + path + '/newly%20added%20file.ogg',
+      chrome.test.assertEq(audioFileSystemURL(path, 'newly added file.ogg'),
           element.attributes.currenttrackurl);
       this.next();
     },
