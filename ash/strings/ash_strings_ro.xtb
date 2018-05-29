@@ -263,15 +263,18 @@
 <translation id="6723839937902243910">Alimentare</translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
+<translation id="6820676911989879663">Fă o pauză!</translation>
 <translation id="683971173229319003">Tasta de căutare + L</translation>
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Conectați-vă la altă rețea...</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="698231206551913481">Toate fișierele și datele locale asociate acestui utilizator vor fi șterse definitiv după eliminarea utilizatorului.</translation>
+<translation id="7015766095477679451">Revino la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
 <translation id="7034339000180558234">Se proiectează <ph name="TAB_NAME" /> pe <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
 <translation id="7067196344162293536">Rotire automată</translation>
+<translation id="7076293881109082629">Conectare</translation>
 <translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
 <translation id="7131634465328662194">Vei fi deconectat(ă) automat.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>

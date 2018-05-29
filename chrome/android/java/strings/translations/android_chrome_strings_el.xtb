@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Διαγραφή υπαρχόντων δεδομένων.</translation>
 <translation id="1146678959555564648">Εισαγωγή VR</translation>
 <translation id="116280672541001035">Χρησιμοποιήθηκαν</translation>
+<translation id="1172593791219290334">Σελίδα εκκίνησης</translation>
 <translation id="1178581264944972037">Παύση</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1197267115302279827">Μετακίνηση σελιδοδεικτών</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Σελιδοδείκτες και ιστορικό ιστού</translation>
 <translation id="1513858653616922153">Διαγραφή κωδικού πρόσβασης</translation>
 <translation id="1516229014686355813">Η λειτουργία "Πατήστε για αναζήτηση" αποστέλλει την επιλεγμένη λέξη και την τρέχουσα σελίδα ως περιβάλλον στην Αναζήτηση Google. Μπορείτε να την απενεργοποιήσετε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Δημοφιλές περιεχόμενο</translation>
 <translation id="1539064842193522527">Ο σύνδεσμος άνοιξε στο Chrome</translation>
 <translation id="1549000191223877751">Μεταβείτε σε άλλο παράθυρο</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Εύρεση στη σελίδα</translation>
 <translation id="1832521218263067499">Συμβάντα ασφαλείας</translation>
 <translation id="1853692000353488670">Νέα καρτέλα ανώνυμης περιήγησης</translation>
+<translation id="1868024384445905608">Το Chrome κατεβάζει πλέον τα αρχεία πιο γρήγορα</translation>
 <translation id="1880072593381090678">Δημοφιλείς σελίδες από το Chrome</translation>
+<translation id="1883903952484604915">Τα αρχεία μου</translation>
 <translation id="1887786770086287077">Η πρόσβαση στην Τοποθεσία είναι απενεργοποιημένη γι' αυτήν τη συσκευή. Ενεργοποιήστε τη στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Η εφαρμογή <ph name="APP_NAME" /> θα ανοίξει στο Chrome. Εάν συνεχίσετε, συμφωνείτε με τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση απορρήτου<ph name="END_LINK2" /> του Chrome.</translation>
 <translation id="189172778771606813">Κλείσιμο συρταριού πλοήγησης</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Ενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB από άλλες εφαρμογές</translation>
 <translation id="2063713494490388661">Πατήστε για αναζήτηση</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 λήψη απέτυχε}other{# λήψεις απέτυχαν}}</translation>
+<translation id="2074837478271106772">Λήψη <ph name="COUNT" /> αρχείων (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2082238445998314030">Αποτέλεσμα <ph name="RESULT_NUMBER" /> από <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Για να λάβετε εξατομικευμένο περιεχόμενο που προτείνεται από την Google, συνδεθείτε στο Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="3148434565183091099">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="3157842584138209013">Δείτε πόσα δεδομένα έχετε αποθηκεύσει από το κουμπί "Περισσότερες επιλογές"</translation>
+<translation id="3165725985537150202">Λήψη αρχείου (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Συντομεύσεις καρτέλας και παραθύρου</translation>
 <translation id="3190152372525844641">Ενεργοποίηση των αδειών για το Chrome στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> αποθηκευμένα δεδομένα</translation>
@@ -566,6 +573,7 @@
 <translation id="618555311922999635">Το πλαίσιο πλοήγησης άνοιξε στο πλήρες ύψος</translation>
 <translation id="6192333916571137726">Αρχείο Λήψη</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
+<translation id="6196868727350051527">Επιτάχυνση της λήψης σας</translation>
 <translation id="6210748933810148297">Δεν είστε ο χρήστης <ph name="EMAIL" />;</translation>
 <translation id="6216432067784365534">Επιλογές <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Ξεκλειδώστε για εξαγωγή των κωδικών πρόσβασής σας</translation>
@@ -637,6 +645,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Μετάφραση</translation>
 <translation id="6846298663435243399">Φόρτωση…</translation>
+<translation id="6850409657436465440">Η λήψη σας βρίσκεται ακόμα σε εξέλιξη</translation>
 <translation id="6850830437481525139">Έκλεισαν <ph name="TAB_COUNT" /> καρτέλες</translation>
 <translation id="6864459304226931083">Λήψη εικόνας</translation>
 <translation id="6865313869410766144">Δεδομένα φόρμας αυτόματης συμπλήρωσης</translation>
@@ -683,6 +692,7 @@
 <translation id="7189372733857464326">Αναμονή για ολοκλήρωση της ενημέρωσης των Υπηρεσιών Google Play</translation>
 <translation id="7189598951263744875">Μοιραστείτε…</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 λήψη σε εκκρεμότητα}other{# λήψεις σε εκκρεμότητα}}</translation>
 <translation id="723171743924126238">Επιλέξτε εικόνες</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
 <translation id="7250468141469952378">Επιλέχθηκαν <ph name="ITEM_COUNT" /></translation>
@@ -757,6 +767,7 @@
 <translation id="7882131421121961860">Δεν βρέθηκε ιστορικό</translation>
 <translation id="7882806643839505685">Να επιτρέπεται ο ήχος για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="7929962904089429003">Άνοιγμα μενού</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 ολοκληρωμένη λήψη}other{# ολοκληρωμένες λήψεις}}</translation>
 <translation id="7942131818088350342">Το <ph name="PRODUCT_NAME" /> δεν είναι ενημερωμένο.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
 <translation id="7963646190083259054">Προμηθευτής:</translation>
@@ -799,6 +810,7 @@
 <translation id="8266862848225348053">Τοποθεσία λήψης</translation>
 <translation id="8283853025636624853">Συγχρονισμός με <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Τυπικές καρτέλες</translation>
+<translation id="8313455859591948645">Επεξεργασία σελίδας εκκίνησης</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> και άλλους ιστοτόπους</translation>
 <translation id="8339163506404995330">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται</translation>
 <translation id="8363501664269050863">Πλαίσιο πλοήγησης. Σύρετε προς τα κάτω για κλείσιμο.</translation>
@@ -887,6 +899,7 @@
 <translation id="9139068048179869749">Να γίνεται ερώτηση προτού επιτραπεί στους ιστότοπους να στέλνουν ειδοποιήσεις (συνιστάται)</translation>
 <translation id="9155898266292537608">Επίσης, μπορείτε να κάνετε αναζήτηση με ένα γρήγορο πάτημα σε μια λέξη</translation>
 <translation id="9188680907066685419">Αποσύνδεση από διαχειριζόμενο λογαριασμό</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Λήψη αρχείου}other{Λήψη # αρχείων}}</translation>
 <translation id="9204836675896933765">1 αρχείο απομένει</translation>
 <translation id="9206873250291191720">Α</translation>
 <translation id="9219103736887031265">Εικόνες</translation>

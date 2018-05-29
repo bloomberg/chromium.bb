@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Șterge datele existente.</translation>
 <translation id="1146678959555564648">Intră în RV</translation>
 <translation id="116280672541001035">Utilizate</translation>
+<translation id="1172593791219290334">Pagină de pornire</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1197267115302279827">Mută marcaje</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Marcaje și istoric web</translation>
 <translation id="1513858653616922153">Șterge parola</translation>
 <translation id="1516229014686355813">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutarea Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Conținut popular</translation>
 <translation id="1539064842193522527">Link deschis în Chrome</translation>
 <translation id="1549000191223877751">Mută în altă fereastră</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Găsește în pagină</translation>
 <translation id="1832521218263067499">Incidente privind securitatea</translation>
 <translation id="1853692000353488670">Filă incognito nouă</translation>
+<translation id="1868024384445905608">Acum Chrome descarcă mai rapid fișierele</translation>
 <translation id="1880072593381090678">Pagini populare din Chrome</translation>
+<translation id="1883903952484604915">Fișierele mele</translation>
 <translation id="1887786770086287077">Accesul la locație este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> se va deschide în Chrome. Continuând, ești de acord cu <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Închide panoul de navigare</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB pentru alte aplicații</translation>
 <translation id="2063713494490388661">Atinge pentru a căuta</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{O descărcare nu a reușit}few{# descărcări nu au reușit}other{# de descărcări nu au reușit}}</translation>
+<translation id="2074837478271106772">Se descarcă <ph name="COUNT" /> fișiere (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2082238445998314030">Rezultatul <ph name="RESULT_NUMBER" /> din <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Pentru a obține sugestii de conținut personalizat de la Google, conectează-te la Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
 <translation id="3148434565183091099">Pentru a accesa marcajele pe toate dispozitivele, conectează-te la Chrome.</translation>
 <translation id="3157842584138209013">Vezi ce volum de date ai economisit folosind butonul Mai multe opțiuni</translation>
+<translation id="3165725985537150202">Fișierul se descarcă (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Comenzi rapide pentru file și ferestre</translation>
 <translation id="3190152372525844641">Activează permisiunile pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
@@ -566,6 +573,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="618555311922999635">Panoul de navigare este deschis la înălțimea completă</translation>
 <translation id="6192333916571137726">Descarcă fișierul</translation>
 <translation id="6192792657125177640">Excepții</translation>
+<translation id="6196868727350051527">Se accelerează descărcarea</translation>
 <translation id="6210748933810148297">Nu ești <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opțiuni pentru <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Deblochează pentru a-ți exporta parolele.</translation>
@@ -637,6 +645,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tradu</translation>
 <translation id="6846298663435243399">Se încarcă…</translation>
+<translation id="6850409657436465440">Descărcarea este încă în desfășurare</translation>
 <translation id="6850830437481525139">S-au închis <ph name="TAB_COUNT" /> (de) file</translation>
 <translation id="6864459304226931083">Descarcă imaginea</translation>
 <translation id="6865313869410766144">Datele salvate pentru completarea automată a formularelor</translation>
@@ -683,6 +692,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
 <translation id="7189598951263744875">Trimite...</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{O descărcare în așteptare}few{# descărcări în așteptare}other{# de descărcări în așteptare}}</translation>
 <translation id="723171743924126238">Selectează imagini</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selectate</translation>
@@ -757,6 +767,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7882131421121961860">Nu s-a găsit niciun istoric</translation>
 <translation id="7882806643839505685">Permite sunetul pentru un anumit site.</translation>
 <translation id="7929962904089429003">Deschide meniul</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{O descărcare finalizată}few{# descărcări finalizate}other{# de descărcări finalizate}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> este învechit.</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="7963646190083259054">Producător:</translation>
@@ -799,6 +810,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8266862848225348053">Locația de descărcare</translation>
 <translation id="8283853025636624853">Se sincronizează cu <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">File standard</translation>
+<translation id="8313455859591948645">Editează pagina de pornire</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> și alte site-uri</translation>
 <translation id="8339163506404995330">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse</translation>
 <translation id="8363501664269050863">Panou de navigare. Glisează în jos pentru a-l închide.</translation>
@@ -887,6 +899,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="9139068048179869749">Întreabă înainte de a permite site-urilor să trimită notificări (recomandat)</translation>
 <translation id="9155898266292537608">De asemenea, poți căuta atingând scurt un cuvânt</translation>
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Fișierul se descarcă}few{Se descarcă # fișiere}other{Se descarcă # de fișiere}}</translation>
 <translation id="9204836675896933765">1 fișier rămas</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagini</translation>

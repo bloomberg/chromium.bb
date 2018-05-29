@@ -88,6 +88,18 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če je ta pravilnik onemogočen, <ph name="PRODUCT_NAME" /> ne dovoli profilov gosta.</translation>
 <translation id="1363275621236827384">Omogoči poizvedbe strežniku Quirks Server za profile strojne opreme.</translation>
+<translation id="1372267489642113556">
+      Če je pravilnik omogočen, se bo vsak naveden izvor s seznama,
+      ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi
+      izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
+      bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
+      https://foo.example.com/.
+      Če je pravilnik onemogočen, ne pride do eksplicitne osamitve spletnih mest in preizkusi pravilnikov IsolateOrigins in SitePerProcess so onemogočeni. Uporabniki bodo še vedno lahko ročno omogočili pravilnik IsolateOrigins.
+      Če pravilnik ni konfiguriran, bo uporabnik to nastavitev lahko spremenil.
+      V sistemu <ph name="PRODUCT_OS_NAME" /> je priporočljivo tudi, da nastavite pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na isto vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
+
+      OPOMBA: Ta pravilnik se ne uporablja za Android. Če želite IsolateOrigins omogočiti za Android, uporabite nastavitev pravilnika IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
@@ -167,6 +179,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1599424828227887013">Omogočanje osamitve spletnih mest za določene izvore v napravah Android</translation>
 <translation id="1608755754295374538">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka</translation>
 <translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
 <translation id="163200210584085447">Vzorci na tem seznamu se bodo primerjali z varnostnim
@@ -528,6 +541,10 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Če te nastavitve ne nastavite, se lahko uporabnik odloči, ali želi uporabljati to funkcijo.
 
       Ta nastavitev je bila odstranjena iz programa <ph name="PRODUCT_NAME" /> 29 in novejših različic.</translation>
+<translation id="2438609638493026652">Omogoča poročanje Googlu o ključnih dogodkih pri namestitvi aplikacije za Android. Dogodki so zajeti samo za aplikacije, katerih namestitev je bila sprožena s pravilnikom.
+
+      Če je pravilnik omogočen, bodo dogodki zabeleženi.
+      Če je pravilnik onemogočen ali ni nastavljen, dogodki ne bodo zabeleženi.</translation>
 <translation id="244317009688098048">Omogočanje bližnjičnih tipk, da se obide samodejna prijava.
 
       Če ta pravilnik ni nastavljen ali je nastavljen na »True« in je lokalni račun v napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, <ph name="PRODUCT_OS_NAME" /> upošteva bližnjične tipke Ctrl + Alt + S, da obide samodejno prijavo in prikaz zaslona za prijavo.
@@ -1149,6 +1166,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4309640770189628899">Ali so v protokolu TLS omogočene šifrirne zbirke DHE</translation>
 <translation id="4322842393287974810">Dovoli samodejno zagnani aplikaciji za kiosk brez zamika nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
+<translation id="4332177773549877617">Beleženje dogodkov za namestitve aplikacije za Android</translation>
 <translation id="4346674324214534449">Omogoča, da nastavite, ali je treba oglase blokirati na spletnih mestih z vsiljivimi oglasi.
 
       Če je ta pravilnik nastavljen na 2, bodo oglasi blokirani na spletnih mestih z vsiljivimi oglasi.

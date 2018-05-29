@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Radera befintlig data.</translation>
 <translation id="1146678959555564648">Kliv in i VR</translation>
 <translation id="116280672541001035">Använd</translation>
+<translation id="1172593791219290334">Startflik</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1197267115302279827">Flytta bokmärken</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Bokmärken och webbhistorik</translation>
 <translation id="1513858653616922153">Radera lösenord</translation>
 <translation id="1516229014686355813">Med funktionen Tryck för att söka skickas det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Populärt innehåll</translation>
 <translation id="1539064842193522527">Länken öppnades i Chrome</translation>
 <translation id="1549000191223877751">Flytta till annat fönster</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Hitta på sida</translation>
 <translation id="1832521218263067499">Incidenter som rör säkerheten</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
+<translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
 <translation id="1880072593381090678">Populära sidor från Chrome</translation>
+<translation id="1883903952484604915">Mina filer</translation>
 <translation id="1887786770086287077">Platsåtkomst har inaktiverats på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> öppnas i Chrome. Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB används av övriga appar</translation>
 <translation id="2063713494490388661">Tryck för att söka</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 nedladdning misslyckades}other{# nedladdningar misslyckades}}</translation>
+<translation id="2074837478271106772"><ph name="COUNT" /> filer (<ph name="MEGABYTES" />) laddas ned</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Logga in i Chrome om du vill få förslag på anpassat innehåll från Google.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3148434565183091099">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3157842584138209013">Under Fler alternativ kan du se hur mycket data du har sparat</translation>
+<translation id="3165725985537150202">En fil laddas ned (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Kortkommandon för flikar och fönster</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sparad data</translation>
@@ -566,6 +573,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="618555311922999635">Navigeringspanelen har öppnats och tar upp hela skärmen</translation>
 <translation id="6192333916571137726">Ladda ned fil</translation>
 <translation id="6192792657125177640">Undantag</translation>
+<translation id="6196868727350051527">Nedladdningen görs snabbare</translation>
 <translation id="6210748933810148297">Inte <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Alternativ för <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Lås upp om du vill exportera dina lösenord</translation>
@@ -637,6 +645,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6846298663435243399">Läser in…</translation>
+<translation id="6850409657436465440">Nedladdningen pågår fortfarande</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
@@ -683,6 +692,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 nedladdning väntar}other{# nedladdningar väntar}}</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
@@ -757,6 +767,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7882131421121961860">Ingen historik hittades</translation>
 <translation id="7882806643839505685">Tillåt ljud för en webbplats.</translation>
 <translation id="7929962904089429003">Öppna menyn</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 nedladdning har slutförts}other{# nedladdningar har slutförts}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
@@ -799,6 +810,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8266862848225348053">Nedladdningsplats</translation>
 <translation id="8283853025636624853">Synkroniseras med <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardflikar</translation>
+<translation id="8313455859591948645">Redigera startfliken</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> och fler webbplatser</translation>
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
 <translation id="8363501664269050863">Navigeringspanel. Stäng genom att svepa nedåt.</translation>
@@ -887,6 +899,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9139068048179869749">Fråga innan webbplatser tillåts att skicka aviseringar (rekommenderas)</translation>
 <translation id="9155898266292537608">Du kan även söka med ett snabbt tryck eller ett ord</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Laddar ned fil}other{Laddar ned # filer}}</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>

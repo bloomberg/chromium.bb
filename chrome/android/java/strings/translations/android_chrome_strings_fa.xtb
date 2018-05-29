@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">حذف داده‌های موجود.</translation>
 <translation id="1146678959555564648">‏VR را وارد کنید</translation>
 <translation id="116280672541001035">مصرف‌شده</translation>
+<translation id="1172593791219290334">صفحه شروع</translation>
 <translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">نشانک‌ها و سابقه وب</translation>
 <translation id="1513858653616922153">حذف گذرواژه</translation>
 <translation id="1516229014686355813">‏«ضربه برای جستجو» کلمه انتخاب‌شده و صفحه کنونی را به‌عنوان متن جستجو به «جستجوی Google» ارسال می‌کند. می‌توانید این ویژگی را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>
+<translation id="1521008027388393450">محتوای پرطرفدار</translation>
 <translation id="1539064842193522527">‏پیوند در Chrome باز شد</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">یافتن در صفحه</translation>
 <translation id="1832521218263067499">حوادث امنیتی</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
+<translation id="1868024384445905608">‏اکنون Chrome فایل‌ها را سریع‌تر بارگیری می‌کند</translation>
 <translation id="1880072593381090678">‏صفحه‌های پرطرفدار Chrome</translation>
+<translation id="1883903952484604915">فایل‌های من</translation>
 <translation id="1887786770086287077">‏دسترسی به مکان برای این دستگاه خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1891331835972267886">‏<ph name="APP_NAME" /> در Chrome باز می‌شود. درصورت ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome موافقت می‌کنید.</translation>
 <translation id="189172778771606813">بستن کشوی پیمایش</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> گیگابایت توسط سایر برنامه‌ها</translation>
 <translation id="2063713494490388661">ضربه برای جستجو</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{۱ بارگیری انجام نشد}one{# بارگیری انجام نشد}other{# بارگیری انجام نشد}}</translation>
+<translation id="2074837478271106772">درحال بارگیری <ph name="COUNT" /> فایل (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
 <translation id="3148434565183091099">‏برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید به سیستم Chrome وارد شوید.</translation>
 <translation id="3157842584138209013">با استفاده از دکمه «گزینه‌های بیشتر»، ببینید چه مقدار داده صرفه‌جویی کرده‌اید</translation>
+<translation id="3165725985537150202">درحال بارگیری فایل (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">میان‌برهای پنجره و برگه</translation>
 <translation id="3190152372525844641">‏مجوزهای Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> داده‌های ذخیره شده</translation>
@@ -565,6 +572,7 @@
 <translation id="618555311922999635">پانل پیمایش کاملاً باز شد</translation>
 <translation id="6192333916571137726">فایل بارگیری</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
+<translation id="6196868727350051527">درحال سرعت بخشیدن به بارگیری</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> رایانامه شما نیست؟</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">برای صادر کردن گذرواژه‌ها، قفل را باز کنید</translation>
@@ -636,6 +644,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6846298663435243399">در حال بارگیری…</translation>
+<translation id="6850409657436465440">بارگیری هنوز درحال انجام است</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> برگه بسته شد</translation>
 <translation id="6864459304226931083">بارگیری تصویر</translation>
 <translation id="6865313869410766144">تکمیل خودکار داده‌های فرم</translation>
@@ -682,6 +691,7 @@
 <translation id="7189372733857464326">‏در انتظار «سرویس‌های Google Play» برای اتمام به‌روزرسانی است</translation>
 <translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{۱ بارگیری در انتظار}one{# بارگیری در انتظار}other{# بارگیری در انتظار}}</translation>
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
@@ -756,6 +766,7 @@
 <translation id="7882131421121961860">هیچ سابقه‌ای پیدا نشد</translation>
 <translation id="7882806643839505685">پخش صدا برای سایتی خاص مجاز شود.</translation>
 <translation id="7929962904089429003">باز کردن منو</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد}one{# بارگیری کامل شد}other{# بارگیری کامل شد}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قدیمی است.</translation>
 <translation id="7947953824732555851">پذیرش و ورود به سیستم</translation>
 <translation id="7963646190083259054">ارائه‌دهنده:</translation>
@@ -798,6 +809,7 @@
 <translation id="8266862848225348053">مکان بارگیری</translation>
 <translation id="8283853025636624853">در حال همگام‌سازی در <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
+<translation id="8313455859591948645">ویرایش صفحه شروع</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> و سایت‌های دیگر</translation>
 <translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
 <translation id="8363501664269050863">پانل پیمایش. برای بستن، صفحه را تند به پایین بکشید.</translation>
@@ -886,6 +898,7 @@
 <translation id="9139068048179869749">قبل از اجازه به سایت‌ها برای ارسال اعلان ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="9155898266292537608">می‌توانید با ضربه‌ای سریع روی کلمه نیز جستجو کنید</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{درحال بارگیری فایل}one{در حال بارگیری # فایل}other{در حال بارگیری # فایل}}</translation>
 <translation id="9204836675896933765">۱ فایل باقی مانده است</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">تصاویر</translation>

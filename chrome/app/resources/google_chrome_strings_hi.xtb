@@ -101,7 +101,7 @@
 <translation id="3503306920980160878">Chrome को इस साइट के साथ आपके स्थान की जानकारी शेयर करने के लिए आपके स्थान का एक्सेस चाहिए</translation>
 <translation id="3582972582564653026">Chrome को अपने सभी डिवाइस पर सिंक करें और मनमुताबिक बनाएं</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
-<translation id="3622797965165704966">अब अपने Google खाते के साथ और साझा किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
+<translation id="3622797965165704966">अब अपने Google खाते के साथ और शेयर किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तें<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3716182511346448902">यह पेज बहुत ज़्यादा मेमोरी का इस्तेमाल करता है, इसलिए Chrome ने इसे रोक दिया है.</translation>
 <translation id="3718181793972440140">ऐसा करने से इस डिवाइस से 1 आइटम हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
@@ -146,7 +146,7 @@
 <translation id="4833487314064352405">{0,plural, =1{एक दिन के अंदर Chrome को फिर से लॉन्च करें}one{# दिन के अंदर Chrome को फिर से लॉन्च करें}other{# दिन के अंदर Chrome को फिर से लॉन्च करें}}</translation>
 <translation id="4891791193823137474">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="4895437082222824641">नए Chrome &amp;टैब में लिंक खोलें</translation>
-<translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
+<translation id="4921569541910214635">कंप्यूटर शेयर करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
 <translation id="4953650215774548573">Google Chrome को अपने डिफ़ॉल्ट ब्राउज़र के रूप में सेट करना</translation>
 <translation id="495931528404527476">Chrome में</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
@@ -237,7 +237,7 @@
 <translation id="7825851276765848807">अनिर्दिष्ट गड़बड़ी के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
 <translation id="7855730255114109580">Google Chrome अप टू डेट है</translation>
 <translation id="7888186132678118370">Chrome को अपने टास्कबार में पिन करें</translation>
-<translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
+<translation id="7890208801193284374">यदि आप कंप्यूटर शेयर करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
 <translation id="7896673875602241923">इस कंप्यूटर पर पहले किसी अन्य व्यक्ति ने <ph name="ACCOUNT_EMAIL_LAST" /> के रूप में Chrome में प्रवेश किया है. अपनी जानकारी अलग रखने के लिए कृपया नया Chrome उपयोगकर्ता बनाएं.</translation>
 <translation id="7908168227788431038">लगभग अप टू डेट हो गया है! अपडेट करना पूरा करने के लिए Google Chrome को पुन: लॉन्च करें.</translation>
 <translation id="7962410387636238736">इस कंप्‍यूटर को अब Google Chrome के अपडेट नहीं मिलेंगे क्‍योंकि Windows XP और Windows Vista अब काम नहीं करते हैं</translation>

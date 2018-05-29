@@ -88,6 +88,19 @@
 
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
+<translation id="1372267489642113556">
+      Ha a házirend engedélyezve van, a vesszővel tagolt
+      listában szereplő összes megnevezett eredet önálló folyamatként fut majd.
+      Ez aldomainek szerint is letiltja a megnevezett eredeteket; pl. a
+      https://example.com/ megadása a https://foo.example.com/ webhely
+      izolálását is eredményezi, mert ez a https://example.com/ webhely része.
+      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az
+      IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik az IsolateOrigins házirendet.
+      Ha a házirend nincs beállítva, a felhasználó módosítani tudja a beállítást.
+      <ph name="PRODUCT_OS_NAME" /> alatt javasolt a <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirend beállítása azonos értékre. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+
+      FONTOS: A házirend nem vonatkozik az Android rendszerre. Ha engedélyezni kívánja az IsolateOrigins házirendet Android rendszeren, használja az IsolateOriginsAndroid házirend-beállítást.
+      </translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="1393485621820363363">Eszközökhöz kötött engedélyezett vállalati nyomtatók</translation>
@@ -164,6 +177,7 @@
 
       Ha további információhoz szeretne jutni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="1583248206450240930">A <ph name="PRODUCT_FRAME_NAME" /> használata alapértelmezés szerint</translation>
+<translation id="1599424828227887013">Webhely-izoláció engedélyezése meghatározott forrásoknál androidos eszközökön</translation>
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
 <translation id="163200210584085447">A listában szereplő mintákat a rendszer egyezteti a kérelmező
@@ -511,6 +525,10 @@
       Ha nem állítja be, akkor a felhasználók dönthetik el, hogy használják-e ezt a funkciót, vagy sem.
 
       Ez a beállítás a <ph name="PRODUCT_NAME" /> 29-es és újabb verzióiban már nem szerepel.</translation>
+<translation id="2438609638493026652">Lehetővé teszi a fő események jelentését a Google-nak az Android-alkalmazások telepítésekor. Az eseményeket csak az olyan alkalmazásokra vonatkozóan rögzíti a rendszer, amelyek telepítése a házirenden keresztül aktiválódott.
+
+      Ha a házirend értéke igaz, a rendszer naplózza az eseményeket.
+      Ha a házirend értéke hamis, vagy nincs beállítva házirend, a rendszer nem naplózza az eseményeket.</translation>
 <translation id="244317009688098048">Engedélyezi a mentesítő billentyűparancsot az automatikus bejelentkezésnél.
 
       Ha a házirend nincs beállítva, illetve amennyiben igaz érték esetén eszközszintű fiók van konfigurálva a késleltetésmentes automatikus bejelentkezéshez, akkor a <ph name="PRODUCT_OS_NAME" /> figyelembe veszi a Ctrl+Alt+S billentyűparancsot az automatikus bejelentkezés átlépéséhez és a bejelentkezési képernyő megjelenítéséhez.
@@ -1101,6 +1119,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4309640770189628899">Engedélyezve vannak-e a DHE rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="4322842393287974810">Annak engedélyezése, hogy a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését a késés nélkül, automatikusan indított kioszkalkalmazás végezze.</translation>
 <translation id="4325690621216251241">Kijelentkezés gomb elhelyezése a tálcán</translation>
+<translation id="4332177773549877617">Az Android-alkalmazások telepítéseivel kapcsolatos események naplózása</translation>
 <translation id="4346674324214534449">Lehetővé teszi annak a beállítását, hogy le szeretné-e tiltani a hirdetéseket a tolakodó hirdetéseket tartalmazó webhelyeken.
 
       Ha a házirend beállítása 2, akkor a hirdetések le lesznek tiltva a tolakodó hirdetéseket tartalmazó webhelyeken.

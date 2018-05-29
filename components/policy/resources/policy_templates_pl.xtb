@@ -86,6 +86,18 @@
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
 <translation id="1363275621236827384">Włącz wysyłanie zapytań o profile sprzętowe do Quirks Server</translation>
+<translation id="1372267489642113556">
+      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej
+      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
+      izolację źródeł z nazwami subdomen, np. określenie https://example.com/
+      spowoduje, że także adres https://foo.example.com/ będzie izolowany jako
+      część witryny https://example.com/
+      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
+      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
+      W przypadku systemu <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dla urządzeń <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
+
+      UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję IsolateOrigins w Androidzie, użyj ustawienia zasady IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Odniesienie: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Czy włączyć zaufanie w starszej infrastrukturze klucza publicznego Symantec Corporation</translation>
 <translation id="1393485621820363363">Włączone drukarki firmowe powiązane z urządzeniami</translation>
@@ -163,6 +175,7 @@
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="1583248206450240930">Używaj domyślnie wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1599424828227887013">Włącz izolację witryn z określonych źródeł na urządzeniach z Androidem</translation>
 <translation id="1608755754295374538">Adresy URL, które bez pytania otrzymają dostęp do urządzeń do nagrywania dźwięku</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="163200210584085447">Wzorce na tej liście są dopasowywane do źródła zabezpieczeń adresu URL,
@@ -511,6 +524,10 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli pozostanie ono nieokreślone, użytkownik będzie mógł zdecydować, czy chce używać tej funkcji.
 
       Ustawienie zostało usunięte z <ph name="PRODUCT_NAME" /> 29 i nowszych wersji.</translation>
+<translation id="2438609638493026652">Włącza raportowanie do Google najważniejszych zdarzeń podczas instalowania aplikacji na Androida. Zdarzenia są rejestrowane tylko w przypadku aplikacji, których instalacja została spowodowana przez zasadę.
+
+      Jeśli zasada ma wartość prawda, zdarzenia będą rejestrowane.
+      Jeśli zasada ma wartość fałsz lub jest nieskonfigurowana, zdarzenia nie będą rejestrowane.</translation>
 <translation id="244317009688098048">Włącz automatyczne logowanie skrótem klawiszowym.
 
       Jeśli ta zasada nie jest skonfigurowana lub ma wartość Prawda, a lokalne konto na urządzeniu jest ustawione do logowania z zerowym opóźnieniem, <ph name="PRODUCT_OS_NAME" /> będzie uznawać skrót klawiszowy Ctrl+Alt+S.
@@ -1101,6 +1118,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4309640770189628899">Czy włączone są mechanizmy szyfrowania DHE w TLS</translation>
 <translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
+<translation id="4332177773549877617">Rejestrowanie zdarzeń związanych z instalacją aplikacji na Androida</translation>
 <translation id="4346674324214534449">Umożliwia ustawienie blokowania reklam na stronach zawierających uciążliwe reklamy.
 
       Jeśli zasada jest ustawiona na wartość 2, reklamy na stronach zawierających uciążliwe reklamy będą blokowane.
@@ -1220,7 +1238,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="467449052039111439">Otwórz adresy URL z listy</translation>
-<translation id="4680936297850947973">Wycofane w wersji M68. W zamian użyj DefaultPopupsSetting.
+<translation id="4680936297850947973">Wycofana w wersji M68. W zamian użyj DefaultPopupsSetting.
 
       Pełne wyjaśnienie można znaleźć na https://www.chromestatus.com/features/5675755719622656.
       Jeśli ta zasada zostanie włączona, strony będą mogły otwierać nowe okna/karty podczas nawigowania.

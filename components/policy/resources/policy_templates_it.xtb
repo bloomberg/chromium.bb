@@ -85,6 +85,18 @@ Il fattore di regolazione minimo deve essere 100%.</translation>
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
 <translation id="1363275621236827384">Attiva le query in Quirks Server per i profili hardware</translation>
+<translation id="1372267489642113556">
+      Se la norma viene attivata, ogni origine indicata in un elenco di valori
+      separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
+      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene
+      isolato anche https://foo.example.com/, perché fa parte del sito
+      https://example.com/.
+      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
+      Se la norma non è configurata, l'utente potrà cambiare questa impostazione.
+      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> relativa ai dispositivi sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
+
+      NOTA: questa norma non viene applicata su Android. Per attivare IsolateOrigins su Android, utilizza l'impostazione della norma IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Consente di stabilire se considerare attendibile o meno l'infrastruttura PKI precedente di Symantec Corporation</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
@@ -158,6 +170,7 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="1583248206450240930">Utilizza <ph name="PRODUCT_FRAME_NAME" /> per impostazione predefinita</translation>
+<translation id="1599424828227887013">Attiva isolamento dei siti per origini specificate su dispositivi Android</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
 <translation id="1617235075406854669">Attiva eliminazione cronologia del browser e dei download</translation>
 <translation id="163200210584085447">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione video verrà concesso sulle pagine di accesso SAML. In caso contrario, l'accesso verrà automaticamente negato. Non sono consentite sequenze con caratteri jolly.</translation>
@@ -495,6 +508,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se l'impostazione non viene impostata, l'utente può decidere se utilizzare o meno la funzione.
 
       L'impostazione è stata rimossa da <ph name="PRODUCT_NAME" /> 29 e versioni successive.</translation>
+<translation id="2438609638493026652">Attiva la segnalazione di eventi chiave durante l'installazione di app Android a Google. Gli eventi vengono acquisiti solo per le app la cui installazione è stata lanciata tramite norma.
+
+      Se la norma viene impostata su True, gli eventi saranno registrati.
+      Se la norma viene impostata su False o non viene impostata, gli eventi non saranno registrati.</translation>
 <translation id="244317009688098048">Attiva scorciatoia da tastiera bailout per accesso automatico.
 
       Se questa norma non è impostata o è impostata su True e un account dispositivo locale è configurato per l'accesso automatico senza ritardo, <ph name="PRODUCT_OS_NAME" /> rispetterà la scorciatoia da tastiera Ctrl+Alt+S per bypassare l'accesso automatico e la visualizzazione della schermata di accesso.
@@ -1082,6 +1099,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4309640770189628899">Attiva o meno i pacchetti di crittografia DHE in TLS</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
+<translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
 <translation id="4346674324214534449">Consente di stabilire se bloccare o meno gli annunci su siti con annunci invasivi.
 
       Se questa norma viene impostata su 2, gli annunci verranno bloccati sui siti con annunci invasivi.

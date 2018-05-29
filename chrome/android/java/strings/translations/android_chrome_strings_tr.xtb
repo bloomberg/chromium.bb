@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Mevcut verileri silin.</translation>
 <translation id="1146678959555564648">VR'ye Gir</translation>
 <translation id="116280672541001035">Kullanılan</translation>
+<translation id="1172593791219290334">Başlangıç Sayfası</translation>
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1181037720776840403">Kaldır</translation>
 <translation id="1197267115302279827">Yer işaretlerini taşı</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Yer işaretleri ve web geçmişi</translation>
 <translation id="1513858653616922153">Şifreyi sil</translation>
 <translation id="1516229014686355813">Dokun ve Ara özelliği, seçilen kelimeyi ve geçerli sayfayı Google Arama'ya bağlam olarak gönderir. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kapatabilirsiniz.</translation>
+<translation id="1521008027388393450">Popüler İçerik</translation>
 <translation id="1539064842193522527">Chrome'da bağlantı açıldı</translation>
 <translation id="1549000191223877751">Diğer pencereye git</translation>
 <translation id="1553358976309200471">Chrome'u güncelle</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Sayfada bul</translation>
 <translation id="1832521218263067499">Güvenlik olayları</translation>
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
+<translation id="1868024384445905608">Chrome artık dosyaları daha hızlı indiriyor</translation>
 <translation id="1880072593381090678">Chrome'dan popüler sayfalar</translation>
+<translation id="1883903952484604915">Dosyalarım</translation>
 <translation id="1887786770086287077">Konum erişimi bu cihaz için kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Masaüstü sitesi iste işlevini etkinleştir</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB diğer uygulamalar</translation>
 <translation id="2063713494490388661">Aramak İçin Hafifçe Dokunma</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 indirme işlemi başarısız oldu}other{# indirme işlemi başarısız oldu}}</translation>
+<translation id="2074837478271106772"><ph name="COUNT" /> dosya indiriliyor (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
 <translation id="2086652334978798447">Google tarafından önerilen kişiselleştirilmiş içeriği almak için Chrome'da oturum açın.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Gizli moddan çık</translation>
 <translation id="3148434565183091099">Yer işaretlerinizi tüm cihazlarınızda almak için Chrome'da oturum açın.</translation>
 <translation id="3157842584138209013">Diğer Seçenekler düğmesini kullanarak ne kadar veri tasarrufu sağladığınıza bakın</translation>
+<translation id="3165725985537150202">Dosya indiriliyor (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Sekme ve pencere kısayolları</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izinleri açın.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> depolanmış veri</translation>
@@ -566,6 +573,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="618555311922999635">Gezinme paneli tam yükseklikte açıldı</translation>
 <translation id="6192333916571137726">Dosyayı indir</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
+<translation id="6196868727350051527">İndirme işleminiz hızlandırılıyor</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> değil misiniz?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçenekleri</translation>
 <translation id="6221633008163990886">Şifrelerinizi dışa aktarmak için kilit açılamadı</translation>
@@ -637,6 +645,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6846298663435243399">Yükleniyor…</translation>
+<translation id="6850409657436465440">İndirme işleminiz hâlâ devam ediyor</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> sekme kapatıldı</translation>
 <translation id="6864459304226931083">Resmi indir</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
@@ -683,6 +692,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7189372733857464326">Güncellemenin tamamlanması için Google Play Hizmetleri bekleniyor</translation>
 <translation id="7189598951263744875">Paylaş...</translation>
 <translation id="7191430249889272776">Sekme arka planda açıldı.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 indirme işlemi beklemede}other{# indirme işlemi beklemede}}</translation>
 <translation id="723171743924126238">Resim seç</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
@@ -757,6 +767,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7882131421121961860">Geçmiş bulunamadı</translation>
 <translation id="7882806643839505685">Belirli bir site için sese izin verin.</translation>
 <translation id="7929962904089429003">Menüyü açar</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 indirme işlemi tamamlandı}other{# indirme işlemi tamamlandı}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> güncel değil.</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7963646190083259054">Firma:</translation>
@@ -799,6 +810,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8266862848225348053">İndirme konumu</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> ile senkronize ediliyor</translation>
 <translation id="8310344678080805313">Standart sekmeler</translation>
+<translation id="8313455859591948645">Başlangıç sayfasını düzenle</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ve diğer siteler</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> dilindeki sayfalar çevrilmeyecek</translation>
 <translation id="8363501664269050863">Gezinme paneli. Kapatmak için hızlıca aşağı kaydırın.</translation>
@@ -887,6 +899,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9139068048179869749">Sitelerin bildirim göndermesine izin vermeden önce size sorulsun (önerilir)</translation>
 <translation id="9155898266292537608">Bir kelimeye hızlıca dokunarak da arama yapabilirsiniz</translation>
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Dosya indiriliyor}other{# dosya indiriliyor}}</translation>
 <translation id="9204836675896933765">1 dosya kaldı</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Resimler</translation>

@@ -87,6 +87,18 @@
 
 このポリシーが false に設定されている場合、ゲストモードのプロフィールで <ph name="PRODUCT_NAME" /> を使用することはできません。</translation>
 <translation id="1363275621236827384">ハードウェア プロファイルを Quirks サーバーに問い合わせられるようにする</translation>
+<translation id="1372267489642113556">
+      このポリシーが有効に設定されている場合、カンマ区切りのリストで指定された
+      発行元が各自のプロセスで実行されます。また、サブドメインによって指定された
+      発行元も分離されます。たとえば、https://example.com/ と指定すると、
+      https://foo.example.com/ も https://example.com/ サイトの一部として
+      分離されます。
+      このポリシーが無効に設定されている場合、明示的なサイト分離は行われず、IsolateOrigins と SitePerProcess のフィールドテストは無効になります。ただしユーザーは IsolateOrigins を手動で有効にできます。
+      このポリシーが未設定の場合、ユーザーはこの設定を変更できます。
+      <ph name="PRODUCT_OS_NAME" /> では、<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> デバイス ポリシーも同じ値に設定することをおすすめします。この 2 つのポリシーの値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
+
+      注: このポリシーは Android には適用されません。Android で IsolateOrigins を有効にするには、IsolateOriginsAndroid ポリシーの設定を使用してください。
+      </translation>
 <translation id="1384459581748403878">参考: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation の古い PKI インフラストラクチャを信頼するかどうか</translation>
 <translation id="1393485621820363363">有効な企業デバイス プリンタ</translation>
@@ -166,6 +178,7 @@
 
       セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="1583248206450240930">デフォルトで <ph name="PRODUCT_FRAME_NAME" /> を使用する</translation>
+<translation id="1599424828227887013">Android 端末で指定の発行元に対してサイト分離を有効にする</translation>
 <translation id="1608755754295374538">ユーザー確認なしで音声キャプチャ デバイスへのアクセスが許可される URL</translation>
 <translation id="1617235075406854669">閲覧とダウンロードの履歴を削除可能にする</translation>
 <translation id="163200210584085447">このリストに指定されているパターンと、リクエスト元 URL の
@@ -507,6 +520,10 @@
       この設定が未設定の場合は、この機能を使用するかどうかをユーザーが選択できます。
 
       この設定は、<ph name="PRODUCT_NAME" /> 29 以降のバージョンでは削除されています。</translation>
+<translation id="2438609638493026652">Android アプリのインストール中に発生したキーイベントが Google に報告されるようにします。取得されるイベントは、ポリシーを通じてインストールされたアプリのイベントのみです。
+
+      このポリシーが true に設定されている場合は、イベントが記録されます。
+      このポリシーが false に設定されているか未設定の場合、イベントは記録されません。</translation>
 <translation id="244317009688098048">自動ログイン回避用のキーボード ショートカットを有効にします。
 
       このポリシーが未設定の場合、または True に設定され、デバイスのローカル アカウントがゼロ遅延の自動ログイン用に設定されている場合、<ph name="PRODUCT_OS_NAME" /> では自動ログインを回避してログイン画面を表示するキーボード ショートカットの Ctrl+Alt+S を有効にします。
@@ -1102,6 +1119,7 @@
 <translation id="4309640770189628899">TLS の DHE 暗号スイートの有効化</translation>
 <translation id="4322842393287974810">遅延なしで自動開始されるキオスクアプリから <ph name="PRODUCT_OS_NAME" /> のバージョンを制御できるようにする</translation>
 <translation id="4325690621216251241">システム トレイにログアウト ボタンを追加する</translation>
+<translation id="4332177773549877617">Android アプリのインストール中に発生したイベントを記録する</translation>
 <translation id="4346674324214534449">煩わしい広告を含むサイトで広告をブロックするかどうかを設定します。
 
       このポリシーが 2 に設定されている場合、煩わしい広告を含むサイトでは広告がブロックされます。

@@ -263,15 +263,18 @@
 <translation id="6723839937902243910">Захранване</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="6803622936009808957">Дисплеите не можаха да се дублират, тъй като не бяха намерени поддържани разделителни способности. Вместо това влязохте в режима за разширен работен плот.</translation>
+<translation id="6820676911989879663">Време е за почивка!</translation>
 <translation id="683971173229319003">търсене + L</translation>
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
+<translation id="7015766095477679451">Ще бъда отново на ваше разположение в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
 <translation id="7034339000180558234">„<ph name="TAB_NAME" />“ се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
+<translation id="7076293881109082629">Влизате</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
 <translation id="7131634465328662194">Ще излезете автоматично.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>

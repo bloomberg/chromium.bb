@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
 <translation id="1146678959555564648">Увійти у VR-режим</translation>
 <translation id="116280672541001035">Використано</translation>
+<translation id="1172593791219290334">Стартова сторінка</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1197267115302279827">Перемістити закладки</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Закладки й історія веб-пошуку</translation>
 <translation id="1513858653616922153">Видалити пароль</translation>
 <translation id="1516229014686355813">Функція "Торкніться, щоб шукати" надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Популярний вміст</translation>
 <translation id="1539064842193522527">Посилання відкрито в Chrome</translation>
 <translation id="1549000191223877751">Відкрити в іншому вікні</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1832521218263067499">Випадки порушення безпеки</translation>
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
+<translation id="1868024384445905608">Тепер Chrome завантажує файли швидше</translation>
 <translation id="1880072593381090678">Популярні сторінки з Chrome</translation>
+<translation id="1883903952484604915">Мої файли</translation>
 <translation id="1887786770086287077">На цьому пристрої вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Додаток <ph name="APP_NAME" /> відкриватиметься в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> ГБ використовується іншими додатками</translation>
 <translation id="2063713494490388661">Торкніться, щоб шукати</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{Не вдалося завантажити 1 файл}one{Не вдалося завантажити # файл}few{Не вдалося завантажити # файли}many{Не вдалося завантажити # файлів}other{Не вдалося завантажити # файлу}}</translation>
+<translation id="2074837478271106772">Завантажується стільки файлів: <ph name="COUNT" /> (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3148434565183091099">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис Chrome.</translation>
 <translation id="3157842584138209013">Перевірте обсяг збережених даних за допомогою кнопки "Більше опцій"</translation>
+<translation id="3165725985537150202">Завантажується файл (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Комбінації клавіш для роботи з вкладками та вікнами</translation>
 <translation id="3190152372525844641">Увімкніть дозволи для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> збережених даних</translation>
@@ -566,6 +573,7 @@
 <translation id="618555311922999635">Панель навігації відкрито на весь екран</translation>
 <translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6192792657125177640">Винятки</translation>
+<translation id="6196868727350051527">Прискорюється завантаження</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: опції</translation>
 <translation id="6221633008163990886">Розблокуйте, щоб експортувати паролі</translation>
@@ -637,6 +645,7 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="6846298663435243399">Завантаження…</translation>
+<translation id="6850409657436465440">Завантаження ще триває</translation>
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="6864459304226931083">Завантажити зображення</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
@@ -683,6 +692,7 @@
 <translation id="7189372733857464326">Сервіси Google Play оновлюються</translation>
 <translation id="7189598951263744875">Поділитися...</translation>
 <translation id="7191430249889272776">Вкладку відкрито у фоновому режимі.</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{Очікується 1 завантаження}one{Очікується # завантаження}few{Очікується # завантаження}many{Очікується # завантажень}other{Очікується # завантаження}}</translation>
 <translation id="723171743924126238">Вибрати зображення</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
@@ -757,6 +767,7 @@
 <translation id="7882131421121961860">Історії не знайдено</translation>
 <translation id="7882806643839505685">Увімкнути звук для певного сайту.</translation>
 <translation id="7929962904089429003">Відкрити меню</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 файл завантажено}one{# файл завантажено}few{# файли завантажено}many{# файлів завантажено}other{# файлу завантажено}}</translation>
 <translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7963646190083259054">Постачальник:</translation>
@@ -799,6 +810,7 @@
 <translation id="8266862848225348053">Папка для завантажень</translation>
 <translation id="8283853025636624853">Синхронізація з обліковим записом <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
+<translation id="8313455859591948645">Редагувати стартову сторінку</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8363501664269050863">Панель навігації. Проведіть пальцем униз, щоб закрити.</translation>
@@ -887,6 +899,7 @@
 <translation id="9139068048179869749">Запитувати, перш ніж дозволити сайтам надсилати сповіщення (рекомендується)</translation>
 <translation id="9155898266292537608">Можете також шукати, швидко торкнувшись слова</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{Завантажується файл}one{Завантажується # файл}few{Завантажується # файли}many{Завантажується # файлів}other{Завантажується # файлу}}</translation>
 <translation id="9204836675896933765">Залишився 1 файл</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Зображення</translation>

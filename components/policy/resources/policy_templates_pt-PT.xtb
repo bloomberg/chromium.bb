@@ -88,6 +88,19 @@
 
       Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não permite que os perfis de convidado sejam iniciados.</translation>
 <translation id="1363275621236827384">Ativar consultas ao Quirks Server para perfis de hardware</translation>
+<translation id="1372267489642113556">
+      Se a política estiver ativada, cada uma das origens nomeadas numa
+      lista separada por vírgulas é executada no seu próprio processo.
+      Deste modo, são também isoladas as origens nomeadas por
+      subdomínios. Por exemplo, ao especificar https://example.com/,
+      https://foo.example.com/ também é isolado como parte do site
+      https://example.com/.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+
+      NOTA: esta política não é aplicável no Android. Para ativar IsolateOrigins no Android, utilize a definição da política IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
 <translation id="1393485621820363363">Impressoras empresariais de dispositivos ativadas</translation>
@@ -165,6 +178,7 @@
 
       Consulte https://developers.google.com/safe-browsing para mais informações acerca da Navegação segura.</translation>
 <translation id="1583248206450240930">Utilizar o <ph name="PRODUCT_FRAME_NAME" /> por predefinição</translation>
+<translation id="1599424828227887013">Ativar o isolamento de site para origens especificadas em dispositivos Android</translation>
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
 <translation id="163200210584085447">Os padrões nesta lista serão comparados com a origem de
@@ -520,6 +534,10 @@
       Se esta definição não for definida, o utilizador poderá decidir utilizar esta função ou não.
 
       Esta definição foi removida do <ph name="PRODUCT_NAME" /> 29 e versões superiores.</translation>
+<translation id="2438609638493026652">Ativa a comunicação dos eventos principais durante a instalação de aplicações Android no Google. Os eventos são capturados apenas para as aplicações cuja instalação foi acionada através da política.
+
+      Se a política estiver definida como verdadeira, os eventos são registados.
+      Se a política estiver definida como falsa ou não estiver definida, os eventos não são registados.</translation>
 <translation id="244317009688098048">Permite o atalho de teclado de resgate para o início de sessão automático.
 
       Se esta política não estiver definida ou estiver definida como Verdadeira e uma conta do dispositivo local estiver configurada para o início de sessão automático de atraso zero, o <ph name="PRODUCT_OS_NAME" /> irá cumprir o atalho Ctrl+Alt+S, ignorando o início de sessão automático e apresentando o ecrã de início de sessão.
@@ -1114,6 +1132,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4309640770189628899">Determinar se os conjuntos de cifras DHE no TLS estão ativados</translation>
 <translation id="4322842393287974810">Permitir que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
+<translation id="4332177773549877617">Registar eventos para instalações de aplicações Android</translation>
 <translation id="4346674324214534449">Permite-lhe definir se os anúncios devem ser bloqueados em sites com anúncios intrusivos.
 
       Se esta política estiver definida como 2, os anúncios são bloqueados em sites com anúncios intrusivos.

@@ -264,15 +264,18 @@
 <translation id="6723839937902243910">Alimentation</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
+<translation id="6820676911989879663">Faites une pause !</translation>
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="698231206551913481">L'ensemble des données locales et des fichiers associés à cet utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>
+<translation id="7015766095477679451">Revenez à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
 <translation id="7034339000180558234">Diffusion de l'onglet "<ph name="TAB_NAME" />" sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7067196344162293536">Rotation automatique</translation>
+<translation id="7076293881109082629">Connexion</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
 <translation id="7131634465328662194">Vous allez être déconnecté automatiquement.</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>

@@ -88,6 +88,18 @@
 
       Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép bắt đầu hồ sơ khách.</translation>
 <translation id="1363275621236827384">Bật truy vấn cấu hình Máy chủ Quirks cho phần cứng</translation>
+<translation id="1372267489642113556">
+      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
+      danh sách được phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Tùy chọn này cũng sẽ cách ly
+      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
+      khiến https://foo.example.com/ bị cách ly vì là một phần của trang web
+      https://example.com/.
+      Nếu bạn tắt chính sách này, sẽ không có hoạt động Cách ly trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng vẫn có thể bật IsolateOrigins theo cách thủ công.
+      Nếu bạn không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này.
+      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> về cùng một giá trị. Nếu các giá trị do hai chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi đang áp dụng giá trị do chính sách người dùng chỉ định.
+
+      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy sử dụng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
@@ -167,6 +179,7 @@
 
       Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về Duyệt web an toàn.</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME" /> theo mặc định</translation>
+<translation id="1599424828227887013">Bật tính năng Cách ly trang web cho nguồn gốc đã chỉ định trên thiết bị Android</translation>
 <translation id="1608755754295374538">Các URL sẽ được cấp quyền truy cập thiết bị ghi âm mà không cần phải hiển thị lời nhắc</translation>
 <translation id="1617235075406854669">Bật xóa lịch sử trình duyệt và lịch sử tải xuống</translation>
 <translation id="163200210584085447">Các mẫu trong danh sách này sẽ được đối sánh dựa trên nguồn gốc
@@ -526,6 +539,10 @@
       Nếu cài đặt này không được đặt, người dùng có thể quyết định sử dụng chức năng này hay không.
 
       Cài đặt này đã bị xóa khỏi phiên bản <ph name="PRODUCT_NAME" /> 29 và các phiên bản cao hơn.</translation>
+<translation id="2438609638493026652">Bật tính năng báo cáo các sự kiện quan trọng trong quá trình cài đặt ứng dụng Android cho Google. Các sự kiện chỉ được ghi lại cho các ứng dụng có quá trình cài đặt được kích hoạt qua chính sách.
+
+      Nếu bạn đặt chính sách này là true thì các sự kiện sẽ được ghi lại.
+      Nếu bạn đặt chính sách này là false hoặc không đặt, thì các sự kiện sẽ không được ghi lại.</translation>
 <translation id="244317009688098048">Bật phím tắt bailout cho tự động đăng nhập.
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành True và tài khoản trong thiết bị được định cấu hình cho tự động đăng nhập không trễ, <ph name="PRODUCT_OS_NAME" /> sẽ đặt phím tắt là Ctrl+Alt+S để bỏ qua tự động đăng nhập và hiển thị màn hình đăng nhập.
@@ -1140,6 +1157,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4309640770189628899">Bộ mã hóa DHE trong TLS có được bật hay không</translation>
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
+<translation id="4332177773549877617">Ghi lại các sự kiện cho lượt cài đặt ứng dụng Android</translation>
 <translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web chứa quảng cáo xâm nhập hay không.
 
       Nếu bạn đặt chính sách này thành 2, quảng cáo sẽ bị chặn trên các trang web chứa quảng cáo xâm nhập.

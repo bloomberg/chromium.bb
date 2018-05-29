@@ -264,15 +264,18 @@
 <translation id="6723839937902243910">Güç</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
+<translation id="6820676911989879663">Mola verin!</translation>
 <translation id="683971173229319003">Ara+L</translation>
 <translation id="6857811139397017780">Şunu etkinleştir: <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="698231206551913481">Bu kullanıcıyla ilişkilendirilen tüm dosyalar ve yerel veriler, bu kullanıcı kaldırıldıktan sonra kalıcı olarak silinir.</translation>
+<translation id="7015766095477679451">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
 <translation id="7034339000180558234"><ph name="TAB_NAME" /> sekmesi <ph name="RECEIVER_NAME" /> üzerinde yayınlanıyor</translation>
 <translation id="7066646422045619941">Bu ağ, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="7067196344162293536">Otomatik döndür</translation>
+<translation id="7076293881109082629">Oturum açılıyor</translation>
 <translation id="7098389117866926363">USB-C cihaz (arkadaki sol bağlantı noktası)</translation>
 <translation id="7131634465328662194">Oturumunuz otomatik olarak kapatılacak.</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>

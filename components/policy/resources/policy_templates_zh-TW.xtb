@@ -88,6 +88,17 @@
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將會禁止啟動訪客設定檔。</translation>
 <translation id="1363275621236827384">允許在 Quirks Server 中查詢硬體設定檔</translation>
+<translation id="1372267489642113556">
+      如果啟用這項政策，逗號分隔的清單中的已命名來源
+      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
+      例如，指定 https://example.com/ 也會造成
+      https://foo.example.com/ 遭到隔離，因為後者同樣屬於
+      https://example.com/ 網站。
+      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
+      如果未設定這項政策，使用者將可以變更這項設定。
+      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      注意：這項政策不適用於 Android 裝置。如要在 Android 裝置上啟用 IsolateOrigins，請改用 IsolateOriginsAndroid 政策設定。
+      </translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
@@ -165,6 +176,7 @@
 
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1599424828227887013">在 Android 裝置上為指定來源啟用網站隔離</translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載記錄</translation>
 <translation id="163200210584085447">系統會比對這份清單中的模式與要求網址的
@@ -512,6 +524,10 @@
       如果你未設定這項政策，使用者可以自行決定是否要使用這項功能。
 
       我們已於 <ph name="PRODUCT_NAME" /> 版本 29 及更高版本中移除這項設定。</translation>
+<translation id="2438609638493026652">允許將 Android 應用程式安裝期間的重要事件回報給 Google。系統只會記錄透過政策觸發的應用程式安裝事件。
+
+      如果將這項政策設為 true，系統就會記錄事件。
+      如果將這項政策設為 false 或不予設定，系統就不會記錄事件。</translation>
 <translation id="244317009688098048">啟用停止自動登入的鍵盤快速鍵。
 
       如果這項政策設為「True」或未設定，且裝置本機帳戶已設為無延遲自動登入，<ph name="PRODUCT_OS_NAME" /> 會將 Ctrl+Alt+S 設為鍵盤快速鍵，以用來停止自動登入並顯示登入畫面。
@@ -1105,6 +1121,7 @@
 <translation id="4309640770189628899">是否在 TLS 中啟用 DHE 加密套件</translation>
 <translation id="4322842393287974810">允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
+<translation id="4332177773549877617">Android 應用程式安裝記錄事件</translation>
 <translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
 
       如果將這項政策的值設為 2，含侵入式廣告的網站將無法顯示廣告。

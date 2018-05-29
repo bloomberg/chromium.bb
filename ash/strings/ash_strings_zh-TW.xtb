@@ -263,15 +263,18 @@
 <translation id="6723839937902243910">電源</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
+<translation id="6820676911989879663">目前禁止使用裝置！</translation>
 <translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="698231206551913481">將這位使用者移除後，與這位使用者相關聯的所有檔案和本機資料都會遭到永久刪除。</translation>
+<translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="7034339000180558234">正在將「<ph name="TAB_NAME" />」畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="7066646422045619941">您的管理員已停用這個網路。</translation>
 <translation id="7067196344162293536">自動旋轉</translation>
+<translation id="7076293881109082629">登入中</translation>
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
 <translation id="7131634465328662194">系統會自動將你登出。</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>

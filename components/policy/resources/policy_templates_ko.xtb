@@ -88,6 +88,18 @@
 
       이 정책이 'false'로 설정되면 <ph name="PRODUCT_NAME" />에서 게스트 프로필을 사용할 수 없습니다.</translation>
 <translation id="1363275621236827384">하드웨어 프로필 Quirks 서버에 검색어를 사용합니다.</translation>
+<translation id="1372267489642113556">
+      정책을 사용 설정하면 쉼표로 구분된 목록에 이름이 지정된 각 출처는
+      자체 프로세스로 작동합니다. 이 정책은 하위 도메인으로 이름이 지정된
+      출처도 격리합니다. 예를 들어, https://example.com/을 지정하면
+      https://foo.example.com/ 또한 https://example.com 사이트의
+      일부로 여겨져 격리됩니다.
+      정책이 사용 중지되면 명시적인 사이트 격리는 이루어지지 않고 IsolateOrigins 및 SitePerProcess 필드 평가판이 사용 중지됩니다. 사용자는 계속해서 IsolateOrigins를 직접 사용 설정할 수 있습니다.
+      정책을 구성하지 않으면 사용자가 이 설정을 변경할 수 있게 됩니다.
+      <ph name="PRODUCT_OS_NAME" />에서 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 기기 정책을 같은 값으로 설정하는 것이 좋습니다. 두 정책을 다른 값으로 설정하면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
+
+      참고: 이 정책은 Android에서 적용되지 않습니다. Android에서 IsolateOrigins를 사용 설정하려면 IsolateOriginsAndroid 정책 설정을 사용하세요.
+      </translation>
 <translation id="1384459581748403878">참고: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation의 Legacy PKI Infrastructure 신뢰 사용 여부</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
@@ -167,6 +179,7 @@
 
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
 <translation id="1583248206450240930">기본으로 <ph name="PRODUCT_FRAME_NAME" /> 사용</translation>
+<translation id="1599424828227887013">Android 기기에서 지정된 출처의 사이트 격리 사용 설정</translation>
 <translation id="1608755754295374538">별도 메시지를 표시하지 않고 오디오 캡처 기기에 대한 액세스 권한이 부여되는 URL입니다.</translation>
 <translation id="1617235075406854669">브라우저 및 다운로드 기록을 삭제하도록 설정합니다.</translation>
 <translation id="163200210584085447">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.
@@ -526,6 +539,10 @@
       이 정책이 설정되어 있지 않은 경우 사용자가 이 기능의 사용 여부를 결정할 수 있습니다.
 
       이 설정은 <ph name="PRODUCT_NAME" /> 29 이상 버전에서 제거되었습니다.</translation>
+<translation id="2438609638493026652">Android 앱 설치 중 주요 이벤트를 Google에 보고할 수 있습니다. 정책을 통해 설치가 실행된 앱의 이벤트만 기록됩니다.
+
+      정책을 true로 설정하면 이벤트가 로깅됩니다.
+      정책을 false로 설정하거나 설정하지 않으면 이벤트가 로깅되지 않습니다.</translation>
 <translation id="244317009688098048">자동 로그인 시 긴급용 단축키를 사용합니다.
 
       이 정책이 설정되지 않거나 True로 설정되고, 기기 로컬 계정이 zero-delay 자동 로그인인 경우, <ph name="PRODUCT_OS_NAME" />에서 자동 로그인을 우회하고 로그인 화면을 표시할 수 있도록 단축키 Ctrl+Alt+S를 적용합니다.
@@ -1141,6 +1158,7 @@
 <translation id="4309640770189628899">TLS DHE 암호화 기술 사용 설정 여부</translation>
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
+<translation id="4332177773549877617">Android 앱 설치 이벤트 로깅</translation>
 <translation id="4346674324214534449">방해가 되는 광고가 포함된 사이트에서 광고를 차단할지 설정할 수 있습니다.
 
       이 정책을 2로 설정하면 방해가 되는 광고가 포함된 사이트에서 광고가 차단됩니다.

@@ -263,15 +263,18 @@
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
+<translation id="6820676911989879663">Ta en paus!</translation>
 <translation id="683971173229319003">Sök+L</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
+<translation id="7015766095477679451">Prova igen klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="7034339000180558234">Castar <ph name="TAB_NAME" /> till <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7067196344162293536">Rotera automatiskt</translation>
+<translation id="7076293881109082629">Logga in</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
 <translation id="7131634465328662194">Du loggas ut automatiskt.</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>

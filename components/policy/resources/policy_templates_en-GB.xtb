@@ -88,6 +88,18 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
+<translation id="1372267489642113556">
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is not configured, the user will be able to change this setting.
+      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
+      </translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
@@ -167,6 +179,7 @@
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME" /> by default</translation>
+<translation id="1599424828227887013">Enable Site Isolation for specified origins on Android devices</translation>
 <translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="163200210584085447">Patterns in this list will be matched against the security
@@ -528,6 +541,10 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is left unset, the user can decide to use this function or not.
 
       This setting has been removed from <ph name="PRODUCT_NAME" /> 29 and higher versions.</translation>
+<translation id="2438609638493026652">Enables reporting of key events during Android app installation to Google. Events are captured only for apps whose installation was triggered via policy.
+
+      If the policy is set to true, events will be logged.
+      If the policy is set to false or unset, events will not be logged.</translation>
 <translation id="244317009688098048">Enable bailout keyboard shortcut for auto-login.
 
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login, <ph name="PRODUCT_OS_NAME" /> will honour the keyboard shortcut Ctrl+Alt+S for bypassing auto-login and showing the login screen.
@@ -1149,6 +1166,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4309640770189628899">Whether DHE cipher suites in TLS are enabled</translation>
 <translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
+<translation id="4332177773549877617">Log events for Android app installs</translation>
 <translation id="4346674324214534449">Allows you to set whether ads should be blocked on sites with intrusive ads.
 
       If this policy is set to 2, ads will be blocked on sites with intrusive ads.

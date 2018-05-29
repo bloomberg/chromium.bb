@@ -17,6 +17,7 @@
 <translation id="1145536944570833626">Suprimeix les dades existents.</translation>
 <translation id="1146678959555564648">Activa el mode RV</translation>
 <translation id="116280672541001035">Dades utilitzades</translation>
+<translation id="1172593791219290334">Pàgina d'inici</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1197267115302279827">Mou les adreces d'interès</translation>
@@ -61,6 +62,7 @@
 <translation id="1513352483775369820">Adreces interès i historial web</translation>
 <translation id="1513858653616922153">Suprimeix la contrasenya</translation>
 <translation id="1516229014686355813">La funció Tocar per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La pots desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
+<translation id="1521008027388393450">Contingut popular</translation>
 <translation id="1539064842193522527">Enllaç obert a Chrome</translation>
 <translation id="1549000191223877751">Mou a l'altra finestra</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
@@ -93,7 +95,9 @@
 <translation id="1829244130665387512">Cerca a la pàgina</translation>
 <translation id="1832521218263067499">Incidències de seguretat</translation>
 <translation id="1853692000353488670">Pestanya d'incògnit nova</translation>
+<translation id="1868024384445905608">Ara Chrome baixa els fitxers més ràpid</translation>
 <translation id="1880072593381090678">Pàgines populars de Chrome</translation>
+<translation id="1883903952484604915">Els meus fitxers</translation>
 <translation id="1887786770086287077">L'accés a la ubicació està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> s'obrirà a Chrome. En continuar, acceptes les <ph name="BEGIN_LINK1" />condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
@@ -117,6 +121,8 @@
 <translation id="2038563949887743358">Activa Mostra com a ordinador</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB en altres aplicacions</translation>
 <translation id="2063713494490388661">Tocar per cercar</translation>
+<translation id="2065944887543506430">{FILE_COUNT,plural, =1{Error en 1 baixada}other{Error en # baixades}}</translation>
+<translation id="2074837478271106772">S'estan baixant <ph name="COUNT" /> fitxers (<ph name="MEGABYTES" />)</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Inicia la sessió a Chrome perquè Google et suggereixi contingut personalitzat</translation>
@@ -227,6 +233,7 @@
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
 <translation id="3148434565183091099">Inicieu la sessió a Chrome per accedir a les adreces d'interès des de tots els dispositius.</translation>
 <translation id="3157842584138209013">Consulta la quantitat de dades que has estalviat des del botó Més opcions</translation>
+<translation id="3165725985537150202">S'està baixant el fitxer (<ph name="MEGABYTES" />)</translation>
 <translation id="3166827708714933426">Dreceres per a pestanyes i finestres</translation>
 <translation id="3190152372525844641">Activeu els permisos per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dades desades</translation>
@@ -566,6 +573,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="618555311922999635">El tauler de navegació ocupa tota la pantalla</translation>
 <translation id="6192333916571137726">Baixa el fitxer</translation>
 <translation id="6192792657125177640">Excepcions</translation>
+<translation id="6196868727350051527">S'està accelerant la baixada</translation>
 <translation id="6210748933810148297">No ets <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Opcions per a <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6221633008163990886">Desbloqueja per exportar les contrasenyes</translation>
@@ -637,6 +645,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="6846298663435243399">S'està carregant…</translation>
+<translation id="6850409657436465440">La baixada encara està en curs</translation>
 <translation id="6850830437481525139">S'han tancat <ph name="TAB_COUNT" /> pestanyes</translation>
 <translation id="6864459304226931083">Baixa la imatge</translation>
 <translation id="6865313869410766144">Dades d'Emplenament automàtic de formularis</translation>
@@ -683,6 +692,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7189372733857464326">S'està esperant que Serveis de Google Play s'acabi d'actualitzar</translation>
 <translation id="7189598951263744875">Comparteix...</translation>
 <translation id="7191430249889272776">Pestanya oberta en segon pla</translation>
+<translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 baixada pendent}other{# baixades pendents}}</translation>
 <translation id="723171743924126238">Selecciona imatges</translation>
 <translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elements seleccionats</translation>
@@ -757,6 +767,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7882131421121961860">No s'ha trobat cap historial</translation>
 <translation id="7882806643839505685">Permet el so d'un lloc web concret.</translation>
 <translation id="7929962904089429003">Obre el menú</translation>
+<translation id="7939459033526903956">{FILE_COUNT,plural, =1{1 baixada completa}other{# baixades completes}}</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> no està actualitzat.</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="7963646190083259054">Proveïdor:</translation>
@@ -799,6 +810,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8266862848225348053">Ubicació de baixada</translation>
 <translation id="8283853025636624853">Se sincronitza amb <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Pestanyes estàndard</translation>
+<translation id="8313455859591948645">Edita la pàgina d'inici</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i més llocs web</translation>
 <translation id="8339163506404995330">Les pàgines en <ph name="LANGUAGE" /> no es traduiran</translation>
 <translation id="8363501664269050863">Tauler de navegació. Fes-lo lliscar cap avall per tancar-lo.</translation>
@@ -887,6 +899,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9139068048179869749">Pregunta abans de permetre que els llocs enviïn notificacions (opció recomanada)</translation>
 <translation id="9155898266292537608">També pots fer un toc ràpid en una paraula per fer cerques</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
+<translation id="9201987247565328043">{FILE_COUNT,plural, =1{S'està baixant el fitxer}other{S'estan baixant # fitxers}}</translation>
 <translation id="9204836675896933765">Queda 1 fitxer</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imatges</translation>

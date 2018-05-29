@@ -88,6 +88,20 @@
 
       Ako se pravilo postavi na "False", <ph name="PRODUCT_NAME" /> neće dopustiti pokretanje profila gostiju.</translation>
 <translation id="1363275621236827384">Omogući slanje upita na Quirks Server za hardverske profile</translation>
+<translation id="1372267489642113556">
+      Ako je pravilo omogućeno, svako od navedenih polazišta
+      na popisu odijeljenom zarezima izvodit će se u svojem procesu. Time će se
+      također izolirati polazišta navedena prema poddomenama, npr. ako se navede
+      https://example.com/ izolirat će se i https://foo.example.com/ kao dio web-lokacije 
+      https://example.com/.
+      Ako je pravilo onemogućeno, neće doći do eksplicitne izolacije web-lokacije i radne verzije IsolateOrigins i SitePerProcess bit će onemogućene. Korisnici će i dalje
+      moći ručno omogućiti IsolateOrigins.
+      Ako se to pravilo ne konfigurira, korisnik će moći izmijeniti tu postavku.
+      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučuje se postaviti pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> s istim vrijednostima.
+      Ako se vrijednosti navedene u pravilima ne podudaraju, može doći do zastoja pri unošenju korisničke sesije dok se ne primijeni vrijednost određena korisničkim pravilom.
+
+      NAPOMENA: ovo pravilo ne odnosi se na Android. Da biste omogućili IsolateOrigins na Androidu, upotrijebite postavku pravila IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Referenca: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Odlučivanje o pouzdanosti naslijeđene infrastrukture javnog ključa tvrtke Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogućeni pisači za uređaje tvrtke</translation>
@@ -165,6 +179,7 @@
 
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
+<translation id="1599424828227887013">Omogućivanje izolacije web-lokacije za određena polazišta na Android uređajima</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="163200210584085447">Uzorci na tom popisu usporedit će se sa sigurnosnim
@@ -512,6 +527,10 @@
       Ako se ta postavka ne postavi, korisnici mogu upotrebljavati tu funkciju prema želji.
 
       Ta je postavka uklonjena iz verzije <ph name="PRODUCT_NAME" /> 29 i novijih verzija.</translation>
+<translation id="2438609638493026652">Omogućuje izvještavanje o ključnim događajima tijekom instalacije Android aplikacije na Googleu. Događaji se bilježe samo za aplikacije čija je instalacija pokrenuta putem pravila.
+
+      Ako je pravilo postavljeno na "true", događaji će biti zabilježeni.
+      Ako je pravilo postavljeno na "false" ili nije postavljeno uopće, događaji neće biti zabilježeni.</translation>
 <translation id="244317009688098048">Omogućuje tipkovni prečac za izbjegavanje automatske prijave.
 
       Ako to pravilo nije postavljeno ili ako je postavljeno na točno, a račun na uređaju konfiguriran je za automatsku prijavu bez odgode, proizvod <ph name="PRODUCT_OS_NAME" /> primjenjivat će tipkovni prečac Ctrl + Alt + S za izbjegavanje automatske prijave i prikazivanje zaslona za prijavu.
@@ -1104,6 +1123,7 @@
 <translation id="4309640770189628899">Omogući DHE pakete šifri u TLS-u</translation>
 <translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
+<translation id="4332177773549877617">Zabilježite događaje za instalacije aplikacije za Android</translation>
 <translation id="4346674324214534449">Omogućuje vam da postavite hoće li se oglasi blokirati na web-lokacijama s ometajućim oglasima.
 
      Ako se to pravilo postavi na 2, oglasi će se blokirati na web-lokacijama s ometajućim oglasima.

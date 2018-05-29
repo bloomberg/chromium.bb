@@ -1259,7 +1259,6 @@
 <translation id="2948300991547862301"><ph name="PAGE_TITLE" /> પર જાઓ</translation>
 <translation id="2948320633360386059">ખલેલ પાડતી જાહેરાતો બતાવવાનું વલણ ધરાવતી સાઇટને અવરોધિત કરી</translation>
 <translation id="29488703364906173">આધુનિક વેબ માટે બનાવવામાં આવેલું, એક ઝડપી, સરળ અને સુરક્ષિત વેબ બ્રાઉઝર.</translation>
-<translation id="2949037475046662832">આની સહિત, આ બધી વેબસાઇટ માટે કૂકી અને સાઇટ ડેટા સાફ કરી નાખશે</translation>
 <translation id="2951247061394563839">મધ્ય વિંડો</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> કૂકીઝ</translation>
 <translation id="2958721676848865875">પૅક એક્સટેન્શનની ચેતવણી</translation>
@@ -3483,7 +3482,6 @@
 <translation id="6459488832681039634">શોધવા માટે પસંદગીનો ઉપયોગ કરો</translation>
 <translation id="6459799433792303855">સક્રિય વિંડો બીજી ડિસ્પ્લેમાં ખસેડી છે.</translation>
 <translation id="6460601847208524483">આગલું શોધો</translation>
-<translation id="6462082050341971451">શું તમે હજી પણ ત્યાં જ છો?</translation>
 <translation id="6463795194797719782">&amp;સંપાદિત કરો</translation>
 <translation id="6466988389784393586">બધાં બુકમાર્ક્સ &amp;ખોલો</translation>
 <translation id="6468485451923838994">ફોન્ટ્સ</translation>
@@ -4110,7 +4108,6 @@
 <translation id="7477347901712410606">જો તમે પાસફ્રેઝ ભૂલી ગયા છો, તો થોભો અને સમન્વયન <ph name="BEGIN_LINK" />Google ડેશબોર્ડ<ph name="END_LINK" /> દ્વારા ફરીથી સેટ કરો.</translation>
 <translation id="7477746269122340519">તમારા વ્યવસ્થાપકે આ વપરાશકર્તાને બ્લૉક કરેલ છે.</translation>
 <translation id="7478485216301680444">કિઓસ્ક ઍપ્લિકેશન ઇન્સ્ટોલ કરી શકાઈ નથી.</translation>
-<translation id="7479479221494776793">જો તમે કંઈપણ કરતાં નથી, તો તમને <ph name="LOGOUT_TIME_LEFT" /> માં સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="748138892655239008">પ્રમાણપત્રની મૂળભૂત મર્યાદાઓ</translation>
 <translation id="7484964289312150019">બધાં બુકમાર્ક્સને &amp;નવી વિંડોમાં ખોલો</translation>
@@ -4519,7 +4516,6 @@
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> ને ગોઠવી રહ્યાં છે ...</translation>
 <translation id="8090234456044969073">તમારી મોટાભાગની અવારનાવર મુલાકાત લીધેલ વેબસાઇટ્સની સૂચિ વાંચો</translation>
 <translation id="8093359998839330381"><ph name="PLUGIN_NAME" /> પ્રતિસાદ આપી રહ્યું નથી</translation>
-<translation id="8093832608898425674">સુરક્ષિત કન્ટેન્ટના વધુ સારા પ્લૅબેક માટે પાત્રતા નિર્ધારિત કરવા માટે <ph name="DOMAIN" /> તમારા ઉપકરણની ઓળખ Google દ્વારા ચકાસવામાં આવે તેવું ઇચ્છે છે. <ph name="LEARN_MORE" />.</translation>
 <translation id="80974698889265265">PIN મેળ ખાતાં નથી</translation>
 <translation id="8101987792947961127">આગલા રીબૂટ પર Powerwash આવશ્યક છે</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME" /> તમારા ડેટાને તમારા Google એકાઉન્ટ સાથે સુરક્ષિતપણે સમન્વયિત કરે છે. દરેક વસ્તુને સમન્વયિત રાખો અથવા સમન્વયિત ડેટા પ્રકારો અને એન્ક્રિપ્શન સેટિંગ્સને કસ્ટમાઇઝ કરો.</translation>
@@ -5186,7 +5182,6 @@
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
 <translation id="9170884462774788842">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક થીમ ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
 <translation id="9173995187295789444">બ્લૂટૂથ ઉપકરણો માટે સ્કૅન કરી રહ્યાં છીએ...</translation>
-<translation id="9174212595744391062">આનાથી બધી સાઇટમાંથી કુકી અને કૅશ સાફ થશે, જેમાં અહીં આપેલ પણ શામેલ છે</translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - Bluetooth ઉપકરણ કનેક્ટ કર્યું</translation>
 <translation id="9177499212658576372">તમે હાલમાં <ph name="NETWORK_TYPE" /> નેટવર્કથી કનેક્ટ કરેલું છે.</translation>
 <translation id="9180380851667544951">સાઇટ તમારી સ્ક્રીનને શેર કરી શકે છે</translation>

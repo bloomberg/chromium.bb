@@ -88,6 +88,19 @@
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
 <translation id="1363275621236827384">Slå på forespørsler til Quirks Server for maskinvareprofiler</translation>
+<translation id="1372267489642113556">
+      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
+      kommadelte lister i sine egne prosesser. Da isoleres også
+      opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/
+      angis, isoleres også https://foo.example.com/ som en del av nettstedet
+      https://example.com/.
+      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt. 
+      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
+      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. 
+Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+
+      MERK: Denne regelen gjelder ikke for Android. Bruk regelen IsolateOriginsAndroid for å aktivere IsolateOrigins på Android.
+      </translation>
 <translation id="1384459581748403878">Referanse: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
@@ -167,6 +180,7 @@
 
       Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME" /> som standard</translation>
+<translation id="1599424828227887013">Slå på nettstedsisolering for spesifiserte opprinnelser på Android-enheter</translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="163200210584085447">Mønstrene på denne listen stilles opp mot sikkerhetskilden
@@ -518,6 +532,10 @@
       Hvis denne innstillingen ikke angis, kan brukere bestemme om de vil bruke den eller ikke.
 
       Denne innstillingen er fjernet fra <ph name="PRODUCT_NAME" /> 29 og nyere versjoner.</translation>
+<translation id="2438609638493026652">Slår på rapportering av viktige hendelser ved Android appinstallasjoner til Google. Hendelser registreres bare for apper som ble installert på grunn av en regel.
+
+      Hvis regelen er satt til «True» (sann), blir hendelser loggført.
+      Hvis regelen er satt til «False» (usann) eller ikke er angitt, blir ikke hendelser loggført.</translation>
 <translation id="244317009688098048">Aktiver hurtigtasten for avbrudd av automatisk pålogging.
 
       Hvis denne regelen ikke er angitt eller har verdien «True», og en lokal konto på enheten er konfigurert for automatisk pålogging uten forsinkelse, følger <ph name="PRODUCT_OS_NAME" /> hurtigtasten Ctrl+Alt+S for å unngå automatisk pålogging og vise påloggingsskjermen.
@@ -883,7 +901,7 @@
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
-<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Feltet med én linje er avviklet og den fjernes i nær fremtid. Begynn å bruke tekstfeltet med flere linjer nedenfor.)</translation>
+<translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Feltet med én linje er avviklet og det fjernes i nær fremtid. Begynn å bruke tekstfeltet med flere linjer nedenfor.)</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3715569262675717862">Autentisering basert på klientsertifikater</translation>
@@ -1121,6 +1139,7 @@
 <translation id="4309640770189628899">Definerer om DHE-chifferserier i TLS er slått på</translation>
 <translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
+<translation id="4332177773549877617">Loggfør hendelser for installasjoner av Android-apper</translation>
 <translation id="4346674324214534449">Lar deg angi om annonser skal blokkeres på nettsteder med forstyrrende annonser.
 
       Hvis denne regelen er satt til «2», blokkeres annonser på nettsteder med forstyrrende annonser.

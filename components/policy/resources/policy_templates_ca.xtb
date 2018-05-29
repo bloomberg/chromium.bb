@@ -88,6 +88,14 @@
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
 <translation id="1363275621236827384">Activa l'opció d'enviar consultes a Quirks Server per als perfils de maquinari</translation>
+<translation id="1372267489642113556">
+      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
+      Si la política es desactiva, es produirà l'aïllament de llocs web no explícits i es desactivaran les proves de camp de les polítiques IsolateOrigins i SitePerProcess. Els usuaris podran continuar activant IsolateOrigins manualment.
+      Si no es configura la política, l'usuari podrà canviar aquesta opció de configuració.
+      A <ph name="PRODUCT_OS_NAME" />, es recomana establir també el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari mentre s'aplica el valor especificat per la política d'usuari.
+
+      NOTA: aquesta política no s'aplica a Android. S'hi pot substituir per IsolateOriginsAndroid.
+      </translation>
 <translation id="1384459581748403878">Referència: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Determina si es confia en la infraestructura de PKI heretada de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impressores activades per a dispositius d'empresa</translation>
@@ -165,6 +173,7 @@
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Fes servir <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
+<translation id="1599424828227887013">Activa l'aïllament de llocs web per a orígens especificats en dispositius Android</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
 <translation id="1617235075406854669">Activa la supressió de l'historial de baixades i del navegador</translation>
 <translation id="163200210584085447">Els patrons d'aquesta llista es compararan amb l'origen de la seguretat de l'URL sol·licitant. Si es troba alguna coincidència, l'URL obtindrà permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML. Si no es troba cap coincidència, l'accés es denegarà automàticament. Els patrons comodí no es permeten.</translation>
@@ -508,6 +517,10 @@
       Si no s'estableix aquesta opció, l'usuari pot decidir si vol fer servir aquesta funció o no.
 
       Aquesta configuració s'ha suprimit a la versió 29 i versions posteriors de <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2438609638493026652">Permet informar Google d'esdeveniments clau durant la instal·lació d'aplicacions per a Android. Només es capturen esdeveniments si la instal·lació d'aplicacions s'activa mitjançant la política.
+
+      Si la política s'estableix en "true", es registren esdeveniments.
+      Si la política s'estableix en "false" o no es defineix, no es registren esdeveniments.</translation>
 <translation id="244317009688098048">Activa les tecles de drecera d'ajuda per a l'inici de sessió automàtic.
 
       Si aquesta política es defineix com a vertadera i un compte local de dispositiu es configura per a l'inici de sessió sense retard, <ph name="PRODUCT_OS_NAME" /> farà cas de les tecles de drecera Ctrl + Alt + S per ometre l'inici de sessió automàtic i mostrarà la pantalla d'inici de sessió.
@@ -1099,6 +1112,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4309640770189628899">Si els sistemes de xifratge DHE de TLS estan activats</translation>
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
+<translation id="4332177773549877617">Registra esdeveniments d'instal·lacions d'aplicacions per a Android</translation>
 <translation id="4346674324214534449">Et permet definir si s'han de bloquejar els anuncis als llocs web amb anuncis intrusius.
 
       Si aquesta política es defineix amb el valor 2, els anuncis es bloquejaran als llocs web amb anuncis intrusius.

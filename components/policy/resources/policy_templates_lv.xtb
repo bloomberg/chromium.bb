@@ -88,6 +88,18 @@
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, pārlūkā <ph name="PRODUCT_NAME" /> nevar izveidot viesu profilus.</translation>
 <translation id="1363275621236827384">Iespējot Quirks servera vaicājumus aparatūras profiliem</translation>
+<translation id="1372267489642113556">
+      Ja šī politika ir iespējota, katram komatatdalītā sarakstā norādītajam
+      sākumpunktam tiks izpildīts atsevišķs process. Šādi tiks arī izolēti
+      sākumpunkti, kas nosaukti pēc apakšdomēniem, piemēram,
+      norādot https://example.com/, arī adrese https://foo.example.com/ tiks izolēta
+      kā daļa no vietnes https://example.com/.
+      Ja šī politika ir atspējota, nenotiks tieša vietnes izolācija un IsolateOrigins un SitePerProcess eksperimenti tiks atspējoti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
+      Ja šī politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
+      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ir ieteicams arī iestatīt to pašu vērtību <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ierīces politikai. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
+
+      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai iespējotu politiku IsolateOrigins operētājsistēmā Android, izmantojiet politikas IsolateOriginsAndroid iestatījumu.
+      </translation>
 <translation id="1384459581748403878">Informācija: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
@@ -167,6 +179,7 @@
 
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="1599424828227887013">Vietnes izolācijas iespējošana norādītiem sākumpunktiem Android ierīcēs</translation>
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="163200210584085447">Šajā sarakstā pieejamajiem šabloniem tiks meklēta atbilstība
@@ -529,6 +542,10 @@
       Ja šis iestatījums nav iestatīts, lietotāji var izlemt, vai izmantot šo funkciju.
 
       Šis iestatījums ir noņemts pārlūkā <ph name="PRODUCT_NAME" /> 29 un jaunākās versijās.</translation>
+<translation id="2438609638493026652">Iespējo galveno notikumu ziņošanu Google serveriem Android lietotņu instalēšanas laikā. Notikumi tiek reģistrēti tikai lietotnēm, kuru instalēšana tika aktivizēta, izmantojot politiku.
+
+      Ja politikai ir iestatīta vērtība “true”, notikumi tiks reģistrēti.
+      Ja politikai ir iestatīta vērtība “false” vai tā nav iestatīta, notikumi netiks reģistrēti.</translation>
 <translation id="244317009688098048">Glābšanas īsinājumtaustiņa iespējošana automātiskās pieteikšanās darbībai
 
       Ja šī politika nav iestatīta vai ja tai ir iestatīta vērtība “True” un lokālais ierīces konts ir konfigurēts nulles aizkaves automātiskās pieteikšanas izmantošanai, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantota taustiņu kombinācija Ctrl+Alt+S, lai izlaistu automātisko pieteikšanos un parādītu pieteikšanās ekrānu.
@@ -1145,6 +1162,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4309640770189628899">DHE šifra komplektu iespējošana standartā TLS</translation>
 <translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
+<translation id="4332177773549877617">Android lietotņu instalēšanas notikumu reģistrēšana</translation>
 <translation id="4346674324214534449">Ļauj iestatīt, vai bloķēt reklāmu rādīšanu vietnēs, kurās tiek rādītas traucējošas reklāmas.
 
       Ja politikai ir iestatīta vērtība “2”, reklāmu rādīšana tiks bloķēta vietnēs, kurās tiek rādītas traucējošas reklāmas.

@@ -263,15 +263,18 @@
 <translation id="6723839937902243910">Bateria</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
+<translation id="6820676911989879663">Fes una pausa</translation>
 <translation id="683971173229319003">Cerca + L</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="698231206551913481">Tots els fitxers i les dades locals associats amb aquest usuari se suprimiran definitivament quan aquest usuari se suprimeixi.</translation>
+<translation id="7015766095477679451">Pots tornar a aquesta hora: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
 <translation id="7034339000180558234">S'està emetent <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
 <translation id="7067196344162293536">Rotació automàtica</translation>
+<translation id="7076293881109082629">Inicia la sessió</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="7131634465328662194">La sessió es tancarà automàticament.</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>

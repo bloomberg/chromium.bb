@@ -89,6 +89,14 @@
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
 <translation id="1363275621236827384">Quirks Server'dan donanım profillerini sorgulamayı etkinleştir</translation>
+<translation id="1372267489642113556">
+      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede adı verilen her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
+      Bu politikanın devre dışı bırakılması halinde hiçbir Site İzolasyonu yapılmaz ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleştirebilir.
+      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
+      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
+
+      NOT: Bu politika Android için geçerli değildir. Android'de IsolateOrigins'i etkinleştirmek için IsolateOriginsAndroid politika ayarını kullanın.
+      </translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="1387596372902085462">Symantec Corporation'ın Eski PKI Altyapısı'ndaki güvenin etkinleştirilip etkinleştirilmemesi</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
@@ -170,6 +178,7 @@
 
       Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="1583248206450240930">Varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> ürününü kullan</translation>
+<translation id="1599424828227887013">Android cihazlarda Site İzolasyonu'nu belirtilen kaynaklar için etkinleştirme</translation>
 <translation id="1608755754295374538">Soru sorulmadan ses yakalama cihazlarına erişim verilecek URL'ler</translation>
 <translation id="1617235075406854669">Tarayıcı ve indirme geçmişinin silinmesini etkinleştir</translation>
 <translation id="163200210584085447">Bu listedeki kalıplar, istek yapan URL'nin güvenlik kaynağı ile
@@ -527,6 +536,10 @@
       Bu ayar belirlenmemiş olarak bırakılırsa kullanıcı bu işlevi kullanıp kullanmayacağına karar verebilir.
 
       Bu ayar, <ph name="PRODUCT_NAME" /> 29 ve sonraki sürümlerinde kaldırılmıştır.</translation>
+<translation id="2438609638493026652">Android uygulama yüklemesi sırasında önemli etkinliklerin Google'a bildirilmesini sağlar. Etkinlikler yalnızca yüklemesini politikanın tetiklediği uygulamalar için yakalanır.
+
+      Politika true (doğru) değerine ayarlanırsa etkinlikler günlüğe kaydedilir.
+      Politika false (yanlış) değerine ayarlanırsa etkinlikler günlüğe kaydedilmez.</translation>
 <translation id="244317009688098048">Otomatik giriş için kurtarma klavye kısayollarını etkinleştirin.
 
       Bu politika ayarlanmazsa veya Doğru seçeneğine ayarlanırsa ve bir cihaz-yerel hesabı sıfır gecikmeli otomatik giriş için yapılandırılırsa, <ph name="PRODUCT_OS_NAME" /> otomatik girişi atlamak ve oturum ekranını görüntülemek üzere kullanılan Ctrl+Alt+S klavye kısayolunu dikkate alır.
@@ -1137,6 +1150,7 @@ politikayı geçersiz kılamaz.
 <translation id="4309640770189628899">TLS'deki DHE şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="4322842393287974810">Sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine izin ver</translation>
 <translation id="4325690621216251241">Sistem tepsisine çıkış düğmesi ekle</translation>
+<translation id="4332177773549877617">Android uygulama yüklemeleriyle ilgili etkinlikleri günlüğe kaydetme</translation>
 <translation id="4346674324214534449">Araya giren reklamların yer aldığı sitelerde reklamların engellenip engellenmeyeceğini ayarlamanıza olanak tanır.
 
       Bu politika 2 değerine ayarlanırsa, araya giren reklamların yer aldığı sitelerde reklamlar engellenir.
