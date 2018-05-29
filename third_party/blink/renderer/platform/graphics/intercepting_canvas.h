@@ -34,20 +34,17 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
 
 class InterceptingCanvasBase : public SkCanvas {
-  WTF_MAKE_NONCOPYABLE(InterceptingCanvasBase);
 
  public:
   template <typename DerivedCanvas>
   class CanvasInterceptorBase {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(CanvasInterceptorBase);
 
    protected:
     CanvasInterceptorBase(InterceptingCanvasBase* canvas) : canvas_(canvas) {
@@ -63,6 +60,9 @@ class InterceptingCanvasBase : public SkCanvas {
     DerivedCanvas* Canvas() { return static_cast<DerivedCanvas*>(canvas_); }
     bool TopLevelCall() const { return canvas_->CallNestingDepth() == 1; }
     InterceptingCanvasBase* canvas_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(CanvasInterceptorBase);
   };
 
   void ResetStepCount() { call_count_ = 0; }
@@ -158,6 +158,8 @@ class InterceptingCanvasBase : public SkCanvas {
  private:
   unsigned call_nesting_depth_;
   unsigned call_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptingCanvasBase);
 };
 
 template <typename DerivedCanvas>

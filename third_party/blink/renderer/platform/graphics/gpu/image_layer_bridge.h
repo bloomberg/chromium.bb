@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -31,7 +32,6 @@ namespace blink {
 class PLATFORM_EXPORT ImageLayerBridge
     : public GarbageCollectedFinalized<ImageLayerBridge>,
       public cc::TextureLayerClient {
-  WTF_MAKE_NONCOPYABLE(ImageLayerBridge);
 
  public:
   ImageLayerBridge(OpacityMode);
@@ -98,6 +98,8 @@ class PLATFORM_EXPORT ImageLayerBridge
   bool disposed_ = false;
   bool has_presented_since_last_set_image_ = false;
   OpacityMode opacity_mode_ = kNonOpaque;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageLayerBridge);
 };
 
 }  // namespace blink

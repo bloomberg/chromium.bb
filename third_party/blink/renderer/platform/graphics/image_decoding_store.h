@@ -31,6 +31,7 @@
 
 #include "SkSize.h"
 #include "SkTypes.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/sk_size_hash.h"
@@ -72,7 +73,6 @@ static inline bool operator!=(const DecoderCacheKey& a,
 // Base class for all cache entries.
 class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
   USING_FAST_MALLOC(CacheEntry);
-  WTF_MAKE_NONCOPYABLE(CacheEntry);
   friend class WTF::DoublyLinkedListNode<CacheEntry>;
 
  public:
@@ -108,6 +108,8 @@ class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
  private:
   CacheEntry* prev_;
   CacheEntry* next_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacheEntry);
 };
 
 class DecoderCacheEntry final : public CacheEntry {
@@ -231,7 +233,6 @@ namespace blink {
 
 class PLATFORM_EXPORT ImageDecodingStore final {
   USING_FAST_MALLOC(ImageDecodingStore);
-  WTF_MAKE_NONCOPYABLE(ImageDecodingStore);
 
  public:
   static std::unique_ptr<ImageDecodingStore> Create() {
@@ -332,6 +333,8 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   // This mutex also protects calls to underlying skBitmap's
   // lockPixels()/unlockPixels() as they are not threadsafe.
   Mutex mutex_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageDecodingStore);
 };
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMetaData;
@@ -28,7 +28,6 @@ class PaintController;
 // When slimming paint ships we can remove this PaintRecord abstraction and
 // rely on PaintController here.
 class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
-  WTF_MAKE_NONCOPYABLE(PaintRecordBuilder);
 
  public:
   // Constructs a new builder for the resulting recorded picture. If |metadata|
@@ -68,6 +67,8 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   std::unique_ptr<PaintController> own_paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
   base::Optional<DisplayItemCacheSkipper> cache_skipper_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintRecordBuilder);
 };
 
 }  // namespace blink

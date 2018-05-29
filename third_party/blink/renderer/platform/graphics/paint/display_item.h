@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/json/json_values.h"

@@ -27,6 +27,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DEFERRED_IMAGE_DECODER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -45,7 +47,6 @@ class SharedBuffer;
 struct DeferredFrameData;
 
 class PLATFORM_EXPORT DeferredImageDecoder final {
-  WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
   USING_FAST_MALLOC(DeferredImageDecoder);
 
  public:
@@ -112,6 +113,8 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   // Caches frame state information.
   Vector<DeferredFrameData> frame_data_;
   scoped_refptr<ImageFrameGenerator> frame_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeferredImageDecoder);
 };
 
 }  // namespace blink

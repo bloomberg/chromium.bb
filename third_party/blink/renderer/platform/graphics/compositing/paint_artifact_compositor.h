@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
@@ -45,7 +45,6 @@ struct PaintChunk;
 class PLATFORM_EXPORT PaintArtifactCompositor final
     : private PropertyTreeManagerClient {
   USING_FAST_MALLOC(PaintArtifactCompositor);
-  WTF_MAKE_NONCOPYABLE(PaintArtifactCompositor);
 
  public:
   ~PaintArtifactCompositor();
@@ -225,6 +224,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   friend class StubChromeClientForSPv2;
   friend class PaintArtifactCompositorTest;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintArtifactCompositor);
 };
 
 }  // namespace blink

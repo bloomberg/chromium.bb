@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
@@ -17,7 +19,6 @@ namespace blink {
 static const unsigned kDefaultInitialBufferSize = 32;
 
 class ContiguousContainerBase::Buffer {
-  WTF_MAKE_NONCOPYABLE(Buffer);
   USING_FAST_MALLOC(Buffer);
 
  public:
@@ -60,6 +61,8 @@ class ContiguousContainerBase::Buffer {
   char* begin_;
   char* end_;
   size_t capacity_;
+
+  DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
 
 ContiguousContainerBase::ContiguousContainerBase(size_t max_object_size)

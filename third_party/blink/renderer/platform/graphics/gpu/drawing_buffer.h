@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
 #include "cc/resources/shared_bitmap_id_registrar.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -75,7 +75,6 @@ class WebGraphicsContext3DProviderWrapper;
 // publish its rendering results to a cc::Layer for compositing.
 class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                                       public RefCounted<DrawingBuffer> {
-  WTF_MAKE_NONCOPYABLE(DrawingBuffer);
 
  public:
   class Client {
@@ -365,7 +364,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     gpu::SyncToken receive_sync_token;
 
    private:
-    WTF_MAKE_NONCOPYABLE(ColorBuffer);
+    DISALLOW_COPY_AND_ASSIGN(ColorBuffer);
   };
 
   // The same as clearFramebuffers(), but leaves GL state dirty.
@@ -589,6 +588,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // A release callback that is run when the previouis image passed to
   // OffscreenCanvas::Commit() is no longer needed.
   std::unique_ptr<viz::SingleReleaseCallback> previous_image_release_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrawingBuffer);
 };
 
 }  // namespace blink

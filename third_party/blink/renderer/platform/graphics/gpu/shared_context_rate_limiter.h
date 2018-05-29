@@ -6,10 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_SHARED_CONTEXT_RATE_LIMITER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -37,7 +38,6 @@ class WebGraphicsContext3DProvider;
 
 class SharedContextRateLimiter final {
   USING_FAST_MALLOC(SharedContextRateLimiter);
-  WTF_MAKE_NONCOPYABLE(SharedContextRateLimiter);
 
  public:
   static std::unique_ptr<SharedContextRateLimiter> Create(
@@ -52,6 +52,8 @@ class SharedContextRateLimiter final {
   Deque<GLuint> queries_;
   unsigned max_pending_ticks_;
   bool can_use_sync_queries_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedContextRateLimiter);
 };
 
 }  // namespace blink

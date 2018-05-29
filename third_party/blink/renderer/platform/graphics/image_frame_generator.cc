@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "SkData.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -71,7 +72,6 @@ static bool CompatibleInfo(const SkImageInfo& src, const SkImageInfo& dst) {
 // decoding.
 class ExternalMemoryAllocator final : public SkBitmap::Allocator {
   USING_FAST_MALLOC(ExternalMemoryAllocator);
-  WTF_MAKE_NONCOPYABLE(ExternalMemoryAllocator);
 
  public:
   ExternalMemoryAllocator(const SkImageInfo& info,
@@ -94,6 +94,8 @@ class ExternalMemoryAllocator final : public SkBitmap::Allocator {
   SkImageInfo info_;
   void* pixels_;
   size_t row_bytes_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalMemoryAllocator);
 };
 
 static bool UpdateYUVComponentSizes(ImageDecoder* decoder,

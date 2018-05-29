@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_RECORDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_RECORDER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -15,7 +15,6 @@ class GraphicsContext;
 
 class PLATFORM_EXPORT ClipRecorder {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  WTF_MAKE_NONCOPYABLE(ClipRecorder);
 
  public:
   ClipRecorder(GraphicsContext&,
@@ -28,6 +27,8 @@ class PLATFORM_EXPORT ClipRecorder {
   const DisplayItemClient& client_;
   GraphicsContext& context_;
   DisplayItem::Type type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClipRecorder);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -22,7 +22,6 @@ namespace blink {
 // display list with identical properties.
 class PLATFORM_EXPORT PaintChunker final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(PaintChunker);
 
  public:
   PaintChunker();
@@ -95,6 +94,8 @@ class PLATFORM_EXPORT PaintChunker final {
   // the item following a forced chunk. PaintController also forces new chunks
   // before and after subsequences by calling ForceNewChunk().
   bool force_new_chunk_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintChunker);
 };
 
 }  // namespace blink

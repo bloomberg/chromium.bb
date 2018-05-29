@@ -27,12 +27,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_FRAME_GENERATOR_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -49,17 +50,18 @@ class ImageDecoder;
 
 class PLATFORM_EXPORT ImageDecoderFactory {
   USING_FAST_MALLOC(ImageDecoderFactory);
-  WTF_MAKE_NONCOPYABLE(ImageDecoderFactory);
 
  public:
   ImageDecoderFactory() = default;
   virtual ~ImageDecoderFactory() = default;
   virtual std::unique_ptr<ImageDecoder> Create() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImageDecoderFactory);
 };
 
 class PLATFORM_EXPORT ImageFrameGenerator final
     : public ThreadSafeRefCounted<ImageFrameGenerator> {
-  WTF_MAKE_NONCOPYABLE(ImageFrameGenerator);
 
  public:
   static scoped_refptr<ImageFrameGenerator> Create(
@@ -164,6 +166,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
   // Protect concurrent access to has_alpha_.
   Mutex alpha_mutex_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageFrameGenerator);
 };
 
 }  // namespace blink

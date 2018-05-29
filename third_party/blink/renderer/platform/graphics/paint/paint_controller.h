@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -52,7 +53,6 @@ struct FrameFirstPaint {
 // a final paint artifact when complete. This class includes logic for caching,
 // cache invalidation, and merging.
 class PLATFORM_EXPORT PaintController {
-  WTF_MAKE_NONCOPYABLE(PaintController);
   USING_FAST_MALLOC(PaintController);
 
  public:
@@ -476,6 +476,8 @@ class PLATFORM_EXPORT PaintController {
   unsigned current_fragment_;
 
   class DisplayItemListAsJSON;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintController);
 };
 
 }  // namespace blink

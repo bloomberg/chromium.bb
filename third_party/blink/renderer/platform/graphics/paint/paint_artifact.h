@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_ARTIFACT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_ARTIFACT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -58,7 +58,6 @@ struct PaintChunksAndRasterInvalidations {
 // safely be assigned to or destroyed.
 class PLATFORM_EXPORT PaintArtifact final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(PaintArtifact);
 
  public:
   PaintArtifact();
@@ -151,6 +150,8 @@ class PLATFORM_EXPORT PaintArtifact final {
  private:
   DisplayItemList display_item_list_;
   PaintChunksAndRasterInvalidations chunks_and_invalidations_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintArtifact);
 };
 
 }  // namespace blink

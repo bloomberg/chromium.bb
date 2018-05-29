@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
@@ -42,7 +43,6 @@ namespace blink {
 
 struct DeferredFrameData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  WTF_MAKE_NONCOPYABLE(DeferredFrameData);
 
  public:
   DeferredFrameData()
@@ -52,6 +52,9 @@ struct DeferredFrameData {
   ImageOrientation orientation_;
   TimeDelta duration_;
   bool is_received_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeferredFrameData);
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(

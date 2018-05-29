@@ -32,9 +32,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DRAW_LOOPER_BUILDER_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 
@@ -46,9 +47,6 @@ class Color;
 class FloatSize;
 
 class PLATFORM_EXPORT DrawLooperBuilder final {
-  // Implementing the copy constructor properly would require writing code to
-  // copy the underlying SkLayerDrawLooper::Builder.
-  WTF_MAKE_NONCOPYABLE(DrawLooperBuilder);
   STACK_ALLOCATED();
 
  public:
@@ -74,6 +72,10 @@ class PLATFORM_EXPORT DrawLooperBuilder final {
 
  private:
   SkLayerDrawLooper::Builder sk_draw_looper_builder_;
+
+  // Implementing the copy constructor properly would require writing code to
+  // copy the underlying SkLayerDrawLooper::Builder.
+  DISALLOW_COPY_AND_ASSIGN(DrawLooperBuilder);
 };
 
 }  // namespace blink
