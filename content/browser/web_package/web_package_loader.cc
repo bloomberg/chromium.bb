@@ -16,6 +16,8 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/origin_util.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -78,6 +80,7 @@ class WebPackageLoader::ResponseTimingInfo {
 };
 
 WebPackageLoader::WebPackageLoader(
+    const GURL& outer_request_url,
     const network::ResourceResponseHead& outer_response,
     network::mojom::URLLoaderClientPtr forwarding_client,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
@@ -100,6 +103,26 @@ WebPackageLoader::WebPackageLoader(
       request_context_getter_(std::move(request_context_getter)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#privacy-considerations
+  // This can be difficult to determine when the exchange is being loaded from
+  // local disk, but when the client itself requested the exchange over a
+  // network it SHOULD require TLS ([I-D.ietf-tls-tls13]) or a successor
+  // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
+  // without TLS. [spec text]
+  if (!IsOriginSecure(outer_request_url)) {
+    devtools_proxy_->ReportErrorMessage(
+        "Signed exchange response from non secure origin is not supported.");
+    // Calls OnSignedExchangeReceived() to show the outer response in DevTool's
+    // Network panel and the error message in the Preview panel.
+    devtools_proxy_->OnSignedExchangeReceived(base::nullopt /* header */,
+                                              nullptr /* certificate */,
+                                              nullptr /* ssl_info */);
+    // This will asynchronously delete |this|.
+    forwarding_client_->OnComplete(
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
+    return;
+  }
 
   // Can't use HttpResponseHeaders::GetMimeType() because SignedExchangeHandler
   // checks "v=" parameter.

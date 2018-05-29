@@ -46,6 +46,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
   WebPackageLoader(
+      const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response,
       network::mojom::URLLoaderClientPtr forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
