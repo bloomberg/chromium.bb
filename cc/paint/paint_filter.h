@@ -93,14 +93,6 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
       return 0;
     return cached_sk_filter_->countInputs();
   }
-  std::string ToString() const {
-    if (!cached_sk_filter_)
-      return "Invalid filter";
-
-    SkString str;
-    cached_sk_filter_->toString(&str);
-    return str.c_str();
-  }
   const CropRect* crop_rect() const {
     return base::OptionalOrNullptr(crop_rect_);
   }

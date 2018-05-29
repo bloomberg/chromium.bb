@@ -165,8 +165,10 @@ void ExpectEqual(const cc::FilterOperation& input,
       EXPECT_EQ(input.zoom_inset(), output.zoom_inset());
       break;
     case cc::FilterOperation::REFERENCE: {
-      EXPECT_EQ(input.image_filter()->ToString(),
-                output.image_filter()->ToString());
+      ASSERT_EQ(!!input.image_filter(), !!output.image_filter());
+      if (input.image_filter()) {
+        EXPECT_EQ(*input.image_filter(), *output.image_filter());
+      }
       break;
     }
     case cc::FilterOperation::ALPHA_THRESHOLD:
