@@ -5,7 +5,6 @@
 #include "ash/system/tray/tray_detailed_view.h"
 
 #include "ash/ash_view_ids.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -306,6 +305,8 @@ void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
   scroll_content_ = new ScrollContentsView();
   scroller_ = new views::ScrollView;
+  scroller_->set_draw_overflow_indicator(
+      delegate_->IsOverflowIndicatorEnabled());
   scroller_->SetContents(scroll_content_);
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetBackgroundColor(

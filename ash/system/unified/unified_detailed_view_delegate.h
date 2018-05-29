@@ -23,6 +23,7 @@ class UnifiedDetailedViewDelegate : public DetailedViewDelegate {
   void TransitionToMainView(bool restore_focus) override;
   void CloseBubble() override;
   SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override;
+  bool IsOverflowIndicatorEnabled() const override;
 
  private:
   UnifiedSystemTrayController* const tray_controller_;
