@@ -240,6 +240,9 @@ def main():
       # The separator for INCLUDE here must match the one used in
       # _LoadToolchainEnv() above.
       include = [p.replace('"', r'\"') for p in env['INCLUDE'].split(';') if p]
+
+      # Make include path relative to builddir.
+      include = map(os.path.relpath, include)
       include_I = ' '.join(['"/I' + i + '"' for i in include])
       include_imsvc = ' '.join(['"-imsvc' + i + '"' for i in include])
 
