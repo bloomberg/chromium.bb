@@ -67,6 +67,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   // TCPConnectedSocket::Delegate implementation:
   void CreateTLSClientSocket(
       const net::HostPortPair& host_port_pair,
+      mojom::TLSClientSocketOptionsPtr socket_options,
       mojom::TLSClientSocketRequest request,
       std::unique_ptr<net::ClientSocketHandle> tcp_socket,
       mojom::SocketObserverPtr observer,

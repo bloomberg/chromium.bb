@@ -95,6 +95,8 @@ class TLSClientSocketTestBase {
         pre_tls_observer()->GetObserverPtr(),
         base::BindLambdaForTesting(
             [&](int result,
+                const base::Optional<net::IPEndPoint>& actual_local_addr,
+                const base::Optional<net::IPEndPoint>& peer_addr,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                 mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
               net_error = result;
@@ -111,7 +113,7 @@ class TLSClientSocketTestBase {
                     mojom::TLSClientSocketRequest request,
                     net::CompletionOnceCallback callback) {
     client_socket->UpgradeToTLS(
-        host_port_pair,
+        host_port_pair, nullptr /* ssl_config_ptr */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::move(request), post_tls_observer()->GetObserverPtr(),
         base::BindOnce(
@@ -300,7 +302,7 @@ TEST_F(TLSClientSocketTest, UpgradeToTLSTwice) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   client_socket->UpgradeToTLS(
-      host_port_pair,
+      host_port_pair, nullptr /* ssl_config_ptr */,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo::MakeRequest(&tls_socket2), nullptr /*observer */,
       base::BindLambdaForTesting(
@@ -312,6 +314,52 @@ TEST_F(TLSClientSocketTest, UpgradeToTLSTwice) {
           }));
   run_loop.Run();
   ASSERT_EQ(net::ERR_SOCKET_NOT_CONNECTED, net_error);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(ssl_socket.ConnectDataConsumed());
+  EXPECT_TRUE(data_provider.AllReadDataConsumed());
+  EXPECT_TRUE(data_provider.AllWriteDataConsumed());
+}
+
+TEST_F(TLSClientSocketTest, UpgradeToTLSWithCustomSSLConfig) {
+  const net::MockRead kReads[] = {net::MockRead(net::ASYNC, net::OK, 0)};
+  net::SequencedSocketData data_provider(kReads, base::span<net::MockWrite>());
+  data_provider.set_connect_data(net::MockConnect(net::SYNCHRONOUS, net::OK));
+  mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
+  net::SSLSocketDataProvider ssl_socket(net::ASYNC, net::OK);
+  ssl_socket.expected_ssl_version_min = net::SSL_PROTOCOL_VERSION_TLS1_1;
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
+  mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
+
+  mojom::TCPConnectedSocketPtr client_socket;
+  net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
+  EXPECT_EQ(net::OK, CreateTCPConnectedSocketSync(
+                         mojo::MakeRequest(&client_socket), server_addr));
+
+  net::HostPortPair host_port_pair("example.org", 443);
+  pre_tls_recv_handle()->reset();
+  pre_tls_send_handle()->reset();
+
+  mojom::TLSClientSocketPtr tls_socket;
+  base::RunLoop run_loop;
+  mojom::TLSClientSocketOptionsPtr options =
+      mojom::TLSClientSocketOptions::New();
+  options->version_min = mojom::SSLVersion::kTLS11;
+  options->version_max = mojom::SSLVersion::kTLS12;
+  int net_error = net::ERR_FAILED;
+  client_socket->UpgradeToTLS(
+      host_port_pair, std::move(options),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+      mojo::MakeRequest(&tls_socket), nullptr /*observer */,
+      base::BindLambdaForTesting(
+          [&](int result,
+              mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+            net_error = result;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  ASSERT_EQ(net::OK, net_error);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ssl_socket.ConnectDataConsumed());

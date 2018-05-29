@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/ssl_config.mojom";
 
 // Represents a connected TLS client socket. Writes and Reads are through the
 // data pipes supplied upon construction. Consumer should use SocketObserver
@@ -12,4 +13,11 @@ import "net/interfaces/ip_endpoint.mojom";
 // to data pipes. Consumer can close the socket by destroying the interface
 // pointer.
 interface TLSClientSocket {
+};
+
+// Represents the options that consumers can specify when requesting a
+// TLSClientSocket.
+struct TLSClientSocketOptions {
+  SSLVersion version_min = kTLS1;
+  SSLVersion version_max = kTLS12;
 };

@@ -307,7 +307,9 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto(kProtoUnknown),
       cert_request_info(NULL),
-      channel_id_service(NULL) {
+      channel_id_service(NULL),
+      expected_ssl_version_min(kDefaultSSLVersionMin),
+      expected_ssl_version_max(kDefaultSSLVersionMax) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
                                 &ssl_info.connection_status);
   // Set to TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
@@ -778,6 +780,8 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
         next_ssl_data->next_protos_expected_in_ssl_config.value().end(),
         ssl_config.alpn_protos.begin()));
   }
+  EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
+  EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(transport_socket), host_and_port, ssl_config, next_ssl_data));
 }
@@ -825,6 +829,14 @@ int MockClientSocket::SetSendBufferSize(int32_t size) {
 int MockClientSocket::Bind(const net::IPEndPoint& local_addr) {
   local_addr_ = local_addr;
   return net::OK;
+}
+
+bool MockClientSocket::SetNoDelay(bool no_delay) {
+  return true;
+}
+
+bool MockClientSocket::SetKeepAlive(bool enable, int delay) {
+  return true;
 }
 
 void MockClientSocket::Disconnect() {
@@ -1392,6 +1404,10 @@ int MockSSLClientSocket::Write(
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   return transport_->socket()->Write(buf, buf_len, std::move(callback),
                                      traffic_annotation);
+}
+
+int MockSSLClientSocket::CancelReadIfReady() {
+  return transport_->socket()->CancelReadIfReady();
 }
 
 int MockSSLClientSocket::Connect(CompletionOnceCallback callback) {

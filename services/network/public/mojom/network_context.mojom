@@ -401,6 +401,8 @@ interface NetworkContext {
       TCPConnectedSocket& socket,
       SocketObserver? observer)
      => (int32 result,
+         net.interfaces.IPEndPoint? local_addr,
+         net.interfaces.IPEndPoint? peer_addr,
          handle<data_pipe_consumer>? receive_stream,
          handle<data_pipe_producer>? send_stream);
 
