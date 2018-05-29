@@ -827,8 +827,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
  private:
   enum NodeFlags {
     kHasRareDataFlag = 1,

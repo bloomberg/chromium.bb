@@ -255,9 +255,4 @@ void TreeWalker::Trace(blink::Visitor* visitor) {
   NodeIteratorBase::Trace(visitor);
 }
 
-void TreeWalker::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  ScriptWrappable::TraceWrappers(visitor);
-  NodeIteratorBase::TraceWrappers(visitor);
-}
-
 }  // namespace blink

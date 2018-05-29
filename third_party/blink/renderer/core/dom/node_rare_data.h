@@ -76,15 +76,6 @@ class NodeMutationObserverData final
     visitor->Trace(transient_registry_);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    for (auto registration : registry_) {
-      visitor->TraceWrappers(registration);
-    }
-    for (auto registration : transient_registry_) {
-      visitor->TraceWrappers(registration);
-    }
-  }
-
  private:
   NodeMutationObserverData() = default;
 
@@ -93,8 +84,6 @@ class NodeMutationObserverData final
       transient_registry_;
   DISALLOW_COPY_AND_ASSIGN(NodeMutationObserverData);
 };
-
-DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeMutationObserverData);
 
 class NodeRenderingData {
  public:
@@ -206,12 +195,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   };
 
   void Trace(blink::Visitor*);
-
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
-
-  void TraceWrappers(ScriptWrappableVisitor*) const;
-  void TraceWrappersAfterDispatch(ScriptWrappableVisitor*) const;
 
  protected:
   explicit NodeRareData(NodeRenderingData* node_layout_data)
@@ -237,8 +222,6 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   unsigned is_element_rare_data_ : 1;
   DISALLOW_COPY_AND_ASSIGN(NodeRareData);
 };
-
-DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeRareData);
 
 }  // namespace blink
 

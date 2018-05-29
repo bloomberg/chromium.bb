@@ -206,9 +206,4 @@ void NodeIterator::Trace(blink::Visitor* visitor) {
   NodeIteratorBase::Trace(visitor);
 }
 
-void NodeIterator::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  ScriptWrappable::TraceWrappers(visitor);
-  NodeIteratorBase::TraceWrappers(visitor);
-}
-
 }  // namespace blink

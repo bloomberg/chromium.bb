@@ -2773,17 +2773,6 @@ void Node::Trace(blink::Visitor* visitor) {
   EventTarget::Trace(visitor);
 }
 
-void Node::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(parent_or_shadow_host_node_);
-  visitor->TraceWrappers(previous_);
-  visitor->TraceWrappers(next_);
-  if (HasRareData())
-    visitor->TraceWrappersWithManualWriteBarrier(RareData());
-  visitor->TraceWrappersWithManualWriteBarrier(
-      const_cast<Node*>(this)->GetEventTargetData());
-  EventTarget::TraceWrappers(visitor);
-}
-
 }  // namespace blink
 
 #ifndef NDEBUG

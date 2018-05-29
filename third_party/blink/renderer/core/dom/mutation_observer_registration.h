@@ -84,7 +84,6 @@ class CORE_EXPORT MutationObserverRegistration final
   void Dispose();
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "MutationObserverRegistration";
   }

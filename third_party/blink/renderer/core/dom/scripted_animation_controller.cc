@@ -52,11 +52,6 @@ void ScriptedAnimationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(per_frame_events_);
 }
 
-void ScriptedAnimationController::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_collection_);
-}
-
 void ScriptedAnimationController::Pause() {
   ++suspend_count_;
 }

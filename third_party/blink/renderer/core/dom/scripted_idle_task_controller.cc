@@ -88,12 +88,6 @@ void ScriptedIdleTaskController::V8IdleTask::Trace(blink::Visitor* visitor) {
   ScriptedIdleTaskController::IdleTask::Trace(visitor);
 }
 
-void ScriptedIdleTaskController::V8IdleTask::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_);
-  ScriptedIdleTaskController::IdleTask::TraceWrappers(visitor);
-}
-
 void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
   callback_->InvokeAndReportException(nullptr, deadline);
 }
@@ -112,13 +106,6 @@ ScriptedIdleTaskController::~ScriptedIdleTaskController() = default;
 void ScriptedIdleTaskController::Trace(blink::Visitor* visitor) {
   visitor->Trace(idle_tasks_);
   PausableObject::Trace(visitor);
-}
-
-void ScriptedIdleTaskController::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (const auto& idle_task : idle_tasks_.Values()) {
-    visitor->TraceWrappers(idle_task);
-  }
 }
 
 int ScriptedIdleTaskController::NextCallbackId() {

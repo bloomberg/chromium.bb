@@ -60,7 +60,6 @@ class CORE_EXPORT Attr final : public Node {
   const AtomicString& prefix() const { return name_.Prefix(); }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   Attr(Element&, const QualifiedName&);

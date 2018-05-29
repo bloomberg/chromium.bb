@@ -643,12 +643,6 @@ void ContainerNode::Trace(blink::Visitor* visitor) {
   Node::Trace(visitor);
 }
 
-void ContainerNode::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(first_child_);
-  visitor->TraceWrappers(last_child_);
-  Node::TraceWrappers(visitor);
-}
-
 Node* ContainerNode::RemoveChild(Node* old_child,
                                  ExceptionState& exception_state) {
   // NotFoundError: Raised if oldChild is not a child of this node.

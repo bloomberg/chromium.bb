@@ -4,6 +4,6 @@ Parsed snapshot
 SUCCESS: found leaking
 SUCCESS: immediate retainer is EventListener.
 SUCCESS: found multiple retaining paths.
-SUCCESS: path1 = [HTMLBodyElement, HTMLHtmlElement, HTMLDocument, Window / file://, ]
-SUCCESS: path2 = [HTMLDivElement, HTMLBodyElement, HTMLHtmlElement, HTMLDocument, Window / file://, ]
+SUCCESS: path1 = [InternalNode, HTMLBodyElement, HTMLHtmlElement, HTMLDocument, Window / file://, ]
+SUCCESS: path2 = [InternalNode, HTMLDivElement, HTMLBodyElement, HTMLHtmlElement, HTMLDocument, Window / file://, ]
 

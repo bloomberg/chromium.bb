@@ -7409,25 +7409,6 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
   return false;
 }
 
-void Document::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  // node_lists_ are traced in their corresponding NodeListsNodeData, keeping
-  // them only alive for live nodes. Otherwise we would keep lists of dead
-  // nodes alive that have not yet been invalidated.
-  visitor->TraceWrappers(dom_window_);
-  visitor->TraceWrappers(imports_controller_);
-  visitor->TraceWrappers(parser_);
-  visitor->TraceWrappers(implementation_);
-  visitor->TraceWrappers(style_sheet_list_);
-  visitor->TraceWrappers(style_engine_);
-  visitor->TraceWrappers(script_runner_);
-  visitor->TraceWrappers(scripted_animation_controller_);
-  visitor->TraceWrappers(scripted_idle_task_controller_);
-  visitor->TraceWrappers(intersection_observer_controller_);
-  ContainerNode::TraceWrappers(visitor);
-  ExecutionContext::TraceWrappers(visitor);
-  Supplementable<Document>::TraceWrappers(visitor);
-}
-
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 }  // namespace blink

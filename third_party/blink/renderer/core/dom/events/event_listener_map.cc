@@ -209,13 +209,4 @@ void EventListenerMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(entries_);
 }
 
-void EventListenerMap::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  // Trace wrappers in entries_.
-  for (auto& entry : entries_) {
-    for (auto& listener : *entry.second) {
-      visitor->TraceWrappers(listener);
-    }
-  }
-}
-
 }  // namespace blink

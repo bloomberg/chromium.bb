@@ -191,7 +191,6 @@ class ElementRareData : public NodeRareData {
   void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
 
   void TraceAfterDispatch(blink::Visitor*);
-  void TraceWrappersAfterDispatch(ScriptWrappableVisitor*) const;
 
  private:
   ScrollOffset saved_layer_scroll_offset_;
@@ -224,7 +223,6 @@ class ElementRareData : public NodeRareData {
 
   explicit ElementRareData(NodeRenderingData*);
 };
-DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ElementRareData);
 
 inline LayoutSize DefaultMinimumSizeForResizing() {
   return LayoutSize(LayoutUnit::Max(), LayoutUnit::Max());

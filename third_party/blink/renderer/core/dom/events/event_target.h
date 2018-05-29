@@ -80,14 +80,11 @@ class CORE_EXPORT EventTargetData final
   ~EventTargetData();
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const;
 
   EventListenerMap event_listener_map;
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
   DISALLOW_COPY_AND_ASSIGN(EventTargetData);
 };
-
-DEFINE_TRAIT_FOR_TRACE_WRAPPERS(EventTargetData);
 
 // All DOM event targets extend EventTarget. The spec is defined here:
 // https://dom.spec.whatwg.org/#interface-eventtarget
@@ -230,11 +227,6 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(event_target_data_);
     EventTarget::Trace(visitor);
-  }
-
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(event_target_data_);
-    EventTarget::TraceWrappers(visitor);
   }
 
  protected:
