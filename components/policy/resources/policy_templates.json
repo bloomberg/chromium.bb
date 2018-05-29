@@ -3529,7 +3529,7 @@
           'caption': '''Do not allow any site to show images''',
         },
       ],
-      'supported_on': ['chrome.*:10-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': ['chrome.*:10-', 'chrome_os:11-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3540,7 +3540,9 @@
       'tags': [],
       'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
 
-          If this policy is left not set, 'AllowImages' will be used and the user will be able to change it.''',
+          If this policy is left not set, 'AllowImages' will be used and the user will be able to change it.
+
+          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
     },
     {
       'name': 'DefaultJavaScriptSetting',
@@ -4034,7 +4036,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:11-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4045,7 +4047,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display images.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
     },
     {
       'name': 'ImagesBlockedForUrls',
@@ -4054,7 +4058,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:11-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4065,7 +4069,9 @@
       'tags': [],
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display images.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
     },
     {
       'name': 'JavaScriptAllowedForUrls',
