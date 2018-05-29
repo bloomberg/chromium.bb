@@ -192,7 +192,7 @@ function updateAppList(appList) {
 function updateLocalMetadata(localMetadata) {
   var startPageToken = localMetadata['account-start-page-token-local'];
 
-  $('account-largest-changestamp-local').textContent = startPageToken +
+  $('account-start-page-token-local').textContent = startPageToken +
       (startPageToken ? ' (loaded)' : ' (not loaded)') +
       (localMetadata['account-metadata-refreshing'] ? ' (refreshing)' : '');
 }
