@@ -703,6 +703,21 @@ class DeletionInfo {
   DISALLOW_COPY_AND_ASSIGN(DeletionInfo);
 };
 
+// Represents a visit to a domain.
+class DomainVisit {
+ public:
+  DomainVisit(const std::string& domain, base::Time visit_time)
+      : domain_(domain), visit_time_(visit_time) {}
+
+  const std::string& domain() const { return domain_; }
+
+  const base::Time visit_time() const { return visit_time_; }
+
+ private:
+  std::string domain_;
+  base::Time visit_time_;
+};
+
 }  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_TYPES_H_
