@@ -179,6 +179,9 @@ Alternative and faster way is to use [gsutil] command line tool:
 gsutil -m rsync <path_to_corpus> gs://clusterfuzz-corpus/libfuzzer/<my_fuzzer_name>_static
 ```
 
+Note that if you upload the corpus to GCS, the `seed_corpus` attribute is not
+needed in your `fuzzer_test` definition.
+
 ### Corpus Minimization
 
 It's important to minimize seed corpus to a *small set of interesting inputs*
