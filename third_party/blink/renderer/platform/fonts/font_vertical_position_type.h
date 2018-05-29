@@ -20,6 +20,14 @@ enum class FontVerticalPositionType {
   BottomOfEmHeight
 };
 
+// Returns whether the position type is CSS "line-over"; i.e., ascender side
+// or "top" side of a line box.
+// https://drafts.csswg.org/css-writing-modes-3/#line-over
+inline bool IsLineOverSide(FontVerticalPositionType type) {
+  return type == FontVerticalPositionType::TextTop ||
+         type == FontVerticalPositionType::TopOfEmHeight;
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VERTICAL_POSITION_TYPE_H_
