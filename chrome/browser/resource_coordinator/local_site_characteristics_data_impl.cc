@@ -42,6 +42,8 @@ void LocalSiteCharacteristicsDataImpl::NotifySiteLoaded() {
   if (loaded_tabs_count_ == 0) {
     site_characteristics_.set_last_loaded(
         TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
+
+    is_dirty_ = true;
   }
   loaded_tabs_count_++;
 }
@@ -138,6 +140,7 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
       database_(database),
       delegate_(delegate),
       safe_to_write_to_db_(false),
+      is_dirty_(false),
       weak_factory_(this) {
   DCHECK(database_);
   DCHECK(delegate_);
@@ -162,7 +165,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
 
   // TODO(sebmarchand): Some data might be lost here if the read operation has
   // not completed, add some metrics to measure if this is really an issue.
-  if (safe_to_write_to_db_) {
+  if (is_dirty_ && safe_to_write_to_db_) {
     DCHECK(site_characteristics_.IsInitialized());
     database_->WriteSiteCharacteristicsIntoDB(origin_str_,
                                               site_characteristics_);
