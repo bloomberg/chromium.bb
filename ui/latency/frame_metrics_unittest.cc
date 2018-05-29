@@ -55,9 +55,8 @@ constexpr double kAccelerationSaturationMax = kAccelerationSaturationMin * 1.01;
 // purposes.
 class TestFrameMetrics : public FrameMetrics {
  public:
-  TestFrameMetrics(const FrameMetricsSettings& settings,
-                   const char* source_name)
-      : FrameMetrics(settings, source_name) {}
+  TestFrameMetrics(const FrameMetricsSettings& settings)
+      : FrameMetrics(settings) {}
   ~TestFrameMetrics() override = default;
 
   void OverrideReportPeriod(base::TimeDelta period) {
@@ -129,9 +128,14 @@ struct TestStreamAnalysis : public StreamAnalysis {
 // The test fixture used by all tests in this file.
 class FrameMetricsTest : public testing::Test {
  public:
+  FrameMetricsTest()
+      : settings(ui::FrameMetricsSource::UnitTest,
+                 ui::FrameMetricsSourceThread::Unknown,
+                 ui::FrameMetricsCompileTarget::Unknown) {}
+
   void SetUp() override {
     // Make sure we don't get an unexpected call to StartNewReportPeriod.
-    frame_metrics = std::make_unique<TestFrameMetrics>(settings, "sourceA");
+    frame_metrics = std::make_unique<TestFrameMetrics>(settings);
     source_timestamp_origin =
         base::TimeTicks() + base::TimeDelta::FromSeconds(1);
     current_source_timestamp = source_timestamp_origin;

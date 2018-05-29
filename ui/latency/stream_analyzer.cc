@@ -9,6 +9,48 @@ namespace ui {
 StreamAnalysis::StreamAnalysis() = default;
 StreamAnalysis::~StreamAnalysis() = default;
 
+void StreamAnalysis::AsValueInto(base::trace_event::TracedValue* state) const {
+  state->SetDouble("mean", mean);
+
+  state->SetDouble("rms", rms);
+  state->SetDouble("smr", smr);
+
+  state->SetDouble("std_dev", std_dev);
+  state->SetDouble("variance_of_roots", variance_of_roots);
+
+  state->BeginArray("thresholds");
+  for (const auto& t : thresholds) {
+    state->BeginArray();
+    state->AppendDouble(t.threshold);
+    state->AppendDouble(t.ge_fraction);
+    state->EndArray();
+  }
+  state->EndArray();
+
+  state->BeginArray("percentiles");
+  for (size_t i = 0; i < PercentileResults::kCount; i++) {
+    state->BeginArray();
+    state->AppendDouble(PercentileResults::kPercentiles[i]);
+    state->AppendDouble(percentiles.values[i]);
+    state->EndArray();
+  }
+  state->EndArray();
+
+  state->SetInteger("worst_sample_count", worst_sample_count);
+
+  state->BeginDictionary("worst_mean");
+  worst_mean.AsValueInto(state);
+  state->EndDictionary();
+
+  state->BeginDictionary("worst_rms");
+  worst_rms.AsValueInto(state);
+  state->EndDictionary();
+
+  state->BeginDictionary("worst_smr");
+  worst_smr.AsValueInto(state);
+  state->EndDictionary();
+}
+
 namespace frame_metrics {
 
 StreamAnalyzer::StreamAnalyzer(
@@ -158,45 +200,7 @@ void StreamAnalyzer::ComputeSummary(StreamAnalysis* results) const {
   results->worst_mean = windowed_analyzer_.ComputeWorstMean();
   results->worst_rms = windowed_analyzer_.ComputeWorstRMS();
   results->worst_smr = windowed_analyzer_.ComputeWorstSMR();
-}
-
-std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-StreamAnalyzer::AsValue() const {
-  auto state = std::make_unique<base::trace_event::TracedValue>();
-  AsValueInto(state.get());
-  return std::move(state);
-}
-
-void StreamAnalyzer::AsValueInto(base::trace_event::TracedValue* state) const {
-  state->SetDouble("mean", ComputeMean());
-
-  state->SetDouble("rms", ComputeRMS());
-  state->SetDouble("smr", ComputeSMR());
-
-  state->SetDouble("std_dev", ComputeStdDev());
-  state->SetDouble("variance_of_roots", ComputeVarianceOfRoots());
-
-  state->BeginArray("percentiles");
-  PercentileResults result = ComputePercentiles();
-  for (size_t i = 0; i < PercentileResults::kCount; i++) {
-    state->BeginArray();
-    state->AppendDouble(PercentileResults::kPercentiles[i]);
-    state->AppendDouble(result.values[i]);
-    state->EndArray();
-  }
-  state->EndArray();
-
-  state->BeginArray("thresholds");
-  std::vector<ThresholdResult> thresholds(ComputeThresholds());
-  for (const auto& t : thresholds) {
-    state->BeginArray();
-    state->AppendDouble(t.threshold);
-    state->AppendDouble(t.ge_fraction);
-    state->EndArray();
-  }
-  state->EndArray();
-
-  windowed_analyzer_.AsValueInto(state);
+  results->worst_sample_count = results->worst_mean.sample_count;
 }
 
 }  // namespace frame_metrics

@@ -117,7 +117,58 @@ uint32_t CapDuration(const base::TimeDelta duration) {
   return std::min(duration, kDurationCap).InMicroseconds();
 }
 
+const char* ToString(FrameMetricsSource source) {
+  switch (source) {
+    case FrameMetricsSource::UnitTest:
+      return "UnitTest";
+    case FrameMetricsSource::Thread:
+      return "Thread";
+    case FrameMetricsSource::Unknown:
+      break;
+  };
+  return "Unknown";
+}
+
+const char* ToString(FrameMetricsSourceThread thread) {
+  switch (thread) {
+    case FrameMetricsSourceThread::Blink:
+      return "Blink";
+    case FrameMetricsSourceThread::RendererCompositor:
+      return "RendererCompositor";
+    case FrameMetricsSourceThread::Ui:
+      return "Ui";
+    case FrameMetricsSourceThread::UiCompositor:
+      return "UiCompositor";
+    case FrameMetricsSourceThread::VizCompositor:
+      return "VizCompositor";
+    case FrameMetricsSourceThread::Unknown:
+      break;
+  }
+  return "Unknown";
+}
+
+const char* ToString(FrameMetricsCompileTarget target) {
+  switch (target) {
+    case FrameMetricsCompileTarget::Chromium:
+      return "Chromium";
+    case FrameMetricsCompileTarget::SynchronousCompositor:
+      return "SynchronousCompositor";
+    case FrameMetricsCompileTarget::Headless:
+      return "Headless";
+    case FrameMetricsCompileTarget::Unknown:
+      break;
+  }
+  return "Unknown";
+}
+
 }  // namespace
+
+void FrameMetricsSettings::AsValueInto(
+    base::trace_event::TracedValue* state) const {
+  state->SetString("source", ToString(source));
+  state->SetString("thread", ToString(source_thread));
+  state->SetString("compile_target", ToString(compile_target));
+}
 
 namespace frame_metrics {
 
@@ -159,10 +210,8 @@ double LatencyAccelerationClient::TransformResult(double result) const {
 
 }  // namespace frame_metrics
 
-FrameMetrics::FrameMetrics(const FrameMetricsSettings& settings,
-                           const char* source_name)
+FrameMetrics::FrameMetrics(FrameMetricsSettings settings)
     : settings_(settings),
-      source_name_(source_name),
       shared_skip_client_(settings_.max_window_size),
       shared_latency_client_(settings_.max_window_size),
       frame_skips_analyzer_(&skip_client_,
@@ -224,15 +273,12 @@ void FrameMetrics::AddFrameProduced(base::TimeTicks source_timestamp,
   DCHECK_GE(skipped_to_produced_ratio, 0);
   frame_skips_analyzer_.AddSample(CapValue(skipped_to_produced_ratio),
                                   CapDuration(amount_produced));
-
-  bool tracing_enabled = 0;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategories, &tracing_enabled);
-  if (tracing_enabled)
-    TraceProducedStats();
 }
 
 void FrameMetrics::AddFrameDisplayed(base::TimeTicks source_timestamp,
                                      base::TimeTicks display_timestamp) {
+  TRACE_EVENT0(kTraceCategories, "AddFrameDisplayed");
+
   // Frame timestamps shouldn't go back in time, but check and drop them just
   // in case. Much of the code assumes a positive and non-zero delta.
   if (source_timestamp <= source_timestamp_prev_) {
@@ -299,7 +345,7 @@ void FrameMetrics::AddFrameDisplayed(base::TimeTicks source_timestamp,
   bool tracing_enabled = 0;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategories, &tracing_enabled);
   if (tracing_enabled)
-    TraceDisplayedStats();
+    TraceStats();
 }
 
 void FrameMetrics::Reset() {
@@ -340,22 +386,53 @@ void FrameMetrics::StartNewReportPeriod() {
   latency_acceleration_analyzer_.StartNewReportPeriod();
 }
 
-void FrameMetrics::TraceProducedStats() {
-  TRACE_EVENT1(kTraceCategories, "FrameProduced", "Skips",
-               frame_skips_analyzer_.AsValue());
-}
+namespace {
 
-void FrameMetrics::TraceDisplayedStats() {
-  TRACE_EVENT0(kTraceCategories, "FrameDisplayed");
-  TRACE_EVENT_INSTANT1(kTraceCategories, "FrameDisplayed",
-                       TRACE_EVENT_SCOPE_THREAD, "Latency",
-                       latency_analyzer_.AsValue());
-  TRACE_EVENT_INSTANT1(kTraceCategories, "FrameDisplayed",
-                       TRACE_EVENT_SCOPE_THREAD, "LatencySpeed",
-                       latency_speed_analyzer_.AsValue());
-  TRACE_EVENT_INSTANT1(kTraceCategories, "FrameDisplayed",
-                       TRACE_EVENT_SCOPE_THREAD, "LatencyAcceleration",
-                       latency_acceleration_analyzer_.AsValue());
+struct FrameMetricsTraceData {
+  FrameMetricsSettings settings;
+  StreamAnalysis skips, latency, speed, acceleration;
+
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const {
+    auto state = std::make_unique<base::trace_event::TracedValue>();
+
+    state->BeginDictionary("Source");
+    settings.AsValueInto(state.get());
+    state->EndDictionary();
+
+    state->BeginDictionary("Skips");
+    skips.AsValueInto(state.get());
+    state->EndDictionary();
+
+    state->BeginDictionary("Latency");
+    latency.AsValueInto(state.get());
+    state->EndDictionary();
+
+    state->BeginDictionary("Speed");
+    speed.AsValueInto(state.get());
+    state->EndDictionary();
+
+    state->BeginDictionary("Acceleration");
+    acceleration.AsValueInto(state.get());
+    state->EndDictionary();
+
+    return std::move(state);
+  }
+};
+
+}  // namespace
+
+void FrameMetrics::TraceStats() const {
+  FrameMetricsTraceData trace_data;
+  {
+    TRACE_EVENT0(kTraceCategories, "CalculateFrameDisplayed");
+    trace_data.settings = settings_;
+    frame_skips_analyzer_.ComputeSummary(&trace_data.skips);
+    latency_analyzer_.ComputeSummary(&trace_data.latency);
+    latency_speed_analyzer_.ComputeSummary(&trace_data.speed);
+    latency_acceleration_analyzer_.ComputeSummary(&trace_data.acceleration);
+  }
+  TRACE_EVENT_INSTANT1(kTraceCategories, "FrameMetrics",
+                       TRACE_EVENT_SCOPE_THREAD, "Info", trace_data.AsValue());
 }
 
 }  // namespace ui
