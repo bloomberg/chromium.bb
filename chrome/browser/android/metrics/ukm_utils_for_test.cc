@@ -37,6 +37,14 @@ void UkmUtilsForTest::RecordSourceWithId(SourceId source_id) {
   service->UpdateSourceURL(source_id, GURL("http://example.com"));
 }
 
+// static
+uint64_t UkmUtilsForTest::GetClientId() {
+  auto* service =
+      g_browser_process->GetMetricsServicesManager()->GetUkmService();
+  DCHECK(service);
+  return service->client_id_;
+}
+
 }  // namespace ukm
 
 static jboolean JNI_UkmUtilsForTest_IsEnabled(JNIEnv*,
@@ -56,4 +64,9 @@ static void JNI_UkmUtilsForTest_RecordSourceWithId(JNIEnv*,
                                                    jlong source_id) {
   ukm::SourceId source = static_cast<ukm::SourceId>(source_id);
   ukm::UkmUtilsForTest::RecordSourceWithId(source);
+}
+
+static jlong JNI_UkmUtilsForTest_GetClientId(JNIEnv*,
+                                             const JavaParamRef<jclass>&) {
+  return ukm::UkmUtilsForTest::GetClientId();
 }

@@ -84,6 +84,7 @@ class UkmService : public UkmRecorderImpl {
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
+  friend ::ukm::UkmUtilsForTest;
 
   // Starts metrics client initialization.
   void StartInitTask();

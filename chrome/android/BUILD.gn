@@ -528,6 +528,7 @@ android_library("chrome_test_java") {
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
+    "//chrome/browser/android/metrics:ukm_utils_java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
@@ -858,6 +859,7 @@ chrome_shared_library("libchromefortest") {
   deps = [
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
+    "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/heap_profiling:test_support",
     "//content/public/test/android:content_native_test_support",
   ]
@@ -1070,6 +1072,7 @@ shared_library("chrome_sync_shell") {
     ":chrome_sync_shell_jni_registration($default_toolchain)",
     "//build/config:exe_and_shlib_deps",
     "//chrome:chrome_android_core",
+    "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/sync",
     "//components/sync:test_support_fake_server_android",
   ]
@@ -1125,6 +1128,7 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
     shared_library_for_unwind_asset = "chromefortest"
   }
   deps = [
+    "//chrome/browser/android/metrics:ukm_utils_java",
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//content/public/test/android:content_java_test_support",
   ]
