@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -42,8 +43,7 @@ class InfoMap;
 // path. Once Network Service is the only path, we can move all this stuff to
 // the UI thread.
 class WebRequestProxyingURLLoaderFactory
-    : public base::RefCountedDeleteOnSequence<
-          WebRequestProxyingURLLoaderFactory>,
+    : public WebRequestAPI::Proxy,
       public network::mojom::URLLoaderFactory {
  public:
   class InProgressRequest : public network::mojom::URLLoader,
@@ -136,17 +136,28 @@ class WebRequestProxyingURLLoaderFactory
     DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
   };
 
-  WebRequestProxyingURLLoaderFactory(void* browser_context,
-                                     content::ResourceContext* resource_context,
-                                     InfoMap* info_map);
-
-  void StartProxying(
+  WebRequestProxyingURLLoaderFactory(
+      void* browser_context,
+      content::ResourceContext* resource_context,
       int render_process_id,
       int render_frame_id,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+      InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      base::OnceClosure on_disconnect);
+      WebRequestAPI::ProxySet* proxies);
+  ~WebRequestProxyingURLLoaderFactory() override;
+
+  static void StartProxying(
+      void* browser_context,
+      content::ResourceContext* resource_context,
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+      InfoMap* info_map,
+      network::mojom::URLLoaderFactoryRequest loader_request,
+      network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+      scoped_refptr<WebRequestAPI::ProxySet> proxies);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
@@ -160,25 +171,20 @@ class WebRequestProxyingURLLoaderFactory
   void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
 
  private:
-  friend class base::DeleteHelper<WebRequestProxyingURLLoaderFactory>;
-  friend class base::RefCountedDeleteOnSequence<
-      WebRequestProxyingURLLoaderFactory>;
-
-  ~WebRequestProxyingURLLoaderFactory() override;
-
   void OnTargetFactoryError();
   void OnProxyBindingError();
   void RemoveRequest(uint64_t request_id);
 
   void* const browser_context_;
   content::ResourceContext* const resource_context_;
-  int render_process_id_ = -1;
-  int render_frame_id_ = -1;
+  const int render_process_id_;
+  const int render_frame_id_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   InfoMap* const info_map_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
-  base::OnceClosure on_disconnect_;
+  // Owns |this|.
+  WebRequestAPI::ProxySet* const proxies_;
   uint64_t next_request_id_ = 1;
 
   std::map<int32_t, std::unique_ptr<InProgressRequest>> requests_;

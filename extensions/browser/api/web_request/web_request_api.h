@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -61,7 +62,6 @@ class InfoMap;
 class WebRequestEventDetails;
 class WebRequestEventRouterDelegate;
 struct WebRequestInfo;
-class WebRequestProxyingURLLoaderFactory;
 class WebRequestRulesRegistry;
 
 // Support class for the WebRequest API. Lives on the UI thread. Most of the
@@ -71,6 +71,50 @@ class WebRequestRulesRegistry;
 class WebRequestAPI : public BrowserContextKeyedAPI,
                       public EventRouter::Observer {
  public:
+  // An interface which is held by ProxySet defined below.
+  class Proxy {
+   public:
+    virtual ~Proxy() {}
+  };
+
+  // A ProxySet is a set of proxies used by WebRequestAPI: It holds Proxy
+  // instances, and removes all proxies when the WebRequestAPI instance is
+  // gone, on the IO thread.
+  // This proxy set is created on the UI thread but anything else other than
+  // AddRef() and Release() including destruction will be done in the IO thread.
+  class ProxySet : public base::RefCountedThreadSafe<
+                       ProxySet,
+                       content::BrowserThread::DeleteOnIOThread> {
+   public:
+    ProxySet();
+
+    // Add a Proxy. This can be called only when |is_shutdown()| is false.
+    void AddProxy(std::unique_ptr<Proxy> proxy);
+    // Remove a Proxy. The removed proxy is deleted upon this call.
+    void RemoveProxy(Proxy* proxy);
+    // Set is_shutdown_ and deletes app proxies.
+    void Shutdown();
+    bool is_shutdown() const {
+      DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+      return is_shutdown_;
+    }
+
+   private:
+    friend struct content::BrowserThread::DeleteOnThread<
+        content::BrowserThread::IO>;
+    friend class base::DeleteHelper<ProxySet>;
+
+    ~ProxySet();
+
+    // Although these members are initialized on the UI thread, we expect at
+    // least one memory barrier before actually calling Generate in the IO
+    // thread, so we don't protect them with a lock.
+    std::set<std::unique_ptr<Proxy>, base::UniquePtrComparator> proxies_;
+    bool is_shutdown_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(ProxySet);
+  };
+
   explicit WebRequestAPI(content::BrowserContext* context);
   ~WebRequestAPI() override;
 
@@ -102,11 +146,6 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  static void RemoveProxyThreadSafe(
-      base::WeakPtr<WebRequestAPI> weak_self,
-      WebRequestProxyingURLLoaderFactory* factory);
-  void RemoveProxy(WebRequestProxyingURLLoaderFactory* factory);
-
   // A count of active event listeners registered in this BrowserContext. This
   // is eventually consistent with the state of
   int listener_count_ = 0;
@@ -114,13 +153,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* const browser_context_;
   InfoMap* const info_map_;
 
-  // Active proxying URLLoaderFactory instances. Only used when the Network
-  // Service is enabled.
-  std::map<WebRequestProxyingURLLoaderFactory*,
-           scoped_refptr<WebRequestProxyingURLLoaderFactory>>
-      proxies_;
-
-  base::WeakPtrFactory<WebRequestAPI> weak_ptr_factory_;
+  // Active proxies. Only used when the Network Service is enabled.
+  scoped_refptr<ProxySet> proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestAPI);
 };
