@@ -198,9 +198,8 @@ CandidateWindowView::~CandidateWindowView() {
 views::Widget* CandidateWindowView::InitWidget() {
   views::Widget* widget = BubbleDialogDelegateView::CreateBubble(this);
 
-  wm::SetWindowVisibilityAnimationType(
-      widget->GetNativeView(),
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  wm::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
+                                             wm::ANIMATE_NONE);
 
   GetBubbleFrameView()->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(
       new CandidateWindowBorder(parent_window())));
