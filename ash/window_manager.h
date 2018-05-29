@@ -186,7 +186,7 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
   uint16_t next_accelerator_namespace_id_ = 0u;
 
   // The ShellDelegate to install. This may be null, in which case
-  // ShellDelegateMus is used.
+  // ShellDelegateMash is used.
   // NOTE: AshTestHelper may set |shell_delegate_| directly.
   std::unique_ptr<ShellDelegate> shell_delegate_;
 
