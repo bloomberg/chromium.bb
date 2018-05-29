@@ -43,7 +43,6 @@ class CORE_EXPORT SingleModuleClient
  public:
   virtual ~SingleModuleClient() = default;
   virtual void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(ScriptWrappableVisitor*) const override {}
   const char* NameInHeapSnapshot() const override {
     return "SingleModuleClient";
   }
@@ -59,7 +58,6 @@ class CORE_EXPORT ModuleTreeClient
  public:
   virtual ~ModuleTreeClient() = default;
   virtual void Trace(blink::Visitor* visitor) {}
-  void TraceWrappers(ScriptWrappableVisitor*) const override {}
   const char* NameInHeapSnapshot() const override { return "ModuleTreeClient"; }
 
   virtual void NotifyModuleTreeLoadFinished(ModuleScript*) = 0;
@@ -87,7 +85,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   static void ClearModulator(ScriptState*);
 
   void Trace(blink::Visitor* visitor) override {}
-  void TraceWrappers(ScriptWrappableVisitor*) const override {}
   const char* NameInHeapSnapshot() const override { return "Modulator"; }
 
   virtual ScriptModuleResolver* GetScriptModuleResolver() = 0;

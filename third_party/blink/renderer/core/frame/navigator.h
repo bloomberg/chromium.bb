@@ -66,7 +66,6 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   Vector<String> languages() override;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   explicit Navigator(LocalFrame*);

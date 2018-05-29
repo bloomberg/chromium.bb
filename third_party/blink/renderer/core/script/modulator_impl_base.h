@@ -30,7 +30,6 @@ class ModulatorImplBase : public Modulator {
  public:
   ~ModulatorImplBase() override;
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   explicit ModulatorImplBase(scoped_refptr<ScriptState>);

@@ -62,7 +62,6 @@ class CORE_EXPORT ScriptLoader final
 
   ~ScriptLoader() override;
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }
 
   enum LegacyTypeSupport {

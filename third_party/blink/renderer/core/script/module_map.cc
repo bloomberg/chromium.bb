@@ -23,7 +23,6 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   ~Entry() override {}
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ModuleMap::Entry"; }
 
   // Notify fetched |m_moduleScript| to the client asynchronously.
@@ -57,10 +56,6 @@ void ModuleMap::Entry::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_script_);
   visitor->Trace(map_);
   visitor->Trace(clients_);
-}
-
-void ModuleMap::Entry::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(module_script_);
 }
 
 void ModuleMap::Entry::DispatchFinishedNotificationAsync(
@@ -105,11 +100,6 @@ ModuleMap::ModuleMap(Modulator* modulator) : modulator_(modulator) {
 void ModuleMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(map_);
   visitor->Trace(modulator_);
-}
-
-void ModuleMap::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (const auto& it : map_)
-    visitor->TraceWrappers(it.value);
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script

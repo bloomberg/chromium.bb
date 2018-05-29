@@ -226,11 +226,6 @@ void ModuleScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(error_to_rethrow_);
   Script::Trace(visitor);
 }
-void ModuleScript::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(record_.UnsafeCast<v8::Value>());
-  visitor->TraceWrappers(parse_error_);
-  visitor->TraceWrappers(error_to_rethrow_);
-}
 
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
   DVLOG(1) << *this << "::RunScript()";

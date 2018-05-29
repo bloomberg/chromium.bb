@@ -100,11 +100,6 @@ void ScriptLoader::Trace(blink::Visitor* visitor) {
   PendingScriptClient::Trace(visitor);
 }
 
-void ScriptLoader::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(pending_script_);
-  visitor->TraceWrappers(prepared_pending_script_);
-}
-
 void ScriptLoader::DidNotifySubtreeInsertionsToDocument() {
   if (!parser_inserted_)
     PrepareScript();  // FIXME: Provide a real starting line number here.

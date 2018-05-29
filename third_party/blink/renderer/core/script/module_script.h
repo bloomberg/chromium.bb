@@ -62,7 +62,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                               String* failure_reason = nullptr);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
 
  private:
@@ -97,7 +96,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-parse-error
   //
-  // |record_|, |parse_error_| and |error_to_rethrow_| are TraceWrappers()ed and
+  // |record_|, |parse_error_| and |error_to_rethrow_| are wrapper traced and
   // kept alive via one or more of following reference graphs:
   // * non-inline module script case
   //   DOMWindow -> Modulator/ModulatorImpl -> ModuleMap -> ModuleMap::Entry

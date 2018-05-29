@@ -330,15 +330,4 @@ void ScriptRunner::Trace(blink::Visitor* visitor) {
   visitor->Trace(in_order_scripts_to_execute_soon_);
 }
 
-void ScriptRunner::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (const auto& loader : pending_in_order_scripts_)
-    visitor->TraceWrappers(loader);
-  for (const auto& loader : pending_async_scripts_)
-    visitor->TraceWrappers(loader);
-  for (const auto& loader : async_scripts_to_execute_soon_)
-    visitor->TraceWrappers(loader);
-  for (const auto& loader : in_order_scripts_to_execute_soon_)
-    visitor->TraceWrappers(loader);
-}
-
 }  // namespace blink
