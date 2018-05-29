@@ -3,45 +3,46 @@
 <body>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/sensor-helpers.js"></script>
 <script src="../resources/device-orientation-helpers.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/services/device/public/mojom/sensor_provider.mojom.js"></script>
 <script>
 'use strict';
 
-async_test(test => {
-  assertTestRunner();
+function sleep(time_ms) {
+  return new Promise(resolve => window.setTimeout(resolve, time_ms));
+}
 
-  var motionData = generateMotionData(0, 0, 0,
-                                      0, 0, 0,
-                                      0, 0, 0,
-                                      0);
-  var succeedAndFinish = test.step_func(() => {
-    test.done();
+sensor_test(async sensor => {
+  const motionData = generateMotionData(0, 0, 0,
+                                        0, 0, 0,
+                                        0, 0, 0);
+
+  setMockMotionData(sensor, motionData);
+  await waitForMotion(motionData);
+
+  testRunner.setPageVisibility('hidden');
+  let hidden = true;
+  let hiddenEventPromise = new Promise((resolve, reject) => {
+    window.addEventListener(
+      'devicemotion',
+      event => {
+        if (hidden) {
+          reject();
+        } else {
+          resolve();
+        }
+      },
+      { once: true });
   });
 
-  function testWithPageVisible() {
-    window.removeEventListener('devicemotion', failAndFinish);
-    testRunner.setPageVisibility("visible");
-    window.addEventListener('devicemotion', succeedAndFinish);
-  }
-
-  var failAndFinish = test.step_func(() => {
-    assert_unreached("Should not have received a devicemotion event while the page was hidden");
-    test.done();
-  });
-
-  function testWithPageHidden() {
-    window.removeEventListener('devicemotion', deviceMotionListener);
-    testRunner.setPageVisibility("hidden");
-    window.addEventListener('devicemotion', failAndFinish);
-    setTimeout(testWithPageVisible, 100);
-  }
-
-  var deviceMotionListener = test.step_func(() => {
-    setTimeout(testWithPageHidden, 0);
-  });
-
-  setMockMotion(motionData);
-  window.addEventListener('devicemotion', deviceMotionListener);
+  // devicemotion events fire every 16ms when active, so we sleep for a while
+  // here to make sure we're not actually getting any events.
+  await sleep(100);
+  hidden = false;
+  testRunner.setPageVisibility('visible');
+  return Promise.all([hiddenEventPromise, waitForMotion(motionData)]);
 }, 'Tests to check that devicemotion events are not fired when the page is not visible.');
 </script>
 </body>

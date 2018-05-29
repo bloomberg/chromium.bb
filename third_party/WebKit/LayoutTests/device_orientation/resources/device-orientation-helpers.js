@@ -1,5 +1,7 @@
 'use strict';
 
+const MOTION_ROTATION_EPSILON = 1e-8;
+
 function assertTestRunner() {
   assert_true(window.testRunner instanceof Object,
     "This test can not be run without the window.testRunner.");
@@ -10,7 +12,7 @@ function generateMotionData(accelerationX, accelerationY, accelerationZ,
                             accelerationIncludingGravityY,
                             accelerationIncludingGravityZ,
                             rotationRateAlpha, rotationRateBeta, rotationRateGamma,
-                            interval) {
+                            interval = 16) {
   var motionData = {accelerationX: accelerationX,
                     accelerationY: accelerationY,
                     accelerationZ: accelerationZ,
@@ -68,6 +70,7 @@ function setMockOrientation(orientationData) {
 let nullToNan = x => (x === null ? NaN : x);
 
 function setMockMotionData(sensor, motionData) {
+  const degToRad = Math.PI / 180;
   return Promise.all([
       setMockSensorDataForType(sensor, device.mojom.SensorType.ACCELEROMETER, [
           nullToNan(motionData.accelerationIncludingGravityX),
@@ -80,9 +83,9 @@ function setMockMotionData(sensor, motionData) {
           nullToNan(motionData.accelerationZ),
       ]),
       setMockSensorDataForType(sensor, device.mojom.SensorType.GYROSCOPE, [
-          nullToNan(motionData.rotationRateAlpha),
-          nullToNan(motionData.rotationRateBeta),
-          nullToNan(motionData.rotationRateGamma),
+          nullToNan(motionData.rotationRateAlpha) * degToRad,
+          nullToNan(motionData.rotationRateBeta) * degToRad,
+          nullToNan(motionData.rotationRateGamma) * degToRad,
       ]),
   ]);
 }
@@ -107,9 +110,9 @@ function checkMotion(event, expectedMotionData) {
   assert_equals(event.accelerationIncludingGravity.y, expectedMotionData.accelerationIncludingGravityY, "accelerationIncludingGravity.y");
   assert_equals(event.accelerationIncludingGravity.z, expectedMotionData.accelerationIncludingGravityZ, "accelerationIncludingGravity.z");
 
-  assert_equals(event.rotationRate.alpha, expectedMotionData.rotationRateAlpha, "rotationRate.alpha");
-  assert_equals(event.rotationRate.beta, expectedMotionData.rotationRateBeta, "rotationRate.beta");
-  assert_equals(event.rotationRate.gamma, expectedMotionData.rotationRateGamma, "rotationRate.gamma");
+  assert_approx_equals(event.rotationRate.alpha, expectedMotionData.rotationRateAlpha, MOTION_ROTATION_EPSILON, "rotationRate.alpha");
+  assert_approx_equals(event.rotationRate.beta, expectedMotionData.rotationRateBeta, MOTION_ROTATION_EPSILON, "rotationRate.beta");
+  assert_approx_equals(event.rotationRate.gamma, expectedMotionData.rotationRateGamma, MOTION_ROTATION_EPSILON, "rotationRate.gamma");
 
   assert_equals(event.interval, expectedMotionData.interval, "interval");
 }
@@ -132,6 +135,29 @@ function waitForOrientation(expectedOrientationData, targetWindow = window) {
         beta: expectedOrientationData.beta,
         gamma: expectedOrientationData.gamma,
         absolute: expectedOrientationData.absolute,
+      }),
+      targetWindow);
+}
+
+function waitForMotion(expectedMotionData, targetWindow = window) {
+  return waitForEvent(
+      new DeviceMotionEvent('devicemotion', {
+        acceleration: {
+          x: expectedMotionData.accelerationX,
+          y: expectedMotionData.accelerationY,
+          z: expectedMotionData.accelerationZ,
+        },
+        accelerationIncludingGravity: {
+          x: expectedMotionData.accelerationIncludingGravityX,
+          y: expectedMotionData.accelerationIncludingGravityY,
+          z: expectedMotionData.accelerationIncludingGravityZ,
+        },
+        rotationRate: {
+          alpha: expectedMotionData.rotationRateAlpha,
+          beta: expectedMotionData.rotationRateBeta,
+          gamma: expectedMotionData.rotationRateGamma,
+        },
+        interval: expectedMotionData.interval,
       }),
       targetWindow);
 }
