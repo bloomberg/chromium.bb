@@ -2350,12 +2350,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"force-text-direction", flag_descriptions::kForceTextDirectionName,
      flag_descriptions::kForceTextDirectionDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceTextDirectionChoices)},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"enable-md-extensions",
-     flag_descriptions::kEnableMaterialDesignExtensionsName,
-     flag_descriptions::kEnableMaterialDesignExtensionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kMaterialDesignExtensions)},
-#endif  // ENABLE_EXTENSIONS
 #if defined(OS_WIN) || defined(OS_LINUX)
     {"enable-input-ime-api", flag_descriptions::kEnableInputImeApiName,
      flag_descriptions::kEnableInputImeApiDescription, kOsWin | kOsLinux,

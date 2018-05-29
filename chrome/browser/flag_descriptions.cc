@@ -491,12 +491,6 @@ const char kEnableManualFallbacksFillingDescription[] =
     "might contain generation fallbacks or 'Show all saved passwords' "
     "fallback.";
 
-const char kEnableMaterialDesignExtensionsName[] =
-    "Enable Material Design extensions";
-const char kEnableMaterialDesignExtensionsDescription[] =
-    "If enabled, the chrome://extensions/ URL loads the Material Design "
-    "extensions page.";
-
 const char kEnablePolicyToolName[] = "Enable policy management page";
 const char kEnablePolicyToolDescription[] =
     "If enabled, the chrome://policy-tool URL loads a page for managing "
