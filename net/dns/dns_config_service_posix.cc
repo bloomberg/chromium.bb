@@ -143,9 +143,9 @@ bool IsVpnPresent() {
 
 ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  dns_config->unhandled_options = false;
 #if !defined(OS_ANDROID)
   ConfigParsePosixResult result;
-  dns_config->unhandled_options = false;
 // TODO(fuchsia): Use res_ninit() when it's implemented on Fuchsia.
 #if defined(OS_OPENBSD) || defined(OS_FUCHSIA)
   // Note: res_ninit in glibc always returns 0 and sets RES_INIT.
@@ -189,23 +189,11 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
   dns_config->timeout = base::TimeDelta::FromMilliseconds(kDnsDefaultTimeoutMs);
   return result;
 #else  // defined(OS_ANDROID)
-// Theoretically, this is bad. __system_property_get is not a supported API
-// (but it's currently visible to anyone using Bionic), and the properties
-// are implementation details that may disappear in future Android releases.
-// Practically, libcutils provides property_get, which is a public API, and the
-// DNS code (and its clients) are already robust against failing to get the DNS
-// config for whatever reason, so the properties can disappear and the world
-// won't end.
-// TODO(juliatuttle): Depend on libcutils, then switch this (and other uses of
-//                    __system_property_get) to property_get.
   dns_config->nameservers.clear();
 
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_MARSHMALLOW) {
-    net::android::GetDnsServers(&dns_config->nameservers);
-    if (dns_config->nameservers.empty())
-      return CONFIG_PARSE_POSIX_NO_NAMESERVERS;
-    return CONFIG_PARSE_POSIX_OK;
+    return net::android::GetDnsServers(&dns_config->nameservers);
   }
 
   if (IsVpnPresent()) {
@@ -213,6 +201,9 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
     return CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS;
   }
 
+  // NOTE(pauljensen): __system_property_get and the net.dns1/2 properties are
+  // not supported APIs, but they're only read on pre-Marshmallow Android which
+  // was released years ago and isn't changing.
   char property_value[PROP_VALUE_MAX];
   __system_property_get("net.dns1", property_value);
   std::string dns1_string = property_value;

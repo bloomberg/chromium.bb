@@ -123,12 +123,17 @@ std::string GetWifiSSID() {
           base::android::AttachCurrentThread()));
 }
 
-void GetDnsServers(std::vector<IPEndPoint>* dns_servers) {
+internal::ConfigParsePosixResult GetDnsServers(
+    std::vector<IPEndPoint>* dns_servers) {
   JNIEnv* env = AttachCurrentThread();
   std::vector<std::string> dns_servers_strings;
   base::android::JavaArrayOfByteArrayToStringVector(
       env, Java_AndroidNetworkLibrary_getDnsServers(env).obj(),
       &dns_servers_strings);
+  if (dns_servers_strings.size() == 0)
+    return internal::CONFIG_PARSE_POSIX_NO_NAMESERVERS;
+  if (dns_servers_strings.size() == 1 && dns_servers_strings[0].size() == 1)
+    return internal::CONFIG_PARSE_POSIX_PRIVATE_DNS_ACTIVE;
   for (const std::string& dns_address_string : dns_servers_strings) {
     IPAddress dns_address(
         reinterpret_cast<const uint8_t*>(dns_address_string.c_str()),
@@ -136,6 +141,7 @@ void GetDnsServers(std::vector<IPEndPoint>* dns_servers) {
     IPEndPoint dns_server(dns_address, dns_protocol::kDefaultPort);
     dns_servers->push_back(dns_server);
   }
+  return internal::CONFIG_PARSE_POSIX_OK;
 }
 
 void TagSocket(SocketDescriptor socket, uid_t uid, int32_t tag) {
