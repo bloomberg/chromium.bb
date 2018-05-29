@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import argparse
-import collections
 import os
 import re
 import shutil
@@ -60,11 +59,9 @@ def _ExtractSizesFromDexFile(dex_path):
     if not line.strip():
       # Each method, type, field, and string contributes 4 bytes (1 reference)
       # to our DexCache size.
-      counts['dex_cache_size'] = (
-          sum(counts[x] for x in CONTRIBUTORS_TO_DEX_CACHE)) * 4
-      return counts
+      return counts, sum(counts[x] for x in CONTRIBUTORS_TO_DEX_CACHE) * 4
     m = re.match(r'([a-z_]+_size) *: (\d+)', line)
-    if m:
+    if m and m.group(1) in CONTRIBUTORS_TO_DEX_CACHE:
       counts[m.group(1)] = int(m.group(2))
   raise Exception('Unexpected end of output.')
 
@@ -72,56 +69,47 @@ def _ExtractSizesFromDexFile(dex_path):
 def ExtractSizesFromZip(path):
   tmpdir = tempfile.mkdtemp(suffix='_dex_extract')
   try:
-    counts = collections.defaultdict(int)
+    counts = {}
+    total = 0
     with zipfile.ZipFile(path, 'r') as z:
       for subpath in z.namelist():
         if not subpath.endswith('.dex'):
           continue
         extracted_path = z.extract(subpath, tmpdir)
-        cur_counts = _ExtractSizesFromDexFile(extracted_path)
-        for k in cur_counts:
-          counts[k] += cur_counts[k]
-    return dict(counts)
+        cur_counts, cur_total = _ExtractSizesFromDexFile(extracted_path)
+        dex_basename = os.path.basename(extracted_path)
+        counts[dex_basename] = cur_counts
+        total += cur_total
+    return counts, total
   finally:
     shutil.rmtree(tmpdir)
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument(
-      '--apk-name', help='Name of the APK to which the dexfile corresponds.')
-  parser.add_argument('dexfile')
+  parser.add_argument('filename')
 
   args = parser.parse_args()
 
   devil_chromium.Initialize()
 
-  if not args.apk_name:
-    dirname, basename = os.path.split(args.dexfile)
-    while basename:
-      if 'apk' in basename:
-        args.apk_name = basename
-        break
-      dirname, basename = os.path.split(dirname)
-    else:
-      parser.error(
-          'Unable to determine apk name from %s, '
-          'and --apk-name was not provided.' % args.dexfile)
-
-  if os.path.splitext(args.dexfile)[1] in ('.zip', '.apk', '.jar'):
-    sizes = ExtractSizesFromZip(args.dexfile)
+  if os.path.splitext(args.filename)[1] in ('.zip', '.apk', '.jar'):
+    sizes, total_size = ExtractSizesFromZip(args.filename)
   else:
-    sizes = _ExtractSizesFromDexFile(args.dexfile)
+    single_set_of_sizes, total_size = _ExtractSizesFromDexFile(args.filename)
+    sizes = {"": single_set_of_sizes}
 
-  def print_result(name, value_key, description=None):
-    perf_tests_results_helper.PrintPerfResult(
-        '%s_%s' % (args.apk_name, name), 'total', [sizes[value_key]],
-        description or name)
+  file_basename = os.path.basename(args.filename)
+  for classes_dex_file, classes_dex_sizes in sizes.iteritems():
+    for dex_header_name, readable_name in CONTRIBUTORS_TO_DEX_CACHE.iteritems():
+      if dex_header_name in classes_dex_sizes:
+        perf_tests_results_helper.PrintPerfResult(
+            '%s_%s_%s' % (file_basename, classes_dex_file, readable_name),
+            'total', [classes_dex_sizes[dex_header_name]], readable_name)
 
-  for dex_header_name, readable_name in CONTRIBUTORS_TO_DEX_CACHE.iteritems():
-    print_result(readable_name, dex_header_name)
-  print_result(
-      'DexCache_size', 'dex_cache_size', 'bytes of permanent dirty memory')
+  perf_tests_results_helper.PrintPerfResult(
+      '%s_DexCache_size' % (file_basename), 'total', [total_size],
+      'bytes of permanent dirty memory')
   return 0
 
 if __name__ == '__main__':
