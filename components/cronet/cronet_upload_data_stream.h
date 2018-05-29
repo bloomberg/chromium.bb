@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
-#define COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
+#ifndef COMPONENTS_CRONET_CRONET_UPLOAD_DATA_STREAM_H_
+#define COMPONENTS_CRONET_CRONET_UPLOAD_DATA_STREAM_H_
 
 #include <stdint.h>
 
@@ -19,11 +19,11 @@ class IOBuffer;
 
 namespace cronet {
 
-// The CronetUploadDataStream is created on a Java thread, but afterwards, lives
-// and is deleted on the network thread. It's responsible for ensuring only one
-// read/rewind request sent to Java is outstanding at a time. The main
-// complexity is around Reset/Initialize calls while there's a pending read or
-// rewind.
+// The CronetUploadDataStream is created on a client thread, but afterwards,
+// lives and is deleted on the network thread. It's responsible for ensuring
+// only one read/rewind request sent to client is outstanding at a time.
+// The main complexity is around Reset/Initialize calls while there's a pending
+// read or rewind.
 class CronetUploadDataStream : public net::UploadDataStream {
  public:
   class Delegate {
@@ -61,7 +61,7 @@ class CronetUploadDataStream : public net::UploadDataStream {
   ~CronetUploadDataStream() override;
 
   // Failure is handled at the Java layer. These two success callbacks are
-  // invoked by Java UploadDataSink upon completion of the operation.
+  // invoked by client UploadDataSink upon completion of the operation.
   void OnReadSuccess(int bytes_read, bool final_chunk);
   void OnRewindSuccess();
 
@@ -102,7 +102,7 @@ class CronetUploadDataStream : public net::UploadDataStream {
 
   Delegate* const delegate_;
 
-  // Vends pointers on the network thread, though created on a Java thread.
+  // Vends pointers on the network thread, though created on a client thread.
   base::WeakPtrFactory<CronetUploadDataStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStream);
@@ -110,4 +110,4 @@ class CronetUploadDataStream : public net::UploadDataStream {
 
 }  // namespace cronet
 
-#endif  // COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_H_
+#endif  // COMPONENTS_CRONET_CRONET_UPLOAD_DATA_STREAM_H_
