@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/client_window.h"
 
+#include "base/containers/flat_map.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/window_service_client.h"
@@ -51,6 +52,31 @@ bool IsLocationInNonClientArea(const aura::Window* window,
   return true;
 }
 
+bool IsPointerPressedEvent(const Event& event) {
+  return event.type() == ET_MOUSE_PRESSED || event.type() == ET_TOUCH_PRESSED;
+}
+
+bool IsPointerEvent(const Event& event) {
+  return event.IsMouseEvent() || event.IsTouchEvent();
+}
+
+bool IsLastMouseButtonRelease(const Event& event) {
+  return event.type() == ET_MOUSE_RELEASED &&
+         event.AsMouseEvent()->button_flags() ==
+             event.AsMouseEvent()->changed_button_flags();
+}
+
+bool IsPointerReleased(const Event& event) {
+  return IsLastMouseButtonRelease(event) || event.type() == ET_TOUCH_RELEASED;
+}
+
+PointerId GetPointerId(const Event& event) {
+  if (event.IsMouseEvent())
+    return MouseEvent::kMousePointerId;
+  DCHECK(event.IsTouchEvent());
+  return event.AsTouchEvent()->pointer_details().id;
+}
+
 // WindowTargeter used for ClientWindows. This is used for two purposes:
 // . If the location is in the non-client area, then child Windows are not
 //   considered. This is done to ensure the delegate of the window (which is
@@ -71,6 +97,14 @@ class ClientWindowTargeter : public aura::WindowTargeter {
       // If the owner intercepts events, then don't recurse (otherwise events
       // would go to a descendant).
       return event_target->CanAcceptEvent(*event) ? window : nullptr;
+    }
+
+    // Ensure presses in the non-client area target the top-level window.
+    // TopLevelEventHandler will ensure these are routed correctly.
+    if (IsPointerPressedEvent(*event) &&
+        IsLocationInNonClientArea(window,
+                                  event->AsLocatedEvent()->location())) {
+      return window;
     }
     return aura::WindowTargeter::FindTargetForEvent(event_target, event);
   }
@@ -99,6 +133,10 @@ class ClientWindowEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override {
+    // This code doesn't handle PointerEvents, because they should never be
+    // generated at this layer.
+    DCHECK(!event->IsPointerEvent());
+
     if (event->phase() != EP_PRETARGET) {
       // All work is done in the pre-phase. If this branch is hit, it means
       // event propagation was not stopped, and normal processing should
@@ -192,6 +230,7 @@ class PointerPressHandler : public aura::client::CaptureClientObserver,
                             public aura::WindowObserver {
  public:
   PointerPressHandler(TopLevelEventHandler* top_level_event_handler,
+                      PointerId pointer_id,
                       const gfx::Point& location);
   ~PointerPressHandler() override;
 
@@ -209,6 +248,9 @@ class PointerPressHandler : public aura::client::CaptureClientObserver,
 
   // True if the pointer down occurred in the non-client area.
   const bool in_non_client_area_;
+
+  // Id of the pointer the handler was created for.
+  const PointerId pointer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerPressHandler);
 };
@@ -228,16 +270,23 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
 
   ~TopLevelEventHandler() override = default;
 
-  void DestroyPointerPressHandler() { pointer_press_handler_.reset(); }
+  void DestroyPointerPressHandler(PointerId id) {
+    pointer_press_handlers_.erase(id);
+  }
 
-  // Returns true if the pointer was pressed over the top-level, such that
-  // pointer events are forwarded to the client until the pointer is released.
-  bool IsInPointerPressed() const {
-    return pointer_press_handler_.get() != nullptr;
+  // Returns true if the pointer with |pointer_id| was pressed over the
+  // top-level. If this returns true, TopLevelEventHandler is waiting on a
+  // release to reset state.
+  bool IsHandlingPointerPress(PointerId pointer_id) const {
+    return pointer_press_handlers_.count(pointer_id) > 0;
   }
 
   // ClientWindowEventHandler:
   void OnEvent(ui::Event* event) override {
+    // This code doesn't handle PointerEvents, because they should never be
+    // generated at this layer.
+    DCHECK(!event->IsPointerEvent());
+
     if (event->phase() != EP_PRETARGET) {
       // All work is done in the pre-phase. If this branch is hit, it means
       // event propagation was not stopped, and normal processing should
@@ -250,7 +299,8 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
       return;
     }
 
-    if (ShouldIgnoreEvent(*event))
+    // Gestures are always handled locally.
+    if (ShouldIgnoreEvent(*event) || event->IsGestureEvent())
       return;
 
     // This code does has two specific behaviors. It's used to ensure events
@@ -258,26 +308,27 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
     // . a press-release sequence targets only one. If in non-client area then
     //   local, otherwise remote client.
     // . mouse-moves (not drags) go to both targets.
-    // TODO(sky): handle touch events too.
     bool stop_propagation = false;
-    if (client_window()->HasNonClientArea() && event->IsMouseEvent()) {
-      if (!pointer_press_handler_) {
-        if (event->type() == ui::ET_MOUSE_PRESSED) {
-          pointer_press_handler_ = std::make_unique<PointerPressHandler>(
-              this, event->AsLocatedEvent()->location());
-          if (pointer_press_handler_->in_non_client_area())
-            return;  // Don't send presses to client.
+    if (client_window()->HasNonClientArea() && IsPointerEvent(*event)) {
+      const PointerId pointer_id = GetPointerId(*event);
+      if (!pointer_press_handlers_.count(pointer_id)) {
+        if (IsPointerPressedEvent(*event)) {
+          std::unique_ptr<PointerPressHandler> handler_ptr =
+              std::make_unique<PointerPressHandler>(
+                  this, pointer_id, event->AsLocatedEvent()->location());
+          PointerPressHandler* handler = handler_ptr.get();
+          pointer_press_handlers_[pointer_id] = std::move(handler_ptr);
+          if (handler->in_non_client_area())
+            return;  // Don't send presses in non-client area to client.
           stop_propagation = true;
         }
       } else {
-        // Else case, in a press-release.
-        const bool was_press_in_non_client_area =
-            pointer_press_handler_->in_non_client_area();
-        if (event->type() == ui::ET_MOUSE_RELEASED &&
-            event->AsMouseEvent()->button_flags() ==
-                event->AsMouseEvent()->changed_button_flags()) {
-          pointer_press_handler_.reset();
-        }
+        // Currently handling a pointer press and waiting on release.
+        PointerPressHandler* handler =
+            pointer_press_handlers_[pointer_id].get();
+        const bool was_press_in_non_client_area = handler->in_non_client_area();
+        if (IsPointerReleased(*event))
+          pointer_press_handlers_.erase(pointer_id);
         if (was_press_in_non_client_area)
           return;  // Don't send release to client since press didn't go there.
         stop_propagation = true;
@@ -290,19 +341,23 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
   }
 
  private:
-  // Non-null while in a pointer press press-drag-release cycle.
-  std::unique_ptr<PointerPressHandler> pointer_press_handler_;
+  // Non-null while in a pointer press press-drag-release cycle. Maps from
+  // pointer-id of the pointer that is down to the handler.
+  base::flat_map<PointerId, std::unique_ptr<PointerPressHandler>>
+      pointer_press_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(TopLevelEventHandler);
 };
 
 PointerPressHandler::PointerPressHandler(
     TopLevelEventHandler* top_level_event_handler,
+    PointerId pointer_id,
     const gfx::Point& location)
     : top_level_event_handler_(top_level_event_handler),
       in_non_client_area_(
           IsLocationInNonClientArea(top_level_event_handler->window(),
-                                    location)) {
+                                    location)),
+      pointer_id_(pointer_id) {
   wm::CaptureController::Get()->AddObserver(this);
   top_level_event_handler_->window()->AddObserver(this);
 }
@@ -315,13 +370,13 @@ PointerPressHandler::~PointerPressHandler() {
 void PointerPressHandler::OnCaptureChanged(aura::Window* lost_capture,
                                            aura::Window* gained_capture) {
   if (gained_capture != top_level_event_handler_->window())
-    top_level_event_handler_->DestroyPointerPressHandler();
+    top_level_event_handler_->DestroyPointerPressHandler(pointer_id_);
 }
 
 void PointerPressHandler::OnWindowVisibilityChanged(aura::Window* window,
                                                     bool visible) {
   if (!top_level_event_handler_->window()->IsVisible())
-    top_level_event_handler_->DestroyPointerPressHandler();
+    top_level_event_handler_->DestroyPointerPressHandler(pointer_id_);
 }
 
 }  // namespace
@@ -421,9 +476,9 @@ ClientWindow::ClientWindow(aura::Window* window,
     window_->SetTargetHandler(event_handler_.get());
 }
 
-bool ClientWindow::IsInPointerPressedForTesting() {
+bool ClientWindow::IsHandlingPointerPressForTesting(PointerId pointer_id) {
   return static_cast<TopLevelEventHandler*>(event_handler_.get())
-      ->IsInPointerPressed();
+      ->IsHandlingPointerPress(pointer_id);
 }
 
 }  // namespace ws2

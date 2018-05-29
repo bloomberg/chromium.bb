@@ -14,8 +14,8 @@ ClientWindowTestHelper::ClientWindowTestHelper(ClientWindow* client_window)
 
 ClientWindowTestHelper::~ClientWindowTestHelper() = default;
 
-bool ClientWindowTestHelper::IsInPointerPressed() {
-  return client_window_->IsInPointerPressedForTesting();
+bool ClientWindowTestHelper::IsHandlingPointerPress(PointerId pointer_id) {
+  return client_window_->IsHandlingPointerPressForTesting(pointer_id);
 }
 
 }  // namespace ws2

@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS2_CLIENT_WINDOW_TEST_HELPER_H_
 
 #include "base/macros.h"
+#include "ui/events/event.h"
 
 namespace ui {
 namespace ws2 {
@@ -18,7 +19,7 @@ class ClientWindowTestHelper {
   explicit ClientWindowTestHelper(ClientWindow* client_window);
   ~ClientWindowTestHelper();
 
-  bool IsInPointerPressed();
+  bool IsHandlingPointerPress(PointerId pointer_id);
 
  private:
   ClientWindow* client_window_;

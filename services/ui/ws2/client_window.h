@@ -12,6 +12,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/ui/ws2/ids.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -112,7 +113,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 
   // Forwards to TopLevelEventHandler, see it for details.
   // NOTE: this is only applicable to top-levels.
-  bool IsInPointerPressedForTesting();
+  bool IsHandlingPointerPressForTesting(PointerId pointer_id);
 
   aura::Window* window_;
 
