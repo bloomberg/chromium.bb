@@ -491,7 +491,9 @@ static void update_masks(EDGE_DIR dir, int plane, uint64_t *mask,
 static int is_frame_boundary(AV1_COMMON *const cm, int plane, int mi_row,
                              int mi_col, int subsampling_x, int subsampling_y,
                              EDGE_DIR dir) {
-  if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return 1;
+  if ((mi_row << MI_SIZE_LOG2) >= cm->height ||
+      (mi_col << MI_SIZE_LOG2) >= cm->width)
+    return 1;
 
   int row_or_col;
   if (plane == 0) {
@@ -544,7 +546,9 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
     for (int r = mi_row; r < mi_row + mi_height; r += row_step) {
       for (int c = mi_col; c < mi_col + mi_width; c += col_step) {
         // do not filter frame boundary
-        if (r >= cm->mi_rows || c >= cm->mi_cols) continue;
+        if ((r << MI_SIZE_LOG2) >= cm->height ||
+            (c << MI_SIZE_LOG2) >= cm->width)
+          continue;
 
         const int row = r % MI_SIZE_64X64;
         const int col = c % MI_SIZE_64X64;
@@ -1690,10 +1694,6 @@ void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
   const int dst_stride = plane_ptr->dst.stride;
   const int y_range = (MAX_MIB_SIZE >> scale_vert);
   const int x_range = (MAX_MIB_SIZE >> scale_horz);
-  /*
-  const int y_range = (cm->seq_params.mib_size >> scale_vert);
-  const int x_range = (cm->seq_params.mib_size >> scale_horz);
-  */
   for (int x = 0; x < x_range; x += col_step) {
     uint8_t *p = dst_ptr + x * MI_SIZE;
     for (int y = 0; y < y_range;) {
