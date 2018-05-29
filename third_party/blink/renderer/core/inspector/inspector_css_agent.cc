@@ -1161,18 +1161,13 @@ Response InspectorCSSAgent::getComputedStyleForNode(
             .build());
   }
 
-  std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
-      variables = computed_style_info->GetVariables();
-
-  if (variables && !variables->IsEmpty()) {
-    for (const auto& it : *variables) {
-      if (!it.value)
-        continue;
-      (*style)->addItem(protocol::CSS::CSSComputedStyleProperty::create()
-                            .setName(it.key)
-                            .setValue(it.value->TokenRange().Serialize())
-                            .build());
-    }
+  for (const auto& it : computed_style_info->GetVariables()) {
+    if (!it.value)
+      continue;
+    (*style)->addItem(protocol::CSS::CSSComputedStyleProperty::create()
+                          .setName(it.key)
+                          .setValue(it.value->TokenRange().Serialize())
+                          .build());
   }
   return Response::OK();
 }

@@ -61,8 +61,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
 
   const CSSValue* GetPropertyCSSValue(const CSSProperty&) const;
   const CSSValue* GetPropertyCSSValue(AtomicString custom_property_name) const;
-  std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
-  GetVariables() const;
+  HashMap<AtomicString, scoped_refptr<CSSVariableData>> GetVariables() const;
 
   const CSSValue* GetFontSizeCSSValuePreferringKeyword() const;
   bool IsMonospaceFont() const;
