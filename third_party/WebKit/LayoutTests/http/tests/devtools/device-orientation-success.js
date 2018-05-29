@@ -5,16 +5,26 @@
 (async function() {
   TestRunner.addResult(`Test device orientation\n`);
   await TestRunner.loadModule('console_test_runner');
+  await TestRunner.addScriptTag('/resources/testharness.js');
+  await TestRunner.addScriptTag('/resources/sensor-helpers.js');
+  await TestRunner.addScriptTag('/gen/layout_test_data/mojo/public/js/mojo_bindings.js');
+  await TestRunner.addScriptTag('/gen/services/device/public/mojom/sensor.mojom.js');
+  await TestRunner.addScriptTag('/gen/services/device/public/mojom/sensor_provider.mojom.js');
   await TestRunner.evaluateInPagePromise(`
+      var sensor = null;
       var mockAlpha = 1.1;
       var mockBeta = 2.2;
       var mockGamma = 3.3;
-      var absolute = true;
 
       function setUpDeviceOrientation()
       {
-          testRunner.setMockDeviceOrientation(true, mockAlpha, true, mockBeta, true, mockGamma, absolute);
-          window.addEventListener("deviceorientation", handler, false);
+          sensor = sensorMocks();
+          let mockDataPromise = setMockSensorDataForType(
+              sensor,
+              device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES,
+              [mockBeta, mockGamma, mockAlpha]);
+          window.addEventListener("deviceorientation", handler);
+          return mockDataPromise;
       }
 
       function handler(evt)
@@ -33,11 +43,19 @@
                 + orientationSensor.quaternion[3].toFixed(6));
           orientationSensor.start();
       }
+
+      function cleanUpDeviceOrientation()
+      {
+          window.removeEventListener("deviceorientation", handler);
+          sensor.mockSensorProvider.reset();
+          return new Promise(done => setTimeout(done, 0));
+      }
   `);
 
   TestRunner.runTestSuite([
-    function setUpDeviceOrientation(next) {
-      TestRunner.evaluateInPage('setUpDeviceOrientation()', next);
+    async function setUpDeviceOrientation(next) {
+      await TestRunner.evaluateInPageAsync('setUpDeviceOrientation()');
+      ConsoleTestRunner.addConsoleSniffer(next);
     },
 
     function firstOrientationOverride(next) {
@@ -56,6 +74,7 @@
 
     async function clearOverride(next) {
       await TestRunner.DeviceOrientationAgent.clearDeviceOrientationOverride();
+      await TestRunner.evaluateInPageAsync('cleanUpDeviceOrientation()');
       ConsoleTestRunner.dumpConsoleMessages();
       next();
     },
