@@ -505,7 +505,7 @@ TEST_F(SupervisedUserServiceExtensionTest,
     EXPECT_FALSE(error_2.empty());
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_FALSE(supervised_user_service->GetDebugPolicyProviderName().empty());
 #endif
 }
@@ -577,7 +577,7 @@ TEST_F(SupervisedUserServiceExtensionTest,
     EXPECT_FALSE(error_4.empty());
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_FALSE(supervised_user_service->GetDebugPolicyProviderName().empty());
 #endif
 }

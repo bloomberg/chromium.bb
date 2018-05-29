@@ -817,11 +817,10 @@ bool DeviceLocalAccountManagementPolicyProvider::IsWhitelisted(
 
 std::string DeviceLocalAccountManagementPolicyProvider::
     GetDebugPolicyProviderName() const {
-#if defined(NDEBUG)
-  NOTREACHED();
-  return std::string();
-#else
+#if DCHECK_IS_ON()
   return "whitelist for device-local accounts";
+#else
+  IMMEDIATE_CRASH();
 #endif
 }
 

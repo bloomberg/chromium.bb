@@ -49,7 +49,8 @@ class ManagementPolicy {
 
     // A human-readable name for this provider, for use in debug messages.
     // Implementers should return an empty string in non-debug builds, to save
-    // executable size.
+    // executable size, and should not call this in builds without DCHECKs
+    // enabled.
     virtual std::string GetDebugPolicyProviderName() const = 0;
 
     // Providers should return false if a user may not install the |extension|,

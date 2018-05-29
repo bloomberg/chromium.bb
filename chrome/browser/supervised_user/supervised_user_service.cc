@@ -817,11 +817,10 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
 
 std::string SupervisedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
-#ifdef NDEBUG
-  NOTREACHED();
-  return std::string();
-#else
+#if DCHECK_IS_ON()
   return "Supervised User Service";
+#else
+  IMMEDIATE_CRASH();
 #endif
 }
 
