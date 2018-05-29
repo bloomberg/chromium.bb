@@ -32,7 +32,6 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
-#include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -81,21 +80,7 @@ PositionTemplate<Strategy> EndOfWordAlgorithm(
 
 PositionInFlatTree NextWordPositionInternal(
     const PositionInFlatTree& position) {
-  DCHECK(position.IsNotNull());
-  PositionInFlatTree last_position = position;
-  for (const auto& inline_contents :
-       TextOffsetMapping::ForwardRangeOf(position)) {
-    const TextOffsetMapping mapping(inline_contents);
-    const String text = mapping.GetText();
-    const int offset =
-        last_position == position ? mapping.ComputeTextOffset(position) : 0;
-    const int word_end =
-        FindNextWordForward(text.Characters16(), text.length(), offset);
-    if (offset < word_end)
-      return mapping.GetPositionAfter(word_end);
-    last_position = mapping.GetRange().EndPosition();
-  }
-  return last_position;
+  return FindBoundaryForward(position, FindNextWordForward);
 }
 
 unsigned PreviousWordPositionBoundary(
