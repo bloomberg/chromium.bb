@@ -251,6 +251,9 @@
 -WindowOpenApiTest.RemoveLockedFullscreenFromWindow
 -WindowOpenApiTest.RemoveLockedFullscreenFromWindowWithoutPermission
 
+# App list code flake: https://crbug.com/847154 https://crbug.com/843429
+-MultiProfileFileManagerBrowserTest.*
+
 # Flaky segfaults: https://crbug.com/818147
 -ExtensionApiTest.BookmarkManager
 
