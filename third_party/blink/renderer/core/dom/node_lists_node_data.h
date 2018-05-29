@@ -171,7 +171,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   }
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const;
 
  private:
   NodeListsNodeData() : child_node_list_(nullptr) {}
@@ -182,8 +181,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   TagCollectionNSCache tag_collection_ns_caches_;
   DISALLOW_COPY_AND_ASSIGN(NodeListsNodeData);
 };
-
-DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeListsNodeData);
 
 template <typename Collection>
 inline Collection* ContainerNode::EnsureCachedCollection(CollectionType type) {

@@ -367,8 +367,6 @@ class CORE_EXPORT ContainerNode : public Node {
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);
 

@@ -43,7 +43,6 @@ class NodeIteratorBase : public GarbageCollectedMixin {
   V8NodeFilter* filter() const { return filter_.Get(); }
 
   void Trace(blink::Visitor*) override;
-  virtual void TraceWrappers(ScriptWrappableVisitor*) const;
 
  protected:
   NodeIteratorBase(Node*, unsigned what_to_show, V8NodeFilter*);

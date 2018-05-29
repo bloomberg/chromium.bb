@@ -4898,13 +4898,6 @@ void Element::Trace(blink::Visitor* visitor) {
   ContainerNode::Trace(visitor);
 }
 
-void Element::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  if (HasRareData()) {
-    visitor->TraceWrappersWithManualWriteBarrier(GetElementRareData());
-  }
-  ContainerNode::TraceWrappers(visitor);
-}
-
 bool Element::HasPartName() const {
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return false;

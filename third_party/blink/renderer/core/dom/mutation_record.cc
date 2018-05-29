@@ -62,13 +62,6 @@ class ChildListRecord : public MutationRecord {
     MutationRecord::Trace(visitor);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(target_);
-    visitor->TraceWrappers(added_nodes_);
-    visitor->TraceWrappers(removed_nodes_);
-    MutationRecord::TraceWrappers(visitor);
-  }
-
  private:
   const AtomicString& type() override;
   Node* target() override { return target_.Get(); }
@@ -94,13 +87,6 @@ class RecordWithEmptyNodeLists : public MutationRecord {
     visitor->Trace(added_nodes_);
     visitor->Trace(removed_nodes_);
     MutationRecord::Trace(visitor);
-  }
-
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(target_);
-    visitor->TraceWrappers(added_nodes_);
-    visitor->TraceWrappers(removed_nodes_);
-    MutationRecord::TraceWrappers(visitor);
   }
 
  private:
@@ -162,11 +148,6 @@ class MutationRecordWithNullOldValue : public MutationRecord {
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(record_);
     MutationRecord::Trace(visitor);
-  }
-
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(record_);
-    MutationRecord::TraceWrappers(visitor);
   }
 
  private:

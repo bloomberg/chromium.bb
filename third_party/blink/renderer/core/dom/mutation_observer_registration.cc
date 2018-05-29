@@ -155,9 +155,4 @@ void MutationObserverRegistration::Trace(blink::Visitor* visitor) {
   visitor->Trace(transient_registration_nodes_);
 }
 
-void MutationObserverRegistration::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(observer_);
-}
-
 }  // namespace blink

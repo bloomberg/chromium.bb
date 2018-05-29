@@ -299,11 +299,6 @@ void ShadowRoot::Trace(blink::Visitor* visitor) {
   DocumentFragment::Trace(visitor);
 }
 
-void ShadowRoot::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(style_sheet_list_);
-  DocumentFragment::TraceWrappers(visitor);
-}
-
 std::ostream& operator<<(std::ostream& ostream, const ShadowRootType& type) {
   switch (type) {
     case ShadowRootType::kUserAgent:

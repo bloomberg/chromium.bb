@@ -51,7 +51,6 @@ class CORE_EXPORT ScriptedAnimationController
   virtual ~ScriptedAnimationController() = default;
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ScriptedAnimationController";
   }
