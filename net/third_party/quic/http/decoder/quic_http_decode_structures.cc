@@ -10,7 +10,7 @@
 #include "net/third_party/quic/http/decoder/quic_http_decode_buffer.h"
 #include "net/third_party/quic/http/quic_http_constants.h"
 
-namespace net {
+namespace quic {
 
 // QuicHttpFrameHeader decoding:
 
@@ -108,4 +108,4 @@ void DoDecode(QuicHttpAltSvcFields* out, QuicHttpDecodeBuffer* b) {
   out->origin_length = b->DecodeUInt16();
 }
 
-}  // namespace net
+}  // namespace quic

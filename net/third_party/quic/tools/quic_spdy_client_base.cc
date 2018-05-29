@@ -15,7 +15,7 @@
 using base::StringToInt;
 using std::string;
 
-namespace net {
+namespace quic {
 
 void QuicSpdyClientBase::ClientQuicDataToResend::Resend() {
   client_->SendRequest(*headers_, body_, fin_);
@@ -270,4 +270,4 @@ const string& QuicSpdyClientBase::latest_response_trailers() const {
   return latest_response_trailers_;
 }
 
-}  // namespace net
+}  // namespace quic

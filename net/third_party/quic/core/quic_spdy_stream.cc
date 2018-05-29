@@ -19,7 +19,7 @@
 
 using base::IntToString;
 
-namespace net {
+namespace quic {
 #define ENDPOINT                                                   \
   (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
                                                       : "Client:"  \
@@ -302,4 +302,4 @@ void QuicSpdyStream::ClearSession() {
   spdy_session_ = nullptr;
 }
 
-}  // namespace net
+}  // namespace quic

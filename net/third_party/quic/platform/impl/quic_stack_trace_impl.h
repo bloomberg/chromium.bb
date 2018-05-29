@@ -7,12 +7,12 @@
 
 #include "base/debug/stack_trace.h"
 
-namespace net {
+namespace quic {
 
 inline std::string QuicStackTraceImpl() {
   return base::debug::StackTrace().ToString();
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_STACK_TRACE_IMPL_H_

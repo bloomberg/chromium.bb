@@ -8,7 +8,7 @@
 
 using testing::Invoke;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -163,4 +163,4 @@ TEST_F(QuicAlarmTest, FireDestroysAlarm) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

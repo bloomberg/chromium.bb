@@ -7,10 +7,10 @@
 
 #include <string>
 
-namespace net {
+namespace quic {
 
 using QuicStringImpl = std::string;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_STRING_IMPL_H_

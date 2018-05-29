@@ -22,14 +22,14 @@ namespace net {
 
 class ChannelIDService;
 
-class NET_EXPORT_PRIVATE ChannelIDKeyChromium : public ChannelIDKey {
+class NET_EXPORT_PRIVATE ChannelIDKeyChromium : public quic::ChannelIDKey {
  public:
   explicit ChannelIDKeyChromium(
       std::unique_ptr<crypto::ECPrivateKey> ec_private_key);
   ~ChannelIDKeyChromium() override;
 
-  // ChannelIDKey interface
-  bool Sign(QuicStringPiece signed_data,
+  // quic::ChannelIDKey interface
+  bool Sign(quic::QuicStringPiece signed_data,
             std::string* out_signature) const override;
   std::string SerializeKey() const override;
 
@@ -37,16 +37,17 @@ class NET_EXPORT_PRIVATE ChannelIDKeyChromium : public ChannelIDKey {
   std::unique_ptr<crypto::ECPrivateKey> ec_private_key_;
 };
 
-// ChannelIDSourceChromium implements the QUIC ChannelIDSource interface.
-class ChannelIDSourceChromium : public ChannelIDSource {
+// ChannelIDSourceChromium implements the QUIC quic::ChannelIDSource interface.
+class ChannelIDSourceChromium : public quic::ChannelIDSource {
  public:
   explicit ChannelIDSourceChromium(ChannelIDService* channel_id_service);
   ~ChannelIDSourceChromium() override;
 
-  // ChannelIDSource interface
-  QuicAsyncStatus GetChannelIDKey(const std::string& hostname,
-                                  std::unique_ptr<ChannelIDKey>* channel_id_key,
-                                  ChannelIDSourceCallback* callback) override;
+  // quic::ChannelIDSource interface
+  quic::QuicAsyncStatus GetChannelIDKey(
+      const std::string& hostname,
+      std::unique_ptr<quic::ChannelIDKey>* channel_id_key,
+      quic::ChannelIDSourceCallback* callback) override;
 
  private:
   class Job;

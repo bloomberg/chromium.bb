@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_IP_ADDRESS_FAMILY_H_
 #define NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_IP_ADDRESS_FAMILY_H_
 
-namespace net {
+namespace quic {
 
 // IP address family type used in QUIC. This hides platform dependant IP address
 // family types.
@@ -15,6 +15,6 @@ enum class IpAddressFamily {
   IP_UNSPEC,
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_IP_ADDRESS_FAMILY_H_

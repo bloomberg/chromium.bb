@@ -36,7 +36,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace net {
+namespace quic {
 
 class QuicDecrypter;
 class QuicEncrypter;
@@ -69,7 +69,7 @@ const float kShortAckDecimationDelay = 0.125;
 
 // Error code used in WriteResult to indicate that the packet writer rejected
 // the message as being too big.
-const int kMessageTooBigErrorCode = ERR_MSG_TOO_BIG;
+const int kMessageTooBigErrorCode = net::ERR_MSG_TOO_BIG;
 
 bool Near(QuicPacketNumber a, QuicPacketNumber b) {
   QuicPacketNumber delta = (a > b) ? a - b : b - a;
@@ -2032,7 +2032,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   WriteResult result = writer_->WritePacket(
       packet->encrypted_buffer, encrypted_length, self_address().host(),
       peer_address(), per_packet_options_);
-  if (result.error_code == ERR_IO_PENDING) {
+  if (result.error_code == net::ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }
 
@@ -3314,4 +3314,4 @@ void QuicConnection::SetRetransmittableOnWireAlarm() {
       QuicTime::Delta::Zero());
 }
 
-}  // namespace net
+}  // namespace quic

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/http/decoder/quic_http_structure_decoder.h"
 #include "net/third_party/quic/platform/api/quic_test_random.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicHttpStructureDecoderPeer {
@@ -18,6 +18,6 @@ class QuicHttpStructureDecoderPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_STRUCTURE_DECODER_TEST_UTIL_H_

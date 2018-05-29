@@ -12,16 +12,19 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // The id used to identify sessions. Includes the hostname, port, scheme and
 // privacy_mode.
 class QUIC_EXPORT_PRIVATE QuicServerId {
  public:
   QuicServerId();
-  QuicServerId(const HostPortPair& host_port_pair, PrivacyMode privacy_mode);
+  QuicServerId(const net::HostPortPair& host_port_pair,
+               net::PrivacyMode privacy_mode);
   QuicServerId(const QuicString& host, uint16_t port);
-  QuicServerId(const QuicString& host, uint16_t port, PrivacyMode privacy_mode);
+  QuicServerId(const QuicString& host,
+               uint16_t port,
+               net::PrivacyMode privacy_mode);
   ~QuicServerId();
 
   // Needed to be an element of std::set.
@@ -33,21 +36,21 @@ class QUIC_EXPORT_PRIVATE QuicServerId {
   QuicString ToString() const;
 
   // Used in Chromium, but not internally.
-  const HostPortPair& host_port_pair() const { return host_port_pair_; }
+  const net::HostPortPair& host_port_pair() const { return host_port_pair_; }
 
   const QuicString& host() const { return host_port_pair_.host(); }
 
   uint16_t port() const { return host_port_pair_.port(); }
 
-  PrivacyMode privacy_mode() const { return privacy_mode_; }
+  net::PrivacyMode privacy_mode() const { return privacy_mode_; }
 
   size_t EstimateMemoryUsage() const;
 
  private:
-  HostPortPair host_port_pair_;
-  PrivacyMode privacy_mode_;
+  net::HostPortPair host_port_pair_;
+  net::PrivacyMode privacy_mode_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SERVER_ID_H_

@@ -13,7 +13,7 @@
 
 using base::IntToString;
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -98,4 +98,4 @@ TEST_F(QuicCompressedCertsCacheTest, CacheMissDueToEviction) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

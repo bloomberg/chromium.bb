@@ -17,7 +17,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicBufferedPacketStorePeer;
@@ -165,6 +165,6 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
   QuicLinkedHashMap<QuicConnectionId, bool> connections_with_chlo_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_BUFFERED_PACKET_STORE_H_

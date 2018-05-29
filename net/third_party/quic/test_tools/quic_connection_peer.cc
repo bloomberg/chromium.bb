@@ -12,7 +12,7 @@
 #include "net/third_party/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/third_party/quic/test_tools/quic_sent_packet_manager_peer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -307,4 +307,4 @@ void QuicConnectionPeer::SetSessionDecidesWhatToWrite(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

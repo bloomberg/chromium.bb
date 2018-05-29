@@ -11,7 +11,7 @@
 
 using testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -65,4 +65,4 @@ TEST_F(QuicSpdyServerStreamBaseTest,
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

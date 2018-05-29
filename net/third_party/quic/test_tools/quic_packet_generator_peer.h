@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_packets.h"
 
-namespace net {
+namespace quic {
 
 class QuicPacketCreator;
 class QuicPacketGenerator;
@@ -25,6 +25,6 @@ class QuicPacketGeneratorPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_PACKET_GENERATOR_PEER_H_

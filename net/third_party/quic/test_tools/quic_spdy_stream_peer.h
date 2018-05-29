@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -19,6 +19,6 @@ class QuicSpdyStreamPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_SPDY_STREAM_PEER_H_

@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 #define ENDPOINT \
   (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
@@ -279,4 +279,4 @@ bool QuicDataReader::ReadVarIntStreamId(QuicStreamId* result) {
   *result = static_cast<QuicStreamId>(temp_uint64);
   return true;
 }
-}  // namespace net
+}  // namespace quic

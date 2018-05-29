@@ -43,7 +43,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     SSLClientSocketPool* ssl_pool,
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
-    QuicTransportVersion quic_version,
+    quic::QuicTransportVersion quic_version,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     HttpAuthCache* http_auth_cache,
@@ -88,11 +88,12 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       traffic_annotation_(traffic_annotation) {
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
                       net_log.source().ToEventParametersCallback());
-  // If doing a QUIC proxy, |quic_version| must not be QUIC_VERSION_UNSUPPORTED,
-  // and |ssl_params| must be valid while |transport_params| is null.
-  // Otherwise, |quic_version| must be QUIC_VERSION_UNSUPPORTED, and exactly
-  // one of |transport_params| or |ssl_params| must be set.
-  DCHECK(quic_version_ == QUIC_VERSION_UNSUPPORTED
+  // If doing a QUIC proxy, |quic_version| must not be
+  // quic::QUIC_VERSION_UNSUPPORTED, and |ssl_params| must be valid while
+  // |transport_params| is null. Otherwise, |quic_version| must be
+  // quic::QUIC_VERSION_UNSUPPORTED, and exactly one of |transport_params| or
+  // |ssl_params| must be set.
+  DCHECK(quic_version_ == quic::QUIC_VERSION_UNSUPPORTED
              ? (bool)transport_params != (bool)ssl_params
              : !transport_params && ssl_params);
 }
@@ -421,7 +422,7 @@ int HttpProxyClientSocketWrapper::DoLoop(int result) {
 int HttpProxyClientSocketWrapper::DoBeginConnect() {
   connect_start_time_ = base::TimeTicks::Now();
   SetConnectTimer(connect_timeout_duration_);
-  if (quic_version_ != QUIC_VERSION_UNSUPPORTED) {
+  if (quic_version_ != quic::QUIC_VERSION_UNSUPPORTED) {
     next_state_ = STATE_QUIC_PROXY_CREATE_SESSION;
   } else if (transport_params_) {
     next_state_ = STATE_TCP_CONNECT;

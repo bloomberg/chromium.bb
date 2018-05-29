@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_ietf_blocked_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicIetfBlockedFrame::QuicIetfBlockedFrame() {}
 
@@ -18,4 +18,4 @@ std::ostream& operator<<(std::ostream& os, const QuicIetfBlockedFrame& frame) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_connection_close_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
     : error_code(QUIC_NO_ERROR) {}
@@ -27,4 +27,4 @@ std::ostream& operator<<(
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 
-namespace net {
+namespace quic {
 BandwidthSampler::BandwidthSampler()
     : total_bytes_sent_(0),
       total_bytes_acked_(0),
@@ -173,4 +173,4 @@ QuicPacketNumber BandwidthSampler::end_of_app_limited_phase() const {
   return end_of_app_limited_phase_;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -21,7 +21,7 @@
 
 #define MMSG_MORE 0
 
-namespace net {
+namespace quic {
 
 #if MMSG_MORE
 // Read in larger batches to minimize recvmmsg overhead.
@@ -90,6 +90,6 @@ class QuicPacketReader {
   DISALLOW_COPY_AND_ASSIGN(QuicPacketReader);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKET_READER_H_

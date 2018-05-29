@@ -47,7 +47,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -1945,4 +1945,4 @@ QuicCryptoServerConfig::Config::~Config() {}
 QuicSignedServerConfig::QuicSignedServerConfig() {}
 QuicSignedServerConfig::~QuicSignedServerConfig() {}
 
-}  // namespace net
+}  // namespace quic

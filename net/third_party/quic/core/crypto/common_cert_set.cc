@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"
 
-namespace net {
+namespace quic {
 
 namespace common_cert_set_2 {
 #include "net/third_party/quic/core/crypto/common_cert_set_2.c"
@@ -164,4 +164,4 @@ const CommonCertSets* CommonCertSets::GetInstanceQUIC() {
   return CommonCertSetsQUIC::GetInstance();
 }
 
-}  // namespace net
+}  // namespace quic

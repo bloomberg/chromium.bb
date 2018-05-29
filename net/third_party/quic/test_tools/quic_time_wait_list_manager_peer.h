@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_time_wait_list_manager.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicTimeWaitListManagerPeer {
@@ -28,6 +28,6 @@ class QuicTimeWaitListManagerPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_TIME_WAIT_LIST_MANAGER_PEER_H_

@@ -64,7 +64,7 @@ const TestVector test_vectors[] = {
 
 }  // namespace
 
-namespace net {
+namespace quic {
 namespace test {
 
 // EncryptWithNonce wraps the |Encrypt| method of |encrypter| to allow passing
@@ -154,4 +154,4 @@ TEST_F(ChaCha20Poly1305EncrypterTest, GetCiphertextSize) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -34,7 +34,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicHttpFrameHeader {
   QuicHttpFrameHeader() {}
@@ -324,6 +324,6 @@ QUIC_EXPORT_PRIVATE inline bool operator!=(const QuicHttpAltSvcFields& a,
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                              const QuicHttpAltSvcFields& v);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_QUIC_HTTP_STRUCTURES_H_

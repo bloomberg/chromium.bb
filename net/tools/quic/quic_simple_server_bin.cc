@@ -30,7 +30,7 @@ std::string FLAGS_quic_mode = "cache";
 // generated using `wget -p --save-headers <url>`
 std::string FLAGS_quic_response_cache_dir = "";
 
-std::unique_ptr<net::ProofSource> CreateProofSource(
+std::unique_ptr<quic::ProofSource> CreateProofSource(
     const base::FilePath& cert_path,
     const base::FilePath& key_path) {
   std::unique_ptr<net::ProofSourceChromium> proof_source(
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     exit(0);
   }
 
-  net::QuicMemoryCacheBackend memory_cache_backend;
+  quic::QuicMemoryCacheBackend memory_cache_backend;
   if (line->HasSwitch("mode")) {
     FLAGS_quic_mode = line->GetSwitchValueASCII("mode");
   }
@@ -110,12 +110,12 @@ int main(int argc, char* argv[]) {
 
   net::IPAddress ip = net::IPAddress::IPv6AllZeros();
 
-  net::QuicConfig config;
+  quic::QuicConfig config;
   net::QuicSimpleServer server(
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
-      config, net::QuicCryptoServerConfig::ConfigOptions(),
-      net::AllSupportedVersions(), &memory_cache_backend);
+      config, quic::QuicCryptoServerConfig::ConfigOptions(),
+      quic::AllSupportedVersions(), &memory_cache_backend);
 
   int rc = server.Listen(net::IPEndPoint(ip, FLAGS_port));
   if (rc < 0) {

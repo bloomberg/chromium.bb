@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/quic_packets.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 // Constant based on TCP defaults.
@@ -64,4 +64,4 @@ bool PrrSender::CanSend(QuicByteCount congestion_window,
   return false;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/crypto/aead_base_decrypter.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // An Aes128Gcm12Decrypter is a QuicDecrypter that implements the
 // AEAD_AES_128_GCM_12 algorithm specified in RFC 5282. Create an instance by
@@ -35,6 +35,6 @@ class QUIC_EXPORT_PRIVATE Aes128Gcm12Decrypter : public AeadBaseDecrypter {
   DISALLOW_COPY_AND_ASSIGN(Aes128Gcm12Decrypter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_AES_128_GCM_12_DECRYPTER_H_

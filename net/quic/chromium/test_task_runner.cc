@@ -13,7 +13,7 @@
 namespace net {
 namespace test {
 
-TestTaskRunner::TestTaskRunner(MockClock* clock) : clock_(clock) {}
+TestTaskRunner::TestTaskRunner(quic::MockClock* clock) : clock_(clock) {}
 
 TestTaskRunner::~TestTaskRunner() {}
 
@@ -43,7 +43,7 @@ const std::vector<PostedTask>& TestTaskRunner::GetPostedTasks() const {
 void TestTaskRunner::RunNextTask() {
   std::vector<PostedTask>::iterator next = FindNextTask();
   DCHECK(next != tasks_.end());
-  clock_->AdvanceTime(QuicTime::Delta::FromMicroseconds(
+  clock_->AdvanceTime(quic::QuicTime::Delta::FromMicroseconds(
       (next->GetTimeToRun() - clock_->NowInTicks()).InMicroseconds()));
   PostedTask task = std::move(*next);
   tasks_.erase(next);

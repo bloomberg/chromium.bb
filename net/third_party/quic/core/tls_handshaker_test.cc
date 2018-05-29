@@ -13,7 +13,7 @@
 #include "net/third_party/quic/test_tools/mock_quic_session_visitor.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -401,4 +401,4 @@ TEST_F(TlsHandshakerTest, ServerConnectionClosedOnTlsAlert) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

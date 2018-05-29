@@ -7,7 +7,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -535,4 +535,4 @@ bool SimpleSessionNotifier::HasLostStreamData() const {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic

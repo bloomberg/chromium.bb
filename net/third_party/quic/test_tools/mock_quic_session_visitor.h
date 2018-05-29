@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_time_wait_list_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class MockQuicSessionVisitor : public QuicTimeWaitListManager::Visitor {
@@ -49,6 +49,6 @@ class MockQuicCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_QUIC_SESSION_VISITOR_H_

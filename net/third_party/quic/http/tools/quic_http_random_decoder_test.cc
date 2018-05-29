@@ -24,7 +24,7 @@ using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace quic {
 namespace test {
 
 QuicHttpRandomDecoderTest::QuicHttpRandomDecoderTest() {}
@@ -169,4 +169,4 @@ uint32_t QuicHttpRandomDecoderTest::RandStreamId() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

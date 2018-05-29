@@ -22,34 +22,36 @@ using std::string;
 namespace net {
 namespace test {
 
-const QuicConfig* QuicStreamFactoryPeer::GetConfig(QuicStreamFactory* factory) {
+const quic::QuicConfig* QuicStreamFactoryPeer::GetConfig(
+    QuicStreamFactory* factory) {
   return &factory->config_;
 }
 
-QuicCryptoClientConfig* QuicStreamFactoryPeer::GetCryptoConfig(
+quic::QuicCryptoClientConfig* QuicStreamFactoryPeer::GetCryptoConfig(
     QuicStreamFactory* factory) {
   return &factory->crypto_config_;
 }
 
-bool QuicStreamFactoryPeer::HasActiveSession(QuicStreamFactory* factory,
-                                             const QuicServerId& server_id) {
+bool QuicStreamFactoryPeer::HasActiveSession(
+    QuicStreamFactory* factory,
+    const quic::QuicServerId& server_id) {
   return factory->HasActiveSession(QuicSessionKey(server_id, SocketTag()));
 }
 
 bool QuicStreamFactoryPeer::HasActiveJob(QuicStreamFactory* factory,
-                                         const QuicServerId& server_id) {
+                                         const quic::QuicServerId& server_id) {
   return factory->HasActiveJob(QuicSessionKey(server_id, SocketTag()));
 }
 
 bool QuicStreamFactoryPeer::HasActiveCertVerifierJob(
     QuicStreamFactory* factory,
-    const QuicServerId& server_id) {
+    const quic::QuicServerId& server_id) {
   return factory->HasActiveCertVerifierJob(server_id);
 }
 
 QuicChromiumClientSession* QuicStreamFactoryPeer::GetActiveSession(
     QuicStreamFactory* factory,
-    const QuicServerId& server_id) {
+    const quic::QuicServerId& server_id) {
   QuicSessionKey session_key(server_id, SocketTag());
   DCHECK(factory->HasActiveSession(session_key));
   return factory->active_sessions_[session_key];
@@ -72,7 +74,7 @@ void QuicStreamFactoryPeer::SetTaskRunner(
   factory->task_runner_ = task_runner;
 }
 
-QuicTime::Delta QuicStreamFactoryPeer::GetPingTimeout(
+quic::QuicTime::Delta QuicStreamFactoryPeer::GetPingTimeout(
     QuicStreamFactory* factory) {
   return factory->ping_timeout_;
 }
@@ -88,9 +90,9 @@ void QuicStreamFactoryPeer::SetRaceCertVerification(
   factory->race_cert_verification_ = race_cert_verification;
 }
 
-QuicAsyncStatus QuicStreamFactoryPeer::StartCertVerifyJob(
+quic::QuicAsyncStatus QuicStreamFactoryPeer::StartCertVerifyJob(
     QuicStreamFactory* factory,
-    const QuicServerId& server_id,
+    const quic::QuicServerId& server_id,
     int cert_verify_flags,
     const NetLogWithSource& net_log) {
   return factory->StartCertVerifyJob(server_id, cert_verify_flags, net_log);
@@ -103,19 +105,19 @@ void QuicStreamFactoryPeer::SetYieldAfterPackets(QuicStreamFactory* factory,
 
 void QuicStreamFactoryPeer::SetYieldAfterDuration(
     QuicStreamFactory* factory,
-    QuicTime::Delta yield_after_duration) {
+    quic::QuicTime::Delta yield_after_duration) {
   factory->yield_after_duration_ = yield_after_duration;
 }
 
 bool QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
     QuicStreamFactory* factory,
-    const QuicServerId& quic_server_id) {
+    const quic::QuicServerId& quic_server_id) {
   return factory->CryptoConfigCacheIsEmpty(quic_server_id);
 }
 
 void QuicStreamFactoryPeer::CacheDummyServerConfig(
     QuicStreamFactory* factory,
-    const QuicServerId& quic_server_id) {
+    const quic::QuicServerId& quic_server_id) {
   // Minimum SCFG that passes config validation checks.
   const char scfg[] = {// SCFG
                        0x53, 0x43, 0x46, 0x47,
@@ -141,16 +143,16 @@ void QuicStreamFactoryPeer::CacheDummyServerConfig(
   DCHECK(cert);
   certs.emplace_back(x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
 
-  QuicCryptoClientConfig* crypto_config = &factory->crypto_config_;
-  QuicCryptoClientConfig::CachedState* cached =
+  quic::QuicCryptoClientConfig* crypto_config = &factory->crypto_config_;
+  quic::QuicCryptoClientConfig::CachedState* cached =
       crypto_config->LookupOrCreate(quic_server_id);
-  QuicChromiumClock clock;
+  quic::QuicChromiumClock clock;
   cached->Initialize(server_config, source_address_token, certs, "", "",
-                     signature, clock.WallNow(), QuicWallTime::Zero());
+                     signature, clock.WallNow(), quic::QuicWallTime::Zero());
   DCHECK(!cached->certs().empty());
 }
 
-QuicClientPushPromiseIndex* QuicStreamFactoryPeer::GetPushPromiseIndex(
+quic::QuicClientPushPromiseIndex* QuicStreamFactoryPeer::GetPushPromiseIndex(
     QuicStreamFactory* factory) {
   return &factory->push_promise_index_;
 }
@@ -162,7 +164,7 @@ int QuicStreamFactoryPeer::GetNumPushStreamsCreated(
 
 void QuicStreamFactoryPeer::SetAlarmFactory(
     QuicStreamFactory* factory,
-    std::unique_ptr<QuicAlarmFactory> alarm_factory) {
+    std::unique_ptr<quic::QuicAlarmFactory> alarm_factory) {
   factory->alarm_factory_ = std::move(alarm_factory);
 }
 

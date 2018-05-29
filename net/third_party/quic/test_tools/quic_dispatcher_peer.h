@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_dispatcher.h"
 
-namespace net {
+namespace quic {
 
 class QuicPacketWriterWrapper;
 
@@ -66,6 +66,6 @@ class QuicDispatcherPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_DISPATCHER_PEER_H_

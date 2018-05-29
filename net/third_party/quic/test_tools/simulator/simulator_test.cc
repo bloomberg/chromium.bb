@@ -21,7 +21,7 @@ using testing::_;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // A simple counter that increments its value by 1 every specified period.
@@ -806,4 +806,4 @@ TEST_F(SimulatorTest, PacketAggregation) {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

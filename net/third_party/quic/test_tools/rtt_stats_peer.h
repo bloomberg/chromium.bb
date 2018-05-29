@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quic/core/quic_time.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class RttStatsPeer {
@@ -23,6 +23,6 @@ class RttStatsPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_RTT_STATS_PEER_H_

@@ -11,7 +11,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -138,4 +138,4 @@ TEST_F(QuicUrlUtilsImplTest, GetPushPromiseUrl) {
 
 };  // namespace
 };  // namespace test
-};  // namespace net
+};  // namespace quic

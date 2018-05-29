@@ -8,7 +8,7 @@
 
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 
-namespace net {
+namespace quic {
 
 // Below we have some defensive coding: if we somehow run off the end, don't
 // overwrite lots of memory. Note that most of this decoder is not defensive
@@ -88,4 +88,4 @@ bool QuicHttpStructureDecoder::ResumeFillingBuffer(QuicHttpDecodeBuffer* db,
   return needed == num_to_copy;
 }
 
-}  // namespace net
+}  // namespace quic

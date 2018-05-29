@@ -7,7 +7,7 @@
 #include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 QuicSpdyServerStreamBase::QuicSpdyServerStreamBase(QuicStreamId id,
                                                    QuicSpdySession* session)
@@ -38,4 +38,4 @@ void QuicSpdyServerStreamBase::StopReading() {
   QuicSpdyStream::StopReading();
 }
 
-}  // namespace net
+}  // namespace quic

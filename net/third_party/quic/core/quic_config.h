@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicConfigPeer;
@@ -475,6 +475,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   QuicTagVector create_session_tag_indicators_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONFIG_H_

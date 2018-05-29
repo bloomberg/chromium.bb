@@ -6,7 +6,7 @@
 
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -286,4 +286,4 @@ bool ParseTransportParameters(const uint8_t* in,
   return out->is_valid();
 }
 
-}  // namespace net
+}  // namespace quic

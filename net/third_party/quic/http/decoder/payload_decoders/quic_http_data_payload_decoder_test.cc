@@ -23,7 +23,7 @@
 
 using ::testing::AssertionResult;
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Provides friend access to an instance of the payload decoder, and also
@@ -123,4 +123,4 @@ TEST_P(QuicHttpDataQuicHttpPayloadDecoderTest, VariousDataPayloadSizes) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

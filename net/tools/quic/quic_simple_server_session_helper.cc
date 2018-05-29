@@ -6,21 +6,23 @@
 
 namespace net {
 
-QuicSimpleServerSessionHelper::QuicSimpleServerSessionHelper(QuicRandom* random)
+QuicSimpleServerSessionHelper::QuicSimpleServerSessionHelper(
+    quic::QuicRandom* random)
     : random_(random) {}
 
 QuicSimpleServerSessionHelper::~QuicSimpleServerSessionHelper() = default;
 
-QuicConnectionId QuicSimpleServerSessionHelper::GenerateConnectionIdForReject(
-    QuicConnectionId /*connection_id*/) const {
+quic::QuicConnectionId
+QuicSimpleServerSessionHelper::GenerateConnectionIdForReject(
+    quic::QuicConnectionId /*connection_id*/) const {
   return random_->RandUint64();
 }
 
 bool QuicSimpleServerSessionHelper::CanAcceptClientHello(
-    const CryptoHandshakeMessage& message,
-    const QuicSocketAddress& client_address,
-    const QuicSocketAddress& peer_address,
-    const QuicSocketAddress& self_address,
+    const quic::CryptoHandshakeMessage& message,
+    const quic::QuicSocketAddress& client_address,
+    const quic::QuicSocketAddress& peer_address,
+    const quic::QuicSocketAddress& self_address,
     std::string* error_details) const {
   return true;
 }

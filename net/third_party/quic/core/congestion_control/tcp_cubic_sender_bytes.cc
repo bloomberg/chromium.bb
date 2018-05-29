@@ -15,7 +15,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 // Constants based on TCP defaults.
@@ -429,4 +429,4 @@ CongestionControlType TcpCubicSenderBytes::GetCongestionControlType() const {
   return reno_ ? kRenoBytes : kCubicBytes;
 }
 
-}  // namespace net
+}  // namespace quic

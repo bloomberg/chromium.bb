@@ -13,7 +13,7 @@
 #include "net/third_party/quic/core/crypto/crypto_framer.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using net::Perspective;
+using quic::Perspective;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -22,21 +22,22 @@ std::string FLAGS_perspective = "";
 
 namespace net {
 
-class CryptoMessagePrinter : public net::CryptoFramerVisitorInterface {
+class CryptoMessagePrinter : public quic::CryptoFramerVisitorInterface {
  public:
-  explicit CryptoMessagePrinter(Perspective perspective)
+  explicit CryptoMessagePrinter(quic::Perspective perspective)
       : perspective_(perspective) {}
 
-  void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
+  void OnHandshakeMessage(
+      const quic::CryptoHandshakeMessage& message) override {
     cout << message.DebugString(perspective_) << endl;
   }
 
-  void OnError(CryptoFramer* framer) override {
+  void OnError(quic::CryptoFramer* framer) override {
     cerr << "Error code: " << framer->error() << endl;
     cerr << "Error details: " << framer->error_detail() << endl;
   }
 
-  Perspective perspective_;
+  quic::Perspective perspective_;
 };
 
 }  // namespace net
@@ -61,15 +62,15 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  Perspective perspective = FLAGS_perspective == "server"
-                                ? Perspective::IS_SERVER
-                                : Perspective::IS_CLIENT;
+  quic::Perspective perspective = FLAGS_perspective == "server"
+                                      ? quic::Perspective::IS_SERVER
+                                      : quic::Perspective::IS_CLIENT;
 
   net::CryptoMessagePrinter printer(perspective);
-  net::CryptoFramer framer;
+  quic::CryptoFramer framer;
   framer.set_visitor(&printer);
   framer.set_process_truncated_messages(true);
-  std::string input = net::QuicTextUtils::HexDecode(argv[1]);
+  std::string input = quic::QuicTextUtils::HexDecode(argv[1]);
   if (!framer.ProcessInput(input, perspective)) {
     return 1;
   }

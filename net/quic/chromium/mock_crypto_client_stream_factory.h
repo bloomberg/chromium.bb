@@ -15,23 +15,24 @@
 #include "net/third_party/quic/core/quic_server_id.h"
 #include "net/third_party/quic/test_tools/mock_crypto_client_stream.h"
 
-namespace net {
-
+namespace quic {
 class QuicCryptoClientStream;
+}  // namespace quic
+namespace net {
 
 class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
  public:
   MockCryptoClientStreamFactory();
   ~MockCryptoClientStreamFactory() override;
 
-  QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      const QuicServerId& server_id,
+  quic::QuicCryptoClientStream* CreateQuicCryptoClientStream(
+      const quic::QuicServerId& server_id,
       QuicChromiumClientSession* session,
-      std::unique_ptr<ProofVerifyContext> proof_verify_context,
-      QuicCryptoClientConfig* crypto_config) override;
+      std::unique_ptr<quic::ProofVerifyContext> proof_verify_context,
+      quic::QuicCryptoClientConfig* crypto_config) override;
 
   void set_handshake_mode(
-      MockCryptoClientStream::HandshakeMode handshake_mode) {
+      quic::MockCryptoClientStream::HandshakeMode handshake_mode) {
     handshake_mode_ = handshake_mode;
   }
 
@@ -45,16 +46,16 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
     proof_verify_details_queue_.push(proof_verify_details);
   }
 
-  MockCryptoClientStream* last_stream() const { return last_stream_; }
+  quic::MockCryptoClientStream* last_stream() const { return last_stream_; }
 
   // Sets initial config for new sessions.
-  void SetConfig(const QuicConfig& config);
+  void SetConfig(const quic::QuicConfig& config);
 
  private:
-  MockCryptoClientStream::HandshakeMode handshake_mode_;
-  MockCryptoClientStream* last_stream_;
+  quic::MockCryptoClientStream::HandshakeMode handshake_mode_;
+  quic::MockCryptoClientStream* last_stream_;
   base::queue<const ProofVerifyDetailsChromium*> proof_verify_details_queue_;
-  std::unique_ptr<QuicConfig> config_;
+  std::unique_ptr<quic::QuicConfig> config_;
   bool use_mock_crypter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStreamFactory);

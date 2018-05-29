@@ -34,7 +34,7 @@ enum QuicAddressMismatch {
 // |first_address| differs from |second_address|. Returns -1 if either address
 // is empty.
 //
-// Only used by the Net.QuicSession.PublicResetAddressMismatch histogram.
+// Only used by the Net.quic::QuicSession.PublicResetAddressMismatch histogram.
 NET_EXPORT_PRIVATE int GetAddressMismatch(const IPEndPoint& first_address,
                                           const IPEndPoint& second_address);
 

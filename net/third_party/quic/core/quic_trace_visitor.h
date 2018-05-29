@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_types.h"
 
-namespace net {
+namespace quic {
 
 // Records a QUIC trace protocol buffer for a QuicConnection.  It's the
 // responsibility of the user of this visitor to process or store the resulting
@@ -60,6 +60,6 @@ class QuicTraceVisitor : public QuicConnectionDebugVisitor {
   const QuicTime start_time_;
 };
 
-};  // namespace net
+};  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TRACE_VISITOR_H_

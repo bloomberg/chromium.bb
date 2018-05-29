@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 
 void QuicRecordTestOutputToFile(QuicStringPiece filename,
                                 QuicStringPiece data) {
@@ -59,4 +59,4 @@ void QuicRecordTestOutputImpl(QuicStringPiece identifier,
   QuicRecordTestOutputToFile(filename, data);
 }
 
-}  // namespace net
+}  // namespace quic

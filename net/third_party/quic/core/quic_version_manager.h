@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Used to generate filtered supported versions based on flags.
 class QUIC_EXPORT_PRIVATE QuicVersionManager {
@@ -58,6 +58,6 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   QuicTransportVersionVector filtered_transport_versions_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_VERSION_MANAGER_H_

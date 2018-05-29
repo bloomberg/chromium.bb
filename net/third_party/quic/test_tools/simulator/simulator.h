@@ -14,7 +14,7 @@
 #include "net/third_party/quic/test_tools/simulator/actor.h"
 #include "net/third_party/quic/test_tools/simulator/alarm_factory.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // Simulator is responsible for scheduling actors in the simulation and
@@ -157,6 +157,6 @@ bool Simulator::RunUntilOrTimeout(TerminationPredicate termination_predicate,
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_SIMULATOR_H_

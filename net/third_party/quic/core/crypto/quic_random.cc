@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -56,4 +56,4 @@ QuicRandom* QuicRandom::GetInstance() {
   return DefaultRandom::GetInstance();
 }
 
-}  // namespace net
+}  // namespace quic

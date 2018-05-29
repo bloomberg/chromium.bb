@@ -20,7 +20,7 @@
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 namespace test {
 class QuicPacketCreatorPeer;
 }
@@ -323,6 +323,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   DISALLOW_COPY_AND_ASSIGN(QuicPacketCreator);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKET_CREATOR_H_

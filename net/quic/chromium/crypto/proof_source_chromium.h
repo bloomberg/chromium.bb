@@ -18,9 +18,9 @@
 
 namespace net {
 
-// ProofSourceChromium implements the QUIC ProofSource interface.
+// ProofSourceChromium implements the QUIC quic::ProofSource interface.
 // TODO(rtenneti): implement details of this class.
-class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
+class NET_EXPORT_PRIVATE ProofSourceChromium : public quic::ProofSource {
  public:
   ProofSourceChromium();
   ~ProofSourceChromium() override;
@@ -32,36 +32,37 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
                   const base::FilePath& key_path,
                   const base::FilePath& sct_path);
 
-  // ProofSource interface
-  void GetProof(const QuicSocketAddress& server_ip,
+  // quic::ProofSource interface
+  void GetProof(const quic::QuicSocketAddress& server_ip,
                 const std::string& hostname,
                 const std::string& server_config,
-                QuicTransportVersion quic_version,
-                QuicStringPiece chlo_hash,
+                quic::QuicTransportVersion quic_version,
+                quic::QuicStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override;
 
-  QuicReferenceCountedPointer<Chain> GetCertChain(
-      const QuicSocketAddress& server_address,
+  quic::QuicReferenceCountedPointer<Chain> GetCertChain(
+      const quic::QuicSocketAddress& server_address,
       const std::string& hostname) override;
 
   void ComputeTlsSignature(
-      const QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& server_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
-      QuicStringPiece in,
+      quic::QuicStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override;
 
  private:
-  bool GetProofInner(const QuicSocketAddress& server_ip,
-                     const std::string& hostname,
-                     const std::string& server_config,
-                     QuicTransportVersion quic_version,
-                     QuicStringPiece chlo_hash,
-                     QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
-                     QuicCryptoProof* proof);
+  bool GetProofInner(
+      const quic::QuicSocketAddress& server_ip,
+      const std::string& hostname,
+      const std::string& server_config,
+      quic::QuicTransportVersion quic_version,
+      quic::QuicStringPiece chlo_hash,
+      quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>* out_chain,
+      quic::QuicCryptoProof* proof);
 
   std::unique_ptr<crypto::RSAPrivateKey> private_key_;
-  QuicReferenceCountedPointer<ProofSource::Chain> chain_;
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain_;
   std::string signed_certificate_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(ProofSourceChromium);

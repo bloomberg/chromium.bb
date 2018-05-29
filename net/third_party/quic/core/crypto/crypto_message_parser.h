@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE CryptoMessageParser {
  public:
@@ -28,6 +28,6 @@ class QUIC_EXPORT_PRIVATE CryptoMessageParser {
   virtual size_t InputBytesRemaining() const = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CRYPTO_MESSAGE_PARSER_H_

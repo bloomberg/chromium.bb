@@ -26,7 +26,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicSpdyStreamPeer;
@@ -204,6 +204,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyStream);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SPDY_STREAM_H_

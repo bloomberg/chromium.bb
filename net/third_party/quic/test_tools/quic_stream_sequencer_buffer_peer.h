@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_stream_sequencer_buffer.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -56,6 +56,6 @@ class QuicStreamSequencerBufferPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_STREAM_SEQUENCER_BUFFER_PEER_H_

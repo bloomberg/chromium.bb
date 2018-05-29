@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE PrrSender {
  public:
@@ -38,6 +38,6 @@ class QUIC_EXPORT_PRIVATE PrrSender {
   QuicByteCount bytes_in_flight_before_loss_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_PRR_SENDER_H_

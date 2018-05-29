@@ -18,7 +18,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/http/test_tools/quic_http_frame_parts.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicHttpFramePartsCollector : public FailingQuicHttpFrameDecoderListener {
@@ -109,6 +109,6 @@ class QuicHttpFramePartsCollector : public FailingQuicHttpFrameDecoderListener {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_TEST_TOOLS_QUIC_HTTP_FRAME_PARTS_COLLECTOR_H_

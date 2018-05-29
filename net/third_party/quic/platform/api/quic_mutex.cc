@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/platform/api/quic_mutex.h"
 
-namespace net {
+namespace quic {
 
 void QuicMutex::WriterLock() {
   impl_.WriterLock();
@@ -42,4 +42,4 @@ QuicWriterMutexLock::~QuicWriterMutexLock() {
   lock_->WriterUnlock();
 }
 
-}  // namespace net
+}  // namespace quic

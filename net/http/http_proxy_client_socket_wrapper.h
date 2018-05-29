@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       SSLClientSocketPool* ssl_pool,
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
-      QuicTransportVersion quic_version,
+      quic::QuicTransportVersion quic_version,
       const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
@@ -191,7 +191,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
 
-  QuicTransportVersion quic_version_;
+  quic::QuicTransportVersion quic_version_;
 
   const std::string user_agent_;
   const HostPortPair endpoint_;

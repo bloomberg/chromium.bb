@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_packets.h"
 
-namespace net {
+namespace quic {
 
 class QuicStreamSequencer;
 
@@ -30,6 +30,6 @@ class QuicStreamSequencerPeer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_STREAM_SEQUENCER_PEER_H_

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/impl/quic_ip_address_impl.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicIpAddress {
   // A class representing an IPv4 or IPv6 address in QUIC. The actual
@@ -67,6 +67,6 @@ class QUIC_EXPORT_PRIVATE QuicIpAddress {
   QuicIpAddressImpl impl_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_IP_ADDRESS_H_

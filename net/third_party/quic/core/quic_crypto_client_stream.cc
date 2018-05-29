@@ -22,7 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 const int QuicCryptoClientStream::kMaxClientHellos;
 
@@ -102,4 +102,4 @@ QuicString QuicCryptoClientStream::chlo_hash() const {
   return handshaker_->chlo_hash();
 }
 
-}  // namespace net
+}  // namespace quic

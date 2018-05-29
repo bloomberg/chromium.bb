@@ -28,7 +28,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 class QuicCryptoStream;
 class QuicFlowController;
@@ -555,6 +555,6 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   DISALLOW_COPY_AND_ASSIGN(QuicSession);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SESSION_H_

@@ -21,7 +21,7 @@
 #include <new>
 #include <utility>
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Reconstruct an object so that it is initialized as when it was first
@@ -44,6 +44,6 @@ void QuicDefaultReconstructObjectImpl(T* ptr, QuicTestRandomBase* rng) {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_RECONSTRUCT_OBJECT_IMPL_H_

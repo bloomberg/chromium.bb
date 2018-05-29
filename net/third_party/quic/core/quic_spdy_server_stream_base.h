@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_spdy_stream.h"
 
-namespace net {
+namespace quic {
 
 class QuicSpdyServerStreamBase : public QuicSpdyStream {
  public:
@@ -22,6 +22,6 @@ class QuicSpdyServerStreamBase : public QuicSpdyStream {
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyServerStreamBase);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SPDY_SERVER_STREAM_BASE_H_

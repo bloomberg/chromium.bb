@@ -14,7 +14,7 @@
 #include "net/third_party/quic/core/session_notifier_interface.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Class which tracks unacked packets for three purposes:
 // 1) Track retransmittable data, including multiple transmissions of frames.
@@ -228,6 +228,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_UNACKED_PACKET_MAP_H_

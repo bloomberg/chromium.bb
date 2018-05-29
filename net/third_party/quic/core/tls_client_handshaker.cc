@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-namespace net {
+namespace quic {
 
 TlsClientHandshaker::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
     TlsClientHandshaker* parent)
@@ -272,4 +272,4 @@ enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
   }
 }
 
-}  // namespace net
+}  // namespace quic

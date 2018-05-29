@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_test_random.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -79,4 +79,4 @@ size_t GenerateRandomSizeSkewedLow(size_t max, QuicTestRandomBase* rng) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 QuicSustainedBandwidthRecorder::QuicSustainedBandwidthRecorder()
     : has_estimate_(false),
@@ -59,4 +59,4 @@ void QuicSustainedBandwidthRecorder::RecordEstimate(bool in_recovery,
   }
 }
 
-}  // namespace net
+}  // namespace quic

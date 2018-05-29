@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/quic_packets.h"
 
-namespace net {
+namespace quic {
 
 // A utility for extracting QUIC Client Hello messages from packets,
 // without needs to spin up a full QuicSession.
@@ -39,6 +39,6 @@ class ChloExtractor {
   ChloExtractor operator=(const ChloExtractor&) = delete;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CHLO_EXTRACTOR_H_

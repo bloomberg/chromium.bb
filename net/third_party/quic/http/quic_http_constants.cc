@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace net {
+namespace quic {
 
 QuicString QuicHttpFrameTypeToString(QuicHttpFrameType v) {
   switch (v) {
@@ -153,4 +153,4 @@ QuicString QuicHttpSettingsParameterToString(QuicHttpSettingsParameter v) {
   return QuicHttpSettingsParameterToString(static_cast<uint32_t>(v));
 }
 
-}  // namespace net
+}  // namespace quic

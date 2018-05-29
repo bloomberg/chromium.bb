@@ -10,8 +10,8 @@
 namespace net {
 
 TEST(QuicSimpleCryptoServerStreamHelperTest, GenerateConnectionIdForReject) {
-  test::MockRandom random;
-  QuicSimpleCryptoServerStreamHelper helper(&random);
+  quic::test::MockRandom random;
+  quic::QuicSimpleCryptoServerStreamHelper helper(&random);
 
   EXPECT_EQ(random.RandUint64(), helper.GenerateConnectionIdForReject(42));
 }

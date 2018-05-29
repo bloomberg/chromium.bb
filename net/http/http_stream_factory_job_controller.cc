@@ -796,11 +796,11 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
   // Create an alternative job if alternative service is set up for this domain.
   alternative_service_info_ =
       GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_);
-  QuicTransportVersion quic_version = QUIC_VERSION_UNSUPPORTED;
+  quic::QuicTransportVersion quic_version = quic::QUIC_VERSION_UNSUPPORTED;
   if (alternative_service_info_.protocol() == kProtoQUIC) {
     quic_version =
         SelectQuicVersion(alternative_service_info_.advertised_versions());
-    DCHECK_NE(quic_version, QUIC_VERSION_UNSUPPORTED);
+    DCHECK_NE(quic_version, quic::QUIC_VERSION_UNSUPPORTED);
   }
 
   if (is_preconnect_) {
@@ -1143,7 +1143,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     // If there is no QUIC version in the advertised versions that is
     // supported, ignore this entry.
     if (SelectQuicVersion(alternative_service_info.advertised_versions()) ==
-        QUIC_VERSION_UNSUPPORTED)
+        quic::QUIC_VERSION_UNSUPPORTED)
       continue;
 
     // Check whether there is an existing QUIC session to use for this origin.
@@ -1178,23 +1178,23 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   return first_alternative_service_info;
 }
 
-QuicTransportVersion HttpStreamFactory::JobController::SelectQuicVersion(
-    const QuicTransportVersionVector& advertised_versions) {
-  const QuicTransportVersionVector& supported_versions =
+quic::QuicTransportVersion HttpStreamFactory::JobController::SelectQuicVersion(
+    const quic::QuicTransportVersionVector& advertised_versions) {
+  const quic::QuicTransportVersionVector& supported_versions =
       session_->params().quic_supported_versions;
   if (advertised_versions.empty())
     return supported_versions[0];
 
-  for (const QuicTransportVersion& supported : supported_versions) {
-    for (const QuicTransportVersion& advertised : advertised_versions) {
+  for (const quic::QuicTransportVersion& supported : supported_versions) {
+    for (const quic::QuicTransportVersion& advertised : advertised_versions) {
       if (supported == advertised) {
-        DCHECK_NE(QUIC_VERSION_UNSUPPORTED, supported);
+        DCHECK_NE(quic::QUIC_VERSION_UNSUPPORTED, supported);
         return supported;
       }
     }
   }
 
-  return QUIC_VERSION_UNSUPPORTED;
+  return quic::QUIC_VERSION_UNSUPPORTED;
 }
 
 bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(

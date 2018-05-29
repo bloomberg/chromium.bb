@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/spdy/core/spdy_framer.h"
 
-namespace net {
+namespace quic {
 
 class QuicHeadersStream;
 class QuicSpdySession;
@@ -61,6 +61,6 @@ class QuicSpdySessionPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_SPDY_SESSION_PEER_H_

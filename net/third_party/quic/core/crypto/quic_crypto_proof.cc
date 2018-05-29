@@ -4,8 +4,8 @@
 
 #include "net/third_party/quic/core/crypto/quic_crypto_proof.h"
 
-namespace net {
+namespace quic {
 
 QuicCryptoProof::QuicCryptoProof() : send_expect_ct_header(false) {}
 
-}  // namespace net
+}  // namespace quic

@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 
-namespace net {
+namespace quic {
 
 template <typename T, typename... Args>
 std::unique_ptr<T> QuicMakeUniqueImpl(Args&&... args) {
@@ -18,6 +18,6 @@ std::unique_ptr<T> QuicWrapUniqueImpl(T* ptr) {
   return base::WrapUnique<T>(ptr);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_PTR_UTIL_IMPL_H_

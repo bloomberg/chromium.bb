@@ -57,7 +57,7 @@ class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
   }
 
   HttpServerPropertiesImpl http_server_properties_;
-  QuicServerId server_id_;
+  quic::QuicServerId server_id_;
   PropertiesBasedQuicServerInfo server_info_;
   CompletionCallback callback_;
 };

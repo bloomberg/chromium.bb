@@ -24,7 +24,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
 
-namespace net {
+namespace quic {
 
 typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
 typedef QuicBufferedPacketStore::BufferedPacketList BufferedPacketList;
@@ -1143,4 +1143,4 @@ void QuicDispatcher::DeliverPacketsToSession(
   }
 }
 
-}  // namespace net
+}  // namespace quic

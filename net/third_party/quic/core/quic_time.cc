@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicString QuicTime::Delta::ToDebugValue() const {
   const int64_t one_ms = 1000;
@@ -82,4 +82,4 @@ QuicWallTime QuicWallTime::Subtract(QuicTime::Delta delta) const {
   return QuicWallTime(microseconds);
 }
 
-}  // namespace net
+}  // namespace quic

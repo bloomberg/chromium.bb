@@ -9,7 +9,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 const size_t kHashSizeShort = 12;  // size of uint128 serialized short
 
@@ -92,4 +92,4 @@ size_t NullEncrypter::GetHashLength() const {
   return kHashSizeShort;
 }
 
-}  // namespace net
+}  // namespace quic

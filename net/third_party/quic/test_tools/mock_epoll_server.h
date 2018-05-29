@@ -16,18 +16,18 @@
 #include "net/tools/epoll_server/epoll_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Unlike the full MockEpollServer, this only lies about the time but lets
 // fd events operate normally.  Usefully when interacting with real backends
 // but wanting to skip forward in time to trigger timeouts.
-class FakeTimeEpollServer : public EpollServer {
+class FakeTimeEpollServer : public net::EpollServer {
  public:
   FakeTimeEpollServer();
   ~FakeTimeEpollServer() override;
 
-  // Replaces the EpollServer NowInUsec.
+  // Replaces the net::EpollServer NowInUsec.
   int64_t NowInUsec() const override;
 
   void set_now_in_usec(int64_t nius) { now_in_usec_ = nius; }
@@ -110,6 +110,6 @@ class MockEpollServer : public FakeTimeEpollServer {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_EPOLL_SERVER_H_

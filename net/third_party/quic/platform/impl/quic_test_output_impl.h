@@ -7,10 +7,10 @@
 
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 void QuicRecordTestOutputImpl(QuicStringPiece identifier, QuicStringPiece data);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_TEST_OUTPUT_IMPL_H_

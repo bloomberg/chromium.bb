@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/quic_transmission_info.h"
 
-namespace net {
+namespace quic {
 
 QuicTransmissionInfo::QuicTransmissionInfo()
     : encryption_level(ENCRYPTION_NONE),
@@ -44,4 +44,4 @@ QuicTransmissionInfo::QuicTransmissionInfo(const QuicTransmissionInfo& other) =
 
 QuicTransmissionInfo::~QuicTransmissionInfo() {}
 
-}  // namespace net
+}  // namespace quic

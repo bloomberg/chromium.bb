@@ -8,7 +8,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 QuicUrlImpl::QuicUrlImpl(QuicStringPiece url) : url_(url) {}
 
@@ -103,4 +103,4 @@ uint16_t QuicUrlImpl::port() const {
   return port;
 }
 
-}  // namespace net
+}  // namespace quic

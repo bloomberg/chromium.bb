@@ -13,7 +13,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 size_t GetPacketHeaderSize(QuicTransportVersion version,
                            const QuicPacketHeader& header) {
@@ -279,4 +279,4 @@ char* CopyBuffer(const SerializedPacket& packet) {
   return dst_buffer;
 }
 
-}  // namespace net
+}  // namespace quic

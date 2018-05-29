@@ -34,26 +34,30 @@ using std::string;
 namespace net {
 
 QuicClientMessageLooplNetworkHelper::QuicClientMessageLooplNetworkHelper(
-    QuicChromiumClock* clock,
-    QuicClientBase* client)
+    quic::QuicChromiumClock* clock,
+    quic::QuicClientBase* client)
     : packet_reader_started_(false), clock_(clock), client_(client) {}
 
 QuicClientMessageLooplNetworkHelper::~QuicClientMessageLooplNetworkHelper() =
     default;
 
 bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
-    QuicSocketAddress server_address,
-    QuicIpAddress bind_to_address,
+    quic::QuicSocketAddress server_address,
+    quic::QuicIpAddress bind_to_address,
     int bind_to_port) {
   auto socket = std::make_unique<UDPClientSocket>(DatagramSocket::DEFAULT_BIND,
                                                   &net_log_, NetLogSource());
 
   if (bind_to_address.IsInitialized()) {
-    client_address_ = QuicSocketAddress(bind_to_address, client_->local_port());
-  } else if (server_address.host().address_family() == IpAddressFamily::IP_V4) {
-    client_address_ = QuicSocketAddress(QuicIpAddress::Any4(), bind_to_port);
+    client_address_ =
+        quic::QuicSocketAddress(bind_to_address, client_->local_port());
+  } else if (server_address.host().address_family() ==
+             quic::IpAddressFamily::IP_V4) {
+    client_address_ =
+        quic::QuicSocketAddress(quic::QuicIpAddress::Any4(), bind_to_port);
   } else {
-    client_address_ = QuicSocketAddress(QuicIpAddress::Any6(), bind_to_port);
+    client_address_ =
+        quic::QuicSocketAddress(quic::QuicIpAddress::Any6(), bind_to_port);
   }
 
   int rc = socket->Connect(server_address.impl().socket_address());
@@ -62,13 +66,13 @@ bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     return false;
   }
 
-  rc = socket->SetReceiveBufferSize(kDefaultSocketReceiveBuffer);
+  rc = socket->SetReceiveBufferSize(quic::kDefaultSocketReceiveBuffer);
   if (rc != OK) {
     LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToShortString(rc);
     return false;
   }
 
-  rc = socket->SetSendBufferSize(kDefaultSocketReceiveBuffer);
+  rc = socket->SetSendBufferSize(quic::kDefaultSocketReceiveBuffer);
   if (rc != OK) {
     LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToShortString(rc);
     return false;
@@ -80,12 +84,14 @@ bool QuicClientMessageLooplNetworkHelper::CreateUDPSocketAndBind(
     LOG(ERROR) << "GetLocalAddress failed: " << ErrorToShortString(rc);
     return false;
   }
-  client_address_ = QuicSocketAddress(QuicSocketAddressImpl(address));
+  client_address_ =
+      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(address));
 
   socket_.swap(socket);
   packet_reader_.reset(new QuicChromiumPacketReader(
       socket_.get(), clock_, this, kQuicYieldAfterPacketsRead,
-      QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
+      quic::QuicTime::Delta::FromMilliseconds(
+          kQuicYieldAfterDurationMilliseconds),
       NetLogWithSource()));
 
   if (socket != nullptr) {
@@ -113,7 +119,7 @@ void QuicClientMessageLooplNetworkHelper::RunEventLoop() {
   base::RunLoop().RunUntilIdle();
 }
 
-QuicPacketWriter*
+quic::QuicPacketWriter*
 QuicClientMessageLooplNetworkHelper::CreateQuicPacketWriter() {
   return new QuicChromiumPacketWriter(
       socket_.get(), base::ThreadTaskRunnerHandle::Get().get());
@@ -126,15 +132,15 @@ void QuicClientMessageLooplNetworkHelper::OnReadError(
   client_->Disconnect();
 }
 
-QuicSocketAddress QuicClientMessageLooplNetworkHelper::GetLatestClientAddress()
-    const {
+quic::QuicSocketAddress
+QuicClientMessageLooplNetworkHelper::GetLatestClientAddress() const {
   return client_address_;
 }
 
 bool QuicClientMessageLooplNetworkHelper::OnPacket(
-    const QuicReceivedPacket& packet,
-    const QuicSocketAddress& local_address,
-    const QuicSocketAddress& peer_address) {
+    const quic::QuicReceivedPacket& packet,
+    const quic::QuicSocketAddress& local_address,
+    const quic::QuicSocketAddress& peer_address) {
   client_->session()->connection()->ProcessUdpPacket(local_address,
                                                      peer_address, packet);
   if (!client_->session()->connection()->connected()) {

@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 
-namespace net {
+namespace quic {
 
 QuicSimpleCryptoServerStreamHelper::QuicSimpleCryptoServerStreamHelper(
     QuicRandom* random)
@@ -28,4 +28,4 @@ bool QuicSimpleCryptoServerStreamHelper::CanAcceptClientHello(
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

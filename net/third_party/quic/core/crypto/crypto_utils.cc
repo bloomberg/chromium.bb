@@ -29,7 +29,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 // static
 std::vector<uint8_t> CryptoUtils::QhkdfExpand(
@@ -457,4 +457,4 @@ void CryptoUtils::HashHandshakeMessage(const CryptoHandshakeMessage& message,
   output->assign(reinterpret_cast<const char*>(digest), sizeof(digest));
 }
 
-}  // namespace net
+}  // namespace quic

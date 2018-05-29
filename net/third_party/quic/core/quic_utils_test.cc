@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -151,4 +151,4 @@ TEST_F(QuicUtilsTest, IsIetfPacketHeader) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

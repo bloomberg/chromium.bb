@@ -20,35 +20,37 @@ class QuicSimpleServerPacketWriter;
 // writes to the shared QuicServerPacketWriter complete.
 // This class is necessary because multiple connections can share the same
 // QuicServerPacketWriter, so it has no way to know which connection to notify.
-class QuicSimplePerConnectionPacketWriter : public QuicPacketWriter {
+class QuicSimplePerConnectionPacketWriter : public quic::QuicPacketWriter {
  public:
   // Does not take ownership of |shared_writer| or |connection|.
   QuicSimplePerConnectionPacketWriter(
       QuicSimpleServerPacketWriter* shared_writer);
   ~QuicSimplePerConnectionPacketWriter() override;
 
-  QuicPacketWriter* shared_writer() const;
-  void set_connection(QuicConnection* connection) { connection_ = connection; }
-  QuicConnection* connection() const { return connection_; }
+  quic::QuicPacketWriter* shared_writer() const;
+  void set_connection(quic::QuicConnection* connection) {
+    connection_ = connection;
+  }
+  quic::QuicConnection* connection() const { return connection_; }
 
-  // Default implementation of the QuicPacketWriter interface: Passes everything
-  // to |shared_writer_|.
-  WriteResult WritePacket(const char* buffer,
-                          size_t buf_len,
-                          const QuicIpAddress& self_address,
-                          const QuicSocketAddress& peer_address,
-                          PerPacketOptions* options) override;
+  // Default implementation of the quic::QuicPacketWriter interface: Passes
+  // everything to |shared_writer_|.
+  quic::WriteResult WritePacket(const char* buffer,
+                                size_t buf_len,
+                                const quic::QuicIpAddress& self_address,
+                                const quic::QuicSocketAddress& peer_address,
+                                quic::PerPacketOptions* options) override;
   bool IsWriteBlockedDataBuffered() const override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;
-  QuicByteCount GetMaxPacketSize(
-      const QuicSocketAddress& peer_address) const override;
+  quic::QuicByteCount GetMaxPacketSize(
+      const quic::QuicSocketAddress& peer_address) const override;
 
  private:
-  void OnWriteComplete(WriteResult result);
+  void OnWriteComplete(quic::WriteResult result);
 
   QuicSimpleServerPacketWriter* shared_writer_;  // Not owned.
-  QuicConnection* connection_;                   // Not owned.
+  quic::QuicConnection* connection_;             // Not owned.
 
   base::WeakPtrFactory<QuicSimplePerConnectionPacketWriter> weak_factory_;
 

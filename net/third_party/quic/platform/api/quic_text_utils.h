@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/impl/quic_text_utils_impl.h"
 
-namespace net {
+namespace quic {
 
 // Various utilities for manipulating text.
 class QuicTextUtils {
@@ -114,6 +114,6 @@ class QuicTextUtils {
   }
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_TEXT_UTILS_H_

@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 size_t CalculateBlockCount(size_t max_capacity_bytes) {
@@ -95,7 +95,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
   if (GetQuicReloadableFlag(quic_fast_path_on_stream_data) &&
       (bytes_received_.Empty() ||
        starting_offset >= bytes_received_.rbegin()->max() ||
-       bytes_received_.IsDisjoint(Interval<QuicStreamOffset>(
+       bytes_received_.IsDisjoint(net::Interval<QuicStreamOffset>(
            starting_offset, starting_offset + size)))) {
     // Optimization for the typical case, when all data is newly received.
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_path_on_stream_data);
@@ -104,7 +104,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
       // Extend the right edge of last interval.
       // TODO(fayang): Encapsulate this into a future version of QuicIntervalSet
       // if this is more efficient than Add.
-      const_cast<Interval<QuicPacketNumber>*>(&(*bytes_received_.rbegin()))
+      const_cast<net::Interval<QuicPacketNumber>*>(&(*bytes_received_.rbegin()))
           ->SetMax(starting_offset + size);
     } else {
       bytes_received_.Add(starting_offset, starting_offset + size);
@@ -506,4 +506,4 @@ QuicStreamOffset QuicStreamSequencerBuffer::NextExpectedByte() const {
   return bytes_received_.rbegin()->max();
 }
 
-}  //  namespace net
+}  //  namespace quic

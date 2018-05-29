@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 
-namespace net {
+namespace quic {
 
 // A connection-specific packet writer that wraps a shared writer.
 class QuicPerConnectionPacketWriter : public QuicPacketWriter {
@@ -39,6 +39,6 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
   DISALLOW_COPY_AND_ASSIGN(QuicPerConnectionPacketWriter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PER_CONNECTION_PACKET_WRITER_H_

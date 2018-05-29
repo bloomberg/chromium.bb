@@ -9,7 +9,7 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/quic_server_peer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 ServerThread::ServerThread(QuicServer* server, const QuicSocketAddress& address)
@@ -126,4 +126,4 @@ void ServerThread::ExecuteScheduledActions() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

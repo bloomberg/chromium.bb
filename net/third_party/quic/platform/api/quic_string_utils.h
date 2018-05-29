@@ -11,13 +11,13 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/impl/quic_string_utils_impl.h"
 
-namespace net {
+namespace quic {
 
 template <typename... Args>
 inline void QuicStrAppend(QuicString* output, const Args&... args) {
   QuicStrAppendImpl(output, std::forward<const Args&>(args)...);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_STRING_UTILS_H_

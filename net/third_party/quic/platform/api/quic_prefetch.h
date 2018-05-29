@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_prefetch_impl.h"
 
-namespace net {
+namespace quic {
 
 // Move data into the cache before it is read, or "prefetch" it.
 //
@@ -34,6 +34,6 @@ inline void QuicPrefetchT0(const void* addr) {
   return QuicPrefetchT0Impl(addr);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_PREFETCH_H_

@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Abstract base class for classes which allocate and delete buffers.
 class QUIC_EXPORT_PRIVATE QuicBufferAllocator {
@@ -32,6 +32,6 @@ class QUIC_EXPORT_PRIVATE QuicBufferAllocator {
   virtual void MarkAllocatorIdle() {}
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_BUFFER_ALLOCATOR_H_

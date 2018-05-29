@@ -9,7 +9,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -39,4 +39,4 @@ void QuicStreamSequencerPeer::SetFrameBufferTotalBytesRead(
   buffer_peer.set_total_bytes_read(total_bytes_read);
 }
 }  // namespace test
-}  // namespace net
+}  // namespace quic

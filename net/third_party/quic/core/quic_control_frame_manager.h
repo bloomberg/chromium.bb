@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 class QuicSession;
 
@@ -123,6 +123,6 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   QuicSession* session_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONTROL_FRAME_MANAGER_H_

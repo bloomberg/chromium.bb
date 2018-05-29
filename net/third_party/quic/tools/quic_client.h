@@ -26,7 +26,7 @@
 #include "net/third_party/quic/tools/quic_spdy_client_base.h"
 #include "net/tools/epoll_server/epoll_server.h"
 
-namespace net {
+namespace quic {
 
 class QuicServerId;
 
@@ -40,20 +40,20 @@ class QuicClient : public QuicSpdyClientBase {
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
              const ParsedQuicVersionVector& supported_versions,
-             EpollServer* epoll_server,
+             net::EpollServer* epoll_server,
              std::unique_ptr<ProofVerifier> proof_verifier);
   // This will take ownership of a passed in network primitive.
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
              const ParsedQuicVersionVector& supported_versions,
-             EpollServer* epoll_server,
+             net::EpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
              std::unique_ptr<ProofVerifier> proof_verifier);
   QuicClient(QuicSocketAddress server_address,
              const QuicServerId& server_id,
              const ParsedQuicVersionVector& supported_versions,
              const QuicConfig& config,
-             EpollServer* epoll_server,
+             net::EpollServer* epoll_server,
              std::unique_ptr<QuicClientEpollNetworkHelper> network_helper,
              std::unique_ptr<ProofVerifier> proof_verifier);
 
@@ -79,6 +79,6 @@ class QuicClient : public QuicSpdyClientBase {
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_CLIENT_H_

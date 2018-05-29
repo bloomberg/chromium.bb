@@ -34,17 +34,17 @@ using std::string;
 namespace net {
 
 QuicSimpleClient::QuicSimpleClient(
-    QuicSocketAddress server_address,
-    const QuicServerId& server_id,
-    const ParsedQuicVersionVector& supported_versions,
-    std::unique_ptr<ProofVerifier> proof_verifier)
-    : QuicSpdyClientBase(
+    quic::QuicSocketAddress server_address,
+    const quic::QuicServerId& server_id,
+    const quic::ParsedQuicVersionVector& supported_versions,
+    std::unique_ptr<quic::ProofVerifier> proof_verifier)
+    : quic::QuicSpdyClientBase(
           server_id,
           supported_versions,
-          QuicConfig(),
+          quic::QuicConfig(),
           CreateQuicConnectionHelper(),
           CreateQuicAlarmFactory(),
-          QuicWrapUnique(
+          quic::QuicWrapUnique(
               new QuicClientMessageLooplNetworkHelper(&clock_, this)),
           std::move(proof_verifier)),
       initialized_(false),
@@ -55,13 +55,14 @@ QuicSimpleClient::QuicSimpleClient(
 QuicSimpleClient::~QuicSimpleClient() {
   if (connected()) {
     session()->connection()->CloseConnection(
-        QUIC_PEER_GOING_AWAY, "Shutting down",
-        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+        quic::QUIC_PEER_GOING_AWAY, "Shutting down",
+        quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
 }
 
 QuicChromiumConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
-  return new QuicChromiumConnectionHelper(&clock_, QuicRandom::GetInstance());
+  return new QuicChromiumConnectionHelper(&clock_,
+                                          quic::QuicRandom::GetInstance());
 }
 
 QuicChromiumAlarmFactory* QuicSimpleClient::CreateQuicAlarmFactory() {

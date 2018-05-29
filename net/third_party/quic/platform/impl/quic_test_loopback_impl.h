@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/api/quic_ip_address.h"
 
-namespace net {
+namespace quic {
 
 // Returns the address family IPv4 used to run test under.
 IpAddressFamily AddressFamilyUnderTestImpl();
@@ -24,6 +24,6 @@ QuicIpAddress TestLoopbackImpl();
 // Returns an indexed IPv4 loopback address.
 QuicIpAddress TestLoopbackImpl(int index);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_TEST_LOOPBACK_IMPL_H_

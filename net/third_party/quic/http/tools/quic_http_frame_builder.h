@@ -22,7 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicHttpFrameBuilder {
@@ -98,6 +98,6 @@ class QuicHttpFrameBuilder {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_TOOLS_QUIC_HTTP_FRAME_BUILDER_H_

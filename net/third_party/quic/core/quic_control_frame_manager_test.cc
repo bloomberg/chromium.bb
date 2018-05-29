@@ -14,7 +14,7 @@ using testing::InSequence;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicControlFrameManagerPeer {
@@ -208,4 +208,4 @@ TEST_F(QuicControlFrameManagerTest, DonotSendPingWithBufferedFrames) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

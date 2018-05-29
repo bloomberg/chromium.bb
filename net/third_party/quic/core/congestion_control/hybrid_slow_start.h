@@ -23,7 +23,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE HybridSlowStart {
  public:
@@ -79,6 +79,6 @@ class QUIC_EXPORT_PRIVATE HybridSlowStart {
   DISALLOW_COPY_AND_ASSIGN(HybridSlowStart);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_HYBRID_SLOW_START_H_

@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_singleton.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -129,4 +129,4 @@ CryptoMessageParser* TlsHandshaker::crypto_message_parser() {
   return &bio_adapter_;
 }
 
-}  // namespace net
+}  // namespace quic

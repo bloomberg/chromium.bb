@@ -6,11 +6,11 @@
 
 #include "net/third_party/quic/core/quic_time.h"
 
-namespace net {
+namespace quic {
 
 QuicServerConfigProtobuf::QuicServerConfigProtobuf()
     : primary_time_(QuicWallTime::Zero().ToUNIXSeconds()), priority_(0) {}
 
 QuicServerConfigProtobuf::~QuicServerConfigProtobuf() {}
 
-}  // namespace net
+}  // namespace quic

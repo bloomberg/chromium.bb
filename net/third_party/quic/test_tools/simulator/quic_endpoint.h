@@ -17,7 +17,7 @@
 #include "net/third_party/quic/test_tools/simulator/link.h"
 #include "net/third_party/quic/test_tools/simulator/queue.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // Size of the TX queue used by the kernel/NIC.  1000 is the Linux
@@ -204,6 +204,6 @@ class QuicEndpointMultiplexer : public Endpoint,
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_QUIC_ENDPOINT_H_

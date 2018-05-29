@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -40,6 +40,6 @@ class PacketReorderingWriter : public QuicPacketWriterWrapper {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_PACKET_REORDERING_WRITER_H_

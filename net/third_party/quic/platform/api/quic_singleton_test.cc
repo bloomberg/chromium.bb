@@ -6,17 +6,17 @@
 
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
 class Foo {
  public:
-  static Foo* GetInstance() { return net::QuicSingleton<Foo>::get(); }
+  static Foo* GetInstance() { return quic::QuicSingleton<Foo>::get(); }
 
  private:
   Foo() = default;
-  friend net::QuicSingletonFriend<Foo>;
+  friend quic::QuicSingletonFriend<Foo>;
 };
 
 class QuicSingletonTest : public QuicTest {};
@@ -29,4 +29,4 @@ TEST_F(QuicSingletonTest, Get) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

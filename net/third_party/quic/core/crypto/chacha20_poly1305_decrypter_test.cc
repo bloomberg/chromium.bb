@@ -107,7 +107,7 @@ const TestVector test_vectors[] = {
 
 }  // namespace
 
-namespace net {
+namespace quic {
 namespace test {
 
 // DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
@@ -173,4 +173,4 @@ TEST_F(ChaCha20Poly1305DecrypterTest, Decrypt) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

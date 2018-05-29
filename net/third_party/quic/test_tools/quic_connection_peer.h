@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 struct QuicPacketHeader;
 class QuicAlarm;
@@ -133,6 +133,6 @@ class QuicConnectionPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_CONNECTION_PEER_H_

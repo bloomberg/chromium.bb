@@ -18,7 +18,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 template <uint32_t ArenaSize>
 class QuicOneBlockArena {
@@ -74,6 +74,6 @@ QuicArenaScopedPtr<T> QuicOneBlockArena<ArenaSize>::New(Args&&... args) {
                                QuicArenaScopedPtr<T>::ConstructFrom::kArena);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_ONE_BLOCK_ARENA_H_

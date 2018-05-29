@@ -15,7 +15,7 @@
 #include "net/third_party/quic/http/quic_http_structures.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 namespace test {
 class QuicHttpWindowUpdateQuicHttpPayloadDecoderPeer;
 }  // namespace test
@@ -41,6 +41,6 @@ class QUIC_EXPORT_PRIVATE QuicHttpWindowUpdateQuicHttpPayloadDecoder {
   QuicHttpWindowUpdateFields window_update_fields_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_PAYLOAD_DECODERS_QUIC_HTTP_WINDOW_UPDATE_PAYLOAD_DECODER_H_

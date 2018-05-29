@@ -9,7 +9,7 @@
 
 #include <memory>
 
-namespace net {
+namespace quic {
 
 // Used by platform specific QuicAlarms. For example, WebRTC will use it to set
 // and cancel an alarm. When setting an alarm, the task runner will schedule a
@@ -46,6 +46,6 @@ class QuartcTaskRunnerInterface {
                                                   uint64_t delay_ms) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_TASK_RUNNER_INTERFACE_H_

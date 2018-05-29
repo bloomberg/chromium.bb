@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_server_session_base.h"
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
 
-namespace net {
+namespace quic {
 
 class QuicSimpleDispatcher : public QuicDispatcher {
  public:
@@ -45,6 +45,6 @@ class QuicSimpleDispatcher : public QuicDispatcher {
   std::map<QuicRstStreamErrorCode, int> rst_error_map_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_DISPATCHER_H_

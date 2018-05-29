@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_buffer_allocator.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE SimpleBufferAllocator : public QuicBufferAllocator {
  public:
@@ -17,6 +17,6 @@ class QUIC_EXPORT_PRIVATE SimpleBufferAllocator : public QuicBufferAllocator {
   void Delete(char* buffer) override;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SIMPLE_BUFFER_ALLOCATOR_H_

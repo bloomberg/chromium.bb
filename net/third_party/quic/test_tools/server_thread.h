@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/tools/quic_server.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Simple wrapper class to run QuicServer in a dedicated thread.
@@ -85,6 +85,6 @@ class ServerThread : public base::SimpleThread {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SERVER_THREAD_H_

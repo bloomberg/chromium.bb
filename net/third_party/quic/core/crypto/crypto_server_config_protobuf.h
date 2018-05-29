@@ -18,7 +18,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // QuicServerConfigProtobuf contains QUIC server config block and the private
 // keys needed to prove ownership.
@@ -110,6 +110,6 @@ class QUIC_EXPORT_PRIVATE QuicServerConfigProtobuf {
   DISALLOW_COPY_AND_ASSIGN(QuicServerConfigProtobuf);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CRYPTO_SERVER_CONFIG_PROTOBUF_H_

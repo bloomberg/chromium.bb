@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class WindowedFilterTest : public QuicTest {
@@ -384,4 +384,4 @@ TEST_F(WindowedFilterTest, ExpireCounterBasedMax) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

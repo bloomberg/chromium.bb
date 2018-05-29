@@ -7,11 +7,11 @@
 
 #include "net/third_party/quic/platform/impl/quic_optional_impl.h"
 
-namespace net {
+namespace quic {
 
 template <typename T>
 using QuicOptional = QuicOptionalImpl<T>;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_OPTIONAL_H_

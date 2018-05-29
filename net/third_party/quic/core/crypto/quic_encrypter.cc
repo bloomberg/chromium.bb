@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 
-namespace net {
+namespace quic {
 
 // static
 std::unique_ptr<QuicEncrypter> QuicEncrypter::Create(QuicTag algorithm) {
@@ -47,4 +47,4 @@ std::unique_ptr<QuicEncrypter> QuicEncrypter::CreateFromCipherSuite(
   }
 }
 
-}  // namespace net
+}  // namespace quic

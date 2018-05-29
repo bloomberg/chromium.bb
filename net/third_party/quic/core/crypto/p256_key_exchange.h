@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
-namespace net {
+namespace quic {
 
 // P256KeyExchange implements a KeyExchange using elliptic-curve
 // Diffie-Hellman on NIST P-256.
@@ -62,6 +62,6 @@ class QUIC_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   DISALLOW_COPY_AND_ASSIGN(P256KeyExchange);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_P256_KEY_EXCHANGE_H_

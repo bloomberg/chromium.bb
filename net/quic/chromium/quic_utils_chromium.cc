@@ -10,12 +10,12 @@
 
 namespace net {
 
-QuicTagVector ParseQuicConnectionOptions(
+quic::QuicTagVector ParseQuicConnectionOptions(
     const std::string& connection_options) {
-  QuicTagVector options;
+  quic::QuicTagVector options;
   // Tokens are expected to be no more than 4 characters long, but
   // handle overflow gracefully.
-  for (const QuicStringPiece& token :
+  for (const quic::QuicStringPiece& token :
        base::SplitStringPiece(connection_options, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_ALL)) {
     uint32_t option = 0;

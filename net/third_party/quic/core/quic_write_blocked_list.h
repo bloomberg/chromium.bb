@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/spdy/core/priority_write_scheduler.h"
 
-namespace net {
+namespace quic {
 
 // Keeps tracks of the QUIC streams that have data to write, sorted by
 // priority.  QUIC stream priority order is:
@@ -261,6 +261,6 @@ class QUIC_EXPORT_PRIVATE QuicWriteBlockedList {
   DISALLOW_COPY_AND_ASSIGN(QuicWriteBlockedList);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_WRITE_BLOCKED_LIST_H_

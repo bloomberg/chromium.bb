@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-namespace net {
+namespace quic {
 
 QuicVersionManager::QuicVersionManager(
     ParsedQuicVersionVector supported_versions)
@@ -72,4 +72,4 @@ void QuicVersionManager::RefilterSupportedVersions() {
       quic_reloadable_flag_quic_version_manager_dedupe_transport_versions);
 }
 
-}  // namespace net
+}  // namespace quic

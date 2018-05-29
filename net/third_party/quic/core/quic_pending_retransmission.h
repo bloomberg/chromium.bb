@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Struct to store the pending retransmission information.
 struct QUIC_EXPORT_PRIVATE QuicPendingRetransmission {
@@ -49,6 +49,6 @@ struct QUIC_EXPORT_PRIVATE QuicPendingRetransmission {
   QuicPacketNumberLength packet_number_length;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PENDING_RETRANSMISSION_H_

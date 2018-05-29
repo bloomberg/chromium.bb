@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class TransportParametersTest : public QuicTest {};
@@ -398,4 +398,4 @@ TEST_F(TransportParametersTest, ParseServerParametersWithInvalidParams) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

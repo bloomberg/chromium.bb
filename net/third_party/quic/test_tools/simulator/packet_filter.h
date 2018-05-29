@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/test_tools/simulator/port.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // Packet filter allows subclasses to filter out the packets that enter the
@@ -71,5 +71,5 @@ class PacketFilter : public Endpoint, public ConstrainedPortInterface {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_PACKET_FILTER_H_

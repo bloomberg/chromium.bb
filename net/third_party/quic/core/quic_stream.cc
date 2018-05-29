@@ -15,7 +15,7 @@
 
 using spdy::SpdyPriority;
 
-namespace net {
+namespace quic {
 
 #define ENDPOINT \
   (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
@@ -850,4 +850,4 @@ void QuicStream::WritePendingRetransmission() {
   }
 }
 
-}  // namespace net
+}  // namespace quic

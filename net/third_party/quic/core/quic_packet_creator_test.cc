@@ -32,7 +32,7 @@ using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -1134,4 +1134,4 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

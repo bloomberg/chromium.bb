@@ -22,7 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 class QuicHttpDecodeBufferSubset;
 
 class QUIC_EXPORT_PRIVATE QuicHttpDecodeBuffer {
@@ -197,6 +197,6 @@ class QUIC_EXPORT_PRIVATE QuicHttpDecodeBufferSubset
   DISALLOW_COPY_AND_ASSIGN(QuicHttpDecodeBufferSubset);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_DECODE_BUFFER_H_

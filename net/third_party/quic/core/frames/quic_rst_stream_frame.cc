@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_rst_stream_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicRstStreamFrame::QuicRstStreamFrame()
     : stream_id(0), error_code(QUIC_STREAM_NO_ERROR), byte_offset(0) {}
@@ -35,4 +35,4 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

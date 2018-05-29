@@ -13,7 +13,7 @@
 #include "net/third_party/quic/core/quic_stream_sequencer.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QuicStream;
 class QuicSession;
@@ -56,6 +56,6 @@ class QuicStreamPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_STREAM_PEER_H_

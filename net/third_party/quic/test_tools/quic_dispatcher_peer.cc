@@ -7,7 +7,7 @@
 #include "net/third_party/quic/core/quic_dispatcher.h"
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -106,4 +106,4 @@ void QuicDispatcherPeer::RestorePerPacketContext(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 using std::string;
@@ -164,4 +164,4 @@ TEST_F(QuicTraceVisitorTest, TransportState) {
 }
 
 }  // namespace
-}  // namespace net
+}  // namespace quic

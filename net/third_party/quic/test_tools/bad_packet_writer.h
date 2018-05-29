@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 // This packet writer allows causing packet write error with specified error
@@ -31,6 +31,6 @@ class BadPacketWriter : public QuicPacketWriterWrapper {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_BAD_PACKET_WRITER_H_

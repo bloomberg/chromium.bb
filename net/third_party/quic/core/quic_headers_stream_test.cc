@@ -39,7 +39,7 @@ using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class MockQuicHpackDebugVisitor : public QuicHpackDebugVisitor {
@@ -912,4 +912,4 @@ TEST_P(QuicHeadersStreamTest, HeadersGetAckedMultipleTimes) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -24,7 +24,7 @@
 #include "net/third_party/quic/test_tools/simulator/simulator.h"
 #include "net/third_party/quic/test_tools/simulator/switch.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Use the initial CWND of 10, as 32 is too much for the test network.
@@ -1076,4 +1076,4 @@ TEST_F(BbrSenderTest, ProbeRTTMinCWND1) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

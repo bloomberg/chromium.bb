@@ -12,7 +12,7 @@
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_packets.h"
 
-namespace net {
+namespace quic {
 
 struct QuicAckFrame;
 
@@ -59,6 +59,6 @@ class SimpleQuicFramer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMPLE_QUIC_FRAMER_H_

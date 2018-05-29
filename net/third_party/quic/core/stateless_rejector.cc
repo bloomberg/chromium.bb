@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 class StatelessRejector::ValidateCallback
     : public ValidateClientHelloResultCallback {
@@ -158,4 +158,4 @@ void StatelessRejector::ProcessClientHelloDone(
   done_cb->Run(std::move(rejector));
 }
 
-}  // namespace net
+}  // namespace quic

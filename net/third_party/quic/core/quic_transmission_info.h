@@ -12,7 +12,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Stores details of a single sent packet.
 struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
@@ -60,6 +60,6 @@ struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
 // 64-bit iOS resulted in an 88-byte struct that is greater than the 84-byte
 // limit on other platforms.  Removing per ianswett's request.
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TRANSMISSION_INFO_H_

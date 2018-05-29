@@ -28,8 +28,8 @@ namespace test {
 class QuicTestPacketMaker {
  public:
   struct Http2StreamDependency {
-    QuicStreamId stream_id;
-    QuicStreamId parent_stream_id;
+    quic::QuicStreamId stream_id;
+    quic::QuicStreamId parent_stream_id;
     spdy::SpdyPriority spdy_priority;
   };
 
@@ -39,222 +39,224 @@ class QuicTestPacketMaker {
   // stream id set to the |parent_stream_id| param of MakeRequestHeaders...().
   // Otherwise, headers are constructed with the exclusive flag set to false and
   // the parent stream ID set to 0 (ignoring the |parent_stream_id| param).
-  QuicTestPacketMaker(QuicTransportVersion version,
-                      QuicConnectionId connection_id,
-                      MockClock* clock,
+  QuicTestPacketMaker(quic::QuicTransportVersion version,
+                      quic::QuicConnectionId connection_id,
+                      quic::MockClock* clock,
                       const std::string& host,
-                      Perspective perspective,
+                      quic::Perspective perspective,
                       bool client_headers_include_h2_stream_dependency);
   ~QuicTestPacketMaker();
 
   void set_hostname(const std::string& host);
-  std::unique_ptr<QuicReceivedPacket> MakeConnectivityProbingPacket(
-      QuicPacketNumber num,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeConnectivityProbingPacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicByteCount packet_length);
-  std::unique_ptr<QuicReceivedPacket> MakePingPacket(QuicPacketNumber num,
-                                                     bool include_version);
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndPingPacket(
-      QuicPacketNumber num,
+      quic::QuicByteCount packet_length);
+  std::unique_ptr<quic::QuicReceivedPacket> MakePingPacket(
+      quic::QuicPacketNumber num,
+      bool include_version);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPingPacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked);
-  std::unique_ptr<QuicReceivedPacket> MakeRstPacket(
-      QuicPacketNumber num,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRstPacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicStreamId stream_id,
-      QuicRstStreamErrorCode error_code);
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code);
 
-  std::unique_ptr<QuicReceivedPacket> MakeRstPacket(
-      QuicPacketNumber num,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRstPacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicStreamId stream_id,
-      QuicRstStreamErrorCode error_code,
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code,
       size_t bytes_written);
 
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndRstPacket(
-      QuicPacketNumber num,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicStreamId stream_id,
-      QuicRstStreamErrorCode error_code,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
       bool send_feedback);
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndRstPacket(
-      QuicPacketNumber num,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicStreamId stream_id,
-      QuicRstStreamErrorCode error_code,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
       bool send_feedback,
       size_t bytes_written);
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndConnectionClosePacket(
-      QuicPacketNumber num,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicTime::Delta delta_time_largest_observed,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
-      QuicErrorCode quic_error,
+      quic::QuicTime::Delta delta_time_largest_observed,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
+      quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
-  std::unique_ptr<QuicReceivedPacket> MakeConnectionClosePacket(
-      QuicPacketNumber num,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeConnectionClosePacket(
+      quic::QuicPacketNumber num,
       bool include_version,
-      QuicErrorCode quic_error,
+      quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
-  std::unique_ptr<QuicReceivedPacket> MakeGoAwayPacket(
-      QuicPacketNumber num,
-      QuicErrorCode error_code,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeGoAwayPacket(
+      quic::QuicPacketNumber num,
+      quic::QuicErrorCode error_code,
       std::string reason_phrase);
-  std::unique_ptr<QuicReceivedPacket> MakeAckPacket(
-      QuicPacketNumber packet_number,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
       bool send_feedback);
-  std::unique_ptr<QuicReceivedPacket> MakeAckPacket(
-      QuicPacketNumber packet_number,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
       bool send_feedback,
-      QuicTime::Delta ack_delay_time);
-  std::unique_ptr<QuicReceivedPacket> MakeDataPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+      quic::QuicTime::Delta ack_delay_time);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      QuicStreamOffset offset,
-      QuicStringPiece data);
-  std::unique_ptr<QuicReceivedPacket> MakeForceHolDataPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+      quic::QuicStreamOffset offset,
+      quic::QuicStringPiece data);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeForceHolDataPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      QuicStreamOffset* offset,
-      QuicStringPiece data);
-  std::unique_ptr<QuicReceivedPacket> MakeMultipleDataFramesPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+      quic::QuicStreamOffset* offset,
+      quic::QuicStringPiece data);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeMultipleDataFramesPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      QuicStreamOffset offset,
+      quic::QuicStreamOffset offset,
       const std::vector<std::string>& data_writes);
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndDataPacket(
-      QuicPacketNumber packet_number,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndDataPacket(
+      quic::QuicPacketNumber packet_number,
       bool include_version,
-      QuicStreamId stream_id,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
+      quic::QuicStreamId stream_id,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
       bool fin,
-      QuicStreamOffset offset,
-      QuicStringPiece data);
+      quic::QuicStreamOffset offset,
+      quic::QuicStringPiece data);
 
-  std::unique_ptr<QuicReceivedPacket>
+  std::unique_ptr<quic::QuicReceivedPacket>
   MakeRequestHeadersAndMultipleDataFramesPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
       spdy::SpdyHeaderBlock headers,
-      QuicStreamId parent_stream_id,
-      QuicStreamOffset* header_stream_offset,
+      quic::QuicStreamId parent_stream_id,
+      quic::QuicStreamOffset* header_stream_offset,
       size_t* spdy_headers_frame_length,
       const std::vector<std::string>& data_writes);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
   // the SPDY headers frame created for this packet.
-  std::unique_ptr<QuicReceivedPacket> MakeRequestHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRequestHeadersPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
       spdy::SpdyHeaderBlock headers,
-      QuicStreamId parent_stream_id,
+      quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length);
 
-  std::unique_ptr<QuicReceivedPacket> MakeRequestHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRequestHeadersPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
       spdy::SpdyHeaderBlock headers,
-      QuicStreamId parent_stream_id,
+      quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
-      QuicStreamOffset* offset);
+      quic::QuicStreamOffset* offset);
 
   // Saves the serialized QUIC stream data in |stream_data|.
-  std::unique_ptr<QuicReceivedPacket> MakeRequestHeadersPacketAndSaveData(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRequestHeadersPacketAndSaveData(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
       spdy::SpdyHeaderBlock headers,
-      QuicStreamId parent_stream_id,
+      quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
-      QuicStreamOffset* offset,
+      quic::QuicStreamOffset* offset,
       std::string* stream_data);
 
-  std::unique_ptr<QuicReceivedPacket> MakeRequestHeadersAndRstPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRequestHeadersAndRstPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyPriority priority,
       spdy::SpdyHeaderBlock headers,
-      QuicStreamId parent_stream_id,
+      quic::QuicStreamId parent_stream_id,
       size_t* spdy_headers_frame_length,
-      QuicStreamOffset* header_stream_offset,
-      QuicRstStreamErrorCode error_code,
+      quic::QuicStreamOffset* header_stream_offset,
+      quic::QuicRstStreamErrorCode error_code,
       size_t bytes_written);
 
   // Convenience method for calling MakeRequestHeadersPacket with nullptr for
   // |spdy_headers_frame_length|.
-  std::unique_ptr<QuicReceivedPacket>
-  MakeRequestHeadersPacketWithOffsetTracking(QuicPacketNumber packet_number,
-                                             QuicStreamId stream_id,
-                                             bool should_include_version,
-                                             bool fin,
-                                             spdy::SpdyPriority priority,
-                                             spdy::SpdyHeaderBlock headers,
-                                             QuicStreamId parent_stream_id,
-                                             QuicStreamOffset* offset);
+  std::unique_ptr<quic::QuicReceivedPacket>
+  MakeRequestHeadersPacketWithOffsetTracking(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
+      quic::QuicStreamId parent_stream_id,
+      quic::QuicStreamOffset* offset);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
   // the SPDY headers frame created for this packet.
-  std::unique_ptr<QuicReceivedPacket> MakePushPromisePacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
-      QuicStreamId promised_stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakePushPromisePacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
+      quic::QuicStreamId promised_stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyHeaderBlock headers,
       size_t* spdy_headers_frame_length,
-      QuicStreamOffset* offset);
+      quic::QuicStreamOffset* offset);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
   // the SPDY headers frame created for this packet.
-  std::unique_ptr<QuicReceivedPacket> MakeResponseHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeResponseHeadersPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyHeaderBlock headers,
       size_t* spdy_headers_frame_length,
-      QuicStreamOffset* offset);
+      quic::QuicStreamOffset* offset);
 
-  std::unique_ptr<QuicReceivedPacket> MakeResponseHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
+  std::unique_ptr<quic::QuicReceivedPacket> MakeResponseHeadersPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       spdy::SpdyHeaderBlock headers,
@@ -262,47 +264,49 @@ class QuicTestPacketMaker {
 
   // Convenience method for calling MakeResponseHeadersPacket with nullptr for
   // |spdy_headers_frame_length|.
-  std::unique_ptr<QuicReceivedPacket>
-  MakeResponseHeadersPacketWithOffsetTracking(QuicPacketNumber packet_number,
-                                              QuicStreamId stream_id,
-                                              bool should_include_version,
-                                              bool fin,
-                                              spdy::SpdyHeaderBlock headers,
-                                              QuicStreamOffset* offset);
+  std::unique_ptr<quic::QuicReceivedPacket>
+  MakeResponseHeadersPacketWithOffsetTracking(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      spdy::SpdyHeaderBlock headers,
+      quic::QuicStreamOffset* offset);
 
   // Creates a packet containing the initial SETTINGS frame, and saves the
   // headers stream offset into |offset|.
-  std::unique_ptr<QuicReceivedPacket> MakeInitialSettingsPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamOffset* offset);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeInitialSettingsPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicStreamOffset* offset);
 
   // Same as above, but also saves the serialized QUIC stream data in
   // |stream_data|.
-  std::unique_ptr<QuicReceivedPacket> MakeInitialSettingsPacketAndSaveData(
-      QuicPacketNumber packet_number,
-      QuicStreamOffset* offset,
-      std::string* stream_data);
+  std::unique_ptr<quic::QuicReceivedPacket>
+  MakeInitialSettingsPacketAndSaveData(quic::QuicPacketNumber packet_number,
+                                       quic::QuicStreamOffset* offset,
+                                       std::string* stream_data);
 
-  std::unique_ptr<QuicReceivedPacket> MakePriorityPacket(
-      QuicPacketNumber packet_number,
+  std::unique_ptr<quic::QuicReceivedPacket> MakePriorityPacket(
+      quic::QuicPacketNumber packet_number,
       bool should_include_version,
-      QuicStreamId id,
-      QuicStreamId parent_stream_id,
+      quic::QuicStreamId id,
+      quic::QuicStreamId parent_stream_id,
       spdy::SpdyPriority priority,
-      QuicStreamOffset* offset);
+      quic::QuicStreamOffset* offset);
 
-  std::unique_ptr<QuicReceivedPacket> MakeAckAndMultiplePriorityFramesPacket(
-      QuicPacketNumber packet_number,
+  std::unique_ptr<quic::QuicReceivedPacket>
+  MakeAckAndMultiplePriorityFramesPacket(
+      quic::QuicPacketNumber packet_number,
       bool should_include_version,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber smallest_received,
-      QuicPacketNumber least_unacked,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
       const std::vector<Http2StreamDependency>& priority_frames,
-      QuicStreamOffset* offset);
+      quic::QuicStreamOffset* offset);
 
-  void SetEncryptionLevel(EncryptionLevel level);
+  void SetEncryptionLevel(quic::EncryptionLevel level);
 
-  void SetLongHeaderType(QuicLongHeaderType type);
+  void SetLongHeaderType(quic::QuicLongHeaderType type);
 
   spdy::SpdyHeaderBlock GetRequestHeaders(const std::string& method,
                                           const std::string& scheme,
@@ -316,36 +320,38 @@ class QuicTestPacketMaker {
                                            const std::string& alt_svc);
 
  private:
-  std::unique_ptr<QuicReceivedPacket> MakePacket(const QuicPacketHeader& header,
-                                                 const QuicFrame& frame);
-  std::unique_ptr<QuicReceivedPacket> MakeMultipleFramesPacket(
-      const QuicPacketHeader& header,
-      const QuicFrames& frames);
+  std::unique_ptr<quic::QuicReceivedPacket> MakePacket(
+      const quic::QuicPacketHeader& header,
+      const quic::QuicFrame& frame);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeMultipleFramesPacket(
+      const quic::QuicPacketHeader& header,
+      const quic::QuicFrames& frames);
 
-  void InitializeHeader(QuicPacketNumber packet_number,
+  void InitializeHeader(quic::QuicPacketNumber packet_number,
                         bool should_include_version);
 
-  spdy::SpdySerializedFrame MakeSpdyHeadersFrame(QuicStreamId stream_id,
-                                                 bool fin,
-                                                 spdy::SpdyPriority priority,
-                                                 spdy::SpdyHeaderBlock headers,
-                                                 QuicStreamId parent_stream_id);
+  spdy::SpdySerializedFrame MakeSpdyHeadersFrame(
+      quic::QuicStreamId stream_id,
+      bool fin,
+      spdy::SpdyPriority priority,
+      spdy::SpdyHeaderBlock headers,
+      quic::QuicStreamId parent_stream_id);
 
   bool ShouldIncludeVersion(bool include_version) const;
 
-  QuicPacketNumberLength GetPacketNumberLength() const;
+  quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
-  QuicTransportVersion version_;
-  QuicConnectionId connection_id_;
-  MockClock* clock_;  // Owned by QuicStreamFactory.
+  quic::QuicTransportVersion version_;
+  quic::QuicConnectionId connection_id_;
+  quic::MockClock* clock_;  // Owned by QuicStreamFactory.
   std::string host_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
-  MockRandom random_generator_;
-  QuicPacketHeader header_;
-  Perspective perspective_;
-  EncryptionLevel encryption_level_;
-  QuicLongHeaderType long_header_type_;
+  quic::test::MockRandom random_generator_;
+  quic::QuicPacketHeader header_;
+  quic::Perspective perspective_;
+  quic::EncryptionLevel encryption_level_;
+  quic::QuicLongHeaderType long_header_type_;
 
   // If true, generated request headers will include non-default HTTP2 stream
   // dependency info.

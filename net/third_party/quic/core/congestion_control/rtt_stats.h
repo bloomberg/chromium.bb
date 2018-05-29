@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class RttStatsPeer;
@@ -105,6 +105,6 @@ class QUIC_EXPORT_PRIVATE RttStats {
   DISALLOW_COPY_AND_ASSIGN(RttStats);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_RTT_STATS_H_

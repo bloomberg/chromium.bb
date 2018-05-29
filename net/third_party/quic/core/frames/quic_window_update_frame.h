@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 
-namespace net {
+namespace quic {
 
 // Flow control updates per-stream and at the connection level.
 // Based on SPDY's WINDOW_UPDATE frame, but uses an absolute byte offset rather
@@ -39,6 +39,6 @@ struct QUIC_EXPORT_PRIVATE QuicWindowUpdateFrame : public QuicControlFrame {
   QuicStreamOffset byte_offset;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_WINDOW_UPDATE_FRAME_H_

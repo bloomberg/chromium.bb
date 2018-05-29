@@ -11,7 +11,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/test_tools/simulator/actor.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 struct Packet {
@@ -61,6 +61,6 @@ class Endpoint : public Actor {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_PORT_H_

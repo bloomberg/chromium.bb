@@ -17,7 +17,7 @@
 #include "net/third_party/quic/quartc/quartc_session_visitor_interface.h"
 #include "net/third_party/quic/quartc/quartc_stream_interface.h"
 
-namespace net {
+namespace quic {
 
 // Send and receive packets, like a virtual UDP socket. For example, this
 // could be implemented by WebRTC's IceTransport.
@@ -146,6 +146,6 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
   virtual void RemoveSessionVisitor(QuartcSessionVisitor* visitor) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_SESSION_INTERFACE_H_

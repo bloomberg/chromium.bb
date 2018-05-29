@@ -14,7 +14,7 @@
 #include "net/base/interval_set.h"
 #include "net/base/linked_hash_map.h"
 
-namespace net {
+namespace quic {
 
 // TODO(mpw): s/std::unordered_map/gtl::node_hash_map/ once node_hash_map is
 //   PG3-compatible.
@@ -36,7 +36,7 @@ using QuicUnorderedSetImpl = std::unordered_set<Key, Hash, Eq, Alloc>;
 
 // A map which offers insertion-ordered iteration.
 template <typename Key, typename Value>
-using QuicLinkedHashMapImpl = linked_hash_map<Key, Value>;
+using QuicLinkedHashMapImpl = net::linked_hash_map<Key, Value>;
 
 // A map which is faster than (for example) hash_map for a certain number of
 // unique key-value-pair elements, and upgrades itself to unordered_map when
@@ -47,7 +47,7 @@ using QuicSmallMapImpl = base::small_map<std::unordered_map<Key, Value>, Size>;
 // A data structure used to represent a sorted set of non-empty, non-adjacent,
 // and mutually disjoint intervals.
 template <typename T>
-using QuicIntervalSetImpl = IntervalSet<T>;
+using QuicIntervalSetImpl = net::IntervalSet<T>;
 
 // Represents a simple queue which may be backed by a list or
 // a flat circular buffer.
@@ -63,6 +63,6 @@ using QuicQueueImpl = base::queue<T>;
 template <typename T>
 using QuicDequeImpl = base::circular_deque<T>;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_CONTAINERS_IMPL_H_

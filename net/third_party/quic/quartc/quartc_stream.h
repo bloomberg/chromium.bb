@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/quartc/quartc_stream_interface.h"
 
-namespace net {
+namespace quic {
 
 // Implements a QuartcStreamInterface using a QuicStream.
 class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream,
@@ -56,6 +56,6 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream,
   QuartcStreamInterface::Delegate* delegate_ = nullptr;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_STREAM_H_

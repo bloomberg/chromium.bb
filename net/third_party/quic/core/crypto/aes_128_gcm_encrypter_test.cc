@@ -152,7 +152,7 @@ const TestVector* const test_group_array[] = {
 
 }  // namespace
 
-namespace net {
+namespace quic {
 namespace test {
 
 // EncryptWithNonce wraps the |Encrypt| method of |encrypter| to allow passing
@@ -255,4 +255,4 @@ TEST_F(Aes128GcmEncrypterTest, GetCiphertextSize) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -15,12 +15,13 @@ namespace test {
 
 TEST(QuicSimpleClientTest, Initialize) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  QuicSocketAddress server_address(QuicIpAddress::Loopback4(), 80);
-  QuicServerId server_id("hostname", server_address.port(),
-                         PRIVACY_MODE_DISABLED);
-  ParsedQuicVersionVector versions = AllSupportedVersions();
-  QuicSimpleClient client(server_address, server_id, versions,
-                          crypto_test_utils::ProofVerifierForTesting());
+  quic::QuicSocketAddress server_address(quic::QuicIpAddress::Loopback4(), 80);
+  quic::QuicServerId server_id("hostname", server_address.port(),
+                               PRIVACY_MODE_DISABLED);
+  quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
+  QuicSimpleClient client(
+      server_address, server_id, versions,
+      quic::test::crypto_test_utils::ProofVerifierForTesting());
   EXPECT_TRUE(client.Initialize());
 }
 

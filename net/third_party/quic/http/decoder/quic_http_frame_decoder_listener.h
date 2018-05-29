@@ -34,7 +34,7 @@
 #include "net/third_party/quic/http/quic_http_constants.h"
 #include "net/third_party/quic/http/quic_http_structures.h"
 
-namespace net {
+namespace quic {
 
 // TODO(jamessynge): Consider sorting the methods by frequency of call, if that
 // helps at all.
@@ -359,6 +359,6 @@ class QuicHttpFrameDecoderNoOpListener : public QuicHttpFrameDecoderListener {
 static_assert(!std::is_abstract<QuicHttpFrameDecoderNoOpListener>(),
               "QuicHttpFrameDecoderNoOpListener ought to be concrete.");
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_FRAME_DECODER_LISTENER_H_

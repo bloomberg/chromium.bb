@@ -9,10 +9,10 @@
 #include "net/third_party/quic/platform/api/quic_clock.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // Clock to efficiently retrieve an approximately accurate time from an
-// EpollServer.
+// net::EpollServer.
 class QUIC_EXPORT_PRIVATE QuicChromiumClock : public QuicClock {
  public:
   static QuicChromiumClock* GetInstance();
@@ -29,6 +29,6 @@ class QUIC_EXPORT_PRIVATE QuicChromiumClock : public QuicClock {
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClock);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_CHROMIUM_CLOCK_H_

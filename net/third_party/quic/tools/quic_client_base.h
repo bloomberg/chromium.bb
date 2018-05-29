@@ -19,7 +19,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class ProofVerifier;
 class QuicServerId;
@@ -356,6 +356,6 @@ class QuicClientBase {
   DISALLOW_COPY_AND_ASSIGN(QuicClientBase);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_CLIENT_BASE_H_

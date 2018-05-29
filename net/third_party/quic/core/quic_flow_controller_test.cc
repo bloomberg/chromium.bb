@@ -16,7 +16,7 @@
 
 using testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Receive window auto-tuning uses RTT in its logic.
@@ -391,4 +391,4 @@ TEST_F(QuicFlowControllerTest, ReceivingBytesNormalNoAutoTune) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 
-namespace net {
+namespace quic {
 
 QuicHeadersStream::CompressedHeaderInfo::CompressedHeaderInfo(
     QuicStreamOffset headers_stream_offset,
@@ -149,4 +149,4 @@ void QuicHeadersStream::OnDataBuffered(
   }
 }
 
-}  // namespace net
+}  // namespace quic

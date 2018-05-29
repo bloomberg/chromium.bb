@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // Serializes and parses a socket address (IP address and port), to be used in
 // the kCADR tag in the ServerHello handshake message and the Public Reset
@@ -37,6 +37,6 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressCoder {
   DISALLOW_COPY_AND_ASSIGN(QuicSocketAddressCoder);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SOCKET_ADDRESS_CODER_H_

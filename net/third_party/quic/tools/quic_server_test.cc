@@ -23,7 +23,7 @@
 
 using ::testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 
 namespace {
@@ -85,8 +85,7 @@ class TestQuicServer : public QuicServer {
 class QuicServerEpollInTest : public QuicTest {
  public:
   QuicServerEpollInTest()
-      : port_(net::test::kTestPort),
-        server_address_(QuicIpAddress::Loopback4(), port_) {}
+      : port_(kTestPort), server_address_(QuicIpAddress::Loopback4(), port_) {}
 
   void StartListening() {
     server_.CreateUDPSocketAndListen(server_address_);
@@ -179,7 +178,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
-  EpollServer eps_;
+  net::EpollServer eps_;
   QuicMemoryCacheBackend quic_simple_server_backend_;
   MockQuicDispatcher dispatcher_;
 };
@@ -209,4 +208,4 @@ TEST_F(QuicServerDispatchPacketTest, DispatchPacket) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

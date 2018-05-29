@@ -194,7 +194,7 @@ const TestVector* const test_group_array[] = {
 
 }  // namespace
 
-namespace net {
+namespace quic {
 namespace test {
 
 // DecryptWithNonce wraps the |Decrypt| method of |decrypter| to allow passing
@@ -272,4 +272,4 @@ TEST_F(Aes128GcmDecrypterTest, Decrypt) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

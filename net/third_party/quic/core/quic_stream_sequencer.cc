@@ -19,7 +19,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 QuicStreamSequencer::QuicStreamSequencer(QuicStream* quic_stream)
     : stream_(quic_stream),
@@ -243,4 +243,4 @@ const QuicString QuicStreamSequencer::DebugString() const {
   // clang-format on
 }
 
-}  // namespace net
+}  // namespace quic

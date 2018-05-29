@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // QuartcSessionVisitor observes internals of a Quartc/QUIC session for the
 // purpose of gathering metrics or debug information.
@@ -48,6 +48,6 @@ class QUIC_EXPORT_PRIVATE QuartcSessionVisitor {
       const ParsedQuicVersion& version) {}
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_SESSION_VISITOR_INTERFACE_H_

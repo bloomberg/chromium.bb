@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
 
-namespace net {
+namespace quic {
 
 QuicSimpleDispatcher::QuicSimpleDispatcher(
     const QuicConfig& config,
@@ -63,4 +63,4 @@ QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
   return session;
 }
 
-}  // namespace net
+}  // namespace quic

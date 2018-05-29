@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_lru_cache_impl.h"
 
-namespace net {
+namespace quic {
 
 // A LRU cache that maps from type Key to Value* in QUIC.
 // This cache CANNOT be shared by multiple threads (even with locks) because
@@ -47,6 +47,6 @@ class QuicLRUCache {
   DISALLOW_COPY_AND_ASSIGN(QuicLRUCache);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_LRU_CACHE_H_

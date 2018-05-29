@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/quartc/quartc_packet_writer.h"
 
-namespace net {
+namespace quic {
 
 QuartcPacketWriter::QuartcPacketWriter(QuartcPacketTransport* packet_transport,
                                        QuicByteCount max_packet_size)
@@ -48,4 +48,4 @@ void QuartcPacketWriter::SetWritable() {
   writable_ = true;
 }
 
-}  // namespace net
+}  // namespace quic

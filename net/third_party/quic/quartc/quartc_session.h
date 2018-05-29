@@ -16,7 +16,7 @@
 #include "net/third_party/quic/quartc/quartc_session_interface.h"
 #include "net/third_party/quic/quartc/quartc_stream.h"
 
-namespace net {
+namespace quic {
 
 // A helper class is used by the QuicCryptoServerStream.
 class QuartcCryptoServerStreamHelper : public QuicCryptoServerStream::Helper {
@@ -195,6 +195,6 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   DISALLOW_COPY_AND_ASSIGN(QuartcSession);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_SESSION_H_

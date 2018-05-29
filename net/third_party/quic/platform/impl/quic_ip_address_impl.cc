@@ -17,25 +17,25 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 QuicIpAddressImpl QuicIpAddressImpl::Loopback4() {
-  return QuicIpAddressImpl(IPAddress::IPv4Localhost());
+  return QuicIpAddressImpl(net::IPAddress::IPv4Localhost());
 }
 
 QuicIpAddressImpl QuicIpAddressImpl::Loopback6() {
-  return QuicIpAddressImpl(IPAddress::IPv6Localhost());
+  return QuicIpAddressImpl(net::IPAddress::IPv6Localhost());
 }
 
 QuicIpAddressImpl QuicIpAddressImpl::Any4() {
-  return QuicIpAddressImpl(IPAddress::IPv4AllZeros());
+  return QuicIpAddressImpl(net::IPAddress::IPv4AllZeros());
 }
 
 QuicIpAddressImpl QuicIpAddressImpl::Any6() {
-  return QuicIpAddressImpl(IPAddress::IPv6AllZeros());
+  return QuicIpAddressImpl(net::IPAddress::IPv6AllZeros());
 }
 
-QuicIpAddressImpl::QuicIpAddressImpl(const IPAddress& addr)
+QuicIpAddressImpl::QuicIpAddressImpl(const net::IPAddress& addr)
     : ip_address_(addr) {}
 
 bool operator==(QuicIpAddressImpl lhs, QuicIpAddressImpl rhs) {
@@ -67,9 +67,9 @@ IpAddressFamily QuicIpAddressImpl::address_family() const {
 
 int QuicIpAddressImpl::AddressFamilyToInt() const {
   switch (ip_address_.size()) {
-    case IPAddress::kIPv4AddressSize:
+    case net::IPAddress::kIPv4AddressSize:
       return AF_INET;
-    case IPAddress::kIPv6AddressSize:
+    case net::IPAddress::kIPv6AddressSize:
       return AF_INET6;
     default:
       NOTREACHED() << "Bad IP address";
@@ -78,7 +78,7 @@ int QuicIpAddressImpl::AddressFamilyToInt() const {
 }
 
 string QuicIpAddressImpl::ToPackedString() const {
-  return IPAddressToPackedString(ip_address_);
+  return net::IPAddressToPackedString(ip_address_);
 }
 
 string QuicIpAddressImpl::ToString() const {
@@ -103,12 +103,12 @@ QuicIpAddressImpl QuicIpAddressImpl::DualStacked() const {
 }
 
 bool QuicIpAddressImpl::FromPackedString(const char* data, size_t length) {
-  if (length != IPAddress::kIPv4AddressSize &&
-      length != IPAddress::kIPv6AddressSize) {
+  if (length != net::IPAddress::kIPv4AddressSize &&
+      length != net::IPAddress::kIPv6AddressSize) {
     QUIC_BUG << "Invalid packed IP address of length " << length;
     return false;
   }
-  ip_address_ = IPAddress(reinterpret_cast<const uint8_t*>(data), length);
+  ip_address_ = net::IPAddress(reinterpret_cast<const uint8_t*>(data), length);
   return true;
 }
 
@@ -126,7 +126,8 @@ bool QuicIpAddressImpl::IsIPv6() const {
 
 bool QuicIpAddressImpl::InSameSubnet(const QuicIpAddressImpl& other,
                                      int subnet_length) {
-  return IPAddressMatchesPrefix(ip_address_, other.ip_address(), subnet_length);
+  return net::IPAddressMatchesPrefix(ip_address_, other.ip_address(),
+                                     subnet_length);
 }
 
-}  // namespace net
+}  // namespace quic

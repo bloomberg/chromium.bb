@@ -25,7 +25,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 // static
 void QuicSocketUtils::GetAddressAndTimestampFromMsghdr(
@@ -218,7 +218,7 @@ size_t QuicSocketUtils::SetIpInfoInCmsg(const QuicIpAddress& self_address,
            address_string.length());
     return sizeof(in6_pktinfo);
   } else {
-    NOTREACHED() << "Unrecognized IPAddress";
+    NOTREACHED() << "Unrecognized net::IPAddress";
     return 0;
   }
 }
@@ -315,4 +315,4 @@ int QuicSocketUtils::CreateUDPSocket(const QuicSocketAddress& address,
   return fd;
 }
 
-}  // namespace net
+}  // namespace quic

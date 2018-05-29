@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 
-namespace net {
+namespace quic {
 
 class SendAlgorithmInterface;
 
@@ -111,6 +111,6 @@ class QuicSentPacketManagerPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_SENT_PACKET_MANAGER_PEER_H_

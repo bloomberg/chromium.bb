@@ -14,7 +14,7 @@
 #include "net/third_party/quic/http/decoder/quic_http_frame_decoder_state.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicHttpContinuationQuicHttpPayloadDecoder {
  public:
@@ -29,6 +29,6 @@ class QUIC_EXPORT_PRIVATE QuicHttpContinuationQuicHttpPayloadDecoder {
                                              QuicHttpDecodeBuffer* db);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_PAYLOAD_DECODERS_QUIC_HTTP_CONTINUATION_PAYLOAD_DECODER_H_

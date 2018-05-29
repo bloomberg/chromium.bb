@@ -21,7 +21,7 @@
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
-namespace net {
+namespace quic {
 namespace test {
 class QuicHttpFrameDecoderPeer {
  public:
@@ -936,4 +936,4 @@ TEST_F(QuicHttpFrameDecoderTest, WindowUpdateTooLong) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

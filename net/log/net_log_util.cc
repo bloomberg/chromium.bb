@@ -207,8 +207,9 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
   {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-    for (QuicErrorCode error = QUIC_NO_ERROR; error < QUIC_LAST_ERROR;
-         error = static_cast<QuicErrorCode>(error + 1)) {
+    for (quic::QuicErrorCode error = quic::QUIC_NO_ERROR;
+         error < quic::QUIC_LAST_ERROR;
+         error = static_cast<quic::QuicErrorCode>(error + 1)) {
       dict->SetInteger(QuicErrorCodeToString(error), static_cast<int>(error));
     }
 
@@ -220,9 +221,9 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
   {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-    for (QuicRstStreamErrorCode error = QUIC_STREAM_NO_ERROR;
-         error < QUIC_STREAM_LAST_ERROR;
-         error = static_cast<QuicRstStreamErrorCode>(error + 1)) {
+    for (quic::QuicRstStreamErrorCode error = quic::QUIC_STREAM_NO_ERROR;
+         error < quic::QUIC_STREAM_LAST_ERROR;
+         error = static_cast<quic::QuicRstStreamErrorCode>(error + 1)) {
       dict->SetInteger(QuicRstStreamErrorCodeToString(error),
                        static_cast<int>(error));
     }

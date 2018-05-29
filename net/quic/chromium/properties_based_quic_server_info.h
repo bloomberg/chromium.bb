@@ -24,7 +24,7 @@ class HttpServerProperties;
 class QUIC_EXPORT_PRIVATE PropertiesBasedQuicServerInfo
     : public QuicServerInfo {
  public:
-  PropertiesBasedQuicServerInfo(const QuicServerId& server_id,
+  PropertiesBasedQuicServerInfo(const quic::QuicServerId& server_id,
                                 HttpServerProperties* http_server_properties);
   ~PropertiesBasedQuicServerInfo() override;
 

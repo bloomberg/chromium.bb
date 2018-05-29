@@ -9,12 +9,12 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/impl/quic_ip_address_impl.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicSocketAddressImpl {
  public:
   QuicSocketAddressImpl() = default;
-  explicit QuicSocketAddressImpl(const IPEndPoint& addr);
+  explicit QuicSocketAddressImpl(const net::IPEndPoint& addr);
   QuicSocketAddressImpl(QuicIpAddressImpl address, uint16_t port);
   explicit QuicSocketAddressImpl(const struct sockaddr_storage& saddr);
   explicit QuicSocketAddressImpl(const struct sockaddr& saddr);
@@ -36,12 +36,12 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddressImpl {
   uint16_t port() const;
 
   sockaddr_storage generic_address() const;
-  const IPEndPoint& socket_address() const { return socket_address_; }
+  const net::IPEndPoint& socket_address() const { return socket_address_; }
 
  private:
-  IPEndPoint socket_address_;
+  net::IPEndPoint socket_address_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SOCKET_ADDRESS_IMPL_H_

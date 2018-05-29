@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_types.h"
 
-namespace net {
+namespace quic {
 
 class QuicDataWriter;
 
@@ -26,6 +26,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamFrameDataProducer {
                                QuicDataWriter* writer) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_STREAM_FRAME_DATA_PRODUCER_H_

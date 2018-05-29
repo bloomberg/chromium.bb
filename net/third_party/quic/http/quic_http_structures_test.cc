@@ -31,7 +31,7 @@ using ::testing::Not;
 using ::testing::Values;
 using ::testing::ValuesIn;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -497,4 +497,4 @@ TEST(QuicHttpAltSvcTest, Misc) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

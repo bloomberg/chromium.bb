@@ -31,7 +31,7 @@ using testing::_;
 using testing::Return;
 using testing::Truly;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -7906,4 +7906,4 @@ TEST_P(QuicFramerTest, StartsWithChlo) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class KeyExchange;
 class QuicRandom;
@@ -36,6 +36,6 @@ class QUIC_EXPORT_PRIVATE EphemeralKeySource {
       QuicString* public_value) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_EPHEMERAL_KEY_SOURCE_H_

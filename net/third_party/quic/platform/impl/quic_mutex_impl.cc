@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_mutex_impl.h"
 
-namespace net {
+namespace quic {
 
 void QuicLockImpl::WriterLock() {
   lock_.Acquire();
@@ -22,4 +22,4 @@ void QuicLockImpl::ReaderUnlock() {
   lock_.Release();
 }
 
-}  // namespace net
+}  // namespace quic

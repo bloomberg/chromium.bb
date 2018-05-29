@@ -10,7 +10,7 @@
 #include "net/third_party/quic/http/decoder/quic_http_frame_decoder_listener.h"
 #include "net/third_party/quic/http/quic_http_constants.h"
 
-namespace net {
+namespace quic {
 namespace {
 constexpr auto kOpaqueSize = QuicHttpPingFields::EncodedSize();
 }
@@ -92,4 +92,4 @@ QuicHttpDecodeStatus QuicHttpPingQuicHttpPayloadDecoder::HandleStatus(
   return status;
 }
 
-}  // namespace net
+}  // namespace quic

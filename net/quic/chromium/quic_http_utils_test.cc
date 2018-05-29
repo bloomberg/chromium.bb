@@ -38,18 +38,19 @@ TEST(QuicHttpUtilsTest, ConvertQuicPriorityToRequestPriority) {
 }
 
 TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
-  QuicTransportVersionVector supported_versions = {
-      QUIC_VERSION_37, QUIC_VERSION_38, QUIC_VERSION_39, QUIC_VERSION_41};
+  quic::QuicTransportVersionVector supported_versions = {
+      quic::QUIC_VERSION_37, quic::QUIC_VERSION_38, quic::QUIC_VERSION_39,
+      quic::QUIC_VERSION_41};
 
   std::vector<uint32_t> alt_svc_versions_google = {
-      QUIC_VERSION_38, QUIC_VERSION_41, QUIC_VERSION_42};
+      quic::QUIC_VERSION_38, quic::QUIC_VERSION_41, quic::QUIC_VERSION_42};
   std::vector<uint32_t> alt_svc_versions_ietf = {
-      QuicVersionToQuicVersionLabel(QUIC_VERSION_38),
-      QuicVersionToQuicVersionLabel(QUIC_VERSION_41),
-      QuicVersionToQuicVersionLabel(QUIC_VERSION_42)};
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_38),
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_41),
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_42)};
 
-  QuicTransportVersionVector supported_alt_svc_versions = {QUIC_VERSION_38,
-                                                           QUIC_VERSION_41};
+  quic::QuicTransportVersionVector supported_alt_svc_versions = {
+      quic::QUIC_VERSION_38, quic::QUIC_VERSION_41};
   spdy::SpdyAltSvcWireFormat::AlternativeService altsvc;
 
   altsvc.protocol_id = "quic";
@@ -63,14 +64,14 @@ TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
   altsvc.version = alt_svc_versions_ietf;
   EXPECT_EQ(supported_alt_svc_versions,
             FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
-  EXPECT_EQ(QuicTransportVersionVector(),
+  EXPECT_EQ(quic::QuicTransportVersionVector(),
             FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
 
   altsvc.protocol_id = "invalid_protocol";
   altsvc.version = alt_svc_versions_ietf;
-  EXPECT_EQ(QuicTransportVersionVector(),
+  EXPECT_EQ(quic::QuicTransportVersionVector(),
             FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
-  EXPECT_EQ(QuicTransportVersionVector(),
+  EXPECT_EQ(quic::QuicTransportVersionVector(),
             FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
 }
 

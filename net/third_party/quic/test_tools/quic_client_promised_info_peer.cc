@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/quic_client_promised_info_peer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -14,4 +14,4 @@ QuicAlarm* QuicClientPromisedInfoPeer::GetAlarm(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

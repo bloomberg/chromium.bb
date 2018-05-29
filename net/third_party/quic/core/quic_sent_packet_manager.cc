@@ -22,7 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 static const int64_t kDefaultRetransmissionTimeMs = 500;
@@ -1264,4 +1264,4 @@ bool QuicSentPacketManager::session_decides_what_to_write() const {
   return unacked_packets_.session_decides_what_to_write();
 }
 
-}  // namespace net
+}  // namespace quic

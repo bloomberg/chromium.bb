@@ -11,7 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -167,4 +167,4 @@ TEST_F(CryptoUtilsTest, HandshakeFailureReasonToString) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -15,7 +15,7 @@
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 
-namespace net {
+namespace quic {
 
 class QuicCryptoStream;
 class QuicSession;
@@ -62,6 +62,6 @@ class QuicSessionPeer {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_SESSION_PEER_H_

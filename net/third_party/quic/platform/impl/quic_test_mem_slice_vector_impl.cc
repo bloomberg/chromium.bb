@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_test_mem_slice_vector_impl.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 TestIOBuffer::~TestIOBuffer() {
@@ -27,4 +27,4 @@ QuicMemSliceSpanImpl QuicTestMemSliceVectorImpl::span() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

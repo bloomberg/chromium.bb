@@ -17,7 +17,7 @@
 using testing::UnorderedElementsAre;
 using testing::Pair;
 
-namespace net {
+namespace quic {
 namespace test {
 
 static std::unique_ptr<QuicHeaderList> FromList(
@@ -386,4 +386,4 @@ TEST_F(PopulateHeaderBlockFromUrl, Failure) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

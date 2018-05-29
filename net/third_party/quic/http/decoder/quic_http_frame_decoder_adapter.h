@@ -26,7 +26,7 @@ class SpdyFramerVisitorInterface;
 
 class ExtensionVisitorInterface;
 }  // namespace spdy
-namespace net {
+namespace quic {
 
 // Adapts spdy::SpdyFramer interface to use QuicHttpFrameDecoder.
 class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
@@ -294,6 +294,6 @@ class SPDY_EXPORT_PRIVATE QuicHttpDecoderAdapter
   bool process_single_input_frame_ = false;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_FRAME_DECODER_ADAPTER_H_

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace net {
+namespace quic {
 
 const BIO_METHOD QuicTlsAdapter::kBIOMethod = {
     0,        // type
@@ -127,4 +127,4 @@ void QuicTlsAdapter::Flush() {
   write_buffer_.clear();
 }
 
-}  // namespace net
+}  // namespace quic

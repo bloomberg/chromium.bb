@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/quic_types.h"
 
-namespace net {
+namespace quic {
 
 QuicPacketWriterWrapper::QuicPacketWriterWrapper() = default;
 
@@ -62,4 +62,4 @@ void QuicPacketWriterWrapper::unset_writer() {
   writer_ = nullptr;
 }
 
-}  // namespace net
+}  // namespace quic

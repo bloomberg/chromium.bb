@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_spdy_client_stream.h"
 
-namespace net {
+namespace quic {
 
 class QuicSimpleClientStream : public QuicSpdyClientStream {
  public:
@@ -23,6 +23,6 @@ class QuicSimpleClientStream : public QuicSpdyClientStream {
   const bool drop_response_body_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_CLIENT_STREAM_H_

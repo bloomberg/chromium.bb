@@ -16,7 +16,7 @@
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_spdy_client_session_base.h"
 
-namespace net {
+namespace quic {
 
 class MockCryptoClientStream : public QuicCryptoClientStream,
                                public QuicCryptoHandshaker {
@@ -52,7 +52,7 @@ class MockCryptoClientStream : public QuicCryptoClientStream,
       const QuicConfig& config,
       QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode,
-      const ProofVerifyDetailsChromium* proof_verify_details_,
+      const net::ProofVerifyDetailsChromium* proof_verify_details_,
       bool use_mock_crypter);
   ~MockCryptoClientStream() override;
 
@@ -87,12 +87,12 @@ class MockCryptoClientStream : public QuicCryptoClientStream,
   bool use_mock_crypter_;
 
   const QuicServerId server_id_;
-  const ProofVerifyDetailsChromium* proof_verify_details_;
+  const net::ProofVerifyDetailsChromium* proof_verify_details_;
   const QuicConfig config_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStream);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_CRYPTO_CLIENT_STREAM_H_

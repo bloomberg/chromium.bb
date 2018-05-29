@@ -28,61 +28,64 @@ class HistogramBase;
 
 namespace net {
 
-// This class is a debug visitor of a QuicConnection which logs
+// This class is a debug visitor of a quic::QuicConnection which logs
 // events to |net_log|.
 class NET_EXPORT_PRIVATE QuicConnectionLogger
-    : public QuicConnectionDebugVisitor,
-      public QuicPacketCreator::DebugDelegate {
+    : public quic::QuicConnectionDebugVisitor,
+      public quic::QuicPacketCreator::DebugDelegate {
  public:
   QuicConnectionLogger(
-      QuicSpdySession* session,
+      quic::QuicSpdySession* session,
       const char* const connection_description,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       const NetLogWithSource& net_log);
 
   ~QuicConnectionLogger() override;
 
-  // QuicPacketCreator::DebugDelegateInterface
-  void OnFrameAddedToPacket(const QuicFrame& frame) override;
+  // quic::QuicPacketCreator::DebugDelegateInterface
+  void OnFrameAddedToPacket(const quic::QuicFrame& frame) override;
 
   // QuicConnectionDebugVisitorInterface
-  void OnPacketSent(const SerializedPacket& serialized_packet,
-                    QuicPacketNumber original_packet_number,
-                    TransmissionType transmission_type,
-                    QuicTime sent_time) override;
+  void OnPacketSent(const quic::SerializedPacket& serialized_packet,
+                    quic::QuicPacketNumber original_packet_number,
+                    quic::TransmissionType transmission_type,
+                    quic::QuicTime sent_time) override;
   void OnPingSent() override;
-  void OnPacketReceived(const QuicSocketAddress& self_address,
-                        const QuicSocketAddress& peer_address,
-                        const QuicEncryptedPacket& packet) override;
-  void OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
-  void OnIncorrectConnectionId(QuicConnectionId connection_id) override;
+  void OnPacketReceived(const quic::QuicSocketAddress& self_address,
+                        const quic::QuicSocketAddress& peer_address,
+                        const quic::QuicEncryptedPacket& packet) override;
+  void OnUnauthenticatedHeader(const quic::QuicPacketHeader& header) override;
+  void OnIncorrectConnectionId(quic::QuicConnectionId connection_id) override;
   void OnUndecryptablePacket() override;
-  void OnDuplicatePacket(QuicPacketNumber packet_number) override;
-  void OnProtocolVersionMismatch(ParsedQuicVersion version) override;
-  void OnPacketHeader(const QuicPacketHeader& header) override;
-  void OnStreamFrame(const QuicStreamFrame& frame) override;
-  void OnAckFrame(const QuicAckFrame& frame) override;
-  void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
-  void OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
-  void OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
-  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
-                           const QuicTime& receive_time) override;
-  void OnBlockedFrame(const QuicBlockedFrame& frame) override;
-  void OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
-  void OnPingFrame(const QuicPingFrame& frame) override;
-  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
+  void OnDuplicatePacket(quic::QuicPacketNumber packet_number) override;
+  void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
+  void OnPacketHeader(const quic::QuicPacketHeader& header) override;
+  void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
+  void OnAckFrame(const quic::QuicAckFrame& frame) override;
+  void OnStopWaitingFrame(const quic::QuicStopWaitingFrame& frame) override;
+  void OnRstStreamFrame(const quic::QuicRstStreamFrame& frame) override;
+  void OnConnectionCloseFrame(
+      const quic::QuicConnectionCloseFrame& frame) override;
+  void OnWindowUpdateFrame(const quic::QuicWindowUpdateFrame& frame,
+                           const quic::QuicTime& receive_time) override;
+  void OnBlockedFrame(const quic::QuicBlockedFrame& frame) override;
+  void OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) override;
+  void OnPingFrame(const quic::QuicPingFrame& frame) override;
+  void OnPublicResetPacket(const quic::QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) override;
-  void OnConnectionClosed(QuicErrorCode error,
+      const quic::QuicVersionNegotiationPacket& packet) override;
+  void OnConnectionClosed(quic::QuicErrorCode error,
                           const std::string& error_details,
-                          ConnectionCloseSource source) override;
+                          quic::ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
-      const ParsedQuicVersion& version) override;
-  void OnRttChanged(QuicTime::Delta rtt) const override;
+      const quic::ParsedQuicVersion& version) override;
+  void OnRttChanged(quic::QuicTime::Delta rtt) const override;
 
-  void OnCryptoHandshakeMessageReceived(const CryptoHandshakeMessage& message);
-  void OnCryptoHandshakeMessageSent(const CryptoHandshakeMessage& message);
-  void UpdateReceivedFrameCounts(QuicStreamId stream_id,
+  void OnCryptoHandshakeMessageReceived(
+      const quic::CryptoHandshakeMessage& message);
+  void OnCryptoHandshakeMessageSent(
+      const quic::CryptoHandshakeMessage& message);
+  void UpdateReceivedFrameCounts(quic::QuicStreamId stream_id,
                                  int num_frames_received,
                                  int num_duplicate_frames_received);
   void OnCertificateVerified(const CertVerifyResult& result);
@@ -103,9 +106,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void UpdateIsCapturing();
 
   NetLogWithSource net_log_;
-  QuicSpdySession* session_;  // Unowned.
+  quic::QuicSpdySession* session_;  // Unowned.
   // The last packet number received.
-  QuicPacketNumber last_received_packet_number_;
+  quic::QuicPacketNumber last_received_packet_number_;
   // The size of the most recently received packet.
   size_t last_received_packet_size_;
   // True if a PING frame has been sent and no packet has been received.
@@ -114,7 +117,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   size_t previous_received_packet_size_;
   // The largest packet number received.  In the case where a packet is
   // received late (out of order), this value will not be updated.
-  QuicPacketNumber largest_received_packet_number_;
+  quic::QuicPacketNumber largest_received_packet_number_;
   // Number of times that the current received packet number is
   // smaller than the last received packet number.
   size_t num_out_of_order_received_packets_;
@@ -126,8 +129,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // The number of times that OnPacketHeader was called.
   // If the network replicates packets, then this number may be slightly
   // different from the real number of distinct packets received.
-  QuicPacketCount num_packets_received_;
-  // The kCADR value provided by the server in ServerHello.
+  quic::QuicPacketCount num_packets_received_;
+  // The quic::kCADR value provided by the server in ServerHello.
   IPEndPoint local_address_from_shlo_;
   // The first local address from which a packet was received.
   IPEndPoint local_address_from_self_;

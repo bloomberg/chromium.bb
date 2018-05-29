@@ -11,7 +11,7 @@
 
 #include "base/strings/stringprintf.h"
 
-namespace net {
+namespace quic {
 
 template <typename... Args>
 inline std::string QuicStrCatImpl(const Args&... args) {
@@ -26,6 +26,6 @@ inline std::string QuicStringPrintfImpl(const Args&... args) {
   return base::StringPrintf(std::forward<const Args&>(args)...);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_STR_CAT_IMPL_H_

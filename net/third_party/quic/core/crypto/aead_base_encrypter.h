@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // AeadBaseEncrypter is the base class of AEAD QuicEncrypter subclasses.
 class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
@@ -78,6 +78,6 @@ class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
   DISALLOW_COPY_AND_ASSIGN(AeadBaseEncrypter);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_AEAD_BASE_ENCRYPTER_H_

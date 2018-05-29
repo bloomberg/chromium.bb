@@ -13,7 +13,7 @@
 #include "net/third_party/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -287,4 +287,4 @@ TEST_F(QuicStreamSendBufferTest, CurrentWriteIndex) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

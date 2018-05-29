@@ -5,7 +5,7 @@
 #include "net/third_party/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -123,4 +123,4 @@ uint64_t QuicCompressedCertsCache::ComputeUncompressedCertsHash(
   return hash;
 }
 
-}  // namespace net
+}  // namespace quic

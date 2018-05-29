@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 
-namespace net {
+namespace quic {
 
 std::unique_ptr<QuicSpdyClientStream>
 QuicSimpleClientSession::CreateClientStream() {
@@ -14,4 +14,4 @@ QuicSimpleClientSession::CreateClientStream() {
                                                 drop_response_body_);
 }
 
-}  // namespace net
+}  // namespace quic

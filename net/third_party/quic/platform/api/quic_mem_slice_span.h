@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_mem_slice_span_impl.h"
 
-namespace net {
+namespace quic {
 
 // QuicMemSliceSpan is effectively wrapper around an array of data structures
 // used as QuicMemSlice. So it could implemented with:
@@ -40,6 +40,6 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceSpan {
   QuicMemSliceSpanImpl impl_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_MEM_SLICE_SPAN_H_

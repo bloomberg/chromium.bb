@@ -9,7 +9,7 @@
 
 #include "net/third_party/quic/core/frames/quic_control_frame.h"
 
-namespace net {
+namespace quic {
 
 // IETF format MAX_STREAM_ID frame.
 // This frame is used by the sender to inform the peer of the largest
@@ -27,6 +27,6 @@ struct QUIC_EXPORT_PRIVATE QuicMaxStreamIdFrame : public QuicControlFrame {
   QuicStreamId max_stream_id;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_MAX_STREAM_ID_FRAME_H_

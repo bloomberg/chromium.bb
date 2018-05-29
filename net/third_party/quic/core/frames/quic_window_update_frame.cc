@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_window_update_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicWindowUpdateFrame::QuicWindowUpdateFrame() {}
 
@@ -24,4 +24,4 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

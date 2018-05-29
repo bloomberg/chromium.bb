@@ -16,7 +16,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -135,4 +135,4 @@ TEST_F(ChloExtractorTest, DoesNotFindInvalidChlo) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

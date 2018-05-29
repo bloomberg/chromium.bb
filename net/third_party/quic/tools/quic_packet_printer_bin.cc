@@ -57,7 +57,7 @@ string ArgToString(base::CommandLine::StringType arg) {
 }
 }  // namespace
 
-namespace net {
+namespace quic {
 
 class QuicPacketPrinter : public QuicFramerVisitorInterface {
  public:
@@ -167,7 +167,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   QuicFramer* framer_;  // Unowned.
 };
 
-}  // namespace net
+}  // namespace quic
 
 int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
@@ -185,31 +185,31 @@ int main(int argc, char* argv[]) {
   }
 
   string perspective_string = ArgToString(args[0]);
-  net::Perspective perspective;
+  quic::Perspective perspective;
   if (perspective_string == "client") {
-    perspective = net::Perspective::IS_CLIENT;
+    perspective = quic::Perspective::IS_CLIENT;
   } else if (perspective_string == "server") {
-    perspective = net::Perspective::IS_SERVER;
+    perspective = quic::Perspective::IS_SERVER;
   } else {
     std::cerr << "Invalid perspective. " << perspective_string
               << " Usage: " << args[0] << " client|server <hex>\n";
     return 1;
   }
-  string hex = net::QuicTextUtils::HexDecode(argv[2]);
-  net::ParsedQuicVersionVector versions = net::AllSupportedVersions();
+  string hex = quic::QuicTextUtils::HexDecode(argv[2]);
+  quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
   // Fake a time since we're not actually generating acks.
-  net::QuicTime start(net::QuicTime::Zero());
-  net::QuicFramer framer(versions, start, perspective);
+  quic::QuicTime start(quic::QuicTime::Zero());
+  quic::QuicFramer framer(versions, start, perspective);
   if (!FLAGS_quic_version.empty()) {
-    for (net::ParsedQuicVersion version : versions) {
-      if (net::QuicVersionToString(version.transport_version) ==
+    for (quic::ParsedQuicVersion version : versions) {
+      if (quic::QuicVersionToString(version.transport_version) ==
           FLAGS_quic_version) {
         framer.set_version(version);
       }
     }
   }
-  net::QuicPacketPrinter visitor(&framer);
+  quic::QuicPacketPrinter visitor(&framer);
   framer.set_visitor(&visitor);
-  net::QuicEncryptedPacket encrypted(hex.c_str(), hex.length());
+  quic::QuicEncryptedPacket encrypted(hex.c_str(), hex.length());
   return framer.ProcessPacket(encrypted);
 }

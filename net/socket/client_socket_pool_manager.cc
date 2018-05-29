@@ -72,7 +72,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                          RequestPriority request_priority,
                          HttpNetworkSession* session,
                          const ProxyInfo& proxy_info,
-                         QuicTransportVersion quic_version,
+                         quic::QuicTransportVersion quic_version,
                          const SSLConfig& ssl_config_for_origin,
                          const SSLConfig& ssl_config_for_proxy,
                          bool force_tunnel,
@@ -181,7 +181,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       }
 
       if (!proxy_info.is_quic()) {
-        quic_version = QUIC_VERSION_UNSUPPORTED;
+        quic_version = quic::QUIC_VERSION_UNSUPPORTED;
       }
 
       http_proxy_params = new HttpProxySocketParams(
@@ -363,7 +363,7 @@ int InitSocketHandleForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    QuicTransportVersion quic_version,
+    quic::QuicTransportVersion quic_version,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
@@ -399,7 +399,7 @@ int InitSocketHandleForWebSocketRequest(
   DCHECK(socket_handle);
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, QUIC_VERSION_UNSUPPORTED,
+      request_priority, session, proxy_info, quic::QUIC_VERSION_UNSUPPORTED,
       ssl_config_for_origin, ssl_config_for_proxy,
       /*force_tunnel=*/true, privacy_mode, SocketTag(), net_log, 0,
       socket_handle, HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
@@ -422,7 +422,7 @@ int InitSocketHandleForRawConnect(const HostPortPair& host_port_pair,
   return InitSocketPoolHelper(
       ClientSocketPoolManager::NORMAL_GROUP, host_port_pair,
       request_extra_headers, request_load_flags, request_priority, session,
-      proxy_info, QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
+      proxy_info, quic::QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
       ssl_config_for_proxy, /*force_tunnel=*/true, privacy_mode, SocketTag(),
       net_log, 0, socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
       OnHostResolutionCallback(), callback);
@@ -444,7 +444,8 @@ int InitSocketHandleForTlsConnect(const HostPortPair& endpoint,
   return InitSocketPoolHelper(
       ClientSocketPoolManager::SSL_GROUP, endpoint, request_extra_headers,
       request_load_flags, request_priority, session, proxy_info,
-      QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin, ssl_config_for_proxy,
+      quic::QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
+      ssl_config_for_proxy,
       /*force_tunnel=*/true, privacy_mode, SocketTag(), net_log, 0,
       socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
       OnHostResolutionCallback(), callback);
@@ -465,7 +466,7 @@ int PreconnectSocketsForHttpRequest(
     int num_preconnect_streams) {
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, QUIC_VERSION_UNSUPPORTED,
+      request_priority, session, proxy_info, quic::QUIC_VERSION_UNSUPPORTED,
       ssl_config_for_origin, ssl_config_for_proxy,
       /*force_tunnel=*/false, privacy_mode, SocketTag(), net_log,
       num_preconnect_streams, NULL, HttpNetworkSession::NORMAL_SOCKET_POOL,

@@ -7,7 +7,7 @@
 
 #include "base/containers/mru_cache.h"
 
-namespace net {
+namespace quic {
 
 template <class K, class V>
 class QuicLRUCacheImpl {
@@ -45,6 +45,6 @@ class QuicLRUCacheImpl {
   DISALLOW_COPY_AND_ASSIGN(QuicLRUCacheImpl);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_LRU_CACHE_IMPL_H_

@@ -26,8 +26,11 @@ namespace net {
 
 class UDPServerSocket;
 
-
+}  // namespace net
+namespace quic {
 class QuicDispatcher;
+}  // namespace quic
+namespace net {
 
 namespace test {
 class QuicSimpleServerPeer;
@@ -36,11 +39,11 @@ class QuicSimpleServerPeer;
 class QuicSimpleServer {
  public:
   QuicSimpleServer(
-      std::unique_ptr<ProofSource> proof_source,
-      const QuicConfig& config,
-      const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-      const ParsedQuicVersionVector& supported_versions,
-      QuicSimpleServerBackend* quic_simple_server_backend);
+      std::unique_ptr<quic::ProofSource> proof_source,
+      const quic::QuicConfig& config,
+      const quic::QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
+      const quic::ParsedQuicVersionVector& supported_versions,
+      quic::QuicSimpleServerBackend* quic_simple_server_backend);
 
   virtual ~QuicSimpleServer();
 
@@ -58,7 +61,7 @@ class QuicSimpleServer {
   // continues the read loop.
   void OnReadComplete(int result);
 
-  QuicDispatcher* dispatcher() { return dispatcher_.get(); }
+  quic::QuicDispatcher* dispatcher() { return dispatcher_.get(); }
 
   IPEndPoint server_address() const { return server_address_; }
 
@@ -68,13 +71,13 @@ class QuicSimpleServer {
   // Initialize the internal state of the server.
   void Initialize();
 
-  QuicVersionManager version_manager_;
+  quic::QuicVersionManager version_manager_;
 
   // Accepts data from the framer and demuxes clients to sessions.
-  std::unique_ptr<QuicDispatcher> dispatcher_;
+  std::unique_ptr<quic::QuicDispatcher> dispatcher_;
 
   // Used by the helper_ to time alarms.
-  QuicChromiumClock clock_;
+  quic::QuicChromiumClock clock_;
 
   // Used to manage the message loop. Owned by dispatcher_.
   QuicChromiumConnectionHelper* helper_;
@@ -87,12 +90,12 @@ class QuicSimpleServer {
 
   // config_ contains non-crypto parameters that are negotiated in the crypto
   // handshake.
-  QuicConfig config_;
+  quic::QuicConfig config_;
   // crypto_config_ contains crypto parameters that are negotiated in the crypto
   // handshake.
-  QuicCryptoServerConfig::ConfigOptions crypto_config_options_;
+  quic::QuicCryptoServerConfig::ConfigOptions crypto_config_options_;
   // crypto_config_ contains crypto parameters for the handshake.
-  QuicCryptoServerConfig crypto_config_;
+  quic::QuicCryptoServerConfig crypto_config_;
 
   // The address that the server listens on.
   IPEndPoint server_address_;
@@ -114,7 +117,7 @@ class QuicSimpleServer {
   // The log to use for the socket.
   NetLog net_log_;
 
-  QuicSimpleServerBackend* quic_simple_server_backend_;
+  quic::QuicSimpleServerBackend* quic_simple_server_backend_;
 
   base::WeakPtrFactory<QuicSimpleServer> weak_factory_;
 

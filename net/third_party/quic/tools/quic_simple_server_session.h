@@ -26,7 +26,7 @@
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicSimpleServerSessionPeer;
@@ -153,6 +153,6 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerSession);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_SERVER_SESSION_H_

@@ -762,7 +762,7 @@ SpdySession::SpdySession(
     const SpdySessionKey& spdy_session_key,
     HttpServerProperties* http_server_properties,
     TransportSecurityState* transport_security_state,
-    const QuicTransportVersionVector& quic_supported_versions,
+    const quic::QuicTransportVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
     bool support_ietf_format_quic_altsvc,
@@ -1674,7 +1674,7 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
   streams_pushed_count_++;
 
   // Verify that the response had a URL for us.
-  GURL gurl(SpdyUtils::GetPromisedUrlFromHeaders(headers));
+  GURL gurl(quic::SpdyUtils::GetPromisedUrlFromHeaders(headers));
   if (!gurl.is_valid()) {
     RecordSpdyPushedStreamFateHistogram(SpdyPushedStreamFate::kInvalidUrl);
     EnqueueResetStreamFrame(stream_id, request_priority,
@@ -3133,7 +3133,7 @@ void SpdySession::OnAltSvc(
       continue;
 
     // Check if QUIC version is supported. Filter supported QUIC versions.
-    QuicTransportVersionVector advertised_versions;
+    quic::QuicTransportVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !altsvc.version.empty()) {
       advertised_versions = FilterSupportedAltSvcVersions(
           altsvc, quic_supported_versions_, support_ietf_format_quic_altsvc_);

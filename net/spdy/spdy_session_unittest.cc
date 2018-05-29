@@ -6284,7 +6284,7 @@ TEST_F(AltSvcFrameTest, IgnoreQuicAltSvcWithUnsupportedVersion) {
   // TODO(zhongyi): spdy::SpdyAltSvcWireFormat::ParseHeaderFieldValue expects
   // positve versions while VersionVector allows nonnegative verisons. Fix the
   // parse function and change the hardcoded invalid version to
-  // QUIC_VERSION_UNSUPPORTED.
+  // quic::QUIC_VERSION_UNSUPPORTED.
   quic_alternative_service.version.push_back(/* invalid QUIC version */ 1);
   altsvc_ir.add_altsvc(quic_alternative_service);
   altsvc_ir.set_origin(origin);

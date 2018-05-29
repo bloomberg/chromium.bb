@@ -9,13 +9,13 @@
 
 #include "base/trace_event/memory_usage_estimator.h"
 
-namespace net {
+namespace quic {
 
 template <class T>
 size_t QuicEstimateMemoryUsageImpl(const T& object) {
   return base::trace_event::EstimateMemoryUsage(object);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_ESTIMATE_MEMORY_USAGE_IMPL_H_

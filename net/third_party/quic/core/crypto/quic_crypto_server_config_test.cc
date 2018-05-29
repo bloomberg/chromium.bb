@@ -25,7 +25,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicCryptoServerConfigTest : public QuicTest {};
@@ -462,4 +462,4 @@ TEST_F(CryptoServerConfigsTest, InvalidConfigs) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

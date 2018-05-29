@@ -44,7 +44,7 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -1402,4 +1402,4 @@ TEST_P(QuicSessionTestServer, RetransmitFrames) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

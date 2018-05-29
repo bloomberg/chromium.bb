@@ -4,11 +4,11 @@
 
 #include "net/third_party/quic/http/decoder/quic_http_frame_decoder_listener.h"
 
-namespace net {
+namespace quic {
 
 bool QuicHttpFrameDecoderNoOpListener::OnFrameHeader(
     const QuicHttpFrameHeader& header) {
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

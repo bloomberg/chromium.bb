@@ -11,7 +11,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 Switch::Switch(Simulator* simulator,
@@ -86,4 +86,4 @@ void Switch::DispatchPacket(SwitchPortNumber port_number,
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace net {
+namespace quic {
 
 // QuicHttpFrameHeader:
 
@@ -139,4 +139,4 @@ std::ostream& operator<<(std::ostream& out, const QuicHttpAltSvcFields& v) {
   return out << "origin_length=" << v.origin_length;
 }
 
-}  // namespace net
+}  // namespace quic

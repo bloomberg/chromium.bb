@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_endian_impl.h"
 
-namespace net {
+namespace quic {
 
 enum Endianness {
   NETWORK_BYTE_ORDER,  // big endian
@@ -49,6 +49,6 @@ class QuicEndian {
   }
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_ENDIAN_H_

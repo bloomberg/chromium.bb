@@ -390,7 +390,7 @@ bool HttpServerPropertiesImpl::SetQuicAlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration,
-    const QuicTransportVersionVector& advertised_versions) {
+    const quic::QuicTransportVersionVector& advertised_versions) {
   DCHECK(alternative_service.protocol == kProtoQUIC);
 
   return SetAlternativeServices(
@@ -604,7 +604,7 @@ HttpServerPropertiesImpl::server_network_stats_map() const {
 }
 
 bool HttpServerPropertiesImpl::SetQuicServerInfo(
-    const QuicServerId& server_id,
+    const quic::QuicServerId& server_id,
     const std::string& server_info) {
   QuicServerInfoMap::iterator it = quic_server_info_map_.Peek(server_id);
   bool changed =
@@ -615,7 +615,7 @@ bool HttpServerPropertiesImpl::SetQuicServerInfo(
 }
 
 const std::string* HttpServerPropertiesImpl::GetQuicServerInfo(
-    const QuicServerId& server_id) {
+    const quic::QuicServerId& server_id) {
   QuicServerInfoMap::iterator it = quic_server_info_map_.Get(server_id);
   if (it != quic_server_info_map_.end()) {
     // Since |canonical_server_info_map_| should always map to the most
@@ -643,7 +643,7 @@ const std::string* HttpServerPropertiesImpl::GetQuicServerInfo(
 
 HttpServerPropertiesImpl::CanonicalServerInfoMap::const_iterator
 HttpServerPropertiesImpl::GetCanonicalServerInfoHost(
-    const QuicServerId& server) const {
+    const quic::QuicServerId& server) const {
   const std::string* canonical_suffix = GetCanonicalSuffix(server.host());
   if (canonical_suffix == nullptr)
     return canonical_server_info_map_.end();
@@ -689,7 +689,7 @@ void HttpServerPropertiesImpl::SetMaxServerConfigsStoredInProperties(
 }
 
 void HttpServerPropertiesImpl::UpdateCanonicalServerInfoMap(
-    const QuicServerId& server) {
+    const quic::QuicServerId& server) {
   const std::string* suffix = GetCanonicalSuffix(server.host());
   if (suffix) {
     HostPortPair canonical_pair(*suffix, server.port());

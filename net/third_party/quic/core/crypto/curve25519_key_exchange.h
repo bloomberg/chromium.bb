@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QuicRandom;
 
@@ -45,6 +45,6 @@ class QUIC_EXPORT_PRIVATE Curve25519KeyExchange : public KeyExchange {
   uint8_t public_key_[32];
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CURVE25519_KEY_EXCHANGE_H_

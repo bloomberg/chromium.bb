@@ -20,7 +20,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 // static
 std::unique_ptr<QuicDecrypter> QuicDecrypter::Create(QuicTag algorithm) {
@@ -67,4 +67,4 @@ void QuicDecrypter::DiversifyPreliminaryKey(QuicStringPiece preliminary_key,
   *out_nonce_prefix = string(hkdf.server_write_iv());
 }
 
-}  // namespace net
+}  // namespace quic

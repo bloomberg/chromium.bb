@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_TEST_RANDOM_IMPL_H_
 #define NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_TEST_RANDOM_IMPL_H_
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicTestRandomBaseImpl {
@@ -47,6 +47,6 @@ class QuicTestRandomImpl : public QuicTestRandomBaseImpl {
 };
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_TEST_RANDOM_IMPL_H_

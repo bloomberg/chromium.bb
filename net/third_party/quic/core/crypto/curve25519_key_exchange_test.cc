@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class Curve25519KeyExchangeTest : public QuicTest {};
@@ -40,4 +40,4 @@ TEST_F(Curve25519KeyExchangeTest, SharedKey) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -12,7 +12,7 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QuicUnackedPacketMap;
 class RttStats;
@@ -43,6 +43,6 @@ class QUIC_EXPORT_PRIVATE LossDetectionInterface {
       QuicPacketNumber spurious_retransmission) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CONGESTION_CONTROL_LOSS_DETECTION_INTERFACE_H_

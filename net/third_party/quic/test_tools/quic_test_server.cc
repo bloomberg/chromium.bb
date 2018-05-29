@@ -11,7 +11,7 @@
 #include "net/third_party/quic/tools/quic_simple_dispatcher.h"
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -208,4 +208,4 @@ void ImmediateGoAwaySession::OnStreamFrame(const QuicStreamFrame& frame) {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic

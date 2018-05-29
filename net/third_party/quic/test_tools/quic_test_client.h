@@ -20,7 +20,7 @@
 #include "net/third_party/quic/tools/quic_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace net {
+namespace quic {
 
 class ProofVerifier;
 class QuicPacketWriterWrapper;
@@ -35,19 +35,19 @@ class MockableQuicClient : public QuicClient {
   MockableQuicClient(QuicSocketAddress server_address,
                      const QuicServerId& server_id,
                      const ParsedQuicVersionVector& supported_versions,
-                     EpollServer* epoll_server);
+                     net::EpollServer* epoll_server);
 
   MockableQuicClient(QuicSocketAddress server_address,
                      const QuicServerId& server_id,
                      const QuicConfig& config,
                      const ParsedQuicVersionVector& supported_versions,
-                     EpollServer* epoll_server);
+                     net::EpollServer* epoll_server);
 
   MockableQuicClient(QuicSocketAddress server_address,
                      const QuicServerId& server_id,
                      const QuicConfig& config,
                      const ParsedQuicVersionVector& supported_versions,
-                     EpollServer* epoll_server,
+                     net::EpollServer* epoll_server,
                      std::unique_ptr<ProofVerifier> proof_verifier);
 
   ~MockableQuicClient() override;
@@ -245,7 +245,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
   void WaitForWriteToFlush();
 
-  EpollServer* epoll_server() { return &epoll_server_; }
+  net::EpollServer* epoll_server() { return &epoll_server_; }
 
   size_t num_requests() const { return num_requests_; }
 
@@ -342,7 +342,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // tracking its state.
   void SetLatestCreatedStream(QuicSpdyClientStream* stream);
 
-  EpollServer epoll_server_;
+  net::EpollServer epoll_server_;
   std::unique_ptr<MockableQuicClient> client_;  // The actual client
   QuicSpdyClientStream* latest_created_stream_;
   std::map<QuicStreamId, QuicSpdyClientStream*> open_streams_;
@@ -392,6 +392,6 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_QUIC_TEST_CLIENT_H_

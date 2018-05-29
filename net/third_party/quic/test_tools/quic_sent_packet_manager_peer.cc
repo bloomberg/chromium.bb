@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_sent_packet_manager.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -232,4 +232,4 @@ void QuicSentPacketManagerPeer::SetNextPacedPacketTime(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

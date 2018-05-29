@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/quic_connection_stats.h"
 
-namespace net {
+namespace quic {
 
 QuicConnectionStats::QuicConnectionStats()
     : bytes_sent(0),
@@ -89,4 +89,4 @@ std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

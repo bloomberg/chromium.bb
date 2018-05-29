@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/test_tools/simulator/queue.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 typedef size_t SwitchPortNumber;
@@ -84,6 +84,6 @@ class Switch {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_SWITCH_H_

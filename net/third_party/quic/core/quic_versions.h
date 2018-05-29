@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // The available versions of QUIC. Guaranteed that the integer value of the enum
 // will match the version number.
@@ -238,6 +238,6 @@ QUIC_EXPORT_PRIVATE inline QuicString ParsedQuicVersionVectorToString(
                                          std::numeric_limits<size_t>::max());
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_VERSIONS_H_

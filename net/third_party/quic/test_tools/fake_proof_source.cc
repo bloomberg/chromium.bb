@@ -10,7 +10,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 FakeProofSource::FakeProofSource()
@@ -127,4 +127,4 @@ void FakeProofSource::InvokePendingCallback(int n) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

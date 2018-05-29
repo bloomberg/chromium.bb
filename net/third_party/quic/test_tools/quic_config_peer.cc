@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/quic_config.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -64,4 +64,4 @@ void QuicConfigPeer::SetReceivedStatelessResetToken(QuicConfig* config,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

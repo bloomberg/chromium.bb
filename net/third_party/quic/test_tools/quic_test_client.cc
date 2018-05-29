@@ -30,7 +30,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -165,7 +165,7 @@ MockableQuicClient::MockableQuicClient(
     QuicSocketAddress server_address,
     const QuicServerId& server_id,
     const ParsedQuicVersionVector& supported_versions,
-    EpollServer* epoll_server)
+    net::EpollServer* epoll_server)
     : MockableQuicClient(server_address,
                          server_id,
                          QuicConfig(),
@@ -177,7 +177,7 @@ MockableQuicClient::MockableQuicClient(
     const QuicServerId& server_id,
     const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
-    EpollServer* epoll_server)
+    net::EpollServer* epoll_server)
     : MockableQuicClient(server_address,
                          server_id,
                          config,
@@ -190,7 +190,7 @@ MockableQuicClient::MockableQuicClient(
     const QuicServerId& server_id,
     const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
-    EpollServer* epoll_server,
+    net::EpollServer* epoll_server,
     std::unique_ptr<ProofVerifier> proof_verifier)
     : QuicClient(
           server_address,
@@ -264,7 +264,7 @@ QuicTestClient::QuicTestClient(
     : client_(new MockableQuicClient(server_address,
                                      QuicServerId(server_hostname,
                                                   server_address.port(),
-                                                  PRIVACY_MODE_DISABLED),
+                                                  net::PRIVACY_MODE_DISABLED),
                                      config,
                                      supported_versions,
                                      &epoll_server_)) {
@@ -280,7 +280,7 @@ QuicTestClient::QuicTestClient(
     : client_(new MockableQuicClient(server_address,
                                      QuicServerId(server_hostname,
                                                   server_address.port(),
-                                                  PRIVACY_MODE_DISABLED),
+                                                  net::PRIVACY_MODE_DISABLED),
                                      config,
                                      supported_versions,
                                      &epoll_server_,
@@ -537,8 +537,8 @@ void QuicTestClient::Connect() {
 
   // If we've been asked to override SNI, set it now
   if (override_sni_set_) {
-    client_->set_server_id(
-        QuicServerId(override_sni_, address().port(), PRIVACY_MODE_DISABLED));
+    client_->set_server_id(QuicServerId(override_sni_, address().port(),
+                                        net::PRIVACY_MODE_DISABLED));
   }
 
   client_->Connect();
@@ -874,4 +874,4 @@ void QuicTestClient::WaitForDelayedAcks() {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

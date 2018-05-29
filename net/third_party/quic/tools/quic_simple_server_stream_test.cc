@@ -33,7 +33,7 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 
 size_t kFakeFrameLen = 60;
@@ -620,4 +620,4 @@ TEST_P(QuicSimpleServerStreamTest, InvalidHeadersWithFin) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

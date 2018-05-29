@@ -9,9 +9,9 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
-QuicSocketAddressImpl::QuicSocketAddressImpl(const IPEndPoint& address)
+QuicSocketAddressImpl::QuicSocketAddressImpl(const net::IPEndPoint& address)
     : socket_address_(address) {}
 
 QuicSocketAddressImpl::QuicSocketAddressImpl(QuicIpAddressImpl address,
@@ -60,7 +60,7 @@ string QuicSocketAddressImpl::ToString() const {
 }
 
 int QuicSocketAddressImpl::FromSocket(int fd) {
-  SockaddrStorage storage;
+  net::SockaddrStorage storage;
   if (getsockname(fd, storage.addr, &storage.addr_len) != 0 ||
       !socket_address_.FromSockAddr(storage.addr, storage.addr_len)) {
     return 1;
@@ -90,4 +90,4 @@ sockaddr_storage QuicSocketAddressImpl::generic_address() const {
   return raw_address;
 }
 
-}  // namespace net
+}  // namespace quic

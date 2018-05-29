@@ -25,10 +25,10 @@ namespace net {
 namespace test {
 namespace {
 
-// TestProofVerifierCallback is a simple callback for a ProofVerifier that
+// TestProofVerifierCallback is a simple callback for a quic::ProofVerifier that
 // signals a TestCompletionCallback when called and stores the results from the
-// ProofVerifier in pointers passed to the constructor.
-class TestProofVerifierCallback : public ProofVerifierCallback {
+// quic::ProofVerifier in pointers passed to the constructor.
+class TestProofVerifierCallback : public quic::ProofVerifierCallback {
  public:
   TestProofVerifierCallback(TestCompletionCallback* comp_callback,
                             bool* ok,
@@ -37,7 +37,7 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 
   void Run(bool ok,
            const string& error_details,
-           std::unique_ptr<ProofVerifyDetails>* details) override {
+           std::unique_ptr<quic::ProofVerifyDetails>* details) override {
     *ok_ = ok;
     *error_details_ = error_details;
 
@@ -52,56 +52,58 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 
 // RunVerification runs |verifier->VerifyProof| and asserts that the result
 // matches |expected_ok|.
-void RunVerification(ProofVerifier* verifier,
+void RunVerification(quic::ProofVerifier* verifier,
                      const string& hostname,
                      const uint16_t port,
                      const string& server_config,
-                     QuicTransportVersion quic_version,
-                     QuicStringPiece chlo_hash,
+                     quic::QuicTransportVersion quic_version,
+                     quic::QuicStringPiece chlo_hash,
                      const std::vector<string>& certs,
                      const string& proof,
                      bool expected_ok) {
-  std::unique_ptr<ProofVerifyDetails> details;
+  std::unique_ptr<quic::ProofVerifyDetails> details;
   TestCompletionCallback comp_callback;
   bool ok;
   string error_details;
-  std::unique_ptr<ProofVerifyContext> verify_context(
-      crypto_test_utils::ProofVerifyContextForTesting());
+  std::unique_ptr<quic::ProofVerifyContext> verify_context(
+      quic::test::crypto_test_utils::ProofVerifyContextForTesting());
   std::unique_ptr<TestProofVerifierCallback> callback(
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details));
 
-  QuicAsyncStatus status = verifier->VerifyProof(
+  quic::QuicAsyncStatus status = verifier->VerifyProof(
       hostname, port, server_config, quic_version, chlo_hash, certs, "", proof,
       verify_context.get(), &error_details, &details, std::move(callback));
 
   switch (status) {
-    case QUIC_FAILURE:
+    case quic::QUIC_FAILURE:
       ASSERT_FALSE(expected_ok);
       ASSERT_NE("", error_details);
       return;
-    case QUIC_SUCCESS:
+    case quic::QUIC_SUCCESS:
       ASSERT_TRUE(expected_ok);
       ASSERT_EQ("", error_details);
       return;
-    case QUIC_PENDING:
+    case quic::QUIC_PENDING:
       comp_callback.WaitForResult();
       ASSERT_EQ(expected_ok, ok);
       break;
   }
 }
 
-class TestCallback : public ProofSource::Callback {
+class TestCallback : public quic::ProofSource::Callback {
  public:
-  explicit TestCallback(bool* called,
-                        bool* ok,
-                        QuicReferenceCountedPointer<ProofSource::Chain>* chain,
-                        QuicCryptoProof* proof)
+  explicit TestCallback(
+      bool* called,
+      bool* ok,
+      quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>* chain,
+      quic::QuicCryptoProof* proof)
       : called_(called), ok_(ok), chain_(chain), proof_(proof) {}
 
-  void Run(bool ok,
-           const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
-           const QuicCryptoProof& proof,
-           std::unique_ptr<ProofSource::Details> /* details */) override {
+  void Run(
+      bool ok,
+      const quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>& chain,
+      const quic::QuicCryptoProof& proof,
+      std::unique_ptr<quic::ProofSource::Details> /* details */) override {
     *ok_ = ok;
     *chain_ = chain;
     *proof_ = proof;
@@ -111,44 +113,47 @@ class TestCallback : public ProofSource::Callback {
  private:
   bool* called_;
   bool* ok_;
-  QuicReferenceCountedPointer<ProofSource::Chain>* chain_;
-  QuicCryptoProof* proof_;
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>* chain_;
+  quic::QuicCryptoProof* proof_;
 };
 
-class ProofTest : public ::testing::TestWithParam<QuicTransportVersion> {};
+class ProofTest : public ::testing::TestWithParam<quic::QuicTransportVersion> {
+};
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(QuicTransportVersion,
-                        ProofTest,
-                        ::testing::ValuesIn(AllSupportedTransportVersions()));
+INSTANTIATE_TEST_CASE_P(
+    QuicTransportVersion,
+    ProofTest,
+    ::testing::ValuesIn(quic::AllSupportedTransportVersions()));
 
-// TODO(rtenneti): Enable testing of ProofVerifier. See http://crbug.com/514468.
+// TODO(rtenneti): Enable testing of quic::ProofVerifier. See
+// http://crbug.com/514468.
 TEST_P(ProofTest, DISABLED_Verify) {
-  std::unique_ptr<ProofSource> source(
-      crypto_test_utils::ProofSourceForTesting());
-  std::unique_ptr<ProofVerifier> verifier(
-      crypto_test_utils::ProofVerifierForTesting());
+  std::unique_ptr<quic::ProofSource> source(
+      quic::test::crypto_test_utils::ProofSourceForTesting());
+  std::unique_ptr<quic::ProofVerifier> verifier(
+      quic::test::crypto_test_utils::ProofVerifierForTesting());
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
   const uint16_t port = 8443;
   const string first_chlo_hash = "first chlo hash bytes";
   const string second_chlo_hash = "first chlo hash bytes";
-  const QuicTransportVersion quic_version = GetParam();
+  const quic::QuicTransportVersion quic_version = GetParam();
 
   bool called = false;
   bool first_called = false;
   bool ok, first_ok;
-  QuicReferenceCountedPointer<ProofSource::Chain> chain;
-  QuicReferenceCountedPointer<ProofSource::Chain> first_chain;
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain;
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> first_chain;
   string error_details;
-  QuicCryptoProof proof, first_proof;
-  QuicSocketAddress server_addr;
+  quic::QuicCryptoProof proof, first_proof;
+  quic::QuicSocketAddress server_addr;
 
-  std::unique_ptr<ProofSource::Callback> cb(
+  std::unique_ptr<quic::ProofSource::Callback> cb(
       new TestCallback(&called, &ok, &chain, &proof));
-  std::unique_ptr<ProofSource::Callback> first_cb(
+  std::unique_ptr<quic::ProofSource::Callback> first_cb(
       new TestCallback(&first_called, &first_ok, &first_chain, &first_proof));
 
   // GetProof here expects the async method to invoke the callback
@@ -192,7 +197,7 @@ TEST_P(ProofTest, DISABLED_Verify) {
 
 namespace {
 
-class TestingSignatureCallback : public ProofSource::SignatureCallback {
+class TestingSignatureCallback : public quic::ProofSource::SignatureCallback {
  public:
   TestingSignatureCallback(bool* ok_out, std::string* signature_out)
       : ok_out_(ok_out), signature_out_(signature_out) {}
@@ -210,13 +215,13 @@ class TestingSignatureCallback : public ProofSource::SignatureCallback {
 }  // namespace
 
 TEST_P(ProofTest, TlsSignature) {
-  std::unique_ptr<ProofSource> source(
-      crypto_test_utils::ProofSourceForTesting());
+  std::unique_ptr<quic::ProofSource> source(
+      quic::test::crypto_test_utils::ProofSourceForTesting());
 
-  QuicSocketAddress server_address;
+  quic::QuicSocketAddress server_address;
   const string hostname = "test.example.com";
 
-  QuicReferenceCountedPointer<ProofSource::Chain> chain =
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain =
       source->GetCertChain(server_address, hostname);
   ASSERT_GT(chain->certs.size(), 0ul);
 
@@ -233,7 +238,7 @@ TEST_P(ProofTest, TlsSignature) {
   string sig;
   bool success;
   std::unique_ptr<TestingSignatureCallback> callback =
-      QuicMakeUnique<TestingSignatureCallback>(&success, &sig);
+      quic::QuicMakeUnique<TestingSignatureCallback>(&success, &sig);
   source->ComputeTlsSignature(server_address, hostname, SSL_SIGN_RSA_PSS_SHA256,
                               to_be_signed, std::move(callback));
   EXPECT_TRUE(success);
@@ -264,19 +269,19 @@ TEST_P(ProofTest, TlsSignature) {
 }
 
 TEST_P(ProofTest, UseAfterFree) {
-  std::unique_ptr<ProofSource> source(
-      crypto_test_utils::ProofSourceForTesting());
+  std::unique_ptr<quic::ProofSource> source(
+      quic::test::crypto_test_utils::ProofSourceForTesting());
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
   const string chlo_hash = "proof nonce bytes";
   bool called = false;
   bool ok;
-  QuicReferenceCountedPointer<ProofSource::Chain> chain;
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain;
   string error_details;
-  QuicCryptoProof proof;
-  QuicSocketAddress server_addr;
-  std::unique_ptr<ProofSource::Callback> cb(
+  quic::QuicCryptoProof proof;
+  quic::QuicSocketAddress server_addr;
+  std::unique_ptr<quic::ProofSource::Callback> cb(
       new TestCallback(&called, &ok, &chain, &proof));
 
   // GetProof here expects the async method to invoke the callback

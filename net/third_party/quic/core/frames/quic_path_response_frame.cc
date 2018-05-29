@@ -5,7 +5,7 @@
 #include "net/third_party/quic/core/frames/quic_path_response_frame.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 
-namespace net {
+namespace quic {
 
 QuicPathResponseFrame::QuicPathResponseFrame() : QuicControlFrame(0) {}
 
@@ -31,4 +31,4 @@ std::ostream& operator<<(std::ostream& os, const QuicPathResponseFrame& frame) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

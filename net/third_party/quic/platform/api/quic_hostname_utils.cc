@@ -6,7 +6,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 // static
 bool QuicHostnameUtils::IsValidSNI(QuicStringPiece sni) {
@@ -18,4 +18,4 @@ char* QuicHostnameUtils::NormalizeHostname(char* hostname) {
   return QuicHostnameUtilsImpl::NormalizeHostname(hostname);
 }
 
-}  // namespace net
+}  // namespace quic

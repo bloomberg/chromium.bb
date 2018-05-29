@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 // CommonCertSets is an interface to an object that contains a number of common
 // certificate sets and can match against them.
@@ -43,6 +43,6 @@ class QUIC_EXPORT_PRIVATE CommonCertSets {
                          uint32_t* out_index) const = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_COMMON_CERT_SET_H_

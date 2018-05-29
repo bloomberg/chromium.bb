@@ -11,10 +11,11 @@
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
 #include "net/tools/epoll_server/epoll_server.h"
 
-namespace net {
+namespace quic {
 
-QuicEpollConnectionHelper::QuicEpollConnectionHelper(EpollServer* epoll_server,
-                                                     QuicAllocator type)
+QuicEpollConnectionHelper::QuicEpollConnectionHelper(
+    net::EpollServer* epoll_server,
+    QuicAllocator type)
     : clock_(epoll_server),
       random_generator_(QuicRandom::GetInstance()),
       allocator_type_(type) {}
@@ -38,4 +39,4 @@ QuicBufferAllocator* QuicEpollConnectionHelper::GetStreamSendBufferAllocator() {
   }
 }
 
-}  // namespace net
+}  // namespace quic

@@ -32,7 +32,7 @@ using std::string;
 using testing::_;
 using testing::Invoke;
 
-namespace net {
+namespace quic {
 namespace test {
 
 QuicAckFrame InitAckFrame(const std::vector<QuicAckBlock>& ack_blocks) {
@@ -969,4 +969,4 @@ QuicStreamId GetNthServerInitiatedStreamId(QuicTransportVersion version,
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

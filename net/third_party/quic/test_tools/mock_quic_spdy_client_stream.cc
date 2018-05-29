@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/mock_quic_spdy_client_stream.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 MockQuicSpdyClientStream::MockQuicSpdyClientStream(
@@ -15,4 +15,4 @@ MockQuicSpdyClientStream::MockQuicSpdyClientStream(
 MockQuicSpdyClientStream::~MockQuicSpdyClientStream() {}
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

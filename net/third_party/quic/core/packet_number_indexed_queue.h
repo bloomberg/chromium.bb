@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 
-namespace net {
+namespace quic {
 
 // PacketNumberIndexedQueue is a queue of mostly continuous numbered entries
 // which supports the following operations:
@@ -201,6 +201,6 @@ auto PacketNumberIndexedQueue<T>::GetEntryWrapper(QuicPacketNumber offset) const
   return entry;
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_PACKET_NUMBER_INDEXED_QUEUE_H_

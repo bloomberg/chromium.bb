@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/impl/quic_socket_address_impl.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicSocketAddress {
   // A class representing a socket endpoint address (i.e., IP address plus a
@@ -44,6 +44,6 @@ class QUIC_EXPORT_PRIVATE QuicSocketAddress {
   QuicSocketAddressImpl impl_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_SOCKET_ADDRESS_H_

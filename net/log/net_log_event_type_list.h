@@ -1636,7 +1636,7 @@ EVENT_TYPE(HTTP2_PROXY_CLIENT_SESSION)
 // Measures the time taken to execute the QuicStreamFactory::Job.
 // The event parameters are:
 //   {
-//     "server_id": <The QuicServerId that the Job serves>,
+//     "server_id": <The quic::QuicServerId that the Job serves>,
 //   }
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB)
 
@@ -1658,10 +1658,10 @@ EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_BOUND_TO_HTTP_STREAM_JOB)
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_CONNECT)
 
 // ------------------------------------------------------------------------
-// QuicSession
+// quic::QuicSession
 // ------------------------------------------------------------------------
 
-// The start/end of a QuicSession.
+// The start/end of a quic::QuicSession.
 //   {
 //     "host": <The host-port string>,
 //   }
@@ -1693,8 +1693,8 @@ EVENT_TYPE(QUIC_SESSION_PACKET_RECEIVED)
 
 // Session sent a QUIC packet.
 //   {
-//     "encryption_level": <The EncryptionLevel of the packet>,
-//     "transmission_type": <The TransmissionType of the packet>,
+//     "encryption_level": <The quic::EncryptionLevel of the packet>,
+//     "transmission_type": <The quic::TransmissionType of the packet>,
 //     "packet_sequence_number": <The packet's full 64-bit sequence number,
 //                                as a base-10 string.>,
 //     "size": <The size of the packet in bytes>
@@ -1815,7 +1815,7 @@ EVENT_TYPE(QUIC_SESSION_BLOCKED_FRAME_SENT)
 
 // Session received a GOAWAY frame.
 //   {
-//     "quic_error":          <QuicErrorCode in the frame>,
+//     "quic_error":          <quic::QuicErrorCode in the frame>,
 //     "last_good_stream_id": <Last correctly received stream id by the server>,
 //     "reason_phrase":       <Prose justifying go-away request>,
 //   }
@@ -1823,7 +1823,7 @@ EVENT_TYPE(QUIC_SESSION_GOAWAY_FRAME_RECEIVED)
 
 // Session sent a GOAWAY frame.
 //   {
-//     "quic_error":          <QuicErrorCode in the frame>,
+//     "quic_error":          <quic::QuicErrorCode in the frame>,
 //     "last_good_stream_id": <Last correctly received stream id by the server>,
 //     "reason_phrase":       <Prose justifying go-away request>,
 //   }
@@ -1861,7 +1861,7 @@ EVENT_TYPE(QUIC_SESSION_STOP_WAITING_FRAME_SENT)
 // Session recevied a RST_STREAM frame.
 //   {
 //     "offset": <Offset in the byte stream which triggered the reset>,
-//     "quic_rst_stream_error": <QuicRstStreamErrorCode in the frame>,
+//     "quic_rst_stream_error": <quic::QuicRstStreamErrorCode in the frame>,
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_RST_STREAM_FRAME_RECEIVED)
@@ -1869,21 +1869,21 @@ EVENT_TYPE(QUIC_SESSION_RST_STREAM_FRAME_RECEIVED)
 // Session sent a RST_STREAM frame.
 //   {
 //     "offset": <Offset in the byte stream which triggered the reset>,
-//     "quic_rst_stream_error": <QuicRstStreamErrorCode in the frame>,
+//     "quic_rst_stream_error": <quic::QuicRstStreamErrorCode in the frame>,
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_RST_STREAM_FRAME_SENT)
 
 // Session received a CONNECTION_CLOSE frame.
 //   {
-//     "quic_error": <QuicErrorCode in the frame>,
+//     "quic_error": <quic::QuicErrorCode in the frame>,
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED)
 
 // Session received a CONNECTION_CLOSE frame.
 //   {
-//     "quic_error": <QuicErrorCode in the frame>,
+//     "quic_error": <quic::QuicErrorCode in the frame>,
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_CONNECTION_CLOSE_FRAME_SENT)
@@ -1942,8 +1942,8 @@ EVENT_TYPE(QUIC_SESSION_PUSH_PROMISE_RECEIVED)
 
 // Session was closed, either remotely or by the peer.
 //   {
-//     "quic_error": <QuicErrorCode which caused the connection to be closed>,
-//     "from_peer":  <True if the peer closed the connection>
+//     "quic_error": <quic::QuicErrorCode which caused the connection to be
+//     closed>, "from_peer":  <True if the peer closed the connection>
 //   }
 EVENT_TYPE(QUIC_SESSION_CLOSED)
 

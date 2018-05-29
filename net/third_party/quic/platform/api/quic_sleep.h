@@ -8,12 +8,12 @@
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/impl/quic_sleep_impl.h"
 
-namespace net {
+namespace quic {
 
 inline void QuicSleep(QuicTime::Delta duration) {
   QuicSleepImpl(duration);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_SLEEP_H_

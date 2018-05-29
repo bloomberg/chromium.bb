@@ -10,7 +10,7 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 enum QuicRstStreamErrorCode {
   // Complete response has been sent, sending a RST to ask the other endpoint
@@ -333,6 +333,6 @@ enum QuicInternalErrorLocation {
 QUIC_EXPORT_PRIVATE
 void RecordInternalErrorLocation(QuicInternalErrorLocation location);
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_ERROR_CODES_H_

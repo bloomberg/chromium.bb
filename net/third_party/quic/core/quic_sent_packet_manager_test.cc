@@ -30,7 +30,7 @@ using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 // Default packet length.
@@ -2652,4 +2652,4 @@ TEST_P(QuicSentPacketManagerTest, OnAckRangeSlowPath) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

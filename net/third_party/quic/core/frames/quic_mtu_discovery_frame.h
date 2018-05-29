@@ -7,12 +7,12 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // A path MTU discovery frame contains no payload and is serialized as a ping
 // frame.
 struct QUIC_EXPORT_PRIVATE QuicMtuDiscoveryFrame {};
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_FRAMES_QUIC_MTU_DISCOVERY_FRAME_H_

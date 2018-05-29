@@ -23,16 +23,16 @@ ConvertQuicPriorityToRequestPriority(spdy::SpdyPriority priority);
 
 // Converts a spdy::SpdyHeaderBlock and priority into NetLog event parameters.
 NET_EXPORT std::unique_ptr<base::Value> QuicRequestNetLogCallback(
-    QuicStreamId stream_id,
+    quic::QuicStreamId stream_id,
     const spdy::SpdyHeaderBlock* headers,
     spdy::SpdyPriority priority,
     NetLogCaptureMode capture_mode);
 
-// Parses |alt_svc_versions| into a QuicTransportVersionVector and removes
+// Parses |alt_svc_versions| into a quic::QuicTransportVersionVector and removes
 // all entries that aren't found in |supported_versions|.
-NET_EXPORT QuicTransportVersionVector FilterSupportedAltSvcVersions(
+NET_EXPORT quic::QuicTransportVersionVector FilterSupportedAltSvcVersions(
     const spdy::SpdyAltSvcWireFormat::AlternativeService& quic_alt_svc,
-    const QuicTransportVersionVector& supported_versions,
+    const quic::QuicTransportVersionVector& supported_versions,
     bool support_ietf_format_quic_altsvc);
 
 }  // namespace net

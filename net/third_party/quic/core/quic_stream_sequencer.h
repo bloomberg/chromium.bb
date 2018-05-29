@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicStreamSequencerPeer;
@@ -156,6 +156,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencer);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_STREAM_SEQUENCER_H_

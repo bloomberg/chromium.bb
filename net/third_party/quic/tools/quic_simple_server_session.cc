@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
-namespace net {
+namespace quic {
 
 QuicSimpleServerSession::QuicSimpleServerSession(
     const QuicConfig& config,
@@ -206,4 +206,4 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
   }
 }
 
-}  // namespace net
+}  // namespace quic

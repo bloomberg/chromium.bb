@@ -14,7 +14,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 class SimpleFramerVisitor : public QuicFramerVisitorInterface {
@@ -275,4 +275,4 @@ const std::vector<QuicPaddingFrame>& SimpleQuicFramer::padding_frames() const {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

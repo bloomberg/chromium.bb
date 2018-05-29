@@ -7,7 +7,7 @@
 #include "net/third_party/quic/core/quic_packet_creator.h"
 #include "net/third_party/quic/core/quic_packet_generator.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -17,4 +17,4 @@ QuicPacketCreator* QuicPacketGeneratorPeer::GetPacketCreator(
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

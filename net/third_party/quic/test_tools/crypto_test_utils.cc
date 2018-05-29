@@ -42,7 +42,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 TestChannelIDKey::TestChannelIDKey(EVP_PKEY* ecdsa_key)
@@ -1084,4 +1084,4 @@ void GenerateFullCHLO(const CryptoHandshakeMessage& inchoate_chlo,
 
 }  // namespace crypto_test_utils
 }  // namespace test
-}  // namespace net
+}  // namespace quic

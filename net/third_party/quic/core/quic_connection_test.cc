@@ -60,7 +60,7 @@ using testing::SaveArg;
 using testing::SetArgPointee;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -330,11 +330,11 @@ class TestPacketWriter : public QuicPacketWriter {
     }
     if (next_packet_too_large_) {
       next_packet_too_large_ = false;
-      return WriteResult(WRITE_STATUS_ERROR, ERR_MSG_TOO_BIG);
+      return WriteResult(WRITE_STATUS_ERROR, net::ERR_MSG_TOO_BIG);
     }
     if (always_get_packet_too_large_) {
       LOG(ERROR) << "RETURNING TOO BIG";
-      return WriteResult(WRITE_STATUS_ERROR, ERR_MSG_TOO_BIG);
+      return WriteResult(WRITE_STATUS_ERROR, net::ERR_MSG_TOO_BIG);
     }
     if (IsWriteBlocked()) {
       return WriteResult(WRITE_STATUS_BLOCKED, -1);
@@ -6829,4 +6829,4 @@ TEST_P(QuicConnectionTest, ValidStatelessResetToken) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

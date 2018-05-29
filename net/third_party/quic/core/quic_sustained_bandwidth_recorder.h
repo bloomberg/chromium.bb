@@ -13,7 +13,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 class QuicSustainedBandwidthRecorderPeer;
@@ -89,6 +89,6 @@ class QUIC_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
   DISALLOW_COPY_AND_ASSIGN(QuicSustainedBandwidthRecorder);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_SUSTAINED_BANDWIDTH_RECORDER_H_

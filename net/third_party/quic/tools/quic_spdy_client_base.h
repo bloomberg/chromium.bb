@@ -20,7 +20,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/tools/quic_client_base.h"
 
-namespace net {
+namespace quic {
 
 class ProofVerifier;
 class QuicServerId;
@@ -211,6 +211,6 @@ class QuicSpdyClientBase : public QuicClientBase,
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientBase);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SPDY_CLIENT_BASE_H_

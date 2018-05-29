@@ -33,28 +33,29 @@ const size_t kNumSessionsToCreatePerSocketEvent = 16;
 
 // Allocate some extra space so we can send an error if the client goes over
 // the limit.
-const int kReadBufferSize = 2 * kMaxPacketSize;
+const int kReadBufferSize = 2 * quic::kMaxPacketSize;
 
 }  // namespace
 
 QuicSimpleServer::QuicSimpleServer(
-    std::unique_ptr<ProofSource> proof_source,
-    const QuicConfig& config,
-    const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-    const ParsedQuicVersionVector& supported_versions,
-    QuicSimpleServerBackend* quic_simple_server_backend)
+    std::unique_ptr<quic::ProofSource> proof_source,
+    const quic::QuicConfig& config,
+    const quic::QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
+    const quic::ParsedQuicVersionVector& supported_versions,
+    quic::QuicSimpleServerBackend* quic_simple_server_backend)
     : version_manager_(supported_versions),
       helper_(
-          new QuicChromiumConnectionHelper(&clock_, QuicRandom::GetInstance())),
+          new QuicChromiumConnectionHelper(&clock_,
+                                           quic::QuicRandom::GetInstance())),
       alarm_factory_(new QuicChromiumAlarmFactory(
           base::ThreadTaskRunnerHandle::Get().get(),
           &clock_)),
       config_(config),
       crypto_config_options_(crypto_config_options),
       crypto_config_(kSourceAddressTokenSecret,
-                     QuicRandom::GetInstance(),
+                     quic::QuicRandom::GetInstance(),
                      std::move(proof_source),
-                     TlsServerHandshaker::CreateSslCtx()),
+                     quic::TlsServerHandshaker::CreateSslCtx()),
       read_pending_(false),
       synchronous_read_count_(0),
       read_buffer_(new IOBufferWithSize(kReadBufferSize)),
@@ -73,19 +74,20 @@ void QuicSimpleServer::Initialize() {
   const uint32_t kInitialSessionFlowControlWindow = 1 * 1024 * 1024;  // 1 MB
   const uint32_t kInitialStreamFlowControlWindow = 64 * 1024;         // 64 KB
   if (config_.GetInitialStreamFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
+      quic::kMinimumFlowControlSendWindow) {
     config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindow);
   }
   if (config_.GetInitialSessionFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
+      quic::kMinimumFlowControlSendWindow) {
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindow);
   }
 
-  std::unique_ptr<CryptoHandshakeMessage> scfg(crypto_config_.AddDefaultConfig(
-      helper_->GetRandomGenerator(), helper_->GetClock(),
-      crypto_config_options_));
+  std::unique_ptr<quic::CryptoHandshakeMessage> scfg(
+      crypto_config_.AddDefaultConfig(helper_->GetRandomGenerator(),
+                                      helper_->GetClock(),
+                                      crypto_config_options_));
 }
 
 QuicSimpleServer::~QuicSimpleServer() = default;
@@ -106,13 +108,13 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   // because the default usage of QuicSimpleServer is as a test server with
   // one or two clients.  Adjust higher for use with many clients.
   rc = socket->SetReceiveBufferSize(
-      static_cast<int32_t>(kDefaultSocketReceiveBuffer));
+      static_cast<int32_t>(quic::kDefaultSocketReceiveBuffer));
   if (rc < 0) {
     LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToString(rc);
     return rc;
   }
 
-  rc = socket->SetSendBufferSize(20 * kMaxPacketSize);
+  rc = socket->SetSendBufferSize(20 * quic::kMaxPacketSize);
   if (rc < 0) {
     LOG(ERROR) << "SetSendBufferSize() failed: " << ErrorToString(rc);
     return rc;
@@ -128,12 +130,12 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
 
   socket_.swap(socket);
 
-  dispatcher_.reset(new QuicSimpleDispatcher(
+  dispatcher_.reset(new quic::QuicSimpleDispatcher(
       config_, &crypto_config_, &version_manager_,
-      std::unique_ptr<QuicConnectionHelperInterface>(helper_),
-      std::unique_ptr<QuicCryptoServerStream::Helper>(
-          new QuicSimpleServerSessionHelper(QuicRandom::GetInstance())),
-      std::unique_ptr<QuicAlarmFactory>(alarm_factory_),
+      std::unique_ptr<quic::QuicConnectionHelperInterface>(helper_),
+      std::unique_ptr<quic::QuicCryptoServerStream::Helper>(
+          new QuicSimpleServerSessionHelper(quic::QuicRandom::GetInstance())),
+      std::unique_ptr<quic::QuicAlarmFactory>(alarm_factory_),
       quic_simple_server_backend_));
   QuicSimpleServerPacketWriter* writer =
       new QuicSimpleServerPacketWriter(socket_.get(), dispatcher_.get());
@@ -205,11 +207,12 @@ void QuicSimpleServer::OnReadComplete(int result) {
     return;
   }
 
-  QuicReceivedPacket packet(read_buffer_->data(), result,
-                            helper_->GetClock()->Now(), false);
+  quic::QuicReceivedPacket packet(read_buffer_->data(), result,
+                                  helper_->GetClock()->Now(), false);
   dispatcher_->ProcessPacket(
-      QuicSocketAddress(QuicSocketAddressImpl(server_address_)),
-      QuicSocketAddress(QuicSocketAddressImpl(client_address_)), packet);
+      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(server_address_)),
+      quic::QuicSocketAddress(quic::QuicSocketAddressImpl(client_address_)),
+      packet);
 
   StartReading();
 }

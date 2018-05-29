@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 // Constructs a version label from the 4 bytes such that the on-the-wire
@@ -313,4 +313,4 @@ QuicString ParsedQuicVersionVectorToString(
   return result;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -5,7 +5,7 @@
 #include "net/third_party/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -84,4 +84,4 @@ bool QuicSocketAddressCoder::Decode(const char* data, size_t length) {
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

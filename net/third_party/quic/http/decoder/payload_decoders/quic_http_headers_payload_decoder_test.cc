@@ -20,7 +20,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicHttpHeadersQuicHttpPayloadDecoderPeer {
@@ -169,4 +169,4 @@ TEST_P(QuicHttpHeadersQuicHttpPayloadDecoderTest, PaddingTooLong) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

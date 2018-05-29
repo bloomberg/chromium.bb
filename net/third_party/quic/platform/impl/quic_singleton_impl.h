@@ -7,7 +7,7 @@
 
 #include "base/memory/singleton.h"
 
-namespace net {
+namespace quic {
 
 template <typename T>
 using QuicSingletonImpl = base::Singleton<T, base::DefaultSingletonTraits<T>>;
@@ -15,6 +15,6 @@ using QuicSingletonImpl = base::Singleton<T, base::DefaultSingletonTraits<T>>;
 template <typename T>
 using QuicSingletonFriendImpl = base::DefaultSingletonTraits<T>;
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SINGLETON_IMPL_H_

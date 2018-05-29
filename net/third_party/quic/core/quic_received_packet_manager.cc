@@ -12,7 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -71,8 +71,8 @@ bool QuicReceivedPacketManager::IsMissing(QuicPacketNumber packet_number) {
 
 bool QuicReceivedPacketManager::IsAwaitingPacket(
     QuicPacketNumber packet_number) {
-  return net::IsAwaitingPacket(ack_frame_, packet_number,
-                               peer_least_packet_awaiting_ack_);
+  return quic::IsAwaitingPacket(ack_frame_, packet_number,
+                                peer_least_packet_awaiting_ack_);
 }
 
 const QuicFrame QuicReceivedPacketManager::GetUpdatedAckFrame(
@@ -143,4 +143,4 @@ QuicPacketNumber QuicReceivedPacketManager::GetLargestObserved() const {
   return LargestAcked(ack_frame_);
 }
 
-}  // namespace net
+}  // namespace quic

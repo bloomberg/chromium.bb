@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/http/quic_http_constants_test_util.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 std::vector<QuicHttpFrameType> AllQuicHttpFrameTypes() {
@@ -142,4 +142,4 @@ uint8_t InvalidFlagMaskForFrameType(QuicHttpFrameType type) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

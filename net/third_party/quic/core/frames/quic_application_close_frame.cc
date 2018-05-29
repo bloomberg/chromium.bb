@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/frames/quic_application_close_frame.h"
 
-namespace net {
+namespace quic {
 
 QuicApplicationCloseFrame::QuicApplicationCloseFrame()
     : error_code(QUIC_NO_ERROR) {}
@@ -16,4 +16,4 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

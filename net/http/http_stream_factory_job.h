@@ -188,7 +188,7 @@ class HttpStreamFactory::Job {
       HostPortPair destination,
       GURL origin_url,
       NextProto alternative_protocol,
-      QuicTransportVersion quic_version,
+      quic::QuicTransportVersion quic_version,
       const ProxyServer& alternative_proxy_server,
       bool is_websocket,
       bool enable_ip_based_pooling,
@@ -448,9 +448,9 @@ class HttpStreamFactory::Job {
   // True if Job uses QUIC.
   const bool using_quic_;
 
-  // QuicTransportVersion that should be used to connect to the QUIC server if
-  // Job uses QUIC.
-  QuicTransportVersion quic_version_;
+  // quic::QuicTransportVersion that should be used to connect to the QUIC
+  // server if Job uses QUIC.
+  quic::QuicTransportVersion quic_version_;
 
   // True if Alternative Service protocol field requires that HTTP/2 is used.
   // In this case, Job fails if it cannot pool to an existing SpdySession and
@@ -554,7 +554,7 @@ class HttpStreamFactory::JobFactory {
       HostPortPair destination,
       GURL origin_url,
       NextProto alternative_protocol,
-      QuicTransportVersion quic_version,
+      quic::QuicTransportVersion quic_version,
       bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log);

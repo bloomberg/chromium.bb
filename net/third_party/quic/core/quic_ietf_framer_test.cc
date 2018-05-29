@@ -40,7 +40,7 @@
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/simple_data_producer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -967,4 +967,4 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
 }
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

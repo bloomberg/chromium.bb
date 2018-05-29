@@ -27,7 +27,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // Forward declarations.
@@ -178,6 +178,6 @@ struct QuicHttpFrameParts : public QuicHttpFrameDecoderListener {
 std::ostream& operator<<(std::ostream& out, const QuicHttpFrameParts& v);
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_TEST_TOOLS_QUIC_HTTP_FRAME_PARTS_H_

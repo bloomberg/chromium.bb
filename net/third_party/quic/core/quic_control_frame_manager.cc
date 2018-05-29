@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 QuicControlFrameManager::QuicControlFrameManager(QuicSession* session)
     : last_control_frame_id_(kInvalidControlFrameId),
@@ -279,4 +279,4 @@ bool QuicControlFrameManager::HasBufferedFrames() const {
   return least_unsent_ < least_unacked_ + control_frames_.size();
 }
 
-}  // namespace net
+}  // namespace quic

@@ -26,13 +26,15 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace net {
-
+namespace quic {
 class QuicSpdyClientSessionBase;
+}  // namespace quic
+namespace net {
 
 // A client-initiated ReliableQuicStream.  Instances of this class
 // are owned by the QuicClientSession which created them.
-class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
+class NET_EXPORT_PRIVATE QuicChromiumClientStream
+    : public quic::QuicSpdyStream {
  public:
   // Wrapper for interacting with the session in a restricted fashion.
   class NET_EXPORT_PRIVATE Handle {
@@ -74,10 +76,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // headers are ACK'd by the peer. Returns a net error code if there is
     // an error writing the headers, or the number of bytes written on
     // success. Will not return ERR_IO_PENDING.
-    int WriteHeaders(spdy::SpdyHeaderBlock header_block,
-                     bool fin,
-                     QuicReferenceCountedPointer<QuicAckListenerInterface>
-                         ack_notifier_delegate);
+    int WriteHeaders(
+        spdy::SpdyHeaderBlock header_block,
+        bool fin,
+        quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
+            ack_notifier_delegate);
 
     // Writes |data| to the peer. Closes the write side if |fin| is true.
     // If the data could not be written immediately, returns ERR_IO_PENDING
@@ -108,11 +111,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     void SetPriority(spdy::SpdyPriority priority);
 
     // Sends a RST_STREAM frame to the peer and closes the streams.
-    void Reset(QuicRstStreamErrorCode error_code);
+    void Reset(quic::QuicRstStreamErrorCode error_code);
 
-    QuicStreamId id() const;
-    QuicErrorCode connection_error() const;
-    QuicRstStreamErrorCode stream_error() const;
+    quic::QuicStreamId id() const;
+    quic::QuicErrorCode connection_error() const;
+    quic::QuicRstStreamErrorCode stream_error() const;
     bool fin_sent() const;
     bool fin_received() const;
     uint64_t stream_bytes_read() const;
@@ -123,9 +126,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     bool IsFirstStream() const;
 
     // TODO(rch): Move these test-only methods to a peer, or else remove.
-    void OnPromiseHeaderList(QuicStreamId promised_id,
+    void OnPromiseHeaderList(quic::QuicStreamId promised_id,
                              size_t frame_len,
-                             const QuicHeaderList& header_list);
+                             const quic::QuicHeaderList& header_list);
     bool can_migrate();
 
     const NetLogWithSource& net_log() const;
@@ -174,9 +177,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
     // asynchronously.
     CompletionCallback write_callback_;
 
-    QuicStreamId id_;
-    QuicErrorCode connection_error_;
-    QuicRstStreamErrorCode stream_error_;
+    quic::QuicStreamId id_;
+    quic::QuicErrorCode connection_error_;
+    quic::QuicRstStreamErrorCode stream_error_;
     bool fin_sent_;
     bool fin_received_;
     uint64_t stream_bytes_read_;
@@ -195,39 +198,42 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   };
 
   QuicChromiumClientStream(
-      QuicStreamId id,
-      QuicSpdyClientSessionBase* session,
+      quic::QuicStreamId id,
+      quic::QuicSpdyClientSessionBase* session,
       const NetLogWithSource& net_log,
       const NetworkTrafficAnnotationTag& traffic_annotation);
 
   ~QuicChromiumClientStream() override;
 
-  // QuicSpdyStream
-  void OnInitialHeadersComplete(bool fin,
-                                size_t frame_len,
-                                const QuicHeaderList& header_list) override;
-  void OnTrailingHeadersComplete(bool fin,
-                                 size_t frame_len,
-                                 const QuicHeaderList& header_list) override;
-  void OnPromiseHeaderList(QuicStreamId promised_id,
+  // quic::QuicSpdyStream
+  void OnInitialHeadersComplete(
+      bool fin,
+      size_t frame_len,
+      const quic::QuicHeaderList& header_list) override;
+  void OnTrailingHeadersComplete(
+      bool fin,
+      size_t frame_len,
+      const quic::QuicHeaderList& header_list) override;
+  void OnPromiseHeaderList(quic::QuicStreamId promised_id,
                            size_t frame_len,
-                           const QuicHeaderList& header_list) override;
+                           const quic::QuicHeaderList& header_list) override;
   void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
-  size_t WriteHeaders(spdy::SpdyHeaderBlock header_block,
-                      bool fin,
-                      QuicReferenceCountedPointer<QuicAckListenerInterface>
-                          ack_listener) override;
+  size_t WriteHeaders(
+      spdy::SpdyHeaderBlock header_block,
+      bool fin,
+      quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
+          ack_listener) override;
 
   // While the server's set_priority shouldn't be called externally, the creator
   // of client-side streams should be able to set the priority.
-  using QuicSpdyStream::SetPriority;
+  using quic::QuicSpdyStream::SetPriority;
 
   // Writes |data| to the peer and closes the write side if |fin| is true.
   // Returns true if the data have been fully written. If the data was not fully
   // written, returns false and OnCanWrite() will be invoked later.
-  bool WriteStreamData(QuicStringPiece data, bool fin);
+  bool WriteStreamData(quic::QuicStringPiece data, bool fin);
   // Same as WriteStreamData except it writes data from a vector of IOBuffers,
   // with the length of each buffer at the corresponding index in |lengths|.
   bool WritevStreamData(const std::vector<scoped_refptr<IOBuffer>>& buffers,
@@ -262,8 +268,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   bool DeliverTrailingHeaders(spdy::SpdyHeaderBlock* header_block,
                               int* frame_len);
 
-  using QuicSpdyStream::HasBufferedData;
-  using QuicStream::sequencer;
+  using quic::QuicSpdyStream::HasBufferedData;
+  using quic::QuicStream::sequencer;
 
  private:
   void NotifyHandleOfInitialHeadersAvailableLater();
@@ -281,7 +287,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   // True when initial headers have been sent.
   bool initial_headers_sent_;
 
-  QuicSpdyClientSessionBase* session_;
+  quic::QuicSpdyClientSessionBase* session_;
 
   // Set to false if this stream to not be migrated during connection migration.
   bool can_migrate_;

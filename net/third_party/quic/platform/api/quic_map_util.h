@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/platform/impl/quic_map_util_impl.h"
 
-namespace net {
+namespace quic {
 
 template <class Collection, class Key>
 bool QuicContainsKey(const Collection& collection, const Key& key) {
@@ -19,6 +19,6 @@ bool QuicContainsValue(const Collection& collection, const Value& value) {
   return QuicContainsValueImpl(collection, value);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_MAP_UTIL_H_

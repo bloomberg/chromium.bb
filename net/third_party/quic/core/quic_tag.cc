@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace net {
+namespace quic {
 
 bool FindMutualQuicTag(const QuicTagVector& our_tags,
                        const QuicTagVector& their_tags,
@@ -67,4 +67,4 @@ bool ContainsQuicTag(const QuicTagVector& tag_vector, QuicTag tag) {
   return base::ContainsValue(tag_vector, tag);
 }
 
-}  // namespace net
+}  // namespace quic

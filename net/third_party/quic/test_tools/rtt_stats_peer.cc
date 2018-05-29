@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/rtt_stats_peer.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -18,4 +18,4 @@ void RttStatsPeer::SetMinRtt(RttStats* rtt_stats, QuicTime::Delta rtt_ms) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

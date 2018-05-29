@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
 
-namespace net {
+namespace quic {
 
 class MockClock : public QuicClock {
  public:
@@ -35,6 +35,6 @@ class MockClock : public QuicClock {
   DISALLOW_COPY_AND_ASSIGN(MockClock);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_MOCK_CLOCK_H_

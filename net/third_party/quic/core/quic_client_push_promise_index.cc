@@ -10,7 +10,7 @@
 
 using spdy::SpdyHeaderBlock;
 
-namespace net {
+namespace quic {
 
 QuicClientPushPromiseIndex::QuicClientPushPromiseIndex() {}
 
@@ -44,4 +44,4 @@ QuicAsyncStatus QuicClientPushPromiseIndex::Try(
   return QUIC_FAILURE;
 }
 
-}  // namespace net
+}  // namespace quic

@@ -11,7 +11,7 @@
 
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicBlockedWriterInterface {
  public:
@@ -22,6 +22,6 @@ class QUIC_EXPORT_PRIVATE QuicBlockedWriterInterface {
   virtual void OnBlockedWriterCanWrite() = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_BLOCKED_WRITER_INTERFACE_H_

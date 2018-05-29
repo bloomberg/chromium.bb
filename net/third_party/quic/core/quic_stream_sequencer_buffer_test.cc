@@ -20,7 +20,7 @@
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock_mutant.h"
 
-namespace net {
+namespace quic {
 
 namespace test {
 
@@ -941,4 +941,4 @@ TEST_F(QuicStreamSequencerBufferRandomIOTest, RandomWriteAndConsumeInPlace) {
 
 }  // namespace test
 
-}  // namespace net
+}  // namespace quic

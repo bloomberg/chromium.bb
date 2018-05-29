@@ -19,7 +19,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 CryptoHandshakeMessage::CryptoHandshakeMessage() : tag_(0), minimum_size_(0) {}
 
@@ -384,4 +384,4 @@ QuicString CryptoHandshakeMessage::DebugStringInternal(
   return ret;
 }
 
-}  // namespace net
+}  // namespace quic

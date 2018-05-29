@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/platform/impl/quic_mutex_impl.h"
 
-namespace net {
+namespace quic {
 
 // A class representing a non-reentrant mutex in QUIC.
 class QUIC_EXPORT_PRIVATE LOCKABLE QuicMutex {
@@ -66,6 +66,6 @@ class QUIC_EXPORT_PRIVATE SCOPED_LOCKABLE QuicWriterMutexLock {
   DISALLOW_COPY_AND_ASSIGN(QuicWriterMutexLock);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_MUTEX_H_

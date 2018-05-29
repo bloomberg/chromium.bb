@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 typedef QuicBufferedPacketStore::BufferedPacket BufferedPacket;
 typedef QuicBufferedPacketStore::BufferedPacketList BufferedPacketList;
@@ -226,4 +226,4 @@ bool QuicBufferedPacketStore::HasChloForConnection(
   return QuicContainsKey(connections_with_chlo_, connection_id);
 }
 
-}  // namespace net
+}  // namespace quic

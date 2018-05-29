@@ -20,7 +20,7 @@
 #include "net/third_party/quic/http/tools/quic_http_random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 class QuicHttpRstStreamQuicHttpPayloadDecoderPeer {
@@ -97,4 +97,4 @@ TEST_F(QuicHttpRstStreamQuicHttpPayloadDecoderTest, AllErrors) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

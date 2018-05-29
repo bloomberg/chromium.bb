@@ -17,7 +17,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 const QuicStreamId kDataStream = 3;
@@ -372,4 +372,4 @@ void QuicEndpointMultiplexer::SetTxPort(ConstrainedPortInterface* port) {
 }
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic

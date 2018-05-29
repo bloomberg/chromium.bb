@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
     : QuicStream(id, session, /*is_static=*/false) {}
@@ -91,4 +91,4 @@ void QuartcStream::SetDelegate(QuartcStreamInterface::Delegate* delegate) {
   DCHECK(delegate_);
 }
 
-}  // namespace net
+}  // namespace quic

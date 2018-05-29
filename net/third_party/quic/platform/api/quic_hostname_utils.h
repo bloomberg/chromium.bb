@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/impl/quic_hostname_utils_impl.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicHostnameUtils {
  public:
@@ -28,6 +28,6 @@ class QUIC_EXPORT_PRIVATE QuicHostnameUtils {
   DISALLOW_COPY_AND_ASSIGN(QuicHostnameUtils);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_HOSTNAME_UTILS_H_

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_alarm.h"
 #include "net/third_party/quic/test_tools/simulator/link.h"
 
-namespace net {
+namespace quic {
 namespace simulator {
 
 // A finitely sized queue which egresses packets onto a constrained link.  The
@@ -115,6 +115,6 @@ class Queue : public Actor, public UnconstrainedPortInterface {
 };
 
 }  // namespace simulator
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_SIMULATOR_QUEUE_H_

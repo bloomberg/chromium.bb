@@ -15,7 +15,7 @@
 #include "third_party/boringssl/src/include/openssl/err.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -200,4 +200,4 @@ QuicStringPiece AeadBaseDecrypter::GetNoncePrefix() const {
                          nonce_size_ - sizeof(QuicPacketNumber));
 }
 
-}  // namespace net
+}  // namespace quic

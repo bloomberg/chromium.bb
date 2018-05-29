@@ -11,24 +11,30 @@
 #include "net/base/net_export.h"
 #include "net/third_party/quic/core/quic_server_id.h"
 
+namespace quic {
+class ProofVerifyContext;
+}  // namespace quic
+namespace net {
+class QuicChromiumClientSession;
+}  // namespace net
+namespace quic {
+class QuicCryptoClientConfig;
+
+class QuicCryptoClientStream;
+}  // namespace quic
 namespace net {
 
-class ProofVerifyContext;
-class QuicChromiumClientSession;
-class QuicCryptoClientConfig;
-class QuicCryptoClientStream;
-
-// An interface used to instantiate QuicCryptoClientStream objects. Used to
-// facilitate testing code with mock implementations.
+// An interface used to instantiate quic::QuicCryptoClientStream objects. Used
+// to facilitate testing code with mock implementations.
 class NET_EXPORT QuicCryptoClientStreamFactory {
  public:
   virtual ~QuicCryptoClientStreamFactory() {}
 
-  virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      const QuicServerId& server_id,
+  virtual quic::QuicCryptoClientStream* CreateQuicCryptoClientStream(
+      const quic::QuicServerId& server_id,
       QuicChromiumClientSession* session,
-      std::unique_ptr<ProofVerifyContext> proof_verify_context,
-      QuicCryptoClientConfig* crypto_config) = 0;
+      std::unique_ptr<quic::ProofVerifyContext> proof_verify_context,
+      quic::QuicCryptoClientConfig* crypto_config) = 0;
 
   static QuicCryptoClientStreamFactory* GetDefaultFactory();
 };

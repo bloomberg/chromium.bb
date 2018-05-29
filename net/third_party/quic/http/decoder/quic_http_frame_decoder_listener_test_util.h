@@ -13,7 +13,7 @@
 #include "net/third_party/quic/http/quic_http_constants.h"
 #include "net/third_party/quic/http/quic_http_structures.h"
 
-namespace net {
+namespace quic {
 
 // Fail if any of the methods are called. Allows a test to override only the
 // expected calls.
@@ -141,6 +141,6 @@ class LoggingQuicHttpFrameDecoderListener
   QuicHttpFrameDecoderListener* wrapped_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_HTTP_DECODER_QUIC_HTTP_FRAME_DECODER_LISTENER_TEST_UTIL_H_

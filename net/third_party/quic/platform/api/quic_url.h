@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/impl/quic_url_impl.h"
 
-namespace net {
+namespace quic {
 
 // QuicUrl stores a representation of a URL.
 class QUIC_EXPORT_PRIVATE QuicUrl {
@@ -65,6 +65,6 @@ class QUIC_EXPORT_PRIVATE QuicUrl {
   QuicUrlImpl impl_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_URL_H_

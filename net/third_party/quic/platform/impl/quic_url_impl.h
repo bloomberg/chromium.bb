@@ -9,7 +9,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "url/gurl.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicUrlImpl {
  public:
@@ -62,6 +62,6 @@ class QUIC_EXPORT_PRIVATE QuicUrlImpl {
   GURL url_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_URL_IMPL_H_

@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/core/quic_session.h"
 
-namespace net {
+namespace quic {
 
 #define ENDPOINT                                                   \
   (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
@@ -49,4 +49,4 @@ CryptoMessageParser* QuicCryptoHandshaker::crypto_message_parser() {
   return &crypto_framer_;
 }
 
-}  // namespace net
+}  // namespace quic

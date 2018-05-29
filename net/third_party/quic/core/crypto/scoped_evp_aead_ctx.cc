@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/core/crypto/scoped_evp_aead_ctx.h"
 
-namespace net {
+namespace quic {
 
 ScopedEVPAEADCtx::ScopedEVPAEADCtx() {
   ctx_.aead = nullptr;
@@ -21,4 +21,4 @@ EVP_AEAD_CTX* ScopedEVPAEADCtx::get() {
   return &ctx_;
 }
 
-}  // namespace net
+}  // namespace quic

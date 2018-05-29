@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
-namespace net {
+namespace quic {
 
 QuicStreamFrame::QuicStreamFrame() : QuicStreamFrame(0, false, 0, nullptr, 0) {}
 
@@ -43,4 +43,4 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

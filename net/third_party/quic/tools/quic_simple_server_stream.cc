@@ -17,7 +17,7 @@
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
-namespace net {
+namespace quic {
 
 QuicSimpleServerStream::QuicSimpleServerStream(
     QuicStreamId id,
@@ -291,4 +291,4 @@ const char* const QuicSimpleServerStream::kErrorResponseBody = "bad";
 const char* const QuicSimpleServerStream::kNotFoundResponseBody =
     "file not found";
 
-}  // namespace net
+}  // namespace quic

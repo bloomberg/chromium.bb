@@ -34,7 +34,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -3734,4 +3734,4 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

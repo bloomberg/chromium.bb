@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 static const uint32_t kMaxAlign = 8;
@@ -56,4 +56,4 @@ TEST_F(QuicOneBlockArenaTest, NoOverlaps) {
 }
 
 }  // namespace
-}  // namespace net
+}  // namespace quic

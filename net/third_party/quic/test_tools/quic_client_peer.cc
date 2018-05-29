@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/tools/quic_client.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 // static
@@ -32,4 +32,4 @@ void QuicClientPeer::SetWriter(QuicClient* client, QuicPacketWriter* writer) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

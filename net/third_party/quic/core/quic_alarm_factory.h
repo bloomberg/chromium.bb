@@ -9,7 +9,7 @@
 #include "net/third_party/quic/core/quic_one_block_arena.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
-namespace net {
+namespace quic {
 
 // QuicConnections currently use around 1KB of polymorphic types which would
 // ordinarily be on the heap. Instead, store them inline in an arena.
@@ -35,6 +35,6 @@ class QUIC_EXPORT_PRIVATE QuicAlarmFactory {
       QuicConnectionArena* arena) = 0;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_ALARM_FACTORY_H_

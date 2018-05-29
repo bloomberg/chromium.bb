@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -47,4 +47,4 @@ TEST_F(QuicMemSliceSpanImplTest, SaveEmptyMemSliceInSendBuffer) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

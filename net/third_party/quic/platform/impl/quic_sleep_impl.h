@@ -9,13 +9,13 @@
 #include "base/time/time.h"
 #include "net/third_party/quic/core/quic_time.h"
 
-namespace net {
+namespace quic {
 
 inline void QuicSleepImpl(QuicTime::Delta duration) {
   base::PlatformThread::Sleep(
       base::TimeDelta::FromMilliseconds(duration.ToMilliseconds()));
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SLEEP_IMPL_H_

@@ -13,7 +13,7 @@ using testing::_;
 using testing::Return;
 using testing::StrictMock;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -487,4 +487,4 @@ TEST_P(QuicUnackedPacketMapTest, SendWithGap) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

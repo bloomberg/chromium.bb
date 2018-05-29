@@ -7,7 +7,7 @@
 using testing::_;
 using testing::Invoke;
 
-namespace net {
+namespace quic {
 namespace test {
 
 MockTimeWaitListManager::MockTimeWaitListManager(
@@ -29,4 +29,4 @@ MockTimeWaitListManager::MockTimeWaitListManager(
 MockTimeWaitListManager::~MockTimeWaitListManager() = default;
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -8,7 +8,7 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 
-namespace net {
+namespace quic {
 
 QuicUnackedPacketMap::QuicUnackedPacketMap()
     : largest_sent_packet_(0),
@@ -400,4 +400,4 @@ void QuicUnackedPacketMap::SetSessionDecideWhatToWrite(
   session_decides_what_to_write_ = session_decides_what_to_write;
 }
 
-}  // namespace net
+}  // namespace quic

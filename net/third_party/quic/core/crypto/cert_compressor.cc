@@ -14,7 +14,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -645,4 +645,4 @@ bool CertCompressor::DecompressChain(
   return true;
 }
 
-}  // namespace net
+}  // namespace quic

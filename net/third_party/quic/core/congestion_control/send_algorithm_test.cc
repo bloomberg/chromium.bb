@@ -25,7 +25,7 @@
 #include "net/third_party/quic/test_tools/simulator/simulator.h"
 #include "net/third_party/quic/test_tools/simulator/switch.h"
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -374,4 +374,4 @@ TEST_P(SendAlgorithmTest, LowRTTTransfer) {
 }
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

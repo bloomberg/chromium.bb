@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicUrlUtilsImpl {
  public:
@@ -33,6 +33,6 @@ class QUIC_EXPORT_PRIVATE QuicUrlUtilsImpl {
   DISALLOW_COPY_AND_ASSIGN(QuicUrlUtilsImpl);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_URL_UTILS_IMPL_H_

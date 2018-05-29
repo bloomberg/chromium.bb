@@ -45,7 +45,7 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
     certs.emplace_back(
         x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
   }
-  chain_ = new ProofSource::Chain(certs);
+  chain_ = new quic::ProofSource::Chain(certs);
 
   std::string key_data;
   if (!base::ReadFileToString(key_path, &key_data)) {
@@ -74,13 +74,13 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
 }
 
 bool ProofSourceChromium::GetProofInner(
-    const QuicSocketAddress& server_addr,
+    const quic::QuicSocketAddress& server_addr,
     const string& hostname,
     const string& server_config,
-    QuicTransportVersion quic_version,
-    QuicStringPiece chlo_hash,
-    QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
-    QuicCryptoProof* proof) {
+    quic::QuicTransportVersion quic_version,
+    quic::QuicStringPiece chlo_hash,
+    quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>* out_chain,
+    quic::QuicCryptoProof* proof) {
   DCHECK(proof != nullptr);
   DCHECK(private_key_.get()) << " this: " << this;
 
@@ -95,8 +95,8 @@ bool ProofSourceChromium::GetProofInner(
       !EVP_PKEY_CTX_set_rsa_pss_saltlen(pkey_ctx, -1) ||
       !EVP_DigestSignUpdate(
           sign_context.get(),
-          reinterpret_cast<const uint8_t*>(kProofSignatureLabel),
-          sizeof(kProofSignatureLabel)) ||
+          reinterpret_cast<const uint8_t*>(quic::kProofSignatureLabel),
+          sizeof(quic::kProofSignatureLabel)) ||
       !EVP_DigestSignUpdate(sign_context.get(),
                             reinterpret_cast<const uint8_t*>(&len_tmp),
                             sizeof(len_tmp)) ||
@@ -129,35 +129,35 @@ bool ProofSourceChromium::GetProofInner(
   return true;
 }
 
-void ProofSourceChromium::GetProof(const QuicSocketAddress& server_addr,
+void ProofSourceChromium::GetProof(const quic::QuicSocketAddress& server_addr,
                                    const std::string& hostname,
                                    const std::string& server_config,
-                                   QuicTransportVersion quic_version,
-                                   QuicStringPiece chlo_hash,
+                                   quic::QuicTransportVersion quic_version,
+                                   quic::QuicStringPiece chlo_hash,
                                    std::unique_ptr<Callback> callback) {
   // As a transitional implementation, just call the synchronous version of
   // GetProof, then invoke the callback with the results and destroy it.
-  QuicReferenceCountedPointer<ProofSource::Chain> chain;
+  quic::QuicReferenceCountedPointer<quic::ProofSource::Chain> chain;
   string signature;
   string leaf_cert_sct;
-  QuicCryptoProof out_proof;
+  quic::QuicCryptoProof out_proof;
 
   const bool ok = GetProofInner(server_addr, hostname, server_config,
                                 quic_version, chlo_hash, &chain, &out_proof);
   callback->Run(ok, chain, out_proof, nullptr /* details */);
 }
 
-QuicReferenceCountedPointer<ProofSource::Chain>
-ProofSourceChromium::GetCertChain(const QuicSocketAddress& server_address,
+quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>
+ProofSourceChromium::GetCertChain(const quic::QuicSocketAddress& server_address,
                                   const std::string& hostname) {
   return chain_;
 }
 
 void ProofSourceChromium::ComputeTlsSignature(
-    const QuicSocketAddress& server_address,
+    const quic::QuicSocketAddress& server_address,
     const std::string& hostname,
     uint16_t signature_algorithm,
-    QuicStringPiece in,
+    quic::QuicStringPiece in,
     std::unique_ptr<SignatureCallback> callback) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   bssl::ScopedEVP_MD_CTX sign_context;

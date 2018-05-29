@@ -17,7 +17,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 MockCryptoClientStream::MockCryptoClientStream(
     const QuicServerId& server_id,
@@ -26,7 +26,7 @@ MockCryptoClientStream::MockCryptoClientStream(
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
-    const ProofVerifyDetailsChromium* proof_verify_details,
+    const net::ProofVerifyDetailsChromium* proof_verify_details,
     bool use_mock_crypter)
     : QuicCryptoClientStream(server_id,
                              session,
@@ -215,4 +215,4 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   session()->OnConfigNegotiated();
 }
 
-}  // namespace net
+}  // namespace quic

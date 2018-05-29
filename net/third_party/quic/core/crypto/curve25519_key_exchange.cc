@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
-namespace net {
+namespace quic {
 
 Curve25519KeyExchange::Curve25519KeyExchange() {}
 
@@ -76,4 +76,4 @@ QuicTag Curve25519KeyExchange::tag() const {
   return kC255;
 }
 
-}  // namespace net
+}  // namespace quic

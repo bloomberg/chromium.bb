@@ -10,7 +10,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 // The StatelessRejector receives CHLO messages and generates an SREJ
 // message in response, if the CHLO can be statelessly rejected.
@@ -114,6 +114,6 @@ class StatelessRejector {
   DISALLOW_COPY_AND_ASSIGN(StatelessRejector);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_STATELESS_REJECTOR_H_

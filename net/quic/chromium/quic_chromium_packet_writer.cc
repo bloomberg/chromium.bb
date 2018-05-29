@@ -86,7 +86,7 @@ QuicChromiumPacketWriter::QuicChromiumPacketWriter(
     base::SequencedTaskRunner* task_runner)
     : socket_(socket),
       delegate_(nullptr),
-      packet_(new ReusableIOBuffer(kMaxPacketSize)),
+      packet_(new ReusableIOBuffer(quic::kMaxPacketSize)),
       write_blocked_(false),
       retry_count_(0),
       weak_factory_(this) {
@@ -100,7 +100,7 @@ QuicChromiumPacketWriter::~QuicChromiumPacketWriter() {}
 void QuicChromiumPacketWriter::SetPacket(const char* buffer, size_t buf_len) {
   if (UNLIKELY(!packet_)) {
     packet_ = new ReusableIOBuffer(
-        std::max(buf_len, static_cast<size_t>(kMaxPacketSize)));
+        std::max(buf_len, static_cast<size_t>(quic::kMaxPacketSize)));
     RecordNotReusableReason(NOT_REUSABLE_NULLPTR);
   }
   if (UNLIKELY(packet_->capacity() < buf_len)) {
@@ -109,37 +109,37 @@ void QuicChromiumPacketWriter::SetPacket(const char* buffer, size_t buf_len) {
   }
   if (UNLIKELY(!packet_->HasOneRef())) {
     packet_ = new ReusableIOBuffer(
-        std::max(buf_len, static_cast<size_t>(kMaxPacketSize)));
+        std::max(buf_len, static_cast<size_t>(quic::kMaxPacketSize)));
     RecordNotReusableReason(NOT_REUSABLE_REF_COUNT);
   }
   packet_->Set(buffer, buf_len);
 }
 
-WriteResult QuicChromiumPacketWriter::WritePacket(
+quic::WriteResult QuicChromiumPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
-    const QuicIpAddress& self_address,
-    const QuicSocketAddress& peer_address,
-    PerPacketOptions* /*options*/) {
+    const quic::QuicIpAddress& self_address,
+    const quic::QuicSocketAddress& peer_address,
+    quic::PerPacketOptions* /*options*/) {
   DCHECK(!IsWriteBlocked());
   SetPacket(buffer, buf_len);
   return WritePacketToSocketImpl();
 }
 
-WriteResult QuicChromiumPacketWriter::WritePacketToSocket(
+quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocket(
     scoped_refptr<ReusableIOBuffer> packet) {
   packet_ = std::move(packet);
   return QuicChromiumPacketWriter::WritePacketToSocketImpl();
 }
 
-WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
+quic::WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
   base::TimeTicks now = base::TimeTicks::Now();
 
   int rv = socket_->Write(packet_.get(), packet_->size(), write_callback_,
                           kTrafficAnnotation);
 
   if (MaybeRetryAfterWriteError(rv))
-    return WriteResult(WRITE_STATUS_BLOCKED, ERR_IO_PENDING);
+    return quic::WriteResult(quic::WRITE_STATUS_BLOCKED, ERR_IO_PENDING);
 
   if (rv < 0 && rv != ERR_IO_PENDING && delegate_ != nullptr) {
     // If write error, then call delegate's HandleWriteError, which
@@ -149,29 +149,29 @@ WriteResult QuicChromiumPacketWriter::WritePacketToSocketImpl() {
     DCHECK(packet_ == nullptr);
   }
 
-  WriteStatus status = WRITE_STATUS_OK;
+  quic::WriteStatus status = quic::WRITE_STATUS_OK;
   if (rv < 0) {
     if (rv != ERR_IO_PENDING) {
-      status = WRITE_STATUS_ERROR;
+      status = quic::WRITE_STATUS_ERROR;
     } else {
-      status = WRITE_STATUS_BLOCKED;
+      status = quic::WRITE_STATUS_BLOCKED;
       write_blocked_ = true;
     }
   }
 
   base::TimeDelta delta = base::TimeTicks::Now() - now;
-  if (status == WRITE_STATUS_OK) {
+  if (status == quic::WRITE_STATUS_OK) {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.PacketWriteTime.Synchronous", delta);
-  } else if (status == WRITE_STATUS_BLOCKED) {
+  } else if (status == quic::WRITE_STATUS_BLOCKED) {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.PacketWriteTime.Asynchronous", delta);
   }
 
-  return WriteResult(status, rv);
+  return quic::WriteResult(status, rv);
 }
 
 void QuicChromiumPacketWriter::RetryPacketAfterNoBuffers() {
   DCHECK_GT(retry_count_, 0);
-  WriteResult result = WritePacketToSocketImpl();
+  quic::WriteResult result = WritePacketToSocketImpl();
   if (result.error_code != ERR_IO_PENDING)
     OnWriteComplete(result.error_code);
 }
@@ -235,9 +235,9 @@ bool QuicChromiumPacketWriter::MaybeRetryAfterWriteError(int rv) {
   return true;
 }
 
-QuicByteCount QuicChromiumPacketWriter::GetMaxPacketSize(
-    const QuicSocketAddress& peer_address) const {
-  return kMaxPacketSize;
+quic::QuicByteCount QuicChromiumPacketWriter::GetMaxPacketSize(
+    const quic::QuicSocketAddress& peer_address) const {
+  return quic::kMaxPacketSize;
 }
 
 }  // namespace net

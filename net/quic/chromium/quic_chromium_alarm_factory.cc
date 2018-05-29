@@ -15,15 +15,15 @@ namespace net {
 
 namespace {
 
-class QuicChromeAlarm : public QuicAlarm {
+class QuicChromeAlarm : public quic::QuicAlarm {
  public:
-  QuicChromeAlarm(const QuicClock* clock,
+  QuicChromeAlarm(const quic::QuicClock* clock,
                   base::TaskRunner* task_runner,
-                  QuicArenaScopedPtr<QuicAlarm::Delegate> delegate)
-      : QuicAlarm(std::move(delegate)),
+                  quic::QuicArenaScopedPtr<quic::QuicAlarm::Delegate> delegate)
+      : quic::QuicAlarm(std::move(delegate)),
         clock_(clock),
         task_runner_(task_runner),
-        task_deadline_(QuicTime::Zero()),
+        task_deadline_(quic::QuicTime::Zero()),
         weak_factory_(this) {}
 
  protected:
@@ -61,7 +61,7 @@ class QuicChromeAlarm : public QuicAlarm {
  private:
   void OnAlarm() {
     DCHECK(task_deadline_.IsInitialized());
-    task_deadline_ = QuicTime::Zero();
+    task_deadline_ = quic::QuicTime::Zero();
     // The alarm may have been cancelled.
     if (!deadline().IsInitialized()) {
       return;
@@ -76,14 +76,14 @@ class QuicChromeAlarm : public QuicAlarm {
     Fire();
   }
 
-  const QuicClock* clock_;
+  const quic::QuicClock* clock_;
   base::TaskRunner* task_runner_;
   // If a task has been posted to the message loop, this is the time it
   // was scheduled to fire.  Tracking this allows us to avoid posting a
   // new tast if the new deadline is in the future, but permits us to
   // post a new task when the new deadline now earlier than when
   // previously posted.
-  QuicTime task_deadline_;
+  quic::QuicTime task_deadline_;
   base::WeakPtrFactory<QuicChromeAlarm> weak_factory_;
 };
 
@@ -91,27 +91,28 @@ class QuicChromeAlarm : public QuicAlarm {
 
 QuicChromiumAlarmFactory::QuicChromiumAlarmFactory(
     base::TaskRunner* task_runner,
-    const QuicClock* clock)
+    const quic::QuicClock* clock)
     : task_runner_(task_runner), clock_(clock), weak_factory_(this) {}
 
 QuicChromiumAlarmFactory::~QuicChromiumAlarmFactory() {}
 
-QuicArenaScopedPtr<QuicAlarm> QuicChromiumAlarmFactory::CreateAlarm(
-    QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
-    QuicConnectionArena* arena) {
+quic::QuicArenaScopedPtr<quic::QuicAlarm> QuicChromiumAlarmFactory::CreateAlarm(
+    quic::QuicArenaScopedPtr<quic::QuicAlarm::Delegate> delegate,
+    quic::QuicConnectionArena* arena) {
   if (arena != nullptr) {
     return arena->New<QuicChromeAlarm>(clock_, task_runner_,
                                        std::move(delegate));
   } else {
-    return QuicArenaScopedPtr<QuicAlarm>(
+    return quic::QuicArenaScopedPtr<quic::QuicAlarm>(
         new QuicChromeAlarm(clock_, task_runner_, std::move(delegate)));
   }
 }
 
-QuicAlarm* QuicChromiumAlarmFactory::CreateAlarm(
-    QuicAlarm::Delegate* delegate) {
-  return new QuicChromeAlarm(clock_, task_runner_,
-                             QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
+quic::QuicAlarm* QuicChromiumAlarmFactory::CreateAlarm(
+    quic::QuicAlarm::Delegate* delegate) {
+  return new QuicChromeAlarm(
+      clock_, task_runner_,
+      quic::QuicArenaScopedPtr<quic::QuicAlarm::Delegate>(delegate));
 }
 
 }  // namespace net

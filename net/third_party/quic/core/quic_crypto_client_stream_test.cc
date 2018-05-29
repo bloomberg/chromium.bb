@@ -27,7 +27,7 @@
 
 using testing::_;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -38,7 +38,7 @@ class QuicCryptoClientStreamTest : public QuicTest {
  public:
   QuicCryptoClientStreamTest()
       : supported_versions_(AllSupportedVersions()),
-        server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
+        server_id_(kServerHostname, kServerPort, net::PRIVACY_MODE_DISABLED),
         crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                        TlsClientHandshaker::CreateSslCtx()) {
     SetQuicReloadableFlag(quic_respect_ietf_header, true);
@@ -369,7 +369,8 @@ TEST_F(QuicCryptoClientStreamTest, TokenBindingNotNegotiated) {
 TEST_F(QuicCryptoClientStreamTest, NoTokenBindingInPrivacyMode) {
   server_options_.token_binding_params = QuicTagVector{kTB10};
   crypto_config_.tb_key_params = QuicTagVector{kTB10};
-  server_id_ = QuicServerId(kServerHostname, kServerPort, PRIVACY_MODE_ENABLED);
+  server_id_ =
+      QuicServerId(kServerHostname, kServerPort, net::PRIVACY_MODE_ENABLED);
   CreateConnection();
 
   CompleteCryptoHandshake();
@@ -389,7 +390,7 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
                               TlsServerHandshaker::CreateSslCtx()),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
-        server_id_(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED) {
+        server_id_(kServerHostname, kServerPort, net::PRIVACY_MODE_DISABLED) {
     SetQuicReloadableFlag(quic_respect_ietf_header, true);
     TestQuicSpdyClientSession* client_session = nullptr;
     CreateClientSessionForTest(server_id_,
@@ -490,4 +491,4 @@ TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

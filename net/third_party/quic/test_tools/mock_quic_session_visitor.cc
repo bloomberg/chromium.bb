@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/test_tools/mock_quic_session_visitor.h"
 
-namespace net {
+namespace quic {
 namespace test {
 
 MockQuicSessionVisitor::MockQuicSessionVisitor() = default;
@@ -16,4 +16,4 @@ MockQuicCryptoServerStreamHelper::MockQuicCryptoServerStreamHelper() = default;
 MockQuicCryptoServerStreamHelper::~MockQuicCryptoServerStreamHelper() = default;
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

@@ -10,7 +10,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/impl/quic_str_cat_impl.h"
 
-namespace net {
+namespace quic {
 
 template <typename... Args>
 inline QuicString QuicStrCat(const Args&... args) {
@@ -22,6 +22,6 @@ inline QuicString QuicStringPrintf(const Args&... args) {
   return QuicStringPrintfImpl(std::forward<const Args&>(args)...);
 }
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_STR_CAT_H_

@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 // Constants based on TCP defaults.
@@ -819,4 +819,4 @@ std::ostream& operator<<(std::ostream& os, const BbrSender::DebugState& state) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic

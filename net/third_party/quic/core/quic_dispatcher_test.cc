@@ -56,7 +56,7 @@ static const size_t kMaxConnectionsWithoutCHLO =
     kDefaultMaxConnectionsInStore / 2;
 static const int16_t kMaxNumSessionsToCreate = 16;
 
-namespace net {
+namespace quic {
 namespace test {
 namespace {
 
@@ -119,7 +119,7 @@ class TestDispatcher : public QuicDispatcher {
   TestDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig* crypto_config,
                  QuicVersionManager* version_manager,
-                 EpollServer* eps)
+                 net::EpollServer* eps)
       : QuicDispatcher(
             config,
             crypto_config,
@@ -351,7 +351,7 @@ class QuicDispatcherTest : public QuicTest {
 
   QuicString SerializeTlsClientHello() { return ""; }
 
-  EpollServer eps_;
+  net::EpollServer eps_;
   QuicEpollConnectionHelper helper_;
   MockQuicConnectionHelper mock_helper_;
   QuicEpollAlarmFactory alarm_factory_;
@@ -1422,7 +1422,7 @@ class BufferedPacketStoreTest
     CryptoHandshakeMessage chlo =
         crypto_test_utils::GenerateDefaultInchoateCHLO(clock_, version,
                                                        &crypto_config_);
-    chlo.SetVector(net::kCOPT, net::QuicTagVector{net::kSREJ});
+    chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
     // Pass an inchoate CHLO.
     crypto_test_utils::GenerateFullCHLO(
         chlo, &crypto_config_, server_addr_, client_addr_, version, clock_,
@@ -1841,7 +1841,7 @@ class AsyncGetProofTest : public QuicDispatcherTest {
     QuicTransportVersion version = AllSupportedTransportVersions().front();
     chlo_ = crypto_test_utils::GenerateDefaultInchoateCHLO(clock_, version,
                                                            &crypto_config_);
-    chlo_.SetVector(net::kCOPT, net::QuicTagVector{net::kSREJ});
+    chlo_.SetVector(kCOPT, QuicTagVector{kSREJ});
     chlo_.SetStringPiece(kALPN, "HTTP/1");
     // Pass an inchoate CHLO.
     crypto_test_utils::GenerateFullCHLO(
@@ -2445,4 +2445,4 @@ TEST_F(AsyncGetProofTest, DispatcherFailedToPickUpVersionForAsyncProof) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net
+}  // namespace quic

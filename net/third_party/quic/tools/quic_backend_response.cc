@@ -4,7 +4,7 @@
 
 #include "net/third_party/quic/tools/quic_backend_response.h"
 
-namespace net {
+namespace quic {
 
 QuicBackendResponse::ServerPushInfo::ServerPushInfo(
     QuicUrl request_url,
@@ -26,4 +26,4 @@ QuicBackendResponse::QuicBackendResponse() : response_type_(REGULAR_RESPONSE) {}
 
 QuicBackendResponse::~QuicBackendResponse() = default;
 
-}  // namespace net
+}  // namespace quic

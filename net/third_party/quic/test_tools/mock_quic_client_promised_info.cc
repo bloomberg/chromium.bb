@@ -6,7 +6,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 namespace test {
 
 MockQuicClientPromisedInfo::MockQuicClientPromisedInfo(
@@ -18,4 +18,4 @@ MockQuicClientPromisedInfo::MockQuicClientPromisedInfo(
 MockQuicClientPromisedInfo::~MockQuicClientPromisedInfo() {}
 
 }  // namespace test
-}  // namespace net
+}  // namespace quic

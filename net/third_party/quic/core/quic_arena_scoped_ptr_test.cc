@@ -7,7 +7,7 @@
 #include "net/third_party/quic/core/quic_one_block_arena.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
-namespace net {
+namespace quic {
 namespace {
 
 enum class TestParam { kFromHeap, kFromArena };
@@ -99,4 +99,4 @@ TEST_P(QuicArenaScopedPtrParamTest, Swap) {
 }
 
 }  // namespace
-}  // namespace net
+}  // namespace quic

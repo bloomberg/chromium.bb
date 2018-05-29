@@ -14,7 +14,7 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-namespace net {
+namespace quic {
 
 class QUIC_EXPORT_PRIVATE QuicDecrypter {
  public:
@@ -132,6 +132,6 @@ class QUIC_EXPORT_PRIVATE QuicDecrypter {
                                       QuicString* out_nonce_prefix);
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_QUIC_DECRYPTER_H_

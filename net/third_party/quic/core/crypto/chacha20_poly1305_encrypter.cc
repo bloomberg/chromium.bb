@@ -6,7 +6,7 @@
 
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
-namespace net {
+namespace quic {
 
 namespace {
 
@@ -27,4 +27,4 @@ ChaCha20Poly1305Encrypter::ChaCha20Poly1305Encrypter()
 
 ChaCha20Poly1305Encrypter::~ChaCha20Poly1305Encrypter() {}
 
-}  // namespace net
+}  // namespace quic

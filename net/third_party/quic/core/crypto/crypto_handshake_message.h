@@ -16,7 +16,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
 
-namespace net {
+namespace quic {
 
 // An intermediate format of a handshake message that's convenient for a
 // CryptoFramer to serialize from or parse into.
@@ -150,6 +150,6 @@ class QUIC_EXPORT_PRIVATE CryptoHandshakeMessage {
   mutable std::unique_ptr<QuicData> serialized_;
 };
 
-}  // namespace net
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_CRYPTO_CRYPTO_HANDSHAKE_MESSAGE_H_

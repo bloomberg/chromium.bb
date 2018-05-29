@@ -9,7 +9,7 @@
 
 using std::string;
 
-namespace net {
+namespace quic {
 
 QuicFrame::QuicFrame() {}
 
@@ -306,4 +306,4 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
   return os;
 }
 
-}  // namespace net
+}  // namespace quic
