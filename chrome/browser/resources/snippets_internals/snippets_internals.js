@@ -219,10 +219,9 @@ function setupEventListeners() {
   });
 
   $('background-fetch-button').addEventListener('click', function(event) {
-    const content = $('background-fetch-button').textContent;
-    $('background-fetch-button').textContent = '...';
+    $('background-fetch-button').disabled = true;
     pageHandler.fetchSuggestionsInBackground(2).then(function(response) {
-      $('background-fetch-button').textContent = content;
+      $('background-fetch-button').disabled = false;
       $('last-json-container').classList.add('hidden');
       $('last-json-button').textContent = 'Show the last JSON';
 
