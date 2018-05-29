@@ -11,7 +11,7 @@
 #include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/assistant/ui/logo_view/shape/mic_part_shape.h"
 #include "base/macros.h"
-#include "base/time/time.h"
+#include "chromeos/assistant/internal/logo_view/input_value_provider/sound_level_input_value_provider.h"
 #include "chromeos/assistant/internal/logo_view/logo_model/logo.h"
 #include "chromeos/assistant/internal/logo_view/state_animator.h"
 #include "chromeos/assistant/internal/logo_view/state_animator_timer_delegate.h"
@@ -57,6 +57,7 @@ class LogoView : public BaseLogoView,
 
   // BaseLogoView:
   void SetState(State state, bool animate) override;
+  void SetSpeechLevel(float speech_level) override;
 
   // chromeos::assistant::StateAnimatorTimerDelegate:
   int64_t StartTimer() override;
@@ -93,6 +94,9 @@ class LogoView : public BaseLogoView,
   ui::Compositor* animating_compositor_ = nullptr;
 
   float dots_scale_ = 1.0f;
+
+  chromeos::assistant::SoundLevelInputValueProvider
+      sound_level_input_value_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(LogoView);
 };

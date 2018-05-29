@@ -15,8 +15,8 @@ class BaseLogoView : public views::View {
   enum class State {
     kUndefined,
     kListening,
-    kMic,
     kMicFab,
+    kUserSpeaks,
   };
 
   BaseLogoView();
@@ -24,6 +24,10 @@ class BaseLogoView : public views::View {
 
   // If |animate| is true, animates to the |state|.
   virtual void SetState(State state, bool animate) {}
+
+  // Set the speech level for kUserSpeaks state. |speech_level| is the last
+  // observed speech level in dB.
+  virtual void SetSpeechLevel(float speech_level) {}
 
   // Creates LogoView based on the build flag ENABLE_CROS_LIBASSISTANT.
   static BaseLogoView* Create();
