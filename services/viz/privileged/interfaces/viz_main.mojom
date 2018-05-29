@@ -9,6 +9,7 @@ import "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojo
 import "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_host.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_service.mojom";
+import "ui/gfx/mojo/font_render_params.mojom";
 
 struct FrameSinkManagerParams {
   // An id that changes for each viz process restart.
@@ -35,5 +36,6 @@ interface VizMain {
   CreateGpuService(GpuService& gpu_service,
                    GpuHost gpu_host,
                    discardable_memory.mojom.DiscardableSharedMemoryManager discardable_memory_manager,
-                   handle<shared_buffer>? activity_flags);
+                   handle<shared_buffer>? activity_flags,
+                   gfx.mojom.SubpixelRendering subpixel_rendering);
 };

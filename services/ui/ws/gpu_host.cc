@@ -80,7 +80,9 @@ DefaultGpuHost::DefaultGpuHost(
   gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
   viz_main_->CreateGpuService(
       MakeRequest(&gpu_service_), std::move(gpu_host_proxy),
-      std::move(discardable_manager_ptr), mojo::ScopedSharedBufferHandle());
+      std::move(discardable_manager_ptr), mojo::ScopedSharedBufferHandle(),
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)
+          .subpixel_rendering);
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::ServerGpuMemoryBufferManager>(
           gpu_service_.get(), next_client_id_++,

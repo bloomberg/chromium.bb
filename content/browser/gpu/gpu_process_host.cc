@@ -23,6 +23,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -73,6 +74,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/latency/latency_info.h"
@@ -455,6 +457,16 @@ void BindDiscardableMemoryRequestOnUI(
           BrowserMainLoop::GetInstance()->discardable_shared_memory_manager()));
 }
 
+struct FontRenderParamsOnIO {
+  bool initialized = false;
+  gfx::FontRenderParams params;
+};
+
+FontRenderParamsOnIO& GetFontRenderParamsOnIO() {
+  static base::NoDestructor<FontRenderParamsOnIO> instance;
+  return *instance;
+}
+
 }  // anonymous namespace
 
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
@@ -486,6 +498,16 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
+
+// static
+void GpuProcessHost::InitFontRenderParamsOnIO(
+    const gfx::FontRenderParams& params) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!GetFontRenderParamsOnIO().initialized);
+
+  GetFontRenderParamsOnIO().initialized = true;
+  GetFontRenderParamsOnIO().params = params;
+}
 
 // static
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
@@ -850,9 +872,11 @@ bool GpuProcessHost::Init() {
                           base::BindOnce(&BindDiscardableMemoryRequestOnUI,
                                          std::move(discardable_request)));
 
+  DCHECK(GetFontRenderParamsOnIO().initialized);
   gpu_main_ptr_->CreateGpuService(
       mojo::MakeRequest(&gpu_service_ptr_), std::move(host_proxy),
-      std::move(discardable_manager_ptr), activity_flags_.CloneHandle());
+      std::move(discardable_manager_ptr), activity_flags_.CloneHandle(),
+      GetFontRenderParamsOnIO().params.subpixel_rendering);
 
 #if defined(USE_OZONE)
   InitOzone();
