@@ -594,7 +594,7 @@
     },
     {
       name: "IncrementalShadowDOM",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "InertAttribute",
