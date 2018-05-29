@@ -160,7 +160,7 @@ crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass Timeout ]
 crbug.com/713049 virtual/exotic-color-space/images/color-profile-reflection.html [ Failure Pass ]
 
-crbug.com/774873 [ Linux Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
+crbug.com/774873 [ Mac Linux Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
