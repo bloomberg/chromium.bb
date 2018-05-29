@@ -51,11 +51,11 @@ bool ContentRendererClient::ShouldTrackUseCounter(const GURL& url) {
   return true;
 }
 
-void ContentRendererClient::DeferMediaLoad(
-    RenderFrame* render_frame,
-    bool has_played_media_before,
-    const base::Closure& closure) {
-  closure.Run();
+bool ContentRendererClient::DeferMediaLoad(RenderFrame* render_frame,
+                                           bool has_played_media_before,
+                                           base::OnceClosure closure) {
+  std::move(closure).Run();
+  return false;
 }
 
 std::unique_ptr<blink::WebMIDIAccessor>

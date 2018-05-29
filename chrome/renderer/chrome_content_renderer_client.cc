@@ -282,24 +282,23 @@ bool IsStandaloneExtensionProcess() {
 }
 
 // Defers media player loading in background pages until they're visible.
-// TODO(dalecurtis): Include an idle listener too.  http://crbug.com/509135
 class MediaLoadDeferrer : public content::RenderFrameObserver {
  public:
   MediaLoadDeferrer(content::RenderFrame* render_frame,
-                    const base::Closure& continue_loading_cb)
+                    base::OnceClosure continue_loading_cb)
       : content::RenderFrameObserver(render_frame),
-        continue_loading_cb_(continue_loading_cb) {}
+        continue_loading_cb_(std::move(continue_loading_cb)) {}
   ~MediaLoadDeferrer() override {}
 
  private:
   // content::RenderFrameObserver implementation:
   void WasShown() override {
-    continue_loading_cb_.Run();
+    std::move(continue_loading_cb_).Run();
     delete this;
   }
   void OnDestruct() override { delete this; }
 
-  const base::Closure continue_loading_cb_;
+  base::OnceClosure continue_loading_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
 };
@@ -678,25 +677,23 @@ WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
   return placeholder->plugin();
 }
 
-void ChromeContentRendererClient::DeferMediaLoad(
+bool ChromeContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool has_played_media_before,
-    const base::Closure& closure) {
+    base::OnceClosure closure) {
   // Don't allow autoplay/autoload of media resources in a RenderFrame that is
   // hidden and has never played any media before.  We want to allow future
   // loads even when hidden to allow playlist-like functionality.
   //
   // NOTE: This is also used to defer media loading for prerender.
-  // NOTE: Switch can be used to allow autoplay, unless frame is prerendered.
-  //
-  // TODO(dalecurtis): Include an idle check too.  http://crbug.com/509135
   if ((render_frame->IsHidden() && !has_played_media_before) ||
       prerender::PrerenderHelper::IsPrerendering(render_frame)) {
-    new MediaLoadDeferrer(render_frame, closure);
-    return;
+    new MediaLoadDeferrer(render_frame, std::move(closure));
+    return true;
   }
 
-  closure.Run();
+  std::move(closure).Run();
+  return false;
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

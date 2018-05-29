@@ -43,8 +43,10 @@ class SurfaceManager;
 // to plumb arguments through various abstraction layers.
 class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
  public:
-  typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
-  typedef base::Callback<Context3D()> Context3DCB;
+  // Returns true if load will deferred. False if it will run immediately.
+  using DeferLoadCB = base::RepeatingCallback<bool(base::OnceClosure)>;
+
+  using Context3DCB = base::Callback<Context3D()>;
 
   // Callback to obtain the media ContextProvider.
   // Requires being called on the media thread.

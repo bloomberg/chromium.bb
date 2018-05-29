@@ -124,9 +124,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void UnregisterContentsLayer(cc::Layer* layer) override;
   void OnSurfaceIdUpdated(viz::SurfaceId surface_id) override;
 
-  void Load(LoadType load_type,
-            const blink::WebMediaPlayerSource& source,
-            CORSMode cors_mode) override;
+  WebMediaPlayer::LoadTiming Load(LoadType load_type,
+                                  const blink::WebMediaPlayerSource& source,
+                                  CORSMode cors_mode) override;
 
   // Playback controls.
   void Play() override;

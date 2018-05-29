@@ -16,7 +16,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
  public:
   ~EmptyWebMediaPlayer() override = default;
 
-  void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {}
+  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CORSMode) override;
   void Play() override {}
   void Pause() override {}
   void Seek(double seconds) override {}

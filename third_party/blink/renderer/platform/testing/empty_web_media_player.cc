@@ -9,6 +9,11 @@
 
 namespace blink {
 
+WebMediaPlayer::LoadTiming
+EmptyWebMediaPlayer::Load(LoadType, const WebMediaPlayerSource&, CORSMode) {
+  return LoadTiming::kImmediate;
+}
+
 WebTimeRanges EmptyWebMediaPlayer::Buffered() const {
   return WebTimeRanges();
 }

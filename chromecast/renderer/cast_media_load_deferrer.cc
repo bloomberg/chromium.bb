@@ -36,17 +36,16 @@ void CastMediaLoadDeferrer::OnInterfaceRequestForFrame(
   registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
-// Runs |closure| if the page/frame is switched to foreground.
-void CastMediaLoadDeferrer::RunWhenInForeground(
-    const base::RepeatingClosure& closure) {
+bool CastMediaLoadDeferrer::RunWhenInForeground(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!render_frame_action_blocked_) {
-    closure.Run();
-    return;
+    std::move(closure).Run();
+    return false;
   }
 
   LOG(WARNING) << "A render frame action is being blocked.";
-  pending_closures_.push_back(closure);
+  pending_closures_.push_back(std::move(closure));
+  return true;
 }
 
 // MediaLoadDeferrer implementation
@@ -59,10 +58,10 @@ void CastMediaLoadDeferrer::UpdateMediaLoadStatus(bool blocked) {
   }
   // Move callbacks in case OnBlockMediaLoading() is called somehow
   // during iteration.
-  std::vector<base::RepeatingClosure> callbacks;
+  std::vector<base::OnceClosure> callbacks;
   callbacks.swap(pending_closures_);
-  for (const auto& cb : callbacks) {
-    cb.Run();
+  for (auto& cb : callbacks) {
+    std::move(cb).Run();
   }
   LOG(INFO) << "Render frame actions are unblocked.";
 }

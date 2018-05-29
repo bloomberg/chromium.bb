@@ -22,5 +22,6 @@ PASS Test abort after readyState is ended following init segment and media segme
 PASS Test abort after appendBuffer update ends.
 PASS Test appending null.
 PASS Test appending after removeSourceBuffer().
+PASS Test slow appending does not trigger stalled events.
 Harness: the test ran to completion.
 

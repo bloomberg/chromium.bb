@@ -7,6 +7,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/autoplay.mojom-blink.h"
+#include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -17,27 +18,44 @@
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
+using ::testing::AnyNumber;
+using ::testing::Return;
+using ::testing::_;
+
 namespace blink {
 
 class MockWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   MOCK_CONST_METHOD0(Duration, double());
   MOCK_CONST_METHOD0(CurrentTime, double());
+  MOCK_METHOD3(
+      Load,
+      WebMediaPlayer::LoadTiming(LoadType load_type,
+                                 const blink::WebMediaPlayerSource& source,
+                                 CORSMode cors_mode));
 };
 
 class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static WebMediaStubLocalFrameClient* Create() {
-    return new WebMediaStubLocalFrameClient;
+  static WebMediaStubLocalFrameClient* Create(
+      std::unique_ptr<WebMediaPlayer> player) {
+    return new WebMediaStubLocalFrameClient(std::move(player));
   }
+
+  WebMediaStubLocalFrameClient(std::unique_ptr<WebMediaPlayer> player)
+      : player_(std::move(player)) {}
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient* client,
       WebLayerTreeView*) override {
-    return std::make_unique<MockWebMediaPlayer>();
+    DCHECK(player_) << " Empty injected player - already used?";
+    return std::move(player_);
   }
+
+ private:
+  std::unique_ptr<WebMediaPlayer> player_;
 };
 
 enum class MediaTestParam { kAudio, kVideo };
@@ -45,8 +63,20 @@ enum class MediaTestParam { kAudio, kVideo };
 class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
  protected:
   void SetUp() override {
+    // Sniff the media player pointer to facilitate mocking.
+    auto mock_media_player = std::make_unique<MockWebMediaPlayer>();
+    media_player_ = mock_media_player.get();
+
+    // Most tests do not care about this call, nor its return value. Those that
+    // do will clear this expectation and set custom expectations/returns.
+    EXPECT_CALL(*MockMediaPlayer(), Load(_, _, _))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(WebMediaPlayer::LoadTiming::kImmediate));
+
     dummy_page_holder_ = DummyPageHolder::Create(
-        IntSize(), nullptr, WebMediaStubLocalFrameClient::Create(), nullptr);
+        IntSize(), nullptr,
+        WebMediaStubLocalFrameClient::Create(std::move(mock_media_player)),
+        nullptr);
 
     if (GetParam() == MediaTestParam::kAudio)
       media_ = HTMLAudioElement::Create(dummy_page_holder_->GetDocument());
@@ -60,9 +90,13 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     Media()->current_src_ = url;
   }
 
+  MockWebMediaPlayer* MockMediaPlayer() { return media_player_; }
+
   bool WasAutoplayInitiated() { return Media()->WasAutoplayInitiated(); }
 
   bool CouldPlayIfEnoughData() { return Media()->CouldPlayIfEnoughData(); }
+
+  bool ShouldDelayLoadEvent() { return Media()->should_delay_load_event_; }
 
   void SetReadyState(HTMLMediaElement::ReadyState state) {
     Media()->SetReadyState(state);
@@ -78,6 +112,9 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<HTMLMediaElement> media_;
+
+  // Owned by WebMediaStubLocalFrameClient.
+  MockWebMediaPlayer* media_player_;
 };
 
 INSTANTIATE_TEST_CASE_P(Audio,
@@ -325,6 +362,44 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_NoGestureRequired_NoGesture) {
   Media()->Play();
 
   EXPECT_TRUE(WasAutoplayInitiated());
+}
+
+TEST_P(HTMLMediaElementTest,
+       DeferredMediaPlayerLoadDoesNotDelayWindowLoadEvent) {
+  // Source isn't really important, we just need something to let load algorithm
+  // run up to the point of calling WebMediaPlayer::Load().
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+
+  // WebMediaPlayer will signal that it will defer loading to some later time.
+  testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
+  EXPECT_CALL(*MockMediaPlayer(), Load(_, _, _))
+      .WillOnce(Return(WebMediaPlayer::LoadTiming::kDeferred));
+
+  // Window's 'load' event starts out "delayed".
+  EXPECT_TRUE(ShouldDelayLoadEvent());
+  Media()->load();
+  test::RunPendingTasks();
+
+  // No longer delayed because WMP loading is deferred.
+  EXPECT_FALSE(ShouldDelayLoadEvent());
+}
+
+TEST_P(HTMLMediaElementTest, ImmediateMediaPlayerLoadDoesDelayWindowLoadEvent) {
+  // Source isn't really important, we just need something to let load algorithm
+  // run up to the point of calling WebMediaPlayer::Load().
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+
+  // WebMediaPlayer will signal that it will do the load immediately.
+  EXPECT_CALL(*MockMediaPlayer(), Load(_, _, _))
+      .WillOnce(Return(WebMediaPlayer::LoadTiming::kImmediate));
+
+  // Window's 'load' event starts out "delayed".
+  EXPECT_TRUE(ShouldDelayLoadEvent());
+  Media()->load();
+  test::RunPendingTasks();
+
+  // Still delayed because WMP loading is not deferred.
+  EXPECT_TRUE(ShouldDelayLoadEvent());
 }
 
 }  // namespace blink

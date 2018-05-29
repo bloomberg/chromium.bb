@@ -26,7 +26,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
   const cc::Layer* GetCcLayer() { return layer_.get(); }
 
   // WebMediaPlayer
-  void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
+  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
     network_state_ = kNetworkStateLoaded;
     client_->NetworkStateChanged();
     ready_state_ = kReadyStateHaveEnoughData;
@@ -34,6 +34,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     layer_ = cc::Layer::Create();
     layer_->SetIsDrawable(true);
     client_->SetCcLayer(layer_.get());
+    return LoadTiming::kImmediate;
   }
   NetworkState GetNetworkState() const override { return network_state_; }
   ReadyState GetReadyState() const override { return ready_state_; }

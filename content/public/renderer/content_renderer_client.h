@@ -155,9 +155,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // can run |closure| immediately if they don't wish to defer media resource
   // loading.  If |has_played_media_before| is true, the render frame has
   // previously started media playback (i.e. played audio and video).
-  virtual void DeferMediaLoad(RenderFrame* render_frame,
+  // Returns true if running of |closure| is deferred; false if run immediately.
+  virtual bool DeferMediaLoad(RenderFrame* render_frame,
                               bool has_played_media_before,
-                              const base::Closure& closure);
+                              base::OnceClosure closure);
 
   // Allows the embedder to override creating a WebMIDIAccessor.  If it
   // returns NULL the content layer will create the MIDI accessor.

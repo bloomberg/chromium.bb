@@ -141,9 +141,9 @@ class ChromeContentRendererClient
                            const blink::WebURLError& error,
                            base::string16* error_description) override;
 
-  void DeferMediaLoad(content::RenderFrame* render_frame,
+  bool DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
-                      const base::Closure& closure) override;
+                      base::OnceClosure closure) override;
   void PostIOThreadCreated(
       base::SingleThreadTaskRunner* io_thread_task_runner) override;
   void PostCompositorThreadCreated(
