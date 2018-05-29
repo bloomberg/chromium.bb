@@ -450,79 +450,6 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
   return result
 
 
-BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
-    'dummy_benchmark.noisy_benchmark_1',
-    'dummy_benchmark.stable_benchmark_1',
-    'blink_perf.bindings',
-    'blink_perf.canvas',
-    'blink_perf.css',
-    'blink_perf.dom',
-    'blink_perf.events',
-    'blink_perf.image_decoder',
-    'blink_perf.layout',
-    'blink_perf.owp_storage',
-    'blink_perf.paint',
-    'blink_perf.parser',
-    'blink_perf.shadow_dom',
-    'blink_perf.svg',
-    'memory.top_10_mobile',
-    'system_health.common_desktop',
-    'system_health.common_mobile',
-    'system_health.memory_desktop',
-    'system_health.memory_mobile',
-    'system_health.webview_startup',
-    'smoothness.gpu_rasterization.tough_filters_cases',
-    'smoothness.gpu_rasterization.tough_path_rendering_cases',
-    'smoothness.gpu_rasterization.tough_scrolling_cases',
-    'smoothness.gpu_rasterization_and_decoding.image_decoding_cases',
-    'smoothness.image_decoding_cases',
-    'smoothness.key_desktop_move_cases',
-    'smoothness.maps',
-    'smoothness.oop_rasterization.top_25_smooth',
-    'smoothness.top_25_smooth',
-    'smoothness.tough_ad_cases',
-    'smoothness.tough_animation_cases',
-    'smoothness.tough_canvas_cases',
-    'smoothness.tough_filters_cases',
-    'smoothness.tough_image_decode_cases',
-    'smoothness.tough_path_rendering_cases',
-    'smoothness.tough_scrolling_cases',
-    'smoothness.tough_texture_upload_cases',
-    'smoothness.tough_webgl_ad_cases',
-    'smoothness.tough_webgl_cases',
-    'dromaeo',
-    'jetstream',
-    'kraken',
-    'octane',
-    'speedometer',
-    'speedometer-future',
-    'speedometer2',
-    'speedometer2-future',
-    'wasm',
-    'battor.steady_state',
-    'battor.trivial_pages',
-    'rasterize_and_record_micro.partial_invalidation',
-    'rasterize_and_record_micro.top_25',
-    'scheduler.tough_scheduling_cases',
-    'tab_switching.typical_25',
-    'thread_times.key_hit_test_cases',
-    'thread_times.key_idle_power_cases',
-    'thread_times.key_mobile_sites_smooth',
-    'thread_times.key_noop_cases',
-    'thread_times.key_silk_cases',
-    'thread_times.simple_mobile_sites',
-    'thread_times.oop_rasterization.key_mobile',
-    'thread_times.tough_compositor_cases',
-    'thread_times.tough_scrolling_cases',
-    'tracing.tracing_with_background_memory_infra',
-    'tracing.tracing_with_debug_overhead',
-    'v8.browsing_desktop',
-    'v8.browsing_mobile',
-    'v8.browsing_desktop-future',
-    'v8.browsing_mobile-future',
-]
-
-
 def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
   # The step name must end in 'test' or 'tests' in order for the
   # results to automatically show up on the flakiness dashboard.
@@ -533,15 +460,11 @@ def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
     benchmark_name,
     '-v',
     '--upload-results',
-    '--browser=%s' % browser
+    '--browser=%s' % browser,
+    '--output-format=histograms',
   ]
   # When this is enabled on more than just windows machines we will need
   # --device=android
-
-  if benchmark_name in BENCHMARKS_TO_OUTPUT_HISTOGRAMS:
-    test_args.append('--output-format=histograms')
-  else:
-    test_args.append('--output-format=chartjson')
 
   ignore_task_failure = False
   step_name = benchmark_name

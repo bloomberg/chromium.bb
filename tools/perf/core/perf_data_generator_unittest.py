@@ -145,7 +145,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
     test = tests[0]
     self.assertEquals(test['args'], [
         'regular', '-v', '--upload-results',
-        '--browser=android-webview', '--output-format=chartjson',
+        '--browser=android-webview', '--output-format=histograms',
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk'])
     self.assertEquals(test['isolate_name'], 'telemetry_perf_webview_tests')
 
