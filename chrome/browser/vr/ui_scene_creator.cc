@@ -92,18 +92,20 @@ void BindColor(Model* model,
   view->AddBinding(std::make_unique<Binding<SkColor>>(
       base::BindRepeating([](Model* m, C c) { return (m->color_scheme()).*c; },
                           base::Unretained(model), color),
+#ifndef NDEBUG
       color_string,
+#endif
       base::BindRepeating(
           [](V* v, S s, const SkColor& value) { (v->*s)(value); },
-          base::Unretained(view), setter),
-      setter_string));
+          base::Unretained(view), setter)
+#ifndef NDEBUG
+          ,
+      setter_string
+#endif
+      ));
 }
 
-#ifndef NDEBUG
 #define VR_BIND_COLOR(m, v, c, s) BindColor(m, v, c, #c, s, #s)
-#else
-#define VR_BIND_COLOR(m, v, c, s) BindColor(m, v, c, "", s, "")
-#endif
 
 template <typename V, typename C, typename S>
 void BindButtonColors(Model* model,
@@ -115,18 +117,20 @@ void BindButtonColors(Model* model,
   view->AddBinding(std::make_unique<Binding<ButtonColors>>(
       base::BindRepeating([](Model* m, C c) { return (m->color_scheme()).*c; },
                           base::Unretained(model), colors),
+#ifndef NDEBUG
       colors_string,
+#endif
       base::BindRepeating(
           [](V* v, S s, const ButtonColors& value) { (v->*s)(value); },
-          base::Unretained(view), setter),
-      setter_string));
+          base::Unretained(view), setter)
+#ifndef NDEBUG
+          ,
+      setter_string
+#endif
+      ));
 }
 
-#ifndef NDEBUG
 #define VR_BIND_BUTTON_COLORS(m, v, c, s) BindButtonColors(m, v, c, #c, s, #s)
-#else
-#define VR_BIND_BUTTON_COLORS(m, v, c, s) BindButtonColors(m, v, c, "", s, "")
-#endif
 
 #define VR_BIND_VISIBILITY(v, c) \
   v->AddBinding(                 \
@@ -808,7 +812,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
               hosted_ui.get(),
               view->SetTranslate(0, 0, value ? 0 : kHostedUiShadowOffset)));
   hosted_ui->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::SizeF>>>(
-      base::BindRepeating(
+      VR_BIND_LAMBDA(
           [](Model* m) {
             return std::pair<bool, gfx::SizeF>(
                 m->hosted_platform_ui.floating,
@@ -816,7 +820,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
                            m->hosted_platform_ui.rect.height()));
           },
           base::Unretained(model)),
-      base::BindRepeating(
+      VR_BIND_LAMBDA(
           [](PlatformUiElement* dialog,
              const std::pair<bool, gfx::SizeF>& value) {
             if (!value.first && value.second.width() > 0) {
@@ -840,7 +844,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
   shadow->SetTransitionedProperties({OPACITY});
   shadow->AddChild(std::move(hosted_ui));
   shadow->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
-      base::BindRepeating(
+      VR_BIND_LAMBDA(
           [](Model* m) {
             return std::pair<bool, gfx::PointF>(
                 m->hosted_platform_ui.floating,
@@ -848,7 +852,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
                             m->hosted_platform_ui.rect.y()));
           },
           base::Unretained(model)),
-      base::BindRepeating(
+      VR_BIND_LAMBDA(
           [](Shadow* shadow, const std::pair<bool, gfx::PointF>& value) {
             if (value.first /* floating */) {
               shadow->set_x_centering(LEFT);
