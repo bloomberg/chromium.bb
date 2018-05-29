@@ -216,20 +216,19 @@ KeyboardController::KeyboardController()
 
 KeyboardController::~KeyboardController() {
   DCHECK(g_keyboard_controller);
-  DCHECK(!enabled_)
+  DCHECK(!enabled())
       << "Keyboard must be disabled before KeyboardController is destroyed";
   g_keyboard_controller = nullptr;
 }
 
 void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
                                         KeyboardLayoutDelegate* delegate) {
-  if (enabled_)
+  if (enabled())
     DisableKeyboard();
 
   ui_ = std::move(ui);
   layout_delegate_ = delegate;
   show_on_content_update_ = false;
-  enabled_ = true;
   keyboard_locked_ = false;
   state_ = KeyboardControllerState::UNKNOWN;
   ui_->GetInputMethod()->AddObserver(this);
@@ -241,7 +240,7 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
 }
 
 void KeyboardController::DisableKeyboard() {
-  if (!enabled_)
+  if (!enabled())
     return;
 
   // TODO(https://crbug.com/731537): Move KeyboardController members into a
@@ -258,8 +257,6 @@ void KeyboardController::DisableKeyboard() {
     container_->RemovePreTargetHandler(&event_filter_);
     container_.reset();
   }
-
-  enabled_ = false;
 
   ui_->GetInputMethod()->RemoveObserver(this);
   for (KeyboardControllerObserver& observer : observer_list_)

@@ -185,7 +185,7 @@ class KEYBOARD_EXPORT KeyboardController
   bool IsOverscrollAllowed() const;
 
   // Whether the keyboard is enabled.
-  bool enabled() const { return enabled_; }
+  bool enabled() const { return ui_ != nullptr; }
 
   // Handle mouse and touch events on the keyboard. The effects of this method
   // will not stop propagation to the keyboard extension.
@@ -305,11 +305,6 @@ class KEYBOARD_EXPORT KeyboardController
 
   // If true, show the keyboard window when keyboard UI content updates.
   bool show_on_content_update_;
-
-  // Whether the keyboard is enabled or not. |GetInstance| returns null by
-  // default when the keyboard is not enabled.
-  // TODO(https://crbug.com/731537): Determine this from the keyboard state.
-  bool enabled_ = false;
 
   // If true, the keyboard is always visible even if no window has input focus.
   bool keyboard_locked_;
