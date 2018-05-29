@@ -101,6 +101,11 @@ bool ApplyReferencesCorrection(ExecutableType exe_type,
     LOG(ERROR) << "Failed to create Disassembler";
     return false;
   }
+  if (old_disasm->size() != old_image.size() ||
+      new_disasm->size() != new_image.size()) {
+    LOG(ERROR) << "Disassembler and element size mismatch";
+    return false;
+  }
 
   ReferenceDeltaSource ref_delta_source = patch.GetReferenceDeltaSource();
   std::map<PoolTag, std::vector<ReferenceGroup>> pool_groups;

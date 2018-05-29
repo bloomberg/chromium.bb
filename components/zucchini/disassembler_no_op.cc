@@ -24,6 +24,7 @@ std::vector<ReferenceGroup> DisassemblerNoOp::MakeReferenceGroups() const {
 }
 
 bool DisassemblerNoOp::Parse(ConstBufferView image) {
+  image_ = image;
   return true;
 }
 
