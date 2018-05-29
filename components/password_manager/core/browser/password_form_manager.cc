@@ -899,7 +899,11 @@ void PasswordFormManager::AddGeneratedVote(
     autofill::AutofillField* field = form_structure->field(i);
     if (field->name == generation_element_) {
       field->set_generation_type(type);
-      field->set_generated_password_changed(generated_password_changed_);
+      if (has_generated_password_) {
+        field->set_generated_password_changed(generated_password_changed_);
+        UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.GeneratedPasswordWasEdited",
+                              generated_password_changed_);
+      }
       break;
     }
   }
