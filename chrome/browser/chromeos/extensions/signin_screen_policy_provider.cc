@@ -34,11 +34,10 @@ SigninScreenPolicyProvider::SigninScreenPolicyProvider() {}
 SigninScreenPolicyProvider::~SigninScreenPolicyProvider() {}
 
 std::string SigninScreenPolicyProvider::GetDebugPolicyProviderName() const {
-#if defined(NDEBUG)
-  NOTREACHED();
-  return std::string();
-#else
+#if DCHECK_IS_ON()
   return "Guard for sign-in screen";
+#else
+  IMMEDIATE_CRASH();
 #endif
 }
 

@@ -64,11 +64,10 @@ StandardManagementPolicyProvider::~StandardManagementPolicyProvider() {
 
 std::string
     StandardManagementPolicyProvider::GetDebugPolicyProviderName() const {
-#ifdef NDEBUG
-  NOTREACHED();
-  return std::string();
-#else
+#if DCHECK_IS_ON()
   return "extension management policy controlled settings";
+#else
+  IMMEDIATE_CRASH();
 #endif
 }
 
