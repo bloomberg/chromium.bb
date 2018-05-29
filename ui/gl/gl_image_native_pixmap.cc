@@ -25,7 +25,7 @@
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
 #define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
-#define DRM_FORMAT_XBGR2101010 FOURCC('X', 'B', '3', '0')
+#define DRM_FORMAT_ABGR2101010 FOURCC('A', 'B', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 
@@ -39,6 +39,8 @@ bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
              format == gfx::BufferFormat::RGBX_8888 ||
              format == gfx::BufferFormat::BGRX_8888 ||
              format == gfx::BufferFormat::BGRX_1010102;
+    case GL_RGB10_A2_EXT:
+      return format == gfx::BufferFormat::RGBX_1010102;
     case GL_RGB_YCRCB_420_CHROMIUM:
       return format == gfx::BufferFormat::YVU_420;
     case GL_RGB_YCBCR_420V_CHROMIUM:
@@ -81,7 +83,9 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_1010102:
       return DRM_FORMAT_XRGB2101010;
     case gfx::BufferFormat::RGBX_1010102:
-      return DRM_FORMAT_XBGR2101010;
+      // We should use here DRM_FORMAT_XBGR2101010 format, but EGL on Intel
+      // doesn't support it for scanout, see https://crbug.com/776093#c14.
+      return DRM_FORMAT_ABGR2101010;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -118,7 +122,9 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRX_8888;
     case DRM_FORMAT_XRGB2101010:
       return gfx::BufferFormat::BGRX_1010102;
-    case DRM_FORMAT_XBGR2101010:
+    case DRM_FORMAT_ABGR2101010:
+      // We should support DRM_FORMAT_XBGR2101010 format instead, but EGL on
+      // Intel doesn't support it for scanout, see https://crbug.com/776093#c14.
       return gfx::BufferFormat::RGBX_1010102;
     case DRM_FORMAT_RGB565:
       return gfx::BufferFormat::BGR_565;
