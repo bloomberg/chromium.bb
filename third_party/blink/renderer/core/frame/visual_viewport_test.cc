@@ -38,6 +38,8 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/double_point.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -2288,6 +2290,62 @@ TEST_P(VisualViewportTest, AutoResizeNoHeightUsesMinimumHeight) {
                                    "</style>"
                                    "<div></div>",
                                    base_url);
+}
+
+class VisualViewportSimTest : public SimTest {
+ public:
+  VisualViewportSimTest() {}
+
+  void SetUp() override {
+    SimTest::SetUp();
+
+    // Use settings that resemble the Android configuration.
+    WebView().GetSettings()->SetViewportEnabled(true);
+    WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
+    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+    WebView().GetSettings()->SetViewportMetaEnabled(true);
+    WebView().GetSettings()->SetViewportEnabled(true);
+    WebView().GetSettings()->SetMainFrameResizesAreOrientationChanges(true);
+    WebView().GetSettings()->SetShrinksViewportContentToFit(true);
+    WebView().SetDefaultPageScaleLimits(0.25f, 5);
+  }
+};
+
+// Test that we correcty size the visual viewport's scrolling contents layer
+// when the layout viewport is smaller.
+TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
+  WebView().Resize(WebSize(400, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <meta name="viewport" content="width=320">
+          <style>
+            body {
+              height: 2000px;
+            }
+          </style>
+      )HTML");
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(1.25f, WebView().MinimumPageScaleFactor());
+
+  VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
+  EXPECT_EQ(IntSize(400, 600), visual_viewport.ContainerLayer()->Size());
+  EXPECT_EQ(gfx::Size(400, 600),
+            visual_viewport.ContainerLayer()->CcLayer()->bounds());
+  EXPECT_EQ(IntSize(320, 480), visual_viewport.ScrollLayer()->Size());
+  EXPECT_EQ(gfx::Size(320, 480),
+            visual_viewport.ScrollLayer()->CcLayer()->bounds());
+
+  WebView().ApplyViewportDeltas(WebFloatSize(1, 1), WebFloatSize(),
+                                WebFloatSize(), 2, 1);
+  EXPECT_EQ(IntSize(400, 600), visual_viewport.ContainerLayer()->Size());
+  EXPECT_EQ(gfx::Size(400, 600),
+            visual_viewport.ContainerLayer()->CcLayer()->bounds());
+  EXPECT_EQ(IntSize(320, 480), visual_viewport.ScrollLayer()->Size());
+  EXPECT_EQ(gfx::Size(320, 480),
+            visual_viewport.ScrollLayer()->CcLayer()->bounds());
 }
 
 }  // namespace
