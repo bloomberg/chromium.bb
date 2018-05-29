@@ -26,6 +26,7 @@
           "dimension_sets": [
             {
               "device_os": "O",
+              "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
               "pool": "chrome.tests.perf-fyi"
@@ -728,6 +729,7 @@
           "dimension_sets": [
             {
               "device_os": "O",
+              "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
               "pool": "chrome.tests.perf-fyi"
@@ -777,6 +779,7 @@
           "dimension_sets": [
             {
               "device_os": "O",
+              "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
               "pool": "chrome.tests.perf-webview-fyi"

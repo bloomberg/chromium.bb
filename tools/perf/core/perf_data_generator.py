@@ -62,7 +62,8 @@ def add_builder(waterfall, name, additional_compile_targets=None):
 
 
 _VALID_SWARMING_DIMENSIONS = {
-    'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args'}
+    'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
+    'device_os', 'device_type', 'device_os_flavor'}
 _VALID_PERF_POOLS = {
     'Chrome-perf', 'chrome.tests.perf', 'chrome.tests.perf-webview'}
 
@@ -75,6 +76,12 @@ def _ValidateSwarmingDimension(tester_name, swarming_dimensions):
             tester_name, k))
       if k == 'pool' and v not in _VALID_PERF_POOLS:
         raise ValueError('Invalid perf pool %s in %s' % (v, tester_name))
+      if k == 'os' and v == 'Android':
+        if (not 'device_type' in dimension.keys() or
+            not 'device_os' in dimension.keys() or
+            not 'device_os_flavor' in dimension.keys()):
+          raise ValueError(
+              'Invalid android dimensions %s in %s' % (v, tester_name))
 
 
 def add_tester(waterfall, name, perf_id, platform, target_bits=64,
@@ -138,6 +145,9 @@ def get_waterfall_config():
       {
        'os': 'Android',
        'pool': 'Chrome-perf',
+       'device_os': 'MMB29Q',
+       'device_type': 'bullhead',
+       'device_os_flavor': 'google',
        'device_ids': [
            'build73-b1--device1', 'build73-b1--device2', 'build73-b1--device3',
            'build73-b1--device4', 'build73-b1--device5', 'build73-b1--device6',
@@ -167,6 +177,9 @@ def get_waterfall_config():
       {
        'os': 'Android',
        'pool': 'chrome.tests.perf',
+       'device_os': 'KOT49H0',
+       'device_type': 'hammerhead',
+       'device_os_flavor': 'google',
        'device_ids': [
            'build199-b7--device1', 'build199-b7--device2',
            'build199-b7--device3', 'build199-b7--device4',
@@ -199,6 +212,9 @@ def get_waterfall_config():
       {
        'os': 'Android',
        'pool': 'chrome.tests.perf',
+       'device_os': 'LMY47W',
+       'device_type': 'sprout',
+       'device_os_flavor': 'google',
        'device_ids': [
            'build191-b7--device1', 'build191-b7--device2',
            'build191-b7--device3', 'build191-b7--device4',
@@ -226,6 +242,9 @@ def get_waterfall_config():
       {
        'os': 'Android',
        'pool': 'chrome.tests.perf-webview',
+       'device_os': 'MOB30K',
+       'device_type': 'bullhead',
+       'device_os_flavor': 'aosp',
        'device_ids': [
            'build188-b7--device1', 'build188-b7--device2',
            'build188-b7--device3', 'build188-b7--device4',
@@ -249,6 +268,9 @@ def get_waterfall_config():
       {
        'os': 'Android',
        'pool': 'chrome.tests.perf-webview',
+       'device_os': 'MOB30K',
+       'device_type': 'shamu',
+       'device_os_flavor': 'aosp',
        'device_ids': [
            'build202-b7--device1', 'build202-b7--device2',
            'build202-b7--device3', 'build202-b7--device4',
@@ -566,6 +588,12 @@ def get_swarming_dimension(dimension, device_id):
   }
   if 'gpu' in dimension:
     complete_dimension['gpu'] = dimension['gpu']
+  if 'device_os' in dimension:
+    complete_dimension['device_os'] = dimension['device_os']
+  if 'device_type' in dimension:
+    complete_dimension['device_type'] = dimension['device_type']
+  if 'device_os_flavor' in dimension:
+    complete_dimension['device_os_flavor'] = dimension['device_os_flavor']
   return complete_dimension
 
 
@@ -1088,6 +1116,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'dimension': {
         'device_os': 'O',
         'device_type': 'gobo',
+        'device_os_flavor': 'google',
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
       },
@@ -1109,7 +1138,8 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'pool': 'chrome.tests.perf-webview-fyi',
         'os': 'Android',
         'device_type': 'walleye',
-        'device_os': 'O'
+        'device_os': 'O',
+        'device_os_flavor': 'google',
       },
       'device_ids': [
       ],
@@ -1130,7 +1160,8 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
         'device_type': 'walleye',
-        'device_os': 'O'
+        'device_os': 'O',
+        'device_os_flavor': 'google',
       },
       'device_ids': [
       ],
