@@ -387,8 +387,6 @@ int get_shear_params(WarpedMotionParams *wm) {
   wm->delta = clamp(mat[5] - (int)ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
                         (1 << WARPEDMODEL_PREC_BITS),
                     INT16_MIN, INT16_MAX);
-  if (!is_affine_shear_allowed(wm->alpha, wm->beta, wm->gamma, wm->delta))
-    return 0;
 
   wm->alpha = ROUND_POWER_OF_TWO_SIGNED(wm->alpha, WARP_PARAM_REDUCE_BITS) *
               (1 << WARP_PARAM_REDUCE_BITS);
@@ -398,6 +396,10 @@ int get_shear_params(WarpedMotionParams *wm) {
               (1 << WARP_PARAM_REDUCE_BITS);
   wm->delta = ROUND_POWER_OF_TWO_SIGNED(wm->delta, WARP_PARAM_REDUCE_BITS) *
               (1 << WARP_PARAM_REDUCE_BITS);
+
+  if (!is_affine_shear_allowed(wm->alpha, wm->beta, wm->gamma, wm->delta))
+    return 0;
+
   return 1;
 }
 
