@@ -43,7 +43,8 @@ AudioManagerPulse::AudioManagerPulse(std::unique_ptr<AudioThread> audio_thread,
       input_context_(pa_context),
       devices_(NULL),
       native_input_sample_rate_(0),
-      native_channel_count_(0) {
+      native_channel_count_(0),
+      default_source_is_monitor_(false) {
   DCHECK(input_mainloop_);
   DCHECK(input_context_);
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
@@ -110,6 +111,12 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
 
   // TODO(xians): add support for querying native channel layout for pulse.
   UpdateNativeAudioHardwareInfo();
+  // We don't want to accidentally open a monitor device, so return invalid
+  // parameters for those.
+  if (device_id == AudioDeviceDescription::kDefaultDeviceId &&
+      default_source_is_monitor_) {
+    return AudioParameters();
+  }
   return AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_STEREO, native_input_sample_rate_,
                          buffer_size);
@@ -246,6 +253,10 @@ void AudioManagerPulse::UpdateNativeAudioHardwareInfo() {
   pa_operation* operation = pa_context_get_server_info(
       input_context_, AudioHardwareInfoCallback, this);
   WaitForOperationCompletion(input_mainloop_, operation);
+  operation = pa_context_get_source_info_by_name(
+      input_context_, default_source_name_.c_str(), DefaultSourceInfoCallback,
+      this);
+  WaitForOperationCompletion(input_mainloop_, operation);
 }
 
 void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
@@ -259,11 +270,19 @@ void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
     return;
   }
 
-  // Exclude the output devices.
-  if (info->monitor_of_sink == PA_INVALID_INDEX) {
-    manager->devices_->push_back(AudioDeviceName(info->description,
-                                                 info->name));
-  }
+  // Exclude output monitor (i.e. loopback) devices.
+  if (info->monitor_of_sink != PA_INVALID_INDEX)
+    return;
+
+  // Exclude devices that don't have an available active port (i.e it's
+  // unplugged). Such devices won't be picked (by pulseaudio) as default device,
+  // and if we have no available devices we don't want to add a default device
+  // to enumerations either.
+  if (!info->active_port ||
+      info->active_port->available == PA_PORT_AVAILABLE_NO)
+    return;
+
+  manager->devices_->push_back(AudioDeviceName(info->description, info->name));
 }
 
 void AudioManagerPulse::OutputDevicesInfoCallback(pa_context* context,
@@ -288,7 +307,24 @@ void AudioManagerPulse::AudioHardwareInfoCallback(pa_context* context,
 
   manager->native_input_sample_rate_ = info->sample_spec.rate;
   manager->native_channel_count_ = info->sample_spec.channels;
+  manager->default_source_name_ = info->default_source_name;
   pa_threaded_mainloop_signal(manager->input_mainloop_, 0);
+}
+
+void AudioManagerPulse::DefaultSourceInfoCallback(pa_context* context,
+                                                  const pa_source_info* info,
+                                                  int eol,
+                                                  void* user_data) {
+  AudioManagerPulse* manager = reinterpret_cast<AudioManagerPulse*>(user_data);
+  if (eol) {
+    // Signal the pulse object that it is done.
+    pa_threaded_mainloop_signal(manager->input_mainloop_, 0);
+    return;
+  }
+
+  DCHECK(info);
+  manager->default_source_is_monitor_ =
+      info->monitor_of_sink != PA_INVALID_INDEX;
 }
 
 }  // namespace media

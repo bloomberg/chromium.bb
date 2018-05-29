@@ -52,6 +52,10 @@ PulseAudioInputStream::~PulseAudioInputStream() {
 
 bool PulseAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (device_name_ == AudioDeviceDescription::kDefaultDeviceId &&
+      audio_manager_->DefaultSourceIsMonitor())
+    return false;
+
   AutoPulseLock auto_lock(pa_mainloop_);
   if (!pulse::CreateInputStream(pa_mainloop_, pa_context_, &handle_, params_,
                                 device_name_, &StreamNotifyCallback, this)) {

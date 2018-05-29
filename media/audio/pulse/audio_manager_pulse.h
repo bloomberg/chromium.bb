@@ -55,6 +55,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
 
+  bool DefaultSourceIsMonitor() const { return default_source_is_monitor_; }
+
  protected:
   void ShutdownOnAudioThread() override;
   AudioParameters GetPreferredOutputStreamParameters(
@@ -78,6 +80,11 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
                                         const pa_server_info* info,
                                         void* user_data);
 
+  static void DefaultSourceInfoCallback(pa_context* context,
+                                        const pa_source_info* info,
+                                        int eol,
+                                        void* user_data);
+
   // Called by MakeLinearOutputStream and MakeLowLatencyOutputStream.
   AudioOutputStream* MakeOutputStream(const AudioParameters& params,
                                       const std::string& device_id);
@@ -94,6 +101,8 @@ class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
   AudioDeviceNames* devices_;
   int native_input_sample_rate_;
   int native_channel_count_;
+  std::string default_source_name_;
+  bool default_source_is_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerPulse);
 };
