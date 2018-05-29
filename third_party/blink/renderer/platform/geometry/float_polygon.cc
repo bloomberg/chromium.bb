@@ -85,7 +85,7 @@ static unsigned FindNextEdgeVertexIndex(const FloatPolygon& polygon,
   return vertex_index2;
 }
 
-FloatPolygon::FloatPolygon(std::unique_ptr<Vector<FloatPoint>> vertices)
+FloatPolygon::FloatPolygon(Vector<FloatPoint> vertices)
     : vertices_(std::move(vertices)) {
   unsigned n_vertices = NumberOfVertices();
   edges_.resize(n_vertices);
