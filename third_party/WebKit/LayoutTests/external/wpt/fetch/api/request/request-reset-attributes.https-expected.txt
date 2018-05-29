@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 FAIL Request.isReloadNavigation is reset with non-empty RequestInit assert_equals: expected "old: false, new: false" but got "hello\n"
-FAIL Request.IsHistoryNavigation should persist. assert_unreached: unregister and register should not fail: Failed to register a ServiceWorker: The path of the provided scope ('/fetch/api/resources/blank.html') is not under the max scope allowed ('/fetch/api/request/resources/'). Adjust the scope, move the Service Worker script, or use the Service-Worker-Allowed HTTP header to allow the scope. Reached unreachable code
+FAIL Request.isHistoryNavigation is reset with non-empty RequestInit assert_equals: expected "old: false, new: false" but got "{\"error\": {\"message\": \"\", \"code\": 404}}"
 FAIL Request.mode is reset with non-empty RequestInit when it's "navigate" assert_equals: expected "old: navigate, new: same-origin" but got "hello\n"
 Harness: the test ran to completion.
 
