@@ -7,7 +7,6 @@ import math
 
 import json5_generator
 import template_expander
-import make_style_builder
 import keyword_utils
 import bisect
 

@@ -102,8 +102,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
         property_['style_builder_declare'] = (
             property_['is_property'] and
-            not property_['longhands'] and
-            not property_['style_builder_legacy'])
+            not property_['longhands'])
 
         if not property_['style_builder_declare']:
             for x in ['initial', 'inherit', 'value']:

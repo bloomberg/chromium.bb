@@ -48,13 +48,6 @@ class CORE_EXPORT StyleBuilder {
   static void ApplyProperty(const CSSProperty&,
                             StyleResolverState&,
                             const CSSValue&);
-
- private:
-  static void ApplyProperty(const CSSProperty&,
-                            StyleResolverState&,
-                            const CSSValue&,
-                            bool is_initial,
-                            bool is_inherit);
 };
 
 }  // namespace blink
