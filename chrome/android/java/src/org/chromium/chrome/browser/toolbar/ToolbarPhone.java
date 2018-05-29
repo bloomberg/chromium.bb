@@ -368,7 +368,6 @@ public class ToolbarPhone extends ToolbarLayout
             mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
             mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
-            if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
 
             mUrlBar = (TextView) findViewById(R.id.url_bar);
 
@@ -526,7 +525,10 @@ public class ToolbarPhone extends ToolbarLayout
 
         enableTabSwitchingResources();
 
-        if (mHomeButton != null) mHomeButton.setOnClickListener(this);
+        if (mHomeButton != null) {
+            mHomeButton.setOnClickListener(this);
+            if (FeatureUtilities.isNewTabPageButtonEnabled()) changeIconToNTPIcon(mHomeButton);
+        }
 
         mMenuButton.setOnKeyListener(new KeyboardNavigationListener() {
             @Override
