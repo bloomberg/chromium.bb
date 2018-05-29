@@ -561,16 +561,13 @@ void RootWindowController::ActivateKeyboard(
   if (!keyboard::IsKeyboardEnabled() || !keyboard_controller)
     return;
 
-  // keyboard window is already initialized and it's under the root window of
-  // this controller.
-  if (keyboard_controller->keyboard_container_initialized() &&
-      keyboard_controller->GetContainerWindow()->GetRootWindow() ==
-          GetRootWindow()) {
-    return;
-  }
-
+  // If the keyboard is already activated, ensure that it is activated in this
+  // root window.
   aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
-  DCHECK(keyboard_window->parent() == nullptr);
+  if (keyboard_window->GetRootWindow() == GetRootWindow())
+    return;
+
+  DCHECK(!keyboard_window->parent());
 
   Shell::Get()->NotifyVirtualKeyboardActivated(true, GetRootWindow());
   aura::Window* vk_container =
@@ -583,10 +580,8 @@ void RootWindowController::ActivateKeyboard(
 
 void RootWindowController::DeactivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
-  if (!keyboard_controller ||
-      !keyboard_controller->keyboard_container_initialized()) {
+  if (!keyboard_controller)
     return;
-  }
 
   aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
   // If the VK is under the root window of this controller.

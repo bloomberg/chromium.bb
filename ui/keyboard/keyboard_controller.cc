@@ -227,6 +227,17 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
     DisableKeyboard();
 
   ui_ = std::move(ui);
+
+  // TODO(https://crbug.com/845780): Move |container_| and friends to a separate
+  // class that manages the container window.
+  container_ = std::make_unique<aura::Window>(new KeyboardWindowDelegate());
+  container_->SetName("KeyboardContainer");
+  container_->set_owned_by_parent(false);
+  container_->Init(ui::LAYER_NOT_DRAWN);
+  container_->AddObserver(this);
+  container_->SetLayoutManager(new KeyboardLayoutManager(this));
+  container_->AddPreTargetHandler(&event_filter_);
+
   layout_delegate_ = delegate;
   show_on_content_update_ = false;
   keyboard_locked_ = false;
@@ -250,13 +261,11 @@ void KeyboardController::DisableKeyboard() {
   container_behavior_.reset();
   animation_observer_.reset();
 
-  if (container_) {
-    if (container_->GetRootWindow())
-      container_->GetRootWindow()->RemoveObserver(this);
-    container_->RemoveObserver(this);
-    container_->RemovePreTargetHandler(&event_filter_);
-    container_.reset();
-  }
+  if (container_->GetRootWindow())
+    container_->GetRootWindow()->RemoveObserver(this);
+  container_->RemoveObserver(this);
+  container_->RemovePreTargetHandler(&event_filter_);
+  container_.reset();
 
   ui_->GetInputMethod()->RemoveObserver(this);
   for (KeyboardControllerObserver& observer : observer_list_)
@@ -278,19 +287,6 @@ bool KeyboardController::keyboard_visible() const {
 }
 
 aura::Window* KeyboardController::GetContainerWindow() {
-  if (!container_.get()) {
-    container_.reset(new aura::Window(new KeyboardWindowDelegate()));
-    container_->SetName("KeyboardContainer");
-    container_->set_owned_by_parent(false);
-    container_->Init(ui::LAYER_NOT_DRAWN);
-    container_->AddObserver(this);
-    container_->SetLayoutManager(new KeyboardLayoutManager(this));
-    container_->AddPreTargetHandler(&event_filter_);
-  }
-  return container_.get();
-}
-
-aura::Window* KeyboardController::GetContainerWindowWithoutCreationForTest() {
   return container_.get();
 }
 
@@ -495,7 +491,7 @@ void KeyboardController::ShowKeyboardInDisplay(
 }
 
 bool KeyboardController::IsKeyboardWindowCreated() {
-  return keyboard_container_initialized() && ui_->HasContentsWindow();
+  return ui_->HasContentsWindow();
 }
 
 void KeyboardController::OnWindowHierarchyChanged(
@@ -525,7 +521,7 @@ void KeyboardController::OnWindowBoundsChanged(
     return;
   // Keep the same height when window resizes. It gets called when the screen
   // rotates.
-  if (!keyboard_container_initialized() || !ui_->HasContentsWindow())
+  if (!ui_->HasContentsWindow())
     return;
 
   container_behavior_->SetCanonicalBounds(GetContainerWindow(), new_bounds);
@@ -542,12 +538,6 @@ void KeyboardController::Reload() {
 
 void KeyboardController::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
-  if (!container_.get()) {
-    DCHECK(state_ == KeyboardControllerState::HIDDEN ||
-           state_ == KeyboardControllerState::INITIAL);
-    return;
-  }
-
   TRACE_EVENT0("vk", "OnTextInputStateChanged");
 
   bool focused =
@@ -612,15 +602,10 @@ void KeyboardController::LoadKeyboardUiInBackground() {
   if (state_ != KeyboardControllerState::INITIAL)
     return;
 
-  // The container window should have been created already when
-  // |Shell::CreateKeyboard| was called.
-  DCHECK(container_.get());
-
   PopulateKeyboardContent(display::Display(), false);
 }
 
 void KeyboardController::ShowKeyboardInternal(const display::Display& display) {
-  DCHECK(container_.get());
   keyboard::MarkKeyboardLoadStarted();
   PopulateKeyboardContent(display, true);
 }

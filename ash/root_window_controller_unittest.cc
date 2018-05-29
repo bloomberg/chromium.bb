@@ -748,8 +748,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       primary_root_window, kShellWindowId_VirtualKeyboardContainer);
   aura::Window* vk_container_in_secondary = Shell::GetContainer(
       secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
-  aura::Window* vk_window =
-      controller->GetContainerWindowWithoutCreationForTest();
+  aura::Window* vk_window = controller->GetContainerWindow();
   EXPECT_TRUE(vk_container_in_primary->Contains(vk_window));
   EXPECT_FALSE(vk_container_in_secondary->Contains(vk_window));
 }
@@ -786,8 +785,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       keyboard::KeyboardController::GetInstance();
 
   controller->ShowKeyboard(false);
-  aura::Window* vk_window =
-      controller->GetContainerWindowWithoutCreationForTest();
+  aura::Window* vk_window = controller->GetContainerWindow();
   EXPECT_FALSE(vk_container_in_primary->Contains(vk_window));
   EXPECT_TRUE(vk_container_in_secondary->Contains(vk_window));
 
@@ -852,8 +850,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
             focusable_window_in_secondary_display->GetRootWindow());
 
   controller->ShowKeyboard(false);
-  aura::Window* vk_window =
-      controller->GetContainerWindowWithoutCreationForTest();
+  aura::Window* vk_window = controller->GetContainerWindow();
   EXPECT_TRUE(vk_container_in_primary->Contains(vk_window));
   EXPECT_FALSE(vk_container_in_secondary->Contains(vk_window));
 
@@ -892,8 +889,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
-  aura::Window* vk_window =
-      controller->GetContainerWindowWithoutCreationForTest();
+  aura::Window* vk_window = controller->GetContainerWindow();
 
   ASSERT_TRUE(vk_container_in_primary->Contains(vk_window));
   ASSERT_FALSE(vk_container_in_secondary->Contains(vk_window));
@@ -948,9 +944,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
-  aura::Window* keyboard_container =
-      controller->GetContainerWindowWithoutCreationForTest();
-  ASSERT_TRUE(keyboard_container);
+  aura::Window* keyboard_container = controller->GetContainerWindow();
   // Track the keyboard container window.
   aura::WindowTracker tracker;
   tracker.Add(keyboard_container);
@@ -1048,7 +1042,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   input_method->SetFocusedTextInputClient(&text_input_client);
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  ASSERT_TRUE(keyboard_controller->GetContainerWindowWithoutCreationForTest());
+  ASSERT_TRUE(keyboard_controller->GetContainerWindow());
   keyboard_controller->GetContainerWindow()->Show();
 
   const int keyboard_height = 100;
