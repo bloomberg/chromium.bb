@@ -111,7 +111,9 @@ HTMLPlugInElement::HTMLPlugInElement(
       // both classes share the same codepath in this class.
       needs_plugin_update_(!flags.IsCreatedByParser()),
       should_prefer_plug_ins_for_images_(prefer_plug_ins_for_images_option ==
-                                         kShouldPreferPlugInsForImages) {}
+                                         kShouldPreferPlugInsForImages) {
+  SetHasCustomStyleCallbacks();
+}
 
 HTMLPlugInElement::~HTMLPlugInElement() {
   DCHECK(plugin_wrapper_.IsEmpty());  // cleared in detachLayoutTree()
@@ -216,21 +218,23 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
     return;
   }
 
-  if (IsImageType()) {
-    if (!image_loader_)
-      image_loader_ = HTMLImageLoader::Create(this);
-    image_loader_->UpdateFromElement();
-  } else if (NeedsPluginUpdate() && GetLayoutEmbeddedObject() &&
-             !GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator() &&
-             GetObjectContentType() != ObjectContentType::kPlugin &&
-             !is_delaying_load_event_) {
+  if (!IsImageType() && NeedsPluginUpdate() && GetLayoutEmbeddedObject() &&
+      !GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator() &&
+      GetObjectContentType() != ObjectContentType::kPlugin &&
+      !is_delaying_load_event_) {
     is_delaying_load_event_ = true;
     GetDocument().IncrementLoadEventDelayCount();
     GetDocument().LoadPluginsSoon();
   }
-  LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned())
-    context.previous_in_flow = layout_object;
+  if (LayoutObject* layout_object = GetLayoutObject()) {
+    if (image_loader_ && layout_object->IsLayoutImage()) {
+      LayoutImageResource* image_resource =
+          ToLayoutImage(layout_object)->ImageResource();
+      image_resource->SetImageResource(image_loader_->GetContent());
+    }
+    if (!layout_object->IsFloatingOrOutOfFlowPositioned())
+      context.previous_in_flow = layout_object;
+  }
 }
 
 void HTMLPlugInElement::IntrinsicSizingInfoChanged() {
@@ -701,6 +705,19 @@ void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {
   if (service_type_.IsEmpty() && ProtocolIs(url_, "data")) {
     service_type_ = MimeTypeFromDataURL(url_);
   }
+}
+
+void HTMLPlugInElement::DidRecalcStyle(StyleRecalcChange change) {
+  if (change != kReattach)
+    return;
+  ComputedStyle* style = GetNonAttachedStyle();
+  if (!style || style->Display() == EDisplay::kNone)
+    return;
+  if (!IsImageType())
+    return;
+  if (!image_loader_)
+    image_loader_ = HTMLImageLoader::Create(this);
+  image_loader_->UpdateFromElement();
 }
 
 }  // namespace blink
