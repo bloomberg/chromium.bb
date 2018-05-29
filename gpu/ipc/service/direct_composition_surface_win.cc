@@ -328,7 +328,7 @@ class DCLayerTree::SwapChainPresenter {
   // Returns true if the video processor changed.
   bool InitializeVideoProcessor(const gfx::Size& in_size,
                                 const gfx::Size& out_size);
-  bool ReallocateSwapChain(bool yuy2);
+  bool ReallocateSwapChain(bool yuy2, bool protected_video);
   bool ShouldBeYUY2();
 
   DCLayerTree* surface_;
@@ -337,6 +337,7 @@ class DCLayerTree::SwapChainPresenter {
   gfx::Size processor_input_size_;
   gfx::Size processor_output_size_;
   bool is_yuy2_swapchain_ = false;
+  bool is_protected_video_ = false;
 
   PresentationHistory presentation_history_;
   bool failed_to_create_yuy2_swapchain_ = false;
@@ -574,11 +575,12 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   bool yuy2_swapchain = ShouldBeYUY2();
   bool first_present = false;
   if (!swap_chain_ || swap_chain_size_ != swap_chain_size ||
+      is_protected_video_ != params.is_protected_video ||
       ((yuy2_swapchain != is_yuy2_swapchain_) &&
        !failed_to_create_yuy2_swapchain_)) {
     first_present = true;
     swap_chain_size_ = swap_chain_size;
-    ReallocateSwapChain(yuy2_swapchain);
+    ReallocateSwapChain(yuy2_swapchain, params.is_protected_video);
   } else if (last_gl_images_ == params.image) {
     // The swap chain is presenting the same images as last swap, which means
     // that the images were never returned to the video decoder and should
@@ -837,7 +839,9 @@ bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
   return true;
 }
 
-bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
+bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
+    bool yuy2,
+    bool protected_video) {
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
   swap_chain_.Reset();
   out_view_.Reset();
@@ -866,6 +870,10 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
   desc.Flags =
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
+  if (protected_video) {
+    desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+    desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
+  }
 
   HANDLE handle;
   if (!CreateSurfaceHandleHelper(&handle))
@@ -899,6 +907,10 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   if (!is_yuy2_swapchain_) {
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
+    if (protected_video) {
+      desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+      desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
+    }
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
@@ -908,6 +920,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
       return false;
     }
   }
+  is_protected_video_ = protected_video;
   return true;
 }
 
@@ -1572,6 +1585,7 @@ bool DirectCompositionSurfaceWin::SupportsProtectedVideo() const {
 
   // TODO: Check the gpu driver date (or a function) which we know this new
   // support is enabled.
+
   return true;
 }
 
