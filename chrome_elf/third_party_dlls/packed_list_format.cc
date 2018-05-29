@@ -20,4 +20,13 @@ const wchar_t kFileSubdir[] =
 // Packed module data cache file.
 const wchar_t kBlFileName[] = L"\\bldata";
 
+std::string GetFingerprintString(uint32_t image_size,
+                                 uint32_t time_data_stamp) {
+  // Max hex 32-bit value is 8 characters long.  2*8+1.
+  char buffer[17] = {};
+  ::snprintf(buffer, sizeof(buffer), "%08X%x", time_data_stamp, image_size);
+
+  return std::string(buffer);
+}
+
 }  // namespace third_party_dlls

@@ -15,7 +15,7 @@ include_rules = [
   "+chrome_elf/third_party_dlls",
 ]
 specific_include_rules = {
-  ".*_unittest\.cc": [
+  ".*_unittest.*": [
     "+base",
   ]
 }

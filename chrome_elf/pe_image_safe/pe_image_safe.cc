@@ -91,12 +91,25 @@ BYTE* PEImageSafe::GetOptionalHeader() {
     return nullptr;
   }
 
+  // Sanity check that the full optional header is in this buffer.
   if ((bitness_ == ImageBitness::k64 &&
        (optional_header_offset + sizeof(IMAGE_OPTIONAL_HEADER64)) >
            image_size_) ||
       (optional_header_offset + sizeof(IMAGE_OPTIONAL_HEADER32) >
        image_size_)) {
     return nullptr;
+  }
+
+  // If |image_size_| is currently |kImageSizeNotSet| (this is an image mapped
+  // into memory by NTLoader), now the size can be updated for accuracy.
+  if (image_size_ == kImageSizeNotSet) {
+    if (bitness_ == ImageBitness::k64) {
+      image_size_ = reinterpret_cast<PIMAGE_OPTIONAL_HEADER64>(optional_header)
+                        ->SizeOfImage;
+    } else {
+      image_size_ = reinterpret_cast<PIMAGE_OPTIONAL_HEADER32>(optional_header)
+                        ->SizeOfImage;
+    }
   }
 
   // Nothing to verify inside the optional header at this point.
@@ -128,7 +141,7 @@ void* PEImageSafe::RVAToAddr(DWORD rva) {
 
 void* PEImageSafe::GetImageDirectoryEntryAddr(int directory,
                                               DWORD* directory_size) {
-  assert(directory > 0 && directory < IMAGE_NUMBEROF_DIRECTORY_ENTRIES &&
+  assert(directory >= 0 && directory < IMAGE_NUMBEROF_DIRECTORY_ENTRIES &&
          ldr_image_mapping_);
 
   // GetOptionalHeader() validates the optional header.

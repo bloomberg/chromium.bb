@@ -9,12 +9,15 @@
 
 #include <windows.h>
 
+#include <limits>
+
 // https://msdn.microsoft.com/library/windows/desktop/ms684179.aspx
 #define LDR_IS_DATAFILE(handle) (((ULONG_PTR)(handle)) & (ULONG_PTR)1)
 
 namespace pe_image_safe {
 
 constexpr DWORD kPageSize = 4096;
+constexpr DWORD kImageSizeNotSet = std::numeric_limits<DWORD>::max();
 
 enum class ImageBitness { kUnknown, k32, k64 };
 
@@ -45,6 +48,11 @@ class PEImageSafe {
   // Some functions can only be used on images that have been memory mapped by
   // the NT Loader (e.g. LoadLibrary).  This constructor must be used to enable
   // that functionality.
+  // - Note: If the mapped image size is not known (e.g. via LoadLibrary), pass
+  //   kImageSizeNotSet for |buffer_size|.  The value will be mined from the PE
+  //   headers.
+  // - Note: Full load or LOAD_LIBRARY_AS_IMAGE_RESOURCE required.
+  // LOAD_LIBRARY_AS_DATAFILE* is not sufficient for some APIs.
   PEImageSafe(HMODULE buffer, DWORD buffer_size)
       : image_(buffer), image_size_(buffer_size) {
     ldr_image_mapping_ = !LDR_IS_DATAFILE(buffer);
