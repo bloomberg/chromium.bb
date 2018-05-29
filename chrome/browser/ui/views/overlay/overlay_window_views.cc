@@ -35,7 +35,7 @@ constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 
-constexpr gfx::Size kCloseButtonSize = gfx::Size(42, 42);
+constexpr gfx::Size kCloseButtonSize = gfx::Size(36, 36);
 constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(90, 90);
 
 const int kCloseButtonMargin = 8;
@@ -216,7 +216,8 @@ void OverlayWindowViews::SetUpViews() {
                                           views::ImageButton::ALIGN_MIDDLE);
   close_controls_view_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonSize.width() / 2,
+      gfx::CreateVectorIcon(views::kIcCloseIcon,
+                            kCloseButtonSize.width() * 2 / 3,
                             kControlIconColor));
   close_controls_view_->SetBackgroundImageAlignment(
       views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
