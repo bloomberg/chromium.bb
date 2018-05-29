@@ -556,13 +556,18 @@ void CookieStoreIOS::DeleteCookiesMatchingInfoAsync(
       system_store_->GetWeakPtr();
   system_store_->GetAllCookiesAsync(
       base::BindBlockArc(^(NSArray<NSHTTPCookie*>* cookies) {
+        if (!weak_system_store) {
+          if (!shared_callback.is_null())
+            std::move(shared_callback).Run(0);
+          return;
+        }
         int to_delete_count = 0;
         for (NSHTTPCookie* cookie in cookies) {
           base::Time creation_time =
               weak_system_store->GetCookieCreationTime(cookie);
           CanonicalCookie cc =
               CanonicalCookieFromSystemCookie(cookie, creation_time);
-          if (weak_system_store && shared_delete_info.Matches(cc)) {
+          if (shared_delete_info.Matches(cc)) {
             weak_system_store->DeleteCookieAsync(
                 cookie, SystemCookieStore::SystemCookieCallback());
             to_delete_count++;
