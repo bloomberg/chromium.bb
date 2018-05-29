@@ -1571,11 +1571,15 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (name == HTMLNames::nameAttr) {
     SetHasName(!params.new_value.IsNull());
   } else if (name == HTMLNames::partAttr) {
-    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
       EnsureElementRareData().SetPart(params.new_value);
+      GetDocument().GetStyleEngine().PartChangedForElement(*this);
+    }
   } else if (name == HTMLNames::partmapAttr) {
-    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
       EnsureElementRareData().SetPartNamesMap(params.new_value);
+      GetDocument().GetStyleEngine().PartmapChangedForElement(*this);
+    }
   } else if (IsStyledElement()) {
     if (name == styleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);

@@ -94,6 +94,10 @@ class RuleFeatureSetTest : public testing::Test {
                                                             *element, pseudo);
   }
 
+  void CollectPartInvalidationSet(InvalidationLists& invalidation_lists) const {
+    rule_feature_set_.CollectPartInvalidationSet(invalidation_lists);
+  }
+
   void CollectUniversalSiblingInvalidationSet(
       InvalidationLists& invalidation_lists) {
     rule_feature_set_.CollectUniversalSiblingInvalidationSet(invalidation_lists,
@@ -1217,6 +1221,8 @@ TEST_F(RuleFeatureSetTest, invalidatesParts) {
     CollectInvalidationSetsForClass(invalidation_lists, "a");
     EXPECT_EQ(1u, invalidation_lists.descendants.size());
     ExpectNoSelfInvalidation(invalidation_lists.descendants);
+    EXPECT_TRUE(invalidation_lists.descendants[0]->TreeBoundaryCrossing());
+    EXPECT_TRUE(invalidation_lists.descendants[0]->InvalidatesParts());
   }
 
   {
@@ -1225,6 +1231,17 @@ TEST_F(RuleFeatureSetTest, invalidatesParts) {
     EXPECT_EQ(1u, invalidation_lists.descendants.size());
     ExpectPartsInvalidation(invalidation_lists.descendants);
     EXPECT_FALSE(invalidation_lists.descendants[0]->WholeSubtreeInvalid());
+    EXPECT_TRUE(invalidation_lists.descendants[0]->TreeBoundaryCrossing());
+    EXPECT_TRUE(invalidation_lists.descendants[0]->InvalidatesParts());
+  }
+
+  {
+    InvalidationLists invalidation_lists;
+    CollectPartInvalidationSet(invalidation_lists);
+    EXPECT_EQ(1u, invalidation_lists.descendants.size());
+    ExpectPartsInvalidation(invalidation_lists.descendants);
+    EXPECT_TRUE(invalidation_lists.descendants[0]->TreeBoundaryCrossing());
+    EXPECT_TRUE(invalidation_lists.descendants[0]->InvalidatesParts());
   }
 }
 }  // namespace blink

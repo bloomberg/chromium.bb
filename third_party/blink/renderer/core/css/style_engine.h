@@ -268,6 +268,9 @@ class CORE_EXPORT StyleEngine final
                            const AtomicString& new_id,
                            Element&);
   void PseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
+  void PartChangedForElement(Element&);
+  void PartmapChangedForElement(Element&);
+
   void ScheduleSiblingInvalidationsForElement(Element&,
                                               ContainerNode& scheduling_parent,
                                               unsigned min_direct_adjacent);
