@@ -229,11 +229,18 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       are_passwords_revealed_when_bubble_is_opened_ = true;
       delegate_->OnPasswordsRevealed();
     }
+    // The condition for the password reauth:
+    // If the bubble opened after reauth -> no more reauth necessary, otherwise
+    // If a password was autofilled -> require reauth to view it, otherwise
+    // Require reauth iff the user opened the bubble manually and it's not the
+    // manual saving state. The manual saving state as well as automatic prompt
+    // are temporary states, therefore, it's better for the sake of convinience
+    // for the user not to break the UX with the reauth prompt.
     password_revealing_requires_reauth_ =
         !are_passwords_revealed_when_bubble_is_opened_ &&
-        (delegate_->BubbleIsManualFallbackForSaving()
-             ? pending_password_.form_has_autofilled_value
-             : display_reason == USER_ACTION);
+        (pending_password_.form_has_autofilled_value ||
+         (!delegate_->BubbleIsManualFallbackForSaving() &&
+          display_reason == USER_ACTION));
     enable_editing_ = delegate_->GetCredentialSource() !=
                       password_manager::metrics_util::CredentialSourceType::
                           kCredentialManagementAPI;
