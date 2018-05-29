@@ -138,6 +138,9 @@ void SignedExchangeHandler::DoHeaderLoop() {
 }
 
 void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
+  DCHECK(state_ == State::kReadingHeadersLength ||
+         state_ == State::kReadingHeaders);
+
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::DidReadHeader");
   if (result < 0) {
@@ -160,20 +163,24 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
   if (header_read_buf_->BytesRemaining() == 0) {
     switch (state_) {
       case State::kReadingHeadersLength:
-        if (!ParseHeadersLength())
+        if (!ParseHeadersLength()) {
           RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
+          return;
+        }
         break;
       case State::kReadingHeaders:
-        if (!ParseHeadersAndFetchCertificate())
+        if (!ParseHeadersAndFetchCertificate()) {
           RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
+          return;
+        }
         break;
       default:
         NOTREACHED();
     }
   }
 
-  if (state_ != State::kReadingHeadersLength &&
-      state_ != State::kReadingHeaders) {
+  // We have finished reading headers, so return without queueing the next read.
+  if (state_ == State::kFetchingCertificate) {
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::DidReadHeader", "state",
                      static_cast<int>(state_));
@@ -181,6 +188,8 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
   }
 
   // Trigger the next read.
+  DCHECK(state_ == State::kReadingHeadersLength ||
+         state_ == State::kReadingHeaders);
   if (completed_syncly) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
