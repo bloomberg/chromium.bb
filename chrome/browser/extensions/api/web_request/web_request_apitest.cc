@@ -438,9 +438,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       message_;
 }
 
-// Flaky (sometimes crash): http://crbug.com/140976
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       DISABLED_WebRequestAuthRequired) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

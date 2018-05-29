@@ -143,6 +143,7 @@
 # http://crbug.com/841827
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
+-ExtensionWebRequestApiTest.WebRequestAuthRequired
 
 # https://crbug.com/721400
 # WebSocket with the network service
