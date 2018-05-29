@@ -10,6 +10,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -26,7 +28,7 @@ import javax.annotation.Nullable;
 /**
  * Dialog that is displayed to ask user where they want to download the file.
  */
-public class DownloadLocationDialog extends ModalDialogView {
+public class DownloadLocationDialog extends ModalDialogView implements OnCheckedChangeListener {
     private DownloadDirectoryAdapter mDirectoryAdapter;
 
     private AlertDialogEditText mFileName;
@@ -109,6 +111,15 @@ public class DownloadLocationDialog extends ModalDialogView {
         boolean isInitial = PrefServiceBridge.getInstance().getPromptForDownloadAndroid()
                 == DownloadPromptStatus.SHOW_INITIAL;
         mDontShowAgain.setChecked(isInitial);
+        mDontShowAgain.setOnCheckedChangeListener(this);
+    }
+
+    // CompoundButton.OnCheckedChangeListener implementation.
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        int newStatus =
+                isChecked ? DownloadPromptStatus.DONT_SHOW : DownloadPromptStatus.SHOW_PREFERENCE;
+        PrefServiceBridge.getInstance().setPromptForDownloadAndroid(newStatus);
     }
 
     // Helper methods available to DownloadLocationDialogBridge.

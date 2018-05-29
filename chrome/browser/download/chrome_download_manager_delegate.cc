@@ -957,9 +957,17 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
   // with the filename automatically set to be the unique filename.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (result == PathValidationResult::SUCCESS) {
-    ChooseDownloadLocation(
-        native_window, DownloadLocationDialogType::NAME_CONFLICT, target_path,
-        base::BindOnce(&OnDownloadLocationDetermined, callback));
+    if (download_prefs_ && download_prefs_->PromptForDownload()) {
+      ChooseDownloadLocation(
+          native_window, DownloadLocationDialogType::NAME_CONFLICT, target_path,
+          base::BindOnce(&OnDownloadLocationDetermined, callback));
+      return;
+    }
+
+    // If user chose not to show download location dialog, uses current unique
+    // target path.
+    callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+                 target_path);
   } else {
     // If the name generation failed, fail the download.
     callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());

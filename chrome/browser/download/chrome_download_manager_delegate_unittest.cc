@@ -53,6 +53,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -1194,6 +1195,10 @@ TEST_F(ChromeDownloadManagerDelegateTest,
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kDownloadsLocationChange);
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
+
+  profile()->GetTestingPrefService()->SetInteger(
+      prefs::kPromptForDownloadAndroid,
+      static_cast<int>(DownloadPromptStatus::SHOW_PREFERENCE));
 
   enum class WebContents { AVAILABLE, NONE };
   enum class ExpectPath { FULL, EMPTY };
