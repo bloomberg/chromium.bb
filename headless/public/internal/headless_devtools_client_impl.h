@@ -130,6 +130,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   void DetachFromHost(content::DevToolsAgentHost* agent_host);
 
   void AttachToExternalHost(ExternalHost* external_host);
+  void InitBrowserMainThread();
 
   void SetTaskRunnerForTests(
       scoped_refptr<base::SequencedTaskRunner> task_runner) {
