@@ -223,7 +223,7 @@ RenderWidget* GetRenderWidget(
         static_cast<WebViewTestProxyType*>(web_widget_test_proxy_base);
     RenderViewImpl* render_view_impl =
         static_cast<RenderViewImpl*>(render_view_proxy);
-    return render_view_impl;
+    return render_view_impl->GetWidget();
   } else if (widget->IsWebFrameWidget()) {
     WebWidgetTestProxyType* render_widget_proxy =
         static_cast<WebWidgetTestProxyType*>(web_widget_test_proxy_base);

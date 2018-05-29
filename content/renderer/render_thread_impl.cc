@@ -2125,7 +2125,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           compositor_task_runner_, GetGpuMemoryBufferManager(),
           sync_message_filter(), routing_id, g_next_layer_tree_frame_sink_id++,
           std::move(params.synthetic_begin_frame_source),
-          view->widget_input_handler_manager()
+          view->GetWidget()
+              ->widget_input_handler_manager()
               ->GetSynchronousCompositorRegistry(),
           std::move(frame_swap_message_queue)));
       return;

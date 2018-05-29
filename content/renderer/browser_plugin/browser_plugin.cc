@@ -390,22 +390,19 @@ void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
 
 void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
                                    bool enable) {
-  auto* render_frame =
-      RenderFrameImpl::FromRoutingID(render_frame_routing_id());
-  auto* render_view = static_cast<RenderViewImpl*>(
-      render_frame ? render_frame->GetRenderView() : nullptr);
+  RenderWidget* render_widget = GetMainWidget();
   if (enable) {
-    if (mouse_locked_ || !render_view)
+    if (mouse_locked_ || !render_widget)
       return;
-    render_view->mouse_lock_dispatcher()->LockMouse(this);
+    render_widget->mouse_lock_dispatcher()->LockMouse(this);
   } else {
     if (!mouse_locked_) {
       OnLockMouseACK(false);
       return;
     }
-    if (!render_view)
+    if (!render_widget)
       return;
-    render_view->mouse_lock_dispatcher()->UnlockMouse(this);
+    render_widget->mouse_lock_dispatcher()->UnlockMouse(this);
   }
 }
 
@@ -442,6 +439,20 @@ gfx::Rect BrowserPlugin::FrameRectInPixels() const {
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
   return pending_visual_properties_.screen_info.device_scale_factor;
+}
+
+RenderWidget* BrowserPlugin::GetMainWidget() const {
+  RenderFrameImpl* frame =
+      RenderFrameImpl::FromRoutingID(render_frame_routing_id());
+  if (frame) {
+    RenderViewImpl* render_view =
+        static_cast<RenderViewImpl*>(frame->GetRenderView());
+    if (render_view) {
+      return render_view->GetWidget();
+    }
+  }
+
+  return nullptr;
 }
 
 void BrowserPlugin::UpdateInternalInstanceId() {
@@ -483,12 +494,9 @@ void BrowserPlugin::UpdateCaptureSequenceNumber(
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   bool embedder_focused = false;
-  auto* render_frame =
-      RenderFrameImpl::FromRoutingID(render_frame_routing_id());
-  auto* render_view = static_cast<RenderViewImpl*>(
-      render_frame ? render_frame->GetRenderView() : nullptr);
-  if (render_view)
-    embedder_focused = render_view->has_focus();
+  RenderWidget* render_widget = GetMainWidget();
+  if (render_widget)
+    embedder_focused = render_widget->has_focus();
   return plugin_focused_ && embedder_focused;
 }
 
@@ -539,12 +547,9 @@ void BrowserPlugin::Destroy() {
 
   container_ = nullptr;
   // Will be a no-op if the mouse is not currently locked.
-  auto* render_frame =
-      RenderFrameImpl::FromRoutingID(render_frame_routing_id());
-  auto* render_view = static_cast<RenderViewImpl*>(
-      render_frame ? render_frame->GetRenderView() : nullptr);
-  if (render_view)
-    render_view->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
+  RenderWidget* render_widget = GetMainWidget();
+  if (render_widget)
+    render_widget->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
 
   task_runner_->DeleteSoon(FROM_HERE, this);
 }
