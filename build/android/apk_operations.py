@@ -17,6 +17,8 @@ import random
 import re
 import shlex
 import sys
+import tempfile
+import textwrap
 
 import devil_chromium
 from devil import devil_env
@@ -36,6 +38,7 @@ with devil_env.SysPath(os.path.join(os.path.dirname(__file__), '..', '..',
 from incremental_install import installer
 from pylib import constants
 from pylib.symbols import deobfuscator
+from pylib.utils import simpleperf
 
 
 # Matches messages only on pre-L (Dalvik) that are spammy and unimportant.
@@ -633,6 +636,36 @@ def _RunCompileDex(devices, package_name, compilation_filter):
       print line
 
 
+def _RunProfile(device, package_name, host_build_directory, pprof_out_path,
+                process_specifier, thread_specifier, extra_args):
+  simpleperf.PrepareDevice(device)
+  device_simpleperf_path = simpleperf.InstallSimpleperf(device, package_name)
+  with tempfile.NamedTemporaryFile() as fh:
+    host_simpleperf_out_path = fh.name
+
+    with simpleperf.RunSimpleperf(device, device_simpleperf_path, package_name,
+                                  process_specifier, thread_specifier,
+                                  extra_args, host_simpleperf_out_path):
+      sys.stdout.write('Profiler is running; press Enter to stop...')
+      sys.stdin.read(1)
+      sys.stdout.write('Post-processing data...')
+      sys.stdout.flush()
+
+    simpleperf.ConvertSimpleperfToPprof(host_simpleperf_out_path,
+                                        host_build_directory, pprof_out_path)
+    print textwrap.dedent("""
+        Profile data written to %(s)s.
+
+        To view profile as a call graph in browser:
+          pprof -web %(s)s
+
+        To print the hottest methods:
+          pprof -top %(s)s
+
+        pprof has many useful customization options; `pprof --help` for details.
+        """ % {'s': pprof_out_path})
+
+
 def _GenerateAvailableDevicesMessage(devices):
   devices_obj = device_utils.DeviceUtils.parallel(devices)
   descriptions = devices_obj.pMap(lambda d: d.build_description).pGet(None)
@@ -1111,6 +1144,44 @@ class _CompileDexCommand(_Command):
                    self.args.compilation_filter)
 
 
+class _ProfileCommand(_Command):
+  name = 'profile'
+  description = ('Run the simpleperf sampling CPU profiler on the currently-'
+                 'running APK. If --args is used, the extra arguments will be '
+                 'passed on to simpleperf; otherwise, the following default '
+                 'arguments are used: -g -f 1000 -o /data/local/tmp/perf.data')
+  needs_package_name = True
+  needs_output_directory = True
+  supports_multiple_devices = False
+  accepts_args = True
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument(
+        '--profile-process', default='browser',
+        help=('Which process to profile. This may be a process name or pid '
+              'such as you would get from running `%s ps`; or '
+              'it can be one of (browser, renderer, gpu).' % sys.argv[0]))
+    group.add_argument(
+        '--profile-thread', default=None,
+        help=('(Optional) Profile only a single thread. This may be either a '
+              'thread ID such as you would get by running `adb shell ps -t` '
+              '(pre-Oreo) or `adb shell ps -e -T` (Oreo and later); or it may '
+              'be one of (io, compositor, main, render), in which case '
+              '--profile-process is also required. (Note that "render" thread '
+              'refers to a thread in the browser process that manages a '
+              'renderer; to profile the main thread of the renderer process, '
+              'use --profile-thread=main).'))
+    group.add_argument('--profile-output', default='profile.pb',
+                       help='Output file for profiling data')
+
+  def Run(self):
+    extra_args = shlex.split(self.args.args or '')
+    _RunProfile(self.devices[0], self.args.package_name,
+                self.args.output_directory, self.args.profile_output,
+                self.args.profile_process, self.args.profile_thread,
+                extra_args)
+
+
 class _RunCommand(_InstallCommand, _LaunchCommand, _LogcatCommand):
   name = 'run'
   description = 'Install, launch, and show logcat (when targeting one device).'
@@ -1149,6 +1220,7 @@ _COMMANDS = [
     _MemUsageCommand,
     _ShellCommand,
     _CompileDexCommand,
+    _ProfileCommand,
     _RunCommand,
 ]
 
