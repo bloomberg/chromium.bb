@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_SUBSAMPLE_ENTRY_H_
 #define MEDIA_BASE_SUBSAMPLE_ENTRY_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <vector>
