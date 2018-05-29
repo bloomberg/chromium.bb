@@ -26,7 +26,10 @@
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
 #include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -171,8 +174,10 @@ class BackgroundFetchDataManager::RegistrationData {
 
 BackgroundFetchDataManager::BackgroundFetchDataManager(
     BrowserContext* browser_context,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<CacheStorageContextImpl> cache_storage_context)
     : service_worker_context_(std::move(service_worker_context)),
+      cache_storage_context_(std::move(cache_storage_context)),
       weak_ptr_factory_(this) {
   // Constructed on the UI thread, then used on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -405,7 +410,8 @@ void BackgroundFetchDataManager::MarkRequestAsComplete(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
     AddDatabaseTask(std::make_unique<background_fetch::MarkRequestCompleteTask>(
-        this, registration_id, request, std::move(callback)));
+        this, registration_id, request, GetCacheStorageManager(),
+        std::move(callback)));
     return;
   }
 
@@ -426,7 +432,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
     AddDatabaseTask(std::make_unique<background_fetch::GetSettledFetchesTask>(
-        this, registration_id, std::move(callback)));
+        this, registration_id, GetCacheStorageManager(), std::move(callback)));
     return;
   }
 
@@ -617,6 +623,15 @@ void BackgroundFetchDataManager::GetNumCompletedRequests(
 
   std::move(callback).Run(registrations_.find(registration_id.unique_id())
                               ->second->GetNumCompletedRequests());
+}
+
+CacheStorageManager* BackgroundFetchDataManager::GetCacheStorageManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  CacheStorageManager* manager = cache_storage_context_->cache_manager();
+  DCHECK(manager);
+
+  return manager;
 }
 
 bool BackgroundFetchDataManager::IsActive(

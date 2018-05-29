@@ -19,11 +19,18 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_num_requests_task.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/mock_quota_manager.h"
+#include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
@@ -101,7 +108,73 @@ bool operator==(const ResponseStateStats& s1, const ResponseStateStats& s2) {
          s1.completed_requests == s2.completed_requests;
 }
 
+class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
+ public:
+  MockBGFQuotaManagerProxy(MockQuotaManager* quota_manager)
+      : MockQuotaManagerProxy(quota_manager,
+                              base::ThreadTaskRunnerHandle::Get().get()) {}
+
+  // Ignore quota client, it is irrelevant for these tests.
+  void RegisterClient(QuotaClient* client) override {
+    delete client;  // Directly delete, to avoid memory leak.
+  }
+
+ protected:
+  ~MockBGFQuotaManagerProxy() override {}
+};
+
 }  // namespace
+
+class BackgroundFetchTestDataManager : public BackgroundFetchDataManager {
+ public:
+  BackgroundFetchTestDataManager(
+      BrowserContext* browser_context,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+      : BackgroundFetchDataManager(browser_context,
+                                   service_worker_context,
+                                   nullptr /* cache_storage_context */),
+        browser_context_(browser_context) {}
+
+ private:
+  void CreateCacheStorageManager() {
+    StoragePartition* storage_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context_);
+    DCHECK(storage_partition);
+
+    ChromeBlobStorageContext* blob_storage_context(
+        ChromeBlobStorageContext::GetFor(browser_context_));
+    // Wait for ChromeBlobStorageContext to finish initializing.
+    base::RunLoop().RunUntilIdle();
+
+    auto mock_quota_manager = base::MakeRefCounted<MockQuotaManager>(
+        storage_partition->GetPath().empty(), storage_partition->GetPath(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::MakeRefCounted<MockSpecialStoragePolicy>());
+    mock_quota_manager->SetQuota(GURL("https://example.com/"),
+                                 StorageType::kTemporary, 1024 * 1024 * 100);
+
+    cache_manager_ = CacheStorageManager::Create(
+        storage_partition->GetPath(), base::ThreadTaskRunnerHandle::Get(),
+        base::MakeRefCounted<MockBGFQuotaManagerProxy>(
+            mock_quota_manager.get()));
+    DCHECK(cache_manager_);
+
+    cache_manager_->SetBlobParametersForCache(
+        storage_partition->GetURLRequestContext(),
+        blob_storage_context->context()->AsWeakPtr());
+  }
+
+  CacheStorageManager* GetCacheStorageManager() override {
+    if (!cache_manager_)
+      CreateCacheStorageManager();
+    return cache_manager_.get();
+  }
+
+  std::unique_ptr<CacheStorageManager> cache_manager_;
+  BrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchTestDataManager);
+};
 
 class BackgroundFetchDataManagerTest
     : public BackgroundFetchTestBase,
@@ -130,7 +203,7 @@ class BackgroundFetchDataManagerTest
     }
 
     background_fetch_data_manager_ =
-        std::make_unique<BackgroundFetchDataManager>(
+        std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(),
             embedded_worker_test_helper()->context_wrapper());
   }
@@ -473,7 +546,8 @@ class BackgroundFetchDataManagerTest
   }
 
   BackgroundFetchRegistrationStorage registration_storage_;
-  std::unique_ptr<BackgroundFetchDataManager> background_fetch_data_manager_;
+  std::unique_ptr<BackgroundFetchTestDataManager>
+      background_fetch_data_manager_;
 };
 
 INSTANTIATE_TEST_CASE_P(

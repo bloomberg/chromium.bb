@@ -14,6 +14,8 @@
 
 namespace content {
 
+class CacheStorageManager;
+
 namespace background_fetch {
 
 // Moves the request from an active state to a complete state. Stores the
@@ -26,6 +28,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
       BackgroundFetchDataManager* data_manager,
       BackgroundFetchRegistrationId registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
+      CacheStorageManager* cache_manager,
       MarkedCompleteCallback callback);
 
   ~MarkRequestCompleteTask() override;
@@ -44,6 +47,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
   BackgroundFetchRegistrationId registration_id_;
   scoped_refptr<BackgroundFetchRequestInfo> request_info_;
+  CacheStorageManager* cache_manager_;
   MarkedCompleteCallback callback_;
 
   proto::BackgroundFetchCompletedRequest completed_request_;

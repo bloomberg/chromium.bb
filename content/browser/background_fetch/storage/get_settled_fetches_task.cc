@@ -16,11 +16,15 @@ namespace background_fetch {
 GetSettledFetchesTask::GetSettledFetchesTask(
     BackgroundFetchDataManager* data_manager,
     BackgroundFetchRegistrationId registration_id,
+    CacheStorageManager* cache_manager,
     SettledFetchesCallback callback)
     : DatabaseTask(data_manager),
       registration_id_(registration_id),
+      cache_manager_(cache_manager),
       settled_fetches_callback_(std::move(callback)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(cache_manager_);
+}
 
 GetSettledFetchesTask::~GetSettledFetchesTask() = default;
 
