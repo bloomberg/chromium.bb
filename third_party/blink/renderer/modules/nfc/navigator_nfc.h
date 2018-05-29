@@ -27,7 +27,6 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
   static NFC* nfc(Navigator&);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   explicit NavigatorNFC(Navigator&);

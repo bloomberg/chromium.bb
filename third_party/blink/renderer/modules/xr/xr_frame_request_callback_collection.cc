@@ -61,11 +61,4 @@ void XRFrameRequestCallbackCollection::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
 }
 
-void XRFrameRequestCallbackCollection::TraceWrappers(
-    blink::ScriptWrappableVisitor* visitor) const {
-  for (const auto& callback : callbacks_.Values()) {
-    visitor->TraceWrappers(callback);
-  }
-}
-
 }  // namespace blink

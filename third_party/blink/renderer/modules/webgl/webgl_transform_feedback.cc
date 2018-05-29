@@ -148,12 +148,4 @@ void WebGLTransformFeedback::Trace(blink::Visitor* visitor) {
   WebGLContextObject::Trace(visitor);
 }
 
-void WebGLTransformFeedback::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto& buf : bound_indexed_transform_feedback_buffers_) {
-    visitor->TraceWrappers(buf);
-  }
-  WebGLContextObject::TraceWrappers(visitor);
-}
-
 }  // namespace blink

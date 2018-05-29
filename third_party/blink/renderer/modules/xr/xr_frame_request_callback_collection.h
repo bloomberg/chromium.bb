@@ -29,7 +29,6 @@ class XRFrameRequestCallbackCollection final : public TraceWrapperBase {
   bool IsEmpty() const { return !callbacks_.size(); }
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(blink::ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "XRFrameRequestCallbackCollection";
   }

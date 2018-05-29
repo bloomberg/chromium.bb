@@ -104,9 +104,4 @@ void IDBObserver::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void IDBObserver::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 }  // namespace blink

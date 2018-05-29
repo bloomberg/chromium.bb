@@ -188,11 +188,6 @@ void LocalFileSystem::Trace(blink::Visitor* visitor) {
   Supplement<WorkerClients>::Trace(visitor);
 }
 
-void LocalFileSystem::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  Supplement<LocalFrame>::TraceWrappers(visitor);
-  Supplement<WorkerClients>::TraceWrappers(visitor);
-}
-
 const char LocalFileSystem::kSupplementName[] = "LocalFileSystem";
 
 LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {

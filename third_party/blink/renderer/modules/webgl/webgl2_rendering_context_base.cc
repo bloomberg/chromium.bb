@@ -5680,28 +5680,6 @@ void WebGL2RenderingContextBase::Trace(blink::Visitor* visitor) {
   WebGLRenderingContextBase::Trace(visitor);
 }
 
-void WebGL2RenderingContextBase::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(read_framebuffer_binding_);
-  visitor->TraceWrappers(transform_feedback_binding_);
-  visitor->TraceWrappers(bound_copy_read_buffer_);
-  visitor->TraceWrappers(bound_copy_write_buffer_);
-  visitor->TraceWrappers(bound_pixel_pack_buffer_);
-  visitor->TraceWrappers(bound_pixel_unpack_buffer_);
-  visitor->TraceWrappers(bound_transform_feedback_buffer_);
-  visitor->TraceWrappers(bound_uniform_buffer_);
-  for (auto& buf : bound_indexed_uniform_buffers_) {
-    visitor->TraceWrappers(buf);
-  }
-  visitor->TraceWrappers(current_boolean_occlusion_query_);
-  visitor->TraceWrappers(current_transform_feedback_primitives_written_query_);
-  visitor->TraceWrappers(current_elapsed_query_);
-  for (auto& unit : sampler_units_) {
-    visitor->TraceWrappers(unit);
-  }
-  WebGLRenderingContextBase::TraceWrappers(visitor);
-}
-
 WebGLTexture* WebGL2RenderingContextBase::ValidateTexture3DBinding(
     const char* function_name,
     GLenum target) {

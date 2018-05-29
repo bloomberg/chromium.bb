@@ -40,9 +40,6 @@ class WebGLRenderbufferAttachment final
   static WebGLFramebuffer::WebGLAttachment* Create(WebGLRenderbuffer*);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(renderbuffer_);
-  }
   const char* NameInHeapSnapshot() const override { return "WebGLAttachment"; }
 
  private:
@@ -114,9 +111,6 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                                                    GLint layer);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(texture_);
-  }
   const char* NameInHeapSnapshot() const override {
     return "WebGLTextureAttachment";
   }
@@ -560,13 +554,6 @@ GLenum WebGLFramebuffer::GetDrawBuffer(GLenum draw_buffer) {
 void WebGLFramebuffer::Trace(blink::Visitor* visitor) {
   visitor->Trace(attachments_);
   WebGLContextObject::Trace(visitor);
-}
-
-void WebGLFramebuffer::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (const auto& attachment : attachments_) {
-    visitor->TraceWrappers(attachment.value);
-  }
-  WebGLContextObject::TraceWrappers(visitor);
 }
 
 }  // namespace blink

@@ -70,11 +70,6 @@ void IndexedDBClient::Trace(blink::Visitor* visitor) {
   Supplement<WorkerClients>::Trace(visitor);
 }
 
-void IndexedDBClient::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  Supplement<LocalFrame>::TraceWrappers(visitor);
-  Supplement<WorkerClients>::TraceWrappers(visitor);
-}
-
 void ProvideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client) {
   Supplement<LocalFrame>::ProvideTo(frame, client);
 }

@@ -71,7 +71,6 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   bool DetachShader(WebGLShader*);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   explicit WebGLProgram(WebGLRenderingContextBase*);

@@ -55,9 +55,4 @@ void WebGLContextObject::Trace(blink::Visitor* visitor) {
   WebGLObject::Trace(visitor);
 }
 
-void WebGLContextObject::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(context_);
-  WebGLObject::TraceWrappers(visitor);
-}
-
 }  // namespace blink

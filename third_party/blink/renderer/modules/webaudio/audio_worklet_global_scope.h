@@ -103,7 +103,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   float sampleRate() const { return sample_rate_; }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   AudioWorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

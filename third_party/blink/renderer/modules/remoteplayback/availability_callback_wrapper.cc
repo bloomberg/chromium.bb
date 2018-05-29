@@ -32,9 +32,4 @@ void AvailabilityCallbackWrapper::Trace(blink::Visitor* visitor) {
   visitor->Trace(bindings_cb_);
 }
 
-void AvailabilityCallbackWrapper::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(bindings_cb_);
-}
-
 }  // namespace blink
