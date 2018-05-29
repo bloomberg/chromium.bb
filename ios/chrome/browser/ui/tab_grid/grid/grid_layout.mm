@@ -12,10 +12,12 @@
 
 @interface GridLayout ()
 @property(nonatomic, strong) NSArray<NSIndexPath*>* indexPathsOfDeletingItems;
+@property(nonatomic, strong) NSArray<NSIndexPath*>* indexPathsOfInsertingItems;
 @end
 
 @implementation GridLayout
 @synthesize indexPathsOfDeletingItems = _indexPathsOfDeletingItems;
+@synthesize indexPathsOfInsertingItems = _indexPathsOfInsertingItems;
 
 #pragma mark - UICollectionViewLayout
 
@@ -66,20 +68,68 @@
 
 - (void)prepareForCollectionViewUpdates:
     (NSArray<UICollectionViewUpdateItem*>*)updateItems {
+  // Track which items in this update are explicitly being deleted or inserted.
   NSMutableArray<NSIndexPath*>* deletingItems =
       [NSMutableArray arrayWithCapacity:updateItems.count];
+  NSMutableArray<NSIndexPath*>* insertingItems =
+      [NSMutableArray arrayWithCapacity:updateItems.count];
   for (UICollectionViewUpdateItem* item in updateItems) {
-    if (item.updateAction == UICollectionUpdateActionDelete) {
-      [deletingItems addObject:item.indexPathBeforeUpdate];
+    switch (item.updateAction) {
+      case UICollectionUpdateActionDelete:
+        [deletingItems addObject:item.indexPathBeforeUpdate];
+        break;
+      case UICollectionUpdateActionInsert:
+        [insertingItems addObject:item.indexPathAfterUpdate];
+        break;
+      default:
+        break;
     }
   }
   self.indexPathsOfDeletingItems = [deletingItems copy];
+  self.indexPathsOfInsertingItems = [insertingItems copy];
+}
+
+- (UICollectionViewLayoutAttributes*)
+finalLayoutAttributesForDisappearingItemAtIndexPath:
+    (NSIndexPath*)itemIndexPath {
+  // Note that this method is called for any item whose index path changing from
+  // |itemIndexPath|, which includes any items that were in the layout and whose
+  // index path is changing. For an item whose index path is changing, this
+  // method is called before
+  // -initialLayoutAttributesForAppearingItemAtIndexPath:
+  UICollectionViewLayoutAttributes* attributes =
+      [super finalLayoutAttributesForDisappearingItemAtIndexPath:itemIndexPath];
+  // Disappearing items that aren't being deleted just use the default
+  // attributes.
+  if (![self.indexPathsOfDeletingItems containsObject:itemIndexPath]) {
+    return attributes;
+  }
+  // Cells being deleted fade out, are scaled down, and drop downwards slightly.
+  attributes.alpha = 0.0;
+  // Scaled down to 60%.
+  CGAffineTransform transform =
+      CGAffineTransformScale(attributes.transform, /*sx=*/0.6, /*sy=*/0.6);
+  // Translated down (positive-y direction) by 50% of the cell cell size.
+  transform = CGAffineTransformTranslate(transform, /*tx=*/0,
+                                         /*ty=*/attributes.size.height * 0.5);
+  attributes.transform = transform;
+  return attributes;
 }
 
 - (UICollectionViewLayoutAttributes*)
 initialLayoutAttributesForAppearingItemAtIndexPath:(NSIndexPath*)itemIndexPath {
+  // Note that this method is called for any item whose index path is becoming
+  // |itemIndexPath|, which includes any items that were in the layout but whose
+  // index path is changing. For an item whose index path is changing, this
+  // method is called after
+  // -finalLayoutAttributesForDisappearingItemAtIndexPath:
   UICollectionViewLayoutAttributes* attributes =
       [super initialLayoutAttributesForAppearingItemAtIndexPath:itemIndexPath];
+  // Appearing items that aren't being inserted just use the default
+  // attributes.
+  if (![self.indexPathsOfInsertingItems containsObject:itemIndexPath]) {
+    return attributes;
+  }
   // TODO(crbug.com/820410) : Polish the animation, and put constants where they
   // belong.
   // Cells being inserted start faded out, scaled down, and drop downwards
@@ -93,30 +143,9 @@ initialLayoutAttributesForAppearingItemAtIndexPath:(NSIndexPath*)itemIndexPath {
   return attributes;
 }
 
-- (UICollectionViewLayoutAttributes*)
-finalLayoutAttributesForDisappearingItemAtIndexPath:
-    (NSIndexPath*)itemIndexPath {
-  UICollectionViewLayoutAttributes* attributes =
-      [super finalLayoutAttributesForDisappearingItemAtIndexPath:itemIndexPath];
-  // Disappearing items that aren't being deleted just use the default
-  // attributes.
-  if (![self.indexPathsOfDeletingItems containsObject:itemIndexPath]) {
-    return attributes;
-  }
-  // Cells being deleted fade out, are scaled down, and drop downwards slightly.
-  attributes.alpha = 0.0;
-  // Scaled down to 60%.
-  CGAffineTransform transform =
-      CGAffineTransformScale(attributes.transform, 0.6, 0.6);
-  // Translated down (positive-y direction) by 50% of the cell cell size.
-  transform =
-      CGAffineTransformTranslate(transform, 0, attributes.size.height * 0.5);
-  attributes.transform = transform;
-  return attributes;
-}
-
 - (void)finalizeCollectionViewUpdates {
   self.indexPathsOfDeletingItems = @[];
+  self.indexPathsOfInsertingItems = @[];
 }
 
 @end
