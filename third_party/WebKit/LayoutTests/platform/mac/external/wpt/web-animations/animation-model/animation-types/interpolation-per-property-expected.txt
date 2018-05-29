@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 721 tests; 646 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 723 tests; 646 PASS, 77 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with effect easing
@@ -652,6 +652,8 @@ PASS transform: scale
 PASS transform: skew
 PASS transform: rotate and translate
 PASS transform: translate and rotate
+FAIL transform: extend shorter list (from) assert_approx_equals: expected matrix(-1,0,0,-1,-50,0) but got matrix(1, 0, 0, 1, 50, -3.67394e-14): The value should be matrix(-1,0,0,-1,-50,0) at 500ms but got matrix(1, 0, 0, 1, 50, -3.67394e-14) expected -1 +/- 0.0001 but got 1
+FAIL transform: extend shorter list (to) assert_approx_equals: expected matrix(-1,0,0,-1,-50,0) but got matrix(1, 0, 0, 1, 50, 0): The value should be matrix(-1,0,0,-1,-50,0) at 500ms but got matrix(1, 0, 0, 1, 50, 0) expected -1 +/- 0.0001 but got 1
 FAIL transform: mismatch order of translate and rotate assert_approx_equals: expected matrix(-0.7071067811865475,0.7071067811865476,-0.7071067811865476,-0.7071067811865475,100,50) but got matrix(0.707107, -0.707107, 0.707107, 0.707107, 100, 50): The value should be matrix(-0.7071067811865475,0.7071067811865476,-0.7071067811865476,-0.7071067811865475,100,50) at 500ms but got matrix(0.707107, -0.707107, 0.707107, 0.707107, 100, 50) expected -0.7071067811865475 +/- 0.0001 but got 0.707107
 FAIL transform: matrix assert_approx_equals: expected matrix(-0.7071067811865475,0.7071067811865476,-0.7071067811865476,-0.7071067811865475,100,50) but got matrix(0.707107, -0.707107, 0.707107, 0.707107, 100, 50): The value should be matrix(-0.7071067811865475,0.7071067811865476,-0.7071067811865476,-0.7071067811865475,100,50) at 500ms but got matrix(0.707107, -0.707107, 0.707107, 0.707107, 100, 50) expected -0.7071067811865475 +/- 0.0001 but got 0.707107
 PASS transform: rotate3d
