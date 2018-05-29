@@ -54,26 +54,10 @@ class SVGZoomAndPan {
     return static_cast<SVGZoomAndPanType>(number);
   }
 
-  bool ParseZoomAndPan(const LChar*& start, const LChar* end);
-  bool ParseZoomAndPan(const UChar*& start, const UChar* end);
+  static SVGZoomAndPanType Parse(const LChar*& start, const LChar* end);
+  static SVGZoomAndPanType Parse(const UChar*& start, const UChar* end);
 
-  bool ParseAttribute(const QualifiedName& name, const AtomicString& value) {
-    if (name == SVGNames::zoomAndPanAttr) {
-      zoom_and_pan_ = kSVGZoomAndPanUnknown;
-      if (!value.IsEmpty()) {
-        if (value.Is8Bit()) {
-          const LChar* start = value.Characters8();
-          ParseZoomAndPan(start, start + value.length());
-        } else {
-          const UChar* start = value.Characters16();
-          ParseZoomAndPan(start, start + value.length());
-        }
-      }
-      return true;
-    }
-
-    return false;
-  }
+  bool ParseAttribute(const QualifiedName& name, const AtomicString& value);
 
   // JS API
   SVGZoomAndPanType zoomAndPan() const { return zoom_and_pan_; }
@@ -86,7 +70,6 @@ class SVGZoomAndPan {
 
  protected:
   SVGZoomAndPan();
-  void ResetZoomAndPan();
 
  private:
   SVGZoomAndPanType zoom_and_pan_;

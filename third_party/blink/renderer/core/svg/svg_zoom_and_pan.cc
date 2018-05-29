@@ -27,35 +27,43 @@ namespace blink {
 
 SVGZoomAndPan::SVGZoomAndPan() : zoom_and_pan_(kSVGZoomAndPanMagnify) {}
 
-void SVGZoomAndPan::ResetZoomAndPan() {
-  zoom_and_pan_ = kSVGZoomAndPanMagnify;
-}
-
 bool SVGZoomAndPan::IsKnownAttribute(const QualifiedName& attr_name) {
   return attr_name == SVGNames::zoomAndPanAttr;
 }
 
+bool SVGZoomAndPan::ParseAttribute(const QualifiedName& name,
+                                   const AtomicString& value) {
+  if (name != SVGNames::zoomAndPanAttr)
+    return false;
+  zoom_and_pan_ = kSVGZoomAndPanUnknown;
+  if (!value.IsEmpty()) {
+    if (value.Is8Bit()) {
+      const LChar* start = value.Characters8();
+      zoom_and_pan_ = Parse(start, start + value.length());
+    } else {
+      const UChar* start = value.Characters16();
+      zoom_and_pan_ = Parse(start, start + value.length());
+    }
+  }
+  return true;
+}
+
 template <typename CharType>
-static bool ParseZoomAndPanInternal(const CharType*& start,
-                                    const CharType* end,
-                                    SVGZoomAndPanType& zoom_and_pan) {
-  if (SkipToken(start, end, "disable")) {
-    zoom_and_pan = kSVGZoomAndPanDisable;
-    return true;
-  }
-  if (SkipToken(start, end, "magnify")) {
-    zoom_and_pan = kSVGZoomAndPanMagnify;
-    return true;
-  }
-  return false;
+static SVGZoomAndPanType ParseZoomAndPanInternal(const CharType*& start,
+                                                 const CharType* end) {
+  if (SkipToken(start, end, "disable"))
+    return kSVGZoomAndPanDisable;
+  if (SkipToken(start, end, "magnify"))
+    return kSVGZoomAndPanMagnify;
+  return kSVGZoomAndPanUnknown;
 }
 
-bool SVGZoomAndPan::ParseZoomAndPan(const LChar*& start, const LChar* end) {
-  return ParseZoomAndPanInternal(start, end, zoom_and_pan_);
+SVGZoomAndPanType SVGZoomAndPan::Parse(const LChar*& start, const LChar* end) {
+  return ParseZoomAndPanInternal(start, end);
 }
 
-bool SVGZoomAndPan::ParseZoomAndPan(const UChar*& start, const UChar* end) {
-  return ParseZoomAndPanInternal(start, end, zoom_and_pan_);
+SVGZoomAndPanType SVGZoomAndPan::Parse(const UChar*& start, const UChar* end) {
+  return ParseZoomAndPanInternal(start, end);
 }
 
 }  // namespace blink

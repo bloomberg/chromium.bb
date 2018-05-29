@@ -31,7 +31,8 @@ namespace blink {
 SVGViewSpec::SVGViewSpec()
     : view_box_(SVGRect::CreateInvalid()),
       preserve_aspect_ratio_(SVGPreserveAspectRatio::Create()),
-      transform_(SVGTransformList::Create()) {}
+      transform_(SVGTransformList::Create()),
+      zoom_and_pan_(kSVGZoomAndPanUnknown) {}
 
 void SVGViewSpec::Trace(blink::Visitor* visitor) {
   visitor->Trace(view_box_);
@@ -72,7 +73,7 @@ void SVGViewSpec::SetPreserveAspectRatio(const SVGPreserveAspectRatio& other) {
 }
 
 void SVGViewSpec::Reset() {
-  ResetZoomAndPan();
+  zoom_and_pan_ = kSVGZoomAndPanUnknown;
   transform_->Clear();
   SetViewBox(FloatRect());
   PreserveAspectRatio()->SetDefault();
@@ -154,7 +155,8 @@ bool SVGViewSpec::ParseViewSpecInternal(const CharType* ptr,
         break;
       }
       case kZoomAndPan:
-        if (!ParseZoomAndPan(ptr, end))
+        zoom_and_pan_ = SVGZoomAndPan::Parse(ptr, end);
+        if (zoom_and_pan_ == kSVGZoomAndPanUnknown)
           return false;
         break;
       case kPreserveAspectRatio:
