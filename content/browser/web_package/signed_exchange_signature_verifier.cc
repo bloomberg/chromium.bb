@@ -15,7 +15,7 @@
 #include "components/cbor/cbor_writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header.h"
-#include "content/browser/web_package/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_signature_header_field.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/signature_verifier.h"
 #include "net/cert/asn1_util.h"

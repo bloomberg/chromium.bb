@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_signature_header_field.h"
 
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class SignedExchangeHeaderParserTest : public ::testing::Test {
+class SignedExchangeSignatureHeaderFieldTest : public ::testing::Test {
  protected:
-  SignedExchangeHeaderParserTest() {}
+  SignedExchangeSignatureHeaderFieldTest() {}
 };
 
-TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -56,7 +56,7 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
        0x0d, 0x6e, 0xf8, 0xad, 0xa6, 0xf7, 0x58, 0x28, 0xd4, 0x3e, 0x62,
        0x00, 0x63, 0xf7, 0xd0, 0xe5, 0x62, 0x9e, 0x1f, 0x11, 0x7c}};
 
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signatures.has_value());
   ASSERT_EQ(signatures->size(), 2u);
@@ -86,7 +86,7 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
   EXPECT_EQ(signatures->at(1).expires, 1511733180ul);
 }
 
-TEST_F(SignedExchangeHeaderParserTest, IncompleteSignature) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, IncompleteSignature) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -96,12 +96,12 @@ TEST_F(SignedExchangeHeaderParserTest, IncompleteSignature) {
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, DuplicatedParam) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, DuplicatedParam) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -112,12 +112,12 @@ TEST_F(SignedExchangeHeaderParserTest, DuplicatedParam) {
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, InvalidCertURL) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertURL) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -127,12 +127,12 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidCertURL) {
       " certUrl=\"https:://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, CertURLWithFragment) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, CertURLWithFragment) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -142,12 +142,12 @@ TEST_F(SignedExchangeHeaderParserTest, CertURLWithFragment) {
       " certUrl=\"https://example.com/oldcerts#test\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, RelativeCertURL) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeCertURL) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -157,12 +157,12 @@ TEST_F(SignedExchangeHeaderParserTest, RelativeCertURL) {
       " certUrl=\"oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, InvalidValidityUrl) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidValidityUrl) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -172,12 +172,12 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidValidityUrl) {
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, ValidityUrlWithFragment) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, ValidityUrlWithFragment) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -187,12 +187,12 @@ TEST_F(SignedExchangeHeaderParserTest, ValidityUrlWithFragment) {
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, RelativeValidityUrl) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeValidityUrl) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -202,12 +202,12 @@ TEST_F(SignedExchangeHeaderParserTest, RelativeValidityUrl) {
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, InvalidCertSHA256) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, InvalidCertSHA256) {
   const char hdr_string[] =
       "sig1;"
       " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
@@ -217,63 +217,70 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidCertSHA256) {
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9;"
       " date=1511128380; expires=1511733180";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, OpenQuoteAtEnd) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, OpenQuoteAtEnd) {
   const char hdr_string[] = "sig1; sig=\"";
-  auto signatures = SignedExchangeHeaderParser::ParseSignature(
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
       hdr_string, nullptr /* devtools_proxy */);
   EXPECT_FALSE(signatures.has_value());
 }
 
-TEST_F(SignedExchangeHeaderParserTest, VersionParam_None) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_None) {
   const char content_type[] = "application/signed-exchange";
   base::Optional<SignedExchangeVersion> version;
-  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
-      content_type, &version));
+  EXPECT_TRUE(
+      SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version));
   EXPECT_FALSE(version);
 }
 
-TEST_F(SignedExchangeHeaderParserTest, VersionParam_NoneWithSemicolon) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_NoneWithSemicolon) {
   const char content_type[] = "application/signed-exchange;";
   base::Optional<SignedExchangeVersion> version;
-  EXPECT_FALSE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
-      content_type, &version));
+  EXPECT_FALSE(
+      SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version));
 }
 
-TEST_F(SignedExchangeHeaderParserTest, VersionParam_EmptyString) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_EmptyString) {
   const char content_type[] = "application/signed-exchange;v=";
   base::Optional<SignedExchangeVersion> version;
-  EXPECT_FALSE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
-      content_type, &version));
+  EXPECT_FALSE(
+      SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version));
 }
 
-TEST_F(SignedExchangeHeaderParserTest, VersionParam_Simple) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_Simple) {
   const char content_type[] = "application/signed-exchange;v=b0";
   base::Optional<SignedExchangeVersion> version;
-  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
-      content_type, &version));
+  EXPECT_TRUE(
+      SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version));
   ASSERT_TRUE(version);
   EXPECT_EQ(*version, SignedExchangeVersion::kB0);
 }
 
-TEST_F(SignedExchangeHeaderParserTest, VersionParam_SimpleWithSpace) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_SimpleWithSpace) {
   const char content_type[] = "application/signed-exchange; v=b1";
   base::Optional<SignedExchangeVersion> version;
-  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
-      content_type, &version));
+  EXPECT_TRUE(
+      SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version));
   ASSERT_TRUE(version);
   EXPECT_EQ(*version, SignedExchangeVersion::kB1);
 }
 
-TEST_F(SignedExchangeHeaderParserTest, VersionParam_SimpleWithDoublequotes) {
+TEST_F(SignedExchangeSignatureHeaderFieldTest,
+       VersionParam_SimpleWithDoublequotes) {
   const char content_type[] = "application/signed-exchange;v=\"b0\"";
   base::Optional<SignedExchangeVersion> version;
-  EXPECT_TRUE(SignedExchangeHeaderParser::GetVersionParamFromContentType(
-      content_type, &version));
+  EXPECT_TRUE(
+      SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version));
   ASSERT_TRUE(version);
   EXPECT_EQ(*version, SignedExchangeVersion::kB0);
 }
