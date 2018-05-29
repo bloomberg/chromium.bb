@@ -23,7 +23,13 @@ const base::Feature kDefaultEnableGpuRasterization{
 // Use the passthrough command decoder by default.  This can be overridden with
 // the --use-cmd-decoder=passthrough or --use-cmd-decoder=validating flags.
 const base::Feature kDefaultPassthroughCommandDecoder{
-    "DefaultPassthroughCommandDecoder", base::FEATURE_DISABLED_BY_DEFAULT};
+  "DefaultPassthroughCommandDecoder",
+#if defined(OS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Use DirectComposition layers (overlays) for video if supported. Overridden by
 // --enable-direct-composition-layers and --disable-direct-composition-layers.
