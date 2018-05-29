@@ -668,15 +668,18 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     DCHECK(signin_manager->IsAuthenticated());
     std::string account_id = signin_manager->GetAuthenticatedAccountId();
 
-    // Record acceptance of ToS if it was shown to the user.
-    if (tos_shown) {
-      ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
-          account_id, consent_auditor::Feature::PLAY_STORE,
-          ComputePlayToSConsentIds(tos_content),
-          IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
-          accepted ? consent_auditor::ConsentStatus::GIVEN
-                   : consent_auditor::ConsentStatus::NOT_GIVEN);
-    }
+    // Record acceptance of ToS if it was shown to the user, otherwise simply
+    // record acceptance of an empty ToS.
+    // TODO(jhorwich): Replace this approach when passing |is_managed| boolean
+    // is supported by the underlying consent protos.
+    if (!tos_shown)
+      tos_content.clear();
+    ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
+        account_id, consent_auditor::Feature::PLAY_STORE,
+        ComputePlayToSConsentIds(tos_content),
+        IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
+        accepted ? consent_auditor::ConsentStatus::GIVEN
+                 : consent_auditor::ConsentStatus::NOT_GIVEN);
 
     // If the user - not policy - controls Backup and Restore setting, record
     // whether consent was given.

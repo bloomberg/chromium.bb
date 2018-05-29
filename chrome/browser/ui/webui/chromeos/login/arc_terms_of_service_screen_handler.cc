@@ -121,11 +121,6 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcOverlayLoading", IDS_ARC_POPUP_HELP_LOADING);
 }
 
-void ArcTermsOfServiceScreenHandler::SendArcManagedStatus(Profile* profile) {
-  CallJS("setArcManaged",
-         arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile));
-}
-
 void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
                                                           bool managed) {
   const Profile* const profile = ProfileManager::GetActiveUserProfile();
@@ -235,7 +230,9 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 
   ShowScreen(kScreenId);
 
-  SendArcManagedStatus(profile);
+  arc_managed_ = arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
+  CallJS("setArcManaged", arc_managed_);
+
   MaybeLoadPlayStoreToS(true);
   StartNetworkAndTimeZoneObserving();
 
@@ -253,7 +250,7 @@ bool ArcTermsOfServiceScreenHandler::NeedDispatchEventOnAction() {
 
 void ArcTermsOfServiceScreenHandler::RecordConsents(
     const std::string& tos_content,
-    bool record_tos_consent,
+    bool record_tos_content,
     bool tos_accepted,
     bool record_backup_consent,
     bool backup_accepted,
@@ -267,14 +264,16 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
   DCHECK(signin_manager->IsAuthenticated());
   const std::string account_id = signin_manager->GetAuthenticatedAccountId();
 
-  if (record_tos_consent) {
-    consent_auditor->RecordGaiaConsent(
-        account_id, consent_auditor::Feature::PLAY_STORE,
-        ArcSupportHost::ComputePlayToSConsentIds(tos_content),
-        IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
-        tos_accepted ? consent_auditor::ConsentStatus::GIVEN
-                     : consent_auditor::ConsentStatus::NOT_GIVEN);
-  }
+  // TODO(jhorwich): Replace this approach when passing |is_managed| boolean is
+  // supported by the underlying consent protos.
+  const std::vector<int> consent_ids = ArcSupportHost::ComputePlayToSConsentIds(
+      record_tos_content ? tos_content : "");
+
+  consent_auditor->RecordGaiaConsent(
+      account_id, consent_auditor::Feature::PLAY_STORE, consent_ids,
+      IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
+      tos_accepted ? consent_auditor::ConsentStatus::GIVEN
+                   : consent_auditor::ConsentStatus::NOT_GIVEN);
 
   if (record_backup_consent) {
     consent_auditor->RecordGaiaConsent(
@@ -301,8 +300,7 @@ void ArcTermsOfServiceScreenHandler::HandleSkip(
 
   // Record consents as not accepted for consents that are under user control
   // when the user skips ARC setup.
-  RecordConsents(tos_content,
-                 /*record_tos_content=*/true, /*tos_accepted=*/false,
+  RecordConsents(tos_content, !arc_managed_, /*tos_accepted=*/false,
                  !backup_restore_managed_, /*backup_accepted=*/false,
                  !location_services_managed_, /*location_accepted=*/false);
 
@@ -321,8 +319,7 @@ void ArcTermsOfServiceScreenHandler::HandleAccept(
 
   // Record consents as accepted or not accepted as appropriate for consents
   // that are under user control when the user completes ARC setup.
-  RecordConsents(tos_content,
-                 /*record_tos_content=*/true, /*tos_accepted=*/true,
+  RecordConsents(tos_content, !arc_managed_, /*tos_accepted=*/true,
                  !backup_restore_managed_, enable_backup_restore,
                  !location_services_managed_, enable_location_services);
 
