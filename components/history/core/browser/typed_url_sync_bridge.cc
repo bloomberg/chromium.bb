@@ -416,11 +416,7 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
       std::string storage_key = GetStorageKeyFromURLRow(row);
       sync_metadata_database_->ClearSyncMetadata(syncer::TYPED_URLS,
                                                  storage_key);
-      // TODO(jkrcal): Untrack the entity from the processor, too (by
-      // introducing UntrackEntityForStorageKey() function into the change
-      // processor). Extend the integration tests to cover the crash in
-      // https://crbug.com/827111. Also add unit-test coverage for expired
-      // deletions (needs some refactoring in the tests).
+      change_processor()->UntrackEntityForStorageKey(storage_key);
     }
     return;
   }

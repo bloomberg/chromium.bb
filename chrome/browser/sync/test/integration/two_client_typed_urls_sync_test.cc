@@ -228,6 +228,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireThenAddAgain) {
   urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(2U, urls.size());
   EXPECT_TRUE(CheckSyncHasURLMetadata(1, url));
+
+  // The first client can add the URL again (regression test for
+  // https://crbug.com/827111).
+  AddUrlToHistoryWithTransition(0, url, ui::PAGE_TRANSITION_TYPED,
+                                history::SOURCE_BROWSED);
+  urls = GetTypedUrlsFromClient(0);
+  EXPECT_EQ(2U, urls.size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(0, url));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {

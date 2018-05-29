@@ -43,6 +43,11 @@ void RecordingModelTypeChangeProcessor::UntrackEntity(
   untrack_set_.insert(FakeModelTypeSyncBridge::CopyEntityData(entity_data));
 }
 
+void RecordingModelTypeChangeProcessor::UntrackEntityForStorageKey(
+    const std::string& storage_key) {
+  untrack_for_storage_key_set_.insert(storage_key);
+}
+
 void RecordingModelTypeChangeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {
   std::swap(metadata_, batch);

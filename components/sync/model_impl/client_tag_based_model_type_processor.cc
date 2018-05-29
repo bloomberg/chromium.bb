@@ -341,6 +341,14 @@ void ClientTagBasedModelTypeProcessor::UntrackEntity(
   entities_.erase(client_tag_hash);
 }
 
+void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
+    const std::string& storage_key) {
+  ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  DCHECK_NE(entity, nullptr);
+  entities_.erase(entity->metadata().client_tag_hash());
+  storage_key_to_tag_hash_.erase(storage_key);
+}
+
 void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
   // Don't bother sending anything if there's no one to send to.
   if (!IsConnected())
