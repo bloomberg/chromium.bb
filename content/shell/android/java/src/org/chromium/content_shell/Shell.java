@@ -28,7 +28,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.content_view.ContentView;
-import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.components.embedder_support.media.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;

@@ -134,6 +134,7 @@ android_library("cast_shell_java") {
     "//chromecast/base:base_java",
     "//components/content_view:content_view_java",
     "//components/crash/android:java",
+    "//components/embedder_support/android:media_java",
     "//content/public/android:content_java",
     "//device/geolocation:geolocation_java",
     "//media/base/android:media_java",
