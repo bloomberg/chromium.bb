@@ -23,7 +23,8 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
                           TransferCacheSerializeHelper* transfer_cache,
                           SkStrikeServer* strike_server,
                           SkColorSpace* color_space,
-                          bool can_use_lcd_text);
+                          bool can_use_lcd_text,
+                          bool context_supports_distance_field_text);
   virtual ~PaintOpBufferSerializer();
 
   struct Preamble {
@@ -98,6 +99,7 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   SkStrikeServer* strike_server_;
   SkColorSpace* color_space_;
   bool can_use_lcd_text_;
+  bool context_supports_distance_field_text_;
 
   SkTextBlobCacheDiffCanvas text_blob_canvas_;
   std::unique_ptr<SkCanvas> canvas_;
@@ -113,7 +115,8 @@ class CC_PAINT_EXPORT SimpleBufferSerializer : public PaintOpBufferSerializer {
                          TransferCacheSerializeHelper* transfer_cache,
                          SkStrikeServer* strike_server,
                          SkColorSpace* color_space,
-                         bool can_use_lcd_text);
+                         bool can_use_lcd_text,
+                         bool context_supports_distance_field_text);
   ~SimpleBufferSerializer() override;
 
   size_t written() const { return written_; }

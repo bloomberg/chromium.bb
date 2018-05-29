@@ -1223,7 +1223,8 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   cc::PaintOpBufferSerializer serializer(
       serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
       font_manager_.strike_server(), raster_properties_->color_space.get(),
-      raster_properties_->can_use_lcd_text);
+      raster_properties_->can_use_lcd_text,
+      capabilities().context_supports_distance_field_text);
   serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();

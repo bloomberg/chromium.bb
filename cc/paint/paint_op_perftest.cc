@@ -53,7 +53,8 @@ class PaintOpPerfTest : public testing::Test {
           test_options_provider.transfer_cache_helper(),
           test_options_provider.strike_server(),
           test_options_provider.color_space(),
-          test_options_provider.can_use_lcd_text());
+          test_options_provider.can_use_lcd_text(),
+          test_options_provider.context_supports_distance_field_text());
       serializer.Serialize(&buffer, nullptr, preamble);
       bytes_written = serializer.written();
       timer_.NextLap();

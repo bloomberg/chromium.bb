@@ -44,6 +44,14 @@ PlaybackParams MakeParams(const SkCanvas* canvas) {
   return PlaybackParams(nullptr, canvas->getTotalMatrix());
 }
 
+SkTextBlobCacheDiffCanvas::Settings MakeCanvasSettings(
+    bool context_supports_distance_field_text) {
+  SkTextBlobCacheDiffCanvas::Settings settings;
+  settings.fContextSupportsDistanceFieldText =
+      context_supports_distance_field_text;
+  return settings;
+}
+
 // Use half of the max int as the extent for the SkNoDrawCanvas. The correct
 // clip is applied to the canvas during serialization.
 const int kMaxExtent = std::numeric_limits<int>::max() >> 1;
@@ -56,18 +64,23 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
     TransferCacheSerializeHelper* transfer_cache,
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
-    bool can_use_lcd_text)
+    bool can_use_lcd_text,
+    bool context_supports_distance_field_text)
     : serialize_cb_(std::move(serialize_cb)),
       image_provider_(image_provider),
       transfer_cache_(transfer_cache),
       strike_server_(strike_server),
       color_space_(color_space),
       can_use_lcd_text_(can_use_lcd_text),
-      text_blob_canvas_(kMaxExtent,
-                        kMaxExtent,
-                        SkMatrix::I(),
-                        ComputeSurfaceProps(can_use_lcd_text),
-                        strike_server) {
+      context_supports_distance_field_text_(
+          context_supports_distance_field_text),
+      text_blob_canvas_(
+          kMaxExtent,
+          kMaxExtent,
+          SkMatrix::I(),
+          ComputeSurfaceProps(can_use_lcd_text),
+          strike_server,
+          MakeCanvasSettings(context_supports_distance_field_text)) {
   DCHECK(serialize_cb_);
   canvas_ = SkCreateColorSpaceXformCanvas(&text_blob_canvas_,
                                           sk_ref_sp<SkColorSpace>(color_space));
@@ -88,7 +101,8 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
   // and PlaybackParams based on the post-preamble canvas.
   PaintOp::SerializeOptions options(
       image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, canvas_->getTotalMatrix());
+      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
+      canvas_->getTotalMatrix());
   PlaybackParams params = MakeParams(canvas_.get());
 
   Save(options, params);
@@ -112,7 +126,8 @@ void PaintOpBufferSerializer::Serialize(
 
   PaintOp::SerializeOptions options(
       image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, canvas_->getTotalMatrix());
+      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
+      canvas_->getTotalMatrix());
   PlaybackParams params = MakeParams(canvas_.get());
 
   // TODO(khushalsagar): remove this clip rect if it's not needed.
@@ -232,7 +247,8 @@ void PaintOpBufferSerializer::SerializeBuffer(
   DCHECK(buffer);
   PaintOp::SerializeOptions options(
       image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, canvas_->getTotalMatrix());
+      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
+      canvas_->getTotalMatrix());
   PlaybackParams params = MakeParams(canvas_.get());
 
   for (PaintOpBuffer::PlaybackFoldingIterator iter(buffer, offsets); iter;
@@ -334,7 +350,8 @@ SimpleBufferSerializer::SimpleBufferSerializer(
     TransferCacheSerializeHelper* transfer_cache,
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
-    bool can_use_lcd_text)
+    bool can_use_lcd_text,
+    bool context_supports_distance_field_text)
     : PaintOpBufferSerializer(
           base::Bind(&SimpleBufferSerializer::SerializeToMemory,
                      base::Unretained(this)),
@@ -342,7 +359,8 @@ SimpleBufferSerializer::SimpleBufferSerializer(
           transfer_cache,
           strike_server,
           color_space,
-          can_use_lcd_text),
+          can_use_lcd_text,
+          context_supports_distance_field_text),
       memory_(memory),
       total_(size) {}
 

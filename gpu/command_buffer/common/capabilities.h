@@ -194,6 +194,9 @@ struct GPU_EXPORT Capabilities {
   int major_version = 2;
   int minor_version = 0;
 
+  // Used by OOP raster.
+  bool context_supports_distance_field_text = true;
+
   std::vector<gfx::BufferUsageAndFormat> texture_target_exception_list;
 };
 

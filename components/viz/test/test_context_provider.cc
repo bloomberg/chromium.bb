@@ -37,8 +37,10 @@ const char* const kExtensions[] = {"GL_EXT_stencil_wrap",
 
 class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
  public:
-  TestGLES2InterfaceForContextProvider()
-      : extension_string_(BuildExtensionString()) {}
+  TestGLES2InterfaceForContextProvider(
+      std::string additional_extensions = std::string())
+      : extension_string_(
+            BuildExtensionString(std::move(additional_extensions))) {}
   ~TestGLES2InterfaceForContextProvider() override = default;
 
   // TestGLES2Interface:
@@ -89,11 +91,15 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
   }
 
  private:
-  static std::string BuildExtensionString() {
+  static std::string BuildExtensionString(std::string additional_extensions) {
     std::string extension_string = kExtensions[0];
     for (size_t i = 1; i < arraysize(kExtensions); ++i) {
       extension_string += " ";
       extension_string += kExtensions[i];
+    }
+    if (!additional_extensions.empty()) {
+      extension_string += " ";
+      extension_string += additional_extensions;
     }
     return extension_string;
   }
@@ -106,11 +112,13 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
 }  // namespace
 
 // static
-scoped_refptr<TestContextProvider> TestContextProvider::Create() {
+scoped_refptr<TestContextProvider> TestContextProvider::Create(
+    std::string additional_extensions) {
   constexpr bool support_locking = false;
   return new TestContextProvider(
       std::make_unique<TestContextSupport>(),
-      std::make_unique<TestGLES2InterfaceForContextProvider>(),
+      std::make_unique<TestGLES2InterfaceForContextProvider>(
+          std::move(additional_extensions)),
       support_locking);
 }
 

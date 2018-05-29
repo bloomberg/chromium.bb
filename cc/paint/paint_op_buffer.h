@@ -146,6 +146,7 @@ class CC_PAINT_EXPORT PaintOp {
                      SkStrikeServer* strike_server,
                      SkColorSpace* color_space,
                      bool can_use_lcd_text,
+                     bool context_supports_distance_field_text,
                      const SkMatrix& original_ctm);
 
     // Required.
@@ -155,6 +156,7 @@ class CC_PAINT_EXPORT PaintOp {
     SkStrikeServer* strike_server = nullptr;
     SkColorSpace* color_space = nullptr;
     bool can_use_lcd_text = false;
+    bool context_supports_distance_field_text = true;
 
     // Optional.
     SkMatrix original_ctm = SkMatrix::I();
