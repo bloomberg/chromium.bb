@@ -25,7 +25,7 @@ class ScopedFlagsOverride {
   PaintOp::SerializeOptions* options_;
 };
 
-// Copied from LayerTreeResourceProvider.
+// Copied from viz::ClientResourceProvider.
 SkSurfaceProps ComputeSurfaceProps(bool can_use_lcd_text) {
   uint32_t flags = 0;
   // Use unknown pixel geometry to disable LCD text.

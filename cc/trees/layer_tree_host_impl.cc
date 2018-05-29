@@ -3045,7 +3045,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
     max_texture_size_ = 16 * 1024;
   }
 
-  resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
+  resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
       layer_tree_frame_sink_->context_provider(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required);
   resource_pool_ = std::make_unique<ResourcePool>(
@@ -4962,7 +4962,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     gpu::Mailbox mailbox = gpu::Mailbox::Generate();
     gl->ProduceTextureDirectCHROMIUM(texture_alloc.texture_id, mailbox.name);
     gpu::SyncToken sync_token =
-        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
+        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
 
     transferable = viz::TransferableResource::MakeGLOverlay(
         mailbox, GL_LINEAR, texture_alloc.texture_target, sync_token,
@@ -5006,7 +5006,8 @@ void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
     UIResourceData& data = it->second;
     viz::ResourceId id = data.resource_id_for_export;
     // Move the |data| to |deleted_ui_resources_| before removing it from the
-    // LayerTreeResourceProvider, so that the ReleaseCallback can see it there.
+    // viz::ClientResourceProvider, so that the ReleaseCallback can see it
+    // there.
     deleted_ui_resources_[uid] = std::move(data);
     ui_resource_map_.erase(it);
 

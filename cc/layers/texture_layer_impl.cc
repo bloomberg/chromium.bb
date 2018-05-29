@@ -69,8 +69,9 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   to_unregister_bitmap_ids_.clear();
 }
 
-bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
-                                LayerTreeResourceProvider* resource_provider) {
+bool TextureLayerImpl::WillDraw(
+    DrawMode draw_mode,
+    viz::ClientResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
   // These imply some synchronization problem where the compositor is in gpu

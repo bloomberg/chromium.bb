@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -79,11 +79,10 @@ class VideoResourceUpdaterTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     layer_tree_frame_sink_software_ = FakeLayerTreeFrameSink::CreateSoftware();
-    resource_provider3d_ =
-        FakeResourceProvider::CreateLayerTreeResourceProvider(
-            context_provider_.get());
+    resource_provider3d_ = FakeResourceProvider::CreateClientResourceProvider(
+        context_provider_.get());
     resource_provider_software_ =
-        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
+        FakeResourceProvider::CreateClientResourceProvider(nullptr);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForHardware(
@@ -243,8 +242,8 @@ class VideoResourceUpdaterTest : public testing::Test {
   UploadCounterGLES2Interface* gl_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
   std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_software_;
-  std::unique_ptr<LayerTreeResourceProvider> resource_provider3d_;
-  std::unique_ptr<LayerTreeResourceProvider> resource_provider_software_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider3d_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider_software_;
   gpu::SyncToken release_sync_token_;
   bool use_r16_texture_ = false;
 };

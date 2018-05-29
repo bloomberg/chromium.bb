@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -30,7 +30,7 @@ namespace cc {
 namespace {
 
 viz::ResourceId CreateAndImportResource(
-    LayerTreeResourceProvider* resource_provider,
+    viz::ClientResourceProvider* resource_provider,
     const gpu::SyncToken& sync_token,
     gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB()) {
   auto transfer_resource = viz::TransferableResource::MakeGL(
@@ -136,7 +136,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
 }
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
-                           LayerTreeResourceProvider* resource_provider,
+                           viz::ClientResourceProvider* resource_provider,
                            viz::RenderPassId child_pass_id) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect visible_rect(0, 0, 100, 100);
@@ -255,7 +255,7 @@ static void CollectResources(
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPass* to_pass,
     viz::DisplayResourceProvider* resource_provider,
-    LayerTreeResourceProvider* child_resource_provider,
+    viz::ClientResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider,
     viz::RenderPassId child_pass_id,
     gpu::SyncToken* sync_token_for_mailbox_tebxture) {

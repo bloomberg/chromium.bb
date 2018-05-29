@@ -18,7 +18,7 @@ namespace {
 
 void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
                     LayerTreeFrameSink* frame_sink,
-                    LayerTreeResourceProvider* resource_provider,
+                    viz::ClientResourceProvider* resource_provider,
                     viz::ContextProvider* context_provider,
                     DrawMode draw_mode) {
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();

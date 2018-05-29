@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/task_runner_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -77,7 +77,7 @@ void VideoLayerImpl::DidBecomeActive() {
 }
 
 bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
-                              LayerTreeResourceProvider* resource_provider) {
+                              viz::ClientResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
@@ -158,7 +158,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                         GetSortingContextId(), visible_quad_rect);
 }
 
-void VideoLayerImpl::DidDraw(LayerTreeResourceProvider* resource_provider) {
+void VideoLayerImpl::DidDraw(viz::ClientResourceProvider* resource_provider) {
   LayerImpl::DidDraw(resource_provider);
 
   DCHECK(frame_.get());

@@ -27,7 +27,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
@@ -44,6 +43,7 @@
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/task_runner_provider.h"
 #include "cc/trees/ukm_manager.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -547,7 +547,7 @@ class CC_EXPORT LayerTreeHostImpl
   FrameRateCounter* fps_counter() { return fps_counter_.get(); }
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
-  LayerTreeResourceProvider* resource_provider() {
+  viz::ClientResourceProvider* resource_provider() {
     return resource_provider_.get();
   }
   BrowserControlsOffsetManager* browser_controls_manager() {
@@ -891,7 +891,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<viz::ContextCacheController::ScopedVisibility>
       worker_context_visibility_;
 
-  std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
   bool need_update_gpu_rasterization_status_;
   bool content_has_slow_paths_;
   bool content_has_non_aa_paint_;

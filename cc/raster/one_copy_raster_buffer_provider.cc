@@ -179,7 +179,7 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
     // Save a sync token in the backing so that we always wait on it even if
     // this task is cancelled between being scheduled and running.
     backing->returned_sync_token =
-        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
+        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
 
     resource.set_gpu_backing(std::move(backing));
   }
@@ -487,7 +487,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
   // Generate sync token on the worker context that will be sent to and waited
   // for by the display compositor before using the content generated here.
-  return LayerTreeResourceProvider::GenerateSyncTokenHelper(ri);
+  return viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
 }
 
 gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {

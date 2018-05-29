@@ -4576,7 +4576,7 @@ class DidDrawCheckLayer : public LayerImpl {
   }
 
   bool WillDraw(DrawMode draw_mode,
-                LayerTreeResourceProvider* provider) override {
+                viz::ClientResourceProvider* provider) override {
     will_draw_called_ = true;
     if (will_draw_returns_false_)
       return false;
@@ -4589,7 +4589,7 @@ class DidDrawCheckLayer : public LayerImpl {
     LayerImpl::AppendQuads(render_pass, append_quads_data);
   }
 
-  void DidDraw(LayerTreeResourceProvider* provider) override {
+  void DidDraw(viz::ClientResourceProvider* provider) override {
     did_draw_called_ = true;
     LayerImpl::DidDraw(provider);
   }
@@ -8356,7 +8356,7 @@ class BlendStateCheckLayer : public LayerImpl {
  public:
   BlendStateCheckLayer(LayerTreeImpl* tree_impl,
                        int id,
-                       LayerTreeResourceProvider* resource_provider)
+                       viz::ClientResourceProvider* resource_provider)
       : LayerImpl(tree_impl, id),
         blend_(false),
         has_render_surface_(false),

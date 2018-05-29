@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -25,6 +24,7 @@
 #include "cc/test/pixel_test.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -541,7 +541,7 @@ class GLRendererShaderTest : public GLRendererTest {
     child_context_provider_ = TestContextProvider::Create();
     child_context_provider_->BindToCurrentThread();
     child_resource_provider_ =
-        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+        cc::FakeResourceProvider::CreateClientResourceProvider(
             child_context_provider_.get());
   }
 
@@ -634,7 +634,7 @@ class GLRendererShaderTest : public GLRendererTest {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestContextProvider> child_context_provider_;
-  std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -1007,14 +1007,14 @@ TEST_F(GLRendererTest, ActiveTextureState) {
       TestContextProvider::Create(std::move(child_gl_owned));
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
-      cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+      cc::FakeResourceProvider::CreateClientResourceProvider(
           child_context_provider.get());
 
   RenderPass* root_pass =
       cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(100, 100),
                         gfx::Transform(), cc::FilterOperations());
   gpu::SyncToken mailbox_sync_token;
-  AddOneOfEveryQuadTypeInDisplayResourceProvider(
+  cc::AddOneOfEveryQuadTypeInDisplayResourceProvider(
       root_pass, resource_provider.get(), child_resource_provider.get(),
       child_context_provider.get(), 0, &mailbox_sync_token);
 
@@ -1027,7 +1027,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   {
     InSequence sequence;
     // The verified flush flag will be set by
-    // cc::LayerTreeResourceProvider::PrepareSendToParent. Before checking if
+    // ClientResourceProvider::PrepareSendToParent. Before checking if
     // the gpu::SyncToken matches, set this flag first.
     mailbox_sync_token.SetVerifyFlush();
     // In AddOneOfEveryQuadTypeInDisplayResourceProvider, resources are added
@@ -1630,9 +1630,9 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   // Return the mapped resource id.
   std::unordered_map<ResourceId, ResourceId> resource_map =
-      SendResourceAndGetChildToParentMap({mask}, resource_provider_.get(),
-                                         child_resource_provider_.get(),
-                                         child_context_provider_.get());
+      cc::SendResourceAndGetChildToParentMap({mask}, resource_provider_.get(),
+                                             child_resource_provider_.get(),
+                                             child_context_provider_.get());
   ResourceId mapped_mask = resource_map[mask];
 
   SkScalar matrix[20];
@@ -2076,7 +2076,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
-      cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+      cc::FakeResourceProvider::CreateClientResourceProvider(
           child_context_provider.get());
 
   auto transfer_resource = TransferableResource::MakeGLOverlay(
@@ -2270,7 +2270,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
-      cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+      cc::FakeResourceProvider::CreateClientResourceProvider(
           child_context_provider.get());
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -2339,7 +2339,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                        flipped, nearest_neighbor, false);
 
   // The verified flush flag will be set by
-  // cc::LayerTreeResourceProvider::PrepareSendToParent. Before checking if the
+  // ClientResourceProvider::PrepareSendToParent. Before checking if the
   // gpu::SyncToken matches, set this flag first.
   sync_token.SetVerifyFlush();
 
@@ -2653,7 +2653,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
-      cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+      cc::FakeResourceProvider::CreateClientResourceProvider(
           child_context_provider.get());
 
   auto transfer_resource = TransferableResource::MakeGLOverlay(

@@ -22,7 +22,7 @@ class ResourcePoolTest : public testing::Test {
   void SetUp() override {
     context_provider_ = viz::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
         context_provider_.get());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ = std::make_unique<ResourcePool>(
@@ -54,7 +54,7 @@ class ResourcePoolTest : public testing::Test {
 
   viz::TestSharedBitmapManager shared_bitmap_manager_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
-  std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
 };

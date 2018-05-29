@@ -23,7 +23,6 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -34,6 +33,7 @@
 #include "cc/trees/proxy.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -175,7 +175,7 @@ void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,
-                         LayerTreeResourceProvider* resource_provider) {
+                         viz::ClientResourceProvider* resource_provider) {
   // WillDraw/DidDraw must be matched.
   DCHECK_NE(DRAW_MODE_NONE, draw_mode);
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
@@ -183,7 +183,7 @@ bool LayerImpl::WillDraw(DrawMode draw_mode,
   return true;
 }
 
-void LayerImpl::DidDraw(LayerTreeResourceProvider* resource_provider) {
+void LayerImpl::DidDraw(viz::ClientResourceProvider* resource_provider) {
   DCHECK_NE(DRAW_MODE_NONE, current_draw_mode_);
   current_draw_mode_ = DRAW_MODE_NONE;
 }
@@ -476,7 +476,7 @@ void LayerImpl::NoteLayerPropertyChangedFromPropertyTrees() {
 
 void LayerImpl::ValidateQuadResourcesInternal(viz::DrawQuad* quad) const {
 #if DCHECK_IS_ON()
-  const LayerTreeResourceProvider* resource_provider =
+  const viz::ClientResourceProvider* resource_provider =
       layer_tree_impl_->resource_provider();
   for (viz::ResourceId resource_id : quad->resources)
     resource_provider->ValidateResource(resource_id);

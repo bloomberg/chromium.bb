@@ -13,11 +13,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/raster/raster_buffer_provider.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -206,7 +206,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
   child_context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
       /*enable_oop_rasterization=*/false);
   child_context_provider_->BindToCurrentThread();
-  child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
+  child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
       child_context_provider_.get(), true);
 }
 
@@ -240,7 +240,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get());
   child_resource_provider_ =
-      std::make_unique<LayerTreeResourceProvider>(nullptr, true);
+      std::make_unique<viz::ClientResourceProvider>(nullptr, true);
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());

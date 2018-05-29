@@ -32,6 +32,7 @@ class TracedValue;
 }
 
 namespace viz {
+class ClientResourceProvider;
 class ContextProvider;
 }
 
@@ -44,7 +45,6 @@ class ImageDecodeCache;
 class LayerTreeDebugState;
 class LayerTreeImpl;
 class LayerTreeFrameSink;
-class LayerTreeResourceProvider;
 class LayerTreeSettings;
 class MemoryHistory;
 class PictureLayerImpl;
@@ -110,7 +110,7 @@ class CC_EXPORT LayerTreeImpl {
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
   viz::ContextProvider* context_provider() const;
-  LayerTreeResourceProvider* resource_provider() const;
+  viz::ClientResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   ImageDecodeCache* image_decode_cache() const;
   ImageAnimationController* image_animation_controller() const;

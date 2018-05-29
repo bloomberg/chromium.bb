@@ -79,7 +79,7 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
 bool PaintedScrollbarLayerImpl::WillDraw(
     DrawMode draw_mode,
-    LayerTreeResourceProvider* resource_provider) {
+    viz::ClientResourceProvider* resource_provider) {
   DCHECK(draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE);
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }

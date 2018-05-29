@@ -16,6 +16,7 @@ include_rules = [
     "+base/threading/thread.h",
     "+base/threading/thread_checker.h",
     "+cc",
+    "+components/viz/client",
     "+components/viz/common",
     "+components/viz/test/fake_external_begin_frame_source.h",
     "+gpu/config",

@@ -36,13 +36,13 @@ class Transform;
 }  // namespace gfx
 
 namespace viz {
+class ClientResourceProvider;
 class ContextProvider;
 class RenderPass;
 class SharedBitmapReporter;
 }
 
 namespace cc {
-class LayerTreeResourceProvider;
 
 // Specifies what type of data is contained in the mailboxes, as well as how
 // many mailboxes will be present.
@@ -83,7 +83,7 @@ class CC_EXPORT VideoResourceUpdater
   // non-null |context_provider| we assume GPU compositing.
   VideoResourceUpdater(viz::ContextProvider* context_provider,
                        viz::SharedBitmapReporter* shared_bitmap_reporter,
-                       LayerTreeResourceProvider* resource_provider,
+                       viz::ClientResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
                        bool use_gpu_memory_buffer_resources,
                        bool use_r16_texture,
@@ -93,11 +93,11 @@ class CC_EXPORT VideoResourceUpdater
 
   // For each CompositorFrame the following sequence is expected:
   // 1. ObtainFrameResources(): Import resources for the next video frame with
-  //    LayerTreeResourceProvider. This will reuse existing GPU or SharedMemory
-  //    buffers if possible, otherwise it will allocate new ones.
+  //    viz::ClientResourceProvider. This will reuse existing GPU or
+  //    SharedMemory buffers if possible, otherwise it will allocate new ones.
   // 2. AppendQuads(): Add DrawQuads to CompositorFrame for video.
   // 3. ReleaseFrameResources(): After the CompositorFrame has been submitted,
-  //    remove imported resources from LayerTreeResourceProvider.
+  //    remove imported resources from viz::ClientResourceProvider.
   void ObtainFrameResources(scoped_refptr<media::VideoFrame> video_frame);
   void ReleaseFrameResources();
   void AppendQuads(viz::RenderPass* render_pass,
@@ -183,7 +183,7 @@ class CC_EXPORT VideoResourceUpdater
 
   viz::ContextProvider* const context_provider_;
   viz::SharedBitmapReporter* const shared_bitmap_reporter_;
-  LayerTreeResourceProvider* const resource_provider_;
+  viz::ClientResourceProvider* const resource_provider_;
   const bool use_stream_video_draw_quad_;
   const bool use_gpu_memory_buffer_resources_;
   // TODO(crbug.com/759456): Remove after r16 is used without the flag.
