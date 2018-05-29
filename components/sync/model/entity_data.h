@@ -31,8 +31,8 @@ using EntityDataPtr = ProtoValuePtr<EntityData, EntityDataTraits>;
 using EntityDataList = std::vector<EntityDataPtr>;
 
 // A light-weight container for sync entity data which represents either
-// local data created on the ModelTypeSyncBridge side or remote data created
-// on ModelTypeWorker.
+// local data created on the local model side or remote data created on
+// ModelTypeWorker.
 // EntityData is supposed to be wrapped and passed by reference.
 struct EntityData {
  public:
