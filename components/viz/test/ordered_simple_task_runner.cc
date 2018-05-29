@@ -30,8 +30,7 @@ namespace cc {
 
 // TestOrderablePendingTask implementation
 TestOrderablePendingTask::TestOrderablePendingTask()
-    : base::TestPendingTask(),
-      task_id_(TestOrderablePendingTask::task_id_counter++) {}
+    : task_id_(TestOrderablePendingTask::task_id_counter++) {}
 
 TestOrderablePendingTask::TestOrderablePendingTask(
     const base::Location& location,

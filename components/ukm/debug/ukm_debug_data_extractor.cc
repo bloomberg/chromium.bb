@@ -67,7 +67,7 @@ std::string UkmDebugDataExtractor::GetHTMLData(UkmService* ukm_service) {
     }
 
     for (const auto& v : ukm_service->entries_) {
-      source_data[v.get()->source_id].entries.push_back(v.get());
+      source_data[v->source_id].entries.push_back(v.get());
     }
 
     output.append("<h2>Sources</h2>");

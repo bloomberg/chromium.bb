@@ -659,7 +659,7 @@ TEST_F(FullscreenOverlayTest, AlphaFail) {
   CreateTransparentCandidateQuadAt(
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
-      pass.get()->output_rect);
+      pass->output_rect);
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;

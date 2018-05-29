@@ -48,8 +48,7 @@ const char kInitiationStatusName[] = "Translate.InitiationStatus.v2";
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
   TestNetworkChangeNotifier()
-      : net::NetworkChangeNotifier(),
-        connection_type_to_return_(
+      : connection_type_to_return_(
             net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 
   // Simulates a change of the connection type to |type|. This will notify any

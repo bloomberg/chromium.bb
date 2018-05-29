@@ -44,7 +44,7 @@ class MockLanguageModel : public language::LanguageModel {
 
 class TranslateUIDelegateTest : public ::testing::Test {
  public:
-  TranslateUIDelegateTest() : ::testing::Test() {}
+  TranslateUIDelegateTest() {}
 
   void SetUp() override {
     pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable());

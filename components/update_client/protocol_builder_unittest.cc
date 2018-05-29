@@ -48,8 +48,7 @@ TEST(BuildProtocolRequest, UpdaterStateAttributes) {
   // When no updater state is provided, then check that the elements and
   // attributes related to the updater state are not serialized.
   std::string request =
-      BuildProtocolRequest("1", "", "", "", "", "", "", "", "", nullptr)
-          .c_str();
+      BuildProtocolRequest("1", "", "", "", "", "", "", "", "", nullptr);
   EXPECT_EQ(std::string::npos, request.find(" domainjoined"));
   EXPECT_EQ(std::string::npos, request.find("<updater"));
 

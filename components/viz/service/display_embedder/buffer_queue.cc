@@ -265,7 +265,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
           size_, format_, gfx::BufferUsage::SCANOUT, surface_handle_));
-  if (!buffer.get()) {
+  if (!buffer) {
     gl_->DeleteTextures(1, &texture);
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";
     return nullptr;

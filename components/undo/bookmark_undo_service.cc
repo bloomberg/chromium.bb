@@ -135,7 +135,7 @@ BookmarkRemoveOperation::~BookmarkRemoveOperation() {
 }
 
 void BookmarkRemoveOperation::Undo() {
-  DCHECK(node_.get());
+  DCHECK(node_);
 
   const BookmarkNode* parent = bookmarks::GetBookmarkNodeByID(
       bookmark_model(), parent_node_id_);

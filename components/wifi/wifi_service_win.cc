@@ -487,24 +487,23 @@ class WiFiServiceImpl : public WiFiService {
 };
 
 WiFiServiceImpl::WiFiServiceImpl()
-    : wlan_api_library_(NULL),
-      WlanConnect_function_(NULL),
-      WlanCloseHandle_function_(NULL),
-      WlanDeleteProfile_function_(NULL),
-      WlanDisconnect_function_(NULL),
-      WlanEnumInterfaces_function_(NULL),
-      WlanFreeMemory_function_(NULL),
-      WlanGetAvailableNetworkList_function_(NULL),
-      WlanGetNetworkBssList_function_(NULL),
-      WlanGetProfile_function_(NULL),
-      WlanOpenHandle_function_(NULL),
-      WlanRegisterNotification_function_(NULL),
-      WlanScan_function_(NULL),
-      WlanSetProfile_function_(NULL),
-      WlanSaveTemporaryProfile_function_(NULL),
-      client_(NULL),
-      enable_notify_network_changed_(true) {
-}
+    : wlan_api_library_(nullptr),
+      WlanConnect_function_(nullptr),
+      WlanCloseHandle_function_(nullptr),
+      WlanDeleteProfile_function_(nullptr),
+      WlanDisconnect_function_(nullptr),
+      WlanEnumInterfaces_function_(nullptr),
+      WlanFreeMemory_function_(nullptr),
+      WlanGetAvailableNetworkList_function_(nullptr),
+      WlanGetNetworkBssList_function_(nullptr),
+      WlanGetProfile_function_(nullptr),
+      WlanOpenHandle_function_(nullptr),
+      WlanRegisterNotification_function_(nullptr),
+      WlanScan_function_(nullptr),
+      WlanSetProfile_function_(nullptr),
+      WlanSaveTemporaryProfile_function_(nullptr),
+      client_(nullptr),
+      enable_notify_network_changed_(true) {}
 
 WiFiServiceImpl::~WiFiServiceImpl() { UnInitialize(); }
 
@@ -571,7 +570,7 @@ void WiFiServiceImpl::SetProperties(
     std::string* error) {
   // Temporary preserve WiFi properties (desired frequency, wifi password) to
   // use in StartConnect.
-  DCHECK(properties.get());
+  DCHECK(properties);
   if (!properties->HasKey(onc::network_type::kWiFi)) {
     DVLOG(0) << "Missing WiFi properties:" << *properties;
     *error = kErrorWiFiService;
@@ -670,7 +669,7 @@ void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
 void WiFiServiceImpl::RequestNetworkScan() {
   DWORD error = EnsureInitialized();
   if (error == ERROR_SUCCESS) {
-    WlanScan_function_(client_, &interface_guid_, NULL, NULL, NULL);
+    WlanScan_function_(client_, &interface_guid_, nullptr, nullptr, nullptr);
   }
 }
 
@@ -800,26 +799,18 @@ void WiFiServiceImpl::SetEventObservers(
   if (!networks_changed_observer_.is_null() ||
       !network_list_changed_observer_.is_null()) {
     // Stop listening to WLAN notifications.
-    WlanRegisterNotification_function_(client_,
-                                       WLAN_NOTIFICATION_SOURCE_NONE,
-                                       FALSE,
-                                       OnWlanNotificationCallback,
-                                       this,
-                                       NULL,
-                                       NULL);
+    WlanRegisterNotification_function_(client_, WLAN_NOTIFICATION_SOURCE_NONE,
+                                       FALSE, OnWlanNotificationCallback, this,
+                                       nullptr, nullptr);
   }
   networks_changed_observer_ = networks_changed_observer;
   network_list_changed_observer_ = network_list_changed_observer;
   if (!networks_changed_observer_.is_null() ||
       !network_list_changed_observer_.is_null()) {
     // Start listening to WLAN notifications.
-    WlanRegisterNotification_function_(client_,
-                                       WLAN_NOTIFICATION_SOURCE_ALL,
-                                       FALSE,
-                                       OnWlanNotificationCallback,
-                                       this,
-                                       NULL,
-                                       NULL);
+    WlanRegisterNotification_function_(client_, WLAN_NOTIFICATION_SOURCE_ALL,
+                                       FALSE, OnWlanNotificationCallback, this,
+                                       nullptr, nullptr);
   }
 }
 
@@ -844,7 +835,7 @@ void WiFiServiceImpl::OnWlanNotificationCallback(
 
 void WiFiServiceImpl::OnWlanNotification(
     PWLAN_NOTIFICATION_DATA wlan_notification_data) {
-  if (event_task_runner_.get() == NULL)
+  if (!event_task_runner_)
     return;
   switch (wlan_notification_data->NotificationCode) {
     case wlan_notification_acm_disconnected:
@@ -887,7 +878,7 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     LOG(ERROR) << kMaxAttempts << " attempts exceeded waiting for connect to "
                << network_guid;
 
-    base::DictionaryValue* created_profile = NULL;
+    base::DictionaryValue* created_profile = nullptr;
     // Check, whether this connection is using newly created profile.
     if (created_profiles_.GetDictionaryWithoutPathExpansion(
         network_guid, &created_profile)) {
@@ -898,8 +889,8 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
       if (created_profile->GetString(kProfileXmlKey, &tkip_profile_xml) &&
           created_profile->GetBoolean(kProfileSharedKey, &shared)) {
         // Remove TKIP profile xml, so it will not be tried again.
-        created_profile->Remove(kProfileXmlKey, NULL);
-        created_profile->Remove(kProfileSharedKey, NULL);
+        created_profile->Remove(kProfileXmlKey, nullptr);
+        created_profile->Remove(kProfileSharedKey, nullptr);
         DWORD error_code = SetProfile(shared, tkip_profile_xml, true);
         if (error_code == ERROR_SUCCESS) {
           // Try to connect with new profile.
@@ -941,7 +932,7 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     if (error != ERROR_SUCCESS)
       LOG(ERROR) << error;
     // There is no need to keep created profile as network is connected.
-    created_profiles_.RemoveWithoutPathExpansion(network_guid, NULL);
+    created_profiles_.RemoveWithoutPathExpansion(network_guid, nullptr);
     // Restore previously suppressed notifications.
     enable_notify_network_changed_ = true;
     RestoreNwCategoryWizard();
@@ -1004,8 +995,7 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
     return ERROR_NOT_FOUND;
   }
   wlan_api_library_ = ::LoadLibraryEx(path.Append(kWlanApiDll).value().c_str(),
-                                      NULL,
-                                      LOAD_WITH_ALTERED_SEARCH_PATH);
+                                      nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
   if (!wlan_api_library_) {
     LOG(ERROR) << "Unable to load WlanApi.dll.";
     return ERROR_NOT_FOUND;
@@ -1073,7 +1063,7 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
       !WlanSetProfile_function_) {
     LOG(ERROR) << "Unable to find required WlanApi function.";
     FreeLibrary(wlan_api_library_);
-    wlan_api_library_ = NULL;
+    wlan_api_library_ = nullptr;
     return ERROR_NOT_FOUND;
   }
 
@@ -1094,14 +1084,14 @@ DWORD WiFiServiceImpl::OpenClientHandle() {
     return error;
 
   // Open a handle to the service.
-  error = WlanOpenHandle_function_(1, NULL, &service_version, &client_);
+  error = WlanOpenHandle_function_(1, nullptr, &service_version, &client_);
 
-  PWLAN_INTERFACE_INFO_LIST interface_list = NULL;
+  PWLAN_INTERFACE_INFO_LIST interface_list = nullptr;
   if (error == ERROR_SUCCESS) {
     // Enumerate wireless interfaces.
-    error = WlanEnumInterfaces_function_(client_, NULL, &interface_list);
+    error = WlanEnumInterfaces_function_(client_, nullptr, &interface_list);
     if (error == ERROR_SUCCESS) {
-      if (interface_list != NULL && interface_list->dwNumberOfItems != 0) {
+      if (interface_list && interface_list->dwNumberOfItems != 0) {
         // Remember first interface just in case if none are connected.
         interface_guid_ = interface_list->InterfaceInfo[0].InterfaceGuid;
         // Try to find a connected interface.
@@ -1118,7 +1108,7 @@ DWORD WiFiServiceImpl::OpenClientHandle() {
       }
     }
     // Clean up..
-    if (interface_list != NULL)
+    if (interface_list)
       WlanFreeMemory_function_(interface_list);
   }
   return error;
@@ -1154,7 +1144,7 @@ DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
       interface_guid, base::WriteInto(&guid_string, kGUIDSize), kGUIDSize);
 
   ULONG buffer_length = 0;
-  DWORD error = ::GetInterfaceInfo(NULL, &buffer_length);
+  DWORD error = ::GetInterfaceInfo(nullptr, &buffer_length);
   if (error == ERROR_INSUFFICIENT_BUFFER) {
     std::unique_ptr<unsigned char[]> buffer(new unsigned char[buffer_length]);
     IP_INTERFACE_INFO* interface_info =
@@ -1229,34 +1219,34 @@ DWORD WiFiServiceImpl::RestoreNwCategoryWizard() {
 }
 
 DWORD WiFiServiceImpl::EnsureInitialized() {
-  if (client_ != NULL)
+  if (client_)
     return ERROR_SUCCESS;
   return ERROR_NOINTERFACE;
 }
 
 DWORD WiFiServiceImpl::CloseClientHandle() {
   DWORD error = ERROR_SUCCESS;
-  if (client_ != NULL) {
-    error = WlanCloseHandle_function_(client_, NULL);
-    client_ = NULL;
+  if (client_) {
+    error = WlanCloseHandle_function_(client_, nullptr);
+    client_ = nullptr;
   }
-  if (wlan_api_library_ != NULL) {
-    WlanConnect_function_ = NULL;
-    WlanCloseHandle_function_ = NULL;
-    WlanDeleteProfile_function_ = NULL;
-    WlanDisconnect_function_ = NULL;
-    WlanEnumInterfaces_function_ = NULL;
-    WlanFreeMemory_function_ = NULL;
-    WlanGetAvailableNetworkList_function_ = NULL;
-    WlanGetNetworkBssList_function_ = NULL;
-    WlanGetProfile_function_ = NULL;
-    WlanOpenHandle_function_ = NULL;
-    WlanRegisterNotification_function_ = NULL;
-    WlanSaveTemporaryProfile_function_ = NULL;
-    WlanScan_function_ = NULL;
-    WlanSetProfile_function_ = NULL;
+  if (wlan_api_library_) {
+    WlanConnect_function_ = nullptr;
+    WlanCloseHandle_function_ = nullptr;
+    WlanDeleteProfile_function_ = nullptr;
+    WlanDisconnect_function_ = nullptr;
+    WlanEnumInterfaces_function_ = nullptr;
+    WlanFreeMemory_function_ = nullptr;
+    WlanGetAvailableNetworkList_function_ = nullptr;
+    WlanGetNetworkBssList_function_ = nullptr;
+    WlanGetProfile_function_ = nullptr;
+    WlanOpenHandle_function_ = nullptr;
+    WlanRegisterNotification_function_ = nullptr;
+    WlanSaveTemporaryProfile_function_ = nullptr;
+    WlanScan_function_ = nullptr;
+    WlanSetProfile_function_ = nullptr;
     ::FreeLibrary(wlan_api_library_);
-    wlan_api_library_ = NULL;
+    wlan_api_library_ = nullptr;
   }
   return error;
 }
@@ -1356,20 +1346,15 @@ void WiFiServiceImpl::UpdateNetworkPropertiesFromBssList(
 
 // Get the list of visible wireless networks
 DWORD WiFiServiceImpl::GetVisibleNetworkList(NetworkList* network_list) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
+  DCHECK(client_);
 
   DWORD error = ERROR_SUCCESS;
-  PWLAN_AVAILABLE_NETWORK_LIST available_network_list = NULL;
-  PWLAN_BSS_LIST bss_list = NULL;
+  PWLAN_AVAILABLE_NETWORK_LIST available_network_list = nullptr;
+  PWLAN_BSS_LIST bss_list = nullptr;
 
   error = WlanGetAvailableNetworkList_function_(
-      client_,
-      &interface_guid_,
-      WLAN_AVAILABLE_NETWORK_INCLUDE_ALL_MANUAL_HIDDEN_PROFILES,
-      NULL,
+      client_, &interface_guid_,
+      WLAN_AVAILABLE_NETWORK_INCLUDE_ALL_MANUAL_HIDDEN_PROFILES, nullptr,
       &available_network_list);
 
   std::set<std::string> network_guids;
@@ -1380,21 +1365,15 @@ DWORD WiFiServiceImpl::GetVisibleNetworkList(NetworkList* network_list) {
     // TODO(mef): WlanGetNetworkBssList is not available on XP. If XP support is
     // needed, then different method of getting BSS (e.g. OID query) will have
     // to be used.
-    error = WlanGetNetworkBssList_function_(client_,
-                                            &interface_guid_,
-                                            NULL,
-                                            dot11_BSS_type_any,
-                                            FALSE,
-                                            NULL,
+    error = WlanGetNetworkBssList_function_(client_, &interface_guid_, nullptr,
+                                            dot11_BSS_type_any, FALSE, nullptr,
                                             &bss_list);
-    if (error == ERROR_SUCCESS && NULL != bss_list) {
+    if (error == ERROR_SUCCESS && bss_list) {
       for (DWORD i = 0; i < available_network_list->dwNumberOfItems; ++i) {
         NetworkProperties network_properties;
         NetworkPropertiesFromAvailableNetwork(
-            available_network_list->Network[i],
-            &network_properties);
-        UpdateNetworkPropertiesFromBssList(network_properties.guid,
-                                           *bss_list,
+            available_network_list->Network[i], &network_properties);
+        UpdateNetworkPropertiesFromBssList(network_properties.guid, *bss_list,
                                            &network_properties);
         // Check for duplicate network guids.
         if (network_guids.count(network_properties.guid)) {
@@ -1417,41 +1396,33 @@ DWORD WiFiServiceImpl::GetVisibleNetworkList(NetworkList* network_list) {
   }
 
   // Clean up.
-  if (available_network_list != NULL) {
+  if (available_network_list) {
     WlanFreeMemory_function_(available_network_list);
   }
-  if (bss_list != NULL) {
+  if (bss_list) {
     WlanFreeMemory_function_(bss_list);
   }
   return error;
 }
 
 DWORD WiFiServiceImpl::GetCurrentProperties(NetworkProperties* properties) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
+  DCHECK(client_);
 
   // TODO(mef): WlanGetNetworkBssList is not available on XP. If XP support is
   // needed, then different method of getting BSS (e.g. OID query) will have
   // to be used.
-  if (WlanGetNetworkBssList_function_ == NULL)
+  if (!WlanGetNetworkBssList_function_)
     return ERROR_NOINTERFACE;
 
   DWORD error = ERROR_SUCCESS;
   DWORD data_size = 0;
-  PWLAN_CONNECTION_ATTRIBUTES wlan_connection_attributes = NULL;
-  PWLAN_BSS_LIST bss_list = NULL;
+  PWLAN_CONNECTION_ATTRIBUTES wlan_connection_attributes = nullptr;
+  PWLAN_BSS_LIST bss_list = nullptr;
   error = WlanQueryInterface_function_(
-      client_,
-      &interface_guid_,
-      wlan_intf_opcode_current_connection,
-      NULL,
-      &data_size,
-      reinterpret_cast<PVOID*>(&wlan_connection_attributes),
-      NULL);
-  if (error == ERROR_SUCCESS &&
-      wlan_connection_attributes != NULL) {
+      client_, &interface_guid_, wlan_intf_opcode_current_connection, nullptr,
+      &data_size, reinterpret_cast<PVOID*>(&wlan_connection_attributes),
+      nullptr);
+  if (error == ERROR_SUCCESS && wlan_connection_attributes != nullptr) {
     WLAN_ASSOCIATION_ATTRIBUTES& connected_wlan =
         wlan_connection_attributes->wlanAssociationAttributes;
 
@@ -1467,56 +1438,42 @@ DWORD WiFiServiceImpl::GetCurrentProperties(NetworkProperties* properties) {
         wlan_connection_attributes->wlanSecurityAttributes.dot11AuthAlgorithm);
     properties->signal_strength = connected_wlan.wlanSignalQuality;
 
-    error = WlanGetNetworkBssList_function_(client_,
-                                            &interface_guid_,
-                                            &connected_wlan.dot11Ssid,
-                                            connected_wlan.dot11BssType,
-                                            FALSE,
-                                            NULL,
-                                            &bss_list);
-    if (error == ERROR_SUCCESS && NULL != bss_list) {
-      UpdateNetworkPropertiesFromBssList(properties->guid,
-                                         *bss_list,
+    error = WlanGetNetworkBssList_function_(
+        client_, &interface_guid_, &connected_wlan.dot11Ssid,
+        connected_wlan.dot11BssType, FALSE, nullptr, &bss_list);
+    if (error == ERROR_SUCCESS && bss_list) {
+      UpdateNetworkPropertiesFromBssList(properties->guid, *bss_list,
                                          properties);
     }
   }
 
   // Clean up.
-  if (wlan_connection_attributes != NULL)
+  if (wlan_connection_attributes)
     WlanFreeMemory_function_(wlan_connection_attributes);
 
-  if (bss_list != NULL)
+  if (bss_list)
     WlanFreeMemory_function_(bss_list);
 
   return error;
 }
 
-
 DWORD WiFiServiceImpl::GetCurrentSSID(std::string* ssid) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
+  DCHECK(client_);
   DWORD error = ERROR_SUCCESS;
   DWORD data_size = 0;
-  PWLAN_CONNECTION_ATTRIBUTES wlan_connection_attributes = NULL;
+  PWLAN_CONNECTION_ATTRIBUTES wlan_connection_attributes = nullptr;
   error = WlanQueryInterface_function_(
-      client_,
-      &interface_guid_,
-      wlan_intf_opcode_current_connection,
-      NULL,
-      &data_size,
-      reinterpret_cast<PVOID*>(&wlan_connection_attributes),
-      NULL);
-  if (error == ERROR_SUCCESS &&
-      wlan_connection_attributes != NULL) {
+      client_, &interface_guid_, wlan_intf_opcode_current_connection, nullptr,
+      &data_size, reinterpret_cast<PVOID*>(&wlan_connection_attributes),
+      nullptr);
+  if (error == ERROR_SUCCESS && wlan_connection_attributes) {
     WLAN_ASSOCIATION_ATTRIBUTES& connected_wlan =
         wlan_connection_attributes->wlanAssociationAttributes;
     *ssid = GUIDFromSSID(connected_wlan.dot11Ssid);
   }
 
   // Clean up.
-  if (wlan_connection_attributes != NULL)
+  if (wlan_connection_attributes)
     WlanFreeMemory_function_(wlan_connection_attributes);
 
   return error;
@@ -1542,10 +1499,7 @@ DWORD WiFiServiceImpl::GetDesiredBssList(
     DOT11_SSID& ssid,
     Frequency frequency,
     std::unique_ptr<DOT11_BSSID_LIST>* desired_list) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
+  DCHECK(client_);
 
   desired_list->reset();
 
@@ -1559,16 +1513,12 @@ DWORD WiFiServiceImpl::GetDesiredBssList(
     return ERROR_NOT_SUPPORTED;
 
   DWORD error = ERROR_SUCCESS;
-  PWLAN_BSS_LIST bss_list = NULL;
+  PWLAN_BSS_LIST bss_list = nullptr;
 
-  error = WlanGetNetworkBssList_function_(client_,
-                                          &interface_guid_,
-                                          &ssid,
-                                          dot11_BSS_type_infrastructure,
-                                          FALSE,
-                                          NULL,
-                                          &bss_list);
-  if (error == ERROR_SUCCESS && NULL != bss_list) {
+  error = WlanGetNetworkBssList_function_(client_, &interface_guid_, &ssid,
+                                          dot11_BSS_type_infrastructure, FALSE,
+                                          nullptr, &bss_list);
+  if (error == ERROR_SUCCESS && bss_list) {
     unsigned int best_quality = 0u;
     size_t best_index = 0;
     Frequency bss_frequency;
@@ -1602,18 +1552,18 @@ DWORD WiFiServiceImpl::GetDesiredBssList(
       selected_list->uNumOfEntries = 1;
       selected_list->uTotalNumOfEntries = 1;
       std::copy(bss_entry.dot11Bssid,
-                bss_entry.dot11Bssid+sizeof(bss_entry.dot11Bssid),
+                bss_entry.dot11Bssid + sizeof(bss_entry.dot11Bssid),
                 selected_list->BSSIDs[0]);
       desired_list->swap(selected_list);
       DVLOG(1) << "Quality: " << best_quality << " BSS: "
-          << NetworkProperties::MacAddressAsString(bss_entry.dot11Bssid);
+               << NetworkProperties::MacAddressAsString(bss_entry.dot11Bssid);
     } else {
       error = ERROR_NOT_FOUND;
     }
   }
 
   // Clean up.
-  if (bss_list != NULL) {
+  if (bss_list) {
     WlanFreeMemory_function_(bss_list);
   }
   return error;
@@ -1629,11 +1579,7 @@ Frequency WiFiServiceImpl::GetNormalizedFrequency(int frequency_in_mhz) const {
 
 DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
                                Frequency frequency) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
-
+  DCHECK(client_);
   DWORD error = ERROR_SUCCESS;
   DOT11_SSID ssid = SSIDFromGUID(network_guid);
   std::unique_ptr<DOT11_BSSID_LIST> desired_bss_list;
@@ -1642,14 +1588,10 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
     if (HaveProfile(network_guid)) {
       base::string16 profile_name = ProfileNameFromGUID(network_guid);
       WLAN_CONNECTION_PARAMETERS wlan_params = {
-          wlan_connection_mode_profile,
-          profile_name.c_str(),
-          NULL,
-          desired_bss_list.get(),
-          dot11_BSS_type_any,
-          0};
-      error = WlanConnect_function_(
-          client_, &interface_guid_, &wlan_params, NULL);
+          wlan_connection_mode_profile, profile_name.c_str(), nullptr,
+          desired_bss_list.get(),       dot11_BSS_type_any,   0};
+      error = WlanConnect_function_(client_, &interface_guid_, &wlan_params,
+                                    nullptr);
     } else {
       // If network is available, but is not open security, then it cannot be
       // connected without profile, so return 'access denied' error.
@@ -1669,13 +1611,13 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
       }
       WLAN_CONNECTION_PARAMETERS wlan_params = {
           wlan_connection_mode_discovery_unsecure,
-          NULL,
+          nullptr,
           &ssid,
           desired_bss_list.get(),
           dot11_BSS_type_infrastructure,
           0};
-      error = WlanConnect_function_(
-          client_, &interface_guid_, &wlan_params, NULL);
+      error = WlanConnect_function_(client_, &interface_guid_, &wlan_params,
+                                    nullptr);
     }
   }
 
@@ -1683,35 +1625,23 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
 }
 
 DWORD WiFiServiceImpl::Disconnect() {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
-
+  DCHECK(client_);
   DWORD error = ERROR_SUCCESS;
-  error = WlanDisconnect_function_(client_, &interface_guid_, NULL);
+  error = WlanDisconnect_function_(client_, &interface_guid_, nullptr);
   return error;
 }
 
 DWORD WiFiServiceImpl::SaveTempProfile(const std::string& network_guid) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
-
+  DCHECK(client_);
   DWORD error = ERROR_SUCCESS;
   base::string16 profile_name = ProfileNameFromGUID(network_guid);
   // TODO(mef): WlanSaveTemporaryProfile is not available on XP. If XP support
   // is needed, then different method of saving network profile will have to be
   // used.
   if (WlanSaveTemporaryProfile_function_) {
-    error = WlanSaveTemporaryProfile_function_(client_,
-                                               &interface_guid_,
-                                               profile_name.c_str(),
-                                               NULL,
-                                               WLAN_PROFILE_USER,
-                                               true,
-                                               NULL);
+    error = WlanSaveTemporaryProfile_function_(
+        client_, &interface_guid_, profile_name.c_str(), nullptr,
+        WLAN_PROFILE_USER, true, nullptr);
   } else {
     error = ERROR_NOT_SUPPORTED;
   }
@@ -1721,28 +1651,20 @@ DWORD WiFiServiceImpl::SaveTempProfile(const std::string& network_guid) {
 DWORD WiFiServiceImpl::GetProfile(const std::string& network_guid,
                                   bool get_plaintext_key,
                                   std::string* profile_xml) {
-  if (client_ == NULL) {
-    NOTREACHED();
-    return ERROR_NOINTERFACE;
-  }
-
+  DCHECK(client_);
   DWORD error = ERROR_SUCCESS;
   base::string16 profile_name = ProfileNameFromGUID(network_guid);
   DWORD flags = get_plaintext_key ? WLAN_PROFILE_GET_PLAINTEXT_KEY : 0;
-  LPWSTR str_profile_xml = NULL;
-  error = WlanGetProfile_function_(client_,
-                                   &interface_guid_,
-                                   profile_name.c_str(),
-                                   NULL,
-                                   &str_profile_xml,
-                                   &flags,
-                                   NULL);
+  LPWSTR str_profile_xml = nullptr;
+  error =
+      WlanGetProfile_function_(client_, &interface_guid_, profile_name.c_str(),
+                               nullptr, &str_profile_xml, &flags, nullptr);
 
-  if (error == ERROR_SUCCESS && str_profile_xml != NULL) {
+  if (error == ERROR_SUCCESS && str_profile_xml) {
     *profile_xml = base::UTF16ToUTF8(str_profile_xml);
   }
   // Clean up.
-  if (str_profile_xml != NULL) {
+  if (str_profile_xml) {
     WlanFreeMemory_function_(str_profile_xml);
   }
 
@@ -1757,14 +1679,9 @@ DWORD WiFiServiceImpl::SetProfile(bool shared,
   base::string16 profile_xml16(base::UTF8ToUTF16(profile_xml));
   DWORD reason_code = 0u;
 
-  error_code = WlanSetProfile_function_(client_,
-                                        &interface_guid_,
-                                        shared ? 0 : WLAN_PROFILE_USER,
-                                        profile_xml16.c_str(),
-                                        NULL,
-                                        overwrite,
-                                        NULL,
-                                        &reason_code);
+  error_code = WlanSetProfile_function_(
+      client_, &interface_guid_, shared ? 0 : WLAN_PROFILE_USER,
+      profile_xml16.c_str(), nullptr, overwrite, nullptr, &reason_code);
   return error_code;
 }
 
@@ -1775,18 +1692,16 @@ bool WiFiServiceImpl::HaveProfile(const std::string& network_guid) {
 
 
 DWORD WiFiServiceImpl::DeleteCreatedProfile(const std::string& network_guid) {
-  base::DictionaryValue* created_profile = NULL;
+  base::DictionaryValue* created_profile = nullptr;
   DWORD error_code = ERROR_SUCCESS;
   // Check, whether this connection is using new created profile, and remove it.
   if (created_profiles_.GetDictionaryWithoutPathExpansion(
       network_guid, &created_profile)) {
     // Connection has failed, so delete it.
     base::string16 profile_name = ProfileNameFromGUID(network_guid);
-    error_code = WlanDeleteProfile_function_(client_,
-                                              &interface_guid_,
-                                              profile_name.c_str(),
-                                              NULL);
-    created_profiles_.RemoveWithoutPathExpansion(network_guid, NULL);
+    error_code = WlanDeleteProfile_function_(client_, &interface_guid_,
+                                             profile_name.c_str(), nullptr);
+    created_profiles_.RemoveWithoutPathExpansion(network_guid, nullptr);
   }
   return error_code;
 }

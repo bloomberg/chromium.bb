@@ -451,7 +451,7 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
 
   helper_->InitScalerImpl();
   const std::unique_ptr<ScalerInterface> planerizer =
-      helper_->scaler_impl_.get()->CreateGrayscalePlanerizer(
+      helper_->scaler_impl_->CreateGrayscalePlanerizer(
           false, vertically_flip_texture, swizzle);
   planerizer->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
                     gfx::Rect(*encoded_texture_size));

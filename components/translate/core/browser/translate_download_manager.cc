@@ -34,10 +34,7 @@ void TranslateDownloadManager::GetSupportedLanguages(
     bool translate_allowed,
     std::vector<std::string>* languages) {
   TranslateLanguageList* language_list = GetInstance()->language_list();
-  if (!language_list) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(language_list);
 
   language_list->GetSupportedLanguages(translate_allowed, languages);
 }
@@ -45,10 +42,7 @@ void TranslateDownloadManager::GetSupportedLanguages(
 // static
 base::Time TranslateDownloadManager::GetSupportedLanguagesLastUpdated() {
   TranslateLanguageList* language_list = GetInstance()->language_list();
-  if (!language_list) {
-    NOTREACHED();
-    return base::Time();
-  }
+  DCHECK(language_list);
 
   return language_list->last_updated();
 }
@@ -57,10 +51,7 @@ base::Time TranslateDownloadManager::GetSupportedLanguagesLastUpdated() {
 std::string TranslateDownloadManager::GetLanguageCode(
     const std::string& language) {
   TranslateLanguageList* language_list = GetInstance()->language_list();
-  if (!language_list) {
-    NOTREACHED();
-    return language;
-  }
+  DCHECK(language_list);
 
   return language_list->GetLanguageCode(language);
 }
@@ -69,18 +60,13 @@ std::string TranslateDownloadManager::GetLanguageCode(
 bool TranslateDownloadManager::IsSupportedLanguage(
     const std::string& language) {
   TranslateLanguageList* language_list = GetInstance()->language_list();
-  if (!language_list) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK(language_list);
+
   return language_list->IsSupportedLanguage(language);
 }
 
 void TranslateDownloadManager::ClearTranslateScriptForTesting() {
-  if (script_.get() == nullptr) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(script_);
   script_->Clear();
 }
 
@@ -92,10 +78,7 @@ void TranslateDownloadManager::ResetForTesting() {
 
 void TranslateDownloadManager::SetTranslateScriptExpirationDelay(int delay_ms) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  if (script_.get() == nullptr) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(script_);
   script_->set_expiration_delay(delay_ms);
 }
 

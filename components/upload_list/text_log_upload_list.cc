@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 
 TextLogUploadList::TextLogUploadList(const base::FilePath& upload_log_path)
-    : UploadList(), upload_log_path_(upload_log_path) {}
+    : upload_log_path_(upload_log_path) {}
 
 TextLogUploadList::~TextLogUploadList() = default;
 

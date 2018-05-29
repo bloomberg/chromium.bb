@@ -236,7 +236,7 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
       persist_to_disk_(persist_to_disk),
       weak_ptr_factory_(this) {
   listener_.reset(listener);
-  DCHECK(listener_.get());
+  DCHECK(listener_);
 
   database_name_override_ = filename;
   table_size_override_ = default_table_size;
@@ -244,7 +244,7 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
 }
 
 VisitedLinkMaster::~VisitedLinkMaster() {
-  if (table_builder_.get()) {
+  if (table_builder_) {
     // Prevent the table builder from calling us back now that we're being
     // destroyed. Note that we DON'T delete the object, since the history
     // system is still writing into it. When that is complete, the table
@@ -343,9 +343,7 @@ void VisitedLinkMaster::PostIOTask(const base::Location& from_here,
 
 void VisitedLinkMaster::AddURL(const GURL& url) {
   Hash index = TryToAddURL(url);
-  if (!table_builder_.get() &&
-      !table_is_loading_from_file_ &&
-      index != null_hash_) {
+  if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_) {
     // Not rebuilding, so we want to keep the file on disk up to date.
     if (persist_to_disk_) {
       WriteUsedItemCountToFile();
@@ -358,16 +356,12 @@ void VisitedLinkMaster::AddURL(const GURL& url) {
 void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
   for (const GURL& url : urls) {
     Hash index = TryToAddURL(url);
-    if (!table_builder_.get() &&
-        !table_is_loading_from_file_ &&
-        index != null_hash_)
+    if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_)
       ResizeTableIfNecessary();
   }
 
   // Keeps the file on disk up to date.
-  if (!table_builder_.get() &&
-      !table_is_loading_from_file_ &&
-      persist_to_disk_)
+  if (!table_builder_ && !table_is_loading_from_file_ && persist_to_disk_)
     WriteFullTable();
 }
 
@@ -667,7 +661,7 @@ void VisitedLinkMaster::OnTableLoadComplete(
     scoped_refptr<LoadFromFileResult> load_from_file_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(persist_to_disk_);
-  DCHECK(!table_builder_.get());
+  DCHECK(!table_builder_);
 
   // When the apart table was loading from the database file the current table
   // have been cleared.
@@ -696,7 +690,7 @@ void VisitedLinkMaster::OnTableLoadComplete(
   added_since_rebuild_.clear();
   deleted_since_rebuild_.clear();
 
-  DCHECK(load_from_file_result.get());
+  DCHECK(load_from_file_result);
 
   // Delete the previous table.
   DCHECK(mapped_table_memory_.region.IsValid());
@@ -1014,7 +1008,7 @@ uint32_t VisitedLinkMaster::NewTableSizeForCount(int32_t item_count) const {
 
 // See the TableBuilder definition in the header file for how this works.
 bool VisitedLinkMaster::RebuildTableFromDelegate() {
-  DCHECK(!table_builder_.get());
+  DCHECK(!table_builder_);
 
   // TODO(brettw) make sure we have reasonable salt!
   table_builder_ = new TableBuilder(this, salt_);

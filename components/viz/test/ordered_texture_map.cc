@@ -18,7 +18,7 @@ OrderedTextureMap::OrderedTextureMap() = default;
 OrderedTextureMap::~OrderedTextureMap() = default;
 
 void OrderedTextureMap::Append(GLuint id, scoped_refptr<TestTexture> texture) {
-  DCHECK(texture.get());
+  DCHECK(texture);
   DCHECK(!ContainsId(id));
 
   textures_[id] = texture;
@@ -26,7 +26,7 @@ void OrderedTextureMap::Append(GLuint id, scoped_refptr<TestTexture> texture) {
 }
 
 void OrderedTextureMap::Replace(GLuint id, scoped_refptr<TestTexture> texture) {
-  DCHECK(texture.get());
+  DCHECK(texture);
   DCHECK(ContainsId(id));
 
   textures_[id] = texture;
@@ -57,7 +57,7 @@ bool OrderedTextureMap::ContainsId(GLuint id) {
 scoped_refptr<TestTexture> OrderedTextureMap::TextureForId(GLuint id) {
   DCHECK(ContainsId(id));
   scoped_refptr<TestTexture> texture = textures_[id];
-  DCHECK(texture.get());
+  DCHECK(texture);
   return texture;
 }
 

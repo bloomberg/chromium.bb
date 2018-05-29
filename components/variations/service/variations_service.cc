@@ -252,8 +252,8 @@ VariationsService::VariationsService(
                          local_state),
       field_trial_creator_(local_state, client_.get(), ui_string_overrider),
       weak_ptr_factory_(this) {
-  DCHECK(client_.get());
-  DCHECK(resource_request_allowed_notifier_.get());
+  DCHECK(client_);
+  DCHECK(resource_request_allowed_notifier_);
 }
 
 VariationsService::~VariationsService() {
@@ -555,7 +555,7 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
         GetVariationsServerURL(policy_pref_service_, restrict_mode_, USE_HTTP);
   }
 
-  DCHECK(!request_scheduler_.get());
+  DCHECK(!request_scheduler_);
   request_scheduler_.reset(VariationsRequestScheduler::Create(
       base::Bind(&VariationsService::FetchVariationsSeed,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -709,7 +709,7 @@ void VariationsService::OnResourceRequestsAllowed() {
   DoActualFetch();
 
   // This service must have created a scheduler in order for this to be called.
-  DCHECK(request_scheduler_.get());
+  DCHECK(request_scheduler_);
   request_scheduler_->Reset();
 }
 
