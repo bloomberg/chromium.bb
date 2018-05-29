@@ -1384,7 +1384,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     fullscreen::features::ViewportAdjustmentExperiment viewportExperiment =
         fullscreen::features::GetActiveViewportExperiment();
     return viewportExperiment ==
-           fullscreen::features::ViewportAdjustmentExperiment::SAFE_AREA;
+               fullscreen::features::ViewportAdjustmentExperiment::SAFE_AREA ||
+           viewportExperiment ==
+               fullscreen::features::ViewportAdjustmentExperiment::HYBRID;
   }
   return NO;
 }
@@ -4169,12 +4171,38 @@ bubblePresenterForFeature:(const base::Feature&)feature
       AlignValueToPixel(progress * [self secondaryToolbarHeightWithInset]);
 
   if (self.usesSafeInsetsForViewportAdjustments) {
+    if (fullscreen::features::GetActiveViewportExperiment() ==
+        fullscreen::features::ViewportAdjustmentExperiment::HYBRID) {
+      [self updateWebViewFrameForBottomOffset:bottom];
+    }
+
     [self updateBrowserSafeAreaForTopToolbarHeight:top
                                bottomToolbarHeight:bottom];
   } else {
     [self updateContentPaddingForTopToolbarHeight:top
                               bottomToolbarHeight:bottom];
   }
+}
+
+// Updates the frame of the web view so that it's |offset| from the bottom of
+// the container view.
+- (void)updateWebViewFrameForBottomOffset:(CGFloat)offset {
+  if (!self.currentWebState)
+    return;
+
+  // Move the frame of the container view such that the bottom is aligned with
+  // the top of the bottom toolbar.
+  id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
+  CGRect webViewFrame = webViewProxy.frame;
+  CGFloat oldOriginY = CGRectGetMinY(webViewFrame);
+  webViewProxy.contentOffset = CGPointMake(0.0, -offset);
+  // Update the contentOffset so that the scroll position is maintained
+  // relative to the screen.
+  CRWWebViewScrollViewProxy* scrollViewProxy = webViewProxy.scrollViewProxy;
+  CGFloat originDelta = CGRectGetMinY(webViewProxy.frame) - oldOriginY;
+  CGPoint contentOffset = scrollViewProxy.contentOffset;
+  contentOffset.y += originDelta;
+  scrollViewProxy.contentOffset = contentOffset;
 }
 
 // Updates the web view's viewport by changing the safe area insets.
@@ -4184,7 +4212,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
       _browserContainerCoordinator.viewController;
   if (@available(iOS 11, *)) {
     containerViewController.additionalSafeAreaInsets = UIEdgeInsetsMake(
-        topToolbarHeight - self.view.safeAreaInsets.top, 0, 0, 0);
+        topToolbarHeight - self.view.safeAreaInsets.top -
+            self.currentWebState->GetWebViewProxy().contentOffset.y,
+        0, 0, 0);
   }
 }
 

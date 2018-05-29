@@ -98,6 +98,14 @@ UIView* GetFirstResponderSubview(UIView* view) {
   return [_contentView frame];
 }
 
+- (CGPoint)contentOffset {
+  return _contentView.contentOffset;
+}
+
+- (void)setContentOffset:(CGPoint)contentOffset {
+  _contentView.contentOffset = contentOffset;
+}
+
 - (UIEdgeInsets)contentInset {
   return _contentView.contentInset;
 }

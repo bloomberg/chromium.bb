@@ -17,15 +17,17 @@ extern const char kViewportAdjustmentExperimentCommandLineSwitch[];
 // The available viewport adjustment experiments.  The choices in this array
 // correspond with the ViewportAdjustmentExperiment values.
 extern const flags_ui::FeatureEntry::Choice
-    kViewportAdjustmentExperimentChoices[3];
+    kViewportAdjustmentExperimentChoices[4];
 
 // Enum type describing viewport adjustment experiments.
 enum class ViewportAdjustmentExperiment : short {
   FRAME = 0,      // Adjust the viewport by resizing the entire WKWebView.
   CONTENT_INSET,  // Adjust the viewport by updating the WKWebView's scroll view
                   // contentInset.
-  SAFE_AREA  // Adjust the viewport by updating the safe area of the browser
-             // container view.
+  SAFE_AREA,  // Adjust the viewport by updating the safe area of the browser
+              // container view.
+  HYBRID,  // Translates the web view up and down and updates the viewport using
+           // safe area insets.
 };
 
 // Convenience method for retrieving the active viewport adjustment experiment
