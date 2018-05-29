@@ -5,12 +5,4 @@
      found in the LICENSE file.
 -->
 <resources>
-    <!--
-         Larger label and icon sizes for Form-Not-Secure experiment
-         (warning messages on credit card and password forms when users
-         are on HTTP sites).
-    -->
-    <dimen name="dropdown_item_larger_sublabel_font_size">18sp</dimen>
-    <dimen name="dropdown_large_icon_size">24dp</dimen>
-    <dimen name="dropdown_large_icon_margin">10dp</dimen>
 </resources>
