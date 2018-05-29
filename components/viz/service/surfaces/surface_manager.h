@@ -263,12 +263,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Adds a reference from |parent_id| to |child_id| without dealing with
   // temporary references.
-  void AddSurfaceReferenceImpl(const SurfaceId& parent_id,
-                               const SurfaceId& child_id);
+  void AddSurfaceReferenceImpl(const SurfaceReference& reference);
 
   // Removes a reference from a |parent_id| to |child_id|.
-  void RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
-                                  const SurfaceId& child_id);
+  void RemoveSurfaceReferenceImpl(const SurfaceReference& reference);
 
   // Removes all surface references to or from |surface_id|. Used when the
   // surface is about to be deleted.
