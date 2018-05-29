@@ -12,13 +12,16 @@
 namespace {
 const int64_t kTestSwapTotalKB = 128 * 1024;
 const int64_t kTestSwapFreeThreshold = kTestSwapTotalKB / 4;
+const uint64_t kRendererWorkloadThreshold = 10 * 1024;
 }  // namespace
 
 class MockNearOomMonitor : public NearOomMonitor {
  public:
   explicit MockNearOomMonitor(
       scoped_refptr<base::SequencedTaskRunner> task_runner)
-      : NearOomMonitor(task_runner, kTestSwapFreeThreshold) {
+      : NearOomMonitor(task_runner,
+                       kTestSwapFreeThreshold,
+                       kRendererWorkloadThreshold) {
     // Start with 128MB swap total and 64MB swap free.
     memory_info_.swap_total = kTestSwapTotalKB;
     memory_info_.swap_free = kTestSwapTotalKB / 2;
