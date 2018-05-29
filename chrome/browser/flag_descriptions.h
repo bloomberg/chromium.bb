@@ -329,9 +329,6 @@ extern const char kEnableManualFallbacksFillingDescription[];
 extern const char kEnableMaterialDesignBookmarksName[];
 extern const char kEnableMaterialDesignBookmarksDescription[];
 
-extern const char kEnableMaterialDesignExtensionsName[];
-extern const char kEnableMaterialDesignExtensionsDescription[];
-
 extern const char kEnablePolicyToolName[];
 extern const char kEnablePolicyToolDescription[];
 

@@ -12,7 +12,6 @@ GEN_INCLUDE([
 ]);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
-GEN('#include "chrome/common/chrome_features.h"');
 
 /**
  * Test fixture for Accessibility of Chrome Extensions.
@@ -23,11 +22,6 @@ var CrExtensionsA11yTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://extensions/';
-  }
-
-  /** @override */
-  get featureList() {
-    return ['features::kMaterialDesignExtensions', ''];
   }
 
   // Include files that define the mocha tests.
