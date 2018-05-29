@@ -26890,6 +26890,7 @@ from previous Chrome versions.
       label="DisplayPersistenceToggleInPermissionPrompts:disabled"/>
   <int value="-1536293422" label="SharedArrayBuffer:enabled"/>
   <int value="-1536242739" label="security-chip"/>
+  <int value="-1535758690" label="AutoplayIgnoreWebAudio:disabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
@@ -28177,6 +28178,7 @@ from previous Chrome versions.
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1361073386" label="ContentSuggestionsNotifications:enabled"/>
   <int value="1363136936" label="VrCustomTabBrowsing:enabled"/>
+  <int value="1367467733" label="AutoplayIgnoreWebAudio:enabled"/>
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
   <int value="1369449914" label="SysInternals:disabled"/>
