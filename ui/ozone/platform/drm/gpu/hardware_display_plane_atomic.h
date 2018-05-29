@@ -35,6 +35,8 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
                             const gfx::OverlayTransform transform,
                             int in_fence_fd);
 
+  bool SetPlaneCtm(drmModeAtomicReq* property_set, uint32_t ctm_blob_id);
+
   void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
   CrtcController* crtc() const { return crtc_; }
 

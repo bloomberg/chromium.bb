@@ -166,6 +166,7 @@ void HardwareDisplayPlane::InitializeProperties(DrmDevice* drm) {
                         &properties_.in_formats);
   GetDrmPropertyForName(drm, props.get(), "IN_FENCE_FD",
                         &properties_.in_fence_fd);
+  GetDrmPropertyForName(drm, props.get(), "PLANE_CTM", &properties_.plane_ctm);
 }
 
 }  // namespace ui

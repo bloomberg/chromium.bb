@@ -34,6 +34,23 @@ struct GammaRampRGBEntry;
 namespace ui {
 
 class HardwareDisplayPlaneManager;
+class DrmDevice;
+
+class DrmPropertyBlobMetadata {
+ public:
+  DrmPropertyBlobMetadata(DrmDevice* drm, uint32_t id);
+  ~DrmPropertyBlobMetadata();
+
+  uint32_t id() const { return id_; }
+
+ private:
+  DrmDevice* drm_;  // Not owned;
+  uint32_t id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DrmPropertyBlobMetadata);
+};
+
+using ScopedDrmPropertyBlob = std::unique_ptr<DrmPropertyBlobMetadata>;
 
 // Wraps DRM calls into a nice interface. Used to provide different
 // implementations of the DRM calls. For the actual implementation the DRM API
@@ -152,6 +169,11 @@ class DrmDevice : public GbmDeviceLinux,
   virtual bool SetProperty(uint32_t connector_id,
                            uint32_t property_id,
                            uint64_t value);
+
+  // Creates a property blob with data |blob| of size |size|.
+  virtual ScopedDrmPropertyBlob CreatePropertyBlob(void* blob, size_t size);
+
+  virtual void DestroyPropertyBlob(uint32_t id);
 
   // Returns a binary blob associated with |property_id|. May be nullptr if the
   // property couldn't be found.

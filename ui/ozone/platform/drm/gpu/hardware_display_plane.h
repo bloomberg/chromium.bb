@@ -67,6 +67,7 @@ class HardwareDisplayPlane {
     DrmDevice::Property rotation;
     DrmDevice::Property in_formats;
     DrmDevice::Property in_fence_fd;
+    DrmDevice::Property plane_ctm;
   };
 
   uint32_t id_;

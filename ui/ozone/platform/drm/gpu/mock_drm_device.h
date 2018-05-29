@@ -62,6 +62,7 @@ class MockDrmDevice : public DrmDevice {
   int get_page_flip_call_count() const { return page_flip_call_count_; }
   int get_overlay_flip_call_count() const { return overlay_flip_call_count_; }
   int get_overlay_clear_call_count() const { return overlay_clear_call_count_; }
+  int get_commit_count() const { return commit_count_; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
   void set_add_framebuffer_expectation(bool state) {
@@ -128,6 +129,8 @@ class MockDrmDevice : public DrmDevice {
   bool SetProperty(uint32_t connector_id,
                    uint32_t property_id,
                    uint64_t value) override;
+  ScopedDrmPropertyBlob CreatePropertyBlob(void* blob, size_t size) override;
+  void DestroyPropertyBlob(uint32_t id) override;
   bool GetCapability(uint64_t capability, uint64_t* value) override;
   ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id) override;
   ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
@@ -164,6 +167,7 @@ class MockDrmDevice : public DrmDevice {
   int overlay_flip_call_count_;
   int overlay_clear_call_count_;
   int allocate_buffer_count_;
+  int commit_count_ = 0;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
