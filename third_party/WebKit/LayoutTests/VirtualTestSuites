@@ -287,41 +287,6 @@
     "args": ["--enable-blink-gen-property-trees"]
   },
   {
-    "prefix": "disable-spv175",
-    "base": "compositing",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
-    "prefix": "disable-spv175",
-    "base": "paint",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
-    "prefix": "disable-spv175",
-    "base": "fast/borders",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
-    "prefix": "disable-spv175",
-    "base": "fast/multicol",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
-    "prefix": "disable-spv175",
-    "base": "fast/pagination",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
-    "prefix": "disable-spv175",
-    "base": "fragmentation",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
-    "prefix": "disable-spv175",
-    "base": "printing",
-    "args": ["--disable-blink-features=SlimmingPaintV175"]
-  },
-  {
     "prefix": "scalefactor200",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2"]

@@ -12,9 +12,7 @@ crbug.com/24182 storage/indexeddb/objectstore-cursor.html [ Slow ]
 crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
 crbug.com/24182 editing/selection/modify_move/move-by-word-visually-mac.html [ Slow ]
 crbug.com/24182 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
-crbug.com/24182 virtual/disable-spv175/compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 crbug.com/24182 compositing/video-frame-size-change.html [ Slow ]
-crbug.com/24182 virtual/disable-spv175/compositing/video-frame-size-change.html [ Slow ]
 crbug.com/24182 css3/filters/effect-reference-hidpi-hw.html [ Slow ]
 crbug.com/24182 css3/filters/filter-change-repaint-composited.html [ Slow ]
 crbug.com/24182 editing/selection/caret-at-bidi-boundary.html [ Slow ]
@@ -291,7 +289,6 @@ crbug.com/697735 external/wpt/editing/run/underline.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/unlink.html [ Slow ]
 crbug.com/584807 printing/webgl-oversized-printing.html [ Slow ]
 crbug.com/584807 virtual/threaded/printing/webgl-oversized-printing.html [ Slow ]
-crbug.com/584807 virtual/disable-spv175/printing/webgl-oversized-printing.html [ Slow ]
 
 crbug.com/592183 external/wpt/webusb/usbDevice.https.html [ Slow ]
 
@@ -301,7 +298,6 @@ crbug.com/614910 virtual/gpu-rasterization/images/pixel-crack-image-background-w
 crbug.com/614910 virtual/gpu-rasterization/images/color-profile-filter.html [ Slow ]
 
 crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
-crbug.com/623798 virtual/disable-spv175/paint/images/animated-gif-last-frame-crash.html [ Slow ]
 
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
@@ -317,16 +313,12 @@ crbug.com/819641 [ Debug ] webexposed/global-interface-listing.html [ Slow ]
 # These tests are slow with our MESA backend. They may be less slow when we have
 # bots running tests on real hardware or maybe when using SwiftShader.
 crbug.com/646528 compositing/lots-of-img-layers.html [ Slow ]
-crbug.com/646528 virtual/disable-spv175/compositing/lots-of-img-layers.html [ Slow ]
 crbug.com/646528 compositing/lots-of-img-layers-with-opacity.html [ Slow ]
-crbug.com/646528 virtual/disable-spv175/compositing/lots-of-img-layers-with-opacity.html [ Slow ]
 
 # SwiftShader slow tests
 crbug.com/726075 [ Win Linux Mac ] animations/svg/animated-filter-svg-element.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] compositing/culling/filter-occlusion-blur.html [ Slow ]
-crbug.com/726075 [ Win Linux Mac ] virtual/disable-spv175/compositing/culling/filter-occlusion-blur.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] compositing/masks/mask-with-added-filters.html [ Slow ]
-crbug.com/726075 [ Win Linux Mac ] virtual/disable-spv175/compositing/masks/mask-with-added-filters.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] css3/blending/mix-blend-mode-with-filters.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] css3/filters/effect-all-on-background-hw.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] css3/filters/effect-blur-hw.html [ Slow ]
@@ -343,11 +335,8 @@ crbug.com/726075 [ Win Linux Mac ] css3/filters/filter-repaint-composited-fallba
 crbug.com/726075 [ Win Linux Mac ] css3/filters/filter-repaint-composited-fallback.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] images/color-profile-layer-filter.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Slow ]
-crbug.com/726075 [ Win Linux Mac ] virtual/disable-spv175/paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] paint/invalidation/filters/filter-repaint-accelerated-on-accelerated-filter.html [ Slow ]
-crbug.com/726075 [ Win Linux Mac ] virtual/disable-spv175/paint/invalidation/filters/filter-repaint-accelerated-on-accelerated-filter.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Slow ]
-crbug.com/726075 [ Win Linux Mac ] virtual/disable-spv175/paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/exotic-color-space/images/color-profile-layer-filter.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Slow ]
 crbug.com/726075 [ Win Linux Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Slow ]
