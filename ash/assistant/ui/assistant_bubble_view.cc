@@ -27,6 +27,7 @@ namespace {
 
 // Appearance.
 constexpr int kIconSizeDip = 32;
+constexpr int kMinHeightDip = 200;
 constexpr int kMaxHeightDip = 640;
 
 // TODO(b/77638210): Replace with localized resource strings.
@@ -215,7 +216,8 @@ AssistantBubbleView::AssistantBubbleView(
           new InteractionContainer(assistant_controller->interaction_model())),
       ui_element_container_(new UiElementContainerView(assistant_controller)),
       suggestions_container_(new SuggestionContainerView(assistant_controller)),
-      dialog_plate_(new DialogPlate(assistant_controller)) {
+      dialog_plate_(new DialogPlate(assistant_controller)),
+      min_height_dip_(kMinHeightDip) {
   InitLayout();
 
   // Observe changes to interaction model.
@@ -227,13 +229,35 @@ AssistantBubbleView::~AssistantBubbleView() {
 }
 
 gfx::Size AssistantBubbleView::CalculatePreferredSize() const {
-  int preferred_height =
-      std::min(GetHeightForWidth(kPreferredWidthDip), kMaxHeightDip);
+  int preferred_height = GetHeightForWidth(kPreferredWidthDip);
+
+  // When not using stylus input modality:
+  // |min_height_dip_| <= preferred_height <= |kMaxHeightDip|.
+  if (assistant_controller_->interaction_model()->input_modality() !=
+      InputModality::kStylus) {
+    preferred_height =
+        std::min(std::max(preferred_height, min_height_dip_), kMaxHeightDip);
+  }
+
   return gfx::Size(kPreferredWidthDip, preferred_height);
+}
+
+void AssistantBubbleView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
+  // Until Assistant UI is hidden, the view may grow in height but not shrink.
+  // The exception to this rule is if using stylus input modality.
+  min_height_dip_ = std::max(min_height_dip_, height());
 }
 
 void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
+
+  // We force a layout here because, though we are receiving a
+  // ChildPreferredSizeChanged event, it may be that the
+  // |ui_element_container_|'s bounds will not actually change due to the height
+  // restrictions imposed by AssistantBubbleView. When this is the case, we
+  // need to force a layout to see |ui_element_container_|'s new contents.
+  if (child == ui_element_container_)
+    Layout();
 }
 
 void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
@@ -249,7 +273,8 @@ void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
 }
 
 void AssistantBubbleView::InitLayout() {
-  // Caption bar and dialog plate are not visible when using stylus modality.
+  // Caption bar, dialog plate, suggestion container, and UI element container
+  // are not visible when using stylus modality.
   const bool is_using_stylus =
       assistant_controller_->interaction_model()->input_modality() ==
       InputModality::kStylus;
@@ -270,7 +295,7 @@ void AssistantBubbleView::InitLayout() {
   AddChildView(interaction_container_);
 
   // UI element container.
-  ui_element_container_->SetVisible(false);
+  ui_element_container_->SetVisible(!is_using_stylus);
   AddChildView(ui_element_container_);
 
   layout_manager_->SetFlexForView(ui_element_container_, 1);
@@ -285,15 +310,30 @@ void AssistantBubbleView::InitLayout() {
 }
 
 void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
-  // Caption bar and dialog plate are not visible when using stylus modality.
+  // Caption bar, dialog plate, suggestion container, and UI element container
+  // are not visible when using stylus modality.
   caption_bar_->SetVisible(input_modality != InputModality::kStylus);
   dialog_plate_->SetVisible(input_modality != InputModality::kStylus);
+  suggestions_container_->SetVisible(input_modality != InputModality::kStylus);
+  ui_element_container_->SetVisible(input_modality != InputModality::kStylus);
 
   // If the query for the interaction is empty, we may need to update the prompt
   // to reflect the current input modality.
   if (assistant_controller_->interaction_model()->query().Empty()) {
     interaction_container_->ClearQuery();
   }
+}
+
+void AssistantBubbleView::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  if (interaction_state != InteractionState::kInactive)
+    return;
+
+  // When the Assistant UI is being hidden we need to reset our minimum height
+  // restriction so that the default restrictions are restored for the next
+  // time the view is shown.
+  min_height_dip_ = kMinHeightDip;
+  PreferredSizeChanged();
 }
 
 void AssistantBubbleView::OnQueryChanged(const AssistantQuery& query) {

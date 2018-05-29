@@ -23,8 +23,8 @@ namespace {
 
 // Appearance.
 constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-constexpr int kCornerRadiusDip = 16;
-constexpr int kMarginDip = 16;
+constexpr int kCornerRadiusDip = 20;
+constexpr int kMarginDip = 8;
 
 // AssistantContainerView ------------------------------------------------------
 

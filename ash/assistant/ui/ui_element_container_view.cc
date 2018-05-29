@@ -107,7 +107,6 @@ void UiElementContainerView::OnUiElementsCleared() {
   // Prevent any in-flight card rendering requests from returning.
   render_request_weak_factory_.InvalidateWeakPtrs();
 
-  SetVisible(false);
   RemoveAllChildViews(/*delete_children=*/true);
   PreferredSizeChanged();
 
@@ -160,7 +159,7 @@ void UiElementContainerView::OnCardReady(
   }
   // TODO(dmblack): Handle Mash case.
 
-  SetVisible(true);
+  PreferredSizeChanged();
 
   // Once the card has been rendered and embedded, we can resume processing
   // any UI elements that are in the pending queue.
@@ -191,7 +190,6 @@ void UiElementContainerView::OnTextElementAdded(
   text_container->AddChildView(text_view);
   AddChildView(text_container);
 
-  SetVisible(true);
   PreferredSizeChanged();
 }
 
