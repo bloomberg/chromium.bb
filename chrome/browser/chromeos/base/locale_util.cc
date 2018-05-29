@@ -62,6 +62,13 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
   if (data->result.success) {
     g_browser_process->SetApplicationLocale(data->result.loaded_locale);
 
+    // If the language switch was triggered by enterprise policy, it is possible
+    // that the locale is not in the user's list of preferred languages yet,
+    // which would lead to an inconsistent state in the settings UI. Make sure
+    // to add it in that case.
+    locale_util::AddLocaleToPreferredLanguages(data->result.loaded_locale,
+                                               data->profile->GetPrefs());
+
     if (data->enable_locale_keyboard_layouts) {
       input_method::InputMethodManager* manager =
           input_method::InputMethodManager::Get();
@@ -107,7 +114,7 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
 
 namespace locale_util {
 
-constexpr const char* kAllowedLocalesFallbackLocale = "en-US";
+constexpr const char* kAllowedUILocalesFallbackLocale = "en-US";
 
 LanguageSwitchResult::LanguageSwitchResult(const std::string& requested_locale,
                                            const std::string& loaded_locale,
@@ -133,43 +140,73 @@ void SwitchLanguage(const std::string& locale,
       base::Bind(&FinishSwitchLanguage, base::Passed(std::move(data))));
 }
 
-bool IsAllowedLocale(const std::string& locale_code, const PrefService* prefs) {
-  const base::Value::ListStorage& allowed_locales =
-      prefs->GetList(prefs::kAllowedLocales)->GetList();
+bool IsAllowedUILocale(const std::string& locale, const PrefService* prefs) {
+  const base::Value::ListStorage& allowed_ui_locales =
+      prefs->GetList(prefs::kAllowedUILocales)->GetList();
 
   // Empty list means all locales are allowed.
-  if (allowed_locales.empty())
+  if (allowed_ui_locales.empty())
     return true;
 
-  // Check if locale is in list of allowed locales.
-  return base::ContainsValue(allowed_locales, base::Value(locale_code));
+  // Only locale codes with native UI support can be allowed.
+  if (!IsNativeUILocale(locale))
+    return false;
+
+  // Check if locale is in list of allowed UI locales.
+  return base::ContainsValue(allowed_ui_locales, base::Value(locale));
 }
 
-std::string GetAllowedFallbackLocale(const PrefService* prefs) {
-  // Check the user's preferred languages if one of them is allowed.
+bool IsNativeUILocale(const std::string& locale) {
+  std::string resolved_locale;
+  if (l10n_util::CheckAndResolveLocale(locale, &resolved_locale) &&
+      locale == resolved_locale) {
+    return true;
+  }
+
+  return false;
+}
+
+std::string GetAllowedFallbackUILocale(const PrefService* prefs) {
+  // Check the user's preferred languages if one of them is an allowed UI
+  // locale.
   std::string preferred_languages_string =
       prefs->GetString(prefs::kLanguagePreferredLanguages);
   std::vector<std::string> preferred_languages =
       base::SplitString(preferred_languages_string, ",", base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
   for (const std::string& language : preferred_languages) {
-    if (IsAllowedLocale(language, prefs))
+    if (IsAllowedUILocale(language, prefs))
       return language;
   }
 
-  // Check the allowed languages and return the first valid entry.
-  const base::Value::ListStorage& allowed_locales =
-      prefs->GetList(prefs::kAllowedLocales)->GetList();
-  const std::vector<std::string>& available_locales =
-      l10n_util::GetAvailableLocales();
-  for (const base::Value& value : allowed_locales) {
+  // Check the allowed UI locales and return the first valid entry.
+  const base::Value::ListStorage& allowed_ui_locales =
+      prefs->GetList(prefs::kAllowedUILocales)->GetList();
+  for (const base::Value& value : allowed_ui_locales) {
     const std::string& locale = value.GetString();
-    if (base::ContainsValue(available_locales, locale))
+    if (IsAllowedUILocale(locale, prefs))
       return locale;
   }
 
   // default fallback
-  return kAllowedLocalesFallbackLocale;
+  return kAllowedUILocalesFallbackLocale;
+}
+
+bool AddLocaleToPreferredLanguages(const std::string& locale,
+                                   PrefService* prefs) {
+  std::string preferred_languages_string =
+      prefs->GetString(prefs::kLanguagePreferredLanguages);
+  std::vector<std::string> preferred_languages =
+      base::SplitString(preferred_languages_string, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  if (!base::ContainsValue(preferred_languages, locale)) {
+    preferred_languages.push_back(locale);
+    prefs->SetString(prefs::kLanguagePreferredLanguages,
+                     base::JoinString(preferred_languages, ","));
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace locale_util

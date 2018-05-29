@@ -390,7 +390,7 @@ cr.define('settings', function() {
         value: 'en-US,sw',
       },
       {
-        key: 'intl.allowed_locales',
+        key: 'intl.allowed_ui_locales',
         type: chrome.settingsPrivate.PrefType.LIST,
         value: [],
       },

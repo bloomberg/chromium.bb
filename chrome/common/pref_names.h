@@ -75,7 +75,7 @@ extern const char kApplicationLocale[];
 extern const char kApplicationLocaleBackup[];
 extern const char kApplicationLocaleAccepted[];
 extern const char kOwnerLocale[];
-extern const char kAllowedLocales[];
+extern const char kAllowedUILocales[];
 #endif
 
 extern const char kDefaultCharset[];
