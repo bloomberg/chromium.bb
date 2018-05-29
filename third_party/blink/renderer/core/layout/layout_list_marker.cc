@@ -247,7 +247,7 @@ void LayoutListMarker::ComputePreferredLogicalWidths() {
     case ListStyleCategory::kNone:
       break;
     case ListStyleCategory::kSymbol:
-      logical_width = GetWidthOfSymbol(StyleRef());
+      logical_width = WidthOfSymbol(StyleRef());
       break;
     case ListStyleCategory::kLanguage:
       logical_width = GetWidthOfTextWithSuffix();
@@ -262,7 +262,7 @@ void LayoutListMarker::ComputePreferredLogicalWidths() {
   UpdateMargins();
 }
 
-LayoutUnit LayoutListMarker::GetWidthOfSymbol(const ComputedStyle& style) {
+LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {
   const Font& font = style.GetFont();
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
@@ -475,7 +475,7 @@ LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
     case ListStyleCategory::kNone:
       return LayoutRect();
     case ListStyleCategory::kSymbol:
-      return GetRelativeSymbolMarkerRect(StyleRef(), Size().Width());
+      return RelativeSymbolMarkerRect(StyleRef(), Size().Width());
     case ListStyleCategory::kLanguage: {
       const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
       DCHECK(font_data);
@@ -496,7 +496,7 @@ LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
   return relative_rect;
 }
 
-LayoutRect LayoutListMarker::GetRelativeSymbolMarkerRect(
+LayoutRect LayoutListMarker::RelativeSymbolMarkerRect(
     const ComputedStyle& style,
     LayoutUnit width) {
   LayoutRect relative_rect;

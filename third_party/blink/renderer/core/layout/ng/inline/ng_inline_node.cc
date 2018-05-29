@@ -70,9 +70,9 @@ void CollectInlinesInternal(
 
   LayoutObject* symbol = nullptr;
   if (block->IsLayoutNGListMarker()) {
-    symbol = ToLayoutNGListMarker(block)->GetSymbolOfMarker();
+    symbol = ToLayoutNGListMarker(block)->SymbolMarkerLayoutText();
   } else if (block->IsLayoutNGListItem()) {
-    symbol = ToLayoutNGListItem(block)->GetSymbolOfMarker();
+    symbol = ToLayoutNGListItem(block)->SymbolMarkerLayoutText();
   }
 
   while (node) {

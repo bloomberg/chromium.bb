@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
@@ -670,8 +669,8 @@ void NGBoxFragmentPainter::PaintSymbol(const NGPaintFragment& fragment,
                                        const PaintInfo& paint_info,
                                        const LayoutPoint& paint_offset) {
   const ComputedStyle& style = fragment.Style();
-  LayoutRect marker_rect = LayoutListMarker::GetRelativeSymbolMarkerRect(
-      style, fragment.Size().width);
+  LayoutRect marker_rect =
+      LayoutListMarker::RelativeSymbolMarkerRect(style, fragment.Size().width);
   marker_rect.MoveBy(fragment.Offset().ToLayoutPoint());
   marker_rect.MoveBy(paint_offset);
   IntRect rect = PixelSnappedIntRect(marker_rect);
