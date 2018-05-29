@@ -80,9 +80,8 @@ static std::unique_ptr<Shape> CreateEllipseShape(const FloatPoint& center,
       radii);
 }
 
-static std::unique_ptr<Shape> CreatePolygonShape(
-    std::unique_ptr<Vector<FloatPoint>> vertices,
-    WindRule fill_rule) {
+static std::unique_ptr<Shape> CreatePolygonShape(Vector<FloatPoint> vertices,
+                                                 WindRule fill_rule) {
   return std::make_unique<PolygonShape>(std::move(vertices), fill_rule);
 }
 
@@ -165,12 +164,11 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
       const Vector<Length>& values = polygon->Values();
       size_t values_size = values.size();
       DCHECK(!(values_size % 2));
-      std::unique_ptr<Vector<FloatPoint>> vertices =
-          std::make_unique<Vector<FloatPoint>>(values_size / 2);
+      Vector<FloatPoint> vertices(values_size / 2);
       for (unsigned i = 0; i < values_size; i += 2) {
         FloatPoint vertex(FloatValueForLength(values.at(i), box_width),
                           FloatValueForLength(values.at(i + 1), box_height));
-        (*vertices)[i / 2] = PhysicalPointToLogical(
+        vertices[i / 2] = PhysicalPointToLogical(
             vertex, logical_box_size.Height().ToFloat(), writing_mode);
       }
       shape = CreatePolygonShape(std::move(vertices), polygon->GetWindRule());

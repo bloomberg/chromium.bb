@@ -64,7 +64,7 @@ class OffsetPolygonEdge final : public VertexPair {
 
 class PolygonShape final : public Shape {
  public:
-  PolygonShape(std::unique_ptr<Vector<FloatPoint>> vertices, WindRule fill_rule)
+  PolygonShape(Vector<FloatPoint> vertices, WindRule fill_rule)
       : Shape(), polygon_(std::move(vertices)) {}
 
   LayoutRect ShapeMarginLogicalBoundingBox() const override;

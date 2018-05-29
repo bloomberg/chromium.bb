@@ -41,10 +41,9 @@ class FloatPolygonTestValue {
  public:
   FloatPolygonTestValue(const float* coordinates, unsigned coordinates_length) {
     DCHECK(!(coordinates_length % 2));
-    std::unique_ptr<Vector<FloatPoint>> vertices =
-        std::make_unique<Vector<FloatPoint>>(coordinates_length / 2);
+    Vector<FloatPoint> vertices(coordinates_length / 2);
     for (unsigned i = 0; i < coordinates_length; i += 2)
-      (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
+      vertices[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
     polygon_ = std::make_unique<FloatPolygon>(std::move(vertices));
   }
 
