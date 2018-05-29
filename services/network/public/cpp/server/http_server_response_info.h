@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/component_export.h"
 #include "base/strings/string_split.h"
 #include "net/http/http_status_code.h"
 
@@ -17,7 +18,7 @@ namespace network {
 
 namespace server {
 
-class HttpServerResponseInfo {
+class COMPONENT_EXPORT(NETWORK_CPP) HttpServerResponseInfo {
  public:
   // Creates a 200 OK HttpServerResponseInfo.
   HttpServerResponseInfo();
