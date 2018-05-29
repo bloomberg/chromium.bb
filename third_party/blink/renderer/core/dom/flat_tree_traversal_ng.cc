@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/dom/ng/flat_tree_traversal_ng.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal_ng.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/html/html_shadow_element.h"
