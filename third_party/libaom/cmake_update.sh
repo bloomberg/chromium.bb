@@ -194,6 +194,20 @@ rm -rf "${TMP}"
 mkdir "${TMP}"
 cd "${TMP}"
 
+echo "Generate linux/arm config files."
+gen_config_files linux/arm \
+  "${toolchain}/armv7-linux-gcc.cmake -DENABLE_NEON=0 -DENABLE_NEON_ASM=0 ${all_platforms}"
+rm -f "${CFG}/linux/arm"/*
+# mkdir required only for initial commit
+mkdir -p "${CFG}/linux/arm"
+cp aom_config.h aom_config.c aom_config.asm "${CFG}/linux/arm/"
+gen_rtcd_header linux/arm armv7 --disable-neon
+
+cd ..
+rm -rf "${TMP}"
+mkdir "${TMP}"
+cd "${TMP}"
+
 echo "Generate linux/arm-neon config files."
 gen_config_files linux/arm-neon "${toolchain}/armv7-linux-gcc.cmake ${all_platforms}"
 rm -f "${CFG}/linux/arm-neon"/*
@@ -201,5 +215,19 @@ rm -f "${CFG}/linux/arm-neon"/*
 mkdir -p "${CFG}/linux/arm-neon"
 cp aom_config.h aom_config.c aom_config.asm "${CFG}/linux/arm-neon/"
 gen_rtcd_header linux/arm-neon armv7
+
+cd ..
+rm -rf "${TMP}"
+mkdir "${TMP}"
+cd "${TMP}"
+
+echo "Generate linux/arm-neon-cpu-detect config files."
+gen_config_files linux/arm-neon-cpu-detect \
+  "${toolchain}/armv7-linux-gcc.cmake -DCONFIG_RUNTIME_CPU_DETECT=1 ${all_platforms}"
+rm -f "${CFG}/linux/arm-neon-cpu-detect"/*
+# mkdir required only for initial commit
+mkdir -p "${CFG}/linux/arm-neon-cpu-detect"
+cp aom_config.h aom_config.c aom_config.asm "${CFG}/linux/arm-neon-cpu-detect/"
+gen_rtcd_header linux/arm-neon-cpu-detect armv7
 
 clean
