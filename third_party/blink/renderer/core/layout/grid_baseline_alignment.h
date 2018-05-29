@@ -10,8 +10,6 @@
 
 namespace blink {
 
-class GridTrackSizingAlgorithm;
-
 // These classes are used to implement the Baseline Alignment logic, as
 // described in the CSS Box Alignment specification.
 // https://drafts.csswg.org/css-align/#baseline-terms
@@ -142,10 +140,10 @@ class GridBaselineAlignment {
   // Context the items belongs to.
   // All the baseline offsets are updated accordingly based on the
   // added item.
-  void UpdateBaselineAlignmentContextIfNeeded(ItemPosition,
-                                              unsigned shared_context,
-                                              LayoutBox&,
-                                              GridAxis);
+  void UpdateBaselineAlignmentContext(ItemPosition,
+                                      unsigned shared_context,
+                                      LayoutBox&,
+                                      GridAxis);
 
   // Returns the baseline offset of a particular item, based on the
   // max-ascent for its associated baseline-sharing group
@@ -153,18 +151,6 @@ class GridBaselineAlignment {
                                     unsigned shared_context,
                                     const LayoutBox&,
                                     GridAxis) const;
-
-  // Returns the sum of the 'max-ascent' and 'max-descent' of a particular
-  // item's baseline-sharing group.
-  base::Optional<LayoutUnit> ExtentForBaselineAlignment(ItemPosition,
-                                                        unsigned shared_context,
-                                                        const LayoutBox&,
-                                                        GridAxis) const;
-
-  // Determines whether baseline algnment may affect the intrinsic
-  // size of the grid container.
-  bool BaselineMayAffectIntrinsicSize(const GridTrackSizingAlgorithm&,
-                                      GridTrackSizingDirection) const;
 
   // Sets the Grid Container's writing-mode so that we can avoid the
   // dependecy of the LayoutGrid class for determining whether a grid
@@ -186,7 +172,6 @@ class GridBaselineAlignment {
   LayoutUnit AscentForChild(const LayoutBox&, GridAxis) const;
   LayoutUnit DescentForChild(const LayoutBox&, LayoutUnit, GridAxis) const;
   bool IsDescentBaselineForChild(const LayoutBox&, GridAxis) const;
-  bool IsBaselineContextComputed(GridAxis) const;
   bool IsHorizontalBaselineAxis(GridAxis) const;
   bool IsOrthogonalChildForBaseline(const LayoutBox&) const;
   bool IsParallelToBaselineAxisForChild(const LayoutBox&, GridAxis) const;

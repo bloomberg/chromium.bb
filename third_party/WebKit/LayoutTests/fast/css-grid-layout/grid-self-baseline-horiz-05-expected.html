@@ -9,6 +9,7 @@ body { margin: 0; }
    margin: 5px;
    text-orientation: sideways;
    height: 350px;
+   position: relative;
 }
 .block > :nth-child(1) { font-size:24px; }
 .block > :nth-child(2) { font-size:32px; }
@@ -24,16 +25,11 @@ body { margin: 0; }
 .extraRightPadding { padding-right: 30px; }
 .inline { display: inline-block; }
 .item { display: inline-block; }
-.item.verticalLR, .item.verticalRL { margin: 10px 6px 0px 12px; }
-.item.horizontalTB  { margin: 10px 6px 4px 0px; }
+.bottom { vertical-align: bottom; }
 </style>
 
-<p>4x1 with parallel and orthogonal items. Items orthogonal to the baseline-axis will use a synthesized baseline (border-box 'under' edge).<br>No item shares any row-like Baseline Context. All items share 'first-column' Baseline Context.<br>Items participate in both, column and row baseline, but since they only share a column-like Baseline Context only 'justify-self' (row baseline-axis) should apply.<br>The Baseline Alignment may increase size contribution of some items.</p>
-<div class="block verticalLR"><div class="item horizontalTB">A</div><div class="item">A</div><div class="item horizontalTB">A</div><div class="item">A</div></div>
-<!-- https://crbug.com/704713
-<div class="block verticalLR"><div class="item horizontalTB extraRightPadding">A</div><div class="item extraLeftPadding">A</div><div class="item horizontalTB">A</div><div class="item">A</div></div>
--->
-<div class="block verticalRL"><div class="item horizontalTB">A</div><div class="item">A</div><div class="item horizontalTB">A</div><div class="item">A</div></div>
-<!-- https://crbug.com/704713
-<div class="block verticalRL"><div class="item horizontalTB extraRightPadding">A</div><div class="item extraLeftPadding">A</div><div class="item horizontalTB">A</div><div class="item">A</div></div>
--->
+<p>4x1 with parallel and orthogonal items. <br>No item shares any row-like Baseline Context. All items share 'first-column' Baseline Context.<br>Only the parallel items participate in baseline alignment in the column-like Baseline Context; since no item shares row-like Baseline Context, only 'justify-self' (row baseline-axis) should apply.<br>The Baseline Alignment may increase size contribution of some items.</p>
+<div class="block verticalLR"><div class="item horizontalTB bottom">A</div><div class="item">A</div><div class="item bottom horizontalTB">A</div><div class="item">A</div></div>
+<div class="block verticalLR"><div class="item horizontalTB bottom extraRightPadding">A</div><div class="item extraLeftPadding">A</div><div class="item bottom horizontalTB">A</div><div class="item">A</div></div>
+<div class="block verticalRL"><div class="item horizontalTB bottom">A</div><div class="item">A</div><div class="item bottom horizontalTB">A</div><div class="item">A</div></div>
+<div class="block verticalRL"><div class="item horizontalTB bottom extraRightPadding">A</div><div class="item extraLeftPadding">A</div><div class="item bottom horizontalTB">A</div><div class="item">A</div></div>

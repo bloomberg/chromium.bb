@@ -23,8 +23,9 @@ body { margin: 0; }
 }
 .extraTopPadding { padding-top: 30px; }
 .item { display: inline-block; }
+.top { vertical-align: top; }
 </style>
 
-<p>4x1 with parallel items. Items orthogonal to the baseline-axis will use a synthesized baseline (border-box 'under' edge).<br>No item shares any row-like Baseline Context. All items share 'first-column' Baseline Context.<br>Items participate in both, column and row baseline, but since they only share a column-like Baseline Context only 'justify-self' (row baseline-axis) should apply.</p>
-<div class="block"><div class="item verticalLR">A</div><div class="item verticalLR">A</div><div class="item verticalLR">A</div><div class="item verticalLR">A</div></div>
-<div class="block"><div class="item verticalLR extraTopPadding">A</div><div class="item verticalLR">A</div><div class="item verticalLR">A</div><div class="item verticalLR">A</div></div>
+<p>1x4 with orthogonal items. <br>All items share 'first-row' Baseline Context. No item shares any column-like Baseline Context.<br>Orthogonal items don't participate in baseline alignment in the row-like Baseline Context; since no item shares column-like Baseline Context, neither 'aling-self' or 'justify-self' apply.</p>
+<div class="block"><div class="item top verticalLR">A</div><div class="item top verticalLR">A</div><div class="item top verticalLR">A</div><div class="item top verticalLR">A</div></div>
+<div class="block"><div class="item top verticalLR extraTopPadding">A</div><div class="item top verticalLR">A</div><div class="item top verticalLR">A</div><div class="item top verticalLR">A</div></div>

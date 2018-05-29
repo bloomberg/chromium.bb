@@ -253,15 +253,6 @@ void LayoutGrid::ComputeTrackSizesForDefiniteSize(
 void LayoutGrid::RepeatTracksSizingIfNeeded(
     LayoutUnit available_space_for_columns,
     LayoutUnit available_space_for_rows) {
-  // Baseline alignment may change item's intrinsic size, hence changing its
-  // min-content contribution.
-  // https://drafts.csswg.org/css-align-3/#baseline-align-content
-  // https://drafts.csswg.org/css-align-3/#baseline-align-self
-  bool baseline_affect_intrinsic_width =
-      track_sizing_algorithm_.BaselineMayAffectIntrinsicSize(kForColumns);
-  bool baseline_affect_intrinsic_height =
-      track_sizing_algorithm_.BaselineMayAffectIntrinsicSize(kForRows);
-
   // In orthogonal flow cases column track's size is determined by using the
   // computed row track's size, which it was estimated during the first cycle of
   // the sizing algorithm.
@@ -273,8 +264,7 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   // all the cases with orthogonal flows require this extra cycle; we need a
   // more specific condition to detect whether child's min-content contribution
   // has changed or not.
-  if (!baseline_affect_intrinsic_width && !baseline_affect_intrinsic_height &&
-      !has_any_orthogonal)
+  if (!has_any_orthogonal)
     return;
 
   // TODO (lajava): Whenever the min-content contribution of a grid item changes
@@ -288,13 +278,6 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   // and rows, to determine the final values.
   ComputeTrackSizesForDefiniteSize(kForColumns, available_space_for_columns);
   ComputeTrackSizesForDefiniteSize(kForRows, available_space_for_rows);
-
-  if (baseline_affect_intrinsic_height &&
-      StyleRef().LogicalHeight().IsIntrinsicOrAuto()) {
-    SetLogicalHeight(ComputeTrackBasedLogicalHeight() +
-                     BorderAndPaddingLogicalHeight() +
-                     ScrollbarLogicalHeight());
-  }
 }
 
 void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
@@ -334,6 +317,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutUnit available_space_for_columns = AvailableLogicalWidth();
     PlaceItemsOnGrid(grid_, available_space_for_columns);
 
+    track_sizing_algorithm_.ComputeBaselineAlignmentContext();
+
     // 1- First, the track sizing algorithm is used to resolve the sizes of the
     // grid columns.
     // At this point the logical width is always definite as the above call to
@@ -367,15 +352,6 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
       track_sizing_algorithm_.SetFreeSpace(
           kForRows, LogicalHeight() - track_based_logical_height);
     }
-
-    // TODO (lajava): We need to compute baselines after step 2 so
-    // items with a relative size (percentages) can resolve it before
-    // determining its baseline. However, we only set item's grid area
-    // (via override sizes) as part of the content-sized tracks sizing
-    // logic. Hence, items located at fixed or flexible tracks can't
-    // resolve correctly their size at this stage, which may lead to
-    // an incorrect computation of their shared context's baseline.
-    ComputeBaselineAlignmentContext();
 
     // 3- If the min-content contribution of any grid items have changed based
     // on the row sizes calculated in step 2, steps 1 and 2 are repeated with
@@ -523,6 +499,7 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   PlaceItemsOnGrid(grid, base::nullopt);
 
   GridTrackSizingAlgorithm algorithm(this, grid);
+  algorithm.ComputeBaselineAlignmentContext();
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, grid,
                                      min_logical_width, max_logical_width);
 
@@ -1217,17 +1194,36 @@ const StyleContentAlignmentData& LayoutGrid::ContentAlignmentNormalBehavior() {
   return kNormalBehavior;
 }
 
+static bool OverrideSizeChanged(const LayoutBox& child,
+                                GridTrackSizingDirection direction,
+                                LayoutSize size) {
+  if (direction == kForColumns) {
+    return !child.HasOverrideContainingBlockContentLogicalWidth() ||
+           child.OverrideContainingBlockContentLogicalWidth() != size.Width();
+  }
+  return !child.HasOverrideContainingBlockContentLogicalHeight() ||
+         child.OverrideContainingBlockContentLogicalHeight() != size.Height();
+}
+
+static bool HasRelativeBlockAxisSize(const LayoutGrid& grid,
+                                     const LayoutBox& child) {
+  return GridLayoutUtils::IsOrthogonalChild(grid, child)
+             ? child.HasRelativeLogicalWidth() ||
+                   child.StyleRef().LogicalWidth().IsAuto()
+             : child.HasRelativeLogicalHeight();
+}
+
 void LayoutGrid::UpdateGridAreaLogicalSize(
     LayoutBox& child,
     LayoutSize grid_area_logical_size) const {
   // Because the grid area cannot be styled, we don't need to adjust
   // the grid breadth to account for 'box-sizing'.
-  if (child.OverrideContainingBlockContentLogicalWidth() !=
-          grid_area_logical_size.Width() ||
-      (child.OverrideContainingBlockContentLogicalHeight() !=
-           grid_area_logical_size.Height() &&
-       (child.HasRelativeLogicalHeight() ||
-        GridLayoutUtils::IsOrthogonalChild(*this, child)))) {
+  bool grid_area_width_changed =
+      OverrideSizeChanged(child, kForColumns, grid_area_logical_size);
+  bool grid_area_height_changed =
+      OverrideSizeChanged(child, kForRows, grid_area_logical_size);
+  if (grid_area_width_changed ||
+      (grid_area_height_changed && HasRelativeBlockAxisSize(*this, child))) {
     child.SetNeedsLayout(LayoutInvalidationReason::kGridChanged, kMarkOnlyThis);
   }
 
@@ -1728,16 +1724,6 @@ bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child,
                               ? HasAutoMarginsInColumnAxis(child)
                               : HasAutoMarginsInRowAxis(child);
   return IsBaselinePosition(align) && !has_auto_margins;
-}
-
-void LayoutGrid::ComputeBaselineAlignmentContext() {
-  for (auto* child = FirstInFlowChildBox(); child;
-       child = child->NextInFlowSiblingBox()) {
-    track_sizing_algorithm_.UpdateBaselineAlignmentContextIfNeeded(
-        *child, kGridRowAxis);
-    track_sizing_algorithm_.UpdateBaselineAlignmentContextIfNeeded(
-        *child, kGridColumnAxis);
-  }
 }
 
 LayoutUnit LayoutGrid::ColumnAxisBaselineOffsetForChild(
@@ -2374,6 +2360,14 @@ size_t LayoutGrid::NumTracks(GridTrackSizingDirection direction,
              ? grid.NumTracks(kForColumns)
              : GridPositionsResolver::ExplicitGridColumnCount(
                    StyleRef(), grid.AutoRepeatTracks(kForColumns));
+}
+
+void LayoutGrid::SetEstimatedGridAreaLogicalSize(const Grid& grid,
+                                                 LayoutBox& child) const {
+  UpdateGridAreaLogicalSize(
+      child,
+      LayoutSize(EstimatedGridAreaBreadthForChild(grid, child, kForColumns),
+                 EstimatedGridAreaBreadthForChild(grid, child, kForRows)));
 }
 
 LayoutUnit LayoutGrid::GridItemOffset(

@@ -78,6 +78,14 @@ void GridTrack::EnsureGrowthLimitIsBiggerThanBaseSize() {
     growth_limit_ = base_size_;
 }
 
+static GridAxis GridAxisForDirection(GridTrackSizingDirection direction) {
+  return direction == kForColumns ? kGridRowAxis : kGridColumnAxis;
+}
+
+static GridTrackSizingDirection GridDirectionForAxis(GridAxis axis) {
+  return axis == kGridRowAxis ? kForColumns : kForRows;
+}
+
 class IndefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
  public:
   IndefiniteSizeStrategy(GridTrackSizingAlgorithm& algorithm)
@@ -158,14 +166,14 @@ void GridTrackSizingAlgorithmStrategy::
 
 LayoutUnit GridTrackSizingAlgorithm::GridAreaBreadthForChild(
     const LayoutBox& child,
-    GridTrackSizingDirection direction) {
+    GridTrackSizingDirection direction) const {
   if (direction == kForRows && sizing_state_ == kColumnSizingFirstIteration) {
     DCHECK(GridLayoutUtils::IsOrthogonalChild(*layout_grid_, child));
     return layout_grid_->EstimatedGridAreaBreadthForChild(grid_, child,
                                                           kForRows);
   }
 
-  Vector<GridTrack>& all_tracks = Tracks(direction);
+  const Vector<GridTrack>& all_tracks = Tracks(direction);
   const GridSpan& span = grid_.GridItemSpan(child, direction);
   LayoutUnit grid_area_breadth;
   for (const auto& track_position : span)
@@ -176,6 +184,19 @@ LayoutUnit GridTrackSizingAlgorithm::GridAreaBreadthForChild(
                                 span.IntegerSpan(), AvailableSpace(direction));
 
   return grid_area_breadth;
+}
+
+bool GridTrackSizingAlgorithm::IsIntrinsicSizedGridArea(const LayoutBox& child,
+                                                        GridAxis axis) const {
+  GridTrackSizingDirection direction = GridDirectionForAxis(axis);
+  const GridSpan& span = grid_.GridItemSpan(child, direction);
+  for (const auto& track_position : span) {
+    GridTrackSize track_size = GetGridTrackSize(direction, track_position);
+    if (track_size.IsContentSized() || track_size.IsFitContent() ||
+        (track_size.MaxTrackBreadth().IsFlex() && !FreeSpace(direction)))
+      return true;
+  }
+  return false;
 }
 
 bool GridTrackSizingAlgorithmStrategy::
@@ -193,28 +214,6 @@ bool GridTrackSizingAlgorithmStrategy::
                                                 override_size.value());
   return true;
 }
-
-base::Optional<LayoutUnit>
-GridTrackSizingAlgorithmStrategy::ExtentForBaselineAlignment(
-    const LayoutBox& child) const {
-  const LayoutGrid& layout_grid = *GetLayoutGrid();
-  GridAxis baseline_axis =
-      GridLayoutUtils::IsOrthogonalChild(*GetLayoutGrid(), child)
-          ? kGridRowAxis
-          : kGridColumnAxis;
-  if (!layout_grid.IsBaselineAlignmentForChild(child, baseline_axis))
-    return base::nullopt;
-
-  ItemPosition align =
-      layout_grid.SelfAlignmentForChild(baseline_axis, child).GetPosition();
-  const auto& span =
-      baseline_axis == kGridColumnAxis
-          ? algorithm_.GetGrid().GridItemSpan(child, kForRows)
-          : algorithm_.GetGrid().GridItemSpan(child, kForColumns);
-
-  return algorithm_.baseline_alignment_.ExtentForBaselineAlignment(
-      align, span.StartLine(), child, baseline_axis);
-};
 
 LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
     LayoutBox& child) const {
@@ -234,11 +233,10 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
 
   child.LayoutIfNeeded();
 
-  if (auto baseline_extent = ExtentForBaselineAlignment(child))
-    return baseline_extent.value();
-
   return child.LogicalHeight() +
-         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child);
+         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child) +
+         algorithm_.BaselineOffsetForChild(child,
+                                           GridAxisForDirection(Direction()));
 }
 
 DISABLE_CFI_PERF
@@ -252,13 +250,10 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
     // preferred width.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
     return child.MinPreferredLogicalWidth() +
-           GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(), child);
-  }
-
-  if (Direction() == kForColumns && !AvailableSpace()) {
-    DCHECK(GridLayoutUtils::IsOrthogonalChild(*GetLayoutGrid(), child));
-    if (auto baseline_extent = ExtentForBaselineAlignment(child))
-      return baseline_extent.value();
+           GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(),
+                                                       child) +
+           algorithm_.BaselineOffsetForChild(child,
+                                             GridAxisForDirection(Direction()));
   }
 
   if (UpdateOverrideContainingBlockContentSizeForChild(
@@ -279,7 +274,10 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MaxContentForChild(
     // preferred width.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
     return child.MaxPreferredLogicalWidth() +
-           GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(), child);
+           GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(),
+                                                       child) +
+           algorithm_.BaselineOffsetForChild(child,
+                                             GridAxisForDirection(Direction()));
   }
 
   if (UpdateOverrideContainingBlockContentSizeForChild(
@@ -333,11 +331,15 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
   if (!child_size.IsAuto())
     return MinContentForChild(child);
 
+  LayoutUnit baseline_shim = algorithm_.BaselineOffsetForChild(
+      child, GridAxisForDirection(Direction()));
   LayoutUnit grid_area_size =
       algorithm_.GridAreaBreadthForChild(child, child_inline_direction);
 
-  if (is_row_axis)
-    return MinLogicalWidthForChild(child, child_min_size, grid_area_size);
+  if (is_row_axis) {
+    return MinLogicalWidthForChild(child, child_min_size, grid_area_size) +
+           baseline_shim;
+  }
 
   bool override_size_has_changed =
       UpdateOverrideContainingBlockContentSizeForChild(
@@ -347,41 +349,67 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
   return child.ComputeLogicalHeightUsing(kMinSize, child_min_size,
                                          child.IntrinsicLogicalHeight()) +
          GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child) +
-         child.ScrollbarLogicalHeight();
+         child.ScrollbarLogicalHeight() + baseline_shim;
 }
 
-void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContextIfNeeded(
+bool GridTrackSizingAlgorithm::CanParticipateInBaselineAlignment(
+    const LayoutBox& child,
+    GridAxis baseline_axis) const {
+  if (!layout_grid_->IsBaselineAlignmentForChild(child, baseline_axis))
+    return false;
+
+  // Baseline cyclic dependencies only happen with synthesized
+  // baselines. These cases include orthogonal or empty grid items
+  // and replaced elements.
+  bool is_parallel_to_baseline_axis =
+      baseline_axis == kGridColumnAxis
+          ? !GridLayoutUtils::IsOrthogonalChild(*layout_grid_, child)
+          : GridLayoutUtils::IsOrthogonalChild(*layout_grid_, child);
+  if (is_parallel_to_baseline_axis && child.FirstLineBoxBaseline() != -1)
+    return true;
+
+  // Baseline cyclic dependencies only happen in grid areas with
+  // intrinsically-sized tracks.
+  if (!IsIntrinsicSizedGridArea(child, baseline_axis))
+    return true;
+
+  return is_parallel_to_baseline_axis
+             ? !child.HasRelativeLogicalHeight()
+             : !child.HasRelativeLogicalWidth() &&
+                   !child.StyleRef().LogicalWidth().IsAuto();
+}
+
+void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContext(
     LayoutBox& child,
     GridAxis baseline_axis) {
-  // TODO (lajava): We must ensure this method is not called as part of an
-  // intrinsic size computation.
-  if (!layout_grid_->IsBaselineAlignmentForChild(child, baseline_axis))
-    return;
+  DCHECK(CanParticipateInBaselineAlignment(child, baseline_axis));
+  DCHECK(!child.NeedsLayout());
 
-  child.LayoutIfNeeded();
   ItemPosition align =
       layout_grid_->SelfAlignmentForChild(baseline_axis, child).GetPosition();
-  const auto& span = baseline_axis == kGridColumnAxis
-                         ? grid_.GridItemSpan(child, kForRows)
-                         : grid_.GridItemSpan(child, kForColumns);
-  baseline_alignment_.UpdateBaselineAlignmentContextIfNeeded(
-      align, span.StartLine(), child, baseline_axis);
+  const auto& span =
+      grid_.GridItemSpan(child, GridDirectionForAxis(baseline_axis));
+  baseline_alignment_.UpdateBaselineAlignmentContext(align, span.StartLine(),
+                                                     child, baseline_axis);
 }
 
 LayoutUnit GridTrackSizingAlgorithm::BaselineOffsetForChild(
     const LayoutBox& child,
     GridAxis baseline_axis) const {
-  if (!layout_grid_->IsBaselineAlignmentForChild(child, baseline_axis))
+  if (!CanParticipateInBaselineAlignment(child, baseline_axis))
     return LayoutUnit();
 
   ItemPosition align =
       layout_grid_->SelfAlignmentForChild(baseline_axis, child).GetPosition();
-  const auto& span = baseline_axis == kGridColumnAxis
-                         ? grid_.GridItemSpan(child, kForRows)
-                         : grid_.GridItemSpan(child, kForColumns);
-
+  const auto& span =
+      grid_.GridItemSpan(child, GridDirectionForAxis(baseline_axis));
   return baseline_alignment_.BaselineOffsetForChild(align, span.StartLine(),
                                                     child, baseline_axis);
+}
+
+void GridTrackSizingAlgorithm::ClearBaselineAlignment() {
+  baseline_alignment_.Clear();
+  baseline_alignment_.SetBlockFlow(layout_grid_->StyleRef().GetWritingMode());
 }
 
 LayoutUnit GridTrackSizingAlgorithmStrategy::ComputeTrackBasedSize() const {
@@ -578,11 +606,10 @@ LayoutUnit IndefiniteSizeStrategy::MinContentForChild(LayoutBox& child) const {
   // performed in LayoutGrid::LayoutOrthogonalWritingModeRoots.
   DCHECK(GridLayoutUtils::IsOrthogonalChild(*GetLayoutGrid(), child));
 
-  if (auto baseline_extent = ExtentForBaselineAlignment(child))
-    return baseline_extent.value();
-
   return child.LogicalHeight() +
-         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child);
+         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child) +
+         algorithm_.BaselineOffsetForChild(child,
+                                           GridAxisForDirection(Direction()));
 }
 
 DISABLE_CFI_PERF
@@ -1472,9 +1499,38 @@ void GridTrackSizingAlgorithm::Setup(
   }
   Tracks(direction).resize(num_tracks);
 
-  baseline_alignment_.SetBlockFlow(layout_grid_->StyleRef().GetWritingMode());
-
   needs_setup_ = false;
+}
+
+void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContext(
+    LayoutBox& child) {
+  bool can_participate_in_row_axis_baseline =
+      CanParticipateInBaselineAlignment(child, kGridRowAxis);
+  bool can_participate_in_column_axis_baseline =
+      CanParticipateInBaselineAlignment(child, kGridColumnAxis);
+  if (!can_participate_in_row_axis_baseline &&
+      !can_participate_in_column_axis_baseline)
+    return;
+
+  if ((can_participate_in_row_axis_baseline &&
+       child.HasRelativeLogicalWidth()) ||
+      (can_participate_in_column_axis_baseline &&
+       child.HasRelativeLogicalHeight())) {
+    layout_grid_->SetEstimatedGridAreaLogicalSize(grid_, child);
+  }
+  child.LayoutIfNeeded();
+
+  if (can_participate_in_row_axis_baseline)
+    UpdateBaselineAlignmentContext(child, kGridRowAxis);
+  if (can_participate_in_column_axis_baseline)
+    UpdateBaselineAlignmentContext(child, kGridColumnAxis);
+}
+
+void GridTrackSizingAlgorithm::ComputeBaselineAlignmentContext() {
+  ClearBaselineAlignment();
+  for (auto* child = layout_grid_->FirstInFlowChildBox(); child;
+       child = child->NextInFlowSiblingBox())
+    UpdateBaselineAlignmentContext(*child);
 }
 
 // Described in https://drafts.csswg.org/css-grid/#algo-track-sizing
