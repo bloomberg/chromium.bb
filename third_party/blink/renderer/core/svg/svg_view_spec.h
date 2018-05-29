@@ -31,8 +31,7 @@ class SVGRect;
 class SVGSVGElement;
 class SVGTransformList;
 
-class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
-                          public SVGZoomAndPan {
+class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec> {
  public:
   static SVGViewSpec* CreateForElement(SVGSVGElement&);
 
@@ -46,6 +45,7 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
     return preserve_aspect_ratio_;
   }
   SVGTransformList* Transform() { return transform_; }
+  SVGZoomAndPanType ZoomAndPan() const { return zoom_and_pan_; }
 
   virtual void Trace(blink::Visitor*);
 
@@ -61,6 +61,7 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
   Member<SVGRect> view_box_;
   Member<SVGPreserveAspectRatio> preserve_aspect_ratio_;
   Member<SVGTransformList> transform_;
+  SVGZoomAndPanType zoom_and_pan_;
 };
 
 template <typename T>
@@ -74,7 +75,7 @@ void SVGViewSpec::InheritViewAttributesFromElement(T& inherit_from_element) {
   }
 
   if (inherit_from_element.hasAttribute(SVGNames::zoomAndPanAttr))
-    setZoomAndPan(inherit_from_element.zoomAndPan());
+    zoom_and_pan_ = inherit_from_element.zoomAndPan();
 }
 
 }  // namespace blink

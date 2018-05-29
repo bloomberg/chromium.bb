@@ -152,7 +152,7 @@ void SVGSVGElement::UpdateUserTransform() {
 bool SVGSVGElement::ZoomAndPanEnabled() const {
   SVGZoomAndPanType zoom_and_pan = this->zoomAndPan();
   if (view_spec_)
-    zoom_and_pan = view_spec_->zoomAndPan();
+    zoom_and_pan = view_spec_->ZoomAndPan();
   return zoom_and_pan == kSVGZoomAndPanMagnify;
 }
 
