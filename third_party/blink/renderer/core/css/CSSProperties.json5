@@ -4380,7 +4380,7 @@
       name: "viewport-fit",
       is_descriptor: true,
       is_property: false,
-      runtime_flag: "DisplayCutoutViewportFit",
+      runtime_flag: "DisplayCutoutAPI",
     },
 
     // Shorthands

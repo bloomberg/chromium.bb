@@ -17,7 +17,7 @@ class HTMLMetaElementTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp();
 
-    RuntimeEnabledFeatures::SetDisplayCutoutViewportFitEnabled(true);
+    RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 

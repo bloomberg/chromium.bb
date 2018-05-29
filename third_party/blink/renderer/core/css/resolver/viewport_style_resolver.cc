@@ -56,7 +56,7 @@ namespace {
 
 bool HasViewportFitProperty(const CSSPropertyValueSet* property_set) {
   DCHECK(property_set);
-  return RuntimeEnabledFeatures::DisplayCutoutViewportFitEnabled() &&
+  return RuntimeEnabledFeatures::DisplayCutoutAPIEnabled() &&
          property_set->HasProperty(CSSPropertyViewportFit);
 }
 

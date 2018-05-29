@@ -396,7 +396,7 @@
       name: "DisableRasterInvalidation",
     },
     {
-      name: "DisplayCutoutViewportFit",
+      name: "DisplayCutoutAPI",
       settable_from_internals: true,
     },
     {

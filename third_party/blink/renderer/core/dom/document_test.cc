@@ -1059,7 +1059,7 @@ class ViewportFitDocumentTest : public DocumentTest {
   void SetUp() override {
     DocumentTest::SetUp();
 
-    RuntimeEnabledFeatures::SetDisplayCutoutViewportFitEnabled(true);
+    RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 };
