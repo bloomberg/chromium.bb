@@ -47,6 +47,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/base/histograms.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/trace_to_console.h"
@@ -1207,6 +1208,18 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // Up the priority of the UI thread.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 #endif
+
+  // cc assumes a single client name for metrics in a process, which is
+  // is inconsistent with single process mode where both the renderer and
+  // browser compositor run in the same process. In this case, avoid
+  // initializing with a browser metric name to ensure we record metrics for the
+  // renderer compositor.
+  // Note that since single process mode is only used by webview in practice,
+  // which doesn't have a browser compositor, this is not required anyway.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    cc::SetClientNameForMetrics("Browser");
+  }
 
   // Initialize the GPU shader cache. This needs to be initialized before
   // BrowserGpuChannelHostFactory below, since that depends on an initialized
