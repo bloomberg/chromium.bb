@@ -352,15 +352,25 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       net::URLRequestContextGetter* url_request_context_getter,
       storage::FileSystemContext* upload_file_system_context,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
-      AppCacheNavigationHandleCore* appcache_handle_core) const {
+      AppCacheNavigationHandleCore* appcache_handle_core,
+      bool was_request_intercepted) const {
     return base::BindOnce(
         &URLLoaderRequestController::CreateNonNetworkServiceURLLoader,
         weak_factory_.GetWeakPtr(),
         base::Unretained(url_request_context_getter),
         base::Unretained(upload_file_system_context),
         std::make_unique<NavigationRequestInfo>(*request_info_),
-        base::Unretained(service_worker_navigation_handle_core),
-        base::Unretained(appcache_handle_core));
+        // If the request has already been intercepted, the request should not
+        // be intercepted again.
+        // S13nServiceWorker: Requests are intercepted by S13nServiceWorker
+        // before the default request handler when needed, so we never need to
+        // pass |service_worker_navigation_handle_core| here.
+        base::Unretained(ServiceWorkerUtils::IsServicificationEnabled() ||
+                                 was_request_intercepted
+                             ? nullptr
+                             : service_worker_navigation_handle_core),
+        base::Unretained(was_request_intercepted ? nullptr
+                                                 : appcache_handle_core));
   }
 
   void CreateNonNetworkServiceURLLoader(
@@ -462,7 +472,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         !service_worker_navigation_handle_core) {
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-              default_request_handler_factory_.Run()),
+              default_request_handler_factory_.Run(
+                  false /* was_request_intercepted */)),
           CreateURLLoaderThrottles(), -1 /* routing_id */, 0 /* request_id */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(),
           this /* client */, kNavigationUrlLoaderTrafficAnnotation,
@@ -481,7 +492,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!service_worker_interceptor) {
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-              default_request_handler_factory_.Run()),
+              default_request_handler_factory_.Run(
+                  false /* was_request_intercepted */)),
           CreateURLLoaderThrottles(), -1 /* routing_id */, 0 /* request_id */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(),
           this /* client */, kNavigationUrlLoaderTrafficAnnotation,
@@ -693,15 +705,26 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       DCHECK(!interceptors_.empty());
       DCHECK(default_request_handler_factory_);
+      // The only way to come here is to enable ServiceWorkerServicification
+      // without NetworkService. We know that the service worker's request
+      // interceptor has already intercepted and decided not to handle the
+      // request.
+      DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
       default_loader_used_ = true;
       // Update |request_info_| when following a redirect.
       if (url_chain_.size() > 0) {
         request_info_ = CreateNavigationRequestInfoForRedirect(
             *request_info_, *resource_request_);
       }
+      // When |subresource_loader_params_| has its value, the request should not
+      // be intercepted by any other interceptors since it means that a request
+      // interceptor already intercepted the request and it attached its info to
+      // the request.
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-              default_request_handler_factory_.Run()),
+              default_request_handler_factory_.Run(
+                  subresource_loader_params_.has_value()
+                  /* was_request_intercepted */)),
           CreateURLLoaderThrottles(), frame_tree_node_id_, 0 /* request_id */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(),
           this /* client */, kNavigationUrlLoaderTrafficAnnotation,
@@ -1162,7 +1185,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // captures all of parameters to create a
   // SingleRequestURLLoaderFactory::RequestHandler. Used only when
   // NetworkService is disabled but IsLoaderInterceptionEnabled() is true.
-  base::RepeatingCallback<SingleRequestURLLoaderFactory::RequestHandler()>
+  // Set |was_request_intercepted| to true if the request was intercepted by an
+  // interceptor and the request is falling back to the network. In that case,
+  // any interceptors won't intercept the request.
+  base::RepeatingCallback<SingleRequestURLLoaderFactory::RequestHandler(
+      bool /* was_request_intercepted */)>
       default_request_handler_factory_;
 
   // The completion status if it has been received. This is needed to handle
