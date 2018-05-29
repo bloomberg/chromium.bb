@@ -105,12 +105,4 @@ void IntersectionObserverController::Trace(blink::Visitor* visitor) {
   PausableObject::Trace(visitor);
 }
 
-void IntersectionObserverController::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (const auto& observer : pending_intersection_observers_)
-    visitor->TraceWrappers(observer);
-  for (const auto& observer : intersection_observers_being_invoked_)
-    visitor->TraceWrappers(observer);
-}
-
 }  // namespace blink

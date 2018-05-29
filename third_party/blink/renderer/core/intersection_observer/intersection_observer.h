@@ -96,7 +96,6 @@ class CORE_EXPORT IntersectionObserver final
   bool HasPendingActivity() const override;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   explicit IntersectionObserver(IntersectionObserverDelegate&,

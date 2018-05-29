@@ -280,10 +280,4 @@ void CSSLayoutDefinition::Trace(Visitor* visitor) {
   visitor->Trace(layout_.Cast<v8::Value>());
 }
 
-void CSSLayoutDefinition::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(constructor_.Cast<v8::Value>());
-  visitor->TraceWrappers(intrinsic_sizes_.Cast<v8::Value>());
-  visitor->TraceWrappers(layout_.Cast<v8::Value>());
-}
-
 }  // namespace blink

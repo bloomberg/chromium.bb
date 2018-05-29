@@ -127,8 +127,4 @@ void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }
 
-void WorkletGlobalScope::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  WorkerOrWorkletGlobalScope::TraceWrappers(visitor);
-}
-
 }  // namespace blink

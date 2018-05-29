@@ -45,10 +45,6 @@ class CORE_EXPORT WorkerAnimationFrameProvider
     visitor->Trace(rendering_contexts_);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    visitor->TraceWrappers(callback_collection_);
-  }
-
   // BeginFrameProviderClient
   void BeginFrame() override;
 

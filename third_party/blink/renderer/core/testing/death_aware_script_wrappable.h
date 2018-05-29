@@ -27,10 +27,6 @@ class InObjectContainer {
 
   virtual void Trace(Visitor* visitor) { visitor->Trace(dependency_); }
 
-  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    visitor->TraceWrappers(dependency_);
-  }
-
  private:
   TraceWrapperMember<DeathAwareScriptWrappable> dependency_;
 };
@@ -70,21 +66,6 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     visitor->Trace(wrapped_hash_map_dependency_);
     visitor->Trace(in_object_dependency_);
     ScriptWrappable::Trace(visitor);
-  }
-
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(wrapped_dependency_);
-    for (auto dep : wrapped_vector_dependency_) {
-      visitor->TraceWrappers(dep);
-    }
-    for (auto pair : wrapped_hash_map_dependency_) {
-      visitor->TraceWrappers(pair.key);
-      visitor->TraceWrappers(pair.value);
-    }
-    for (const auto& in_object_dependency : in_object_dependency_) {
-      in_object_dependency.TraceWrappers(visitor);
-    }
-    ScriptWrappable::TraceWrappers(visitor);
   }
 
   void SetWrappedDependency(DeathAwareScriptWrappable* dependency) {

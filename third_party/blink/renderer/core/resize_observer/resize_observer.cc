@@ -187,9 +187,4 @@ void ResizeObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void ResizeObserver::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 }  // namespace blink

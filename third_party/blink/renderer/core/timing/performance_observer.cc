@@ -141,9 +141,4 @@ void PerformanceObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-void PerformanceObserver::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 }  // namespace blink

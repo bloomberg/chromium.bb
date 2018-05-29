@@ -162,11 +162,4 @@ void LayoutWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   MainThreadWorkletGlobalScope::Trace(visitor);
 }
 
-void LayoutWorkletGlobalScope::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto definition : layout_definitions_)
-    visitor->TraceWrappers(definition.value);
-  MainThreadWorkletGlobalScope::TraceWrappers(visitor);
-}
-
 }  // namespace blink

@@ -30,7 +30,6 @@ class ElementIntersectionObserverData
   void DeactivateAllIntersectionObservers(Node&);
 
   void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "ElementIntersectionObserverData";
   }
