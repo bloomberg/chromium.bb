@@ -277,7 +277,15 @@ class VideoEncoderTest
 
 // A simple test to encode three frames of video, expecting to see one key frame
 // followed by two delta frames.
-TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_GeneratesKeyFrameThenOnlyDeltaFrames \
+  DISABLED_GeneratesKeyFrameThenOnlyDeltaFrames
+#else
+#define MAYBE_GeneratesKeyFrameThenOnlyDeltaFrames \
+  GeneratesKeyFrameThenOnlyDeltaFrames
+#endif
+TEST_P(VideoEncoderTest, MAYBE_GeneratesKeyFrameThenOnlyDeltaFrames) {
   CreateEncoder();
   SetVEAFactoryAutoRespond(true);
 
@@ -317,7 +325,13 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
 // changes.  See media/cast/receiver/video_decoder_unittest.cc for a complete
 // encode/decode cycle of varied frame sizes that actually checks the frame
 // content.
-TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_EncodesVariedFrameSizes DISABLED_EncodesVariedFrameSizes
+#else
+#define MAYBE_EncodesVariedFrameSizes EncodesVariedFrameSizes
+#endif
+TEST_P(VideoEncoderTest, MAYBE_EncodesVariedFrameSizes) {
   CreateEncoder();
   SetVEAFactoryAutoRespond(true);
 
@@ -382,7 +396,14 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
 // before it has a chance to receive the VEA creation callback.  For all other
 // encoders, this tests that the encoder can be safely destroyed before the task
 // is run that delivers the first EncodedFrame.
-TEST_P(VideoEncoderTest, CanBeDestroyedBeforeVEAIsCreated) {
+// Fails consistently on official builds: crbug.com/612496
+#ifdef OFFICIAL_BUILD
+#define MAYBE_CanBeDestroyedBeforeVEAIsCreated \
+  DISABLED_CanBeDestroyedBeforeVEAIsCreated
+#else
+#define MAYBE_CanBeDestroyedBeforeVEAIsCreated CanBeDestroyedBeforeVEAIsCreated
+#endif
+TEST_P(VideoEncoderTest, MAYBE_CanBeDestroyedBeforeVEAIsCreated) {
   CreateEncoder();
 
   // Send a frame to spawn creation of the ExternalVideoEncoder instance.
