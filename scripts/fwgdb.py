@@ -52,6 +52,8 @@ def ParseArgs(argv):
 
   parser.add_argument('-b', '--board',
                       help='The board overlay name (auto-detect by default)')
+  parser.add_argument('-c', '--cgdb', action='store_true',
+                      help='Use cgdb curses interface rather than plain gdb')
   parser.add_argument('-s', '--symbols',
                       help='Root directory or complete path to symbolized ELF '
                            '(defaults to /build/<BOARD>/firmware)')
@@ -227,10 +229,19 @@ def main(argv):
 
     chost = ParsePortage(opts.board)
     logging.info('Launching GDB...')
+
+    gdb_cmd = chost + '-gdb'
+    gdb_args = [
+        '--symbols', FindSymbols(opts.symbols, opts.board),
+        '--directory', _SRC_DC,
+        '--directory', _SRC_VB,
+        '--directory', _SRC_LP,
+    ] + ex_args
+
+    if opts.cgdb:
+      full_cmd = ['cgdb', '-d', gdb_cmd, '--'] + gdb_args
+    else:
+      full_cmd = [gdb_cmd] + gdb_args
+
     cros_build_lib.RunCommand(
-        [chost + '-gdb',
-         '--symbols', FindSymbols(opts.symbols, opts.board),
-         '--directory', _SRC_DC,
-         '--directory', _SRC_VB,
-         '--directory', _SRC_LP] + ex_args,
-        ignore_sigint=True, debug_level=logging.WARNING)
+        full_cmd, ignore_sigint=True, debug_level=logging.WARNING)
