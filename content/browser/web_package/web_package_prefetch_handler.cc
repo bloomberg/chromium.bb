@@ -47,7 +47,7 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
     url_loader_factory = std::move(network_loader_factory);
   }
   web_package_loader_ = std::make_unique<WebPackageLoader>(
-      response, std::move(client), std::move(endpoints),
+      outer_request_url, response, std::move(client), std::move(endpoints),
       std::move(request_initiator), network::mojom::kURLLoadOptionNone,
       std::make_unique<SignedExchangeDevToolsProxy>(
           outer_request_url, response, std::move(frame_tree_node_id_getter),

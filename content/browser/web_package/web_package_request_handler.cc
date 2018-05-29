@@ -88,10 +88,10 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
   // or reusing the existing ThrottlingURLLoader by reattaching URLLoaderClient,
   // to support SafeBrowsing checking of the content of the WebPackage.
   web_package_loader_ = std::make_unique<WebPackageLoader>(
-      response, std::move(client), url_loader->Unbind(),
+      url_, response, std::move(client), url_loader->Unbind(),
       std::move(request_initiator_), url_loader_options_,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          std::move(url_), response,
+          url_, response,
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
           std::move(devtools_navigation_token_), report_raw_headers_),
       std::move(url_loader_factory_), std::move(url_loader_throttles_getter_),
