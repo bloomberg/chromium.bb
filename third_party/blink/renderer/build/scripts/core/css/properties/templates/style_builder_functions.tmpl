@@ -103,6 +103,16 @@ state.Style()->{{property.setter}}
   state.Style()->{{property.is_inherited_setter}}(false);
         {% endif %}
     {% endcall %}
+  {% elif property.style_builder_template == 'empty' %}
+    {% call(property) apply_initial(property, header) %}
+  // Intentionally empty.
+    {% endcall %}
+    {% call(property) apply_inherit(property, header) %}
+  // Intentionally empty.
+    {% endcall %}
+    {% call(property) apply_value(property, header) %}
+  // Intentionally empty.
+    {% endcall %}
   {% elif property.style_builder_template == "auto" %}
     {% set auto_getter = property.style_builder_template_args['auto_getter'] or
                        'HasAuto' + property.name_for_methods %}

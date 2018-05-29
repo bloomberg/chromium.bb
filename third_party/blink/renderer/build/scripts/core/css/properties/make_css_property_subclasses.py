@@ -104,7 +104,6 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
             property_['is_property'] and
             not property_['longhands'] and
             not property_['direction_aware_options'] and
-            not property_['builder_skip'] and
             not property_['style_builder_legacy'])
 
         if not property_['style_builder_declare']:

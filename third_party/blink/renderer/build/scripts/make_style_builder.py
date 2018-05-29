@@ -39,7 +39,6 @@ def calculate_apply_functions_to_declare(property_):
     property_['should_declare_functions'] = \
         not property_['longhands'] \
         and not property_['direction_aware_options'] \
-        and not property_['builder_skip'] \
         and property_['is_property']
     property_['use_property_class_in_stylebuilder'] = \
         property_['should_declare_functions'] \
