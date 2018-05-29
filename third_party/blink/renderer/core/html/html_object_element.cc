@@ -329,15 +329,9 @@ const AtomicString HTMLObjectElement::ImageSourceURL() const {
   return getAttribute(dataAttr);
 }
 
-// TODO(schenney): crbug.com/572908 Remove this hack.
 void HTMLObjectElement::ReattachFallbackContent() {
-  if (GetDocument().InStyleRecalc()) {
-    // This can happen inside of AttachLayoutTree() in the middle of a
-    // RebuildLayoutTree, so we need to reattach synchronously here.
-    ReattachLayoutTree(SyncReattachContext::CurrentAttachContext());
-  } else {
+  if (!GetDocument().InStyleRecalc())
     LazyReattachIfAttached();
-  }
 }
 
 void HTMLObjectElement::RenderFallbackContent() {
