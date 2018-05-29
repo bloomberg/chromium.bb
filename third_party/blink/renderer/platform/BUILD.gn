@@ -2225,6 +2225,7 @@ jumbo_source_set("unit_tests") {
     "graphics/image_frame_generator_test.cc",
     "graphics/image_layer_chromium_test.cc",
     "graphics/offscreen_canvas_frame_dispatcher_test.cc",
+    "graphics/test/fake_canvas_resource_host.h",
     "graphics/test/fake_gles2_interface.h",
     "graphics/test/fake_scrollable_area.h",
     "graphics/test/fake_web_graphics_context_3d_provider.h",
