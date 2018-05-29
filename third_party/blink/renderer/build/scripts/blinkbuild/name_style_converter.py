@@ -182,7 +182,20 @@ class NameStyleConverter(object):
     # Use the following high level naming functions which describe the semantics
     # of the name, rather than a particular style.
 
+    def to_class_name(self, prefix=None, suffix=None):
+        """Represents this name as a class name in Chromium C++ style.
+
+        i.e. UpperCamelCase.
+        """
+        camel_prefix = prefix[0].upper() + prefix[1:].lower() if prefix else ''
+        camel_suffix = suffix[0].upper() + suffix[1:].lower() if suffix else ''
+        return camel_prefix + self.to_upper_camel_case() + camel_suffix
+
     def to_class_data_member(self, prefix=None, suffix=None):
+        """Represents this name as a data member name in Chromium C++ style.
+
+        i.e. snake_case_with_trailing_underscore_.
+        """
         lower_prefix = prefix.lower() + '_' if prefix else ''
         lower_suffix = suffix.lower() + '_' if suffix else ''
         return lower_prefix + self.to_snake_case() + '_' + lower_suffix

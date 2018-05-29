@@ -123,10 +123,5 @@ def enum_value_name(words):
 
 
 @naming_style
-def class_name(words):
-    return _upper_camel_case(words)
-
-
-@naming_style
 def method_name(words):
     return _upper_camel_case(words)

@@ -5,7 +5,7 @@
 from itertools import chain
 
 from blinkbuild.name_style_converter import NameStyleConverter
-from name_utilities import class_name, enum_value_name, method_name
+from name_utilities import enum_value_name, method_name
 
 
 def _flatten_list(x):
@@ -42,9 +42,9 @@ class Group(object):
         self.fields = fields
         self.parent = None
 
-        name = name or ''
-        self.type_name = class_name(['style', name, 'data'])
-        self.member_name = NameStyleConverter(name).to_class_data_member(suffix='data')
+        converter = NameStyleConverter(name or '')
+        self.type_name = converter.to_class_name(prefix='style', suffix='data')
+        self.member_name = converter.to_class_data_member(suffix='data')
         self.num_32_bit_words_for_bit_fields = _num_32_bit_words_for_bit_fields(
             field for field in fields if field.is_bit_field
         )
