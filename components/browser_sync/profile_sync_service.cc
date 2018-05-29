@@ -611,12 +611,16 @@ void ProfileSyncService::AccessTokenFetched(
     if (HasSyncingEngine()) {
       engine_->UpdateCredentials(auth_manager_->GetCredentials());
     } else {
+      // TODO(treib): Can this happen? We only ever request an access token
+      // after the engine already exists.
       startup_controller_->TryStart();
     }
   }
   // Else: Some error happened. SyncAuthManager takes care of that (retry if
   // appropriate etc), so there's nothing for us to do here.
 
+  // Whether or not the fetch was successful, the visible auth error state might
+  // have changed, so let our observers know.
   NotifyObservers();
 }
 
@@ -625,8 +629,6 @@ void ProfileSyncService::OnRefreshTokenAvailable() {
 
   if (HasSyncingEngine()) {
     auth_manager_->RequestAccessToken();
-  } else {
-    startup_controller_->TryStart();
   }
 }
 
@@ -1018,7 +1020,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // TODO(lipalani) : if setup in progress we want to display these
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.
-      if (startup_controller_->IsSetupInProgress()) {
+      if (IsSetupInProgress()) {
         RequestStop(CLEAR_DATA);
         expect_sync_configuration_aborted_ = true;
       }
@@ -1274,6 +1276,8 @@ bool ProfileSyncService::IsSyncAllowed() const {
 
 bool ProfileSyncService::IsSyncActive() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(treib): Should this check that the state is CONFIGURED? Seems wrong to
+  // say IsSyncActive() == true while it's CONFIGURING or RETRYING.
   return engine_initialized_ && data_type_manager_ &&
          data_type_manager_->state() != DataTypeManager::STOPPED;
 }
@@ -1741,6 +1745,8 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 void ProfileSyncService::OnPrimaryAccountSet() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!engine_);
+
+  startup_controller_->TryStart();
 }
 
 void ProfileSyncService::OnPrimaryAccountCleared() {

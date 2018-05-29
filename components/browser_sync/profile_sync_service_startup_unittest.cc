@@ -170,6 +170,9 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
   }
 };
 
+// ChromeOS does not support sign-in after startup (in particular,
+// IdentityManager::Observer::OnPrimaryAccountSet never gets called).
+#if !defined(OS_CHROMEOS)
 TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
@@ -177,6 +180,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   SetUpSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::STOPPED));
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
@@ -187,29 +192,53 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_EQ(0, pref_service()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
   EXPECT_FALSE(
       pref_service()->GetBoolean(syncer::prefs::kSyncFirstSetupComplete));
-  Mock::VerifyAndClearExpectations(data_type_manager);
-
-  // Then start things up.
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
-  EXPECT_CALL(*data_type_manager, state())
-      .WillOnce(Return(DataTypeManager::CONFIGURED))
-      .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged(_)).Times(AnyNumber());
-
-  auto sync_blocker = sync_service_->GetSetupInProgressHandle();
 
   // Confirmation isn't needed before sign in occurs.
   EXPECT_FALSE(sync_service_->IsSyncConfirmationNeeded());
+  EXPECT_FALSE(sync_service_->IsSyncActive());
 
-  // Simulate successful signin as test_user.
+  // This tells the ProfileSyncService that setup is now in progress, which
+  // causes it to try starting up the engine. We're not signed in yet though, so
+  // that won't work.
+  auto sync_blocker = sync_service_->GetSetupInProgressHandle();
+  EXPECT_FALSE(sync_service_->IsSyncActive());
+
+  EXPECT_FALSE(sync_service_->IsEngineInitialized());
+
+  // Confirmation isn't needed before sign in occurs, or when setup is already
+  // in progress.
+  EXPECT_FALSE(sync_service_->IsSyncConfirmationNeeded());
+
+  // Simulate successful signin as test_user. This will cause ProfileSyncService
+  // to start, since all conditions are now fulfilled.
   SimulateTestUserSignin();
+
+  // Now we're signed in, so the engine can start.
+  EXPECT_TRUE(sync_service_->IsEngineInitialized());
+
+  // Sync itself still isn't active though while setup is in progress.
+  EXPECT_FALSE(sync_service_->IsSyncActive());
+
+  // Setup is already in progress, so confirmation still isn't needed.
+  EXPECT_FALSE(sync_service_->IsSyncConfirmationNeeded());
+
+  // Releasing the sync blocker will let ProfileSyncService configure the
+  // DataTypeManager.
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
+  EXPECT_CALL(*data_type_manager, state())
+      .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
 
   // Simulate the UI telling sync it has finished setting up.
   sync_blocker.reset();
   sync_service_->SetFirstSetupComplete();
+
+  // This should have enabled sync.
   EXPECT_TRUE(sync_service_->IsSyncActive());
+  EXPECT_FALSE(sync_service_->IsSyncConfirmationNeeded());
+
+  EXPECT_CALL(*data_type_manager, Stop());
 }
+#endif  // OS_CHROMEOS
 
 // TODO(pavely): Reenable test once android is switched to oauth2.
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {

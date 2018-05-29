@@ -414,7 +414,9 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsSyncAllowedByPlatform() const;
 
   // Whether sync is currently blocked from starting because the sync
-  // confirmation dialog hasn't been confirmed.
+  // confirmation dialog hasn't been shown. Note that once the dialog is
+  // showing (i.e. IsFirstSetupInProgress() is true), this will return false.
+  // TODO(crbug.com/839834): This method is somewhat misnamed.
   virtual bool IsSyncConfirmationNeeded() const;
 
   // Returns whether sync is managed, i.e. controlled by configuration

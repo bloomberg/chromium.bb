@@ -73,13 +73,17 @@ HttpBridgeFactory::HttpBridgeFactory(
   // This registration is happening on the Sync thread, while signalling occurs
   // on the UI thread. We must handle the possibility signalling has already
   // occurred.
-  if (!cancelation_signal_->TryRegisterHandler(this)) {
+  if (cancelation_signal_->TryRegisterHandler(this)) {
+    registered_for_cancelation_ = true;
+  } else {
     OnSignalReceived();
   }
 }
 
 HttpBridgeFactory::~HttpBridgeFactory() {
-  cancelation_signal_->UnregisterHandler(this);
+  if (registered_for_cancelation_) {
+    cancelation_signal_->UnregisterHandler(this);
+  }
 }
 
 void HttpBridgeFactory::Init(

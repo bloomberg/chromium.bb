@@ -218,6 +218,7 @@ class HttpBridgeFactory : public HttpPostProviderFactory,
   NetworkTimeUpdateCallback network_time_update_callback_;
 
   CancelationSignal* const cancelation_signal_;
+  bool registered_for_cancelation_ = false;
 
   // A callback to tag Sync request to be able to record data use of this
   // service by data_use_measurement component.
