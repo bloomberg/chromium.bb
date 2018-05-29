@@ -615,17 +615,21 @@ def _CalculateCompressedSize(file_path):
 
 
 def _PrintDexAnalysis(apk_filename, chartjson=None):
-  sizes = method_count.ExtractSizesFromZip(apk_filename)
+  sizes, total_size = method_count.ExtractSizesFromZip(apk_filename)
 
   graph_title = os.path.basename(apk_filename) + '_Dex'
   dex_metrics = method_count.CONTRIBUTORS_TO_DEX_CACHE
+  cumulative_sizes = collections.defaultdict(int)
+  for classes_dex_sizes in sizes.values():
+    for key in dex_metrics:
+      cumulative_sizes[key] += classes_dex_sizes[key]
   for key, label in dex_metrics.iteritems():
     perf_tests_results_helper.ReportPerfResult(chartjson, graph_title, label,
-                                               sizes[key], 'entries')
+                                               cumulative_sizes[key], 'entries')
 
   graph_title = '%sCache' % graph_title
   perf_tests_results_helper.ReportPerfResult(chartjson, graph_title, 'DexCache',
-                                             sizes['dex_cache_size'], 'bytes')
+                                             total_size, 'bytes')
 
 
 def _PrintPatchSizeEstimate(new_apk, builder, bucket, chartjson=None):
