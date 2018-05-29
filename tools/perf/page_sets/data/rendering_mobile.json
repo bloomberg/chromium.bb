@@ -1,21 +1,21 @@
 {
     "archives": {
-        "espn": {
+        "espn_mobile": {
             "DEFAULT": "key_mobile_sites_012.wprgo"
         },
-        "espn_sync_scroll": {
+        "espn_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_012.wprgo"
         },
-        "twitter": {
+        "twitter_mobile": {
             "DEFAULT": "key_mobile_sites_011.wprgo"
         },
-        "twitter_sync_scroll": {
+        "twitter_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_011.wprgo"
         },
-        "wikipedia": {
+        "wikipedia_mobile": {
             "DEFAULT": "key_mobile_sites_009.wprgo"
         },
-        "wikipedia_sync_scroll": {
+        "wikipedia_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_009.wprgo"
         },
         "wikipedia_delayed_scroll_start": {
@@ -24,409 +24,409 @@
         "wikipedia_delayed_scroll_start_sync_scroll": {
             "DEFAULT": "key_mobile_sites_009.wprgo"
         },
-        "yahoo_answers": {
+        "yahoo_answers_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "yahoo_answers_sync_scroll": {
+        "yahoo_answers_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "cuteoverload": {
+        "cuteoverload_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "cuteoverload_sync_scroll": {
+        "cuteoverload_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "digg": {
+        "digg_mobile": {
             "DEFAULT": "key_mobile_sites_014.wprgo"
         },
-        "digg_sync_scroll": {
+        "digg_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_014.wprgo"
         },
-        "wordpress": {
+        "wordpress_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "wordpress_sync_scroll": {
+        "wordpress_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "forecast.io": {
+        "forecast.io_mobile": {
             "DEFAULT": "key_mobile_sites_013.wprgo"
         },
-        "forecast.io_sync_scroll": {
+        "forecast.io_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_013.wprgo"
         },
-        "usatoday": {
+        "usatoday_mobile": {
             "DEFAULT": "key_mobile_sites_007.wprgo"
         },
-        "usatoday_sync_scroll": {
+        "usatoday_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_007.wprgo"
         },
-        "blogspot": {
+        "blogspot_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "blogspot_sync_scroll": {
+        "blogspot_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "gsp.ro": {
+        "gsp.ro_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "gsp.ro_sync_scroll": {
+        "gsp.ro_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "capitolvolkswagen": {
+        "capitolvolkswagen_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "capitolvolkswagen_sync_scroll": {
+        "capitolvolkswagen_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "youtube": {
+        "youtube_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "youtube_sync_scroll": {
+        "youtube_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "mlb": {
+        "mlb_mobile": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         },
-        "mlb_sync_scroll": {
+        "mlb_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         },
-        "google_news": {
+        "google_news_mobile": {
             "DEFAULT": "key_mobile_sites_006.wprgo"
         },
-        "google_news_sync_scroll": {
+        "google_news_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_006.wprgo"
         },
-        "yahoo_news": {
+        "yahoo_news_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "yahoo_news_sync_scroll": {
+        "yahoo_news_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "nytimes": {
+        "nytimes_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "nytimes_sync_scroll": {
+        "nytimes_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "wsj": {
+        "wsj_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "wsj_sync_scroll": {
+        "wsj_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "pinterest": {
+        "pinterest_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "pinterest_sync_scroll": {
+        "pinterest_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "ebay": {
+        "ebay_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "ebay_sync_scroll": {
+        "ebay_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "slashdot": {
+        "slashdot_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "slashdot_sync_scroll": {
+        "slashdot_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "yahoo_sports": {
+        "yahoo_sports_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "yahoo_sports_sync_scroll": {
+        "yahoo_sports_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "techcrunch": {
+        "techcrunch_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "techcrunch_sync_scroll": {
+        "techcrunch_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "theverge": {
+        "theverge_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "theverge_sync_scroll": {
+        "theverge_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "worldjournal": {
+        "worldjournal_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "worldjournal_sync_scroll": {
+        "worldjournal_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "amazon": {
+        "amazon_mobile": {
             "DEFAULT": "key_mobile_sites_015.wprgo"
         },
-        "amazon_sync_scroll": {
+        "amazon_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_015.wprgo"
         },
-        "androidpolice": {
+        "androidpolice_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "androidpolice_sync_scroll": {
+        "androidpolice_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "baidu": {
+        "baidu_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "baidu_sync_scroll": {
+        "baidu_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "bing": {
+        "bing_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "bing_sync_scroll": {
+        "bing_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "boingboing": {
+        "boingboing_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "boingboing_sync_scroll": {
+        "boingboing_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "booking.com": {
+        "booking.com_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "booking.com_sync_scroll": {
+        "booking.com_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "cnn": {
+        "cnn_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "cnn_sync_scroll": {
+        "cnn_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "cnn_article": {
+        "cnn_article_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "cnn_article_sync_scroll": {
+        "cnn_article_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "deviantart": {
+        "deviantart_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "deviantart_sync_scroll": {
+        "deviantart_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "latimes": {
+        "latimes_mobile": {
             "DEFAULT": "key_mobile_sites_007.wprgo"
         },
-        "latimes_sync_scroll": {
+        "latimes_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_007.wprgo"
         },
-        "reddit": {
+        "reddit_mobile": {
             "DEFAULT": "key_mobile_sites_010.wprgo"
         },
-        "reddit_sync_scroll": {
+        "reddit_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_010.wprgo"
         },
-        "sfgate": {
+        "sfgate_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "sfgate_sync_scroll": {
+        "sfgate_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "theverge_article": {
+        "theverge_article_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "theverge_article_sync_scroll": {
+        "theverge_article_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "wowwiki": {
+        "wowwiki_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "wowwiki_sync_scroll": {
+        "wowwiki_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "facebook": {
+        "facebook_mobile": {
             "DEFAULT": "key_mobile_sites_003.wprgo"
         },
-        "facebook_sync_scroll": {
+        "facebook_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_003.wprgo"
         },
-        "gmail": {
+        "gmail_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "gmail_sync_scroll": {
+        "gmail_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "google_plus": {
+        "google_plus_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "google_plus_sync_scroll": {
+        "google_plus_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "google_web_search": {
+        "google_web_search_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "google_web_search_sync_scroll": {
+        "google_web_search_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "google_calendar": {
+        "google_calendar_mobile": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "google_calendar_sync_scroll": {
+        "google_calendar_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_000.wprgo"
         },
-        "linkedin": {
+        "linkedin_mobile": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         },
-        "linkedin_sync_scroll": {
+        "linkedin_mobile_sync_scroll": {
             "DEFAULT": "key_mobile_sites_002.wprgo"
         },
-        "google_docs_desktop": {
+        "google_docs": {
             "DEFAULT": "top_25_009.wprgo"
         },
         "google_docs_desktop_gpu_raster": {
             "DEFAULT": "top_25_009.wprgo"
         },
-        "facebook_desktop": {
+        "facebook": {
             "DEFAULT": "top_25_003.wprgo"
         },
         "facebook_desktop_gpu_raster": {
             "DEFAULT": "top_25_003.wprgo"
         },
-        "wikipedia_desktop": {
+        "wikipedia": {
             "DEFAULT": "top_25_004.wprgo"
         },
         "wikipedia_desktop_gpu_raster": {
             "DEFAULT": "top_25_004.wprgo"
         },
-        "yahoo_answers_desktop": {
+        "yahoo_answers": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "yahoo_answers_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "booking.com_desktop": {
+        "booking.com": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "booking.com_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "wordpress_desktop": {
+        "wordpress": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "wordpress_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "espn_desktop": {
+        "espn": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "espn_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "yahoo_games_desktop": {
+        "yahoo_games": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "yahoo_games_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "blogspot_desktop": {
+        "blogspot": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "blogspot_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "yahoo_news_desktop": {
+        "yahoo_news": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "yahoo_news_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "pinterest_desktop": {
+        "pinterest": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "pinterest_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "yahoo_sports_desktop": {
+        "yahoo_sports": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "yahoo_sports_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "techcrunch_desktop": {
+        "techcrunch": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "techcrunch_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "amazon_desktop": {
+        "amazon": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "amazon_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "cnn_desktop": {
+        "cnn": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "cnn_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "ebay_desktop": {
+        "ebay": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "ebay_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "linkedin_desktop": {
+        "linkedin": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "linkedin_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "weather.com_desktop": {
+        "weather.com": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "weather.com_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "youtube_desktop": {
+        "youtube": {
             "DEFAULT": "top_25_011.wprgo"
         },
         "youtube_desktop_gpu_raster": {
             "DEFAULT": "top_25_011.wprgo"
         },
-        "google_drive_desktop": {
+        "google_drive": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "google_drive_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "gmail_desktop": {
+        "gmail": {
             "DEFAULT": "top_25_006.wprgo"
         },
         "gmail_desktop_gpu_raster": {
             "DEFAULT": "top_25_006.wprgo"
         },
-        "google_plus_desktop": {
+        "google_plus": {
             "DEFAULT": "top_25_010.wprgo"
         },
         "google_plus_desktop_gpu_raster": {
             "DEFAULT": "top_25_010.wprgo"
         },
-        "twitter_desktop": {
+        "twitter": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "twitter_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "google_web_search_desktop": {
+        "google_web_search": {
             "DEFAULT": "top_25_000.wprgo"
         },
         "google_web_search_desktop_gpu_raster": {
             "DEFAULT": "top_25_000.wprgo"
         },
-        "google_calendar_desktop": {
+        "google_calendar": {
             "DEFAULT": "top_25_008.wprgo"
         },
         "google_calendar_desktop_gpu_raster": {
             "DEFAULT": "top_25_008.wprgo"
         },
-        "google_image_search_desktop": {
+        "google_image_search": {
             "DEFAULT": "top_25_007.wprgo"
         },
         "google_image_search_desktop_gpu_raster": {

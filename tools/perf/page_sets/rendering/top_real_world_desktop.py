@@ -8,7 +8,7 @@ from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 
 
-class TopRealWorldPage(rendering_story.RenderingStory):
+class TopRealWorldDesktopPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
   TAGS = [story_tags.GPU_RASTERIZATION]
 
@@ -17,7 +17,7 @@ class TopRealWorldPage(rendering_story.RenderingStory):
                shared_page_state_class,
                name_suffix='',
                extra_browser_args=None):
-    super(TopRealWorldPage, self).__init__(
+    super(TopRealWorldDesktopPage, self).__init__(
         page_set=page_set,
         shared_page_state_class=shared_page_state_class,
         name_suffix=name_suffix,
@@ -33,7 +33,7 @@ class TopRealWorldPage(rendering_story.RenderingStory):
             action_runner.ScrollPage(direction='down')
 
 
-class GoogleWebSearchPage(TopRealWorldPage):
+class GoogleWebSearchPage(TopRealWorldDesktopPage):
   """ Why: top google property; a google tab is often open """
   BASE_NAME = 'google_web_search'
   URL = 'https://www.google.com/#hl=en&q=barack+obama'
@@ -54,7 +54,7 @@ class GoogleWebSearchPage(TopRealWorldPage):
     action_runner.WaitForElement(text='Next')
 
 
-class GoogleImageSearchPage(TopRealWorldPage):
+class GoogleImageSearchPage(TopRealWorldDesktopPage):
   """ Why: tough image case; top google properties """
   BASE_NAME = 'google_image_search'
   URL = 'https://www.google.com/search?q=cats&tbm=isch'
@@ -75,7 +75,7 @@ class GoogleImageSearchPage(TopRealWorldPage):
     super(GoogleImageSearchPage, self).RunNavigateSteps(action_runner)
 
 
-class GmailPage(TopRealWorldPage):
+class GmailPage(TopRealWorldDesktopPage):
   """ Why: productivity, top google properties """
   ABSTRACT_STORY = True
   URL = 'https://mail.google.com/mail/'
@@ -99,7 +99,7 @@ class GmailPage(TopRealWorldPage):
         'document.getElementById("gb") !== null')
 
 
-class GoogleCalendarPage(TopRealWorldPage):
+class GoogleCalendarPage(TopRealWorldDesktopPage):
   """ Why: productivity, top google properties """
   ABSTRACT_STORY = True
   URL='https://www.google.com/calendar/'
@@ -130,7 +130,7 @@ class GoogleCalendarPage(TopRealWorldPage):
     action_runner.Wait(1)
 
 
-class GoogleDocPage(TopRealWorldPage):
+class GoogleDocPage(TopRealWorldDesktopPage):
   """ Why: productivity, top google properties; Sample doc in the link """
   ABSTRACT_STORY = True
   # pylint: disable=line-too-long
@@ -155,7 +155,7 @@ class GoogleDocPage(TopRealWorldPage):
         'document.getElementsByClassName("kix-appview-editor").length')
 
 
-class GooglePlusPage(TopRealWorldPage):
+class GooglePlusPage(TopRealWorldDesktopPage):
   """ Why: social; top google property; Public profile; infinite scrolls """
   BASE_NAME = 'google_plus'
   URL = 'https://plus.google.com/110031535020051778989/posts'
@@ -177,7 +177,7 @@ class GooglePlusPage(TopRealWorldPage):
     action_runner.WaitForElement(text='Home')
 
 
-class YoutubePage(TopRealWorldPage):
+class YoutubePage(TopRealWorldDesktopPage):
   """ Why: #3 (Alexa global) """
   BASE_NAME = 'youtube'
   URL = 'http://www.youtube.com'
@@ -199,7 +199,7 @@ class YoutubePage(TopRealWorldPage):
     action_runner.Wait(2)
 
 
-class BlogspotPage(TopRealWorldPage):
+class BlogspotPage(TopRealWorldDesktopPage):
   """ Why: #11 (Alexa global), google property; some blogger layouts have
   infinite scroll but more interesting """
   BASE_NAME = 'blogspot'
@@ -221,7 +221,7 @@ class BlogspotPage(TopRealWorldPage):
     action_runner.WaitForElement(text='accessibility')
 
 
-class WordpressPage(TopRealWorldPage):
+class WordpressPage(TopRealWorldDesktopPage):
   """ Why: #18 (Alexa global), Picked an interesting post """
   BASE_NAME = 'wordpress'
   # pylint: disable=line-too-long
@@ -246,7 +246,7 @@ class WordpressPage(TopRealWorldPage):
     )
 
 
-class FacebookPage(TopRealWorldPage):
+class FacebookPage(TopRealWorldDesktopPage):
   """ Why: top social,Public profile """
   BASE_NAME = 'facebook'
   URL = 'https://www.facebook.com/barackobama'
@@ -267,7 +267,7 @@ class FacebookPage(TopRealWorldPage):
     action_runner.WaitForElement(text='Videos')
 
 
-class LinkedinPage(TopRealWorldPage):
+class LinkedinPage(TopRealWorldDesktopPage):
   """ Why: #12 (Alexa global), Public profile. """
   BASE_NAME = 'linkedin'
   URL = 'http://www.linkedin.com/in/linustorvalds'
@@ -284,7 +284,7 @@ class LinkedinPage(TopRealWorldPage):
         extra_browser_args=extra_browser_args)
 
 
-class WikipediaPage(TopRealWorldPage):
+class WikipediaPage(TopRealWorldDesktopPage):
   """ Why: #6 (Alexa) most visited worldwide,Picked an interesting page. """
   BASE_NAME = 'wikipedia'
   URL = 'http://en.wikipedia.org/wiki/Wikipedia'
@@ -301,7 +301,7 @@ class WikipediaPage(TopRealWorldPage):
         extra_browser_args=extra_browser_args)
 
 
-class TwitterPage(TopRealWorldPage):
+class TwitterPage(TopRealWorldDesktopPage):
   """ Why: #8 (Alexa global),Picked an interesting page """
   BASE_NAME = 'twitter'
   URL = 'https://twitter.com/katyperry'
@@ -322,7 +322,7 @@ class TwitterPage(TopRealWorldPage):
     action_runner.Wait(2)
 
 
-class PinterestPage(TopRealWorldPage):
+class PinterestPage(TopRealWorldDesktopPage):
   """ Why: #37 (Alexa global) """
   BASE_NAME = 'pinterest'
   URL = 'http://pinterest.com'
@@ -339,7 +339,7 @@ class PinterestPage(TopRealWorldPage):
         extra_browser_args=extra_browser_args)
 
 
-class ESPNPage(TopRealWorldPage):
+class ESPNPage(TopRealWorldDesktopPage):
   """ Why: #1 sports """
   ABSTRACT_STORY = True
   URL = 'http://espn.go.com'
@@ -356,7 +356,7 @@ class ESPNPage(TopRealWorldPage):
         extra_browser_args=extra_browser_args)
 
 
-class WeatherPage(TopRealWorldPage):
+class WeatherPage(TopRealWorldDesktopPage):
   """ Why: #7 (Alexa news); #27 total time spent, picked interesting page. """
   BASE_NAME = 'weather.com'
   URL = 'http://www.weather.com/weather/right-now/Mountain+View+CA+94043'
@@ -373,7 +373,7 @@ class WeatherPage(TopRealWorldPage):
         extra_browser_args=extra_browser_args)
 
 
-class YahooGamesPage(TopRealWorldPage):
+class YahooGamesPage(TopRealWorldDesktopPage):
   """ Why: #1 games according to Alexa (with actual games in it) """
   BASE_NAME = 'yahoo_games'
   URL = 'http://games.yahoo.com'
@@ -465,50 +465,50 @@ class ESPNSmoothPage(ESPNPage):
           action_runner.ScrollPage(direction='down', left_start_ratio=0.1)
 
 
-class YahooNewsPage(TopRealWorldPage):
+class YahooNewsPage(TopRealWorldDesktopPage):
   """Why: #1 news worldwide (Alexa global)"""
   BASE_NAME = 'yahoo_news'
   URL = 'http://news.yahoo.com'
 
 
-class CNNNewsPage(TopRealWorldPage):
+class CNNNewsPage(TopRealWorldDesktopPage):
   """Why: #2 news worldwide"""
   BASE_NAME = 'cnn'
   URL = 'http://www.cnn.com'
 
 
-class AmazonPage(TopRealWorldPage):
+class AmazonPage(TopRealWorldDesktopPage):
   # Why: #1 world commerce website by visits; #3 commerce in the US by
   # time spent
   BASE_NAME = 'amazon'
   URL = 'http://www.amazon.com'
 
 
-class EbayPage(TopRealWorldPage):
+class EbayPage(TopRealWorldDesktopPage):
   # Why: #1 commerce website by time spent by users in US
   BASE_NAME = 'ebay'
   URL = 'http://www.ebay.com'
 
 
-class BookingPage(TopRealWorldPage):
+class BookingPage(TopRealWorldDesktopPage):
   # Why: #1 Alexa recreation
   BASE_NAME = 'booking.com'
   URL = 'http://booking.com'
 
 
-class YahooAnswersPage(TopRealWorldPage):
+class YahooAnswersPage(TopRealWorldDesktopPage):
   # Why: #1 Alexa reference
   BASE_NAME = 'yahoo_answers'
   URL = 'http://answers.yahoo.com'
 
 
-class YahooSportsPage(TopRealWorldPage):
+class YahooSportsPage(TopRealWorldDesktopPage):
   # Why: #1 Alexa sports
   BASE_NAME = 'yahoo_sports'
   URL = 'http://sports.yahoo.com/'
 
 
-class TechCrunchPage(TopRealWorldPage):
+class TechCrunchPage(TopRealWorldDesktopPage):
   # Why: top tech blog
   BASE_NAME = 'techcrunch'
   URL = 'http://techcrunch.com'

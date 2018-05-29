@@ -34,7 +34,6 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
 class RenderingMobile(perf_benchmark.PerfBenchmark):
 
   test = rendering.Rendering
-  page_set = page_sets.RenderingMobilePageSet
   SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
@@ -47,3 +46,6 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
                       help='If set, continuously scroll up and down forever. '
                            'This is useful for analysing scrolling behaviour '
                            'with tools such as perf.')
+
+  def CreateStorySet(self, options):
+    return page_sets.RenderingStorySet(platform='mobile')
