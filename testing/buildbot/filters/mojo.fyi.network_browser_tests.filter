@@ -27,13 +27,6 @@
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
 
-# Add a testing method to call AddHPKP in NetworkContext.
-# https://crbug.com/844034
--PKPModelClientTest.PKPBypass/0
--PKPModelClientTest.PKPBypass/1
--PKPModelClientTest.PKPEnforced/0
--PKPModelClientTest.PKPEnforced/1
-
 # https://crbug.com/721398
 -WebViewTest.ClearDataCache
 
