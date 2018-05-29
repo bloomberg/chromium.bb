@@ -23,7 +23,7 @@
 #include "components/arc/test/fake_timer_instance.h"
 #include "components/arc/test/test_browser_context.h"
 #include "components/arc/timer/arc_timer_bridge.h"
-#include "components/arc/timer/arc_timer_traits.h"
+#include "components/arc/timer/arc_timer_struct_traits.h"
 #include "components/arc/timer/create_timer_request.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"

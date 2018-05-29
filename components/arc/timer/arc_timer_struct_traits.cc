@@ -4,8 +4,7 @@
 
 #include <utility>
 
-#include "base/posix/unix_domain_socket.h"
-#include "components/arc/timer/arc_timer_traits.h"
+#include "components/arc/timer/arc_timer_struct_traits.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 

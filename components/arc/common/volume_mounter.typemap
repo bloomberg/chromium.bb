@@ -9,9 +9,10 @@ public_headers = [
   "//chromeos/dbus/dbus_client_implementation_type.h",
   "//chromeos/disks/disk_mount_manager.h",
 ]
-traits_headers = [ "//components/arc/volume_mounter/volume_mounter_traits.h" ]
+traits_headers =
+    [ "//components/arc/volume_mounter/volume_mounter_struct_traits.h" ]
 sources = [
-  "//components/arc/volume_mounter/volume_mounter_traits.cc",
+  "//components/arc/volume_mounter/volume_mounter_struct_traits.cc",
 ]
 type_mappings = [
   "arc.mojom.DeviceType=chromeos::DeviceType",
