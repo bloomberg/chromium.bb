@@ -655,6 +655,7 @@ blink_core_sources("css") {
     "properties/longhands/translate_custom.cc",
     "properties/longhands/unicode_bidi_custom.cc",
     "properties/longhands/user_select_custom.cc",
+    "properties/longhands/variable.cc",
     "properties/longhands/variable.h",
     "properties/longhands/vector_effect_custom.cc",
     "properties/longhands/vertical_align_custom.cc",

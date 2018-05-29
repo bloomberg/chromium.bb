@@ -9,13 +9,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHANDS_VARIABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHANDS_VARIABLE_H_
 
-#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
 
 namespace blink {
 
-class Variable final : public CSSProperty {
+class Variable final : public Longhand {
  public:
-  constexpr Variable() : CSSProperty() {}
+  constexpr Variable() : Longhand() {}
 
   bool IsInherited() const override { return true; }
   bool IsAffectedByAll() const override { return false; }
@@ -34,6 +34,9 @@ class Variable final : public CSSProperty {
     NOTREACHED();
     return nullptr;
   }
+
+  void ApplyValue(StyleResolverState& state,
+                  const CSSValue& value) const override;
 };
 
 }  // namespace blink

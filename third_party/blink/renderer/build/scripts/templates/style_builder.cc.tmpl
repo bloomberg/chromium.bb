@@ -48,7 +48,7 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
     case CSSPropertyVariable:
       DCHECK(!isInitial);
       DCHECK(!isInherit);
-      StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
+      ToLonghand(property).ApplyValue(state, value);
       return;
     default:
       NOTREACHED();
