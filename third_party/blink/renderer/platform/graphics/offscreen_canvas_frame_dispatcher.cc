@@ -129,8 +129,14 @@ void OffscreenCanvasFrameDispatcher::DispatchFrameSync(
     scoped_refptr<StaticBitmapImage> image,
     double commit_start_time,
     const SkIRect& damage_rect) {
+  scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
+      std::move(image),
+      nullptr,  // Resource provider not specified -> recycling will not work
+      kLow_SkFilterQuality, CanvasColorParams());
+
   viz::CompositorFrame frame;
-  if (!PrepareFrame(std::move(image), commit_start_time, damage_rect, &frame))
+  if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
+                    &frame))
     return;
 
   pending_compositor_frames_++;
@@ -145,8 +151,14 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
     scoped_refptr<StaticBitmapImage> image,
     double commit_start_time,
     const SkIRect& damage_rect) {
+  scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
+      std::move(image),
+      nullptr,  // Resource provider not specified -> recycling will not work
+      kLow_SkFilterQuality, CanvasColorParams());
+
   viz::CompositorFrame frame;
-  if (!PrepareFrame(std::move(image), commit_start_time, damage_rect, &frame))
+  if (!PrepareFrame(std::move(canvas_resource), commit_start_time, damage_rect,
+                    &frame))
     return;
 
   pending_compositor_frames_++;
@@ -156,10 +168,11 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
 }
 
 bool OffscreenCanvasFrameDispatcher::PrepareFrame(
-    scoped_refptr<StaticBitmapImage> image,
+    scoped_refptr<CanvasResource> image,
     double commit_start_time,
     const SkIRect& damage_rect,
     viz::CompositorFrame* frame) {
+  DCHECK(image->IsBitmap());
   if (!image || !VerifyImageSize(image->Size()))
     return false;
 
@@ -167,14 +180,8 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
 
   // For frameless canvas, we don't get a valid frame_sink_id and should drop.
   if (!frame_sink_id_.is_valid()) {
-    scoped_refptr<CanvasResource> canvas_resource =
-        CanvasResourceBitmap::Create(std::move(image),
-                                     nullptr,  // Resource provider not
-                                               // specified -> recycling will
-                                               // not work
-                                     kLow_SkFilterQuality, CanvasColorParams());
     PostImageToPlaceholderIfNotBlocked(
-        std::move(canvas_resource),
+        std::move(image),
         offscreen_canvas_resource_provider_->GetNextResourceId());
     return false;
   }
@@ -214,7 +221,7 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, commit_type_histogram,
       ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
-  if (image->IsTextureBacked()) {
+  if (image->IsAccelerated()) {
     // While |image| is texture backed, it could be generated with "software
     // rendering" aka swiftshader. If the compositor is not also using
     // swiftshader, then we could not give a swiftshader based texture
@@ -224,20 +231,22 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
       // Case 1: both canvas and compositor are gpu accelerated.
       commit_type = kCommitGPUCanvasGPUCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToStaticBitmapImage(resource, image);
+          ->SetTransferableResourceToStaticBitmapImage(resource,
+                                                       image->Bitmap());
       yflipped = true;
     } else {
       // Case 2: canvas is accelerated but gpu compositing is disabled.
       commit_type = kCommitGPUCanvasSoftwareCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToSharedBitmap(resource, image);
+          ->SetTransferableResourceToSharedBitmap(resource, image->Bitmap());
     }
   } else {
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       // Case 3: canvas is not gpu-accelerated, but compositor is.
       commit_type = kCommitSoftwareCanvasGPUCompositing;
       scoped_refptr<StaticBitmapImage> accelerated_image =
-          image->MakeAccelerated(SharedGpuContext::ContextProviderWrapper());
+          image->Bitmap()->MakeAccelerated(
+              SharedGpuContext::ContextProviderWrapper());
       if (!accelerated_image)
         return false;
       offscreen_canvas_resource_provider_
@@ -247,19 +256,14 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
       // Case 4: both canvas and compositor are not gpu accelerated.
       commit_type = kCommitSoftwareCanvasSoftwareCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToSharedBitmap(resource, image);
+          ->SetTransferableResourceToSharedBitmap(resource, image->Bitmap());
     }
   }
 
   commit_type_histogram.Count(commit_type);
 
-  scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
-      std::move(image),
-      nullptr,  // Resource provider not specified -> recycling will not work
-      kLow_SkFilterQuality, CanvasColorParams());
-
   PostImageToPlaceholderIfNotBlocked(
-      std::move(canvas_resource),
+      std::move(image),
       offscreen_canvas_resource_provider_->GetNextResourceId());
 
   frame->resource_list.push_back(std::move(resource));

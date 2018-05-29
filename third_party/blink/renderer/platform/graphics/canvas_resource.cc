@@ -71,8 +71,8 @@ void CanvasResource::WaitSyncTokenBeforeRelease() {
     auto* gl = ContextGL();
     if (gl)
       gl->WaitSyncTokenCHROMIUM(sync_token_for_release_.GetData());
+    sync_token_for_release_.Clear();
   }
-  sync_token_for_release_.Clear();
 }
 
 static void ReleaseFrameResources(
