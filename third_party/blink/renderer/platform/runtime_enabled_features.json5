@@ -616,6 +616,12 @@
       name: "IntersectionObserverV2",
     },
     {
+      // Tracks "jank" from layout objects changing their visual location
+      // between animation frames (see crbug.com/581518).
+      name: "JankTracking",
+      status: "experimental",
+    },
+    {
       name: "JSImageDecode",
       status: "stable",
     },
