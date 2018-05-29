@@ -79,7 +79,8 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
         gfx::BufferFormat::BGR_565,   gfx::BufferFormat::RGBA_8888,
         gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::BGRA_8888,
         gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::UYVY_422,
-        gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR};
+        gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR,
+        gfx::BufferFormat::R_8};
     const gfx::BufferUsage kGPUReadWriteUsages[] = {
         gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
         gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
