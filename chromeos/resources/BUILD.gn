@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//tools/grit/grit_rule.gni")
+import("//chromeos/assistant/assistant.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
@@ -16,6 +17,8 @@ grit("resources") {
     "chromeos_resources.pak",
   ]
   output_dir = "$root_gen_dir/chromeos"
+
+  defines = [ "enable_cros_libassistant=$enable_cros_libassistant" ]
 
   grit_flags = [
     "-E",

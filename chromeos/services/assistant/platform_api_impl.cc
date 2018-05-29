@@ -78,7 +78,6 @@ PlatformApiImpl::PlatformApiImpl(
     device::mojom::BatteryMonitorPtr battery_monitor)
     : audio_input_provider_(std::move(audio_input)),
       audio_output_provider_(config, this),
-      resource_provider_(config),
       system_provider_(std::move(battery_monitor)) {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
