@@ -4468,13 +4468,6 @@ static_library("test_support_unit") {
       "//chrome/install_static/test:test_support",
     ]
   }
-
-  if (is_chromeos) {
-    deps = [
-      "//ash:test_support_with_content",
-      "//ash/public/cpp",
-    ]
-  }
 }
 
 if (is_win) {
