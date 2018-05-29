@@ -8,7 +8,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "net/http/http_util.h"
 
@@ -409,36 +408,51 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
 WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     void* browser_context,
     content::ResourceContext* resource_context,
-    InfoMap* info_map)
-    : RefCountedDeleteOnSequence(content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO)),
-      browser_context_(browser_context),
-      resource_context_(resource_context),
-      info_map_(info_map) {}
-
-void WebRequestProxyingURLLoaderFactory::StartProxying(
     int render_process_id,
     int render_frame_id,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+    InfoMap* info_map,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    base::OnceClosure on_disconnect) {
+    WebRequestAPI::ProxySet* proxies)
+    : browser_context_(browser_context),
+      resource_context_(resource_context),
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
+      navigation_ui_data_(std::move(navigation_ui_data)),
+      info_map_(info_map),
+      proxies_(proxies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  on_disconnect_ = std::move(on_disconnect);
-  render_process_id_ = render_process_id;
-  render_frame_id_ = render_frame_id;
-  navigation_ui_data_ = std::move(navigation_ui_data);
-
   target_factory_.Bind(std::move(target_factory_info));
   target_factory_.set_connection_error_handler(
       base::BindOnce(&WebRequestProxyingURLLoaderFactory::OnTargetFactoryError,
                      base::Unretained(this)));
-
   proxy_bindings_.AddBinding(this, std::move(loader_request));
   proxy_bindings_.set_connection_error_handler(base::BindRepeating(
       &WebRequestProxyingURLLoaderFactory::OnProxyBindingError,
       base::Unretained(this)));
+}
+
+void WebRequestProxyingURLLoaderFactory::StartProxying(
+    void* browser_context,
+    content::ResourceContext* resource_context,
+    int render_process_id,
+    int render_frame_id,
+    std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
+    InfoMap* info_map,
+    network::mojom::URLLoaderFactoryRequest loader_request,
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+    scoped_refptr<WebRequestAPI::ProxySet> proxies) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (proxies->is_shutdown())
+    return;
+
+  auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
+      browser_context, resource_context, render_process_id, render_frame_id,
+      std::move(navigation_ui_data), info_map, std::move(loader_request),
+      std::move(target_factory_info), proxies.get());
+
+  proxies->AddProxy(std::move(proxy));
 }
 
 void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
@@ -478,7 +492,7 @@ void WebRequestProxyingURLLoaderFactory::OnTargetFactoryError() {
   target_factory_.reset();
   if (proxy_bindings_.empty()) {
     // Deletes |this|.
-    std::move(on_disconnect_).Run();
+    proxies_->RemoveProxy(this);
   }
 }
 
@@ -486,7 +500,7 @@ void WebRequestProxyingURLLoaderFactory::OnProxyBindingError() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (proxy_bindings_.empty() && !target_factory_.is_bound()) {
     // Deletes |this|.
-    std::move(on_disconnect_).Run();
+    proxies_->RemoveProxy(this);
   }
 }
 

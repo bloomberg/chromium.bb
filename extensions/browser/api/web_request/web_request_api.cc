@@ -43,6 +43,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_event_details.h"
@@ -356,10 +357,39 @@ std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
 
 }  // namespace
 
+WebRequestAPI::ProxySet::ProxySet() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+WebRequestAPI::ProxySet::~ProxySet() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+void WebRequestAPI::ProxySet::AddProxy(std::unique_ptr<Proxy> proxy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!is_shutdown_);
+
+  proxies_.insert(std::move(proxy));
+}
+
+void WebRequestAPI::ProxySet::RemoveProxy(Proxy* proxy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto it = proxies_.find(proxy);
+  DCHECK(it != proxies_.end());
+  proxies_.erase(it);
+}
+
+void WebRequestAPI::ProxySet::Shutdown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  is_shutdown_ = true;
+
+  proxies_.clear();
+}
+
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context),
       info_map_(ExtensionSystem::Get(browser_context_)->info_map()),
-      weak_ptr_factory_(this) {
+      proxies_(base::MakeRefCounted<ProxySet>()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
@@ -373,7 +403,11 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
   }
 }
 
-WebRequestAPI::~WebRequestAPI() = default;
+WebRequestAPI::~WebRequestAPI() {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ProxySet::Shutdown, std::move(proxies_)));
+}
 
 void WebRequestAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
@@ -451,46 +485,20 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
         std::make_unique<ExtensionNavigationUIData>(frame, tab_id, window_id);
   }
 
-  auto proxy = base::MakeRefCounted<WebRequestProxyingURLLoaderFactory>(
-      frame->GetProcess()->GetBrowserContext(),
-      frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
-      info_map_);
-  proxies_.emplace(proxy.get(), proxy);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&WebRequestProxyingURLLoaderFactory::StartProxying, proxy,
-                     // Match the behavior of the WebRequestInfo constructor
-                     // which takes a net::URLRequest*.
-                     is_navigation ? -1 : frame->GetProcess()->GetID(),
-                     is_navigation ? MSG_ROUTING_NONE : frame->GetRoutingID(),
-                     std::move(navigation_ui_data), std::move(proxied_request),
-                     std::move(target_factory_info),
-                     base::BindOnce(&WebRequestAPI::RemoveProxyThreadSafe,
-                                    weak_ptr_factory_.GetWeakPtr(),
-                                    base::Unretained(proxy.get()))));
+      base::BindOnce(
+          &WebRequestProxyingURLLoaderFactory::StartProxying,
+          frame->GetProcess()->GetBrowserContext(),
+          frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
+          // Match the behavior of the WebRequestInfo constructor
+          // which takes a net::URLRequest*.
+          is_navigation ? -1 : frame->GetProcess()->GetID(),
+          is_navigation ? MSG_ROUTING_NONE : frame->GetRoutingID(),
+          std::move(navigation_ui_data), base::Unretained(info_map_),
+          std::move(proxied_request), std::move(target_factory_info),
+          proxies_));
   return true;
-}
-
-// static
-void WebRequestAPI::RemoveProxyThreadSafe(
-    base::WeakPtr<WebRequestAPI> weak_self,
-    WebRequestProxyingURLLoaderFactory* factory) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&WebRequestAPI::RemoveProxyThreadSafe, weak_self,
-                       base::Unretained(factory)));
-    return;
-  }
-  if (!weak_self)
-    return;
-  weak_self->RemoveProxy(factory);
-}
-
-void WebRequestAPI::RemoveProxy(WebRequestProxyingURLLoaderFactory* factory) {
-  auto it = proxies_.find(factory);
-  DCHECK(it != proxies_.end());
-  proxies_.erase(it);
 }
 
 // Represents a single unique listener to an event, along with whatever filter
