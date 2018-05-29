@@ -14,14 +14,13 @@ GLImageEGL::GLImageEGL(const gfx::Size& size)
 
 GLImageEGL::~GLImageEGL() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (egl_image_ != EGL_NO_IMAGE_KHR) {
-    EGLBoolean result =
-        eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
-    if (result == EGL_FALSE) {
-      DLOG(ERROR) << "Error destroying EGLImage: "
-                  << ui::GetLastEGLErrorString();
-    }
-  }
+  if (egl_image_ == EGL_NO_IMAGE_KHR)
+    return;
+
+  const EGLBoolean result =
+      eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+  if (result == EGL_FALSE)
+    DLOG(ERROR) << "Error destroying EGLImage: " << ui::GetLastEGLErrorString();
 }
 
 bool GLImageEGL::Initialize(EGLContext context,
@@ -32,12 +31,10 @@ bool GLImageEGL::Initialize(EGLContext context,
   DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
   egl_image_ = eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(), context,
                                  target, buffer, attrs);
-  if (egl_image_ == EGL_NO_IMAGE_KHR) {
+  const bool success = egl_image_ != EGL_NO_IMAGE_KHR;
+  if (!success)
     LOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
-    return false;
-  }
-
-  return true;
+  return success;
 }
 
 gfx::Size GLImageEGL::GetSize() {

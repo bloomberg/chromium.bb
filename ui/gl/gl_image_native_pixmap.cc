@@ -24,7 +24,6 @@
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
-#define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
 #define DRM_FORMAT_ABGR2101010 FOURCC('A', 'B', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
@@ -37,8 +36,7 @@ bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
     case GL_RGB:
       return format == gfx::BufferFormat::BGR_565 ||
              format == gfx::BufferFormat::RGBX_8888 ||
-             format == gfx::BufferFormat::BGRX_8888 ||
-             format == gfx::BufferFormat::BGRX_1010102;
+             format == gfx::BufferFormat::BGRX_8888;
     case GL_RGB10_A2_EXT:
       return format == gfx::BufferFormat::RGBX_1010102;
     case GL_RGB_YCRCB_420_CHROMIUM:
@@ -80,8 +78,6 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_ARGB8888;
     case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
-    case gfx::BufferFormat::BGRX_1010102:
-      return DRM_FORMAT_XRGB2101010;
     case gfx::BufferFormat::RGBX_1010102:
       // We should use here DRM_FORMAT_XBGR2101010 format, but EGL on Intel
       // doesn't support it for scanout, see https://crbug.com/776093#c14.
@@ -96,6 +92,7 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
@@ -120,8 +117,6 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRA_8888;
     case DRM_FORMAT_XRGB8888:
       return gfx::BufferFormat::BGRX_8888;
-    case DRM_FORMAT_XRGB2101010:
-      return gfx::BufferFormat::BGRX_1010102;
     case DRM_FORMAT_ABGR2101010:
       // We should support DRM_FORMAT_XBGR2101010 format instead, but EGL on
       // Intel doesn't support it for scanout, see https://crbug.com/776093#c14.
@@ -398,7 +393,6 @@ unsigned GLImageNativePixmap::GetInternalFormatForTesting(
       return GL_RGB;
     case gfx::BufferFormat::RGBA_8888:
       return GL_RGBA;
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBX_1010102:
       return GL_RGB10_A2_EXT;
     case gfx::BufferFormat::BGRA_8888:
@@ -413,6 +407,7 @@ unsigned GLImageNativePixmap::GetInternalFormatForTesting(
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
@@ -434,7 +429,6 @@ bool GLImageNativePixmap::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBX_1010102:
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -445,6 +439,7 @@ bool GLImageNativePixmap::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       return false;
