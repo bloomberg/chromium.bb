@@ -1355,7 +1355,6 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-max-widt
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-sizes-quirks.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-sizes.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/perpendicular-writing-modes-inside-flex-item.html [ Skip ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child-with-contenteditable.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/preferred-widths-orthogonal.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/preferred-widths.html [ Skip ]

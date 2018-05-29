@@ -53,6 +53,10 @@ bool IsManagedByLayoutNG(const LayoutObject& object) {
   const auto* containing_block = object.ContainingBlock();
   if (!containing_block)
     return false;
+  return IsLayoutNGContainingBlock(containing_block);
+}
+
+bool IsLayoutNGContainingBlock(const LayoutBlock* containing_block) {
   if (containing_block->IsLayoutFlowThread())
     containing_block = containing_block->ContainingBlock();
   return containing_block && (containing_block->IsLayoutNGMixin() ||

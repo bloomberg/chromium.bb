@@ -28,6 +28,11 @@ bool AreNGBlockFlowChildrenInline(const LayoutBlock*);
 // LayoutNG engine (i.e. its containing block is a LayoutNG object as well).
 bool IsManagedByLayoutNG(const LayoutObject&);
 
+// Return true if the block is of NG type, or if it's a block invisible to
+// LayoutNG and it has an NG containg block. False if it's hosted by the legacy
+// layout engine.
+bool IsLayoutNGContainingBlock(const LayoutBlock*);
+
 }  // namespace blink
 
 #endif  // LegacyLayoutTreeWalking_h
