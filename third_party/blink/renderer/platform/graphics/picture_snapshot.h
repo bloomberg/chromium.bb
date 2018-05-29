@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -46,7 +47,6 @@ namespace blink {
 class FloatRect;
 
 class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
-  WTF_MAKE_NONCOPYABLE(PictureSnapshot);
 
  public:
   typedef Vector<Vector<double>> Timings;
@@ -74,6 +74,8 @@ class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
   std::unique_ptr<SkBitmap> CreateBitmap() const;
 
   sk_sp<const SkPicture> picture_;
+
+  DISALLOW_COPY_AND_ASSIGN(PictureSnapshot);
 };
 
 }  // namespace blink

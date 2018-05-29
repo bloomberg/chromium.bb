@@ -29,13 +29,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRADIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRADIENT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -48,7 +48,6 @@ namespace blink {
 class FloatPoint;
 
 class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
-  WTF_MAKE_NONCOPYABLE(Gradient);
 
  public:
   enum class Type { kLinear, kRadial, kConic };
@@ -128,6 +127,8 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   bool stops_sorted_;
 
   mutable sk_sp<PaintShader> cached_shader_;
+
+  DISALLOW_COPY_AND_ASSIGN(Gradient);
 };
 
 }  // namespace blink

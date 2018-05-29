@@ -29,6 +29,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_CONTEXT_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
@@ -43,7 +45,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -62,7 +63,6 @@ class Path;
 struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT GraphicsContext {
-  WTF_MAKE_NONCOPYABLE(GraphicsContext);
   USING_FAST_MALLOC(GraphicsContext);
 
  public:
@@ -500,6 +500,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   unsigned printing_ : 1;
   unsigned has_meta_data_ : 1;
+
+  DISALLOW_COPY_AND_ASSIGN(GraphicsContext);
 };
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_XR_WEBGL_DRAWING_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_XR_WEBGL_DRAWING_BUFFER_H_
 
+#include "base/macros.h"
 #include "cc/layers/texture_layer_client.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
@@ -86,7 +86,7 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
     gpu::SyncToken receive_sync_token;
 
    private:
-    WTF_MAKE_NONCOPYABLE(ColorBuffer);
+    DISALLOW_COPY_AND_ASSIGN(ColorBuffer);
   };
 
   XRWebGLDrawingBuffer(DrawingBuffer*,

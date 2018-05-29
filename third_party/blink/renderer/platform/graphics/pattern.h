@@ -29,12 +29,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PATTERN_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PATTERN_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -43,7 +43,6 @@ class SkMatrix;
 namespace blink {
 
 class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
-  WTF_MAKE_NONCOPYABLE(Pattern);
 
  public:
   enum RepeatMode {
@@ -78,6 +77,9 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 
   Pattern(RepeatMode);
   mutable sk_sp<PaintShader> cached_shader_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Pattern);
 };
 
 }  // namespace blink

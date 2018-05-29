@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -71,7 +71,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   friend class CrossfadeGeneratedImage;
   friend class GradientGeneratedImage;
   friend class GraphicsContext;
-  WTF_MAKE_NONCOPYABLE(Image);
 
  public:
   virtual ~Image();
@@ -307,6 +306,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   PaintImage::Id stable_image_id_;
   const bool is_multipart_;
   HighContrastClassification high_contrast_classification_;
+
+  DISALLOW_COPY_AND_ASSIGN(Image);
 };
 
 #define DEFINE_IMAGE_TYPE_CASTS(typeName)                          \

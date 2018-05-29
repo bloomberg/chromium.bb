@@ -5,16 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_DISPLAY_ITEM_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_DISPLAY_ITEM_FRAGMENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class ScopedDisplayItemFragment final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  WTF_MAKE_NONCOPYABLE(ScopedDisplayItemFragment);
 
  public:
   ScopedDisplayItemFragment(GraphicsContext& context, unsigned fragment)
@@ -29,6 +28,8 @@ class ScopedDisplayItemFragment final {
  private:
   GraphicsContext& context_;
   unsigned original_fragment_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisplayItemFragment);
 };
 
 }  // namespace blink

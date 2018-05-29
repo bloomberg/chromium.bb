@@ -26,12 +26,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DECODING_IMAGE_GENERATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DECODING_IMAGE_GENERATOR_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class SkData;
@@ -46,7 +46,6 @@ class ImageFrameGenerator;
 class PLATFORM_EXPORT DecodingImageGenerator final
     : public PaintImageGenerator {
   USING_FAST_MALLOC(DecodingImageGenerator);
-  WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
 
  public:
   // Aside from tests, this is used to create a decoder from SkData in Skia
@@ -95,6 +94,8 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   const bool all_data_received_;
   bool can_yuv_decode_;
   const PaintImage::ContentId complete_frame_content_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DecodingImageGenerator);
 };
 
 }  // namespace blink

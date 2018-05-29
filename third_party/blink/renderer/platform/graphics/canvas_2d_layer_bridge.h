@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -74,7 +74,6 @@ class StaticBitmapImage;
 #define CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU 0
 
 class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
-  WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 
  public:
   enum AccelerationMode {
@@ -220,6 +219,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   CanvasResourceHost* resource_host_;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Canvas2DLayerBridge);
 };
 
 }  // namespace blink

@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_PROPERTY_TREE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_PROPERTY_TREE_MANAGER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
@@ -40,7 +40,6 @@ class PropertyTreeManagerClient {
 // Mutates a cc property tree to reflect Blink paint property tree
 // state. Intended for use by PaintArtifactCompositor.
 class PropertyTreeManager {
-  WTF_MAKE_NONCOPYABLE(PropertyTreeManager);
 
  public:
   PropertyTreeManager(PropertyTreeManagerClient&,
@@ -185,6 +184,8 @@ class PropertyTreeManager {
 #if DCHECK_IS_ON()
   HashSet<const EffectPaintPropertyNode*> effect_nodes_converted_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(PropertyTreeManager);
 };
 
 }  // namespace blink

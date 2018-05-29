@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_WEBGL_IMAGE_CONVERSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_WEBGL_IMAGE_CONVERSION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -129,7 +130,6 @@ class PLATFORM_EXPORT WebGLImageConversion final {
 
   class PLATFORM_EXPORT ImageExtractor final {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ImageExtractor);
 
    public:
     ImageExtractor(Image*,
@@ -162,6 +162,8 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     DataFormat image_source_format_;
     AlphaOp alpha_op_;
     unsigned image_source_unpack_alignment_;
+
+    DISALLOW_COPY_AND_ASSIGN(ImageExtractor);
   };
 
   // Computes the components per pixel and bytes per component

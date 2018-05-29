@@ -29,16 +29,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_CONTEXT_STATE_SAVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_CONTEXT_STATE_SAVER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT GraphicsContextStateSaver final {
   USING_FAST_MALLOC(GraphicsContextStateSaver);
-  WTF_MAKE_NONCOPYABLE(GraphicsContextStateSaver);
 
  public:
   GraphicsContextStateSaver(GraphicsContext& context,
@@ -77,6 +76,8 @@ class PLATFORM_EXPORT GraphicsContextStateSaver final {
  private:
   GraphicsContext& context_;
   bool save_and_restore_;
+
+  DISALLOW_COPY_AND_ASSIGN(GraphicsContextStateSaver);
 };
 
 }  // namespace blink

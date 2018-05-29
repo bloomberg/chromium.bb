@@ -64,7 +64,6 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
       HashSet<CrossThreadPersistent<CompositorAnimator>>;
 
   class AutoSignal {
-    WTF_MAKE_NONCOPYABLE(AutoSignal);
 
    public:
     explicit AutoSignal(WaitableEvent*);
@@ -72,6 +71,8 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
 
    private:
     WaitableEvent* event_;
+
+    DISALLOW_COPY_AND_ASSIGN(AutoSignal);
   };
 
   // The AnimationWorkletProxyClientImpls are also owned by the WorkerClients

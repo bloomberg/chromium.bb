@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
 
+#include "base/macros.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/picture_layer.h"
@@ -12,7 +13,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -24,7 +24,6 @@ class PaintChunkSubset;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
                                                public cc::LayerClient {
-  WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
@@ -87,6 +86,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
 #endif
 
   base::WeakPtrFactory<ContentLayerClientImpl> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentLayerClientImpl);
 };
 
 }  // namespace blink

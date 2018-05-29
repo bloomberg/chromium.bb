@@ -29,6 +29,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/content_layer_client.h"
@@ -79,7 +80,6 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                                       public DisplayItemClient,
                                       private cc::ContentLayerClient {
-  WTF_MAKE_NONCOPYABLE(GraphicsLayer);
   USING_FAST_MALLOC(GraphicsLayer);
 
  public:
@@ -459,6 +459,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   base::WeakPtrFactory<GraphicsLayer> weak_ptr_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(CompositingLayerPropertyUpdaterTest, MaskLayerState);
+
+  DISALLOW_COPY_AND_ASSIGN(GraphicsLayer);
 };
 
 // ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses

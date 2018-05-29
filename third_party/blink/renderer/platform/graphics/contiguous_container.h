@@ -9,12 +9,13 @@
 #include <iterator>
 #include <memory>
 #include <utility>
+
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -40,7 +41,6 @@ namespace blink {
 
 class PLATFORM_EXPORT ContiguousContainerBase {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(ContiguousContainerBase);
 
  protected:
   explicit ContiguousContainerBase(size_t max_object_size);
@@ -76,6 +76,8 @@ class PLATFORM_EXPORT ContiguousContainerBase {
   Vector<std::unique_ptr<Buffer>> buffers_;
   unsigned end_index_;
   size_t max_object_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContiguousContainerBase);
 };
 
 // For most cases, no alignment stricter than pointer alignment is required. If

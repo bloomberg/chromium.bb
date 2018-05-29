@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_PROVIDER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -58,7 +58,6 @@ class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT CanvasResourceProvider
     : public WebGraphicsContext3DProviderWrapper::DestructionObserver {
-  WTF_MAKE_NONCOPYABLE(CanvasResourceProvider);
 
  public:
   enum ResourceUsage {
@@ -168,6 +167,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   uint32_t snapshot_sk_image_id_ = 0u;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(CanvasResourceProvider);
 };
 
 }  // namespace blink

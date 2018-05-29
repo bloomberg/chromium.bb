@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_IMAGE_PIXEL_LOCKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_IMAGE_PIXEL_LOCKER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -18,7 +18,6 @@ namespace blink {
 
 class ImagePixelLocker final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  WTF_MAKE_NONCOPYABLE(ImagePixelLocker);
 
  public:
   ImagePixelLocker(sk_sp<const SkImage>, SkAlphaType, SkColorType);
@@ -29,6 +28,8 @@ class ImagePixelLocker final {
   const sk_sp<const SkImage> image_;
   const void* pixels_;
   Vector<char> pixel_storage_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImagePixelLocker);
 };
 
 }  // namespace blink

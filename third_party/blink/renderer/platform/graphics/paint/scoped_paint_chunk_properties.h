@@ -5,19 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class ScopedPaintChunkProperties {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  WTF_MAKE_NONCOPYABLE(ScopedPaintChunkProperties);
 
  public:
   // Use new PropertyTreeState for the scope.
@@ -104,6 +103,8 @@ class ScopedPaintChunkProperties {
 
   PaintController& paint_controller_;
   PropertyTreeState previous_properties_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPaintChunkProperties);
 };
 
 }  // namespace blink

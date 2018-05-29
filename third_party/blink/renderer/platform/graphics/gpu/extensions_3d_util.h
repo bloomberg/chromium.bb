@@ -6,10 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_EXTENSIONS_3D_UTIL_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -24,7 +25,6 @@ namespace blink {
 
 class PLATFORM_EXPORT Extensions3DUtil final {
   USING_FAST_MALLOC(Extensions3DUtil);
-  WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
 
  public:
   // Creates a new Extensions3DUtil. If the passed GLES2Interface has been
@@ -48,6 +48,8 @@ class PLATFORM_EXPORT Extensions3DUtil final {
   HashSet<String> enabled_extensions_;
   HashSet<String> requestable_extensions_;
   bool is_valid_;
+
+  DISALLOW_COPY_AND_ASSIGN(Extensions3DUtil);
 };
 
 }  // namespace blink
