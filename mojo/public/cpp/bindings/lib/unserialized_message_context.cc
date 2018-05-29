@@ -15,6 +15,7 @@ UnserializedMessageContext::UnserializedMessageContext(const Tag* tag,
   header_.version = 1;
   header_.name = message_name;
   header_.flags = message_flags;
+  header_.num_bytes = sizeof(header_);
 }
 
 UnserializedMessageContext::~UnserializedMessageContext() = default;
