@@ -1039,6 +1039,9 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 }
 
 void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
+  if (HasBeenDisposed())
+    return;
+
   // If a vertical scrollbar was removed, the min/max scroll offsets may have
   // changed, so the scroll offsets needs to be clamped.  If the scroll offset
   // did not change, but the scroll origin *did* change, we still need to notify

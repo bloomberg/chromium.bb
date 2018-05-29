@@ -931,4 +931,21 @@ TEST_F(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
                                   .To2DTranslation());
 }
 
+// Delayed scroll offset clamping should not crash. https://crbug.com/842495
+TEST_F(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=scroller style="overflow: scroll; width: 200px; height: 200px;">
+      <div style="height: 1000px;"></div>
+    </div>
+  )HTML");
+  Element* scroller = GetDocument().getElementById("scroller");
+  {
+    PaintLayerScrollableArea::DelayScrollOffsetClampScope scope;
+    PaintLayerScrollableArea::DelayScrollOffsetClampScope::SetNeedsClamp(
+        scroller->GetLayoutBox()->GetScrollableArea());
+    scroller->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
+}
+
 }  // namespace blink
