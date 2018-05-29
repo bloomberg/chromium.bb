@@ -46,6 +46,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // The gesture recognizer used for interactive item reordering.
 @property(nonatomic, strong)
     UILongPressGestureRecognizer* itemReorderRecognizer;
+// The touch location of an interactively reordering item, expressed as an
+// offset from its center. This is subtracted from the location that is passed
+// to -updateInteractiveMovementTargetPosition: so that the moving item will
+// keep them same relative location to the user's touch.
+@property(nonatomic, assign) CGPoint itemReorderTouchPoint;
 // Animator to show or hide the empty state.
 @property(nonatomic, strong) UIViewPropertyAnimator* emptyStateAnimator;
 @end
@@ -62,6 +67,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
 @synthesize itemReorderRecognizer = _itemReorderRecognizer;
+@synthesize itemReorderTouchPoint = _itemReorderTouchPoint;
 @synthesize emptyStateAnimator = _emptyStateAnimator;
 
 - (instancetype)init {
@@ -478,16 +484,30 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
           [self.collectionView beginInteractiveMovementForItemAtIndexPath:path];
       if (!moving) {
         gesture.enabled = NO;
+      } else {
+        CGPoint cellCenter =
+            [self.collectionView cellForItemAtIndexPath:path].center;
+        self.itemReorderTouchPoint =
+            CGPointMake(location.x - cellCenter.x, location.y - cellCenter.y);
       }
       break;
     }
-    case UIGestureRecognizerStateChanged:
-      [self.collectionView updateInteractiveMovementTargetPosition:location];
+    case UIGestureRecognizerStateChanged: {
+      // Offset the location so it's the touch point that moves, not the cell
+      // center.
+      CGPoint targetLocation =
+          CGPointMake(location.x - self.itemReorderTouchPoint.x,
+                      location.y - self.itemReorderTouchPoint.y);
+      [self.collectionView
+          updateInteractiveMovementTargetPosition:targetLocation];
       break;
+    }
     case UIGestureRecognizerStateEnded:
+      self.itemReorderTouchPoint = CGPointZero;
       [self.collectionView endInteractiveMovement];
       break;
     case UIGestureRecognizerStateCancelled:
+      self.itemReorderTouchPoint = CGPointZero;
       [self.collectionView cancelInteractiveMovement];
       // Re-enable cancelled gesture.
       gesture.enabled = YES;
