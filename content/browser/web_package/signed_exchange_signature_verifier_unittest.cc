@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "content/browser/web_package/signed_exchange_header.h"
-#include "content/browser/web_package/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_signature_header_field.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,8 +222,9 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   ));
 
     SignedExchangeHeader invalid_expires_header(header);
-    auto invalid_expires_signature = SignedExchangeHeaderParser::ParseSignature(
-        kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
+    auto invalid_expires_signature =
+        SignedExchangeSignatureHeaderField::ParseSignature(
+            kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
     ASSERT_TRUE(invalid_expires_signature.has_value());
     ASSERT_EQ(1u, invalid_expires_signature->size());
     invalid_expires_header.SetSignatureForTesting(
@@ -244,7 +245,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   ));
 
     SignedExchangeHeader badsig_header(header);
-    SignedExchangeHeaderParser::Signature badsig = header.signature();
+    SignedExchangeSignatureHeaderField::Signature badsig = header.signature();
     badsig.sig[0]++;
     badsig_header.SetSignatureForTesting(badsig);
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
@@ -255,7 +256,8 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                   ));
 
     SignedExchangeHeader badsigsha256_header(header);
-    SignedExchangeHeaderParser::Signature badsigsha256 = header.signature();
+    SignedExchangeSignatureHeaderField::Signature badsigsha256 =
+        header.signature();
     badsigsha256.cert_sha256->data[0]++;
     badsigsha256_header.SetSignatureForTesting(badsigsha256);
     EXPECT_EQ(
@@ -268,7 +270,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
 };
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
-  auto signature = SignedExchangeHeaderParser::ParseSignature(
+  auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
       kSignatureHeaderRSA, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());
@@ -293,7 +295,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
 }
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
-  auto signature = SignedExchangeHeaderParser::ParseSignature(
+  auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
       kSignatureHeaderECDSAP256, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());
@@ -319,7 +321,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
 }
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
-  auto signature = SignedExchangeHeaderParser::ParseSignature(
+  auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
       kSignatureHeaderECDSAP384, nullptr /* devtools_proxy */);
   ASSERT_TRUE(signature.has_value());
   ASSERT_EQ(1u, signature->size());

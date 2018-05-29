@@ -89,8 +89,8 @@ SignedExchangeHandler::SignedExchangeHandler(
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::SignedExchangeHandler");
 
-  if (!SignedExchangeHeaderParser::GetVersionParamFromContentType(content_type,
-                                                                  &version_) ||
+  if (!SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
+          content_type, &version_) ||
       (version_ != SignedExchangeVersion::kB0 &&
        version_ != SignedExchangeVersion::kB1)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(

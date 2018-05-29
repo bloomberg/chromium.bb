@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_HEADER_PARSER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_HEADER_PARSER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_SIGNATURE_HEADER_FIELD_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_SIGNATURE_HEADER_FIELD_H_
 
 #include <stdint.h>
 #include <string>
@@ -22,9 +22,10 @@ namespace content {
 
 class SignedExchangeDevToolsProxy;
 
-// Provide parsers for signed-exchange headers.
+// SignedExchangeSignatureHeaderField provides parser for signed exchange's
+// `Signature` header field.
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
-class CONTENT_EXPORT SignedExchangeHeaderParser {
+class CONTENT_EXPORT SignedExchangeSignatureHeaderField {
  public:
   struct CONTENT_EXPORT Signature {
     Signature();
@@ -49,6 +50,7 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
       base::StringPiece signature_str,
       SignedExchangeDevToolsProxy* devtools_proxy);
 
+  // TODO(kouhei): Move this to another class.
   // Parses |content_type| to get the value of "v=" parameter of the signed
   // exchange, and converts to SignedExchangeVersion. Returns false if failed to
   // parse.
@@ -59,4 +61,4 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_HEADER_PARSER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_SIGNATURE_HEADER_FIELD_H_

@@ -327,8 +327,8 @@ base::Optional<SignedExchangeHeader> SignedExchangeHeader::Parse(
     return base::nullopt;
   }
 
-  base::Optional<std::vector<SignedExchangeHeaderParser::Signature>>
-      signatures = SignedExchangeHeaderParser::ParseSignature(
+  base::Optional<std::vector<SignedExchangeSignatureHeaderField::Signature>>
+      signatures = SignedExchangeSignatureHeaderField::ParseSignature(
           signature_iter->second, devtools_proxy);
   if (!signatures || signatures->empty()) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(

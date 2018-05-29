@@ -1667,7 +1667,8 @@ void NetworkHandler::OnSignedExchangeReceived(
     for (const auto it : header->response_headers())
       headers_dict->setString(it.first, it.second);
 
-    const SignedExchangeHeaderParser::Signature& sig = header->signature();
+    const SignedExchangeSignatureHeaderField::Signature& sig =
+        header->signature();
     std::unique_ptr<Array<Network::SignedExchangeSignature>> signatures =
         Array<Network::SignedExchangeSignature>::create();
     std::unique_ptr<Network::SignedExchangeSignature> signature =

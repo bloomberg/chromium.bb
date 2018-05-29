@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "content/browser/web_package/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_signature_header_field.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -68,11 +68,11 @@ class CONTENT_EXPORT SignedExchangeHeader {
 
   const HeaderMap& response_headers() const { return response_headers_; }
 
-  const SignedExchangeHeaderParser::Signature& signature() const {
+  const SignedExchangeSignatureHeaderField::Signature& signature() const {
     return signature_;
   }
   void SetSignatureForTesting(
-      const SignedExchangeHeaderParser::Signature& sig) {
+      const SignedExchangeSignatureHeaderField::Signature& sig) {
     signature_ = sig;
   }
 
@@ -82,7 +82,7 @@ class CONTENT_EXPORT SignedExchangeHeader {
 
   net::HttpStatusCode response_code_;
   HeaderMap response_headers_;
-  SignedExchangeHeaderParser::Signature signature_;
+  SignedExchangeSignatureHeaderField::Signature signature_;
 };
 
 }  // namespace content
