@@ -17,7 +17,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
@@ -27,8 +26,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.ui.base.PageTransition;
 
 /**
  * Android UKM tests.
@@ -40,35 +37,9 @@ public class UkmTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    private static final String DEBUG_PAGE = "chrome://ukm";
-
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
-    // TODO(rkaplow): Swap these methods (here and in UkmTest.java) with the JNI methods in
-    // UkmUtilsForTest.
-    /*
-     * These helper method should stay in sync with the tests within
-     * sync_shell/.../chrome/browser/sync/UkmTest.java.
-     */
-    public String getElementContent(Tab normalTab, String elementId) throws Exception {
-        mActivityTestRule.loadUrlInTab(
-                DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
-        return JavaScriptUtils.executeJavaScriptAndWaitForResult(normalTab.getWebContents(),
-                "document.getElementById('" + elementId + "').textContent");
-    }
-
-    public boolean isUkmEnabled(Tab normalTab) throws Exception {
-        String state = getElementContent(normalTab, "state");
-        Assert.assertTrue(
-                "UKM state: " + state, state.equals("\"True\"") || state.equals("\"False\""));
-        return state.equals("\"True\"");
-    }
-
-    public String getUkmClientId(Tab normalTab) throws Exception {
-        return getElementContent(normalTab, "clientid");
     }
 
     /**
@@ -94,6 +65,8 @@ public class UkmTest {
         closeCurrentTab(true);
     }
 
+    // TODO(rkaplow): Simplify these by running then all in the UI thread via
+    // @UIThreadTest.
     @Test
     @SmallTest
     @DisabledTest // TODO(https://crbug.com/842999): Reenable after unflaking.
@@ -102,38 +75,47 @@ public class UkmTest {
         // chrome/browser/metrics/ukm_browsertest.cc.
         Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
 
-        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
 
-        String clientId = getUkmClientId(normalTab);
-        Assert.assertFalse("Non empty client id: " + clientId, clientId.isEmpty());
+        long originalClientId =
+                ThreadUtils.runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
+                        .longValue();
+        Assert.assertFalse("Non-zero client id: " + originalClientId, originalClientId == 0);
 
         mActivityTestRule.newIncognitoTabFromMenu();
 
-        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         // Opening another regular tab mustn't enable UKM.
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         // Opening and closing another Incognito tab mustn't enable UKM.
         mActivityTestRule.newIncognitoTabFromMenu();
         closeIncognitoTab();
-        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         closeRegularTab();
-        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         closeIncognitoTab();
-        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
 
         // Client ID should not have been reset.
-        Assert.assertEquals("Client id:", clientId, getUkmClientId(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("Client id:", originalClientId, UkmUtilsForTest.getClientId());
+        });
     }
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testIncognitoPlusRegularCheck() throws Exception {
         // Keep in sync with UkmBrowserTest.IncognitoPlusRegularCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
@@ -148,10 +130,12 @@ public class UkmTest {
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
         Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
 
-        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
 
         closeIncognitoTab();
-        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
     }
 
     @Test
@@ -160,12 +144,17 @@ public class UkmTest {
         // Keep in sync with UkmBrowserTest.HistoryDeleteCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
 
-        Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
+        // Start by closing all tabs.
+        ChromeTabUtils.closeAllTabs(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
 
-        String originalClientId = getUkmClientId(normalTab);
+        long originalClientId =
+                ThreadUtils.runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
+                        .longValue();
+        Assert.assertFalse("Non-zero client id: " + originalClientId, originalClientId == 0);
 
         // Record some dummy UKM data (adding a Source).
         final long sourceId = 0x54321;
@@ -193,9 +182,8 @@ public class UkmTest {
             Assert.assertTrue(UkmUtilsForTest.isEnabled());
             // The source under sourceId should be removed.
             Assert.assertFalse(UkmUtilsForTest.hasSourceWithId(sourceId));
+            // Client ID should not have been reset.
+            Assert.assertEquals("Client id:", originalClientId, UkmUtilsForTest.getClientId());
         });
-
-        // Client ID should NOT have been reset.
-        Assert.assertEquals("Client id:", originalClientId, getUkmClientId(normalTab));
     }
 }

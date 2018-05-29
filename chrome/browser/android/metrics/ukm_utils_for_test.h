@@ -17,6 +17,7 @@ class UkmUtilsForTest {
   static bool IsEnabled();
   static bool HasSourceWithId(SourceId source_id);
   static void RecordSourceWithId(SourceId source_id);
+  static uint64_t GetClientId();
 
  private:
   // Should never be needed, as this class is setup to let it be a friend to

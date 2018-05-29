@@ -29,7 +29,15 @@ public class UkmUtilsForTest {
         nativeRecordSourceWithId(sourceId);
     }
 
+    /**
+     * Get the UKM clientId.
+     */
+    public static long getClientId() {
+        return nativeGetClientId();
+    }
+
     private static native boolean nativeIsEnabled();
     private static native boolean nativeHasSourceWithId(long sourceId);
     private static native void nativeRecordSourceWithId(long sourceId);
+    private static native long nativeGetClientId();
 }
