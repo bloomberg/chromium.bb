@@ -156,7 +156,8 @@ void InputStream::SetVolume(double volume) {
 }
 
 void InputStream::OnCreated(bool initially_muted) {
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("audio", "Created", this);
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("audio", "Created", this,
+                                      "initially muted", initially_muted);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
   base::ReadOnlySharedMemoryRegion shared_memory_region =
