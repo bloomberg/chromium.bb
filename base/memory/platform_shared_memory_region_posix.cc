@@ -31,6 +31,7 @@ struct ScopedPathUnlinkerTraits {
 using ScopedPathUnlinker =
     ScopedGeneric<const FilePath*, ScopedPathUnlinkerTraits>;
 
+#if !defined(OS_NACL)
 bool CheckFDAccessMode(int fd, int expected_mode) {
   int fd_status = fcntl(fd, F_GETFL);
   if (fd_status == -1) {
@@ -47,6 +48,7 @@ bool CheckFDAccessMode(int fd, int expected_mode) {
 
   return true;
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace
 
@@ -161,7 +163,7 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
   *memory = mmap(nullptr, size, PROT_READ | (write_allowed ? PROT_WRITE : 0),
                  MAP_SHARED, handle_.fd.get(), offset);
 
-  bool mmap_succeeded = *memory && *memory != reinterpret_cast<void*>(-1);
+  bool mmap_succeeded = *memory && *memory != MAP_FAILED;
   if (!mmap_succeeded) {
     DPLOG(ERROR) << "mmap " << handle_.fd.get() << " failed";
     return false;
@@ -263,6 +265,7 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
     PlatformHandle handle,
     Mode mode,
     size_t size) {
+#if !defined(OS_NACL)
   if (!CheckFDAccessMode(handle.fd,
                          mode == Mode::kReadOnly ? O_RDONLY : O_RDWR)) {
     return false;
@@ -278,6 +281,28 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
   }
 
   return true;
+#else
+  // fcntl(_, F_GETFL) is not implemented on NaCl.
+  void* temp_memory = nullptr;
+  temp_memory =
+      mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, handle.fd, 0);
+
+  bool mmap_succeeded = temp_memory && temp_memory != MAP_FAILED;
+  if (mmap_succeeded)
+    munmap(temp_memory, size);
+
+  bool is_read_only = !mmap_succeeded;
+  bool expected_read_only = mode == Mode::kReadOnly;
+
+  if (is_read_only != expected_read_only) {
+    DLOG(ERROR) << "Descriptor has a wrong access mode: it is"
+                << (is_read_only ? " " : " not ") << "read-only but it should"
+                << (expected_read_only ? " " : " not ") << "be";
+    return false;
+  }
+
+  return true;
+#endif  // !defined(OS_NACL)
 }
 
 PlatformSharedMemoryRegion::PlatformSharedMemoryRegion(
