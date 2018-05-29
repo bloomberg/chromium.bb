@@ -15,6 +15,7 @@
 namespace blink {
 
 static const float kTimerDelay = 3.0;
+static const float kRegionGranularitySteps = 60.0;
 
 static FloatPoint LogicalStart(const FloatRect& rect,
                                const LayoutObject& object) {
@@ -32,6 +33,11 @@ static float GetMoveDistance(const FloatRect& old_rect,
   FloatSize location_delta =
       LogicalStart(new_rect, object) - LogicalStart(old_rect, object);
   return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
+}
+
+static float RegionGranularityScale(const IntRect& viewport) {
+  return kRegionGranularitySteps /
+         std::min(viewport.Height(), viewport.Width());
 }
 
 JankTracker::JankTracker(LocalFrameView* frame_view)
@@ -99,6 +105,10 @@ void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
   IntRect visible_new_visual_rect = RoundedIntRect(new_visual_rect_abs);
   visible_new_visual_rect.Intersect(viewport);
 
+  float scale = RegionGranularityScale(viewport);
+  visible_old_visual_rect.Scale(scale);
+  visible_new_visual_rect.Scale(scale);
+
   region_.Unite(Region(visible_old_visual_rect));
   region_.Unite(Region(visible_new_visual_rect));
 }
@@ -114,6 +124,7 @@ void JankTracker::NotifyPrePaintFinished() {
   }
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
+  viewport.Scale(RegionGranularityScale(viewport));
   double viewport_area = double(viewport.Width()) * double(viewport.Height());
 
   double jank_fraction = region_.Area() / viewport_area;
