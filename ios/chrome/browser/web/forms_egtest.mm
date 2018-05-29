@@ -401,11 +401,6 @@ id<GREYMatcher> GoButtonMatcher() {
 // keyboard navigates to the correct URL and the back button works as expected
 // afterwards.
 - (void)testPostFormEntryWithKeyboard {
-// TODO(crbug.com/704618): Re-enable this test on devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-#endif
-
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
