@@ -50,9 +50,4 @@ void SVGAnimatedNumber::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void SVGAnimatedNumber::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  SVGAnimatedProperty<SVGNumber>::TraceWrappers(visitor);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 }  // namespace blink

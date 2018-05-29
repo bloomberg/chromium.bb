@@ -59,11 +59,6 @@ class SVGAnimatedTransformList final
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    SVGAnimatedProperty<SVGTransformList>::TraceWrappers(visitor);
-    ScriptWrappable::TraceWrappers(visitor);
-  }
-
  protected:
   SVGAnimatedTransformList(SVGElement* context_element,
                            const QualifiedName& attribute_name,

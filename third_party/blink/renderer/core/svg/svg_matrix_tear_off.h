@@ -89,7 +89,6 @@ class CORE_EXPORT SVGMatrixTearOff final : public ScriptWrappable {
   const AffineTransform& Value() const;
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  private:
   explicit SVGMatrixTearOff(const AffineTransform&);

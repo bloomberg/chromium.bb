@@ -60,7 +60,6 @@ class SVGAnimatedLength : public ScriptWrappable,
   }
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
 
  protected:
   SVGAnimatedLength(SVGElement* context_element,

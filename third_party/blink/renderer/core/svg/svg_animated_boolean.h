@@ -53,11 +53,6 @@ class SVGAnimatedBoolean final : public ScriptWrappable,
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    SVGAnimatedProperty<SVGBoolean>::TraceWrappers(visitor);
-    ScriptWrappable::TraceWrappers(visitor);
-  }
-
  protected:
   SVGAnimatedBoolean(SVGElement* context_element,
                      const QualifiedName& attribute_name)

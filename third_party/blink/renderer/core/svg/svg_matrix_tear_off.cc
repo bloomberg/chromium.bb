@@ -50,11 +50,6 @@ void SVGMatrixTearOff::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void SVGMatrixTearOff::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(context_transform_);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 const AffineTransform& SVGMatrixTearOff::Value() const {
   return context_transform_ ? context_transform_->Target()->Matrix()
                             : static_value_;

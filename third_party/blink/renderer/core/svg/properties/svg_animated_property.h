@@ -79,9 +79,6 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(context_element_);
   }
-  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    visitor->TraceWrappers(context_element_);
-  }
 
  protected:
   SVGAnimatedPropertyBase(AnimatedPropertyType,

@@ -77,11 +77,6 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
     ScriptWrappable::Trace(visitor);
   }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(context_element_);
-    ScriptWrappable::TraceWrappers(visitor);
-  }
-
   static void ThrowReadOnly(ExceptionState&);
 
  protected:
@@ -114,10 +109,6 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(target_);
     SVGPropertyTearOffBase::Trace(visitor);
-  }
-
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    SVGPropertyTearOffBase::TraceWrappers(visitor);
   }
 
  protected:
