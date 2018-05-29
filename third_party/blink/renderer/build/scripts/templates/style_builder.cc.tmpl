@@ -50,17 +50,6 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
       DCHECK(!isInherit);
       StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
       return;
-    {% for input_property in properties if input_property.direction_aware_options %}
-    case {{input_property.property_id}}:
-    {% endfor %}
-    {
-      const CSSProperty& resolved_property =
-              property.ResolveDirectionAwareProperty(state.Style()->Direction(),
-                                             state.Style()->GetWritingMode());
-      DCHECK(!resolved_property.IDEquals(property.PropertyID()));
-      ApplyProperty(resolved_property, state, value);
-      return;
-    }
     default:
       NOTREACHED();
   }
