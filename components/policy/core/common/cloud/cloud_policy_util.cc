@@ -8,6 +8,12 @@
 
 #if defined(OS_WIN)
 #include <Windows.h>  // For GetComputerNameW()
+// SECURITY_WIN32 must be defined in order to get
+// EXTENDED_NAME_FORMAT enumeration.
+#define SECURITY_WIN32 1
+#include <security.h>
+#undef SECURITY_WIN32
+#include <wincred.h>
 #endif
 
 #if defined(OS_MACOSX)
@@ -23,6 +29,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/sys_info.h"
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
@@ -111,6 +118,31 @@ std::string GetOSVersion() {
 
 std::string GetOSPlatform() {
   return version_info::GetOSType();
+}
+
+std::string GetOSArchitecture() {
+  return base::SysInfo::OperatingSystemArchitecture();
+}
+
+std::string GetOSUsername() {
+#if defined(OS_WIN)
+  WCHAR username[CREDUI_MAX_USERNAME_LENGTH + 1] = {};
+  DWORD username_length = sizeof(username);
+
+  // The SAM compatible username works on both standalone workstations and
+  // domain joined machines.  The form is "DOMAIN\username", where DOMAIN is the
+  // the name of the machine for standalone workstations.
+  if (!::GetUserNameEx(::NameSamCompatible, username, &username_length) ||
+      username_length <= 0) {
+    return std::string();
+  }
+
+  return base::WideToUTF8(username);
+#else
+  // TODO(crbug.com/847265): For now, this is only supported on Windows. Other
+  // platforms will be added when enabled.
+  return std::string();
+#endif  // OS_WIN
 }
 
 }  // namespace policy

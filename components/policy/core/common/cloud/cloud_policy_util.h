@@ -11,14 +11,21 @@
 
 namespace policy {
 
-// Returns the name of the machine.  This function is platform specific.
+// Returns the name of the machine. This function is platform specific.
 POLICY_EXPORT std::string GetMachineName();
 
-// Returns the OS version of the machine.  This function is platform specific.
+// Returns the OS version of the machine. This function is platform specific.
 POLICY_EXPORT std::string GetOSVersion();
 
-// Returns the OS platform of the machine.  This function is platform specific.
+// Returns the OS platform of the machine. This function is platform specific.
 POLICY_EXPORT std::string GetOSPlatform();
+
+// Returns the bitness of the OS. This function is platform specific.
+POLICY_EXPORT std::string GetOSArchitecture();
+
+// Returns the username of the logged in user in the OS. This function is
+// platform specific.
+POLICY_EXPORT std::string GetOSUsername();
 
 }  // namespace policy
 
