@@ -28,6 +28,9 @@ extern GuideName* const kSearchButtonGuide;
 // A guide that is constrained to match the frame of the TabSwitcher button's
 // image.
 extern GuideName* const kTabSwitcherGuide;
+// A guide that is constrained to match the frame of the TabStrip's TabSwitcher
+// button's image.
+extern GuideName* const kTabStripTabSwitcherGuide;
 // A guide that is constrained to match the frame of the ToolsMenu button.
 extern GuideName* const kToolsMenuGuide;
 // A guide that is constrained to match the frame of the last-tapped voice

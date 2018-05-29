@@ -194,6 +194,9 @@
     case PopupMenuTypeToolsMenu:
       selectedButton = self.view.toolsMenuButton;
       break;
+    case PopupMenuTypeTabStripTabGrid:
+      // ignore
+      break;
   }
 
   selectedButton.spotlighted = YES;

@@ -115,6 +115,12 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
             fromNamedGuide:kSearchButtonGuide];
 }
 
+- (void)showTabStripTabGridButtonPopup {
+  base::RecordAction(base::UserMetricsAction("MobileTabStripShowTabGridMenu"));
+  [self presentPopupOfType:PopupMenuTypeTabStripTabGrid
+            fromNamedGuide:kTabStripTabSwitcherGuide];
+}
+
 - (void)dismissPopupMenuAnimated:(BOOL)animated {
   [self.UIUpdater updateUIForMenuDismissed];
   [self.presenter dismissAnimated:animated];

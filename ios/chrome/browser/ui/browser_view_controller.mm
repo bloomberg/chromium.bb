@@ -2139,6 +2139,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.tabStripCoordinator.presentationProvider = self;
     self.tabStripCoordinator.animationWaitDuration =
         kLegacyFullscreenControllerToolbarAnimationDuration;
+
+    UILayoutGuide* guide =
+        [[NamedGuide alloc] initWithName:kTabStripTabSwitcherGuide];
+    [self.view addLayoutGuide:guide];
     [self.tabStripCoordinator start];
   }
 

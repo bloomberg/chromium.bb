@@ -44,6 +44,7 @@
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/snapshot_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -1151,6 +1152,7 @@ NSString* StringForItemCount(long count) {
         [TabStripCenteredButton buttonWithType:UIButtonTypeCustom];
     if (UseRTLLayout())
       [_tabSwitcherButton setTransform:CGAffineTransformMakeScale(-1, 1)];
+    [self addTabSwitcherLongPressGesture];
   } else {
     _tabSwitcherButton = [UIButton buttonWithType:UIButtonTypeCustom];
   }
@@ -1180,6 +1182,26 @@ NSString* StringForItemCount(long count) {
   [_view addSubview:_tabSwitcherButton];
   // Shrink the scroll view.
   [self updateScrollViewFrameForTabSwitcherButton];
+}
+
+// Adds a LongPressGesture to the |_tabSwitcherButton|, with target on
+// -|handleTabSwitcherLongPress:|.
+- (void)addTabSwitcherLongPressGesture {
+  UILongPressGestureRecognizer* longPress =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleTabSwitcherLongPress:)];
+  [_tabSwitcherButton addGestureRecognizer:longPress];
+}
+
+// Handles the long press on the |_tabSwitcherButton|.
+- (void)handleTabSwitcherLongPress:(UILongPressGestureRecognizer*)gesture {
+  if (gesture.state != UIGestureRecognizerStateBegan)
+    return;
+  NamedGuide* tabSwitcherGuide =
+      [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
+  tabSwitcherGuide.constrainedView = _tabSwitcherButton;
+  [self.dispatcher showTabStripTabGridButtonPopup];
 }
 
 - (void)shiftTabStripSubviews:(CGPoint)oldContentOffset {
