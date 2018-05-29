@@ -361,36 +361,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateDenyCloseNotifications) {
   ASSERT_EQ(0, GetNotificationCount());
 }
 
-// Crashes on Linux/Win. See http://crbug.com/160657.
-IN_PROC_BROWSER_TEST_F(
-    NotificationsTest,
-    DISABLED_TestOriginPrefsNotSavedInIncognito) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Verify that allow/deny origin preferences are not saved in incognito.
-  Browser* incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
-  ASSERT_TRUE(RequestAndDenyPermission(incognito));
-  CloseBrowserSynchronously(incognito);
-
-  incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
-  ASSERT_TRUE(RequestAndAcceptPermission(incognito));
-  CreateSimpleNotification(incognito, true);
-  ASSERT_EQ(1, GetNotificationCount());
-  CloseBrowserSynchronously(incognito);
-
-  incognito = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
-  ASSERT_TRUE(RequestPermissionAndWait(incognito));
-
-  ContentSettingsForOneType settings;
-  GetPrefsByContentSetting(CONTENT_SETTING_BLOCK, &settings);
-  EXPECT_EQ(0U, settings.size());
-  GetPrefsByContentSetting(CONTENT_SETTING_ALLOW, &settings);
-  EXPECT_EQ(0U, settings.size());
-}
-
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionRequestUI) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
