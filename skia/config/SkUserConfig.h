@@ -227,6 +227,9 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
 #define GR_AA_TESSELLATOR_MAX_VERB_COUNT 10
 
+// Remove this and rebaseline affected layout tests.
+#define SK_DONT_DROP_UNNECESSARY_AA_IN_TEXTURE_OP
+
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
 
 
