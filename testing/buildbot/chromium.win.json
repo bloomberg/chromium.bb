@@ -929,7 +929,6 @@
         "test": "installer_util_unittests"
       },
       {
-        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
