@@ -15,7 +15,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/timer/arc_timer.h"
 #include "components/arc/timer/arc_timer_bridge.h"
-#include "components/arc/timer/arc_timer_traits.h"
+#include "components/arc/timer/arc_timer_struct_traits.h"
 
 namespace arc {
 

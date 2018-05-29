@@ -4,9 +4,9 @@
 
 mojom = "//components/arc/common/timer.mojom"
 public_headers = [ "//components/arc/timer/create_timer_request.h" ]
-traits_headers = [ "//components/arc/timer/arc_timer_traits.h" ]
+traits_headers = [ "//components/arc/timer/arc_timer_struct_traits.h" ]
 sources = [
-  "//components/arc/timer/arc_timer_traits.cc",
+  "//components/arc/timer/arc_timer_struct_traits.cc",
 ]
 type_mappings =
     [ "arc.mojom.CreateTimerRequest=arc::CreateTimerRequest[move_only]" ]

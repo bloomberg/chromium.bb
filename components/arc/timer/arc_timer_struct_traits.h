@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_TIMER_ARC_TIMER_TRAITS_H_
-#define COMPONENTS_ARC_TIMER_ARC_TIMER_TRAITS_H_
+#ifndef COMPONENTS_ARC_TIMER_ARC_TIMER_STRUCT_TRAITS_H_
+#define COMPONENTS_ARC_TIMER_ARC_TIMER_STRUCT_TRAITS_H_
 
 #include "components/arc/common/timer.mojom.h"
 #include "components/arc/timer/create_timer_request.h"
@@ -33,4 +33,4 @@ struct StructTraits<arc::mojom::CreateTimerRequestDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_ARC_TIMER_ARC_TIMER_TRAITS_H_
+#endif  // COMPONENTS_ARC_TIMER_ARC_TIMER_STRUCT_TRAITS_H_
