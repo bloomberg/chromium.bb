@@ -71,6 +71,14 @@ state.Style()->{{property.setter}}
   {%- endif %}
 {% endmacro %}
 
+{% macro resolve_directional_property(apply_call) %}
+const CSSProperty& resolved_property =
+    ResolveDirectionAwareProperty(state.Style()->Direction(),
+                                  state.Style()->GetWritingMode());
+DCHECK(!resolved_property.IDEquals(PropertyID()));
+ToLonghand(resolved_property).{{apply_call}};
+{% endmacro %}
+
 {% macro style_builder_functions(property, header) %}
   {% if not property.style_builder_template %}
     {% call(property) apply_initial(property, header) %}
@@ -112,6 +120,16 @@ state.Style()->{{property.setter}}
     {% endcall %}
     {% call(property) apply_value(property, header) %}
   // Intentionally empty.
+    {% endcall %}
+  {% elif property.style_builder_template == 'direction_aware' %}
+    {% call(property) apply_initial(property, header) %}
+{{resolve_directional_property('ApplyInitial(state)')|indent(2, true) -}}
+    {% endcall %}
+    {% call(property) apply_inherit(property, header) %}
+{{resolve_directional_property('ApplyInherit(state)')|indent(2, true) -}}
+    {% endcall %}
+    {% call(property) apply_value(property, header) %}
+{{resolve_directional_property('ApplyValue(state, value)')|indent(2, true) -}}
     {% endcall %}
   {% elif property.style_builder_template == "auto" %}
     {% set auto_getter = property.style_builder_template_args['auto_getter'] or
