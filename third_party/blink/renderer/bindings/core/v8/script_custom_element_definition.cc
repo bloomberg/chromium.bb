@@ -130,16 +130,6 @@ void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   CustomElementDefinition::Trace(visitor);
 }
 
-void ScriptCustomElementDefinition::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(constructor_.Cast<v8::Value>());
-  visitor->TraceWrappers(connected_callback_.Cast<v8::Value>());
-  visitor->TraceWrappers(disconnected_callback_.Cast<v8::Value>());
-  visitor->TraceWrappers(adopted_callback_.Cast<v8::Value>());
-  visitor->TraceWrappers(attribute_changed_callback_.Cast<v8::Value>());
-  CustomElementDefinition::TraceWrappers(visitor);
-}
-
 HTMLElement* ScriptCustomElementDefinition::HandleCreateElementSyncException(
     Document& document,
     const QualifiedName& tag_name,
