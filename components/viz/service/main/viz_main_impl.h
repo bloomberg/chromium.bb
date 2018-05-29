@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "ui/gfx/font_render_params.h"
 
 namespace gpu {
 class SyncPointManager;
@@ -89,7 +90,8 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
       mojom::GpuHostPtr gpu_host,
       discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
           discardable_memory_manager,
-      mojo::ScopedSharedBufferHandle activity_flags) override;
+      mojo::ScopedSharedBufferHandle activity_flags,
+      gfx::FontRenderParams::SubpixelRendering subpixel_rendering) override;
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
 
   GpuServiceImpl* gpu_service() { return gpu_service_.get(); }

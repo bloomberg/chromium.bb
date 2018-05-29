@@ -90,6 +90,8 @@ class CachedFontRenderParams {
 
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     if (message == WM_SETTINGCHANGE) {
+      // TODO(khushalsagar): This should trigger an update to the
+      // renderer and gpu processes, where the params are cached.
       params_.reset();
       singleton_hwnd_observer_.reset(nullptr);
     }

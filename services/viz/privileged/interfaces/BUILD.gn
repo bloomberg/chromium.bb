@@ -14,6 +14,7 @@ mojom("interfaces") {
     "//services/viz/privileged/interfaces/compositing",
     "//services/viz/privileged/interfaces/gl",
     "//services/viz/public/interfaces",
+    "//ui/gfx/mojo",
   ]
 }
 

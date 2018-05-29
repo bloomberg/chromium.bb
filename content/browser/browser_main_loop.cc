@@ -135,6 +135,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/switches.h"
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -1212,6 +1213,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // ShaderCacheFactory.
   InitShaderCacheFactorySingleton(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+
+  // Initialize the FontRenderParams on IO thread. This needs to be initialized
+  // before gpu process initialization below.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &GpuProcessHost::InitFontRenderParamsOnIO,
+          gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
 
   // If mus is not hosting viz, then the browser must.
   bool browser_is_viz_host = !base::FeatureList::IsEnabled(::features::kMash);

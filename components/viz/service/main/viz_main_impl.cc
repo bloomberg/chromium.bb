@@ -29,6 +29,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/switches.h"
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
@@ -199,7 +200,8 @@ void VizMainImpl::CreateGpuService(
     mojom::GpuHostPtr gpu_host,
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
         discardable_memory_manager,
-    mojo::ScopedSharedBufferHandle activity_flags) {
+    mojo::ScopedSharedBufferHandle activity_flags,
+    gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   gpu_service_->UpdateGPUInfo();
   for (const LogMessage& log : log_messages_)
@@ -223,6 +225,13 @@ void VizMainImpl::CreateGpuService(
     base::DiscardableMemoryAllocator::SetInstance(
         discardable_shared_memory_manager_.get());
   }
+
+  SkFontLCDConfig::SetSubpixelOrder(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
+          subpixel_rendering));
+  SkFontLCDConfig::SetSubpixelOrientation(
+      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
+          subpixel_rendering));
 
   gpu_service_->Bind(std::move(request));
   gpu_service_->InitializeWithHost(

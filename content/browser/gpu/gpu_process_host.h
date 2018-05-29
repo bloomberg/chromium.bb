@@ -43,6 +43,10 @@ namespace base {
 class Thread;
 }
 
+namespace gfx {
+struct FontRenderParams;
+}
+
 namespace gpu {
 class ShaderDiskCache;
 struct SyncToken;
@@ -109,6 +113,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       GpuProcessKind kind,
       bool force_create,
       const base::Callback<void(GpuProcessHost*)>& callback);
+
+  static void InitFontRenderParamsOnIO(const gfx::FontRenderParams& params);
 
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe);
