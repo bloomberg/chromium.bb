@@ -116,23 +116,29 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                              this,
                              &tracing_controller_,
                              YesNoStateToString),
-      page_frozen_for_tracing_(parent_page_scheduler_->IsFrozen(),
-                               "FrameScheduler.PageFrozen",
-                               this,
-                               &tracing_controller_,
-                               FrozenStateToString),
-      page_visibility_for_tracing_(parent_page_scheduler_->IsPageVisible()
-                                       ? PageVisibilityState::kVisible
-                                       : PageVisibilityState::kHidden,
-                                   "FrameScheduler.PageVisibility",
-                                   this,
-                                   &tracing_controller_,
-                                   PageVisibilityStateToString),
-      page_keep_active_for_tracing_(parent_page_scheduler_->KeepActive(),
-                                    "FrameScheduler.KeepActive",
-                                    this,
-                                    &tracing_controller_,
-                                    KeepActiveStateToString) {}
+      page_frozen_for_tracing_(
+          parent_page_scheduler_ ? parent_page_scheduler_->IsFrozen() : true,
+          "FrameScheduler.PageFrozen",
+          this,
+          &tracing_controller_,
+          FrozenStateToString),
+      page_visibility_for_tracing_(
+          parent_page_scheduler_ && parent_page_scheduler_->IsPageVisible()
+              ? PageVisibilityState::kVisible
+              : PageVisibilityState::kHidden,
+          "FrameScheduler.PageVisibility",
+          this,
+          &tracing_controller_,
+          PageVisibilityStateToString),
+      page_keep_active_for_tracing_(
+          parent_page_scheduler_ ? parent_page_scheduler_->KeepActive() : false,
+          "FrameScheduler.KeepActive",
+          this,
+          &tracing_controller_,
+          KeepActiveStateToString) {}
+
+FrameSchedulerImpl::FrameSchedulerImpl()
+    : FrameSchedulerImpl(nullptr, nullptr, nullptr, FrameType::kSubframe) {}
 
 namespace {
 

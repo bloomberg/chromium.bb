@@ -94,6 +94,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void SetPageKeepActiveForTracing(bool keep_active);
   void SetPageFrozenForTracing(bool frozen);
 
+ protected:
+  // This will construct a subframe that is not linked to any main thread or
+  // page scheduler. Should be used only for testing purposes.
+  FrameSchedulerImpl();
+
  private:
   friend class PageSchedulerImpl;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
@@ -173,7 +178,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
       page_visibility_for_tracing_;
   TraceableState<bool, kTracingCategoryNameInfo> page_keep_active_for_tracing_;
-
 
   DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };
