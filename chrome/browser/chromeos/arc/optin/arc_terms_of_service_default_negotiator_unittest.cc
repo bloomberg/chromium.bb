@@ -274,7 +274,7 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithUnchecked) {
 }
 
 TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithManagedToS) {
-  // Verifies that we don't record ToS consent if the ToS is not shown due to
+  // Verifies that we record an empty ToS consent if the ToS is not shown due to
   // a managed user scenario.
   // Also verifies that a managed setting for Backup and Restore is not recorded
   // while an unmanaged setting for Location Services still is recorded.
@@ -307,12 +307,17 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, AcceptWithManagedToS) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcLocationServiceEnabled));
 
   // Make sure consent auditing records expected consents.
+  std::vector<int> tos_consent = ArcSupportHost::ComputePlayToSConsentIds("");
+  tos_consent.push_back(IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE);
   const std::vector<int> location_consent = {
       IDS_ARC_OPT_IN_LOCATION_SETTING, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE};
-  const std::vector<std::vector<int>> consent_ids = {location_consent};
+  const std::vector<std::vector<int>> consent_ids = {tos_consent,
+                                                     location_consent};
   const std::vector<consent_auditor::Feature> features = {
+      consent_auditor::Feature::PLAY_STORE,
       consent_auditor::Feature::GOOGLE_LOCATION_SERVICE};
   const std::vector<consent_auditor::ConsentStatus> statuses = {
+      consent_auditor::ConsentStatus::GIVEN,
       consent_auditor::ConsentStatus::GIVEN};
 
   EXPECT_EQ(consent_auditor()->account_id(), GetAuthenticatedAccountId());

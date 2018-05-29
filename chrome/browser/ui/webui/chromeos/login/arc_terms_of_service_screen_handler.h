@@ -17,8 +17,6 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/timezone_settings.h"
 
-class Profile;
-
 namespace arc {
 class ArcOptInPreferenceHandler;
 }
@@ -86,9 +84,6 @@ class ArcTermsOfServiceScreenHandler
                       bool record_location_consent,
                       bool location_accepted);
 
-  // Sends if Arc enable status is manged to screen.
-  void SendArcManagedStatus(Profile* profile);
-
   bool NeedDispatchEventOnAction();
 
   // arc::ArcOptInPreferenceHandlerObserver:
@@ -106,6 +101,9 @@ class ArcTermsOfServiceScreenHandler
 
   // To filter out duplicate notifications from html.
   bool action_taken_ = false;
+
+  // To track if ARC preference is managed.
+  bool arc_managed_ = false;
 
   // To track if optional features are managed preferences.
   bool backup_restore_managed_ = false;
