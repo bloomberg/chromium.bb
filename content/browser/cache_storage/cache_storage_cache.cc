@@ -74,24 +74,6 @@ const uint64_t kPaddingRange = 14431 * 1024;
 //   2: Uniform random 14,431K.
 const int32_t kCachePaddingAlgorithmVersion = 2;
 
-// This class ensures that the cache and the entry have a lifetime as long as
-// the blob that is created to contain them.
-class CacheStorageCacheDataHandle
-    : public storage::BlobDataBuilder::DataHandle {
- public:
-  CacheStorageCacheDataHandle(CacheStorageCacheHandle cache_handle,
-                              disk_cache::ScopedEntryPtr entry)
-      : cache_handle_(std::move(cache_handle)), entry_(std::move(entry)) {}
-
- private:
-  ~CacheStorageCacheDataHandle() override {}
-
-  CacheStorageCacheHandle cache_handle_;
-  disk_cache::ScopedEntryPtr entry_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageCacheDataHandle);
-};
-
 using MetadataCallback =
     base::OnceCallback<void(std::unique_ptr<proto::CacheMetadata>)>;
 
@@ -342,6 +324,35 @@ int64_t CalculateResponsePaddingInternal(
 }
 
 }  // namespace
+
+// This class ensures that the cache and the entry have a lifetime as long as
+// the blob that is created to contain them.
+class CacheStorageCache::BlobDataHandle
+    : public storage::BlobDataBuilder::DataHandle {
+ public:
+  BlobDataHandle(CacheStorageCacheHandle cache_handle,
+                 disk_cache::ScopedEntryPtr entry)
+      : cache_handle_(std::move(cache_handle)), entry_(std::move(entry)) {}
+
+  bool IsValid() override { return bool{entry_}; }
+
+  void Invalidate() {
+    cache_handle_ = base::nullopt;
+    entry_ = nullptr;
+  }
+
+ private:
+  ~BlobDataHandle() override {
+    if (cache_handle_ && cache_handle_->value()) {
+      cache_handle_->value()->blob_data_handles_.erase(this);
+    }
+  }
+
+  base::Optional<CacheStorageCacheHandle> cache_handle_;
+  disk_cache::ScopedEntryPtr entry_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobDataHandle);
+};
 
 // The state needed to pass between CacheStorageCache::Put callbacks.
 struct CacheStorageCache::PutContext {
@@ -1676,6 +1687,8 @@ void CacheStorageCache::SizeImpl(SizeCallback callback) {
 
 void CacheStorageCache::GetSizeThenCloseDidGetSize(SizeCallback callback,
                                                    int64_t cache_size) {
+  for (auto* handle : blob_data_handles_)
+    handle->Invalidate();
   CloseImpl(base::BindOnce(std::move(callback), cache_size));
 }
 
@@ -1832,9 +1845,11 @@ void CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
       std::make_unique<storage::BlobDataBuilder>(response->blob_uuid);
 
   disk_cache::Entry* temp_entry = entry.get();
+  auto data_handle = base::MakeRefCounted<BlobDataHandle>(CreateCacheHandle(),
+                                                          std::move(entry));
+  blob_data_handles_.insert(data_handle.get());
   blob_data->AppendDiskCacheEntryWithSideData(
-      new CacheStorageCacheDataHandle(CreateCacheHandle(), std::move(entry)),
-      temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
+      std::move(data_handle), temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
   auto blob_handle =
       blob_storage_context_->AddFinishedBlob(std::move(blob_data));
 
