@@ -1151,6 +1151,12 @@ enum AuthenticationState {
   [self didReachBottom];
 }
 
+- (void)unifiedConsentCoordinatorDidTapOnAddAccount:
+    (UnifiedConsentCoordinator*)coordinator {
+  DCHECK_EQ(_unifiedConsentCoordinator, coordinator);
+  [self openAuthenticationDialogAddIdentity];
+}
+
 @end
 
 @implementation ChromeSigninViewController (Testing)

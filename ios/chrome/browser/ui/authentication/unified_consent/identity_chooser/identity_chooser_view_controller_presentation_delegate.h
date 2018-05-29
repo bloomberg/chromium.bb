@@ -16,6 +16,10 @@
 - (void)identityChooserViewControllerDidDisappear:
     (IdentityChooserViewController*)viewController;
 
+// Called when the user taps on "Add Account…" cell.
+- (void)identityChooserViewControllerDidTapOnAddAccount:
+    (IdentityChooserViewController*)viewController;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_IDENTITY_CHOOSER_IDENTITY_CHOOSER_VIEW_CONTROLLER_COORDINATOR_DELEGATE_H_

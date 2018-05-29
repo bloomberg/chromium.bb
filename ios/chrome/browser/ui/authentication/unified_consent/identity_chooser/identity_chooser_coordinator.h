@@ -28,6 +28,8 @@
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 // Delegate.
 @property(nonatomic, weak) id<IdentityChooserCoordinatorDelegate> delegate;
+// YES if view controller was closed by tapping on "Add Account…" button.
+@property(nonatomic, assign, readonly) BOOL addAccountTapped;
 
 @end
 

@@ -19,11 +19,13 @@
 @property(nonatomic, strong) IdentityChooserMediator* identityChooserMediator;
 @property(nonatomic, strong)
     IdentityChooserViewController* identityChooserViewController;
+@property(nonatomic, assign) BOOL addAccountTapped;
 
 @end
 
 @implementation IdentityChooserCoordinator
 
+@synthesize addAccountTapped = _addAccountTapped;
 @synthesize delegate = _delegate;
 @synthesize identityChooserMediator = _identityChooserMediator;
 @synthesize identityChooserViewController = _identityChooserViewController;
@@ -65,6 +67,15 @@
     (IdentityChooserViewController*)viewController {
   DCHECK_EQ(self.identityChooserViewController, viewController);
   [self.delegate identityChooserCoordinatorDidClose:self];
+}
+
+- (void)identityChooserViewControllerDidTapOnAddAccount:
+    (IdentityChooserViewController*)viewController {
+  DCHECK_EQ(self.identityChooserViewController, viewController);
+  DCHECK(!self.addAccountTapped);
+  self.addAccountTapped = YES;
+  [self.identityChooserViewController dismissViewControllerAnimated:YES
+                                                         completion:nil];
 }
 
 @end
