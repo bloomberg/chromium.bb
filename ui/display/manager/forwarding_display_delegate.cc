@@ -81,13 +81,19 @@ void ForwardingDisplayDelegate::SetHDCPState(const DisplaySnapshot& snapshot,
   delegate_->SetHDCPState(snapshot.display_id(), state, std::move(callback));
 }
 
-bool ForwardingDisplayDelegate::SetColorCorrection(
-    const DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& degamma_lut,
-    const std::vector<GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
-  delegate_->SetColorCorrection(output.display_id(), degamma_lut, gamma_lut,
-                                correction_matrix);
+bool ForwardingDisplayDelegate::SetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
+  delegate_->SetColorMatrix(display_id, color_matrix);
+  // DrmNativeDisplayDelegate always returns true so this will too.
+  return true;
+}
+
+bool ForwardingDisplayDelegate::SetGammaCorrection(
+    int64_t display_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  delegate_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
   // DrmNativeDisplayDelegate always returns true so this will too.
   return true;
 }

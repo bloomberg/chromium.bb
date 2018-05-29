@@ -117,11 +117,12 @@ class DrmThread : public base::Thread,
   void SetHDCPState(int64_t display_id,
                     display::HDCPState state,
                     base::OnceCallback<void(int64_t, bool)> callback) override;
-  void SetColorCorrection(
+  void SetColorMatrix(int64_t display_id,
+                      const std::vector<float>& color_matrix) override;
+  void SetGammaCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) override;
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
   void CheckOverlayCapabilities(
       const gfx::AcceleratedWidget& widget,
       const OverlaySurfaceCandidateList& overlays,

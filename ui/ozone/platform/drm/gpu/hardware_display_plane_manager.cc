@@ -376,14 +376,17 @@ std::vector<uint64_t> HardwareDisplayPlaneManager::GetFormatModifiers(
   return std::vector<uint64_t>();
 }
 
-bool HardwareDisplayPlaneManager::SetColorCorrection(
+bool HardwareDisplayPlaneManager::SetColorMatrix(
     uint32_t crtc_id,
-    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
-  const bool should_set_gamma_properties =
-      !degamma_lut.empty() || !gamma_lut.empty();
-  int crtc_index = LookupCrtcIndex(crtc_id);
+    const std::vector<float>& color_matrix) {
+  if (color_matrix.empty()) {
+    // TODO: Consider allowing an empty matrix to disable the color transform
+    // matrix.
+    LOG(ERROR) << "CTM is empty. Expected a 3x3 matrix.";
+    return false;
+  }
+
+  const int crtc_index = LookupCrtcIndex(crtc_id);
   if (crtc_index < 0) {
     LOG(ERROR) << "Unknown CRTC ID=" << crtc_id;
     return false;
@@ -391,26 +394,32 @@ bool HardwareDisplayPlaneManager::SetColorCorrection(
 
   const CrtcProperties& crtc_props = crtc_properties_[crtc_index];
 
-  if (correction_matrix.empty()) {
-    LOG(ERROR) << "CTM is empty. Expected a 3x3 matrix.";
+  ScopedDrmColorCtmPtr ctm_blob_data = CreateCTMBlob(color_matrix);
+  if (!crtc_props.ctm.id)
+    return SetColorCorrectionOnAllCrtcPlanes(crtc_id, std::move(ctm_blob_data));
+
+  return SetBlobProperty(drm_->get_fd(), crtc_id, DRM_MODE_OBJECT_CRTC,
+                         crtc_props.ctm.id, "CTM",
+                         reinterpret_cast<unsigned char*>(ctm_blob_data.get()),
+                         sizeof(drm_color_ctm));
+}
+
+bool HardwareDisplayPlaneManager::SetGammaCorrection(
+    uint32_t crtc_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  if (degamma_lut.empty() && gamma_lut.empty()) {
+    // TODO: Consider treating this as a signal to disable gamma correction.
+    return true;
+  }
+
+  const int crtc_index = LookupCrtcIndex(crtc_id);
+  if (crtc_index < 0) {
+    LOG(ERROR) << "Unknown CRTC ID=" << crtc_id;
     return false;
   }
 
-  if (crtc_props.ctm.id) {
-    ScopedDrmColorCtmPtr ctm_blob_data = CreateCTMBlob(correction_matrix);
-    if (!SetBlobProperty(drm_->get_fd(), crtc_id, DRM_MODE_OBJECT_CRTC,
-                         crtc_props.ctm.id, "CTM",
-                         reinterpret_cast<unsigned char*>(ctm_blob_data.get()),
-                         sizeof(drm_color_ctm))) {
-      return false;
-    }
-  } else if (!should_set_gamma_properties) {
-    return SetColorCorrectionOnAllCrtcPlanes(crtc_id,
-                                             CreateCTMBlob(correction_matrix));
-  }
-
-  if (!should_set_gamma_properties)
-    return true;
+  const CrtcProperties& crtc_props = crtc_properties_[crtc_index];
 
   if (!crtc_props.degamma_lut_size.id || !crtc_props.gamma_lut_size.id ||
       !crtc_props.degamma_lut.id || !crtc_props.gamma_lut.id) {

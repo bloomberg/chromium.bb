@@ -53,7 +53,8 @@ bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {
                         OnRemoveGraphicsDevice)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_GetHDCPState, OnGetHDCPState)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
-    IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetColorCorrection, OnSetColorCorrection)
+    IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetColorMatrix, OnSetColorMatrix)
+    IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaCorrection, OnSetGammaCorrection)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_CheckOverlayCapabilities,
                         OnCheckOverlayCapabilities)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -226,16 +227,25 @@ void DrmThreadMessageProxy::OnSetHDCPState(int64_t display_id,
                      display_id, state, std::move(safe_callback)));
 }
 
-void DrmThreadMessageProxy::OnSetColorCorrection(
-    int64_t id,
-    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
+void DrmThreadMessageProxy::OnSetColorMatrix(
+    int64_t display_id,
+    const std::vector<float>& color_matrix) {
   DCHECK(drm_thread_->IsRunning());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&DrmThread::SetColorCorrection,
-                                base::Unretained(drm_thread_), id, degamma_lut,
-                                gamma_lut, correction_matrix));
+      FROM_HERE,
+      base::BindOnce(&DrmThread::SetColorMatrix, base::Unretained(drm_thread_),
+                     display_id, color_matrix));
+}
+
+void DrmThreadMessageProxy::OnSetGammaCorrection(
+    int64_t display_id,
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  DCHECK(drm_thread_->IsRunning());
+  drm_thread_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DrmThread::SetGammaCorrection,
+                                base::Unretained(drm_thread_), display_id,
+                                degamma_lut, gamma_lut));
 }
 
 void DrmThreadMessageProxy::OnCheckOverlayCapabilitiesCallback(

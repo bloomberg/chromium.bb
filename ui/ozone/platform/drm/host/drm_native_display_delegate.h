@@ -38,12 +38,12 @@ class DrmNativeDisplayDelegate : public display::NativeDisplayDelegate {
   void SetHDCPState(const display::DisplaySnapshot& output,
                     display::HDCPState state,
                     display::SetHDCPStateCallback callback) override;
-  bool SetColorCorrection(
-      const display::DisplaySnapshot& output,
+  bool SetColorMatrix(int64_t display_id,
+                      const std::vector<float>& color_matrix) override;
+  bool SetGammaCorrection(
+      int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) override;
-
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut) override;
   void AddObserver(display::NativeDisplayObserver* observer) override;
   void RemoveObserver(display::NativeDisplayObserver* observer) override;
   display::FakeDisplayController* GetFakeDisplayController() override;

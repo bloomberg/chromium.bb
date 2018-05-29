@@ -103,12 +103,15 @@ void DrmDisplayHost::OnHDCPStateUpdated(bool status) {
   set_hdcp_callback_.Reset();
 }
 
-void DrmDisplayHost::SetColorCorrection(
+void DrmDisplayHost::SetColorMatrix(const std::vector<float>& color_matrix) {
+  sender_->GpuSetColorMatrix(snapshot_->display_id(), color_matrix);
+}
+
+void DrmDisplayHost::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-    const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-    const std::vector<float>& correction_matrix) {
-  sender_->GpuSetColorCorrection(snapshot_->display_id(), degamma_lut,
-                                 gamma_lut, correction_matrix);
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  sender_->GpuSetGammaCorrection(snapshot_->display_id(), degamma_lut,
+                                 gamma_lut);
 }
 
 void DrmDisplayHost::OnGpuProcessLaunched() {}

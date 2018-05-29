@@ -60,11 +60,12 @@ class GpuThreadAdapter {
   virtual bool GpuGetHDCPState(int64_t display_id) = 0;
   virtual bool GpuSetHDCPState(int64_t display_id,
                                display::HDCPState state) = 0;
-  virtual bool GpuSetColorCorrection(
+  virtual bool GpuSetColorMatrix(int64_t display_id,
+                                 const std::vector<float>& color_matrix) = 0;
+  virtual bool GpuSetGammaCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
-      const std::vector<display::GammaRampRGBEntry>& gamma_lut,
-      const std::vector<float>& correction_matrix) = 0;
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut) = 0;
 
   // Services needed by DrmWindowHost
   virtual bool GpuDestroyWindow(gfx::AcceleratedWidget widget) = 0;

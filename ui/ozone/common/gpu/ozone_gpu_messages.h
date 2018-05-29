@@ -153,11 +153,14 @@ IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetHDCPState,
                      int64_t /* display_id */,
                      display::HDCPState /* state */)
 
-IPC_MESSAGE_CONTROL4(OzoneGpuMsg_SetColorCorrection,
-                     int64_t,                                  // display ID,
-                     std::vector<display::GammaRampRGBEntry>,  // degamma lut
-                     std::vector<display::GammaRampRGBEntry>,  // gamma lut
-                     std::vector<float>)  // transform matrix
+IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetColorMatrix,
+                     int64_t,             // Display ID
+                     std::vector<float>)  // Color transform matrix
+
+IPC_MESSAGE_CONTROL3(OzoneGpuMsg_SetGammaCorrection,
+                     int64_t,                                  // Display ID
+                     std::vector<display::GammaRampRGBEntry>,  // Degamma lut
+                     std::vector<display::GammaRampRGBEntry>)  // Gamma lut
 
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_CheckOverlayCapabilities,
                      gfx::AcceleratedWidget /* widget */,
