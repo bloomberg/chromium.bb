@@ -785,7 +785,7 @@ bool UserSessionManager::RespectLocalePreference(
 
   const std::string* account_locale = NULL;
   if (pref_locale.empty() && user->has_gaia_account() &&
-      prefs->GetList(prefs::kAllowedLocales)->GetList().empty()) {
+      prefs->GetList(prefs::kAllowedUILocales)->GetList().empty()) {
     if (user->GetAccountLocale() == NULL)
       return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
@@ -810,9 +810,9 @@ bool UserSessionManager::RespectLocalePreference(
           ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
           : Profile::APP_LOCALE_CHANGED_VIA_LOGIN;
 
-  // check if pref_locale is allowed by policy (AllowedLocales)
-  if (!chromeos::locale_util::IsAllowedLocale(pref_locale, prefs)) {
-    pref_locale = chromeos::locale_util::GetAllowedFallbackLocale(prefs);
+  // check if pref_locale is allowed by policy (AllowedUILocales)
+  if (!chromeos::locale_util::IsAllowedUILocale(pref_locale, prefs)) {
+    pref_locale = chromeos::locale_util::GetAllowedFallbackUILocale(prefs);
     app_locale_changed_via = Profile::APP_LOCALE_CHANGED_VIA_POLICY;
   }
 

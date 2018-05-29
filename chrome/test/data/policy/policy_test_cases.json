@@ -3121,6 +3121,15 @@
     ]
   },
 
+  "AllowedUILocales": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "AllowedUILocales": ["en-US", "de"] },
+    "pref_mappings": [
+      { "pref": "intl.allowed_ui_locales" }
+    ]
+  },
+
 
   "----- Chrome OS device policies ---------------------------------------": {},
 
@@ -3759,9 +3768,6 @@
   },
 
   "SkipMetadataCheck": {
-  },
-
-  "AllowedLocales": {
   },
 
   "ArcBackupRestoreServiceEnabled": {

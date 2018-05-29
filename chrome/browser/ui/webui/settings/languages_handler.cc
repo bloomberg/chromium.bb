@@ -70,9 +70,9 @@ void LanguagesHandler::HandleSetProspectiveUILanguage(
   CHECK(args->GetString(0, &language_code));
 
 #if defined(OS_CHROMEOS)
-  // check if prospectiveUILanguage is allowed by policy (AllowedLocales)
-  if (!chromeos::locale_util::IsAllowedLocale(language_code,
-                                              profile_->GetPrefs())) {
+  // check if prospectiveUILanguage is allowed by policy (AllowedUILocales)
+  if (!chromeos::locale_util::IsAllowedUILocale(language_code,
+                                                profile_->GetPrefs())) {
     return;
   }
 #endif

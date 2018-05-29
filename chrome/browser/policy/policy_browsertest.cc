@@ -99,6 +99,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -110,6 +111,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -241,6 +243,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
+#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1085,16 +1088,7 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
 #endif
 
 #if defined(OS_CHROMEOS)
-class AllowedLocalesPolicyTest : public LoginPolicyTestBase {
- protected:
-  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
-    base::ListValue allowed_locales;
-    allowed_locales.AppendString("fr");
-    policy->SetKey(key::kAllowedLocales, std::move(allowed_locales));
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(AllowedLocalesPolicyTest, AllowedLocales) {
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedUILocales) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
@@ -1102,11 +1096,34 @@ IN_PROC_BROWSER_TEST_F(AllowedLocalesPolicyTest, AllowedLocales) {
       user_manager::UserManager::Get()->GetActiveUser();
   Profile* const profile =
       chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  PrefService* prefs = profile->GetPrefs();
+
+  // Set locale and preferred languages to "en-US".
+  prefs->SetString(prefs::kApplicationLocale, "en-US");
+  prefs->SetString(prefs::kLanguagePreferredLanguages, "en-US");
+
+  // Set policy to only allow "fr" as locale.
+  std::unique_ptr<base::DictionaryValue> policy =
+      std::make_unique<base::DictionaryValue>();
+  base::ListValue allowed_ui_locales;
+  allowed_ui_locales.AppendString("fr");
+  policy->SetKey(key::kAllowedUILocales, std::move(allowed_ui_locales));
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+}
+
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  const PrefService* prefs = profile->GetPrefs();
 
   // Verifies that the default locale has been overridden by policy
   // (see |GetMandatoryPoliciesValue|)
   Browser* browser = CreateBrowser(profile);
-  EXPECT_EQ("fr", profile->GetPrefs()->GetString(prefs::kApplicationLocale));
+  EXPECT_EQ("fr", prefs->GetString(prefs::kApplicationLocale));
   ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
   base::string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   base::string16 title;
@@ -1120,6 +1137,10 @@ IN_PROC_BROWSER_TEST_F(AllowedLocalesPolicyTest, AllowedLocales) {
   EXPECT_EQ("en-US", loaded);
   base::string16 english_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
   EXPECT_NE(french_title, english_title);
+
+  // Verifiy that the enforced locale is added into the list of
+  // preferred languages.
+  EXPECT_EQ("en-US,fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
 }
 #endif
 
