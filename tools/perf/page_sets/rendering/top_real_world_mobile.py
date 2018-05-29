@@ -25,9 +25,6 @@ class TopRealWorldMobilePage(rendering_story.RenderingStory):
         shared_page_state_class=shared_page_state_class)
 
   def RunPageInteractions(self, action_runner):
-    if self.action_on_load_complete:
-      action_runner.WaitForJavaScriptCondition(
-          'document.readyState == "complete"', timeout=30)
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollPage()
 
@@ -296,7 +293,12 @@ class WikipediaDelayedScrollMobilePage(TopRealWorldMobilePage):
         name_suffix=name_suffix,
         extra_browser_args=extra_browser_args,
         shared_page_state_class=shared_page_state_class)
-    self.action_on_load_complete = True
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.WaitForJavaScriptCondition(
+      'document.readyState == "complete"', timeout=30)
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class BlogspotMobilePage(TopRealWorldMobilePage):
