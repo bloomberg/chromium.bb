@@ -370,7 +370,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html 
 
 ### virtual/layout_ng/fast/block/float
 crbug.com/810335 virtual/layout_ng/fast/block/float/003.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/014.html [ Failure Crash ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/026.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/028.html [ Failure ]
@@ -412,7 +411,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 
 ### virtual/layout_ng/overflow
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
-crbug.com/724701 virtual/layout_ng/overflow/overflow-inline-001.html [ Failure ]
 
 ### single pixel underline Mac failures
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]
@@ -466,9 +464,6 @@ crbug.com/714962 virtual/layout_ng/fast/inline/nested-text-descendants.html [ Fa
 crbug.com/714962 virtual/layout_ng/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-continuations.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/styledEmptyInlinesWithBRs.html [ Failure ]
-
-### virtual/layout_ng/external/wpt/css/CSS2/linebox/
-crbug.com/714962 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow/
 crbug.com/714962 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
@@ -534,7 +529,7 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/text-orientation-ba
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-after-spanner.html [ Failure Crash Timeout ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-before-spanner.html [ Failure Crash Timeout ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-between-spanners.html [ Failure Crash Timeout ]
-crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Crash Timeout ]
+crbug.com/636993 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-inline-and-spanner-after-spanner-foreignObject.html [ Pass Crash Timeout ]
 
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/multicol-becomes-paged-fixed-height.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-auto-height.html [ Failure ]
@@ -807,7 +802,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-in
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/static-becomes-relpos-has-abspos.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/event-offset-complex-tree.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/event-offset-in-nested.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/multicol/event-offset.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/first-line-in-float-below-next-column-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/first-line-in-float-with-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/fixedpos-child-becomes-static.html [ Failure ]
@@ -1091,14 +1085,9 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/first-letter-inh
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/modal-dialog-crash.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/paged-x-column-gap.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_experimental/fast/pagination/paged-y-to-paged-x.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/repeating-thead-tfoot-paged-x.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/repeating-thead-tfoot-paged-y.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/short-pages-tall-content.html [ Timeout ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/viewport-x-vertical-rl-ltr.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/viewport-x-vertical-rl-rtl.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/viewport-y-vertical-rl-ltr.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/pagination/viewport-y-vertical-rl-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/abspos-after-forced-break.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/auto-scrollbar-shrink-to-fit.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/avoid-break-inside-first-child-nested.html [ Failure ]
@@ -1204,7 +1193,6 @@ crbug.com/824918 virtual/layout_ng_experimental/printing/fixed-positioned-header
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers-transformed.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned-headers-and-footers.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/printing/fixed-positioned.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/forced-break-tree-dump-only.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/iframe-print.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/list-item-with-empty-first-line.html [ Failure ]
