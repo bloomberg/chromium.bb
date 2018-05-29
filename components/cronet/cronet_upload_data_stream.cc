@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/android/cronet_upload_data_stream.h"
+#include "components/cronet/cronet_upload_data_stream.h"
 
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

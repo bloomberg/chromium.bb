@@ -24,6 +24,8 @@ source_set("cronet_common") {
     "cronet_global_state.h",
     "cronet_prefs_manager.cc",
     "cronet_prefs_manager.h",
+    "cronet_upload_data_stream.cc",
+    "cronet_upload_data_stream.h",
     "cronet_url_request.cc",
     "cronet_url_request.h",
     "cronet_url_request_context.cc",

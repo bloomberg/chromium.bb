@@ -183,8 +183,6 @@ source_set("cronet_static") {
     "//components/cronet/android/cronet_bidirectional_stream_adapter.h",
     "//components/cronet/android/cronet_library_loader.cc",
     "//components/cronet/android/cronet_library_loader.h",
-    "//components/cronet/android/cronet_upload_data_stream.cc",
-    "//components/cronet/android/cronet_upload_data_stream.h",
     "//components/cronet/android/cronet_upload_data_stream_adapter.cc",
     "//components/cronet/android/cronet_upload_data_stream_adapter.h",
     "//components/cronet/android/cronet_url_request_adapter.cc",

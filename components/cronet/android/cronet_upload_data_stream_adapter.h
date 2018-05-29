@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/cronet/android/cronet_upload_data_stream.h"
+#include "components/cronet/cronet_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 
 namespace base {
