@@ -322,6 +322,12 @@ void LayoutView::UpdateLayout() {
   ClearNeedsLayout();
 }
 
+LayoutRect LayoutView::LocalVisualRectIgnoringVisibility() const {
+  LayoutRect rect = VisualOverflowRect();
+  rect.Unite(LayoutRect(rect.Location(), ViewRect().Size()));
+  return rect;
+}
+
 void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                     TransformState& transform_state,
                                     MapCoordinatesFlags mode) const {

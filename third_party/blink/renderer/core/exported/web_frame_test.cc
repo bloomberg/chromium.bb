@@ -12367,6 +12367,25 @@ TEST_F(WebFrameSimTest, LayoutViewportExceedsLayoutOverflow) {
   ASSERT_EQ(IntSize(400, 600), area->ContentsSize());
 }
 
+TEST_F(WebFrameSimTest, LayoutViewLocalVisualRect) {
+  WebView().GetSettings()->SetViewportEnabled(true);
+  WebView().GetSettings()->SetViewportMetaEnabled(true);
+
+  WebView().Resize(WebSize(600, 400));
+  WebView().SetDefaultPageScaleLimits(0.5f, 2);
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <meta name='viewport' content='width=device-width, minimum-scale=0.5'>
+    <body style='margin: 0; width: 1800px; height: 1200px'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  ASSERT_EQ(LayoutRect(0, 0, 1200, 800),
+            GetDocument().GetLayoutView()->LocalVisualRect());
+}
+
 TEST_F(WebFrameSimTest, NamedLookupIgnoresEmptyNames) {
   SimRequest main_resource("https://example.com/main.html", "text/html");
   LoadURL("https://example.com/main.html");
