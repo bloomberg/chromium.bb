@@ -162,22 +162,27 @@ ShortcutsDatabase::Shortcut::MatchCore ShortcutsBackend::MatchToMatchCore(
     TemplateURLService* template_url_service,
     SearchTermsData* search_terms_data) {
   const AutocompleteMatch::Type match_type = GetTypeForShortcut(match.type);
-  const AutocompleteMatch& normalized_match =
-      AutocompleteMatch::IsSpecializedSearchType(match.type)
-          ? BaseSearchProvider::CreateSearchSuggestion(
-                match.search_terms_args->search_terms, match_type,
-                ui::PageTransitionCoreTypeIs(match.transition,
-                                             ui::PAGE_TRANSITION_KEYWORD),
-                match.GetTemplateURL(template_url_service, false),
-                *search_terms_data)
-          : match;
+
+  const AutocompleteMatch* normalized_match = &match;
+  AutocompleteMatch temp;
+
+  if (AutocompleteMatch::IsSpecializedSearchType(match.type)) {
+    DCHECK(match.search_terms_args);
+    temp = BaseSearchProvider::CreateSearchSuggestion(
+        match.search_terms_args->search_terms, match_type,
+        ui::PageTransitionCoreTypeIs(match.transition,
+                                     ui::PAGE_TRANSITION_KEYWORD),
+        match.GetTemplateURL(template_url_service, false), *search_terms_data);
+    normalized_match = &temp;
+  }
+
   return ShortcutsDatabase::Shortcut::MatchCore(
-      normalized_match.fill_into_edit, normalized_match.destination_url,
-      normalized_match.contents,
-      StripMatchMarkers(normalized_match.contents_class),
-      normalized_match.description,
-      StripMatchMarkers(normalized_match.description_class),
-      normalized_match.transition, match_type, normalized_match.keyword);
+      normalized_match->fill_into_edit, normalized_match->destination_url,
+      normalized_match->contents,
+      StripMatchMarkers(normalized_match->contents_class),
+      normalized_match->description,
+      StripMatchMarkers(normalized_match->description_class),
+      normalized_match->transition, match_type, normalized_match->keyword);
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
