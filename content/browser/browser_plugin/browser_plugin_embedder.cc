@@ -211,6 +211,21 @@ bool BrowserPluginEmbedder::WereAnyGuestsRecentlyAudible() {
 }
 
 // static
+bool BrowserPluginEmbedder::GuestCurrentlyAudibleCallback(WebContents* guest) {
+  return guest->IsCurrentlyAudible();
+}
+
+bool BrowserPluginEmbedder::AreAnyGuestsCurrentlyAudible() {
+  if (!GetBrowserPluginGuestManager())
+    return false;
+
+  return GetBrowserPluginGuestManager()->ForEachGuest(
+      web_contents(),
+      base::BindRepeating(
+          &BrowserPluginEmbedder::GuestCurrentlyAudibleCallback));
+}
+
+// static
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                                            WebContents* guest) {
   *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)

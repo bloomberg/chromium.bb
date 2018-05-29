@@ -628,6 +628,17 @@ WebContentsImpl::~WebContentsImpl() {
   pepper_playback_observer_.reset();
 #endif  // defined(ENABLED_PLUGINS)
 
+  // If audio is playing then notify external observers of the audio stream
+  // disappearing.
+  if (is_currently_audible_) {
+    is_currently_audible_ = false;
+    for (auto& observer : observers_)
+      observer.OnAudioStateChanged(false);
+
+    if (GetOuterWebContents())
+      GetOuterWebContents()->OnAudioStateChanged();
+  }
+
   for (auto& observer : observers_)
     observer.FrameDeleted(root->current_frame_host());
 
@@ -1429,7 +1440,7 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
 }
 
 bool WebContentsImpl::IsCurrentlyAudible() {
-  return audio_stream_monitor()->IsCurrentlyAudible();
+  return is_currently_audible_;
 }
 
 bool WebContentsImpl::IsConnectedToBluetoothDevice() const {
@@ -1498,16 +1509,34 @@ void WebContentsImpl::NotifyNavigationStateChanged(
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::OnAudioStateChanged(bool is_audible) {
-  SendPageMessage(new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_audible));
+void WebContentsImpl::OnAudioStateChanged() {
+  // This notification can come from any embedded contents or from this
+  // WebContents' stream monitor. Aggregate these signals to get the actual
+  // state.
+  bool is_currently_audible =
+      audio_stream_monitor_.IsCurrentlyAudible() ||
+      (browser_plugin_embedder_ &&
+       browser_plugin_embedder_->AreAnyGuestsCurrentlyAudible());
+  if (is_currently_audible == is_currently_audible_)
+    return;
+
+  // Update internal state.
+  is_currently_audible_ = is_currently_audible;
+  was_ever_audible_ = was_ever_audible_ || is_currently_audible_;
+
+  SendPageMessage(
+      new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_currently_audible_));
 
   // Notification for UI updates in response to the changed audio state.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 
-  was_ever_audible_ = was_ever_audible_ || is_audible;
+  // Ensure that audio state changes propagate from innermost to outermost
+  // WebContents.
+  if (GetOuterWebContents())
+    GetOuterWebContents()->OnAudioStateChanged();
 
   for (auto& observer : observers_)
-    observer.OnAudioStateChanged(is_audible);
+    observer.OnAudioStateChanged(is_currently_audible_);
 }
 
 base::TimeTicks WebContentsImpl::GetLastActiveTime() const {

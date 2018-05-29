@@ -80,6 +80,10 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   BrowserPluginGuest* GetFullPageGuest();
 
   // Polls all guests for this web contents and returns true if any of them
+  // are currently audible.
+  bool AreAnyGuestsCurrentlyAudible();
+
+  // Polls all guests for this web contents and returns true if any of them
   // were audible recently.
   bool WereAnyGuestsRecentlyAudible();
 
@@ -98,6 +102,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   static bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                              WebContents* guest);
 
+  static bool GuestCurrentlyAudibleCallback(WebContents* guest);
   static bool GuestRecentlyAudibleCallback(WebContents* guest);
 
   // Message handlers.

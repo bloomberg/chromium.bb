@@ -437,8 +437,10 @@ class WebContents : public PageNavigator,
   // change.
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
 
-  // Notifies the WebContents that audio started or stopped being audible.
-  virtual void OnAudioStateChanged(bool is_audio_playing) = 0;
+  // Notifies the WebContents that audio state has changed. The contents is
+  // aware of all of its potential sources of audio and needs to poll them
+  // directly to determine its aggregate audio state.
+  virtual void OnAudioStateChanged() = 0;
 
   // Get/Set the last time that the WebContents was made active (either when it
   // was created or shown with WasShown()).

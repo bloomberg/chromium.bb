@@ -225,6 +225,7 @@ void TestWebContents::SetWasRecentlyAudible(bool audible) {
 
 void TestWebContents::SetIsCurrentlyAudible(bool audible) {
   audio_stream_monitor()->set_is_currently_audible_for_testing(audible);
+  is_currently_audible_ = audible;
 }
 
 void TestWebContents::TestDidReceiveInputEvent(
