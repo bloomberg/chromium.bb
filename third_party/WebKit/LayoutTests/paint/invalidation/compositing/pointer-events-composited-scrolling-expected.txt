@@ -57,14 +57,6 @@
       "reason": "compositing update"
     },
     {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='content'",
       "reason": "compositing update"
     }

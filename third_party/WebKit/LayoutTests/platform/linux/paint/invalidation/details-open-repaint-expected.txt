@@ -52,10 +52,6 @@
       "reason": "appeared"
     },
     {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
       "object": "HorizontalScrollbar",
       "reason": "scroll control"
     },

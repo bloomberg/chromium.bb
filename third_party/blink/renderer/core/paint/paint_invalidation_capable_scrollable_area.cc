@@ -138,7 +138,12 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
   LayoutSize previous_scrollbar_used_space_in_box;
   if (!previously_was_overlay)
     previous_scrollbar_used_space_in_box = previous_visual_rect.Size();
-  if (new_scrollbar_used_space_in_box != previous_scrollbar_used_space_in_box) {
+
+  // The IsEmpty() check avoids invalidaiton in cases when the visual rect
+  // changes from (0,0 0x0) to (0,0 0x100).
+  if (!(new_scrollbar_used_space_in_box.IsEmpty() &&
+        previous_scrollbar_used_space_in_box.IsEmpty()) &&
+      new_scrollbar_used_space_in_box != previous_scrollbar_used_space_in_box) {
     context.painting_layer->SetNeedsRepaint();
     ObjectPaintInvalidator(box).InvalidateDisplayItemClient(
         box, PaintInvalidationReason::kGeometry);
