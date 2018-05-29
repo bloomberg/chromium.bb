@@ -63,10 +63,4 @@ const AudioParamDescriptor*
   return nullptr;
 }
 
-void AudioWorkletProcessorDefinition::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(constructor_.Cast<v8::Value>());
-  visitor->TraceWrappers(process_.Cast<v8::Value>());
-}
-
 }  // namespace blink

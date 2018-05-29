@@ -44,8 +44,6 @@ class WebGLContextObject : public WebGLObject {
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
  protected:
   explicit WebGLContextObject(WebGLRenderingContextBase*);
 

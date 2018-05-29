@@ -192,11 +192,6 @@ void MIDIPort::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void MIDIPort::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(access_);
-  EventTargetWithInlineData::TraceWrappers(visitor);
-}
-
 void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {
   // The frame should exist, but it may be already detached and the execution
   // context may be lost here.

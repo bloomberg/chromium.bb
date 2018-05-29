@@ -31,7 +31,6 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   }
   ~GeoNotifier() = default;
   void Trace(blink::Visitor*);
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override { return "GeoNotifier"; }
 
   const PositionOptions& Options() const { return options_; }

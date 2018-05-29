@@ -122,7 +122,6 @@ class XRSession final : public EventTargetWithInlineData {
   void SetNonExclusiveProjectionMatrix(const WTF::Vector<float>&);
 
   void Trace(blink::Visitor*) override;
-  void TraceWrappers(blink::ScriptWrappableVisitor*) const override;
 
  private:
   class XRSessionResizeObserverDelegate;

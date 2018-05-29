@@ -333,9 +333,4 @@ void XRWebGLLayer::Trace(blink::Visitor* visitor) {
   XRLayer::Trace(visitor);
 }
 
-void XRWebGLLayer::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(webgl_context_);
-  XRLayer::TraceWrappers(visitor);
-}
-
 }  // namespace blink

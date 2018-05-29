@@ -43,11 +43,6 @@ void GeoNotifier::Trace(blink::Visitor* visitor) {
   visitor->Trace(fatal_error_);
 }
 
-void GeoNotifier::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(success_callback_);
-  visitor->TraceWrappers(error_callback_);
-}
-
 void GeoNotifier::SetFatalError(PositionError* error) {
   // If a fatal error has already been set, stick with it. This makes sure that
   // when permission is denied, this is the error reported, as required by the

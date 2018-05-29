@@ -75,17 +75,6 @@ void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   ThreadedWorkletGlobalScope::Trace(visitor);
 }
 
-void AnimationWorkletGlobalScope::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto animator : animators_)
-    visitor->TraceWrappers(animator.value);
-
-  for (auto definition : animator_definitions_)
-    visitor->TraceWrappers(definition.value);
-
-  ThreadedWorkletGlobalScope::TraceWrappers(visitor);
-}
-
 void AnimationWorkletGlobalScope::Dispose() {
   DCHECK(IsContextThread());
   if (AnimationWorkletProxyClient* proxy_client =

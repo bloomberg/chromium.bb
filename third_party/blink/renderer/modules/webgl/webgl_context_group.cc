@@ -50,10 +50,4 @@ uint32_t WebGLContextGroup::NumberOfContextLosses() const {
   return number_of_context_losses_;
 }
 
-void WebGLContextGroup::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (auto context : contexts_) {
-    visitor->TraceWrappers(context);
-  }
-}
-
 }  // namespace blink

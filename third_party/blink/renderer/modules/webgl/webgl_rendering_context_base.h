@@ -570,8 +570,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void Trace(blink::Visitor*) override;
 
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
   // Returns approximate gpu memory allocated per pixel.
   int ExternallyAllocatedBufferCountPerPixel() override;
 
@@ -846,7 +844,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     virtual WebGLExtension* GetExtensionObjectIfAlreadyEnabled() = 0;
 
     virtual void Trace(blink::Visitor* visitor) {}
-    void TraceWrappers(ScriptWrappableVisitor*) const override {}
     const char* NameInHeapSnapshot() const override {
       return "ExtensionTracker";
     }
@@ -895,11 +892,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     void Trace(blink::Visitor* visitor) override {
       visitor->Trace(extension_);
       ExtensionTracker::Trace(visitor);
-    }
-
-    void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-      visitor->TraceWrappers(extension_);
-      ExtensionTracker::TraceWrappers(visitor);
     }
 
    private:

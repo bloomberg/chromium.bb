@@ -128,13 +128,6 @@ void IDBDatabase::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void IDBDatabase::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (const auto& observer : observers_.Values()) {
-    visitor->TraceWrappers(observer);
-  }
-  EventTargetWithInlineData::TraceWrappers(visitor);
-}
-
 int64_t IDBDatabase::NextTransactionId() {
   // Only keep a 32-bit counter to allow ports to use the other 32
   // bits of the id.

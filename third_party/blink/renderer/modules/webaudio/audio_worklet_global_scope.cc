@@ -394,15 +394,4 @@ void AudioWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   ThreadedWorkletGlobalScope::Trace(visitor);
 }
 
-void AudioWorkletGlobalScope::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  for (auto definition : processor_definition_map_)
-    visitor->TraceWrappers(definition.value);
-
-  for (auto processor : processor_instances_)
-    visitor->TraceWrappers(processor);
-
-  ThreadedWorkletGlobalScope::TraceWrappers(visitor);
-}
-
 }  // namespace blink

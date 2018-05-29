@@ -14,14 +14,6 @@ void GeolocationWatchers::Trace(blink::Visitor* visitor) {
   visitor->Trace(notifier_to_id_map_);
 }
 
-void GeolocationWatchers::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  for (const auto& notifier : id_to_notifier_map_.Values())
-    visitor->TraceWrappers(notifier);
-  // |notifier_to_id_map_| is a HeapHashMap that is the inverse mapping of
-  // |id_to_notifier_map_|.  As the contents are the same, we don't need to
-  // trace |id_to_notifier_map_|.
-}
-
 bool GeolocationWatchers::Add(int id, GeoNotifier* notifier) {
   DCHECK_GT(id, 0);
   if (!id_to_notifier_map_.insert(id, notifier).is_new_entry)

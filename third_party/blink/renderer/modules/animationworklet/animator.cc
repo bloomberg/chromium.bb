@@ -28,11 +28,6 @@ void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(instance_.Cast<v8::Value>());
 }
 
-void Animator::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(definition_);
-  visitor->TraceWrappers(instance_.Cast<v8::Value>());
-}
-
 bool Animator::Animate(ScriptState* script_state,
                        const CompositorMutatorInputState::AnimationState& input,
                        CompositorMutatorOutputState::AnimationState* output) {

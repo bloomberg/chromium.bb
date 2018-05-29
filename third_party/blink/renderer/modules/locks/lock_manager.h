@@ -42,11 +42,6 @@ class LockManager final : public ScriptWrappable,
 
   void Trace(blink::Visitor*) override;
 
-  // Wrapper tracing is needed for callbacks. The reference chain is
-  // NavigatorLocksImpl -> LockManager -> LockRequestImpl ->
-  // V8LockGrantedCallback.
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
-
   // Terminate all outstanding requests when the context is destroyed, since
   // this can unblock requests by other contexts.
   void ContextDestroyed(ExecutionContext*) override;

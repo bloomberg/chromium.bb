@@ -72,7 +72,6 @@ class MODULES_EXPORT CSSPaintDefinition final
   }
 
   virtual void Trace(blink::Visitor* visitor);
-  void TraceWrappers(ScriptWrappableVisitor*) const override;
   const char* NameInHeapSnapshot() const override {
     return "CSSPaintDefinition";
   }
