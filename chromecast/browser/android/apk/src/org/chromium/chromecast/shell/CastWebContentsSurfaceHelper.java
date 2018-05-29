@@ -22,7 +22,7 @@ import org.chromium.chromecast.base.Observable;
 import org.chromium.chromecast.base.ScopeFactories;
 import org.chromium.chromecast.base.ScopeFactory;
 import org.chromium.chromecast.base.Unit;
-import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.components.embedder_support.media.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.WebContents;

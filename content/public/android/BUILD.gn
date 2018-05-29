@@ -106,7 +106,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/app/SandboxedProcessService8.java",
     "java/src/org/chromium/content/app/SandboxedProcessService9.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
-    "java/src/org/chromium/content/browser/ActivityContentVideoViewEmbedder.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BindingManager.java",

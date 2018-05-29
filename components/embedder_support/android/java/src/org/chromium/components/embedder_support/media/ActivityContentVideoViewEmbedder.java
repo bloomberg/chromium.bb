@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.components.embedder_support.media;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -22,7 +22,7 @@ public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedde
     private final Activity mActivity;
     private View mView;
 
-    public ActivityContentVideoViewEmbedder(Activity activity)  {
+    public ActivityContentVideoViewEmbedder(Activity activity) {
         this.mActivity = activity;
     }
 
@@ -30,10 +30,8 @@ public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedde
     public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.addView(view, 0,
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        Gravity.CENTER));
+                new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
         setSystemUiVisibility(true);
         mView = view;
     }
@@ -54,8 +52,7 @@ public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedde
     public void setSystemUiVisibility(boolean enterFullscreen) {
         View decor = mActivity.getWindow().getDecorView();
         if (enterFullscreen) {
-            mActivity.getWindow().setFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            mActivity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -66,10 +63,8 @@ public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedde
 
         int systemUiVisibility = decor.getSystemUiVisibility();
         int flags = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         if (enterFullscreen) {
             systemUiVisibility |= flags;
         } else {
