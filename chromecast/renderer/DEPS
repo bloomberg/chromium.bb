@@ -14,6 +14,5 @@ include_rules = [
   "+media/renderers",
   "+mojo/public",
   "+services/service_manager/public",
-  "+third_party/blink/public/platform",
-  "+third_party/blink/public/web",
+  "+third_party/blink/public",
 ]
