@@ -22,12 +22,8 @@
   Audits2TestRunner.getRunButton().click();
 
   var results = await Audits2TestRunner.waitForResults();
-  TestRunner.addResult(`\n=============== Lighthouse Results ===============`);
-
-  Object.keys(results.audits).sort().forEach(auditName => {
-    var audit = results.audits[auditName];
-    TestRunner.addResult(`${audit.name}: ${Boolean(audit.rawValue)}`);
-  });
+  TestRunner.addResult(`\n=============== Audits run ===============`);
+  TestRunner.addResult(Object.keys(results.audits).sort().join('\n'));
 
   TestRunner.completeTest();
 })();
