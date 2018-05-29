@@ -167,8 +167,8 @@ void UnifiedSystemTrayView::SetDetailedView(views::View* detailed_view) {
 
 void UnifiedSystemTrayView::ResetDetailedView() {
   detailed_view_container_->RemoveAllChildViews(true /* delete_children */);
+  detailed_view_container_->SetVisible(false);
   system_tray_container_->SetVisible(true);
-  Layout();
 }
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
