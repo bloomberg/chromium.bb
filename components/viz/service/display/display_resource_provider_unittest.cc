@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/display/display_resource_provider.h"
-#include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -364,7 +364,7 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   bool use_gpu() const { return use_gpu_; }
 
   void MakeChildResourceProvider() {
-    child_resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>(
         child_context_provider_.get(), child_needs_sync_token_);
   }
 
@@ -436,7 +436,7 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
-  std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
 };
 
@@ -740,9 +740,8 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
     return;
 
   bool need_sync_tokens = false;
-  auto no_token_resource_provider =
-      std::make_unique<cc::LayerTreeResourceProvider>(
-          child_context_provider_.get(), need_sync_tokens);
+  auto no_token_resource_provider = std::make_unique<ClientResourceProvider>(
+      child_context_provider_.get(), need_sync_tokens);
 
   GLuint external_texture_id = child_gl_->CreateExternalTexture();
 
@@ -1000,10 +999,9 @@ class ResourceProviderTestImportedResourceGLFilters {
         TestContextProvider::Create(std::move(child_gl_owned));
     child_context_provider->BindToCurrentThread();
 
-    auto child_resource_provider =
-        std::make_unique<cc::LayerTreeResourceProvider>(
-            child_context_provider.get(),
-            /*delegated_sync_points_required=*/true);
+    auto child_resource_provider = std::make_unique<ClientResourceProvider>(
+        child_context_provider.get(),
+        /*delegated_sync_points_required=*/true);
 
     unsigned texture_id = 1;
     gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -1047,7 +1045,7 @@ class ResourceProviderTestImportedResourceGLFilters {
     ResourceId mapped_resource_id = resource_map[resource_id];
     {
       // The verified flush flag will be set by
-      // cc::LayerTreeResourceProvider::PrepareSendToParent. Before checking if
+      // ClientResourceProvider::PrepareSendToParent. Before checking if
       // the gpu::SyncToken matches, set this flag first.
       sync_token.SetVerifyFlush();
 
@@ -1157,10 +1155,9 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
       TestContextProvider::Create(std::move(child_gl_owned));
   child_context_provider->BindToCurrentThread();
 
-  auto child_resource_provider =
-      std::make_unique<cc::LayerTreeResourceProvider>(
-          child_context_provider.get(),
-          /*delegated_sync_points_required=*/true);
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>(
+      child_context_provider.get(),
+      /*delegated_sync_points_required=*/true);
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -1202,7 +1199,7 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   ResourceId mapped_resource_id = resource_map[resource_id];
   {
     // The verified flush flag will be set by
-    // cc::LayerTreeResourceProvider::PrepareSendToParent. Before checking if
+    // ClientResourceProvider::PrepareSendToParent. Before checking if
     // the gpu::SyncToken matches, set this flag first.
     sync_token.SetVerifyFlush();
 

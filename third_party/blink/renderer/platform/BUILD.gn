@@ -1525,7 +1525,8 @@ jumbo_component("platform") {
   deps = [
     ":platform_export",
     "//base/allocator:buildflags",
-    "//components/viz/service",
+    "//components/viz/client",
+    "//components/viz/common",
     "//device/vr/public/mojom:mojom_blink",
     "//gin",
     "//mojo/public/cpp/base",

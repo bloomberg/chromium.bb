@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 
 #include "base/bits.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -18,22 +18,20 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
-using gpu::gles2::GLES2Interface;
+namespace viz {
 
-namespace cc {
-
-struct LayerTreeResourceProvider::ImportedResource {
-  viz::TransferableResource resource;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+struct ClientResourceProvider::ImportedResource {
+  TransferableResource resource;
+  std::unique_ptr<SingleReleaseCallback> release_callback;
   int exported_count = 0;
   bool marked_for_deletion = false;
 
   gpu::SyncToken returned_sync_token;
   bool returned_lost = false;
 
-  ImportedResource(viz::ResourceId id,
-                   const viz::TransferableResource& resource,
-                   std::unique_ptr<viz::SingleReleaseCallback> release_callback)
+  ImportedResource(ResourceId id,
+                   const TransferableResource& resource,
+                   std::unique_ptr<SingleReleaseCallback> release_callback)
       : resource(resource),
         release_callback(std::move(release_callback)),
         // If the resource is immediately deleted, it returns the same SyncToken
@@ -41,7 +39,7 @@ struct LayerTreeResourceProvider::ImportedResource {
         // backing or reusing it.
         returned_sync_token(resource.mailbox_holder.sync_token) {
     // Replace the |resource| id with the local id from this
-    // LayerTreeResourceProvider.
+    // ClientResourceProvider.
     this->resource.id = id;
   }
   ~ImportedResource() = default;
@@ -50,15 +48,15 @@ struct LayerTreeResourceProvider::ImportedResource {
   ImportedResource& operator=(ImportedResource&&) = default;
 };
 
-LayerTreeResourceProvider::LayerTreeResourceProvider(
-    viz::ContextProvider* compositor_context_provider,
+ClientResourceProvider::ClientResourceProvider(
+    ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required)
     : delegated_sync_points_required_(delegated_sync_points_required),
       compositor_context_provider_(compositor_context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-LayerTreeResourceProvider::~LayerTreeResourceProvider() {
+ClientResourceProvider::~ClientResourceProvider() {
   for (auto& pair : imported_resources_) {
     ImportedResource& imported = pair.second;
     // If the resource is exported we can't report when it can be used again
@@ -68,7 +66,7 @@ LayerTreeResourceProvider::~LayerTreeResourceProvider() {
   }
 }
 
-gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
+gpu::SyncToken ClientResourceProvider::GenerateSyncTokenHelper(
     gpu::gles2::GLES2Interface* gl) {
   DCHECK(gl);
   gpu::SyncToken sync_token;
@@ -78,7 +76,7 @@ gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
   return sync_token;
 }
 
-gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
+gpu::SyncToken ClientResourceProvider::GenerateSyncTokenHelper(
     gpu::raster::RasterInterface* ri) {
   DCHECK(ri);
   gpu::SyncToken sync_token;
@@ -88,10 +86,10 @@ gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
   return sync_token;
 }
 
-void LayerTreeResourceProvider::PrepareSendToParent(
-    const std::vector<viz::ResourceId>& export_ids,
-    std::vector<viz::TransferableResource>* list,
-    viz::ContextProvider* context_provider) {
+void ClientResourceProvider::PrepareSendToParent(
+    const std::vector<ResourceId>& export_ids,
+    std::vector<TransferableResource>* list,
+    ContextProvider* context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This function goes through the array multiple times, store the resources
@@ -100,7 +98,7 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   // will become invalid.
   std::vector<ImportedResource*> imports;
   imports.reserve(export_ids.size());
-  for (const viz::ResourceId id : export_ids) {
+  for (const ResourceId id : export_ids) {
     auto it = imported_resources_.find(id);
     DCHECK(it != imported_resources_.end());
     imports.push_back(&it->second);
@@ -131,12 +129,12 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   }
 }
 
-void LayerTreeResourceProvider::ReceiveReturnsFromParent(
-    const std::vector<viz::ReturnedResource>& resources) {
+void ClientResourceProvider::ReceiveReturnsFromParent(
+    const std::vector<ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  for (const viz::ReturnedResource& returned : resources) {
-    viz::ResourceId local_id = returned.id;
+  for (const ReturnedResource& returned : resources) {
+    ResourceId local_id = returned.id;
 
     auto import_it = imported_resources_.find(local_id);
     DCHECK(import_it != imported_resources_.end());
@@ -162,18 +160,18 @@ void LayerTreeResourceProvider::ReceiveReturnsFromParent(
   }
 }
 
-viz::ResourceId LayerTreeResourceProvider::ImportResource(
-    const viz::TransferableResource& resource,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
+ResourceId ClientResourceProvider::ImportResource(
+    const TransferableResource& resource,
+    std::unique_ptr<SingleReleaseCallback> release_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  viz::ResourceId id = next_id_++;
+  ResourceId id = next_id_++;
   auto result = imported_resources_.emplace(
       id, ImportedResource(id, resource, std::move(release_callback)));
   DCHECK(result.second);  // If false, the id was already in the map.
   return id;
 }
 
-void LayerTreeResourceProvider::RemoveImportedResource(viz::ResourceId id) {
+void ClientResourceProvider::RemoveImportedResource(ResourceId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = imported_resources_.find(id);
   DCHECK(it != imported_resources_.end());
@@ -186,29 +184,29 @@ void LayerTreeResourceProvider::RemoveImportedResource(viz::ResourceId id) {
   }
 }
 
-bool LayerTreeResourceProvider::IsTextureFormatSupported(
-    viz::ResourceFormat format) const {
+bool ClientResourceProvider::IsTextureFormatSupported(
+    ResourceFormat format) const {
   gpu::Capabilities caps;
   if (compositor_context_provider_)
     caps = compositor_context_provider_->ContextCapabilities();
 
   switch (format) {
-    case viz::ALPHA_8:
-    case viz::RGBA_4444:
-    case viz::RGBA_8888:
-    case viz::RGB_565:
-    case viz::LUMINANCE_8:
+    case ALPHA_8:
+    case RGBA_4444:
+    case RGBA_8888:
+    case RGB_565:
+    case LUMINANCE_8:
       return true;
-    case viz::BGRA_8888:
+    case BGRA_8888:
       return caps.texture_format_bgra8888;
-    case viz::ETC1:
+    case ETC1:
       return caps.texture_format_etc1;
-    case viz::RED_8:
+    case RED_8:
       return caps.texture_rg;
-    case viz::R16_EXT:
+    case R16_EXT:
       return caps.texture_norm16;
-    case viz::LUMINANCE_F16:
-    case viz::RGBA_F16:
+    case LUMINANCE_F16:
+    case RGBA_F16:
       return caps.texture_half_float_linear;
   }
 
@@ -216,31 +214,31 @@ bool LayerTreeResourceProvider::IsTextureFormatSupported(
   return false;
 }
 
-bool LayerTreeResourceProvider::IsRenderBufferFormatSupported(
-    viz::ResourceFormat format) const {
+bool ClientResourceProvider::IsRenderBufferFormatSupported(
+    ResourceFormat format) const {
   gpu::Capabilities caps;
   if (compositor_context_provider_)
     caps = compositor_context_provider_->ContextCapabilities();
 
   switch (format) {
-    case viz::RGBA_4444:
-    case viz::RGBA_8888:
-    case viz::RGB_565:
+    case RGBA_4444:
+    case RGBA_8888:
+    case RGB_565:
       return true;
-    case viz::BGRA_8888:
+    case BGRA_8888:
       return caps.render_buffer_format_bgra8888;
-    case viz::RGBA_F16:
+    case RGBA_F16:
       // TODO(ccameron): This will always return false on pixel tests, which
       // makes it un-test-able until we upgrade Mesa.
       // https://crbug.com/687720
       return caps.texture_half_float_linear &&
              caps.color_buffer_half_float_rgba;
-    case viz::LUMINANCE_8:
-    case viz::ALPHA_8:
-    case viz::RED_8:
-    case viz::ETC1:
-    case viz::LUMINANCE_F16:
-    case viz::R16_EXT:
+    case LUMINANCE_8:
+    case ALPHA_8:
+    case RED_8:
+    case ETC1:
+    case LUMINANCE_F16:
+    case R16_EXT:
       // We don't currently render into these formats. If we need to render into
       // these eventually, we should expand this logic.
       return false;
@@ -250,12 +248,12 @@ bool LayerTreeResourceProvider::IsRenderBufferFormatSupported(
   return false;
 }
 
-LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
+ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GrContext* gr_context,
     GLuint texture_id,
     GLenum texture_target,
     const gfx::Size& size,
-    viz::ResourceFormat format,
+    ResourceFormat format,
     bool can_use_lcd_text,
     int msaa_sample_count) {
   GrGLTextureInfo texture_info;
@@ -273,12 +271,12 @@ LayerTreeResourceProvider::ScopedSkSurface::ScopedSkSurface(
       &surface_props);
 }
 
-LayerTreeResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
+ClientResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
   if (surface_)
     surface_->prepareForExternalIO();
 }
 
-SkSurfaceProps LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
+SkSurfaceProps ClientResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
     bool can_use_lcd_text) {
   uint32_t flags = 0;
   // Use unknown pixel geometry to disable LCD text.
@@ -291,17 +289,17 @@ SkSurfaceProps LayerTreeResourceProvider::ScopedSkSurface::ComputeSurfaceProps(
   return surface_props;
 }
 
-void LayerTreeResourceProvider::ValidateResource(viz::ResourceId id) const {
+void ClientResourceProvider::ValidateResource(ResourceId id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(id);
   DCHECK(imported_resources_.find(id) != imported_resources_.end());
 }
 
-bool LayerTreeResourceProvider::InUseByConsumer(viz::ResourceId id) {
+bool ClientResourceProvider::InUseByConsumer(ResourceId id) {
   auto it = imported_resources_.find(id);
   DCHECK(it != imported_resources_.end());
   ImportedResource& imported = it->second;
   return imported.exported_count > 0 || imported.returned_lost;
 }
 
-}  // namespace cc
+}  // namespace viz

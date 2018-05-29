@@ -19,8 +19,11 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace viz {
+class ClientResourceProvider;
+}
+
 namespace cc {
-class LayerTreeResourceProvider;
 
 class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
  public:
@@ -45,7 +48,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   void PushPropertiesTo(LayerImpl* layer) override;
 
   bool WillDraw(DrawMode draw_mode,
-                LayerTreeResourceProvider* resource_provider) override;
+                viz::ClientResourceProvider* resource_provider) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 

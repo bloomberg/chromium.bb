@@ -9,11 +9,11 @@
 
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -266,7 +266,7 @@ std::unique_ptr<RenderPass> CreateRenderPassWithTransform(
 }
 
 static ResourceId CreateResourceInLayerTree(
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     const gfx::Size& size,
     bool is_overlay_candidate) {
   auto resource = TransferableResource::MakeGLOverlay(
@@ -281,12 +281,11 @@ static ResourceId CreateResourceInLayerTree(
   return resource_id;
 }
 
-ResourceId CreateResource(
-    DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
-    ContextProvider* child_context_provider,
-    const gfx::Size& size,
-    bool is_overlay_candidate) {
+ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
+                          ClientResourceProvider* child_resource_provider,
+                          ContextProvider* child_context_provider,
+                          const gfx::Size& size,
+                          bool is_overlay_candidate) {
   ResourceId resource_id = CreateResourceInLayerTree(
       child_resource_provider, size, is_overlay_candidate);
 
@@ -320,7 +319,7 @@ SolidColorDrawQuad* CreateSolidColorQuadAt(
 
 TextureDrawQuad* CreateCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass,
@@ -348,7 +347,7 @@ TextureDrawQuad* CreateCandidateQuadAt(
 
 TextureDrawQuad* CreateTransparentCandidateQuadAt(
     DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass,
@@ -376,7 +375,7 @@ TextureDrawQuad* CreateTransparentCandidateQuadAt(
 
 StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass,
@@ -399,7 +398,7 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
 
 TextureDrawQuad* CreateFullscreenCandidateQuad(
     DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass) {
@@ -410,7 +409,7 @@ TextureDrawQuad* CreateFullscreenCandidateQuad(
 
 StreamVideoDrawQuad* CreateFullscreenCandidateVideoQuad(
     DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass,
@@ -422,7 +421,7 @@ StreamVideoDrawQuad* CreateFullscreenCandidateVideoQuad(
 
 YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
     DisplayResourceProvider* parent_resource_provider,
-    cc::LayerTreeResourceProvider* child_resource_provider,
+    ClientResourceProvider* child_resource_provider,
     ContextProvider* child_context_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass) {
@@ -531,7 +530,7 @@ class OverlayTest : public testing::Test {
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
-        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+        cc::FakeResourceProvider::CreateClientResourceProvider(
             child_provider_.get());
 
     overlay_processor_ =
@@ -545,7 +544,7 @@ class OverlayTest : public testing::Test {
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestContextProvider> child_provider_;
-  std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<OverlayProcessor> overlay_processor_;
   gfx::Rect damage_rect_;
   std::vector<gfx::Rect> content_bounds_;
@@ -2595,7 +2594,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
-        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
+        cc::FakeResourceProvider::CreateClientResourceProvider(
             child_provider_.get());
   }
 
@@ -2638,7 +2637,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
   std::unique_ptr<OverlayInfoRendererGL> renderer_;
   scoped_refptr<TestContextProvider> provider_;
   scoped_refptr<TestContextProvider> child_provider_;
-  std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   MockOverlayScheduler scheduler_;
 };
 
@@ -2829,7 +2828,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
 
   // Return the resource map.
   std::unordered_map<ResourceId, ResourceId> resource_map =
-      SendResourceAndGetChildToParentMap(
+      cc::SendResourceAndGetChildToParentMap(
           {resource1, resource2, resource3}, resource_provider_.get(),
           child_resource_provider_.get(), child_provider_.get());
 
@@ -3018,7 +3017,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
 
   // Return the resource map.
   std::unordered_map<ResourceId, ResourceId> resource_map =
-      SendResourceAndGetChildToParentMap(
+      cc::SendResourceAndGetChildToParentMap(
           {resource1, resource2, resource3}, resource_provider_.get(),
           child_resource_provider_.get(), child_provider_.get());
   ResourceId mapped_resource1 = resource_map[resource1];

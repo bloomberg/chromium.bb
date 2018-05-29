@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/staging_buffer_pool.h"
-#include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
 namespace gpu {

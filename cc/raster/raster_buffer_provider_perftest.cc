@@ -16,11 +16,11 @@
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/tiles/tile_task_manager.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
@@ -331,7 +331,7 @@ class RasterBufferProviderPerfTestBase {
   scoped_refptr<viz::ContextProvider> compositor_context_provider_;
   scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
   std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_;
-  std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
@@ -501,14 +501,14 @@ class RasterBufferProviderPerfTest
 
  private:
   void Create3dResourceProvider() {
-    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
         compositor_context_provider_.get());
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider_ =
-        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
+        FakeResourceProvider::CreateClientResourceProvider(nullptr);
   }
 
   std::string TestModifierString() const {
@@ -571,7 +571,7 @@ class RasterBufferProviderCommonPerfTest
  public:
   // Overridden from testing::Test:
   void SetUp() override {
-    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
         compositor_context_provider_.get());
     resource_pool_ = std::make_unique<ResourcePool>(
         resource_provider_.get(), compositor_context_provider_.get(),

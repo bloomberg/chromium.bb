@@ -7,8 +7,8 @@
 #include <memory>
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -28,7 +28,7 @@ void VideoFrameResourceProvider::Initialize(
     viz::ContextProvider* media_context_provider,
     viz::SharedBitmapReporter* shared_bitmap_reporter) {
   context_provider_ = media_context_provider;
-  resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
+  resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
       media_context_provider, true);
 
   int max_texture_size;

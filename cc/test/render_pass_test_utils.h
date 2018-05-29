@@ -21,6 +21,7 @@ struct SyncToken;
 }
 
 namespace viz {
+class ClientResourceProvider;
 class ContextProvider;
 class DisplayResourceProvider;
 class RenderPass;
@@ -28,7 +29,6 @@ class SolidColorDrawQuad;
 }  // namespace viz
 
 namespace cc {
-class LayerTreeResourceProvider;
 
 // Adds a new render pass with the provided properties to the given
 // render pass list.
@@ -75,16 +75,16 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
                        SkBlendMode blend_mode);
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
-                           LayerTreeResourceProvider* resource_provider,
+                           viz::ClientResourceProvider* resource_provider,
                            viz::RenderPassId child_pass_id);
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
-// The resource used in render pass is created by LayerTreeResourceProvider,
+// The resource used in render pass is created by viz::ClientResourceProvider,
 // then transferred to viz::DisplayResourceProvider.
 void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPass* to_pass,
     viz::DisplayResourceProvider* resource_provider,
-    LayerTreeResourceProvider* child_resource_provider,
+    viz::ClientResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider,
     viz::RenderPassId child_pass_id,
     gpu::SyncToken* sync_token_for_mailbox_texture);

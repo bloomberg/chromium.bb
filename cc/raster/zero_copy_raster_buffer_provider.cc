@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_pool.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -147,7 +147,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
     gl->BindTexture(backing_->texture_target, 0);
 
     backing_->mailbox_sync_token =
-        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
+        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
     backing_->gpu_memory_buffer = std::move(gpu_memory_buffer_);
   }
 

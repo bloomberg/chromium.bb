@@ -376,7 +376,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // modified by this class are now in an indeterminate state.
   bool lost_context_provider_ = false;
   // The ResourceIds in DisplayResourceProvider start from 2 to avoid
-  // conflicts with id from LayerTreeResourceProvider.
+  // conflicts with id from ClientResourceProvider.
   ResourceId next_id_ = 2;
   // Used as child id when creating a child.
   int next_child_ = 1;

@@ -56,14 +56,14 @@ class SoftwareRendererTest : public testing::Test {
     renderer_->SetVisible(true);
 
     child_resource_provider_ =
-        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
+        cc::FakeResourceProvider::CreateClientResourceProvider(nullptr);
   }
 
   DisplayResourceProvider* resource_provider() const {
     return resource_provider_.get();
   }
 
-  cc::LayerTreeResourceProvider* child_resource_provider() const {
+  ClientResourceProvider* child_resource_provider() const {
     return child_resource_provider_.get();
   }
 
@@ -121,7 +121,7 @@ class SoftwareRendererTest : public testing::Test {
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
-  std::unique_ptr<cc::LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<SoftwareRenderer> renderer_;
 };
 
@@ -194,9 +194,9 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   // Transfer resources to the parent, and get the resource map.
   std::unordered_map<ResourceId, ResourceId> resource_map =
-      SendResourceAndGetChildToParentMap({resource_yellow, resource_cyan},
-                                         resource_provider(),
-                                         child_resource_provider(), nullptr);
+      cc::SendResourceAndGetChildToParentMap(
+          {resource_yellow, resource_cyan}, resource_provider(),
+          child_resource_provider(), nullptr);
   ResourceId mapped_resource_yellow = resource_map[resource_yellow];
   ResourceId mapped_resource_cyan = resource_map[resource_cyan];
 
@@ -257,8 +257,9 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
 
   // Transfer resources to the parent, and get the resource map.
   std::unordered_map<ResourceId, ResourceId> resource_map =
-      SendResourceAndGetChildToParentMap({resource_cyan}, resource_provider(),
-                                         child_resource_provider(), nullptr);
+      cc::SendResourceAndGetChildToParentMap(
+          {resource_cyan}, resource_provider(), child_resource_provider(),
+          nullptr);
   ResourceId mapped_resource_cyan = resource_map[resource_cyan];
 
   gfx::Rect root_rect(tile_size);

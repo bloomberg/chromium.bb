@@ -21,7 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/texture_allocation.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -341,7 +341,7 @@ VideoResourceUpdater::PlaneResource::AsHardware() {
 VideoResourceUpdater::VideoResourceUpdater(
     viz::ContextProvider* context_provider,
     viz::SharedBitmapReporter* shared_bitmap_reporter,
-    LayerTreeResourceProvider* resource_provider,
+    viz::ClientResourceProvider* resource_provider,
     bool use_stream_video_draw_quad,
     bool use_gpu_memory_buffer_resources,
     bool use_r16_texture,

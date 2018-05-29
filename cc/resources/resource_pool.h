@@ -34,11 +34,11 @@ class SingleThreadTaskRunner;
 }
 
 namespace viz {
+class ClientResourceProvider;
 class ContextProvider;
 }
 
 namespace cc {
-class LayerTreeResourceProvider;
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
                                public base::MemoryCoordinatorClient {
@@ -169,7 +169,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   // When holding gpu resources, the |context_provider| should be non-null,
   // and when holding software resources, it should be null. It is used for
   // consistency checking as well as for correctness.
-  ResourcePool(LayerTreeResourceProvider* resource_provider,
+  ResourcePool(viz::ClientResourceProvider* resource_provider,
                viz::ContextProvider* context_provider,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                const base::TimeDelta& expiration_delay,
@@ -286,7 +286,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                       int tracing_id,
-                      const LayerTreeResourceProvider* resource_provider,
+                      const viz::ClientResourceProvider* resource_provider,
                       bool is_free) const;
 
    private:
@@ -347,7 +347,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   bool HasEvictableResources() const;
   base::TimeTicks GetUsageTimeForLRUResource() const;
 
-  LayerTreeResourceProvider* const resource_provider_;
+  viz::ClientResourceProvider* const resource_provider_;
   viz::ContextProvider* const context_provider_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const base::TimeDelta resource_expiration_delay_;

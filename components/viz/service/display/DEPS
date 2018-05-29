@@ -30,6 +30,7 @@ specific_include_rules = {
   ],
   ".*_(unit|pixel|perf)test\.cc": [
     "+cc/test",
+    "+components/viz/client",
     "+components/viz/service/display_embedder",
     "+components/viz/service/frame_sinks",
     "+components/viz/test",

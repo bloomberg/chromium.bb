@@ -86,7 +86,7 @@ void UIResourceLayerImpl::SetVertexOpacity(const float vertex_opacity[4]) {
 
 bool UIResourceLayerImpl::WillDraw(
     DrawMode draw_mode,
-    LayerTreeResourceProvider* resource_provider) {
+    viz::ClientResourceProvider* resource_provider) {
   if (!ui_resource_id_ || draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
   return LayerImpl::WillDraw(draw_mode, resource_provider);

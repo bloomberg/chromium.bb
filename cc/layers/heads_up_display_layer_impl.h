@@ -24,10 +24,13 @@ class SkPaint;
 class SkTypeface;
 struct SkRect;
 
+namespace viz {
+class ClientResourceProvider;
+}
+
 namespace cc {
 class FrameRateCounter;
 class LayerTreeFrameSink;
-class LayerTreeResourceProvider;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
  public:
@@ -41,12 +44,12 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
   bool WillDraw(DrawMode draw_mode,
-                LayerTreeResourceProvider* resource_provider) override;
+                viz::ClientResourceProvider* resource_provider) override;
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
                         LayerTreeFrameSink* frame_sink,
-                        LayerTreeResourceProvider* resource_provider,
+                        viz::ClientResourceProvider* resource_provider,
                         bool gpu_raster,
                         const viz::RenderPassList& list);
 

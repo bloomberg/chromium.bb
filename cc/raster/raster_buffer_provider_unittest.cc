@@ -24,12 +24,12 @@
 #include "cc/raster/one_copy_raster_buffer_provider.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/tiles/tile_task_manager.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -297,14 +297,14 @@ class RasterBufferProviderTest
     context_provider_->BindToCurrentThread();
     worker_context_provider_ = viz::TestContextProvider::CreateWorker();
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
-    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
         context_provider_.get());
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
     resource_provider_ =
-        FakeResourceProvider::CreateLayerTreeResourceProvider(nullptr);
+        FakeResourceProvider::CreateClientResourceProvider(nullptr);
   }
 
   void OnTimeout() {
@@ -317,7 +317,7 @@ class RasterBufferProviderTest
   scoped_refptr<viz::TestContextProvider> worker_context_provider_;
   std::unique_ptr<ResourcePool> pool_;
   std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink_;
-  std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
+  std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
   std::unique_ptr<TileTaskManager> tile_task_manager_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;

@@ -136,7 +136,7 @@ class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
 
 bool HeadsUpDisplayLayerImpl::WillDraw(
     DrawMode draw_mode,
-    LayerTreeResourceProvider* resource_provider) {
+    viz::ClientResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
@@ -173,7 +173,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DrawMode draw_mode,
     LayerTreeFrameSink* layer_tree_frame_sink,
-    LayerTreeResourceProvider* resource_provider,
+    viz::ClientResourceProvider* resource_provider,
     bool gpu_raster,
     const viz::RenderPassList& list) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
@@ -276,7 +276,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
 
     {
       ScopedGpuRaster gpu_raster(context_provider);
-      LayerTreeResourceProvider::ScopedSkSurface scoped_surface(
+      viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
           context_provider->GrContext(), backing->texture_id,
           backing->texture_target, pool_resource.size(), pool_resource.format(),
           false /* can_use_lcd_text */, 0 /* msaa_sample_count */);
@@ -289,7 +289,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     }
 
     backing->mailbox_sync_token =
-        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
+        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
   } else if (draw_mode == DRAW_MODE_HARDWARE) {
     // If not using |gpu_raster| but using gpu compositing, we DrawHudContents()
     // into a software bitmap and upload it to a texture for compositing.
@@ -317,7 +317,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         pool_resource.size().height(), GLDataFormat(pool_resource.format()),
         GLDataType(pool_resource.format()), pixmap.addr());
     backing->mailbox_sync_token =
-        LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
+        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
   } else {
     // If not using gpu compositing, we DrawHudContents() directly into a shared
     // memory bitmap, wrapped in an SkSurface, that can be shared to the display

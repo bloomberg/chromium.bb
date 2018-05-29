@@ -7,9 +7,9 @@
 
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/service/display/gl_renderer.h"
@@ -79,7 +79,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<viz::DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestInProcessContextProvider> child_context_provider_;
-  std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
+  std::unique_ptr<viz::ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<viz::DirectRenderer> renderer_;
   viz::SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;

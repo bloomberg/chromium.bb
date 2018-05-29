@@ -5,16 +5,17 @@
 #ifndef CC_TEST_FAKE_RESOURCE_PROVIDER_H_
 #define CC_TEST_FAKE_RESOURCE_PROVIDER_H_
 
-#include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/service/display/display_resource_provider.h"
 
 namespace cc {
 
 class FakeResourceProvider {
  public:
-  static std::unique_ptr<LayerTreeResourceProvider>
-  CreateLayerTreeResourceProvider(viz::ContextProvider* context_provider) {
-    return std::make_unique<LayerTreeResourceProvider>(context_provider, true);
+  static std::unique_ptr<viz::ClientResourceProvider>
+  CreateClientResourceProvider(viz::ContextProvider* context_provider) {
+    return std::make_unique<viz::ClientResourceProvider>(context_provider,
+                                                         true);
   }
 
   static std::unique_ptr<viz::DisplayResourceProvider>

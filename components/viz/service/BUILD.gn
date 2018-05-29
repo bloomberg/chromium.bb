@@ -328,6 +328,7 @@ viz_source_set("unit_tests") {
     "//base/test:test_support",
     "//cc:test_support",
     "//cc/paint",
+    "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/test:test_support",
