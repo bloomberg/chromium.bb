@@ -47,7 +47,7 @@ class AssistantCardElement : public AssistantUiElement {
 
   ~AssistantCardElement() override = default;
 
-  const std::string& GetHtml() const { return html_; }
+  const std::string& html() const { return html_; }
 
  private:
   const std::string html_;
@@ -65,7 +65,7 @@ class AssistantTextElement : public AssistantUiElement {
 
   ~AssistantTextElement() override = default;
 
-  const std::string& GetText() const { return text_; }
+  const std::string& text() const { return text_; }
 
  private:
   const std::string text_;
