@@ -366,7 +366,7 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
   } else if (key_string == "minimal-ui") {
     // Ignore vendor-specific argument.
   } else if (key_string == "viewport-fit") {
-    if (RuntimeEnabledFeatures::DisplayCutoutViewportFitEnabled()) {
+    if (RuntimeEnabledFeatures::DisplayCutoutAPIEnabled()) {
       bool unknown_value = false;
       description->SetViewportFit(
           ParseViewportFitValueAsEnum(unknown_value, value_string));

@@ -441,7 +441,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kDisplayCutoutAPI))
-    WebRuntimeFeatures::EnableDisplayCutoutViewportFit(true);
+    WebRuntimeFeatures::EnableDisplayCutoutAPI(true);
 #endif
 
   if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
