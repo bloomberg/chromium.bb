@@ -28,7 +28,7 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
 };
 
 // A dummy FrameScheduler for tests.
-class FakeFrameScheduler : public FrameScheduler {
+class FakeFrameScheduler : public FrameSchedulerImpl {
  public:
   FakeFrameScheduler()
       : page_scheduler_(nullptr),

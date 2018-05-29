@@ -82,7 +82,7 @@ class MainThreadMetricsHelperTest : public testing::Test {
                                        start + duration, base::nullopt);
   }
 
-  void RunTask(FrameScheduler* scheduler,
+  void RunTask(FrameSchedulerImpl* scheduler,
                base::TimeTicks start,
                base::TimeDelta duration) {
     DCHECK_LE(clock_.NowTicks(), start);

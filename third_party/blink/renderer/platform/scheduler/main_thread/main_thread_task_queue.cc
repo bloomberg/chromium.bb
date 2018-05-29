@@ -172,7 +172,7 @@ void MainThreadTaskQueue::ClearReferencesToSchedulers() {
   frame_scheduler_ = nullptr;
 }
 
-FrameScheduler* MainThreadTaskQueue::GetFrameScheduler() const {
+FrameSchedulerImpl* MainThreadTaskQueue::GetFrameScheduler() const {
   return frame_scheduler_;
 }
 
@@ -181,7 +181,7 @@ void MainThreadTaskQueue::DetachFromFrameScheduler() {
 }
 
 void MainThreadTaskQueue::SetFrameSchedulerForTest(
-    FrameScheduler* frame_scheduler) {
+    FrameSchedulerImpl* frame_scheduler) {
   frame_scheduler_ = frame_scheduler;
 }
 

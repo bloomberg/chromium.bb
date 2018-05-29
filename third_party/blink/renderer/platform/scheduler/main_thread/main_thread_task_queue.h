@@ -17,9 +17,6 @@ class TaskQueueManager;
 }  // namespace base
 
 namespace blink {
-
-class FrameScheduler;
-
 namespace scheduler {
 
 class MainThreadSchedulerImpl;
@@ -157,7 +154,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     base::sequence_manager::TaskQueue::Spec spec;
     base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
         fixed_priority;
-    FrameScheduler* frame_scheduler;
+    FrameSchedulerImpl* frame_scheduler;
     bool can_be_deferred;
     bool can_be_throttled;
     bool can_be_paused;
@@ -202,11 +199,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // Override base method to notify MainThreadScheduler about shutdown queue.
   void ShutdownTaskQueue() override;
 
-  FrameScheduler* GetFrameScheduler() const;
+  FrameSchedulerImpl* GetFrameScheduler() const;
   void DetachFromFrameScheduler();
 
  protected:
-  void SetFrameSchedulerForTest(FrameScheduler* frame);
+  void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
 
   MainThreadTaskQueue(
       std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
@@ -236,7 +233,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
-  FrameScheduler* frame_scheduler_;  // NOT OWNED
+  FrameSchedulerImpl* frame_scheduler_;  // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadTaskQueue);
 };
