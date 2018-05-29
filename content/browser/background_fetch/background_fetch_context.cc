@@ -222,7 +222,10 @@ void BackgroundFetchContext::InitializeController(
 
   scheduler_->AddJobController(controller.get());
 
-  job_controllers_.insert({unique_id, std::move(controller)});
+  // Workaround for GLIBC C++ < 7.3 that fails to insert with braces
+  // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82522
+  auto pair = std::make_pair(unique_id, std::move(controller));
+  job_controllers_.insert(std::move(pair));
   std::move(done_closure).Run();
 }
 
