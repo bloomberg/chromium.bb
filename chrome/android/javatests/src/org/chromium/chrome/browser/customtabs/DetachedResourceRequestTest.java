@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.PathUtils;
@@ -34,7 +33,6 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -47,8 +45,6 @@ import java.util.concurrent.TimeoutException;
 /** Tests for detached resource requests. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class DetachedResourceRequestTest {
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
 

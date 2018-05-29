@@ -14,7 +14,6 @@ import android.support.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
@@ -36,12 +35,6 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class FeaturesAnnotationsTest {
-    @Rule
-    public TestRule mChromeHomeProcessor = new ChromeModernDesign.Processor();
-
-    @Rule
-    public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
-
     @Rule
     public ChromeTabbedActivityTestRule mActivityRule = new ChromeTabbedActivityTestRule();
 

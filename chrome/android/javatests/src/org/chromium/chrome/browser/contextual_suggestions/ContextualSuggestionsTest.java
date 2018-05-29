@@ -24,12 +24,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.params.MethodParamAnnotationRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -98,18 +96,12 @@ public class ContextualSuggestionsTest {
     public ContextualSuggestionsDependenciesRule mContextualSuggestionsDeps =
             new ContextualSuggestionsDependenciesRule();
     @Rule
-    public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
-    @Rule
-    public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
-    @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
     @Rule
     public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
     @Rule
     public RenderTestRule mRenderTestRule = new RenderTestRule();
 
-    @Rule
-    public MethodRule mMethodParamAnnotationProcessor = new MethodParamAnnotationRule();
     /** Parameter provider for the Slim Peek UI */
     public static class SlimPeekUIParams implements ParameterProvider {
         @Override

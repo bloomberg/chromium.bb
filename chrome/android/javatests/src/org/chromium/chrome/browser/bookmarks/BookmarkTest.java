@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
@@ -69,9 +68,6 @@ public class BookmarkTest {
 
     @Rule
     public RenderTestRule mRenderTestRule = new RenderTestRule();
-
-    @Rule
-    public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
 
     private static final String TEST_PAGE_URL_GOOGLE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_TITLE_GOOGLE = "The Google";

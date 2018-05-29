@@ -4,12 +4,13 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.annotation.CallSuper;
+
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.android_webview.AwSwitches;
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
@@ -38,11 +39,13 @@ public final class AwJUnit4ClassRunner extends BaseJUnit4ClassRunner {
      * @throws InitializationError if the test class is malformed
      */
     public AwJUnit4ClassRunner(Class<?> klass) throws InitializationError {
-        super(klass, null, defaultPreTestHooks());
+        super(klass);
     }
 
-    private static List<PreTestHook> defaultPreTestHooks() {
-        return CollectionUtil.newArrayList(Policies.getRegistrationHook());
+    @CallSuper
+    @Override
+    protected List<PreTestHook> getPreTestHooks() {
+        return addToList(super.getPreTestHooks(), Policies.getRegistrationHook());
     }
 
     @Override

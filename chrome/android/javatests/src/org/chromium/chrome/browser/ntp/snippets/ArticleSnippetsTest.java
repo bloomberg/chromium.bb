@@ -104,12 +104,6 @@ public class ArticleSnippetsTest {
     public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     @Rule
-    public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
-
-    @Rule
-    public TestRule mFeaturesProcessor = new Features.InstrumentationProcessor();
-
-    @Rule
     public TestRule mDisableChromeAnimations = new DisableChromeAnimations();
 
     private SuggestionsUiDelegate mUiDelegate;

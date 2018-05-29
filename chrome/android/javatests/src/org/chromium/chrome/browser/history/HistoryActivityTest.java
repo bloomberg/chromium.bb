@@ -33,7 +33,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -79,9 +78,6 @@ public class HistoryActivityTest {
     @Rule
     public IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
-
-    @Rule
-    public TestRule mChromeModernDesignStateRule = new ChromeModernDesign.Processor();
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver
             implements SelectionObserver<HistoryItem>, SignInStateObserver, PrefObserver {

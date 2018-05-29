@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
@@ -29,7 +28,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -48,9 +46,6 @@ public class LocationBarLayoutTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
-
-    @Rule
-    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private static final int SEARCH_ICON_RESOURCE = R.drawable.omnibox_search;
 

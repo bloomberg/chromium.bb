@@ -23,12 +23,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.MethodRule;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.params.MethodParamAnnotationRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -65,7 +62,6 @@ import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
@@ -110,14 +106,10 @@ public class NewTabPageTest {
     public RenderTestRule mRenderTestRule =
             new RenderTestRule("chrome/test/data/android/render_tests");
 
-    @Rule
-    public MethodRule mMethodParamAnnotationProcessor = new MethodParamAnnotationRule();
-
-    @Rule
-    public ChromeModernDesign.Processor mChromeModernProcessor = new ChromeModernDesign.Processor();
-
-    @Rule
-    public TestRule mFeatureRule = new Features.InstrumentationProcessor();
+    // This is only used for directly setting the feature state, therefore not annotated with @Rule.
+    // TODO(bauerb): Refactor so it doesn't use AnnotationRule.
+    private ChromeModernDesign.Processor mChromeModernProcessor =
+            new ChromeModernDesign.Processor();
 
     public static class ModernParams implements ParameterProvider {
         @Override

@@ -15,11 +15,9 @@ import android.support.v7.widget.RecyclerView;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.MethodRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.params.MethodParamAnnotationRule;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -50,9 +48,6 @@ public class HomeSheetUiCaptureTest {
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
-
-    @Rule
-    public MethodRule mMethodParamAnnotationProcessor = new MethodParamAnnotationRule();
 
     @Before
     public void setup() throws InterruptedException {
