@@ -34,10 +34,12 @@ class AssistantBubbleView : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
+  void OnBoundsChanged(const gfx::Rect& prev_bounds) override;
   void RequestFocus() override;
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
+  void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnQueryChanged(const AssistantQuery& query) override;
   void OnQueryCleared() override;
 
@@ -53,6 +55,8 @@ class AssistantBubbleView : public views::View,
   DialogPlate* dialog_plate_;                    // Owned by view hierarchy.
 
   views::BoxLayout* layout_manager_ = nullptr;  // Owned by view hierarchy.
+
+  int min_height_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
 };
