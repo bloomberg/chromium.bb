@@ -96,14 +96,6 @@ void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(GetTextForTooltipAndAccessibleName());
 }
 
-void PageActionIconView::OnFocus() {
-  InkDropHostView::OnFocus();
-}
-
-void PageActionIconView::OnBlur() {
-  InkDropHostView::OnFocus();
-}
-
 bool PageActionIconView::GetTooltipText(const gfx::Point& p,
                                         base::string16* tooltip) const {
   if (IsBubbleShowing())
