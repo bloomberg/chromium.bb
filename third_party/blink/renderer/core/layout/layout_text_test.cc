@@ -639,4 +639,44 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRect) {
       GetSelectionRectFor("foo^ |"));
 }
 
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectRTL) {
+  LoadAhem();
+  // TODO(yoichio) : Fix LastLogicalLeafIgnoringLineBreak so that 'foo' is the
+  // last fragment.
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(-10, 0, 30, 20)
+                              : LayoutRect(-10, 0, 40, 20),
+            GetSelectionRectFor("<div style='width: 2em' dir=rtl>"
+                                "f^oo ba|r baz</div>"));
+  EXPECT_EQ(LayoutRect(0, 0, 40, 20),
+            GetSelectionRectFor("<div style='width: 2em' dir=ltr>"
+                                "f^oo ba|r baz</div>"));
+}
+
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVertical) {
+  LoadAhem();
+  EXPECT_EQ(
+      LayoutRect(0, 0, 20, 40),
+      GetSelectionRectFor("<div style='writing-mode: vertical-lr; height: 2em'>"
+                          "f^oo ba|r baz</div>"));
+  // TODO(yoichio): This is caused by mixing lrt between vertical and logical.
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(10, 0, 20, 40) : LayoutRect(0, 0, 20, 40),
+      GetSelectionRectFor("<div style='writing-mode: vertical-rl; height: 2em'>"
+                          "f^oo ba|r baz</div>"));
+}
+
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectVerticalRTL) {
+  LoadAhem();
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(0, -10, 20, 30)
+                              : LayoutRect(0, -10, 20, 40),
+            GetSelectionRectFor(
+                "<div style='writing-mode: vertical-lr; height: 2em' dir=rtl>"
+                "f^oo ba|r baz</div>"));
+  EXPECT_EQ(LayoutNGEnabled() ? LayoutRect(10, -10, 20, 30)
+                              : LayoutRect(0, -10, 20, 40),
+            GetSelectionRectFor(
+                "<div style='writing-mode: vertical-rl; height: 2em' dir=rtl>"
+                "f^oo ba|r baz</div>"));
+}
+
 }  // namespace blink

@@ -146,7 +146,23 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
 
   LayoutRect box_rect(box_origin, fragment_.Size().ToLayoutSize());
   base::Optional<GraphicsContextStateSaver> state_saver;
-  NGLineOrientation orientation = text_fragment.LineOrientation();
+
+  // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
+  // include selection and composition highlights.
+  // Since NGPaintFragment::ComputeLocalSelectionRect() returns
+  // NGPhysicalOffsetRect rather than NGLogicalRect, we should paint selection
+  // before GraphicsContext flip.
+  // TODO(yoichio): Make NGPhysicalTextFragment::LocalRect and
+  // NGPaintFragment::ComputeLocalSelectionRect logical so that we can paint
+  // selection in same fliped dimention as NGTextPainter.
+  if (have_selection && paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip && !is_printing) {
+    // TODO(yoichio): Implement composition highlights.
+    PaintSelection(context, fragment_, document, style,
+                   selection_style.fill_color, box_rect, selection_status);
+  }
+
+  const NGLineOrientation orientation = text_fragment.LineOrientation();
   if (orientation != NGLineOrientation::kHorizontal) {
     state_saver.emplace(context);
     // Because we rotate the GraphicsContext to be logical, flip the
@@ -157,15 +173,6 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
         box_rect, orientation == NGLineOrientation::kClockWiseVertical
                       ? TextPainterBase::kClockwise
                       : TextPainterBase::kCounterclockwise));
-  }
-
-  // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
-  // include selection and composition highlights.
-  if (have_selection && paint_info.phase != PaintPhase::kSelection &&
-      paint_info.phase != PaintPhase::kTextClip && !is_printing) {
-    // TODO(yoichio): Implement composition highlights.
-    PaintSelection(context, fragment_, document, style,
-                   selection_style.fill_color, box_rect, selection_status);
   }
 
   // 2. Now paint the foreground, including text and decorations.
