@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static junit.framework.Assert.assertNotNull;
@@ -14,11 +16,14 @@ import static junit.framework.Assert.assertNull;
 
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -100,6 +105,64 @@ public class AccessorySheetViewTest {
         onView(withText(kSampleAction)).check(matches(isDisplayed()));
     }
 
+    @Test
+    @MediumTest
+    public void testSettingActiveTabIndexChangesTab() {
+        final String kFirstTab = "First Tab";
+        final String kSecondTab = "Second Tab";
+        mModel.getTabList().add(createTestTabWithTextView(kFirstTab));
+        mModel.getTabList().add(createTestTabWithTextView(kSecondTab));
+        mModel.setActiveTabIndex(0);
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true)); // Render view.
+
+        onView(withText(kFirstTab)).check(matches(isDisplayed()));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setActiveTabIndex(1));
+
+        onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, withText(kSecondTab)));
+    }
+
+    @Test
+    @MediumTest
+    public void testRemovingTabDeletesItsView() {
+        final String kFirstTab = "First Tab";
+        final String kSecondTab = "Second Tab";
+        mModel.getTabList().add(createTestTabWithTextView(kFirstTab));
+        mModel.getTabList().add(createTestTabWithTextView(kSecondTab));
+        mModel.setActiveTabIndex(0);
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true)); // Render view.
+
+        onView(withText(kFirstTab)).check(matches(isDisplayed()));
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mModel.getTabList().remove(mModel.getTabList().get(0)));
+
+        onView(withText(kFirstTab)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testReplaceLastTab() {
+        final String kFirstTab = "First Tab";
+        mModel.getTabList().add(createTestTabWithTextView(kFirstTab));
+        mModel.setActiveTabIndex(0);
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true)); // Render view.
+
+        // Remove the last tab.
+        onView(withText(kFirstTab)).check(matches(isDisplayed()));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mModel.getTabList().remove(mModel.getTabList().get(0)); });
+        onView(withText(kFirstTab)).check(doesNotExist());
+
+        // Add a new first tab.
+        final String kSecondTab = "Second Tab";
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.getTabList().add(createTestTabWithTextView(kSecondTab));
+            mModel.setActiveTabIndex(0);
+        });
+        onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, withText(kSecondTab)));
+    }
+
     private KeyboardAccessoryData.Tab createTestTab(KeyboardAccessoryData.Tab.Listener listener) {
         return new KeyboardAccessoryData.Tab() {
             @Override
@@ -122,5 +185,13 @@ public class AccessorySheetViewTest {
                 return listener;
             }
         };
+    }
+
+    private KeyboardAccessoryData.Tab createTestTabWithTextView(String textViewCaption) {
+        return createTestTab(view -> {
+            TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
+            sampleTextView.setText(textViewCaption);
+            view.addView(sampleTextView);
+        });
     }
 }

@@ -50,6 +50,11 @@ public class ManualFillingCoordinator {
         mAccessorySheet.addTab(tab);
     }
 
+    public void removeTab(KeyboardAccessoryData.Tab tab) {
+        mKeyboardAccessory.removeTab(tab);
+        mAccessorySheet.removeTab(tab);
+    }
+
     /**
      * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of
      * the keyboard accessory (e.g. by providing suggestions or actions).
