@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 
-struct gbm_device;
-
 namespace ui {
 
 class GbmDevice : public DrmDevice {
@@ -18,15 +16,11 @@ class GbmDevice : public DrmDevice {
             base::File file,
             bool is_primary_device);
 
-  gbm_device* device() const { return device_; }
-
   // DrmDevice implementation:
   bool Initialize() override;
 
  private:
   ~GbmDevice() override;
-
-  gbm_device* device_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GbmDevice);
 };
