@@ -237,8 +237,7 @@ const Shape& ShapeOutsideInfo::ComputedShape() const {
       break;
     case ShapeValue::kBox: {
       const FloatRoundedRect& shape_rect = style.GetRoundedBorderFor(
-          LayoutRect(LayoutPoint(), reference_box_logical_size_),
-          layout_box_.View());
+          LayoutRect(LayoutPoint(), reference_box_logical_size_));
       shape_ = Shape::CreateLayoutBoxShape(shape_rect, writing_mode, margin);
       break;
     }
