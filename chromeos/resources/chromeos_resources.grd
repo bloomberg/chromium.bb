@@ -17,6 +17,9 @@
           use_base_dir="false"
           type="BINDATA" />
       <part file="proximity_auth_resources.grdp" />
+      <if expr="enable_cros_libassistant">
+        <part file="assistant_resources.grdp" />
+      </if>
     </includes>
   </release>
 </grit>
