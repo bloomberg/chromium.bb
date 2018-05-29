@@ -5520,6 +5520,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DCHECK(!web::GetWebClient()->IsSlimNavigationManagerEnabled());
   _webStateImpl->ShowRepostFormWarningDialog(
       base::BindBlockArc(^(bool shouldContinue) {
+        if (_isBeingDestroyed)
+          return;
+
         if (shouldContinue)
           webViewNavigationBlock();
         else
