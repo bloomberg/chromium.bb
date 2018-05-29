@@ -64,10 +64,7 @@ class ControllerStateChangeWaiter
 
 bool WaitVisibilityChangesTo(bool visibility) {
   aura::Window* keyboard_window =
-      keyboard::KeyboardController::GetInstance()
-          ->GetContainerWindowWithoutCreationForTest();
-  if (!keyboard_window)
-    return false;
+      keyboard::KeyboardController::GetInstance()->GetContainerWindow();
   WindowVisibilityChangeWaiter waiter(keyboard_window, visibility);
   waiter.Wait();
   return true;

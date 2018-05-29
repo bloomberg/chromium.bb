@@ -92,15 +92,8 @@ class KEYBOARD_EXPORT KeyboardController
   void DisableKeyboard();
 
   // Returns the container for the keyboard, which is owned by
-  // KeyboardController. Creates the container if it's not already created.
+  // KeyboardController.
   aura::Window* GetContainerWindow();
-
-  // Same as GetContainerWindow except that this function doesn't create the
-  // window.
-  aura::Window* GetContainerWindowWithoutCreationForTest();
-
-  // Whether the container window for the keyboard has been initialized.
-  bool keyboard_container_initialized() const { return container_ != nullptr; }
 
   // Reloads the content of the keyboard. No-op if the keyboard content is not
   // loaded yet.
