@@ -414,6 +414,7 @@ typedef struct AV1Common {
 
   // Pointer to a scratch buffer used by self-guided restoration
   int32_t *rst_tmpbuf;
+  RestorationLineBuffers *rlbs;
 
   // Output of loop restoration
   YV12_BUFFER_CONFIG rst_frame;

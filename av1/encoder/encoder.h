@@ -686,6 +686,7 @@ typedef struct AV1_COMP {
   int ref_conv[REF_FRAMES];
 
   AV1LfSync lf_row_sync;
+  AV1LrStruct lr_ctxt;
 } AV1_COMP;
 
 void av1_initialize_enc(void);

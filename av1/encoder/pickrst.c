@@ -110,6 +110,7 @@ typedef struct {
   // tile in the frame.
   SgrprojInfo sgrproj;
   WienerInfo wiener;
+  AV1PixelRect tile_rect;
 } RestSearchCtxt;
 
 static void rsc_on_tile(int tile_row, int tile_col, void *priv) {
@@ -148,6 +149,7 @@ static void init_rsc(const YV12_BUFFER_CONFIG *src, const AV1_COMMON *cm,
   rsc->src_stride = src->strides[is_uv];
   rsc->dgd_buffer = dgd->buffers[plane];
   rsc->dgd_stride = dgd->strides[is_uv];
+  rsc->tile_rect = av1_whole_frame_rect(cm, is_uv);
   assert(src->crop_widths[is_uv] == dgd->crop_widths[is_uv]);
   assert(src->crop_heights[is_uv] == dgd->crop_heights[is_uv]);
 }
@@ -530,7 +532,9 @@ static int count_sgrproj_bits(SgrprojInfo *sgrproj_info,
 
 static void search_sgrproj(const RestorationTileLimits *limits,
                            const AV1PixelRect *tile, int rest_unit_idx,
-                           void *priv) {
+                           void *priv, int32_t *tmpbuf,
+                           RestorationLineBuffers *rlbs) {
+  (void)rlbs;
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
 
@@ -554,7 +558,7 @@ static void search_sgrproj(const RestorationTileLimits *limits,
       dgd_start, limits->h_end - limits->h_start,
       limits->v_end - limits->v_start, rsc->dgd_stride, src_start,
       rsc->src_stride, highbd, bit_depth, procunit_width, procunit_height,
-      cm->rst_tmpbuf);
+      tmpbuf);
 
   RestorationUnitInfo rui;
   rui.restoration_type = RESTORE_SGRPROJ;
@@ -1048,7 +1052,10 @@ static int64_t finer_tile_search_wiener(const RestSearchCtxt *rsc,
 
 static void search_wiener(const RestorationTileLimits *limits,
                           const AV1PixelRect *tile_rect, int rest_unit_idx,
-                          void *priv) {
+                          void *priv, int32_t *tmpbuf,
+                          RestorationLineBuffers *rlbs) {
+  (void)tmpbuf;
+  (void)rlbs;
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
 
@@ -1141,8 +1148,11 @@ static void search_wiener(const RestorationTileLimits *limits,
 
 static void search_norestore(const RestorationTileLimits *limits,
                              const AV1PixelRect *tile_rect, int rest_unit_idx,
-                             void *priv) {
+                             void *priv, int32_t *tmpbuf,
+                             RestorationLineBuffers *rlbs) {
   (void)tile_rect;
+  (void)tmpbuf;
+  (void)rlbs;
 
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
@@ -1156,9 +1166,12 @@ static void search_norestore(const RestorationTileLimits *limits,
 
 static void search_switchable(const RestorationTileLimits *limits,
                               const AV1PixelRect *tile_rect, int rest_unit_idx,
-                              void *priv) {
+                              void *priv, int32_t *tmpbuf,
+                              RestorationLineBuffers *rlbs) {
   (void)limits;
   (void)tile_rect;
+  (void)tmpbuf;
+  (void)rlbs;
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
 
@@ -1230,8 +1243,9 @@ static double search_rest_type(RestSearchCtxt *rsc, RestorationType rtype) {
   };
 
   reset_rsc(rsc);
-  av1_foreach_rest_unit_in_frame(rsc->cm, rsc->plane, rsc_on_tile, funs[rtype],
-                                 rsc);
+  rsc_on_tile(0, 0, rsc);
+  av1_foreach_rest_unit_in_frame(rsc->cm, rsc->plane, funs[rtype], rsc,
+                                 &rsc->tile_rect, rsc->cm->rst_tmpbuf, NULL);
   return RDCOST_DBL(rsc->x->rdmult, rsc->bits >> 4, rsc->sse);
 }
 

@@ -39,7 +39,7 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
   { { 2, 0 }, { 56, -1 } },    { { 2, 0 }, { 22, -1 } },
 };
 
-static AV1PixelRect whole_frame_rect(const AV1_COMMON *cm, int is_uv) {
+AV1PixelRect av1_whole_frame_rect(const AV1_COMMON *cm, int is_uv) {
   AV1PixelRect rect;
 
   int ss_x = is_uv && cm->subsampling_x;
@@ -70,7 +70,7 @@ void av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rsi,
   // top-left and we can use av1_get_tile_rect(). With CONFIG_MAX_TILE, we have
   // to do the computation ourselves, iterating over the tiles and keeping
   // track of the largest width and height, then upscaling.
-  const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
+  const AV1PixelRect tile_rect = av1_whole_frame_rect(cm, is_uv);
   const int max_tile_w = tile_rect.right - tile_rect.left;
   const int max_tile_h = tile_rect.bottom - tile_rect.top;
 
@@ -1121,59 +1121,49 @@ void av1_loop_restoration_filter_unit(
   }
 }
 
-typedef struct {
-  const RestorationInfo *rsi;
-  RestorationLineBuffers *rlbs;
-  const AV1_COMMON *cm;
-  int tile_stripe0;
-  int ss_x, ss_y;
-  int highbd, bit_depth;
-  uint8_t *data8, *dst8;
-  int data_stride, dst_stride;
-  int32_t *tmpbuf;
-} FilterFrameCtxt;
-
-static void filter_frame_on_tile(int tile_row, int tile_col, void *priv) {
+static void filter_frame_on_tile(int tile_row, int tile_col, void *priv,
+                                 AV1_COMMON *cm) {
   (void)tile_col;
   FilterFrameCtxt *ctxt = (FilterFrameCtxt *)priv;
-  ctxt->tile_stripe0 =
-      (tile_row == 0) ? 0 : ctxt->cm->rst_end_stripe[tile_row - 1];
+  ctxt->tile_stripe0 = (tile_row == 0) ? 0 : cm->rst_end_stripe[tile_row - 1];
 }
 
 static void filter_frame_on_unit(const RestorationTileLimits *limits,
                                  const AV1PixelRect *tile_rect,
-                                 int rest_unit_idx, void *priv) {
+                                 int rest_unit_idx, void *priv, int32_t *tmpbuf,
+                                 RestorationLineBuffers *rlbs) {
   FilterFrameCtxt *ctxt = (FilterFrameCtxt *)priv;
   const RestorationInfo *rsi = ctxt->rsi;
 
   av1_loop_restoration_filter_unit(
-      limits, &rsi->unit_info[rest_unit_idx], &rsi->boundaries, ctxt->rlbs,
-      tile_rect, ctxt->tile_stripe0, ctxt->ss_x, ctxt->ss_y, ctxt->highbd,
-      ctxt->bit_depth, ctxt->data8, ctxt->data_stride, ctxt->dst8,
-      ctxt->dst_stride, ctxt->tmpbuf, rsi->optimized_lr);
+      limits, &rsi->unit_info[rest_unit_idx], &rsi->boundaries, rlbs, tile_rect,
+      ctxt->tile_stripe0, ctxt->ss_x, ctxt->ss_y, ctxt->highbd, ctxt->bit_depth,
+      ctxt->data8, ctxt->data_stride, ctxt->dst8, ctxt->dst_stride, tmpbuf,
+      rsi->optimized_lr);
 }
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
-                                       AV1_COMMON *cm, int optimized_lr) {
+                                       AV1_COMMON *cm, int optimized_lr,
+                                       void *lr_ctxt) {
   assert(!cm->all_lossless);
   const int num_planes = av1_num_planes(cm);
   typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
                            YV12_BUFFER_CONFIG *dst);
   static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
                                          aom_yv12_copy_v };
+  AV1LrStruct *loop_rest_ctxt = (AV1LrStruct *)lr_ctxt;
+  loop_rest_ctxt->dst = &cm->rst_frame;
+  loop_rest_ctxt->frame = frame;
 
-  YV12_BUFFER_CONFIG *dst = &cm->rst_frame;
-
-  const int frame_width = frame->crop_widths[0];
-  const int frame_height = frame->crop_heights[0];
-  if (aom_realloc_frame_buffer(dst, frame_width, frame_height,
+  const int frame_width = loop_rest_ctxt->frame->crop_widths[0];
+  const int frame_height = loop_rest_ctxt->frame->crop_heights[0];
+  if (aom_realloc_frame_buffer(loop_rest_ctxt->dst, frame_width, frame_height,
                                cm->subsampling_x, cm->subsampling_y,
                                cm->use_highbitdepth, AOM_BORDER_IN_PIXELS,
                                cm->byte_alignment, NULL, NULL, NULL) < 0)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate restoration dst buffer");
 
-  RestorationLineBuffers rlbs;
   const int bit_depth = cm->bit_depth;
   const int highbd = cm->use_highbitdepth;
 
@@ -1187,31 +1177,33 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     }
 
     const int is_uv = plane > 0;
-    const int plane_width = frame->crop_widths[is_uv];
-    const int plane_height = frame->crop_heights[is_uv];
+    const int plane_width = loop_rest_ctxt->frame->crop_widths[is_uv];
+    const int plane_height = loop_rest_ctxt->frame->crop_heights[is_uv];
 
-    extend_frame(frame->buffers[plane], plane_width, plane_height,
-                 frame->strides[is_uv], RESTORATION_BORDER, RESTORATION_BORDER,
-                 highbd);
+    extend_frame(loop_rest_ctxt->frame->buffers[plane], plane_width,
+                 plane_height, loop_rest_ctxt->frame->strides[is_uv],
+                 RESTORATION_BORDER, RESTORATION_BORDER, highbd);
 
-    FilterFrameCtxt ctxt;
-    ctxt.rsi = rsi;
-    ctxt.rlbs = &rlbs;
-    ctxt.cm = cm;
-    ctxt.ss_x = is_uv && cm->subsampling_x;
-    ctxt.ss_y = is_uv && cm->subsampling_y;
-    ctxt.highbd = highbd;
-    ctxt.bit_depth = bit_depth;
-    ctxt.data8 = frame->buffers[plane];
-    ctxt.dst8 = dst->buffers[plane];
-    ctxt.data_stride = frame->strides[is_uv];
-    ctxt.dst_stride = dst->strides[is_uv];
-    ctxt.tmpbuf = cm->rst_tmpbuf;
+    loop_rest_ctxt->ctxt[plane].rsi = rsi;
+    loop_rest_ctxt->ctxt[plane].ss_x = is_uv && cm->subsampling_x;
+    loop_rest_ctxt->ctxt[plane].ss_y = is_uv && cm->subsampling_y;
+    loop_rest_ctxt->ctxt[plane].highbd = highbd;
+    loop_rest_ctxt->ctxt[plane].bit_depth = bit_depth;
+    loop_rest_ctxt->ctxt[plane].data8 = loop_rest_ctxt->frame->buffers[plane];
+    loop_rest_ctxt->ctxt[plane].dst8 = loop_rest_ctxt->dst->buffers[plane];
+    loop_rest_ctxt->ctxt[plane].data_stride =
+        loop_rest_ctxt->frame->strides[is_uv];
+    loop_rest_ctxt->ctxt[plane].dst_stride =
+        loop_rest_ctxt->dst->strides[is_uv];
+    loop_rest_ctxt->ctxt[plane].tile_rect = av1_whole_frame_rect(cm, is_uv);
 
-    av1_foreach_rest_unit_in_frame(cm, plane, filter_frame_on_tile,
-                                   filter_frame_on_unit, &ctxt);
+    filter_frame_on_tile(0, 0, &loop_rest_ctxt->ctxt[plane], cm);
 
-    copy_funs[plane](dst, frame);
+    av1_foreach_rest_unit_in_frame(
+        cm, plane, filter_frame_on_unit, &loop_rest_ctxt->ctxt[plane],
+        &loop_rest_ctxt->ctxt[plane].tile_rect, cm->rst_tmpbuf, cm->rlbs);
+
+    copy_funs[plane](loop_rest_ctxt->dst, loop_rest_ctxt->frame);
   }
 }
 
@@ -1220,7 +1212,8 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
                                       int hunits_per_tile, int units_per_tile,
                                       int unit_size, int ss_y,
                                       rest_unit_visitor_t on_rest_unit,
-                                      void *priv) {
+                                      void *priv, int32_t *tmpbuf,
+                                      RestorationLineBuffers *rlbs) {
   const int tile_w = tile_rect->right - tile_rect->left;
   const int tile_h = tile_rect->bottom - tile_rect->top;
   const int ext_size = unit_size * 3 / 2;
@@ -1252,7 +1245,7 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
       assert(limits.h_end <= tile_rect->right);
 
       const int unit_idx = unit_idx0 + i * hunits_per_tile + j;
-      on_rest_unit(&limits, tile_rect, unit_idx, priv);
+      on_rest_unit(&limits, tile_rect, unit_idx, priv, tmpbuf, rlbs);
 
       x0 += w;
       ++j;
@@ -1264,21 +1257,18 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
 }
 
 void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
-                                    rest_tile_start_visitor_t on_tile,
                                     rest_unit_visitor_t on_rest_unit,
-                                    void *priv) {
+                                    void *priv, AV1PixelRect *tile_rect,
+                                    int32_t *tmpbuf,
+                                    RestorationLineBuffers *rlbs) {
   const int is_uv = plane > 0;
   const int ss_y = is_uv && cm->subsampling_y;
 
   const RestorationInfo *rsi = &cm->rst_info[plane];
 
-  const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
-
-  if (on_tile) on_tile(0, 0, priv);
-
-  foreach_rest_unit_in_tile(&tile_rect, 0, 0, 1, rsi->horz_units_per_tile,
+  foreach_rest_unit_in_tile(tile_rect, 0, 0, 1, rsi->horz_units_per_tile,
                             rsi->units_per_tile, rsi->restoration_unit_size,
-                            ss_y, on_rest_unit, priv);
+                            ss_y, on_rest_unit, priv, tmpbuf, rlbs);
 }
 
 int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
@@ -1294,7 +1284,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 
   const int is_uv = plane > 0;
 
-  const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
+  const AV1PixelRect tile_rect = av1_whole_frame_rect(cm, is_uv);
   const int tile_w = tile_rect.right - tile_rect.left;
   const int tile_h = tile_rect.bottom - tile_rect.top;
 
@@ -1476,7 +1466,7 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 
   // Get the tile rectangle, with height rounded up to the next multiple of 8
   // luma pixels (only relevant for the bottom tile of the frame)
-  const AV1PixelRect tile_rect = whole_frame_rect(cm, is_uv);
+  const AV1PixelRect tile_rect = av1_whole_frame_rect(cm, is_uv);
   const int stripe0 = 0;
 
   RestorationStripeBoundaries *boundaries = &cm->rst_info[plane].boundaries;

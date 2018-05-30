@@ -247,6 +247,29 @@ typedef struct {
   int h_start, h_end, v_start, v_end;
 } RestorationTileLimits;
 
+typedef void (*rest_unit_visitor_t)(const RestorationTileLimits *limits,
+                                    const AV1PixelRect *tile_rect,
+                                    int rest_unit_idx, void *priv,
+                                    int32_t *tmpbuf,
+                                    RestorationLineBuffers *rlbs);
+
+typedef struct FilterFrameCtxt {
+  const RestorationInfo *rsi;
+  int tile_stripe0;
+  int ss_x, ss_y;
+  int highbd, bit_depth;
+  uint8_t *data8, *dst8;
+  int data_stride, dst_stride;
+  AV1PixelRect tile_rect;
+} FilterFrameCtxt;
+
+typedef struct AV1LrStruct {
+  rest_unit_visitor_t on_rest_unit;
+  FilterFrameCtxt ctxt[MAX_MB_PLANE];
+  YV12_BUFFER_CONFIG *frame;
+  YV12_BUFFER_CONFIG *dst;
+} AV1LrStruct;
+
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
 extern int sgrproj_mtable[SGRPROJ_PARAMS][2];
 extern const int32_t x_by_xplus1[256];
@@ -287,12 +310,9 @@ void av1_loop_restoration_filter_unit(
     int dst_stride, int32_t *tmpbuf, int optimized_lr);
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
-                                       struct AV1Common *cm, int optimized_lr);
+                                       struct AV1Common *cm, int optimized_lr,
+                                       void *lr_ctxt);
 void av1_loop_restoration_precal();
-
-typedef void (*rest_unit_visitor_t)(const RestorationTileLimits *limits,
-                                    const AV1PixelRect *tile_rect,
-                                    int rest_unit_idx, void *priv);
 
 typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
                                           void *priv);
@@ -300,9 +320,10 @@ typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
 // Call on_rest_unit for each loop restoration unit in the frame. At the start
 // of each tile, call on_tile.
 void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
-                                    rest_tile_start_visitor_t on_tile,
                                     rest_unit_visitor_t on_rest_unit,
-                                    void *priv);
+                                    void *priv, AV1PixelRect *tile_rect,
+                                    int32_t *tmpbuf,
+                                    RestorationLineBuffers *rlbs);
 
 // Return 1 iff the block at mi_row, mi_col with size bsize is a
 // top-level superblock containing the top-left corner of at least one
@@ -321,6 +342,8 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               struct AV1Common *cm,
                                               int after_cdef);
+
+AV1PixelRect av1_whole_frame_rect(const struct AV1Common *cm, int is_uv);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -4030,14 +4030,16 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       if (do_loop_restoration) {
         av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 1);
         av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
-                                          optimized_loop_restoration);
+                                          optimized_loop_restoration,
+                                          &pbi->lr_ctxt);
       }
     } else {
       // In no cdef and no superres case. Provide an optimized version of
       // loop_restoration_filter.
       if (do_loop_restoration)
         av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
-                                          optimized_loop_restoration);
+                                          optimized_loop_restoration,
+                                          &pbi->lr_ctxt);
     }
   }
 
