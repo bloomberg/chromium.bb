@@ -187,6 +187,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // Called when a deactivation is detected.
   void OnDeactivate();
 
+  // When a bubble is visible, the anchor widget should always render as active.
+  void UpdateAnchorWidgetRenderState(bool visible);
+
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;
 

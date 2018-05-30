@@ -4672,6 +4672,7 @@ if (!is_android) {
       "../browser/ui/tabs/window_activity_watcher_interactive_uitest.cc",
       "../browser/ui/translate/translate_bubble_test_utils.h",
       "../browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc",
+      "../browser/ui/views/permission_bubble/permission_bubble_views_interactive_uitest_mac.mm",
       "../browser/webauth_interactive_uitest.cc",
       "//ui/base/clipboard/clipboard_unittest.cc",
       "base/always_on_top_window_killer_win.cc",

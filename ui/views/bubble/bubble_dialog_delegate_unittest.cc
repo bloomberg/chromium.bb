@@ -36,6 +36,8 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   }
   ~TestBubbleDialogDelegateView() override {}
 
+  using BubbleDialogDelegateView::SetAnchorView;
+
   // BubbleDialogDelegateView overrides:
   View* GetInitiallyFocusedView() override { return view_; }
   gfx::Size CalculatePreferredSize() const override {
@@ -474,6 +476,22 @@ TEST_F(BubbleDialogDelegateTest, StyledLabelTitle) {
             bubble_widget->GetWindowBoundsInScreen().width());
   EXPECT_LT(size_before_new_title.height(),
             bubble_widget->GetWindowBoundsInScreen().height());
+}
+
+TEST_F(BubbleDialogDelegateTest, VisibleAnchorChanges) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(nullptr);
+  bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
+
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+  EXPECT_FALSE(anchor_widget->IsAlwaysRenderAsActive());
+  bubble_delegate->SetAnchorView(anchor_widget->GetContentsView());
+  EXPECT_TRUE(anchor_widget->IsAlwaysRenderAsActive());
+
+  bubble_widget->Hide();
 }
 
 }  // namespace views
