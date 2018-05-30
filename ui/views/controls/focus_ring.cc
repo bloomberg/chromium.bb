@@ -32,6 +32,11 @@ std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
   return ring;
 }
 
+// static
+bool FocusRing::IsPathUseable(const SkPath& path) {
+  return path.isRect(nullptr) || path.isOval(nullptr) || path.isRRect(nullptr);
+}
+
 void FocusRing::SetPath(const SkPath& path) {
   DCHECK(IsPathUseable(path));
   path_ = path;
@@ -113,10 +118,6 @@ FocusRing::FocusRing(View* parent) : view_(parent) {
 FocusRing::~FocusRing() {
   if (parent())
     parent()->RemoveObserver(this);
-}
-
-bool FocusRing::IsPathUseable(const SkPath& path) {
-  return path.isRect(nullptr) || path.isOval(nullptr) || path.isRRect(nullptr);
 }
 
 SkRRect FocusRing::RingRectFromPathRect(const SkRect& rect) const {

@@ -48,6 +48,10 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // |parent|.
   static std::unique_ptr<FocusRing> Install(View* parent);
 
+  // Returns whether this class can draw a focus ring from |path|. Not all paths
+  // are useable since not all paths can be easily outset.
+  static bool IsPathUseable(const SkPath& path);
+
   // Sets the path to draw this FocusRing around. This path is in the parent
   // view's coordinate system, *not* in the FocusRing's coordinate system.
   void SetPath(const SkPath& path);
@@ -74,10 +78,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
  private:
   explicit FocusRing(View* parent);
-
-  // Returns whether this class can draw a focus ring from |path|. Not all paths
-  // are useable since not all paths can be easily outset.
-  bool IsPathUseable(const SkPath& path);
 
   // Translates the provided SkRect or SkRRect, which is in the parent's
   // coordinate system, into this view's coordinate system, then insets it
