@@ -100,7 +100,10 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
       original_max_touch_points_(0),
       embedder_script_enabled_(
           web_view->GetPage()->GetSettings().GetScriptEnabled()),
-      script_execution_disabled_(false) {}
+      script_execution_disabled_(false),
+      embedder_hide_scrollbars_(
+          web_view->GetPage()->GetSettings().GetHideScrollbars()),
+      scrollbars_hidden_(false) {}
 
 DevToolsEmulator::~DevToolsEmulator() = default;
 
@@ -161,6 +164,12 @@ void DevToolsEmulator::SetScriptEnabled(bool enabled) {
   embedder_script_enabled_ = enabled;
   if (!script_execution_disabled_)
     web_view_->GetPage()->GetSettings().SetScriptEnabled(enabled);
+}
+
+void DevToolsEmulator::SetHideScrollbars(bool hide) {
+  embedder_hide_scrollbars_ = hide;
+  if (!scrollbars_hidden_)
+    web_view_->GetPage()->GetSettings().SetHideScrollbars(hide);
 }
 
 void DevToolsEmulator::SetDoubleTapToZoomEnabled(bool enabled) {
@@ -499,6 +508,14 @@ void DevToolsEmulator::SetScriptExecutionDisabled(
   script_execution_disabled_ = script_execution_disabled;
   web_view_->GetPage()->GetSettings().SetScriptEnabled(
       script_execution_disabled_ ? false : embedder_script_enabled_);
+}
+
+void DevToolsEmulator::SetScrollbarsHidden(bool hidden) {
+  if (scrollbars_hidden_ == hidden)
+    return;
+  scrollbars_hidden_ = hidden;
+  web_view_->GetPage()->GetSettings().SetHideScrollbars(
+      scrollbars_hidden_ ? true : embedder_hide_scrollbars_);
 }
 
 }  // namespace blink

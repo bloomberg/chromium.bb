@@ -483,7 +483,7 @@ void WebSettingsImpl::SetMockScrollbarsEnabled(bool enabled) {
 }
 
 void WebSettingsImpl::SetHideScrollbars(bool enabled) {
-  settings_->SetHideScrollbars(enabled);
+  dev_tools_emulator_->SetHideScrollbars(enabled);
 }
 
 void WebSettingsImpl::SetMockGestureTapHighlightsEnabled(bool enabled) {
