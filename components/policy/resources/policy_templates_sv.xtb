@@ -79,7 +79,6 @@
 
           Skalningsfaktorn måste vara 100 % eller mer.</translation>
 <translation id="131353325527891113">Visa användarnamn på inloggningsskärmen</translation>
-<translation id="1325295456374328159">Konfigurera de tillåtna språkkoderna i en användarsession</translation>
 <translation id="1327466551276625742">Aktivera uppmaning att konfigurera nätverk om enheten är offline</translation>
 <translation id="1330145147221172764">Aktivera skärmtangentbordet</translation>
 <translation id="13356285923490863">Policynamn</translation>
@@ -474,9 +473,6 @@
 
       Innehållet på listan "Webbadresser att öppna vid start" ignoreras om du inte väljer "Öppna följande sidor" i "Vid start".</translation>
 <translation id="2327252517317514801">Ange vilka domäner som ska ha tillgång till G Suite</translation>
-<translation id="2337466621458842053">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
-
-          Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
 <translation id="2372547058085956601">Fördröjningen av den automatiska inloggningen till en offentlig session.
 
       Om policyn |DeviceLocalAccountAutoLoginId| inte har angetts har inte policyn någon effekt. I annat fall:
@@ -1247,9 +1243,6 @@
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
 
       Om policyn inte anges är inställningen aktiverad men kan ändras av användaren.</translation>
-<translation id="4525521128313814366">Policyn gör att du kan ställa in en lista med adressmönster som anger webbplatser som får visa bilder.
-
-          Om den här policyn inte ställs in används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultImagesSetting om den är inställd, eller från användarens personliga konfiguration om den inte är det.</translation>
 <translation id="4531706050939927436">Android-appar kan tvångsinstalleras via Googles Administratörskonsol med Google Play. Den här principen gäller inte för dem.</translation>
 <translation id="4534500438517478692">Namn på Android-begränsning:</translation>
 <translation id="4541530620466526913">Lokala konton på enheten</translation>
@@ -1549,9 +1542,6 @@
 <translation id="5457065417344056871">Använda gästläget i webbläsaren</translation>
 <translation id="5457924070961220141">Policyn gör att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> installeras.
           Standardinställningen som används om policyn inte ställs in är att tillåta att värdwebbläsaren utför renderingen, men du kan åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
-<translation id="5459155981813668716">Konfigurerar de språkkoder som <ph name="PRODUCT_OS_NAME" /> kan visas i.
-
-      Om principen används kan användare endast ställa in <ph name="PRODUCT_OS_NAME" /> på att visas i någon av de språkkoder som anges i denna princip. Om principen inte används eller om en tom lista anges för principen kan <ph name="PRODUCT_OS_NAME" /> visas i alla språkkoder som stöds. Om en lista med ogiltiga värden anges för principen ignoreras alla värden. Om en användare tidigare har ställt in <ph name="PRODUCT_OS_NAME" /> på att visas i en språkkod som inte tillåts i denna princip byts den visade språkkoden ut mot en tillåten språkkoden nästa gång användaren loggar in. Om användaren har konfigurerat föredragna språkkoder och en av de föredragna språkkoderna tillåts i denna princip ändras <ph name="PRODUCT_OS_NAME" /> till denna språkkod. I annat fall ändras <ph name="PRODUCT_OS_NAME" /> till det första giltiga värdet i denna princip eller till en alternativ språkkod (för närvarande en-US) om principen endast innehåller ogiltiga värden.</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
@@ -2343,9 +2333,6 @@
 
       Den här principen kan endast ställas in som rekommenderad. Du kan använda principen för att flytta flera rekommenderade språkkoder högst upp, men användare kan alltid välja en språkkod som stöds av <ph name="PRODUCT_OS_NAME" /> för sessionen.
       </translation>
-<translation id="7763311235717725977">Policyn gör att du kan ställa in om webbplatser får visa bilder. Bildvisning kan tillåtas för alla webbplatser eller nekas för alla webbplatser.
-
-          Om du inte ställer in policyn används AllowImages och inställningen kan ändras av användaren.</translation>
 <translation id="7763479091692861127"> De typer av anslutningar som är tillåtna att använda uppdateringar av operativsystem. Uppdateringar av operativsystem belastar anslutningen hårt på grund av dess storlek och kan medföra extra kostnader. Därför är de inte aktiverade som standard för anslutningstyper som anses vara dyra. Det gäller bland annat WiMax, Bluetooth och Cellular.
 
       Identifierarna för giltiga anslutningstyper är ”ethernet”, ”wifi”, ”wimax”, ”bluetooth” och ”cellular”.</translation>

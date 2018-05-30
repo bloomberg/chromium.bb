@@ -79,7 +79,6 @@
 
           Skaleringsfaktoren må være 100 % eller mer.</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
-<translation id="1325295456374328159">Konfigurer tillatte lokaliteter i brukerøkter</translation>
 <translation id="1327466551276625742">Aktiver melding om nettverkskonfigurasjon når du er uten nett.</translation>
 <translation id="1330145147221172764">Slå på skjermtastaturet</translation>
 <translation id="13356285923490863">Navn på retningslinje</translation>
@@ -470,7 +469,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
 <translation id="2327252517317514801">Spesifiser hvilke domener som har tilgang til G Suite</translation>
-<translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="2372547058085956601">Tid før automatisk pålogging til offentlig økt.
 
       Hvis |DeviceLocalAccountAutoLoginId|-innstillingen ikke er angitt, har dette ingen effekt. Ellers:
@@ -1221,7 +1219,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukeren endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME" />.
 
       Hvis denne retningslinjen ikke angis, aktiveres den, men brukeren kan endre på dette.</translation>
-<translation id="4525521128313814366">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder. Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultImagesSetting, eller fra brukerens egne retningslinjer hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="4531706050939927436">Android-apper kan tvangsinstalleres fra Google Administrasjonskonsoll ved hjelp av Google Play. De bruker ikke denne regelen.</translation>
 <translation id="4534500438517478692">Navnet på Android-begrensningen:</translation>
 <translation id="4541530620466526913">Lokale kontoer på enheten</translation>
@@ -1513,9 +1510,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="5457065417344056871">Slå på gjestemodus i nettleseren</translation>
 <translation id="5457924070961220141">Gjør at du kan konfigurere standard HTML-gjengivelsen når <ph name="PRODUCT_FRAME_NAME" /> er installert.
           Standardinnstillingen som brukes når denne retningslinjen er angitt, er for å tillate vertstjeneren å foreta gjengivelsen, men du kan velge å overstyre dette sånn at <ph name="PRODUCT_FRAME_NAME" /> som standard gjengir HTML-sider.</translation>
-<translation id="5459155981813668716">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
-
-      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på et språk som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillatt lokalitet neste gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokalitetene tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
 <translation id="5464816904705580310">Konfigurer innstillinger for administrerte brukere.</translation>
 <translation id="546726650689747237">Forsinkelse for lysdemping på skjermen når enheten kjører på vekselstrøm</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
@@ -2302,9 +2296,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Denne regelen kan bare angis som en anbefaling. Du kan bruke denne regelen til å flytte et sett med anbefalte lokaliteter til toppen, men brukerne kan alltid velge en hvilken som helst lokalitet som støttes av <ph name="PRODUCT_OS_NAME" />, når de starter økten.
       </translation>
-<translation id="7763311235717725977">Gjør at du kan angi om nettsteder kan vise bilder. Bildevisning kan enten tillates for alle nettsteder, eller nektes for alle nettsteder.
-
-          Hvis denne retningslinjen ikke angis, brukes AllowImages, og brukeren kan endre dette.</translation>
 <translation id="7763479091692861127"> Tilkoblingstypene som tillates for oppdateringer av operativsystem. Oppdateringer av operativsystem legger potensielt beslag på store deler av kapasiteten som følge av at de er omfattende operasjoner, og det kan påløpe ekstra kostnader. Derfor er slike oppdateringer som standard ikke slått på for tilkoblingstyper som anses som kostbare, herunder WiMax, Bluetooth og mobilnettverk.
 
       Identifikatorene som gjenkjennes for tilkoblingstyper er "ethernet", "wifi", "wimax", "bluetooth" og "cellular".</translation>

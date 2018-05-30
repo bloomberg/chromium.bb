@@ -78,7 +78,6 @@
 
           De schaalfactor moet 100% of meer zijn.</translation>
 <translation id="131353325527891113">Gebruikersnamen weergeven in het aanmeldscherm</translation>
-<translation id="1325295456374328159">Instellen welke talen zijn toegestaan in een gebruikerssessie</translation>
 <translation id="1327466551276625742">Prompt voor netwerkconfiguratie inschakelen als je offline bent</translation>
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="13356285923490863">Naam van beleid</translation>
@@ -120,7 +119,7 @@
       Als de instelling wordt gewijzigd terwijl de gebruiker is ingelogd bij een sessie met meerdere profielen, worden alle gebruikers in de sessie gecontroleerd op basis van hun overeenkomstige instellingen. De sessie wordt gesloten als een van de gebruikers niet langer deel mag uitmaken van de sessie.
 
       Als dit beleid niet wordt ingesteld, is de standaardwaarde 'MultiProfileUserBehaviorMustBePrimary' van toepassing op gebruikers die op ondernemingsniveau worden beheerd en wordt 'MultiProfileUserBehaviorUnrestricted' gebruikt voor niet-beheerde gebruikers.</translation>
-<translation id="1465619815762735808">Klikken om te spelen</translation>
+<translation id="1465619815762735808">Klikken om af te spelen</translation>
 <translation id="1466133662354365542">Hiermee wordt de functie Automatisch aanvullen van <ph name="PRODUCT_NAME" /> ingeschakeld en wordt gebruikers toegestaan creditcard- of adresgegevens automatisch in te vullen op webformulieren aan de hand van eerder opgeslagen gegevens.
 
       Als je deze instelling uitschakelt, worden er nooit creditcardgegevens voorgesteld of ingevuld door Automatisch aanvullen. Er worden ook geen aanvullende creditcardgegevens opgeslagen die de gebruiker mogelijk verzendt terwijl hij browst op internet.
@@ -460,9 +459,6 @@
 
       De content van de lijst 'URL's die worden geopend bij starten' wordt genegeerd, tenzij je 'Een lijst met URL's openen' selecteert bij 'Actie bij starten'.</translation>
 <translation id="2327252517317514801">Domeinen definiëren voor toegang tot G Suite</translation>
-<translation id="2337466621458842053">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop afbeeldingen kunnen worden weergegeven.
-
-          Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="2372547058085956601">De vertraging voor automatisch inloggen bij de openbare sessie.
 
       Als het beleid |DeviceLocalAccountAutoLoginId| niet is ingesteld, heeft dit beleid geen effect. Anders:
@@ -1232,9 +1228,6 @@
       Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid niet wordt ingesteld, wordt dit ingeschakeld maar kan de gebruiker dit wijzigen.</translation>
-<translation id="4525521128313814366">Hiermee kun je een lijst URL-patronen instellen waarmee sites worden gespecificeerd waarop geen afbeeldingen kunnen worden weergegeven.
-
-          Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultImagesSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="4531706050939927436">De installatie van Android-apps kan via de Google Beheerdersconsole worden afgedwongen door gebruik te maken van Google Play. Deze apps gebruiken dit beleid niet.</translation>
 <translation id="4534500438517478692">Naam Android-beperking:</translation>
 <translation id="4541530620466526913">Lokale accounts op apparaat</translation>
@@ -1529,9 +1522,6 @@
 <translation id="5457065417344056871">De gastmodus inschakelen in browser</translation>
 <translation id="5457924070961220141">Hiermee kun je de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME" /> is geïnstalleerd.
           De standaardinstelling die wordt gebruikt wanneer dit beleid niet wordt ingesteld, wordt gebruikt om de hostbrowser de rendering te laten regelen, maar je kunt dit naar wens aanpassen en <ph name="PRODUCT_FRAME_NAME" /> HTML-pagina's standaard laten renderen.</translation>
-<translation id="5459155981813668716">Hiermee wordt ingesteld in welke talen <ph name="PRODUCT_OS_NAME" /> wordt weergegeven.
-
-      Als dit beleid is ingesteld, kan de gebruiker alleen instellen dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een van de talen die is opgenomen in dit beleid. Als dit beleid niet is ingesteld of is ingesteld op een lege lijst, kan <ph name="PRODUCT_OS_NAME" /> worden weergegeven in alle ondersteunde talen. Als dit beleid is ingesteld op een lijst met ongeldige waarden, worden alle ongeldige waarden genegeerd. Als een gebruiker al eerder had ingesteld dat <ph name="PRODUCT_OS_NAME" /> wordt weergegeven in een bepaalde taal die niet is toegestaan door dit beleid, wordt de weergavetaal (op het moment dat de gebruiker inlogt) ingesteld op een taal die wel is toegestaan. Als de gebruiker voorkeurstalen had ingesteld en een van de voorkeurstalen is toegestaan door dit beleid, schakelt <ph name="PRODUCT_OS_NAME" /> over naar deze taal. Als de gebruiker geen voorkeurstalen had ingesteld, schakelt <ph name="PRODUCT_OS_NAME" /> over naar de eerste geldige waarde die door het beleid is bepaald, of anders naar de standaardtaal (momenteel en-US) als het beleid alleen ongeldige talen bevat.</translation>
 <translation id="5464816904705580310">Hiermee configureer je instellingen voor beheerde gebruikers.</translation>
 <translation id="546726650689747237">Vertraging van dimmen van scherm wanneer op netstroom wordt gewerkt</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
@@ -2314,9 +2304,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Dit beleid kan alleen worden ingesteld als aanbevolen. Je kunt dit beleid gebruiken om een aantal aanbevolen talen naar het bovenste deel van de lijst te verplaatsen, maar gebruikers kunnen altijd de gewenste taal die door <ph name="PRODUCT_OS_NAME" /> wordt ondersteund voor hun sessie kiezen.
       </translation>
-<translation id="7763311235717725977">Hiermee kun je instellen of het websites is toegestaan afbeeldingen weer te geven. Het weergeven van afbeeldingen kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
-
-          Als dit beleid niet wordt ingesteld, wordt 'AllowImages' gebruikt en kan dit door de gebruiker worden gewijzigd.</translation>
 <translation id="7763479091692861127"> De verbindingstypen die mogen worden gebruikt voor updates voor het besturingssysteem. Updates voor het besturingssysteem kunnen de verbinding zwaar belasten door hun grootte en kunnen extra kosten tot gevolg hebben. Updates voor het besturingssysteem zijn daarom standaard uitgeschakeld voor dure verbindingstypen. Dit omvat momenteel de verbindingstypen WiMax, Bluetooth en Mobiel.
 
       De herkende verbindingstypen zijn 'ethernet', 'wifi', 'wimax', 'bluetooth' en 'mobiel'.</translation>

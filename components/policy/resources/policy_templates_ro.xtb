@@ -79,7 +79,6 @@
 
           Acesta trebuie să fie de minimum 100 %.</translation>
 <translation id="131353325527891113">Afișați numele de utilizator pe ecranul de conectare</translation>
-<translation id="1325295456374328159">Configurează codurile locale permise într-o sesiune a utilizatorului</translation>
 <translation id="1327466551276625742">Activați solicitarea privind configurația rețelei, în modul offline</translation>
 <translation id="1330145147221172764">Activați tastatura pe ecran</translation>
 <translation id="13356285923490863">Numele politicii</translation>
@@ -466,7 +465,6 @@
 
       Conținutul listei „Adrese URL care se deschid la pornire” este ignorat, cu excepția cazului în care selectezi „Deschide o listă cu adrese URL” în „Acțiune la pornire”.</translation>
 <translation id="2327252517317514801">Definește domeniile care au permisiunea să acceseze G Suite</translation>
-<translation id="2337466621458842053">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile care au permisiunea să afișeze imagini. Dacă această politică rămâne nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting”, în cazul în care politica este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="2372547058085956601">Stabilește intervalul de inactivitate până la conectarea automată la o sesiune publică.
 
       Dacă setarea politicii |DeviceLocalAccountAutoLoginId| este anulată, aceasta nu mai are efect. În caz contrar:
@@ -1207,7 +1205,6 @@
       Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />.
 
       Dacă această politică nu este setată, această setare va fi activată, dar utilizatorul va putea să o schimbe.</translation>
-<translation id="4525521128313814366">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a afișa imagini. Dacă această politică rămâne nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting”, în cazul în care politica este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="4531706050939927436">Aplicațiile Android pot fi instalate forțat din consola Google Admin folosind Google Play. Acestea nu folosesc politica.</translation>
 <translation id="4534500438517478692">Numele restricției Android:</translation>
 <translation id="4541530620466526913">Conturi locale de pe gadget</translation>
@@ -1487,9 +1484,6 @@
 <translation id="5447306928176905178">Activați raportarea informațiilor privind memoria (dimensiunea de heap JavaScript) în pagină (s-a renunțat la dezvoltare)</translation>
 <translation id="5457065417344056871">Activează modul pentru invitați în browser</translation>
 <translation id="5457924070961220141">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
-<translation id="5459155981813668716">Configurează limbile în care poate fi afișat <ph name="PRODUCT_OS_NAME" />.
-
-      Dacă această politică este configurată, utilizatorul poate să configureze afișarea <ph name="PRODUCT_OS_NAME" /> numai într-una dintre limbile specificate de această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, <ph name="PRODUCT_OS_NAME" /> poate fi afișat în toate limbile acceptate. Dacă această politică este configurată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a configurat anterior afișarea <ph name="PRODUCT_OS_NAME" /> într-o limbă care nu este permisă de această politică, limba de afișare va fi înlocuită cu o limbă permisă la următoarea conectare a utilizatorului. Dacă utilizatorul a configurat limbile preferate și una dintre ele este permisă de această politică, <ph name="PRODUCT_OS_NAME" /> va comuta la limba respectivă. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la o limbă alternativă (în prezent, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
 <translation id="5464816904705580310">Configurați setările pentru utilizatorii gestionați.</translation>
 <translation id="546726650689747237">Interval până la reducerea luminozității ecranului la funcționarea pe c.a.</translation>
 <translation id="5469825884154817306">Blochează imagini de pe aceste site-uri</translation>
@@ -2242,7 +2236,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Această politică poate fi setată numai ca recomandare. Poți să folosești această politică pentru a muta un set de limbi recomandate în partea de sus a listei, însă utilizatorii vor avea întotdeauna posibilitatea să aleagă pentru sesiunea lor orice limbă acceptată de <ph name="PRODUCT_OS_NAME" />.
       </translation>
-<translation id="7763311235717725977">Vă permite să setați dacă site-urile au permisiunea de a afișa imagini. Afișarea imaginilor poate fi permisă sau interzisă în bloc pentru toate site-urile web. Dacă această politică este nesetată, va fi utilizată „AllowImages”, iar utilizatorul o va putea schimba.</translation>
 <translation id="7763479091692861127"> Tipurile de conexiune care pot fi utilizate pentru actualizările sistemului de operare. Din cauza dimensiunii lor, actualizările sistemului de operare pot suprasolicita conexiunea și pot genera costuri suplimentare. Prin urmare, în mod prestabilit, acestea nu sunt activate pentru tipurile de conexiune considerate scumpe, printre care se numără în prezent conexiunile WiMax, cele prin Bluetooth și cele prin rețele mobile.
 
       Identificatorii recunoscuți pentru tipurile de conexiune sunt „ethernet”, „wifi”, „wimax”, „bluetooth” și „cellular”.</translation>

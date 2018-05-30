@@ -79,7 +79,6 @@
 
           Faktor skaliranja mora biti 100% ili više.</translation>
 <translation id="131353325527891113">Prikaži korisnička imena na zaslonu prijave</translation>
-<translation id="1325295456374328159">Konfiguriraj dopuštene jezike u korisničkoj sesiji</translation>
 <translation id="1327466551276625742">Omogući odzivnu poruku za konfiguraciju mreže tijekom izvanmrežnog rada</translation>
 <translation id="1330145147221172764">Omogući tipkovnicu na zaslonu</translation>
 <translation id="13356285923490863">Naziv pravila</translation>
@@ -465,7 +464,6 @@
 <translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
 <translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se, osim ako odaberete "Otvori popis URL-ova" pod "Radnje prilikom pokretanja".</translation>
 <translation id="2327252517317514801">Definira domene kojima je dopušten pristup G Suiteu</translation>
-<translation id="2337466621458842053">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju prikazivati slike. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultImagesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="2372547058085956601">Odgoda automatske prijave u javnu sesiju.
 
       Ako nije postavljeno pravilo |DeviceLocalAccountAutoLoginId|, ovo se pravilo neće primjenjivati. U suprotnom:
@@ -1197,7 +1195,6 @@
       Ako omogućite ili onemogućite ovu postavku, korisnici neće moći promijeniti niti poništiti ovu postavku na usluzi <ph name="PRODUCT_NAME" />.
 
       Ako ovo pravilo nije postavljeno, bit će omogućeno, ali će ga korisnici moći promijeniti.</translation>
-<translation id="4525521128313814366">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati slike. Ako se ovo pravilo ne postavi, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultImagesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="4531706050939927436">Instaliranje Android aplikacija može se nametnuti s konzole Google Admina putem Google Playa. One ne upotrebljavaju to pravilo.</translation>
 <translation id="4534500438517478692">Naziv ograničenja za Android:</translation>
 <translation id="4541530620466526913">Lokalni računi na uređaju</translation>
@@ -1479,9 +1476,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="5447306928176905178">Omogući prijavljivanje informacija o memoriji (ukupna veličina JS-a) na stranici (zastarjelo)</translation>
 <translation id="5457065417344056871">Omogućivanje načina rada za goste u pregledniku</translation>
 <translation id="5457924070961220141">Omogućuje konfiguriranje zadanog HTML prikazivača kada je instaliran okvir <ph name="PRODUCT_FRAME_NAME" />. Ako ovo pravilo nije postavljeno, zadana je postavka da prikazivanje obavlja preglednik hosta, ali to po izboru možete poništiti i postaviti da okvir <ph name="PRODUCT_FRAME_NAME" /> prikazuje HTML stranice prema zadanim postavkama.</translation>
-<translation id="5459155981813668716">Konfigurira jezike na kojima se <ph name="PRODUCT_OS_NAME" /> može prikazivati.
-
-      Ako se to pravilo postavi, korisnik može konfigurirati da se <ph name="PRODUCT_OS_NAME" /> prikazuje samo na jednom od jezika navedenih ovim pravilom. Ako se to pravilo ne postavi ili se postavi na prazan popis, moguće je prikazivati <ph name="PRODUCT_OS_NAME" /> na svim podržanim jezicima. Ako se to pravilo postavi na popis s nevažećim vrijednostima, sve će se nevažeće vrijednosti zanemariti. Ako je korisnik prethodno konfigurirao da se <ph name="PRODUCT_OS_NAME" /> prikazuje na jeziku koji nije dopušten ovim pravilom, jezik prikaza prebacit će se na dopušteni jezik sljedeći put kada se korisnik prijavi. Ako je korisnik konfigurirao preferirane jezike i jedan od njih dopušten je ovim pravilom, <ph name="PRODUCT_OS_NAME" /> prelazi na taj jezik. U suprotnom, <ph name="PRODUCT_OS_NAME" /> prelazi na prvu važeću vrijednost navedenu tim pravilom ili na zamjenski jezik (trenutačno en-US), ako pravilo sadrži samo nevažeće unose.</translation>
 <translation id="5464816904705580310">Konfiguriranje postavki za upravljane korisnike.</translation>
 <translation id="546726650689747237">Odgoda zatamnjenja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="5469825884154817306">Blokiraj slike na ovim web-lokacijama</translation>
@@ -2226,7 +2220,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       To se pravilo može postaviti samo kao preporučeno. Tim pravilom možete premjestiti skup preporučenih jezika na vrh popisa, ali korisnici za svoju sesiju uvijek mogu sami odabrati bilo koji jezik koji <ph name="PRODUCT_OS_NAME" /> podržava.
       </translation>
-<translation id="7763311235717725977">Omogućuje da postavite smiju li web-lokacije prikazivati slike. Prikazivanje slika može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako se ovo pravilo ne postavi, upotrebljavat će se pravilo "AllowImages", a korisnici će to moći promijeniti.</translation>
 <translation id="7763479091692861127"> Vrste veza putem kojih su dopuštena ažuriranja OS-a. Ažuriranja OS-a zbog svoje veličine potencijalno jako opterećuju vezu i mogu uzrokovati dodatne troškove. Stoga prema zadanim postavkama nisu omogućena za vrste veza koje se smatraju skupima, a to su trenutačno WiMax, Bluetooth i mobilne veze.
 
       Prepoznati identifikatori vrste veze jesu "ethernet", "wifi", "wimax", "bluetooth" i "mobilna".</translation>
