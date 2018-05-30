@@ -3624,7 +3624,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadAfterCrash) {
   // Load guest and wait for it to appear.
   LoadAppWithGuest("web_view/simple");
   EXPECT_TRUE(GetGuestWebContents()->GetMainFrame()->GetView());
-  WaitForChildFrameSurfaceReady(GetGuestWebContents()->GetMainFrame());
+  content::RenderFrameSubmissionObserver frame_observer(GetGuestWebContents());
+  frame_observer.WaitForMetadataChange();
 
   // Kill guest.
   auto* rph = GetGuestWebContents()->GetMainFrame()->GetProcess();
@@ -3640,11 +3641,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadAfterCrash) {
                             "document.querySelector('webview').reload()"));
   load_observer.Wait();
   EXPECT_TRUE(GetGuestWebContents()->GetMainFrame()->GetView());
-
-  // When the frame passed has a RenderWidgetHostViewChildFrame,
-  // WaitForChildFrameSurfaceReady will only return when the guest is embedded
-  // within the root surface.
-  WaitForChildFrameSurfaceReady(GetGuestWebContents()->GetMainFrame());
+  // Ensure that the guest produces a new frame.
+  frame_observer.WaitForAnyFrameSubmission();
 }
 
 // The presence of DomAutomationController interferes with these tests, so we

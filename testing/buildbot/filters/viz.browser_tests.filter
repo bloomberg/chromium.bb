@@ -14,7 +14,6 @@
 -PDFExtensionHitTestTest.MouseLeave*
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
 -WebViewTest.InterstitialPageFocusedWidget
--WebViewTest.ReloadAfterCrash
 -WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
 
 # Mac Flaking with missing browser. https://crbug.com/842664
