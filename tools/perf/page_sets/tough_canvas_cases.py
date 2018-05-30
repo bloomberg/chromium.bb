@@ -7,10 +7,7 @@ from telemetry import story
 
 class ToughCanvasCasesPage(page_module.Page):
 
-  def __init__(self, url, page_set):
-    name = url
-    if not url.startswith('http'):
-      name = url[7:]
+  def __init__(self, name, url, page_set):
     super(ToughCanvasCasesPage, self).__init__(url=url, page_set=page_set,
                                                name=name)
 
@@ -28,6 +25,7 @@ class MicrosofFirefliesPage(ToughCanvasCasesPage):
 
   def __init__(self, page_set):
     super(MicrosofFirefliesPage, self).__init__(
+      name='microsoft_fireflies',
       # pylint: disable=line-too-long
       url='http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.html',
       page_set=page_set)
@@ -49,45 +47,88 @@ class ToughCanvasCasesPageSet(story.StorySet):
     # self.AddStory(MicrosofFirefliesPage(self))
 
     urls_list = [
-      'http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM',
-      'http://runway.countlessprojects.com/prototype/performance_test.html',
-      # pylint: disable=line-too-long
-      'http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html',
-      'http://ie.microsoft.com/testdrive/Performance/SpeedReading/Default.html',
-      'http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html',
-      'http://www.megidish.net/awjs/',
-      'http://themaninblue.com/experiment/AnimationBenchmark/canvas/',
-      'http://mix10k.visitmix.com/Entry/Details/169',
-      'http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html',
-      'http://www.chiptune.com/starfield/starfield.html',
-      'http://jarrodoverson.com/static/demos/particleSystem/',
-      'http://www.effectgames.com/demos/canvascycle/',
-      'http://spielzeugz.de/html5/liquid-particles.html',
-      'http://hakim.se/experiments/html5/magnetic/02/',
-      'http://ie.microsoft.com/testdrive/Performance/LetItSnow/',
-      'http://ie.microsoft.com/testdrive/Graphics/WorkerFountains/Default.html',
-      'http://ie.microsoft.com/testdrive/Graphics/TweetMap/Default.html',
-      'http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html',
-      'http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html',
-      'http://www.smashcat.org/av/canvas_test/',
-      # pylint: disable=line-too-long
-      'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image',
-      # pylint: disable=line-too-long
-      'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15',
-      'file://tough_canvas_cases/canvas-font-cycler.html',
-      'file://tough_canvas_cases/canvas-animation-no-clear.html',
-      'file://tough_canvas_cases/canvas_toBlob.html',
-      'file://../../../chrome/test/data/perf/canvas_bench/many_images.html',
-      'file://tough_canvas_cases/rendering_throughput/canvas_arcs.html',
-      'file://tough_canvas_cases/rendering_throughput/canvas_lines.html',
-      'file://tough_canvas_cases/rendering_throughput/put_get_image_data.html',
-      'file://tough_canvas_cases/rendering_throughput/fill_shapes.html',
-      'file://tough_canvas_cases/rendering_throughput/stroke_shapes.html',
-      'file://tough_canvas_cases/rendering_throughput/bouncing_clipped_rectangles.html',
-      'file://tough_canvas_cases/rendering_throughput/bouncing_gradient_circles.html',
-      'file://tough_canvas_cases/rendering_throughput/bouncing_svg_images.html',
-      'file://tough_canvas_cases/rendering_throughput/bouncing_png_images.html'
+      ('geo_apis',
+       'http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM'),
+      ('runway',
+       'http://runway.countlessprojects.com/prototype/performance_test.html'),
+      ('microsoft_fish_ie_tank',
+       # pylint: disable=line-too-long
+       'http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html'),
+      ('microsoft_speed_reading',
+       # pylint: disable=line-too-long
+       'http://ie.microsoft.com/testdrive/Performance/SpeedReading/Default.html'),
+      ('kevs_3d',
+       'http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html'),
+      ('megi_dish',
+       'http://www.megidish.net/awjs/'),
+      ('man_in_blue',
+       'http://themaninblue.com/experiment/AnimationBenchmark/canvas/'),
+      ('mix_10k',
+       'http://mix10k.visitmix.com/Entry/Details/169'),
+      ('crafty_mind',
+       'http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html'),
+      ('chip_tune',
+       'http://www.chiptune.com/starfield/starfield.html'),
+      ('jarro_doverson',
+       'http://jarrodoverson.com/static/demos/particleSystem/'),
+      ('effect_games',
+       'http://www.effectgames.com/demos/canvascycle/'),
+      ('spielzeugz',
+       'http://spielzeugz.de/html5/liquid-particles.html'),
+      ('hakim',
+       'http://hakim.se/experiments/html5/magnetic/02/'),
+      ('microsoft_snow',
+       'http://ie.microsoft.com/testdrive/Performance/LetItSnow/'),
+      ('microsoft_worker_fountains',
+       # pylint: disable=line-too-long
+       'http://ie.microsoft.com/testdrive/Graphics/WorkerFountains/Default.html'),
+      ('microsoft_tweet_map',
+       'http://ie.microsoft.com/testdrive/Graphics/TweetMap/Default.html'),
+      ('microsoft_video_city',
+       'http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html'),
+      ('microsoft_asteroid_belt',
+       # pylint: disable=line-too-long
+       'http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html'),
+      ('smash_cat',
+       'http://www.smashcat.org/av/canvas_test/'),
+      ('bouncing_balls_shadow',
+       # pylint: disable=line-too-long
+       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=image_with_shadow&back=image'),
+      ('bouncing_balls_15',
+       # pylint: disable=line-too-long
+       'file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15'),
+      ('canvas_font_cycler',
+       'file://tough_canvas_cases/canvas-font-cycler.html'),
+      ('canvas_animation_no_clear',
+       'file://tough_canvas_cases/canvas-animation-no-clear.html'),
+      ('canvas_to_blob',
+       'file://tough_canvas_cases/canvas_toBlob.html'),
+      ('many_images',
+       # pylint: disable=line-too-long
+       'file://../../../chrome/test/data/perf/canvas_bench/many_images.html'),
+      ('canvas_arcs',
+       'file://tough_canvas_cases/rendering_throughput/canvas_arcs.html'),
+      ('canvas_lines',
+       'file://tough_canvas_cases/rendering_throughput/canvas_lines.html'),
+      ('put_get_image_data',
+       # pylint: disable=line-too-long
+       'file://tough_canvas_cases/rendering_throughput/put_get_image_data.html'),
+      ('fill_shapes',
+       'file://tough_canvas_cases/rendering_throughput/fill_shapes.html'),
+      ('stroke_shapes',
+       'file://tough_canvas_cases/rendering_throughput/stroke_shapes.html'),
+      ('bouncing_clipped_rectangles',
+       # pylint: disable=line-too-long
+       'file://tough_canvas_cases/rendering_throughput/bouncing_clipped_rectangles.html'),
+      ('bouncing_gradient_circles',
+       # pylint: disable=line-too-long
+       'file://tough_canvas_cases/rendering_throughput/bouncing_gradient_circles.html'),
+      ('bouncing_svg_images',
+       # pylint: disable=line-too-long
+       'file://tough_canvas_cases/rendering_throughput/bouncing_svg_images.html'),
+      ('bouncing_png_images',
+       'file://tough_canvas_cases/rendering_throughput/bouncing_png_images.html')
     ]
 
-    for url in urls_list:
-      self.AddStory(ToughCanvasCasesPage(url, self))
+    for name, url in urls_list:
+      self.AddStory(ToughCanvasCasesPage(name=name,url=url,page_set=self))
