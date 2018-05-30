@@ -3,31 +3,31 @@
         "aquarium_20k": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html": {
+        "ken_russell": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://webglsamples.org/aquarium/aquarium.html": {
+        "aquarium": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://webglsamples.org/blob/blob.html": {
+        "blob": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://webglsamples.org/dynamic-cubemap/dynamic-cubemap.html": {
+        "dynamic_cube_map": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://www.khronos.org/registry/webgl/sdk/demos/google/nvidia-vertex-buffer-object/index.html": {
+        "nvidia_vertex_buffer_object": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html": {
+        "particles": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://www.khronos.org/registry/webgl/sdk/demos/google/san-angeles/index.html": {
+        "sans_angeles": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html": {
+        "earth": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         },
-        "http://www.khronos.org/registry/webgl/sdk/demos/webkit/ManyPlanetsDeep.html": {
+        "many_planets_deep": {
             "DEFAULT": "tough_webgl_cases_006.wprgo"
         }
     },

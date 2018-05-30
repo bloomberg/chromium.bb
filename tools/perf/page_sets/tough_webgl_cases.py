@@ -50,31 +50,29 @@ class ToughWebglCasesPageSet(story.StorySet):
     urls_list = [
       # pylint: disable=line-too-long
       ('http://www.khronos.org/registry/webgl/sdk/demos/google/nvidia-vertex-buffer-object/index.html',
-       None),
+       'nvidia_vertex_buffer_object'),
       # pylint: disable=line-too-long
       ('http://www.khronos.org/registry/webgl/sdk/demos/google/san-angeles/index.html',
-       None),
+       'sans_angeles'),
       # pylint: disable=line-too-long
       ('http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html',
-       None),
+       'particles'),
       ('http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html',
-       None),
+       'earth'),
       # pylint: disable=line-too-long
       ('http://www.khronos.org/registry/webgl/sdk/demos/webkit/ManyPlanetsDeep.html',
-       None),
+       'many_planets_deep'),
       ('http://webglsamples.org/aquarium/aquarium.html',
-       None),
+       'aquarium'),
       ('http://webglsamples.org/aquarium/aquarium.html?numFish=20000',
        'aquarium_20k'),
-      ('http://webglsamples.org/blob/blob.html', None),
+      ('http://webglsamples.org/blob/blob.html', 'blob'),
       # pylint: disable=line-too-long
       ('http://webglsamples.org/dynamic-cubemap/dynamic-cubemap.html',
-       None),
+       'dynamic_cube_map'),
       # pylint: disable=line-too-long
       ('http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html',
-       None)
+       'ken_russell')
     ]
     for url, name in urls_list:
-      if name is None:
-        name = url
       self.AddStory(ToughWebglCasesPage(url, self, name))
