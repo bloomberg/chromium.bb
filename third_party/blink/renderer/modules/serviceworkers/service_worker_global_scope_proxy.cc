@@ -150,6 +150,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
+  // Do not remove this, it modifies V8 state.
+  ScriptState::Scope scope(script_state);
+
   BackgroundFetchSettledEventInit init;
   init.setId(developer_id);
   init.setFetches(BackgroundFetchSettledFetches::Create(script_state, fetches));
@@ -200,6 +203,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
 
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
+
+  // Do not remove this, it modifies V8 state.
+  ScriptState::Scope scope(script_state);
 
   BackgroundFetchSettledEventInit init;
   init.setId(developer_id);
