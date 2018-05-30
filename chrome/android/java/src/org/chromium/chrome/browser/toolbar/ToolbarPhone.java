@@ -1746,8 +1746,9 @@ public class ToolbarPhone extends ToolbarLayout
         if (mHomeButton == null) return;
 
         boolean isNTP = getToolbarDataProvider().getNewTabPageForCurrentTab() != null;
-        boolean hideHomeButton =
-                FeatureUtilities.isNewTabPageButtonEnabled() ? isNTP : !mIsHomeButtonEnabled;
+        boolean hideHomeButton = FeatureUtilities.isNewTabPageButtonEnabled()
+                ? isNTP || isIncognito()
+                : !mIsHomeButtonEnabled;
         if (hideHomeButton) {
             removeHomeButton();
         } else {
