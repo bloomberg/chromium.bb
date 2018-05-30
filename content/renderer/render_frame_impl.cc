@@ -2519,8 +2519,7 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
     const blink::WebHistoryItem& history_item) {
   frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
                    WebString::FromUTF8("UTF-8"), error_page_url, error_url,
-                   replace, frame_load_type, history_item,
-                   blink::kWebHistoryDifferentDocumentLoad, false);
+                   replace, frame_load_type, history_item, false);
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -2646,8 +2645,7 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
   frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
                    WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
                    error.url(), true, blink::WebFrameLoadType::kStandard,
-                   blink::WebHistoryItem(),
-                   blink::kWebHistoryDifferentDocumentLoad, true);
+                   blink::WebHistoryItem(), true);
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -2943,15 +2941,13 @@ void RenderFrameImpl::CommitNavigation(
 #endif
     if (is_main_frame_ && should_load_data_url) {
       LoadDataURL(common_params, request_params, frame_, load_type,
-                  item_for_history_navigation,
-                  blink::kWebHistoryDifferentDocumentLoad, is_client_redirect);
+                  item_for_history_navigation, is_client_redirect);
     } else {
       WebURLRequest request = CreateURLRequestForCommit(
           common_params, request_params, std::move(url_loader_client_endpoints),
           head);
 
       frame_->CommitNavigation(request, load_type, item_for_history_navigation,
-                               blink::kWebHistoryDifferentDocumentLoad,
                                is_client_redirect, devtools_navigation_token);
       // The commit can result in this frame being removed. Use a
       // WeakPtr as an easy way to detect whether this has occured. If so, this
@@ -6656,7 +6652,6 @@ void RenderFrameImpl::LoadDataURL(
     WebLocalFrame* frame,
     blink::WebFrameLoadType load_type,
     blink::WebHistoryItem item_for_history_navigation,
-    blink::WebHistoryLoadType history_load_type,
     bool is_client_redirect) {
   // A loadData request with a specified base URL.
   GURL data_url = params.url;
@@ -6687,7 +6682,7 @@ void RenderFrameImpl::LoadDataURL(
         WebString::FromUTF8(charset), base_url,
         // Needed so that history-url-only changes don't become reloads.
         params.history_url_for_data_url, replace, load_type,
-        item_for_history_navigation, history_load_type, is_client_redirect);
+        item_for_history_navigation, is_client_redirect);
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << params.url.possibly_invalid_spec();

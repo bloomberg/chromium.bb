@@ -944,7 +944,7 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
   DCHECK(GetFrame());
   LoadData(data, WebString::FromUTF8("text/html"), WebString::FromUTF8("UTF-8"),
            base_url, unreachable_url, replace, WebFrameLoadType::kStandard,
-           WebHistoryItem(), kWebHistoryDifferentDocumentLoad, false);
+           WebHistoryItem(), false);
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2030,7 +2030,6 @@ void WebLocalFrameImpl::CommitNavigation(
     const WebURLRequest& request,
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& item,
-    WebHistoryLoadType web_history_load_type,
     bool is_client_redirect,
     const base::UnguessableToken& devtools_navigation_token) {
   DCHECK(GetFrame());
@@ -2049,7 +2048,7 @@ void WebLocalFrameImpl::CommitNavigation(
   HistoryItem* history_item = item;
   GetFrame()->Loader().CommitNavigation(
       frame_request, static_cast<FrameLoadType>(web_frame_load_type),
-      history_item, static_cast<HistoryLoadType>(web_history_load_type));
+      history_item);
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
@@ -2114,7 +2113,6 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
                                  bool replace,
                                  WebFrameLoadType web_frame_load_type,
                                  const WebHistoryItem& item,
-                                 WebHistoryLoadType web_history_load_type,
                                  bool is_client_redirect) {
   DCHECK(GetFrame());
 
@@ -2152,7 +2150,7 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
 
   GetFrame()->Loader().CommitNavigation(
       frame_request, static_cast<FrameLoadType>(web_frame_load_type),
-      history_item, static_cast<HistoryLoadType>(web_history_load_type));
+      history_item);
 }
 
 WebLocalFrame::FallbackContentResult

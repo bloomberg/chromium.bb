@@ -866,7 +866,6 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
   item.SetPageScaleFactor(2);
 
   FrameTestHelpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
-                                    kWebHistoryDifferentDocumentLoad,
                                     mojom::FetchCacheMode::kDefault);
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
@@ -897,7 +896,6 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   item.SetPageScaleFactor(2);
 
   FrameTestHelpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
-                                    kWebHistoryDifferentDocumentLoad,
                                     mojom::FetchCacheMode::kDefault);
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();

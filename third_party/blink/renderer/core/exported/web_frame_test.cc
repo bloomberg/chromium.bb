@@ -6911,7 +6911,6 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       URLTestHelpers::ToKURL(error_url), response, error);
   FrameTestHelpers::LoadHistoryItem(frame, error_history_item,
-                                    kWebHistoryDifferentDocumentLoad,
                                     mojom::FetchCacheMode::kDefault);
   WebString text = WebFrameContentDumper::DumpWebViewAsText(
       web_view_helper.GetWebView(), std::numeric_limits<size_t>::max());
@@ -7725,7 +7724,6 @@ TEST_F(WebFrameTest, BackToReload) {
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
 
   FrameTestHelpers::LoadHistoryItem(frame, WebHistoryItem(first_item.Get()),
-                                    kWebHistoryDifferentDocumentLoad,
                                     mojom::FetchCacheMode::kDefault);
   EXPECT_EQ(first_item.Get(),
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
@@ -7758,8 +7756,7 @@ TEST_F(WebFrameTest, BackDuringChildFrameReload) {
   ResourceRequest request =
       history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault);
   main_frame->CommitNavigation(WrappedResourceRequest(request),
-                               WebFrameLoadType::kBackForward, item,
-                               kWebHistoryDifferentDocumentLoad, false,
+                               WebFrameLoadType::kBackForward, item, false,
                                base::UnguessableToken::Create());
 
   FrameTestHelpers::ReloadFrame(child_frame);
@@ -7809,7 +7806,6 @@ TEST_F(WebFrameTest, LoadHistoryItemReload) {
 
   // Cache policy overrides should take.
   FrameTestHelpers::LoadHistoryItem(frame, WebHistoryItem(first_item),
-                                    kWebHistoryDifferentDocumentLoad,
                                     mojom::FetchCacheMode::kValidateCache);
   EXPECT_EQ(first_item.Get(),
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
@@ -8141,10 +8137,9 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
 
   ToLocalFrame(web_view_impl->GetPage()->MainFrame())
       ->Loader()
-      .CommitNavigation(
-          FrameLoadRequest(nullptr, item->GenerateResourceRequest(
-                                        mojom::FetchCacheMode::kDefault)),
-          kFrameLoadTypeBackForward, item.Get(), kHistorySameDocumentLoad);
+      .CommitSameDocumentNavigation(
+          item->Url(), kFrameLoadTypeBackForward, item.Get(),
+          ClientRedirectPolicy::kNotClientRedirect, nullptr, nullptr);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
 

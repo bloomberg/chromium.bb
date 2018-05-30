@@ -212,7 +212,6 @@ class WebLocalFrame : public WebFrame {
       const WebURLRequest&,
       WebFrameLoadType,
       const WebHistoryItem&,
-      WebHistoryLoadType,
       bool is_client_redirect,
       const base::UnguessableToken& devtools_navigation_token) = 0;
 
@@ -251,7 +250,6 @@ class WebLocalFrame : public WebFrame {
                         bool replace = false,
                         WebFrameLoadType = WebFrameLoadType::kStandard,
                         const WebHistoryItem& = WebHistoryItem(),
-                        WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
                         bool is_client_redirect = false) = 0;
 
   // Returns the document loader that is currently loading.  May be null.

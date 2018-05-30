@@ -70,11 +70,6 @@ enum SameDocumentNavigationSource {
   kSameDocumentNavigationHistoryApi,
 };
 
-enum HistoryLoadType {
-  kHistorySameDocumentLoad,
-  kHistoryDifferentDocumentLoad
-};
-
 enum HistoryCommitType {
   kStandardCommit,
   kBackForwardCommit,

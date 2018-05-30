@@ -261,7 +261,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebURLRequest&,
       WebFrameLoadType,
       const WebHistoryItem&,
-      WebHistoryLoadType,
       bool is_client_redirect,
       const base::UnguessableToken& devtools_navigation_token) override;
   blink::mojom::CommitResult CommitSameDocumentNavigation(
@@ -278,7 +277,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                 bool replace,
                 WebFrameLoadType,
                 const WebHistoryItem&,
-                WebHistoryLoadType,
                 bool is_client_redirect) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;

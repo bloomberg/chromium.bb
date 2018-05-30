@@ -605,9 +605,9 @@ void FrameLoader::LoadInSameDocument(
                                        : SerializedScriptValue::NullValue());
 
   if (history_item) {
-    RestoreScrollPositionAndViewState(frame_load_type, kHistorySameDocumentLoad,
-                                      view_state.get(),
-                                      history_item->ScrollRestorationType());
+    RestoreScrollPositionAndViewState(
+        frame_load_type, true /* is_same_document */, view_state.get(),
+        history_item->ScrollRestorationType());
   }
 
   // We need to scroll to the fragment whether or not a hash change occurred,
@@ -839,32 +839,28 @@ static NavigationPolicy NavigationPolicyForRequest(
 
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   FrameLoadType frame_load_type,
-                                  HistoryItem* history_item,
-                                  HistoryLoadType history_load_type) {
+                                  HistoryItem* history_item) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(frame_load_type != kFrameLoadTypeBackForward);
   CHECK(!history_item);
-  CHECK(history_load_type == kHistoryDifferentDocumentLoad);
   return LoadInternal(passed_request, frame_load_type, history_item,
-                      history_load_type, true /* check_with_client */);
+                      true /* check_with_client */);
 }
 
 void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
                                    FrameLoadType frame_load_type,
-                                   HistoryItem* history_item,
-                                   HistoryLoadType history_load_type) {
+                                   HistoryItem* history_item) {
   CHECK(!passed_request.OriginDocument());
   CHECK(passed_request.FrameName().IsEmpty());
   CHECK(!passed_request.TriggeringEvent());
   CHECK(!passed_request.Form());
   return LoadInternal(passed_request, frame_load_type, history_item,
-                      history_load_type, false /* check_with_client */);
+                      false /* check_with_client */);
 }
 
 void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
                                FrameLoadType frame_load_type,
                                HistoryItem* history_item,
-                               HistoryLoadType history_load_type,
                                bool check_with_client) {
   DCHECK(frame_->GetDocument());
 
@@ -932,9 +928,6 @@ void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
                                     ? DetermineFrameLoadType(request)
                                     : frame_load_type;
 
-  bool same_document_history_navigation =
-      IsBackForwardLoadType(new_load_type) &&
-      history_load_type == kHistorySameDocumentLoad;
   bool same_document_navigation =
       policy == kNavigationPolicyCurrentTab &&
       ShouldPerformFragmentNavigation(request.Form(),
@@ -942,7 +935,7 @@ void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
                                       new_load_type, url);
 
   // Perform same document navigation.
-  if (same_document_history_navigation || same_document_navigation) {
+  if (same_document_navigation) {
     CommitSameDocumentNavigation(
         request.GetResourceRequest().Url(), new_load_type, history_item,
         request.ClientRedirect(), request.OriginDocument(),
@@ -1167,14 +1160,14 @@ void FrameLoader::RestoreScrollPositionAndViewState() {
   }
   base::AutoReset<bool> in_restore_scroll(&in_restore_scroll_, true);
   RestoreScrollPositionAndViewState(
-      GetDocumentLoader()->LoadType(), kHistoryDifferentDocumentLoad,
+      GetDocumentLoader()->LoadType(), false /* is_same_document */,
       GetDocumentLoader()->GetHistoryItem()->GetViewState(),
       GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType());
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState(
     FrameLoadType load_type,
-    HistoryLoadType history_load_type,
+    bool is_same_document,
     HistoryItem::ViewState* view_state,
     HistoryScrollRestorationType scroll_restoration_type) {
   LocalFrameView* view = frame_->View();
@@ -1203,8 +1196,7 @@ void FrameLoader::RestoreScrollPositionAndViewState(
       view->LayoutViewportScrollableArea()->ClampScrollOffset(
           view_state->scroll_offset_) == view_state->scroll_offset_;
 
-  bool should_force_clamping =
-      !frame_->IsLoading() || history_load_type == kHistorySameDocumentLoad;
+  bool should_force_clamping = !frame_->IsLoading() || is_same_document;
   // Here |can_restore_without_clamping| is false, but layout might be necessary
   // to ensure correct content size.
   if (!can_restore_without_clamping && should_force_clamping)
@@ -1870,10 +1862,6 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
   probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());
   return loader;
 }
-
-STATIC_ASSERT_ENUM(kWebHistorySameDocumentLoad, kHistorySameDocumentLoad);
-STATIC_ASSERT_ENUM(kWebHistoryDifferentDocumentLoad,
-                   kHistoryDifferentDocumentLoad);
 
 STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationManual,
                    kScrollRestorationManual);
