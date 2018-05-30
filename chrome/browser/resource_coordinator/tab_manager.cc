@@ -120,9 +120,9 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
 int GetNumLoadedLifecycleUnits(LifecycleUnitSet lifecycle_unit_set) {
   int num_loaded_lifecycle_units = 0;
   for (auto* lifecycle_unit : lifecycle_unit_set) {
-    LifecycleState state = lifecycle_unit->GetState();
-    if (state != LifecycleState::DISCARDED &&
-        state != LifecycleState::PENDING_DISCARD) {
+    LifecycleUnitState state = lifecycle_unit->GetState();
+    if (state != LifecycleUnitState::DISCARDED &&
+        state != LifecycleUnitState::PENDING_DISCARD) {
       num_loaded_lifecycle_units++;
     }
   }
@@ -1002,12 +1002,12 @@ void TabManager::PerformStateTransitions() {
 }
 
 void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
-                                             LifecycleState last_state) {
-  LifecycleState state = lifecycle_unit->GetState();
-  bool was_discarded = (last_state == LifecycleState::PENDING_DISCARD ||
-                        last_state == LifecycleState::DISCARDED);
-  bool is_discarded = (state == LifecycleState::PENDING_DISCARD ||
-                       state == LifecycleState::DISCARDED);
+                                             LifecycleUnitState last_state) {
+  LifecycleUnitState state = lifecycle_unit->GetState();
+  bool was_discarded = (last_state == LifecycleUnitState::PENDING_DISCARD ||
+                        last_state == LifecycleUnitState::DISCARDED);
+  bool is_discarded = (state == LifecycleUnitState::PENDING_DISCARD ||
+                       state == LifecycleUnitState::DISCARDED);
 
   if (is_discarded && !was_discarded) {
     num_loaded_lifecycle_units_--;
@@ -1038,8 +1038,8 @@ void TabManager::OnLifecycleUnitVisibilityChanged(
 }
 
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
-  if (lifecycle_unit->GetState() != LifecycleState::DISCARDED &&
-      lifecycle_unit->GetState() != LifecycleState::PENDING_DISCARD) {
+  if (lifecycle_unit->GetState() != LifecycleUnitState::DISCARDED &&
+      lifecycle_unit->GetState() != LifecycleUnitState::PENDING_DISCARD) {
     num_loaded_lifecycle_units_--;
   }
   lifecycle_units_.erase(lifecycle_unit);
@@ -1052,7 +1052,7 @@ void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
 
 void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
   lifecycle_units_.insert(lifecycle_unit);
-  if (lifecycle_unit->GetState() != LifecycleState::DISCARDED)
+  if (lifecycle_unit->GetState() != LifecycleUnitState::DISCARDED)
     num_loaded_lifecycle_units_++;
 
   // Add an observer to be notified of destruction.

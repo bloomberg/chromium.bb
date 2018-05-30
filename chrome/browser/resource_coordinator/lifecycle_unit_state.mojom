@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_STATE_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_STATE_H_
-
-namespace resource_coordinator {
+module mojom;
 
 // Note that these states are emitted via UKMs, so the integer values should
 // remain consistent.
-enum class LifecycleState {
+enum LifecycleUnitState {
   // The LifecycleUnit is alive and active with no CPU throttling.
   ACTIVE = 0,
   // The LifecycleUnit is currently being CPU throttled.
@@ -26,7 +23,7 @@ enum class LifecycleState {
 
 // An enumeration of reasons why a lifecycle state change was applied. These are
 // also emitted via UKM so need to remain stable.
-enum class LifecycleStateChangeReason {
+enum LifecycleUnitStateChangeReason {
   // Policy in the browser decided to initiate the state change.
   BROWSER_INITIATED = 0,
   // Policy in the renderer decided to initiate the state change.
@@ -34,7 +31,3 @@ enum class LifecycleStateChangeReason {
   // A system wide memory pressure condition initiated the state change.
   SYSTEM_MEMORY_PRESSURE = 2,
 };
-
-}  // namespace resource_coordinator
-
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_STATE_H_

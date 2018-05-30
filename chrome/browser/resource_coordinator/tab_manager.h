@@ -21,10 +21,10 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
-#include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -408,7 +408,7 @@ class TabManager : public LifecycleUnitObserver,
       content::Visibility visibility) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
   void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
-                                   LifecycleState last_state) override;
+                                   LifecycleUnitState last_state) override;
 
   // LifecycleUnitSourceObserver:
   void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) override;
