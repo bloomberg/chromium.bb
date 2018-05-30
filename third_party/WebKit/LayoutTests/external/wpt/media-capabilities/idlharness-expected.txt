@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Test IDL implementation of Media Session
+PASS Test IDL implementation of Media Capabilities
 PASS Navigator interface: attribute mediaCapabilities
 PASS Unscopable handled correctly for mediaCapabilities property on Navigator
 PASS Navigator interface: navigator must inherit property "mediaCapabilities" with the proper type
