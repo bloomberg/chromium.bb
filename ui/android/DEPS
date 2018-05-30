@@ -21,3 +21,9 @@ include_rules = [
   "+ui/events",
   "+ui/gfx",
 ]
+
+specific_include_rules = {
+  ".*test\.(cc|h)": [
+    "+components/viz/test"
+  ]
+}
