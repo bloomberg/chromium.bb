@@ -146,11 +146,10 @@ using AudioDeviceCaptureCapabilities =
 //    their corresponding constraints.
 // TODO(guidou): Add support for other standard constraints such as sampleRate,
 // channelCount and groupId. http://crbug.com/731170
-AudioCaptureSettings CONTENT_EXPORT SelectSettingsAudioCapture(
-    const AudioDeviceCaptureCapabilities& capabilities,
-    const blink::WebMediaConstraints& constraints,
-    bool should_disable_hardware_noise_suppression,
-    bool should_enable_experimental_hw_echo_cancellation);
+AudioCaptureSettings CONTENT_EXPORT
+SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
+                           const blink::WebMediaConstraints& constraints,
+                           bool should_disable_hardware_noise_suppression);
 
 // This variant of SelectSettings takes an existing MediaStreamAudioSource
 // as input in order to determine settings that are compatible with it.

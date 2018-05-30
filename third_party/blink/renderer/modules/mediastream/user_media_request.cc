@@ -427,15 +427,13 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       video_(video),
       should_disable_hardware_noise_suppression_(
           OriginTrials::disableHardwareNoiseSuppressionEnabled(context)),
-      should_enable_experimental_hw_echo_cancellation_(
-          OriginTrials::experimentalHardwareEchoCancellationEnabled(context)),
       controller_(controller),
       callbacks_(callbacks) {
   if (should_disable_hardware_noise_suppression_) {
     UseCounter::Count(context,
                       WebFeature::kUserMediaDisableHardwareNoiseSuppression);
   }
-  if (should_enable_experimental_hw_echo_cancellation_) {
+  if (OriginTrials::experimentalHardwareEchoCancellationEnabled(context)) {
     UseCounter::Count(
         context,
         WebFeature::kUserMediaEnableExperimentalHardwareEchoCancellation);
@@ -462,11 +460,6 @@ WebMediaConstraints UserMediaRequest::VideoConstraints() const {
 
 bool UserMediaRequest::ShouldDisableHardwareNoiseSuppression() const {
   return should_disable_hardware_noise_suppression_;
-}
-
-bool UserMediaRequest::ShouldEnableExperimentalHardwareEchoCancellation()
-    const {
-  return should_enable_experimental_hw_echo_cancellation_;
 }
 
 bool UserMediaRequest::IsSecureContextUse(String& error_message) {
