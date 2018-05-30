@@ -853,9 +853,9 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 #endif
     default:
       // Unknown/unsupported format
-      MEDIA_LOG(ERROR, reader->media_log()) << __func__
-                                            << " unsupported video format "
-                                            << FourCCToString(actual_format);
+      MEDIA_LOG(ERROR, reader->media_log())
+          << "Unsupported VisualSampleEntry type "
+          << FourCCToString(actual_format);
       return false;
   }
 

@@ -893,9 +893,6 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   if (d3d9_.Get())
     return true;
 
-  if (media_log_)
-    MEDIA_LOG(INFO, media_log_) << __func__ << ": Creating D3D9 device.";
-
   HRESULT hr = E_FAIL;
 
   hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d9_.GetAddressOf());
@@ -1043,9 +1040,6 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   // The device may exist if the last state was a config change.
   if (D3D11Device())
     return true;
-
-  if (media_log_)
-    MEDIA_LOG(INFO, media_log_) << __func__ << ": Creating D3D11 device.";
 
   HRESULT hr = create_dxgi_device_manager_(
       &dx11_dev_manager_reset_token_, d3d11_device_manager_.GetAddressOf());
@@ -1647,12 +1641,16 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
   ULONG_PTR device_manager_to_use = NULL;
   if (use_dx11_) {
     CHECK(create_dxgi_device_manager_);
+    if (media_log_)
+      MEDIA_LOG(INFO, media_log_) << "Using D3D11 device for DXVA";
     RETURN_AND_NOTIFY_ON_FAILURE(CreateDX11DevManager(),
                                  "Failed to initialize DX11 device and manager",
                                  PLATFORM_FAILURE, false);
     device_manager_to_use =
         reinterpret_cast<ULONG_PTR>(d3d11_device_manager_.Get());
   } else {
+    if (media_log_)
+      MEDIA_LOG(INFO, media_log_) << "Using D3D9 device for DXVA";
     RETURN_AND_NOTIFY_ON_FAILURE(CreateD3DDevManager(),
                                  "Failed to initialize D3D device and manager",
                                  PLATFORM_FAILURE, false);
@@ -1765,8 +1763,6 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     UINT32 dx11_aware = 0;
     attributes->GetUINT32(MF_SA_D3D11_AWARE, &dx11_aware);
     use_dx11_ = !!dx11_aware;
-    if (media_log_)
-      MEDIA_LOG(INFO, media_log_) << __func__ << ": Using DX11? " << use_dx11_;
   }
 
   use_keyed_mutex_ =

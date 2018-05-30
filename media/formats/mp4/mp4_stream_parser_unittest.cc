@@ -348,7 +348,7 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   bool expect_success = true;
 #else
   bool expect_success = false;
-  EXPECT_MEDIA_LOG(ErrorLog("Parse unsupported video format hev1"));
+  EXPECT_MEDIA_LOG(ErrorLog("Unsupported VisualSampleEntry type hev1"));
 #endif
   auto params = GetDefaultInitParametersExpectations();
   params.duration = base::TimeDelta::FromMicroseconds(1002000);
