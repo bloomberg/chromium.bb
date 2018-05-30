@@ -245,7 +245,7 @@
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2666117266261740852">Zavrite ostatné karty alebo aplikácie</translation>
 <translation id="2674170444375937751">Naozaj chcete odstrániť tieto stránky zo svojej histórie?</translation>
-<translation id="2677748264148917807">Opustiť</translation>
+<translation id="2677748264148917807">Odísť</translation>
 <translation id="2699302886720511147">Akceptované karty</translation>
 <translation id="2702801445560668637">Čitateľský zoznam</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
@@ -561,7 +561,7 @@
 <translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Platba</translation>
 <translation id="4926049483395192435">Musí byť určená.</translation>
-<translation id="4926159001844873046">Web <ph name="SITE" /> hovorí</translation>
+<translation id="4926159001844873046">Správa z webu <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Akcie</translation>
 <translation id="4958444002117714549">Rozbaliť zoznam</translation>
@@ -951,7 +951,7 @@
 <translation id="782886543891417279">Sieť Wi‑Fi (<ph name="WIFI_NAME" />), ktorú používate, môže vyžadovať, aby ste navštívili jej prihlasovaciu stránku</translation>
 <translation id="785549533363645510">Nie ste však neviditeľný/-á. Prejdením do režimu inkognito neskryjete svoje prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb ani pred navštívenými webmi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="7862185352068345852">Opustiť web?</translation>
+<translation id="7862185352068345852">Chcete odísť z tohto webu?</translation>
 <translation id="7878176543348854470">Debetné a predplatené karty sú akceptované.</translation>
 <translation id="7878562273885520351">Vaše heslo mohlo byť napadnuté</translation>
 <translation id="7887683347370398519">Skontrolujte svoj kód CVC a skúste to znova</translation>

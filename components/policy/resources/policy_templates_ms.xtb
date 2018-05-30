@@ -79,7 +79,6 @@
 
           Faktor skala mestilah 100% atau lebih.</translation>
 <translation id="131353325527891113">Paparkan nama pengguna pada skrin log masuk</translation>
-<translation id="1325295456374328159">Konfigurasikan tempat peristiwa yang dibenarkan dalam sesi pengguna</translation>
 <translation id="1327466551276625742">Dayakan gesaan konfigurasi rangkaian apabila di luar talian</translation>
 <translation id="1330145147221172764">Dayakan papan kekunci pada skrin</translation>
 <translation id="13356285923490863">Nama Dasar</translation>
@@ -475,9 +474,6 @@
 
       Kandungan senarai 'URL untuk dibuka semasa permulaan' diabaikan melainkan anda memilih 'Buka senarai URL' dalam 'Tindakan pada permulaan'.</translation>
 <translation id="2327252517317514801">Tentukan domain yang dibenarkan untuk mengakses G Suite</translation>
-<translation id="2337466621458842053">Membolehkan anda menetapkan senarai corak url yang menentukan tapak mana yang dibenarkan untuk memaparkan imej.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
 <translation id="2372547058085956601">Kelewatan log masuk automatik sesi terbuka.
 
       Jika dasar |DeviceLocalAccountAutoLoginId| tidak ditetapkan, dasar ini tidak mempunyai sebarang kesan. Jika tidak:
@@ -1245,9 +1241,6 @@
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak dapat mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
-<translation id="4525521128313814366">Membolehkan anda menetapkan senarai corak url yang menentukan tapak mana yang tidak dibenarkan untuk memaparkan imej.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
 <translation id="4531706050939927436">Apl Android boleh dipaksa pasang daripada konsol Google Admin menggunakan Google Play. Apl itu tidak menggunakan dasar ini.</translation>
 <translation id="4534500438517478692">Nama sekatan Android:</translation>
 <translation id="4541530620466526913">Akaun setempat peranti</translation>
@@ -1543,9 +1536,6 @@
 <translation id="5457065417344056871">Dayakan mod tetamu dalam penyemak imbas</translation>
 <translation id="5457924070961220141">Membenarkan anda mengkonfigurasi pemapar HTML lalai apabila <ph name="PRODUCT_FRAME_NAME" /> dipasang.
           Tetapan lalai yang gunakan apabila dasar ini dibiarkan tanpa ditetapkan ialah untuk membenarkan penyemak imbas hos membuat paparan, tetapi anda boleh memilih untuk mengatasi hal ini dan membenarkan <ph name="PRODUCT_FRAME_NAME" /> memaparkan halaman HTML secara lalai.</translation>
-<translation id="5459155981813668716">Mengkonfigurasi tempat peristiwa yang mungkin memaparkan <ph name="PRODUCT_OS_NAME" />.
-
-      Jika dasar ini ditetapkan, pengguna hanya boleh mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk dipaparkan dalam salah satu tempat peristiwa yang ditentukan oleh dasar ini. Jika dasar ini tidak ditetapkan atau ditetapkan pada senarai kosong, <ph name="PRODUCT_OS_NAME" /> boleh dipaparkan dalam semua tempat peristiwa yang disokong. Jika dasar ini ditetapkan pada senarai yang mempunyai nilai yang tidak sah, semua nilai yang tidak sah akan diabaikan. Jika pengguna mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> sebelum ini untuk dipaparkan dalam bahasa yang tidak dibenarkan oleh dasar ini, tempat peristiwa yang dipaparkan akan ditukar kepada tempat peristiwa yang dibenarkan apabila pengguna mengelog masuk pada masa akan datang. Jika pengguna telah mengkonfigurasi tempat peristiwa pilihan dan salah satu tempat peristiwa pilihan itu dibenarkan oleh dasar ini, <ph name="PRODUCT_OS_NAME" /> akan bertukar kepada tempat peristiwa ini. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan bertukar kepada nilai pertama yang sah yang ditentukan oleh dasar ini atau bertukar kepada tempat peristiwa sebelumnya (pada masa ini en-US), jika dasar ini hanya mengandungi masukan yang tidak sah.</translation>
 <translation id="5464816904705580310">Konfigurasikan tetapan untuk pengguna terurus.</translation>
 <translation id="546726650689747237">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa AC</translation>
 <translation id="5469825884154817306">Sekat imej pada tapak ini</translation>
@@ -2337,9 +2327,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Dasar ini hanya boleh ditetapkan sebagai disyorkan. Anda boleh menggunakan dasar ini untuk mengalihkan satu set penempatan yang disyorkan ke bahagian atas tetapi para pengguna sentiasa dibenarkan memilih sebarang penempatan yang disokong oleh <ph name="PRODUCT_OS_NAME" /> untuk sesi mereka.
       </translation>
-<translation id="7763311235717725977">Membenarkan anda menetapkan sama ada laman web yang dibenarkan untuk memaparkan imej. Memaparkan imej boleh dibenarkan untuk semua laman web atau dinafikan untuk semua laman web.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowImages' yang akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="7763479091692861127"> Jenis sambungan yang dibenarkan untuk digunakan bagi kemas kini OS. Kemas kini OS mungkin akan membebankan sambungan disebabkan oleh saiznya dan boleh menyebabkan kos tambahan. Oleh itu, kemas kini ini tidak didayakan secara lalai untuk jenis sambungan yang dianggap mahal, yang merangkumi WiMax, Bluetooth dan Selular pada masa ini.
 
       Pengecam jenis sambungan yang diperakui ialah "ethernet", "wifi", "wimax", "bluetooth" dan "selular".</translation>

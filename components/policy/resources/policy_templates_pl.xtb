@@ -77,7 +77,6 @@
 
           Współczynnik skalowania musi wynosić co najmniej 100%.</translation>
 <translation id="131353325527891113">Pokaż nazwy użytkowników na ekranie logowania</translation>
-<translation id="1325295456374328159">Skonfiguruj dozwolone języki sesji użytkownika</translation>
 <translation id="1327466551276625742">Włącza pytanie o konfigurację sieci wyświetlane w trybie offline</translation>
 <translation id="1330145147221172764">Włącz klawiaturę ekranową</translation>
 <translation id="13356285923490863">Nazwa zasady</translation>
@@ -462,7 +461,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
 <translation id="2327252517317514801">Zdefiniuj domeny, które będą mogły uzyskiwać dostęp do G Suite</translation>
-<translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
 
       Jeśli zasada |DeviceLocalAccountAutoLoginId| nie jest ustawiona, ta zasada nie daje żadnych rezultatów. W przeciwnym razie:
@@ -1192,7 +1190,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli to ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
 
       W przypadku nieskonfigurowania tej zasady ustawienie zostanie włączone, ale użytkownik będzie mógł to zmienić.</translation>
-<translation id="4525521128313814366">Pozwala na ustawienie listy wzorcowych URL-i, które określają witryny mogące wyświetlać obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="4531706050939927436">Instalację aplikacji na Androida można wymusić za pomocą konsoli Google Admin przy użyciu Google Play. Ta zasada ich nie dotyczy.</translation>
 <translation id="4534500438517478692">Nazwa ograniczenia w Androidzie:</translation>
 <translation id="4541530620466526913">Lokalne konta na urządzeniu</translation>
@@ -1463,9 +1460,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5447306928176905178">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony (opcja wycofana)</translation>
 <translation id="5457065417344056871">Włącz tryb gościa w przeglądarce</translation>
 <translation id="5457924070961220141">Umożliwia skonfigurowanie domyślnego mechanizmu renderowania HTML po zainstalowaniu wtyczki <ph name="PRODUCT_FRAME_NAME" />. Ustawieniem domyślnym, stosowanym w przypadku nieskonfigurowania tej zasady, jest zezwolenie przeglądarce hosta na wykonywanie renderowania, jednak możesz opcjonalnie zastąpić to ustawienie, tak aby strony HTML były domyślnie renderowane przez wtyczkę <ph name="PRODUCT_FRAME_NAME" />.</translation>
-<translation id="5459155981813668716">Określa języki, w których można wyświetlać <ph name="PRODUCT_OS_NAME" />.
-
-      Jeśli ta zasada jest skonfigurowana, użytkownik może skonfigurować wyświetlanie <ph name="PRODUCT_OS_NAME" /> tylko w jednym z języków określonych w tej zasadzie. Jeśli zasada jest nieskonfigurowana lub jest ustawiona na pustą listę, <ph name="PRODUCT_OS_NAME" /> można wyświetlać we wszystkich obsługiwanych językach. Jeśli ustawiona lista zawiera nieprawidłowe wartości, będą one ignorowane. Jeśli użytkownik wcześniej skonfigurował wyświetlanie <ph name="PRODUCT_OS_NAME" /> w języku niedozwolonym przez tę zasadę, język wyświetlania zostanie przełączony na dozwolony po następnym zalogowaniu się użytkownika. Jeśli użytkownik skonfigurował preferowane języki i jeden z nich jest dozwolony przez tę zasadę, <ph name="PRODUCT_OS_NAME" /> przełączy się na ten język. W przeciwnym razie <ph name="PRODUCT_OS_NAME" /> przełączy się na język odpowiadający pierwszej prawidłowej wartości z listy, a jeśli lista zawiera same nieprawidłowe wartości – na język zastępczy (obecnie en-US).</translation>
 <translation id="5464816904705580310">Konfiguruj ustawienia dla zarządzanych użytkowników.</translation>
 <translation id="546726650689747237">Opóźnienie przyciemnienia ekranu przy zasilaniu sieciowym</translation>
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
@@ -2209,7 +2203,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Tę zasadę możesz ustawić tylko jako zalecaną. Za jej pomocą możesz przenieść zalecane języki na początek, ale użytkownicy zawsze mogą wybrać dla swojej sesji publicznej dowolny język obsługiwany w <ph name="PRODUCT_OS_NAME" />.
       </translation>
-<translation id="7763311235717725977">Pozwala określić, czy witryny mogą wyświetlać obrazy. Pokazywanie obrazów może być włączone lub wyłączone dla wszystkich witryn. Jeśli ta zasada nie będzie skonfigurowana, zostanie użyta zasada „AllowImages” i użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="7763479091692861127"> Typy połączeń, które mogą być używane do aktualizowania systemu operacyjnego. Z powodu swojego rozmiaru aktualizacje te silnie wykorzystują połączenie, co może skutkować dodatkowymi kosztami. Dlatego domyślnie są wyłączone w przypadku połączeń uznanych za „kosztowne”, czyli aktualnie dla WiMax, Bluetooth i komórek.
 
       Rozpoznawane identyfikatory typów połączeń to  „ethernet”, „wifi”, „wimax”, „bluetooth” i „cellular”.</translation>

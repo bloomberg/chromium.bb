@@ -79,7 +79,6 @@
 
           O fator de escala deve ser de 100% ou mais.</translation>
 <translation id="131353325527891113">Mostrar nomes de utilizador no ecrã de início de sessão</translation>
-<translation id="1325295456374328159">Configurar os locais permitidos numa sessão de utilizador.</translation>
 <translation id="1327466551276625742">Ativar o pedido de configuração da rede quando estiver offline</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
 <translation id="13356285923490863">Nome da Política</translation>
@@ -471,7 +470,6 @@
 <translation id="2309390639296060546">Definição de geolocalização predefinida</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista "URLs a abrir no aranque" é ignorado, a menos que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
 <translation id="2327252517317514801">Definir domínios com permissão para aceder ao G Suite</translation>
-<translation id="2337466621458842053">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="2372547058085956601">O atraso do início automático da sessão pública.
 
       Se a política |DeviceLocalAccountAutoLoginId| não estiver definida, esta política não tem efeito. Se não for esse o caso:
@@ -1206,7 +1204,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se ativar ou desativar esta definição, os utilizadores não a poderão alterar ou substituir no <ph name="PRODUCT_NAME" />.
 
       Se deixar esta política por definir, a definição será ativada mas o utilizador poderá alterá-la.</translation>
-<translation id="4525521128313814366">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="4531706050939927436">As aplicações Android podem ser instaladas à força a partir da Consola do gestor do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais do dispositivo</translation>
@@ -1482,9 +1479,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5447306928176905178">Ativar informações de memória de relatórios (tamanho da área dinâmica para dados JS) para a página (descontinuado)</translation>
 <translation id="5457065417344056871">Ativar o modo convidado no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador de HTML predefinido quando o <ph name="PRODUCT_FRAME_NAME" /> é instalado. Se esta política não for definida, será utilizada a predefinição para permitir que o processamento seja efetuado pelo navegador anfitrião. Opcionalmente, pode substituir esta definição e configurar o <ph name="PRODUCT_FRAME_NAME" /> para processar páginas HTML por predefinição.</translation>
-<translation id="5459155981813668716">Configura os locais em que o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado.
-
-      Se esta política estiver definida, o utilizador pode configurar a apresentação do <ph name="PRODUCT_OS_NAME" /> apenas num dos idiomas especificados por esta política. Se esta política não for definida ou for definida com uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado em todos os idiomas compatíveis. Se esta política estiver definida com uma lista com valores inválidos, os mesmos serão ignorados. Se um utilizador configurou o <ph name="PRODUCT_OS_NAME" /> anteriormente de forma a ser apresentado num idioma não permitido por esta política, o idioma da apresentação será alterado para um permitido da próxima vez que o utilizador iniciar sessão. Se o utilizador tiver configurado idiomas preferidos e um destes for permitido por esta política, o <ph name="PRODUCT_OS_NAME" /> mudará para esse idioma. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> mudará para o primeiro valor válido especificado por esta política ou para um idioma alternativo (atualmente, en-US), se esta política incluir apenas entradas inválidas.</translation>
 <translation id="5464816904705580310">Configura definições para utilizadores geridos.</translation>
 <translation id="546726650689747237">Atraso do escurecimento do ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="5469825884154817306">Bloquear imagens nesses sites</translation>
@@ -2238,7 +2232,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Esta política apenas pode ser definida como recomendada. Pode utilizá-la para mover um conjunto de locais recomendados para a parte superior, mas os utilizadores podem sempre escolher qualquer local suportado pelo <ph name="PRODUCT_OS_NAME" /> para a respetiva sessão.
       </translation>
-<translation id="7763311235717725977">Permite definir se os Web sites estão ou não autorizados a apresentar imagens. A apresentação de imagens pode ser autorizada para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "AllowImages" e o utilizador poderá alterá-la.</translation>
 <translation id="7763479091692861127"> Os tipos de ligação permitidos para utilização em atualizações do SO. As atualizações do SO podem sobrecarregar a ligação devido ao seu tamanho, o que pode implicar custos adicionais. Por conseguinte, por predefinição, não estão ativadas para tipos de ligação considerados caros, nomeadamente WiMax, Bluetooth e Celular.
 
       Os identificadores dos tipos de ligação reconhecidos são "ethernet", "wifi", "wimax", "bluetooth" e "celular".</translation>

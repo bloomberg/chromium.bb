@@ -79,7 +79,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
           Skaleringsfaktoren skal være 100 % eller mere.</translation>
 <translation id="131353325527891113">Vis brugernavne på loginskærmen</translation>
-<translation id="1325295456374328159">Konfigurer tilladte sprog i en brugersession</translation>
 <translation id="1327466551276625742">Aktivér meddelelse om netværkskonfiguration, når du er offline</translation>
 <translation id="1330145147221172764">Aktivér skærmtastatur</translation>
 <translation id="13356285923490863">Navn på politik</translation>
@@ -463,7 +462,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2309390639296060546">Standardindstilling for geoplacering</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen "Webadresser, der skal åbnes ved opstart" ignoreres, medmindre du vælger "Åbn en liste over webadresser" i "Handling ved opstart".</translation>
 <translation id="2327252517317514801">Definer domæner, der har adgang til G Suite</translation>
-<translation id="2337466621458842053">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor billedvisning tillades. Hvis denne politik ikke er angivet, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="2372547058085956601">Forsinkelse for automatisk login på offentlige sessioner.
 
       Hvis politikken |DeviceLocalAccountAutoLoginId| ikke er angivet, har den ingen effekt. Derudover:
@@ -1204,7 +1202,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik ikke indstilles, bliver dette aktiveret, men brugeren vil kunne ændre det.</translation>
-<translation id="4525521128313814366">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som ikke må vise billeder. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="4531706050939927436">Android-apps kan tvinges til installation via Google Administrationskonsol ved hjælp af Google Play. De anvender ikke denne politik.</translation>
 <translation id="4534500438517478692">Navn på Android-begrænsning:</translation>
 <translation id="4541530620466526913">Enhedslokale konti</translation>
@@ -1479,9 +1476,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5447306928176905178">Aktiver rapportering af hukommelsesoplysninger (størrelse på JavaScript-heap) til siden. (Udfaset)</translation>
 <translation id="5457065417344056871">Aktivér delefunktion i browseren</translation>
 <translation id="5457924070961220141">Giver dig mulighed for at konfigurere standard-HTML-gengivelse, når <ph name="PRODUCT_FRAME_NAME" /> er installeret. Den standardindstilling, der anvendes, når denne politik ikke er angivet, er at lade værtsbrowseren foretage gengivelsen, men du kan vælge at tilsidesætte dette og få <ph name="PRODUCT_FRAME_NAME" /> til at gengive HTML-sider som standard.</translation>
-<translation id="5459155981813668716">Konfigurerer de sprog, som <ph name="PRODUCT_OS_NAME" /> kan vises på.
-
-      Hvis denne politik er angivet, kan brugeren kun konfigurere <ph name="PRODUCT_OS_NAME" /> til at blive vist på et af de sprog, der angives af denne politik. Hvis politikken ikke er angivet eller er angivet med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises på alle understøttede sprog. Hvis denne politik er angivet med en liste, der indeholder ugyldige værdier, ignoreres alle ugyldige værdier. Hvis en bruger tidligere konfigurerede <ph name="PRODUCT_OS_NAME" /> til at blive vist på et sprog, der ikke tillades af denne politik, ændres visningssproget til et tilladt sprog, næste gang brugeren logger ind. Hvis brugeren har konfigureret foretrukne sprog, og et af de foretrukne sprog er tilladt af denne politik, skifter <ph name="PRODUCT_OS_NAME" /> til det pågældende sprog. Ellers skifter <ph name="PRODUCT_OS_NAME" /> til den første gyldige værdi, der er angivet af denne politik, eller til en alternativ landestandard (som i øjeblikket er en-US), hvis politikken kun indeholder ugyldige poster.</translation>
 <translation id="5464816904705580310">Konfigurer indstillingerne for administrerede brugere.</translation>
 <translation id="546726650689747237">Forsinkelse på skærmnedtoning, når strømforsyning er tilsluttet</translation>
 <translation id="5469825884154817306">Bloker billeder på disse websites</translation>
@@ -2230,9 +2224,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Denne politik kan kun angives som anbefalet. Du kan bruge denne politik til at flytte en række anbefalede landestandarder op øverst på listen, men brugerne kan altid vælge en af de andre landestandarder, som understøttes af <ph name="PRODUCT_OS_NAME" />, til deres session.
       </translation>
-<translation id="7763311235717725977">Giver dig mulighed for at bestemme, om websites skal kunne vise billeder. Billedvisning kan enten være tilladt for alle websites eller nægtet for alle websites.
-
-          Hvis denne politik ikke er angivet, anvendes "AllowImages", og brugeren kan ændre den.</translation>
 <translation id="7763479091692861127"> De forbindelsestyper, der er tilladt at bruge ved OS-opdateringer. OS-opdateringer kan lægge et stort pres på forbindelsen, fordi de fylder meget, og kan forårsage yderligere omkostninger. Derfor er de som standard ikke aktiveret for forbindelsestyper, der betragtes som dyre, hvilket i øjeblikket er WiMax, Bluetooth og mobil.
 
       De genkendte forbindelsestype-id'er er "ethernet", "wifi", "wimax", "bluetooth" og "mobil".</translation>

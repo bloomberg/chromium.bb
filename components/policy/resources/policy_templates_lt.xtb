@@ -79,7 +79,6 @@
 
           Skalės mastelio faktorius turi būti 100 proc. arba daugiau.</translation>
 <translation id="131353325527891113">Rodyti naudotojų vardus prisijungimo ekrane</translation>
-<translation id="1325295456374328159">Naudotojo sesijoje leidžiamų lokalių konfigūravimas</translation>
 <translation id="1327466551276625742">Įgalinti tinklo konfigūracijos raginimą, kai esate neprisijungę</translation>
 <translation id="1330145147221172764">Įgalinti ekrano klaviatūrą</translation>
 <translation id="13356285923490863">Politikos pavadinimas</translation>
@@ -475,9 +474,6 @@
 
       Jei skiltyje „Veiksmai paleidžiant“ nepasirinksite „Atidaryti URL sąrašą“, sąrašo „Paleidžiant atidaromi URL“ turinio bus nepaisoma.</translation>
 <translation id="2327252517317514801">Nurodomi domenai, kuriems leidžiama pasiekti „G Suite“</translation>
-<translation id="2337466621458842053">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti vaizdų, sąrašą.
-
-          Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
 <translation id="2372547058085956601">Viešos sesijos automatinio prisijungimo delsa.
 
       Jei nenustatyta |DeviceLocalAccountAutoLoginId| politika, ji negalioja. Kiti atvejai:
@@ -1248,9 +1244,6 @@
       Jei įgalinate šį nustatymą arba jo neleidžiate, naudotojai negali jo pakeisti ar panaikinti „<ph name="PRODUCT_NAME" />“.
 
       Nenustačius šios politikos, tai bus įgalinta, bet naudotojas galės tai pakeisti.</translation>
-<translation id="4525521128313814366">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti vaizdų, sąrašą.
-
-          Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis vaizdų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
 <translation id="4531706050939927436">„Android“ programas galima priverstinai įdiegti iš „Google Admin Console“ naudojant „Google Play“. Jose ši politika nenaudojama.</translation>
 <translation id="4534500438517478692">„Android“ ribojimo pavadinimas:</translation>
 <translation id="4541530620466526913">Vietinės įrenginio paskyros</translation>
@@ -1550,9 +1543,6 @@
 <translation id="5457065417344056871">Svečio režimo įgalinimas naršyklėje</translation>
 <translation id="5457924070961220141">Leidžiama konfigūruoti numatytąją HTML pateikimo programą, kai įdiegta „<ph name="PRODUCT_FRAME_NAME" />“.
           Numatytasis nustatymas, kuris naudojamas, kai ši politika nenustatyta, – leisti prieglobos naršyklei atlikti pateikimo veiksmus. Bet galite tai pakeisti ir nustatyti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus pateikti HTML puslapius.</translation>
-<translation id="5459155981813668716">Konfigūruojamos lokalės, kuriose galima pateikti „<ph name="PRODUCT_OS_NAME" />“.
-
-      Jei ši politika nustatyta, naudotojas gali konfigūruoti, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta tik vienoje iš lokalių, nurodytų pagal šią politiką. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, „<ph name="PRODUCT_OS_NAME" />“ galima pateikti visose palaikomose lokalėse. Jei ši politika nustatyta kaip sąrašas su netinkamomis vertėmis, visų netinkamų verčių nepaisoma. Jei naudotojas anksčiau sukonfigūravo, kad „<ph name="PRODUCT_OS_NAME" />“ būtų pateikta pagal šią politiką neleidžiama kalba, pateikimo lokalė bus perjungta į leidžiamą lokalę kitą kartą naudotojui prisijungus. Jei naudotojas sukonfigūravo pageidaujamas lokales ir viena iš pageidaujamų lokalių leidžiama pagal šią politiką, „<ph name="PRODUCT_OS_NAME" />“ bus perjungta į šią lokalę. Priešingu atveju „<ph name="PRODUCT_OS_NAME" />“ bus taikoma pagal šią politiką nustatyta pirmoji tinkama vertė arba bus perjungta į atsarginę lokalę (šiuo metu „en-US“), jei šioje politikoje yra tik netinkami įrašai.</translation>
 <translation id="5464816904705580310">Konfigūruojami tvarkomų naudotojų paskyrų nustatymai.</translation>
 <translation id="546726650689747237">Ekrano pritemdymo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
@@ -2343,9 +2333,6 @@
 
       Šią politiką galima nustatyti tik kaip rekomenduojamą. Galite naudoti šią politiką, kad perkeltumėte rekomenduojamų lokalių rinkinį į viršų, bet naudotojams visada leidžiama sesijai pasirinkti bet kurią „<ph name="PRODUCT_OS_NAME" />“ palaikomą lokalę.
       </translation>
-<translation id="7763311235717725977">Leidžiama nustatyti, ar svetainėse galima pateikti vaizdų. Vaizdų pateikimas gali būti leidžiamas arba neleidžiamas visose svetainėse.
-
-          Nenustačius šios politikos, bus naudojama „Leisti vaizdus“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="7763479091692861127"> Ryšių, leidžiamų naudoti OS naujiniams, tipai. OS naujiniai potencialiai apsunkina ryšį dėl savo dydžio, todėl gali būti taikomi papildomi mokesčiai. Taigi pagal numatytuosius nustatymus jie nėra įgalinti brangiais laikomiems ryšių tipams, įskaitant šiuo metu naudojamus „WiMax“, „Bluetooth“ ir „Cellular“.
 
       Atpažįstami ryšio tipo identifikatoriai yra „ethernet“, „wifi“, „wimax“, „bluetooth“ ir „cellular“.</translation>

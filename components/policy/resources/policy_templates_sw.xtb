@@ -78,7 +78,6 @@ Kama sera hii haijawekwa, mfumo wa kipimo cha msingi kitatumika.
 
 Mfumo wa kipimo lazima uwe 100% au zaidi.</translation>
 <translation id="131353325527891113">Onyesha majina ya watumiaji kwenye skrini ya kuingia</translation>
-<translation id="1325295456374328159">Weka mipangilio ya lugha zinazoruhusiwa katika kipindi cha mtumiaji</translation>
 <translation id="1327466551276625742">Washa ombi la usanidi wa mtandao inapokuwa nje ya mtandao</translation>
 <translation id="1330145147221172764">Washa kibodi ya skrini</translation>
 <translation id="13356285923490863">Jina la Sera</translation>
@@ -458,9 +457,6 @@ Sera hii ikiondolewa, chaguo msingi zitatumika kwa mipangilio yote.</translation
 
       Maudhui ya orodha ya  'URL za kufungua mwanzoni' zinapuuzwa isipokuwa uchague 'Fungua orodha ya URL katika 'Kitendo cha mwanzo'.</translation>
 <translation id="2327252517317514801">Bainisha vikoa vinavyoruhusiwa kufikia G Suite</translation>
-<translation id="2337466621458842053">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuonyesha picha.
-
-         Ikiwa sera hii itaachwa bila thamani chaguo msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImageSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
 <translation id="2372547058085956601">Ucheleweshwaji wa kuingia kiotomatiki katika kipindi cha umma.
 
       Sera ya |DeviceLocalAccountAutoLoginId| ikiondolewa, sera hii haina athari. Vinginevyo:
@@ -1223,9 +1219,6 @@ Ikiwa sera hii haijawekwa, thamani ya 2 itatumika.</translation>
       Ukiwasha au kufunga mpangilio huu, watumiaji hawawezi kubadilisha au kufuta mpangilio huu katika <ph name="PRODUCT_NAME" />.
 
       Ikiwa sera hii itaachwa bila kuwekwa, hii itawezeshwa lakini mtumiaji ataweza kuibadilisha.</translation>
-<translation id="4525521128313814366">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo haziruhusiwi kuonyesha picha.
-
-          Ikiwa sera hii itasalia kama haijawekwa thamani chaguo msingi ya ulimwenguni itatumiwa aidha kutoka kwenye sera ya 'DefaultImagesSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
 <translation id="4531706050939927436">Programu za Android zinaweza kusakinishwa kwa lazima kutoka kwenye Google Admin console kwa kutumia Google Play. Hazitumii sera hii.</translation>
 <translation id="4534500438517478692">Jina la vikwazo la Android:</translation>
 <translation id="4541530620466526913">Akaunti za kifaa cha karibu nawe</translation>
@@ -1520,9 +1513,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5457065417344056871">Washa matumizi ya wageni katika kivinjari</translation>
 <translation id="5457924070961220141">Inakuruhusu kusanidi kitoaji cha HTML chaguo msingi wakati <ph name="PRODUCT_FRAME_NAME" /> imesakinishwa.
           Mpangilio chaguo msingi unaotumiwa wakati sera hii inasalia kama haijawekwa ni kuruhusu kivinjari kipangishaji kutekeleza uonyeshaji, lakini unaweza kufuta kwa hiari hii na uwe na kurasa za kionyeshi <ph name="PRODUCT_FRAME_NAME" /> cha HTML kwa chaguo msingi.</translation>
-<translation id="5459155981813668716">Huweka mipangilio ya lugha ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kutumiwa nayo. 
-
-      Sera hii ikiwekwa, mtumiaji anaweza kuweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> ili itumike katika lugha zinazobainishwa na sera hii. Sera hii isipowekwa au ikiwekwa kwenye orodha tupu, <ph name="PRODUCT_OS_NAME" /> inaweza kutumika katika lugha zote zinazotumiwa. Sera ikiwekwa kuwa orodha yenye thamani zisizo sahihi, thamani zote zisizo sahihi hazitatumiwa. Kama mtumiaji alikuwa ameweka mipangilio ya <ph name="PRODUCT_OS_NAME" /> hapo awali kutumika katika lugha ambayo hairuhusiwi na sera hii, lugha inayotumiwa itabadilishwa iwe lugha inayoruhusiwa wakati unaofuata mtumiaji atakapoingia katika akaunti. Ikiwa mtumiaji alikuwa ameweka lugha anazopendelea na mojawapo ya lugha alizopendelea inaruhusiwa na sera hii, <ph name="PRODUCT_OS_NAME" /> itabadili itumie lugha hii. Vinginevyo, <ph name="PRODUCT_OS_NAME" /> itabadili itumie thamani sahihi ya kwanza inayobainishwa au lugha ya mfumo (kwa sasa ni Kiingereza cha Marekani), kama sera hii ina ingizo zisizo sahihi pekee.</translation>
 <translation id="5464816904705580310">Sanidi mipangilio ya watumiaji waliodhibitiwa.</translation>
 <translation id="546726650689747237">Ufifili wa skrini unachelewesha wakati wa kuendesha kwa nishati ya AC</translation>
 <translation id="5469825884154817306">Zuia picha katika tovuti hizi</translation>
@@ -2305,9 +2295,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
       Sera hii inaweza tu kuwekwa kama ilivyopendekezwa. Unaweza kutumia sera hii kuhamisha seti ya lugha zilizopendekezwa hadi upande wa juu lakini watumiaji wanaruhusiwa kuchagua lugha inayotumika kwenye <ph name="PRODUCT_OS_NAME" /> kwa kipindi chao wakati wowote.
       </translation>
-<translation id="7763311235717725977">Inakuruhusu kuweka iwapo tovuti zinaruhusiwa kuonyesha picha. Kuonyesha picha kunaweza kuwa kwa tovuti zote au kukataliwa kwa tovuti zote.
-
-          Ikiwa sera hii itasalia kama haijawekwa, 'AllowImages' zitatumiwa na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="7763479091692861127"> Aina za miunganisho zinazoruhusiwa kutumia sasisho za Mfumo wa Uendeshaji. Sasisho za Mfumo wa Uendeshaji zinaweza kuweka vichujo vizito kwenye muunganisho kwa sababu ya ukubwa wavyo na huenda vikasababisha gharama ya ziada. Kwa hivyo, haviwashwi kwa chaguo msingi kwa aina za miunganisho zinazoonekana kuwa ghali, zinazojumuisha WiMax, Bluetooth na Simu ya Mkononi kwa wakati huu.
 
       Vitambulisho vinavyotambuliwa vya aina vya muunganisho ni "ethaneti", "wifi", "wimax", "bluetooth"  na "simu ya mkononi".</translation>

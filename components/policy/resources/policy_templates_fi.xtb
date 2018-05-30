@@ -79,7 +79,6 @@
 
           Skaalauskertoimen on oltava vähintään 100 %.</translation>
 <translation id="131353325527891113">Näytä käyttäjänimet kirjautumisruudulla</translation>
-<translation id="1325295456374328159">Määritä käyttökerran hyväksytyt kieli- ja maa-asetukset</translation>
 <translation id="1327466551276625742">Ota käyttöön verkon määrityskehote offline-tilassa</translation>
 <translation id="1330145147221172764">Ota ruutunäppäimistö käyttöön</translation>
 <translation id="13356285923490863">Käytännön nimi</translation>
@@ -462,7 +461,6 @@
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
 <translation id="2327252517317514801">Määritä verkkotunnukset, joilla on G Suiten käyttöoikeus</translation>
-<translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="2372547058085956601">Julkisen istunnon automaattisen kirjautumisen viive.
 
       Jos |DeviceLocalAccountAutoLoginId|-käytäntöä ei ole määritetty, käytännöllä ei ole vaikutusta. Muutoin:
@@ -1198,7 +1196,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos tälle asetukselle määritetään jokin arvo, käyttäjät eivät voi muuttaa tai vaihtaa asetusta tuotteessa <ph name="PRODUCT_NAME" />.
 
       Jos tätä käytäntöä ei määritetä, se on käytössä, mutta käyttäjät voivat muuttaa sitä.</translation>
-<translation id="4525521128313814366">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="4531706050939927436">Android-sovellusten asennus voidaan pakottaa Google-hallintakonsolista Google Playn avulla. Ne eivät käytä tätä käytäntöä.</translation>
 <translation id="4534500438517478692">Android-rajoituksen nimi:</translation>
 <translation id="4541530620466526913">Laitteeseen lisätyt tilit</translation>
@@ -1474,9 +1471,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="5447306928176905178">Ota käyttöön muistitietojen ilmoittaminen (JS-pinon koko) sivulle (vanhentunut)</translation>
 <translation id="5457065417344056871">Ota vierastila käyttöön selaimessa</translation>
 <translation id="5457924070961220141">Voit määrittää oletus-HTML-hahmontajan, kun <ph name="PRODUCT_FRAME_NAME" /> on asennettu. Oletusasetusta käytetään, jos tätä käytäntöä ei ole määritetty. Tällöin isäntäselain suorittaa hahmonnuksen, mutta voit ohittaa asetuksen ja asettaa tuotteen <ph name="PRODUCT_FRAME_NAME" /> hahmontamaan HTML-sivut oletuksena.</translation>
-<translation id="5459155981813668716">Määrittää kieli- ja maa-asetukset, joilla <ph name="PRODUCT_OS_NAME" /> voidaan näyttää
-
-      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_OS_NAME" /> voidaan määrittää näkymään ainoastaan jollakin tässä käytännössä ilmoitetulla kielellä. Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä luettelo, <ph name="PRODUCT_OS_NAME" /> voidaan näyttää kaikilla tuetuilla kielillä. Jos käytännön arvoksi on määritetty luettelo, jonka arvot ovat virheellisiä, kaikki virheelliset arvot ohitetaan. Jos <ph name="PRODUCT_OS_NAME" /> on aiemmin määritetty näkymään kielellä, jota käytäntö ei salli, näytettävä kieli vaihdetaan sallittuun kieleen seuraavalla sisäänkirjautumiskerralla. Jos jokin käyttäjän määrittämistä kielistä sallitaan tässä käytännössä, <ph name="PRODUCT_OS_NAME" /> vaihtaa tähän kieleen. Muussa tapauksessa <ph name="PRODUCT_OS_NAME" /> vaihtaa käytännön ensimmäiseen kelvollisen arvoon tai varakieleen (tällä hetkellä Yhdysvaltain englantiin), jos käytännössä on virheellisiä merkintöjä.</translation>
 <translation id="5464816904705580310">Määritä hallinnoitujen käyttäjien asetukset.</translation>
 <translation id="546726650689747237">Ruudun himmennyksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="5469825884154817306">Estä kuvat näissä sivustoissa</translation>
@@ -2226,7 +2220,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Tämä käytäntö voidaan asettaa vain suositukseksi. Käytännön avulla suositellut kielet voidaan näyttää listan alussa, mutta käyttäjä voi aina valita käyttökertaa varten minkä tahansa kielen, jota <ph name="PRODUCT_OS_NAME" /> tukee.
       </translation>
-<translation id="7763311235717725977">Voit määrittää, saavatko sivustot näyttää kuvia. Kuvien näyttäminen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta. Jos tätä käytäntöä ei ole määritetty, AllowImages-asetusta käytetään, ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="7763479091692861127"> Yhteystyypit, joilla voidaan suorittaa käyttöjärjestelmäpäivityksiä. Käyttöjärjestelmäpäivitykset saattavat kuormittaa yhteyttä niiden koon vuoksi, ja tiedonsiirrosta voidaan periä lisämaksuja. Järjestelmäpäivityksiä ei voi tällä hetkellä oletuksena suorittaa kalliilla yhteystyypeillä, kuten WiMax, Bluetooth ja Cellular.
 
       Tunnistettuja yhteystyypin tunnuksia ovat ethernet, wifi, wimax, bluetooth ja cellular.</translation>

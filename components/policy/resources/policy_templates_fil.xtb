@@ -79,7 +79,6 @@
 
           Dapat nasa 100% o higit pa ang scale factor.</translation>
 <translation id="131353325527891113">Ipakita ang mga username sa screen ng pag-login</translation>
-<translation id="1325295456374328159">I-configure ang mga pinapayagang lokal sa isang session ng user</translation>
 <translation id="1327466551276625742">I-enable ang prompt ng configuration ng network kapag offline</translation>
 <translation id="1330145147221172764">I-enable ang on-screen na keyboard</translation>
 <translation id="13356285923490863">Pangalan ng Patakaran</translation>
@@ -471,9 +470,6 @@
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
 <translation id="2327252517317514801">Tumutukoy sa mga domain na pinapayagang i-access ang G Suite</translation>
-<translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi man, ang personal na configuration ng user.</translation>
 <translation id="2372547058085956601">Delay ng awtomatikong pag-log in sa pampublikong session.
 
       Kung hindi nakatakda ang patakaran ng |DeviceLocalAccountAutoLoginId|, walang bisa ang patakarang ito. Kung hindi:
@@ -1237,9 +1233,6 @@
       Kung pinagana o hindi mo pinagana ang setting na ito, hindi magagawang baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
 
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit mababago ito ng user.</translation>
-<translation id="4525521128313814366">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga larawan.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung pinagana, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="4531706050939927436">Maaaring puwersahang i-install ang mga Android app mula sa Google Admin console gamit ang Google Play. Hindi ginagamit ng mga ito ang patakarang ito.</translation>
 <translation id="4534500438517478692">Pinaghihigpitang pangalan ng Android:</translation>
 <translation id="4541530620466526913">Mga account na lokal sa device</translation>
@@ -1535,9 +1528,6 @@
 <translation id="5457065417344056871">I-enable ang guest mode sa browser</translation>
 <translation id="5457924070961220141">Binibigyang-daan kang i-configure ang default na taga-render ng HTML kapag naka-install ang <ph name="PRODUCT_FRAME_NAME" />.
           Ang default na setting na ginagamit kapag hinayaang hindi nakatakda ang patakarang ito ay ang pagpayag sa browser ng host na gawin ang pag-render, ngunit maaari mo itong i-override at ipa-render sa <ph name="PRODUCT_FRAME_NAME" /> ang mga pahina ng HTML bilang default.</translation>
-<translation id="5459155981813668716">Kino-configure ang mga lokal kung saan maaaring ipakita ang <ph name="PRODUCT_OS_NAME" />.
-
-      Kung itatakda ang patakarang ito, mako-configure lang ng user ang <ph name="PRODUCT_OS_NAME" /> na ipakita sa isa sa mga lokal na tinutukoy sa patakarang ito. Kung hindi itatakda ang patakarang ito o kung itatakda ito sa isang listahang walang laman, maaaring ipakita ang <ph name="PRODUCT_OS_NAME" /> sa lahat ng sinusuportahang lokal. Kung itatakda ang patakarang ito sa isang listahang may mga invalid na value, babalewalain ang lahat ng invalid na value. Kung na-configure dati ng isang user ang <ph name="PRODUCT_OS_NAME" /> na ipakita sa isang wikang hindi pinapayagan ng patakarang ito, malilipat sa isang pinapayagang lokal ang lokal na pinagpapakitaan sa susunod na mag-sign in ang user. Kung na-configure ng user ang mga piniling lokal at pinapayagan ng patakarang ito ang isa sa mga piniling lokal, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa lokal na ito. Kung hindi naman, lilipat ang <ph name="PRODUCT_OS_NAME" /> sa unang valid na value na tinutukoy sa patakarang ito, o sa isang alternatibong lokal (kasalukuyang en-US), kung naglalaman lang ang patakarang ito ng mga invalid na entry.</translation>
 <translation id="5464816904705580310">I-configure ang mga setting para sa mga pinapamahalaang user.</translation>
 <translation id="546726650689747237">Delay ng pag-dim ng screen kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
@@ -2331,9 +2321,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Maaari lang itakda ang patakarang ito tulad ng inirerekomenda. Magagamit mo ang patakarang ito upang maglipat ng hanay ng mga inirerekomendang lokal sa itaas, ngunit maaaring pumili anumang oras ang mga user ng anumang lokal na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> para sa kanilang session.
       </translation>
-<translation id="7763311235717725977">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na magpakita ng mga larawan. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga larawan.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowImages' at magagawa ng user na baguhin ito.</translation>
 <translation id="7763479091692861127"> Ang mga uri ng koneksyon na pinapayagang gamitin para sa mga pag-update sa OS. Potensyal na nakakapagpabagal ng koneksyon ang mga pag-update sa OS dahil sa laki ng mga ito at maaari itong makaipon ng karagdagang gastusin. Samakatuwid, hindi naka-enable ang mga ito bilang default para sa mga uri ng koneksyon na itinuturing na mahal, na kinabibilangan ng WiMax, Bluetooth at Cellular sa ngayon.
 
       Ang mga kilalang identifier ng uri ng koneksyon ay "ethernet," "wifi," "wimax," "bluetooth" at "cellular."</translation>
