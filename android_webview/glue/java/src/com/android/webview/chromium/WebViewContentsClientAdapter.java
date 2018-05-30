@@ -630,7 +630,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                         /* reporting */ true));
             }
         } finally {
-            TraceEvent.end("WebViewContentsClientAdapter.onRenderProcessGone");
+            TraceEvent.end("WebViewContentsClientAdapter.onSafeBrowsingHit");
         }
     }
 
