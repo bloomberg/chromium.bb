@@ -115,26 +115,15 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   // Defer deletion until queue iteration is complete, as
   // SpdyBuffer::~SpdyBuffer() can result in callbacks into SpdyWriteQueue.
   std::vector<std::unique_ptr<SpdyBufferProducer>> erased_buffer_producers;
-
-  // Do the actual deletion and removal, preserving FIFO-ness.
   base::circular_deque<PendingWrite>& queue = queue_[priority];
-  auto out_it = queue.begin();
-  for (auto it = queue.begin(); it != queue.end(); ++it) {
-    // Loop invariant: elements between |begin| and |old_it| are the ones
-    // preserved, contigously, in their original order.  Elements between
-    // |old_it| and |it| are undefined.  The distance between |old_it| and |it|
-    // is the number elements moved to |erased_buffer_producers| so far.
-    // Elements between |it| and |end| have not been touched yet.
+  for (auto it = queue.begin(); it != queue.end();) {
     if (it->stream.get() == stream.get()) {
       erased_buffer_producers.push_back(std::move(it->frame_producer));
+      it = queue.erase(it);
     } else {
-      *out_it = std::move(*it);
-      ++out_it;
+      ++it;
     }
   }
-  // The number of elements preserved is the distance between |begin| and
-  // |old_it|.  The rest of the container shall be erased.
-  queue.erase(out_it, queue.end());
   removing_writes_ = false;
 
   // Iteration on |queue| is completed.  Now |erased_buffer_producers| goes out
@@ -145,29 +134,21 @@ void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
     spdy::SpdyStreamId last_good_stream_id) {
   CHECK(!removing_writes_);
   removing_writes_ = true;
-  std::vector<std::unique_ptr<SpdyBufferProducer>> erased_buffer_producers;
 
+  // Defer deletion until queue iteration is complete, as
+  // SpdyBuffer::~SpdyBuffer() can result in callbacks into SpdyWriteQueue.
+  std::vector<std::unique_ptr<SpdyBufferProducer>> erased_buffer_producers;
   for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
-    // Do the actual deletion and removal, preserving FIFO-ness.
     base::circular_deque<PendingWrite>& queue = queue_[i];
-    auto out_it = queue.begin();
-    for (auto it = queue.begin(); it != queue.end(); ++it) {
-      // Loop invariant: elements between |begin| and |old_it| are the ones
-      // preserved, contigously, in their original order.  Elements between
-      // |old_it| and |it| are undefined.  The distance between |old_it| and
-      // |it| is the number elements moved to |erased_buffer_producers| so far.
-      // Elements between |it| and |end| have not been touched yet.
+    for (auto it = queue.begin(); it != queue.end();) {
       if (it->stream.get() && (it->stream->stream_id() > last_good_stream_id ||
                                it->stream->stream_id() == 0)) {
         erased_buffer_producers.push_back(std::move(it->frame_producer));
+        it = queue.erase(it);
       } else {
-        *out_it = std::move(*it);
-        ++out_it;
+        ++it;
       }
     }
-    // The number of elements preserved is the distance between |begin| and
-    // |old_it|.  The rest of the container shall be erased.
-    queue.erase(out_it, queue.end());
   }
   removing_writes_ = false;
 
@@ -195,23 +176,14 @@ void SpdyWriteQueue::ChangePriorityOfWritesForStream(
 
   base::circular_deque<PendingWrite>& old_queue = queue_[old_priority];
   base::circular_deque<PendingWrite>& new_queue = queue_[new_priority];
-  auto out_it = old_queue.begin();
-  for (auto it = old_queue.begin(); it != old_queue.end(); ++it) {
-    // Loop invariant: elements between |begin| and |old_it| are the ones
-    // kept in |old_queue|, contigously, in their original order.  Elements
-    // between |old_it| and |it| are undefined.  The distance between |old_it|
-    // and |it| is the number elements moved to |new_queue| so far. Elements
-    // between |it| and |end| have not been touched yet.
+  for (auto it = old_queue.begin(); it != old_queue.end();) {
     if (it->stream.get() == stream.get()) {
       new_queue.push_back(std::move(*it));
+      it = old_queue.erase(it);
     } else {
-      *out_it = std::move(*it);
-      ++out_it;
+      ++it;
     }
   }
-  // The number of elements kept in |old_queue| is the distance between |begin|
-  // and |old_it|.  The rest of the container shall be erased.
-  old_queue.erase(out_it, old_queue.end());
 }
 
 void SpdyWriteQueue::Clear() {
