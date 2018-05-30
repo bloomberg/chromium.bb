@@ -425,7 +425,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline bool ShouldApplyPaintContainment() const {
     return StyleRef().ContainsPaint() &&
-           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText();
+           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
+           (!IsTablePart() || IsLayoutBlockFlow());
   }
 
  private:
