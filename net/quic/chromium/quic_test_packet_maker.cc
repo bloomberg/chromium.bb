@@ -358,13 +358,37 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     quic::QuicPacketNumber smallest_received,
     quic::QuicPacketNumber least_unacked,
     bool send_feedback) {
-  return MakeAckPacket(packet_number, largest_received, smallest_received,
+  return MakeAckPacket(packet_number, 1, largest_received, smallest_received,
                        least_unacked, send_feedback,
                        quic::QuicTime::Delta::Zero());
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     quic::QuicPacketNumber packet_number,
+    quic::QuicPacketNumber first_received,
+    quic::QuicPacketNumber largest_received,
+    quic::QuicPacketNumber smallest_received,
+    quic::QuicPacketNumber least_unacked,
+    bool send_feedback) {
+  return MakeAckPacket(packet_number, first_received, largest_received,
+                       smallest_received, least_unacked, send_feedback,
+                       quic::QuicTime::Delta::Zero());
+}
+
+std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
+    quic::QuicPacketNumber packet_number,
+    quic::QuicPacketNumber largest_received,
+    quic::QuicPacketNumber smallest_received,
+    quic::QuicPacketNumber least_unacked,
+    bool send_feedback,
+    quic::QuicTime::Delta ack_delay_time) {
+  return MakeAckPacket(packet_number, 1, largest_received, smallest_received,
+                       least_unacked, send_feedback, ack_delay_time);
+}
+
+std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
+    quic::QuicPacketNumber packet_number,
+    quic::QuicPacketNumber first_received,
     quic::QuicPacketNumber largest_received,
     quic::QuicPacketNumber smallest_received,
     quic::QuicPacketNumber least_unacked,
@@ -385,7 +409,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     ack.received_packet_times.push_back(std::make_pair(i, clock_->Now()));
   }
   if (largest_received > 0) {
-    ack.packets.AddRange(1, largest_received + 1);
+    DCHECK_GE(largest_received, first_received);
+    ack.packets.AddRange(first_received, largest_received + 1);
   }
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),

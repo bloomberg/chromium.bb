@@ -119,6 +119,21 @@ class QuicTestPacketMaker {
       bool send_feedback);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
       quic::QuicPacketNumber packet_number,
+      quic::QuicPacketNumber first_received,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
+      bool send_feedback);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicPacketNumber largest_received,
+      quic::QuicPacketNumber smallest_received,
+      quic::QuicPacketNumber least_unacked,
+      bool send_feedback,
+      quic::QuicTime::Delta ack_delay_time);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
+      quic::QuicPacketNumber packet_number,
+      quic::QuicPacketNumber first_received,
       quic::QuicPacketNumber largest_received,
       quic::QuicPacketNumber smallest_received,
       quic::QuicPacketNumber least_unacked,
