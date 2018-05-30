@@ -102,6 +102,7 @@ public class UrlBar extends AutocompleteEditText {
     private String mPreviousTldScrollText;
     private int mPreviousTldScrollViewWidth;
     private int mPreviousTldScrollResultXPosition;
+    private float mPreviousFontSize;
 
     private final int mDarkHintColor;
     private final int mDarkDefaultTextColor;
@@ -810,7 +811,10 @@ public class UrlBar extends AutocompleteEditText {
 
         int measuredWidth = getMeasuredWidth();
         if (TextUtils.equals(url, previousTldScrollText)
-                && measuredWidth == previousTldScrollViewWidth) {
+                && measuredWidth == previousTldScrollViewWidth
+                // Font size is float but it changes in discrete range (eg small font, big font),
+                // therefore false negative using regular equality is unlikely.
+                && getTextSize() == mPreviousFontSize) {
             scrollTo(previousTldScrollResultXPosition, getScrollY());
             return;
         }
@@ -824,7 +828,8 @@ public class UrlBar extends AutocompleteEditText {
         float scrollPos;
         if (startPointX < endPointX) {
             // LTR
-            scrollPos = Math.max(0, endPointX - measuredWidth);
+            float padding = getResources().getDimensionPixelSize(R.dimen.toolbar_edge_padding);
+            scrollPos = Math.max(0, endPointX - measuredWidth + padding);
         } else {
             float width = getLayout().getPaint().measureText(urlComponents.first);
             // RTL
@@ -838,6 +843,7 @@ public class UrlBar extends AutocompleteEditText {
 
         mPreviousTldScrollText = url.toString();
         mPreviousTldScrollViewWidth = measuredWidth;
+        mPreviousFontSize = getTextSize();
         mPreviousTldScrollResultXPosition = (int) scrollPos;
     }
 
