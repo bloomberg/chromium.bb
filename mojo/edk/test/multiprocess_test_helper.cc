@@ -25,12 +25,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/peer_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -216,25 +218,28 @@ void MultiprocessTestHelper::ChildSetup() {
   CHECK(base::CommandLine::InitializedForCurrentProcess());
 
   auto& command_line = *base::CommandLine::ForCurrentProcess();
-  NamedPlatformHandle named_pipe(
+  NamedPlatformChannel::ServerName named_pipe(
       command_line.GetSwitchValueNative(kNamedPipeName));
   if (command_line.HasSwitch(kRunAsBrokerClient)) {
-    std::unique_ptr<IncomingBrokerClientInvitation> invitation;
+    mojo::IncomingInvitation invitation;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     CHECK(base::MachPortBroker::ChildSendTaskPortToParent("mojo_test"));
 #endif
-    if (named_pipe.is_valid()) {
-      invitation = IncomingBrokerClientInvitation::Accept(ConnectionParams(
-          TransportProtocol::kLegacy, CreateClientHandle(named_pipe)));
+    if (!named_pipe.empty()) {
+      invitation = mojo::IncomingInvitation::Accept(
+          mojo::NamedPlatformChannel::ConnectToServer(named_pipe));
     } else {
-      invitation = IncomingBrokerClientInvitation::AcceptFromCommandLine(
-          TransportProtocol::kLegacy);
+      auto endpoint =
+          mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+              command_line);
+      invitation = IncomingInvitation::Accept(std::move(endpoint));
     }
-    primordial_pipe = invitation->ExtractMessagePipe(kTestChildMessagePipeName);
+    primordial_pipe = invitation.ExtractMessagePipe(kTestChildMessagePipeName);
   } else {
-    if (named_pipe.is_valid()) {
+    if (!named_pipe.empty()) {
+      NamedPlatformHandle pipe_name(named_pipe);
       primordial_pipe = g_child_peer_connection.Get().Connect(ConnectionParams(
-          TransportProtocol::kLegacy, CreateClientHandle(named_pipe)));
+          TransportProtocol::kLegacy, CreateClientHandle(pipe_name)));
     } else {
       primordial_pipe = g_child_peer_connection.Get().Connect(ConnectionParams(
           TransportProtocol::kLegacy,
