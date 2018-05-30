@@ -255,13 +255,13 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_EmptyString) {
 }
 
 TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_Simple) {
-  const char content_type[] = "application/signed-exchange;v=b0";
+  const char content_type[] = "application/signed-exchange;v=b1";
   base::Optional<SignedExchangeVersion> version;
   EXPECT_TRUE(
       SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
           content_type, &version));
   ASSERT_TRUE(version);
-  EXPECT_EQ(*version, SignedExchangeVersion::kB0);
+  EXPECT_EQ(*version, SignedExchangeVersion::kB1);
 }
 
 TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_SimpleWithSpace) {
@@ -276,13 +276,13 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, VersionParam_SimpleWithSpace) {
 
 TEST_F(SignedExchangeSignatureHeaderFieldTest,
        VersionParam_SimpleWithDoublequotes) {
-  const char content_type[] = "application/signed-exchange;v=\"b0\"";
+  const char content_type[] = "application/signed-exchange;v=\"b1\"";
   base::Optional<SignedExchangeVersion> version;
   EXPECT_TRUE(
       SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
           content_type, &version));
   ASSERT_TRUE(version);
-  EXPECT_EQ(*version, SignedExchangeVersion::kB0);
+  EXPECT_EQ(*version, SignedExchangeVersion::kB1);
 }
 
 }  // namespace content

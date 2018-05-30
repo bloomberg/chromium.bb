@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
         if (request.relative_url == "/htxg/test.example.org_test.htxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
-                      ::testing::HasSubstr("application/signed-exchange;v=b0"));
+                      ::testing::HasSubstr("application/signed-exchange;v=b1"));
         }
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");

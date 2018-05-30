@@ -37,12 +37,6 @@ class CONTENT_EXPORT SignedExchangeCertificateChain {
   SignedExchangeCertificateChain(scoped_refptr<net::X509Certificate> cert,
                                  const std::string& ocsp,
                                  const std::string& sct);
-
-  // Parses a TLS 1.3 Certificate message containing X.509v3 certificates and
-  // returns a vector of cert_data. Returns nullopt when failed to parse.
-  static base::Optional<std::vector<base::StringPiece>> GetCertChainFromMessage(
-      base::span<const uint8_t> message);
-
   ~SignedExchangeCertificateChain();
 
   const scoped_refptr<net::X509Certificate>& cert() const { return cert_; }
