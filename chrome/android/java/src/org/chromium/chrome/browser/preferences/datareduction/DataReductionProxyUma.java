@@ -50,7 +50,8 @@ public class DataReductionProxyUma {
     public static final int ACTION_SITE_BREAKDOWN_SORTED_BY_DATA_SAVED = 24;
     public static final int ACTION_SITE_BREAKDOWN_SORTED_BY_DATA_USED = 25;
     public static final int ACTION_SITE_BREAKDOWN_EXPANDED = 26;
-    public static final int ACTION_INDEX_BOUNDARY = 27;
+    public static final int ACTION_SITE_BREAKDOWN_SORTED_BY_HOSTNAME = 27;
+    public static final int ACTION_INDEX_BOUNDARY = 28;
 
     // Represent the possible Lo-Fi context menu user actions. This must remain in sync with
     // Previews.ContextMenuAction.LoFi in tools/metrics/histograms/histograms.xml.
