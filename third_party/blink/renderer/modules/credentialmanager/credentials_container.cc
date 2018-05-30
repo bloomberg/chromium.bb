@@ -405,7 +405,7 @@ void OnGetAssertionComplete(
     DOMArrayBuffer* user_handle =
         credential->user_handle
             ? VectorToDOMArrayBuffer(std::move(*credential->user_handle))
-            : DOMArrayBuffer::Create(nullptr, 0);
+            : nullptr;
     AuthenticatorAssertionResponse* authenticator_response =
         AuthenticatorAssertionResponse::Create(client_data_buffer,
                                                authenticator_buffer,
