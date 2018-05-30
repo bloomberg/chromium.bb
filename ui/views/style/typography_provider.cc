@@ -115,7 +115,7 @@ void DefaultTypographyProvider::GetDefaultFont(int context,
       *size_delta = ui::kTitleFontSizeDelta;
       break;
     case style::CONTEXT_TOUCH_MENU:
-      *size_delta = -1;
+      *size_delta = 2;
       break;
     default:
       *size_delta = ui::kLabelFontSizeDelta;

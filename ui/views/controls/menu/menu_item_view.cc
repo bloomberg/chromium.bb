@@ -845,6 +845,9 @@ const gfx::FontList& MenuItemView::GetFontList() const {
     if (font_list)
       return *font_list;
   }
+
+  if (GetMenuController() && GetMenuController()->use_touchable_layout())
+    return style::GetFont(style::CONTEXT_TOUCH_MENU, style::STYLE_PRIMARY);
   return MenuConfig::instance().font_list;
 }
 
