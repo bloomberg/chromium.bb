@@ -42,10 +42,13 @@ CrostiniInstallerView* g_crostini_installer_view = nullptr;
 constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
+constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
 
 }  // namespace
 
-void ShowCrostiniInstallerView(Profile* profile) {
+void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface) {
+  base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
+                                CrostiniUISurface::kCount);
   return CrostiniInstallerView::Show(profile);
 }
 
