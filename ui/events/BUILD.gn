@@ -148,6 +148,7 @@ component("events") {
     "events_export.h",
     "events_stub.cc",
     "gestures/gesture_recognizer_impl_mac.cc",
+    "gestures/gesture_types.cc",
     "gestures/gesture_types.h",
     "keyboard_hook.h",
     "keyboard_hook_base.cc",

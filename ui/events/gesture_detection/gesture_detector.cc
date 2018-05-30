@@ -145,7 +145,8 @@ GestureDetector::GestureDetector(
 
 GestureDetector::~GestureDetector() {}
 
-bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
+bool GestureDetector::OnTouchEvent(const MotionEvent& ev,
+                                   bool should_process_double_tap) {
   const MotionEvent::Action action = ev.GetAction();
 
   velocity_tracker_.AddMovement(ev);
@@ -249,8 +250,9 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
     case MotionEvent::Action::DOWN: {
       bool is_repeated_tap =
           current_down_event_ && previous_up_event_ &&
-          IsRepeatedTap(*current_down_event_, *previous_up_event_, ev);
-      if (double_tap_listener_) {
+          IsRepeatedTap(*current_down_event_, *previous_up_event_, ev,
+                        should_process_double_tap);
+      if (double_tap_listener_ && should_process_double_tap) {
         is_down_candidate_for_repeated_single_tap_ = false;
         bool had_tap_message = timeout_handler_->HasTimeout(TAP);
         if (had_tap_message)
@@ -345,7 +347,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
     case MotionEvent::Action::UP:
       still_down_ = false;
       {
-        if (is_double_tapping_) {
+        if (is_double_tapping_ && should_process_double_tap) {
           // Finally, give the up event of the double-tap.
           DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
@@ -360,7 +362,8 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           }
           handled = listener_->OnSingleTapUp(
               ev, 1 + current_single_tap_repeat_count_);
-          if (defer_confirm_single_tap_ && double_tap_listener_ != NULL) {
+          if (defer_confirm_single_tap_ && should_process_double_tap &&
+              double_tap_listener_ != NULL) {
             double_tap_listener_->OnSingleTapConfirmed(ev);
           }
         } else if (!all_pointers_within_slop_regions_) {
@@ -495,7 +498,8 @@ void GestureDetector::CancelTaps() {
 
 bool GestureDetector::IsRepeatedTap(const MotionEvent& first_down,
                                     const MotionEvent& first_up,
-                                    const MotionEvent& second_down) const {
+                                    const MotionEvent& second_down,
+                                    bool should_process_double_tap) const {
   if (!always_in_bigger_tap_region_)
     return false;
 
@@ -507,8 +511,10 @@ bool GestureDetector::IsRepeatedTap(const MotionEvent& first_down,
   // Only use the min time when in double-tap detection mode. For repeated
   // single taps the risk of accidental repeat detection (e.g., from fingernail
   // interference) is minimal.
-  if (double_tap_listener_ && delta_time < double_tap_min_time_)
+  if (should_process_double_tap && double_tap_listener_ &&
+      delta_time < double_tap_min_time_) {
     return false;
+  }
 
   const float delta_x = first_down.GetX() - second_down.GetX();
   const float delta_y = first_down.GetY() - second_down.GetY();

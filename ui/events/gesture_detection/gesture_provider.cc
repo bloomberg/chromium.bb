@@ -76,6 +76,12 @@ gfx::RectF ClampBoundingBox(const gfx::RectF& bounds,
 
 }  // namespace
 
+// GestureProviderClient:
+
+bool GestureProviderClient::RequiresDoubleTapGestureEvents() const {
+  return false;
+}
+
 // GestureProvider:::Config
 
 GestureProvider::Config::Config()
@@ -129,7 +135,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       tap_down_point_ = gfx::PointF(event.GetX(), event.GetY());
       max_diameter_before_show_press_ = event.GetTouchMajor();
     }
-    gesture_detector_.OnTouchEvent(event);
+    gesture_detector_.OnTouchEvent(event,
+                                   client_->RequiresDoubleTapGestureEvents());
     scale_gesture_detector_.OnTouchEvent(event);
 
     if (action == MotionEvent::Action::UP ||
@@ -669,7 +676,8 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   }
 
   bool IsDoubleTapEnabled() const {
-    return gesture_detector_.has_doubletap_listener();
+    return gesture_detector_.has_doubletap_listener() &&
+           client_->RequiresDoubleTapGestureEvents();
   }
 
   void SetIgnoreSingleTap(bool value) { ignore_single_tap_ = value; }

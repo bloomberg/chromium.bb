@@ -2033,6 +2033,10 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
   SendGestureEvent(web_gesture);
 }
 
+bool RenderWidgetHostViewAndroid::RequiresDoubleTapGestureEvents() const {
+  return true;
+}
+
 void RenderWidgetHostViewAndroid::OnSizeChanged() {
   if (ime_adapter_android_)
     ime_adapter_android_->UpdateAfterViewSizeChanged();

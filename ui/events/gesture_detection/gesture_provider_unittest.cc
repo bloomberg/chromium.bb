@@ -148,6 +148,10 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     gestures_.push_back(gesture);
   }
 
+  bool RequiresDoubleTapGestureEvents() const override {
+    return should_process_double_tap_events_;
+  }
+
   void SetUpWithConfig(const GestureProvider::Config& config) {
     gesture_provider_.reset(new GestureProvider(config, this));
     gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
@@ -434,6 +438,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   std::unique_ptr<GestureProvider> gesture_provider_;
   std::unique_ptr<GestureEventData> active_scroll_begin_event_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  bool should_process_double_tap_events_ = true;
 };
 
 // Verify that a DOWN followed shortly by an UP will trigger a single tap.
@@ -1420,6 +1425,60 @@ TEST_F(GestureProviderTest, NoDoubleTapWhenExplicitlyDisabled) {
   gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
 
   event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::Action::DOWN, kFakeCoordX,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::UP, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_UNCONFIRMED, GetMostRecentGestureEventType());
+
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::Action::DOWN, kFakeCoordX,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::UP, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_DOUBLE_TAP, GetMostRecentGestureEventType());
+}
+
+TEST_F(GestureProviderTest, NoDoubleTapWhenConsumerDoesntWantIt) {
+  // Double tap gestures are supported by the platform but the current consumer
+  // doesn't want it.
+  should_process_double_tap_events_ = false;
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+  MockMotionEvent event = ObtainMotionEvent(
+      event_time, MotionEvent::Action::DOWN, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::UP, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::Action::DOWN, kFakeCoordX,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::UP, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+
+  // The consumer now wants to receive double taps.
+  should_process_double_tap_events_ = true;
+
+  event_time = base::TimeTicks::Now();
   event = ObtainMotionEvent(event_time, MotionEvent::Action::DOWN, kFakeCoordX,
                             kFakeCoordY);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));

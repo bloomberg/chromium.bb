@@ -93,6 +93,10 @@ void FilteredGestureProvider::OnGestureEvent(const GestureEventData& event) {
       GestureEventDataPacket::FromTouchTimeout(event));
 }
 
+bool FilteredGestureProvider::RequiresDoubleTapGestureEvents() const {
+  return client_->RequiresDoubleTapGestureEvents();
+}
+
 void FilteredGestureProvider::ForwardGestureEvent(
     const GestureEventData& event) {
   client_->OnGestureEvent(event);

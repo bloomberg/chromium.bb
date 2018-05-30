@@ -55,6 +55,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
  private:
   // GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& event) override;
+  bool RequiresDoubleTapGestureEvents() const override;
 
   // TouchDispositionGestureFilterClient implementation.
   void ForwardGestureEvent(const ui::GestureEventData& event) override;

@@ -80,6 +80,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
  private:
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
+  bool RequiresDoubleTapGestureEvents() const override;
 
   // Returns cursor size in DIP.
   gfx::SizeF InitCursorFromResource(

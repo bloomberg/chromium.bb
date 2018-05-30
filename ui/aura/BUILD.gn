@@ -138,6 +138,7 @@ jumbo_component("aura") {
     "scoped_simple_keyboard_hook.cc",
     "scoped_window_targeter.cc",
     "window.cc",
+    "window_delegate.cc",
     "window_event_dispatcher.cc",
     "window_observer.cc",
     "window_occlusion_tracker.cc",
