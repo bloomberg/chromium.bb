@@ -37,3 +37,23 @@ int MaterialRefreshLayoutProvider::GetCornerRadiusMetric(
       return 0;
   }
 }
+
+int MaterialRefreshLayoutProvider::GetShadowElevationMetric(
+    views::EmphasisMetric emphasis_metric) const {
+  switch (emphasis_metric) {
+    case views::EMPHASIS_LOW:
+      return 1;
+    case views::EMPHASIS_MEDIUM:
+      return 3;
+    case views::EMPHASIS_HIGH:
+      return 16;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+gfx::ShadowValues MaterialRefreshLayoutProvider::MakeShadowValues(
+    int elevation) const {
+  return gfx::ShadowValue::MakeRefreshShadowValues(elevation);
+}

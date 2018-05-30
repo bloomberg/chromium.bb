@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -68,6 +69,27 @@ Insets ShadowValue::GetMargin(const ShadowValues& shadows) {
 // static
 Insets ShadowValue::GetBlurRegion(const ShadowValues& shadows) {
   return GetInsets(shadows, true);
+}
+
+// static
+ShadowValues ShadowValue::MakeRefreshShadowValues(int elevation) {
+  constexpr SkColor shadow_base_color = gfx::kGoogleGrey800;
+  // Refresh uses hand-tweaked shadows corresponding to a small set of
+  // elevations. Use the Refresh spec and designer input to add missing shadow
+  // values.
+  switch (elevation) {
+    case 3: {
+      ShadowValue key = {gfx::Vector2d(0, 1), 12,
+                         SkColorSetA(shadow_base_color, 0x66)};
+      ShadowValue ambient = {gfx::Vector2d(0, 4), 64,
+                             SkColorSetA(shadow_base_color, 0x40)};
+      return {key, ambient};
+    }
+    default:
+      // This surface has not been updated for Refresh. Fall back to the
+      // deprecated style.
+      return MakeMdShadowValues(elevation);
+  }
 }
 
 // static
