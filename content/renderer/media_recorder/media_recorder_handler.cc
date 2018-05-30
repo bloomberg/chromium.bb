@@ -236,8 +236,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
   timeslice_ = TimeDelta::FromMilliseconds(timeslice);
   slice_origin_timestamp_ = TimeTicks::Now();
 
-  media_stream_.VideoTracks(video_tracks_);
-  media_stream_.AudioTracks(audio_tracks_);
+  video_tracks_ = media_stream_.VideoTracks();
+  audio_tracks_ = media_stream_.AudioTracks();
 
   if (video_tracks_.IsEmpty() && audio_tracks_.IsEmpty()) {
     LOG(WARNING) << __func__ << ": no media tracks.";
@@ -463,8 +463,8 @@ bool MediaRecorderHandler::UpdateTracksAndCheckIfChanged() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks, audio_tracks;
-  media_stream_.VideoTracks(video_tracks);
-  media_stream_.AudioTracks(audio_tracks);
+  video_tracks = media_stream_.VideoTracks();
+  audio_tracks = media_stream_.AudioTracks();
 
   bool video_tracks_changed = video_tracks_.size() != video_tracks.size();
   bool audio_tracks_changed = audio_tracks_.size() != audio_tracks.size();

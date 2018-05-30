@@ -987,15 +987,13 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
   } else {
     GetUserMediaRequestFailed(result, constraint_name);
 
-    blink::WebVector<blink::WebMediaStreamTrack> tracks;
-    request_info->web_stream()->AudioTracks(tracks);
-    for (auto& web_track : tracks) {
+    for (auto& web_track : request_info->web_stream()->AudioTracks()) {
       MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
       if (track)
         track->Stop();
     }
-    request_info->web_stream()->VideoTracks(tracks);
-    for (auto& web_track : tracks) {
+
+    for (auto& web_track : request_info->web_stream()->VideoTracks()) {
       MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
       if (track)
         track->Stop();

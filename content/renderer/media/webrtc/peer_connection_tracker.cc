@@ -96,8 +96,7 @@ static std::string SerializeMediaDescriptor(
     const blink::WebMediaStream& stream) {
   std::string id = stream.Id().Utf8();
   std::string result = "id: " + id;
-  blink::WebVector<blink::WebMediaStreamTrack> tracks;
-  stream.AudioTracks(tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> tracks = stream.AudioTracks();
   if (!tracks.IsEmpty()) {
     result += ", audio: [";
     for (size_t i = 0; i < tracks.size(); ++i) {
@@ -107,7 +106,7 @@ static std::string SerializeMediaDescriptor(
     }
     result += "]";
   }
-  stream.VideoTracks(tracks);
+  tracks = stream.VideoTracks();
   if (!tracks.IsEmpty()) {
     result += ", video: [";
     for (size_t i = 0; i < tracks.size(); ++i) {
@@ -797,6 +796,6 @@ PeerConnectionTracker::GetPeerConnectionTrackerHost() {
         &peer_connection_tracker_host_ptr_);
   }
   return peer_connection_tracker_host_ptr_;
-};
+}
 
 }  // namespace content

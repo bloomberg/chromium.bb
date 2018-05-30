@@ -66,14 +66,10 @@ LocalWebRtcMediaStreamAdapter::LocalWebRtcMediaStreamAdapter(
       factory_(factory) {
   webrtc_stream_ = factory_->CreateLocalMediaStream(web_stream.Id().Utf8());
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream_.AudioTracks(audio_tracks);
-  for (blink::WebMediaStreamTrack& audio_track : audio_tracks)
+  for (blink::WebMediaStreamTrack& audio_track : web_stream_.AudioTracks())
     TrackAdded(audio_track);
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream_.VideoTracks(video_tracks);
-  for (blink::WebMediaStreamTrack& video_track : video_tracks)
+  for (blink::WebMediaStreamTrack& video_track : web_stream_.VideoTracks())
     TrackAdded(video_track);
 
   web_stream_.AddObserver(this);
@@ -83,14 +79,10 @@ LocalWebRtcMediaStreamAdapter::~LocalWebRtcMediaStreamAdapter() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   web_stream_.RemoveObserver(this);
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream_.AudioTracks(audio_tracks);
-  for (blink::WebMediaStreamTrack& audio_track : audio_tracks)
+  for (blink::WebMediaStreamTrack& audio_track : web_stream_.AudioTracks())
     TrackRemoved(audio_track);
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream_.VideoTracks(video_tracks);
-  for (blink::WebMediaStreamTrack& video_track : video_tracks)
+  for (blink::WebMediaStreamTrack& video_track : web_stream_.VideoTracks())
     TrackRemoved(video_track);
 }
 

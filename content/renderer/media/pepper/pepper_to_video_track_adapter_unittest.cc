@@ -71,8 +71,8 @@ TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
 
   // Verify the video track has been added.
   const blink::WebMediaStream test_stream = registry_->test_stream();
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  test_stream.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      test_stream.VideoTracks();
   ASSERT_EQ(1u, video_tracks.size());
 
   // Verify the native video track has been added.

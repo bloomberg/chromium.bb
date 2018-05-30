@@ -309,14 +309,14 @@ TEST_F(LocalWebRtcMediaStreamAdapterTest, RemoveAndAddTrack) {
   EXPECT_EQ(web_stream.Id().Utf8(), adapter->webrtc_stream()->id());
 
   // Modify the web layer stream, make sure the webrtc layer stream is updated.
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      web_stream.AudioTracks();
 
   web_stream.RemoveTrack(audio_tracks[0]);
   EXPECT_TRUE(adapter->webrtc_stream()->GetAudioTracks().empty());
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      web_stream.VideoTracks();
 
   web_stream.RemoveTrack(video_tracks[0]);
   EXPECT_TRUE(adapter->webrtc_stream()->GetVideoTracks().empty());
@@ -335,12 +335,8 @@ TEST_F(RemoteWebRtcMediaStreamAdapterTest, CreateStreamAdapter) {
       CreateRemoteStreamAdapter(webrtc_stream.get());
   EXPECT_TRUE(adapter->is_initialized());
   EXPECT_EQ(webrtc_stream, adapter->webrtc_stream());
-  blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
-  adapter->web_stream().AudioTracks(web_audio_tracks);
-  EXPECT_EQ(1u, web_audio_tracks.size());
-  blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
-  adapter->web_stream().VideoTracks(web_video_tracks);
-  EXPECT_EQ(1u, web_video_tracks.size());
+  EXPECT_EQ(1u, adapter->web_stream().AudioTracks().size());
+  EXPECT_EQ(1u, adapter->web_stream().VideoTracks().size());
 }
 
 TEST_F(RemoteWebRtcMediaStreamAdapterTest,
@@ -351,12 +347,8 @@ TEST_F(RemoteWebRtcMediaStreamAdapterTest,
       CreateRemoteStreamAdapter(webrtc_stream.get());
   EXPECT_TRUE(adapter->is_initialized());
   EXPECT_EQ(webrtc_stream, adapter->webrtc_stream());
-  blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
-  adapter->web_stream().AudioTracks(web_audio_tracks);
-  EXPECT_EQ(1u, web_audio_tracks.size());
-  blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
-  adapter->web_stream().VideoTracks(web_video_tracks);
-  EXPECT_EQ(1u, web_video_tracks.size());
+  EXPECT_EQ(1u, adapter->web_stream().AudioTracks().size());
+  EXPECT_EQ(1u, adapter->web_stream().VideoTracks().size());
 }
 
 TEST_F(RemoteWebRtcMediaStreamAdapterTest, RemoveAndAddTrack) {
@@ -366,35 +358,27 @@ TEST_F(RemoteWebRtcMediaStreamAdapterTest, RemoveAndAddTrack) {
       CreateRemoteStreamAdapter(webrtc_stream.get());
   EXPECT_TRUE(adapter->is_initialized());
   EXPECT_EQ(webrtc_stream, adapter->webrtc_stream());
-  blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
-  adapter->web_stream().AudioTracks(web_audio_tracks);
-  EXPECT_EQ(1u, web_audio_tracks.size());
-  blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
-  adapter->web_stream().VideoTracks(web_video_tracks);
-  EXPECT_EQ(1u, web_video_tracks.size());
+  EXPECT_EQ(1u, adapter->web_stream().AudioTracks().size());
+  EXPECT_EQ(1u, adapter->web_stream().VideoTracks().size());
 
   // Modify the webrtc layer stream, make sure the web layer stream is updated.
   rtc::scoped_refptr<webrtc::AudioTrackInterface> webrtc_audio_track =
       webrtc_stream->GetAudioTracks()[0];
   adapter->SetTracks(
       RemoveTrack(webrtc_stream.get(), webrtc_audio_track.get()));
-  adapter->web_stream().AudioTracks(web_audio_tracks);
-  EXPECT_EQ(0u, web_audio_tracks.size());
+  EXPECT_EQ(0u, adapter->web_stream().AudioTracks().size());
 
   rtc::scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track =
       webrtc_stream->GetVideoTracks()[0];
   adapter->SetTracks(
       RemoveTrack(webrtc_stream.get(), webrtc_video_track.get()));
-  adapter->web_stream().VideoTracks(web_video_tracks);
-  EXPECT_EQ(0u, web_video_tracks.size());
+  EXPECT_EQ(0u, adapter->web_stream().VideoTracks().size());
 
   adapter->SetTracks(AddTrack(webrtc_stream.get(), webrtc_audio_track.get()));
-  adapter->web_stream().AudioTracks(web_audio_tracks);
-  EXPECT_EQ(1u, web_audio_tracks.size());
+  EXPECT_EQ(1u, adapter->web_stream().AudioTracks().size());
 
   adapter->SetTracks(AddTrack(webrtc_stream.get(), webrtc_video_track.get()));
-  adapter->web_stream().VideoTracks(web_video_tracks);
-  EXPECT_EQ(1u, web_video_tracks.size());
+  EXPECT_EQ(1u, adapter->web_stream().VideoTracks().size());
 }
 
 }  // namespace content

@@ -52,22 +52,20 @@ int WebMediaStream::UniqueId() const {
   return private_->UniqueId();
 }
 
-void WebMediaStream::AudioTracks(
-    WebVector<WebMediaStreamTrack>& web_tracks) const {
+WebVector<WebMediaStreamTrack> WebMediaStream::AudioTracks() const {
   size_t number_of_tracks = private_->NumberOfAudioComponents();
   WebVector<WebMediaStreamTrack> result(number_of_tracks);
   for (size_t i = 0; i < number_of_tracks; ++i)
     result[i] = private_->AudioComponent(i);
-  web_tracks.Swap(result);
+  return result;
 }
 
-void WebMediaStream::VideoTracks(
-    WebVector<WebMediaStreamTrack>& web_tracks) const {
+WebVector<WebMediaStreamTrack> WebMediaStream::VideoTracks() const {
   size_t number_of_tracks = private_->NumberOfVideoComponents();
   WebVector<WebMediaStreamTrack> result(number_of_tracks);
   for (size_t i = 0; i < number_of_tracks; ++i)
     result[i] = private_->VideoComponent(i);
-  web_tracks.Swap(result);
+  return result;
 }
 
 WebMediaStreamTrack WebMediaStream::GetAudioTrack(
