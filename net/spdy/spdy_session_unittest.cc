@@ -5925,7 +5925,7 @@ TEST_F(SpdySessionTest, RejectInvalidUnknownFrames) {
   EXPECT_FALSE(OnUnknownFrame(8, 0));
 }
 
-TEST_F(SpdySessionTest, EnableWebsocket) {
+TEST_F(SpdySessionTest, EnableWebSocket) {
   spdy::SettingsMap settings_map;
   settings_map[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
   spdy::SpdySerializedFrame settings(
@@ -5961,7 +5961,7 @@ TEST_F(SpdySessionTest, EnableWebsocket) {
   EXPECT_FALSE(session_);
 }
 
-TEST_F(SpdySessionTest, DisableWebsocketDoesNothing) {
+TEST_F(SpdySessionTest, DisableWebSocketDoesNothing) {
   spdy::SettingsMap settings_map;
   settings_map[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 0;
   spdy::SpdySerializedFrame settings(
@@ -5997,7 +5997,7 @@ TEST_F(SpdySessionTest, DisableWebsocketDoesNothing) {
   EXPECT_FALSE(session_);
 }
 
-TEST_F(SpdySessionTest, EnableWebsocketThenDisableIsProtocolError) {
+TEST_F(SpdySessionTest, EnableWebSocketThenDisableIsProtocolError) {
   spdy::SettingsMap settings_map1;
   settings_map1[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
   spdy::SpdySerializedFrame settings1(
