@@ -659,6 +659,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       GlobalRequestID request_id,
       const base::Optional<net::AuthCredentials>& credentials);
 
+  static void RecordFetchRequestMode(const GURL& url,
+                                     base::StringPiece method,
+                                     network::mojom::FetchRequestMode mode);
+
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotation();
 
   LoaderMap pending_loaders_;
