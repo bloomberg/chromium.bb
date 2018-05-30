@@ -120,6 +120,11 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   base::circular_deque<PendingWrite>& queue = queue_[priority];
   auto out_it = queue.begin();
   for (auto it = queue.begin(); it != queue.end(); ++it) {
+    // Loop invariant: elements between |begin| and |old_it| are the ones
+    // preserved, contigously, in their original order.  Elements between
+    // |old_it| and |it| are undefined.  The distance between |old_it| and |it|
+    // is the number elements moved to |erased_buffer_producers| so far.
+    // Elements between |it| and |end| have not been touched yet.
     if (it->stream.get() == stream.get()) {
       erased_buffer_producers.push_back(std::move(it->frame_producer));
     } else {
@@ -127,8 +132,13 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
       ++out_it;
     }
   }
+  // The number of elements preserved is the distance between |begin| and
+  // |old_it|.  The rest of the container shall be erased.
   queue.erase(out_it, queue.end());
   removing_writes_ = false;
+
+  // Iteration on |queue| is completed.  Now |erased_buffer_producers| goes out
+  // of scope, SpdyBufferProducers are destroyed.
 }
 
 void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
@@ -142,6 +152,11 @@ void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
     base::circular_deque<PendingWrite>& queue = queue_[i];
     auto out_it = queue.begin();
     for (auto it = queue.begin(); it != queue.end(); ++it) {
+      // Loop invariant: elements between |begin| and |old_it| are the ones
+      // preserved, contigously, in their original order.  Elements between
+      // |old_it| and |it| are undefined.  The distance between |old_it| and
+      // |it| is the number elements moved to |erased_buffer_producers| so far.
+      // Elements between |it| and |end| have not been touched yet.
       if (it->stream.get() && (it->stream->stream_id() > last_good_stream_id ||
                                it->stream->stream_id() == 0)) {
         erased_buffer_producers.push_back(std::move(it->frame_producer));
@@ -150,9 +165,53 @@ void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
         ++out_it;
       }
     }
+    // The number of elements preserved is the distance between |begin| and
+    // |old_it|.  The rest of the container shall be erased.
     queue.erase(out_it, queue.end());
   }
   removing_writes_ = false;
+
+  // Iteration on each |queue| is completed.  Now |erased_buffer_producers| goes
+  // out of scope, SpdyBufferProducers are destroyed.
+}
+
+void SpdyWriteQueue::ChangePriorityOfWritesForStream(
+    const base::WeakPtr<SpdyStream>& stream,
+    RequestPriority old_priority,
+    RequestPriority new_priority) {
+  CHECK(!removing_writes_);
+  DCHECK(stream.get());
+
+#if DCHECK_IS_ON()
+  // |stream| should not have pending writes in a queue not matching
+  // |old_priority|.
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
+    if (i == old_priority)
+      continue;
+    for (auto it = queue_[i].begin(); it != queue_[i].end(); ++it)
+      DCHECK_NE(it->stream.get(), stream.get());
+  }
+#endif
+
+  base::circular_deque<PendingWrite>& old_queue = queue_[old_priority];
+  base::circular_deque<PendingWrite>& new_queue = queue_[new_priority];
+  auto out_it = old_queue.begin();
+  for (auto it = old_queue.begin(); it != old_queue.end(); ++it) {
+    // Loop invariant: elements between |begin| and |old_it| are the ones
+    // kept in |old_queue|, contigously, in their original order.  Elements
+    // between |old_it| and |it| are undefined.  The distance between |old_it|
+    // and |it| is the number elements moved to |new_queue| so far. Elements
+    // between |it| and |end| have not been touched yet.
+    if (it->stream.get() == stream.get()) {
+      new_queue.push_back(std::move(*it));
+    } else {
+      *out_it = std::move(*it);
+      ++out_it;
+    }
+  }
+  // The number of elements kept in |old_queue| is the distance between |begin|
+  // and |old_it|.  The rest of the container shall be erased.
+  old_queue.erase(out_it, old_queue.end());
 }
 
 void SpdyWriteQueue::Clear() {
