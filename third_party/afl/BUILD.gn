@@ -95,6 +95,8 @@ executable("afl-fuzz") {
   configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
   configs += [ ":afl-tool" ]
 
+  no_default_deps = true
+
   sources = [
     "src/afl-fuzz.c",
   ]
@@ -105,6 +107,8 @@ executable("afl-tmin") {
   configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
   configs += [ ":afl-tool" ]
 
+  no_default_deps = true
+
   sources = [
     "src/afl-tmin.c",
   ]
@@ -114,6 +118,8 @@ executable("afl-tmin") {
 executable("afl-showmap") {
   configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
   configs += [ ":afl-tool" ]
+
+  no_default_deps = true
 
   sources = [
     "src/afl-showmap.c",
