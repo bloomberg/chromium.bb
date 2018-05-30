@@ -63,6 +63,8 @@ const base::Feature kIPHNewTabFeature{"IPH_NewTab",
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)
+const base::Feature kIPHBottomToolbarTipFeature{
+    "IPH_BottomToolbarTip", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabTipFeature{"IPH_NewTabTip",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewIncognitoTabTipFeature{
