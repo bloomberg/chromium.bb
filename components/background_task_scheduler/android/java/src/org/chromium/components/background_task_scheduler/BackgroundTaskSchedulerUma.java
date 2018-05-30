@@ -268,6 +268,6 @@ class BackgroundTaskSchedulerUma {
     }
 
     void assertNativeIsLoaded() {
-        assert LibraryLoader.isInitialized();
+        assert LibraryLoader.getInstance().isInitialized();
     }
 }

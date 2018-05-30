@@ -273,7 +273,7 @@ public class ChromeFullscreenManager
         if (mActivity != activity) return;
         onWindowFocusChanged(hasFocus);
         // {@link ContentVideoView#getContentVideoView} requires native to have been initialized.
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         ContentVideoView videoView = ContentVideoView.getInstance();
         if (videoView != null) {
             videoView.onFullscreenWindowFocused();

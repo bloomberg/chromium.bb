@@ -131,7 +131,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     @Override
     public void preInflationStartup() {
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
-        mHadWarmStart = LibraryLoader.isInitialized();
+        mHadWarmStart = LibraryLoader.getInstance().isInitialized();
     }
 
     @Override

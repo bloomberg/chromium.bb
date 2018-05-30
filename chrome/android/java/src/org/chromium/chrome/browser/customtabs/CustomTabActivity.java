@@ -914,7 +914,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     protected boolean handleBackPressed() {
-        if (!LibraryLoader.isInitialized()) return false;
+        if (!LibraryLoader.getInstance().isInitialized()) return false;
 
         RecordUserAction.record("CustomTabs.SystemBack");
         if (getActivityTab() == null) return false;

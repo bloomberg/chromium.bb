@@ -67,7 +67,7 @@ public class CachedMetrics {
 
         public void record() {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.isInitialized()) {
+                if (LibraryLoader.getInstance().isInitialized()) {
                     recordWithNative();
                 } else {
                     mCount++;
@@ -99,7 +99,7 @@ public class CachedMetrics {
 
         public void record(int sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.isInitialized()) {
+                if (LibraryLoader.getInstance().isInitialized()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -133,7 +133,7 @@ public class CachedMetrics {
 
         public void record(int sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.isInitialized()) {
+                if (LibraryLoader.getInstance().isInitialized()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -168,7 +168,7 @@ public class CachedMetrics {
 
         public void record(long sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.isInitialized()) {
+                if (LibraryLoader.getInstance().isInitialized()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -200,7 +200,7 @@ public class CachedMetrics {
 
         public void record(boolean sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.isInitialized()) {
+                if (LibraryLoader.getInstance().isInitialized()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);
@@ -241,7 +241,7 @@ public class CachedMetrics {
 
         public void record(int sample) {
             synchronized (CachedMetric.sMetrics) {
-                if (LibraryLoader.isInitialized()) {
+                if (LibraryLoader.getInstance().isInitialized()) {
                     recordWithNative(sample);
                 } else {
                     mSamples.add(sample);

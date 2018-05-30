@@ -64,7 +64,7 @@ public final class DownloadNotificationUmaHelper {
      * @param action Notification interaction that was taken (ie. pause, resume).
      */
     static void recordNotificationInteractionHistogram(String action) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         int actionType = sInteractions.indexOf(action);
         if (actionType == -1) return;
         RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.NotificationInteraction",
@@ -77,7 +77,7 @@ public final class DownloadNotificationUmaHelper {
      * @param stopType Type of the foreground stop that is being recorded ({@link ServiceStopped}).
      */
     static void recordServiceStoppedHistogram(int stopType, boolean withForeground) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         if (withForeground) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.DownloadManager.ServiceStopped.DownloadForeground", stopType,
@@ -95,7 +95,7 @@ public final class DownloadNotificationUmaHelper {
      * @param lifecycleStep The lifecycle step that is being recorded ({@link ForegroundLifecycle}).
      */
     static void recordForegroundServiceLifecycleHistogram(int lifecycleStep) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.DownloadManager.ForegroundServiceLifecycle", lifecycleStep,
                 ForegroundLifecycle.MAX);
@@ -109,7 +109,7 @@ public final class DownloadNotificationUmaHelper {
      * @param withForeground Whether this is with foreground enabled or not.
      */
     static void recordExistingNotificationsCountHistogram(int count, boolean withForeground) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         if (withForeground) {
             RecordHistogram.recordCountHistogram(
                     "Android.DownloadManager.NotificationsCount.ForegroundEnabled", count);
@@ -125,7 +125,7 @@ public final class DownloadNotificationUmaHelper {
      * @param launchType Whether it is a launch or a relaunch ({@link LaunchType}).
      */
     static void recordNotificationFlickerCountHistogram(int launchType) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.DownloadManager.NotificationLaunch", launchType, LaunchType.MAX);
     }
@@ -137,7 +137,7 @@ public final class DownloadNotificationUmaHelper {
      */
     static void recordStateAtCancelHistogram(boolean isDownload, int state) {
         if (state == -1) return;
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         if (isDownload) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.OfflineItems.StateAtCancel.Downloads", state, StateAtCancel.MAX);

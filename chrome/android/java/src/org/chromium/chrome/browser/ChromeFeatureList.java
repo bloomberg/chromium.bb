@@ -42,7 +42,7 @@ public abstract class ChromeFeatureList {
      */
     public static boolean isInitialized() {
         if (sTestFeatures != null) return true;
-        if (!LibraryLoader.isInitialized()) return false;
+        if (!LibraryLoader.getInstance().isInitialized()) return false;
 
         // Even if the native library is loaded, the C++ FeatureList might not be initialized yet.
         // In that case, accessing it will not immediately fail, but instead cause a crash later
