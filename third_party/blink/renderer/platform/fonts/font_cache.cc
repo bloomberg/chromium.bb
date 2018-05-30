@@ -38,7 +38,6 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
-#include "third_party/blink/renderer/platform/fonts/accept_languages_resolver.h"
 #include "third_party/blink/renderer/platform/fonts/alternate_font_family.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/layout_locale.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -209,7 +209,7 @@ void FontCache::SetFontManager(sk_sp<SkFontMgr> font_manager) {
 }
 
 void FontCache::AcceptLanguagesChanged(const String& accept_languages) {
-  AcceptLanguagesResolver::AcceptLanguagesChanged(accept_languages);
+  LayoutLocale::AcceptLanguagesChanged(accept_languages);
   GetFontCache()->InvalidateShapeCache();
 }
 

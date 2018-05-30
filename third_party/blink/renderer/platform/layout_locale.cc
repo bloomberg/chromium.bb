@@ -4,9 +4,10 @@
 
 #include "third_party/blink/renderer/platform/layout_locale.h"
 
-#include "third_party/blink/renderer/platform/fonts/accept_languages_resolver.h"
+#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/text/icu_error.h"
 #include "third_party/blink/renderer/platform/text/locale_to_script_mapping.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -77,25 +78,38 @@ bool LayoutLocale::HasScriptForHan() const {
   return has_script_for_han_;
 }
 
+// static
 const LayoutLocale* LayoutLocale::LocaleForHan(
     const LayoutLocale* content_locale) {
   if (content_locale && content_locale->HasScriptForHan())
     return content_locale;
 
-  if (FontGlobalContext::HasDefaultLocaleForHan())
-    return FontGlobalContext::GetDefaultLocaleForHan();
-
-  const LayoutLocale* default_for_han;
-  if (const LayoutLocale* locale = AcceptLanguagesResolver::LocaleForHan())
-    default_for_han = locale;
-  else if (GetDefault().HasScriptForHan())
-    default_for_han = &GetDefault();
-  else if (GetSystem().HasScriptForHan())
-    default_for_han = &GetSystem();
-  else
-    default_for_han = nullptr;
-  FontGlobalContext::SetDefaultLocaleForHan(default_for_han);
-  return default_for_han;
+  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  if (UNLIKELY(!data.default_locale_for_han_computed)) {
+    // Use the first acceptLanguages that can disambiguate.
+    Vector<String> languages;
+    data.current_accept_languages.Split(',', languages);
+    for (String token : languages) {
+      token = token.StripWhiteSpace();
+      const LayoutLocale* locale = LayoutLocale::Get(AtomicString(token));
+      if (locale->HasScriptForHan()) {
+        data.default_locale_for_han = locale;
+        break;
+      }
+    }
+    if (!data.default_locale_for_han) {
+      const LayoutLocale& default_locale = GetDefault();
+      if (default_locale.HasScriptForHan())
+        data.default_locale_for_han = &default_locale;
+    }
+    if (!data.default_locale_for_han) {
+      const LayoutLocale& system_locale = GetSystem();
+      if (system_locale.HasScriptForHan())
+        data.default_locale_for_han = &system_locale;
+    }
+    data.default_locale_for_han_computed = true;
+  }
+  return data.default_locale_for_han;
 }
 
 const char* LayoutLocale::LocaleForHanForSkFontMgr() const {
@@ -112,38 +126,40 @@ LayoutLocale::LayoutLocale(const AtomicString& locale)
       has_script_for_han_(false),
       hyphenation_computed_(false) {}
 
+// static
 const LayoutLocale* LayoutLocale::Get(const AtomicString& locale) {
   if (locale.IsNull())
     return nullptr;
 
-  auto result = FontGlobalContext::GetLayoutLocaleMap().insert(locale, nullptr);
+  auto result = FontGlobalContext::GetLayoutLocaleData().locale_map.insert(
+      locale, nullptr);
   if (result.is_new_entry)
     result.stored_value->value = base::AdoptRef(new LayoutLocale(locale));
   return result.stored_value->value.get();
 }
 
+// static
 const LayoutLocale& LayoutLocale::GetDefault() {
-  if (const LayoutLocale* locale = FontGlobalContext::GetDefaultLayoutLocale())
-    return *locale;
-
-  AtomicString language = DefaultLanguage();
-  const LayoutLocale* locale =
-      LayoutLocale::Get(!language.IsEmpty() ? language : "en");
-  FontGlobalContext::SetDefaultLayoutLocale(locale);
-  return *locale;
+  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  if (UNLIKELY(!data.default_locale)) {
+    AtomicString language = DefaultLanguage();
+    data.default_locale =
+        LayoutLocale::Get(!language.IsEmpty() ? language : "en");
+  }
+  return *data.default_locale;
 }
 
+// static
 const LayoutLocale& LayoutLocale::GetSystem() {
-  if (const LayoutLocale* locale = FontGlobalContext::GetSystemLayoutLocale())
-    return *locale;
-
-  // Platforms such as Windows can give more information than the default
-  // locale, such as "en-JP" for English speakers in Japan.
-  String name = icu::Locale::getDefault().getName();
-  const LayoutLocale* locale =
-      LayoutLocale::Get(AtomicString(name.Replace('_', '-')));
-  FontGlobalContext::SetSystemLayoutLocale(locale);
-  return *locale;
+  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  if (UNLIKELY(!data.system_locale)) {
+    // Platforms such as Windows can give more information than the default
+    // locale, such as "en-JP" for English speakers in Japan.
+    String name = icu::Locale::getDefault().getName();
+    data.system_locale =
+        LayoutLocale::Get(AtomicString(name.Replace('_', '-')));
+  }
+  return *data.system_locale;
 }
 
 scoped_refptr<LayoutLocale> LayoutLocale::CreateForTesting(
@@ -221,6 +237,17 @@ AtomicString LayoutLocale::LocaleWithBreakKeyword(
 
   NOTREACHED();
   return string_;
+}
+
+// static
+void LayoutLocale::AcceptLanguagesChanged(const String& accept_languages) {
+  PerThreadData& data = FontGlobalContext::GetLayoutLocaleData();
+  if (data.current_accept_languages == accept_languages)
+    return;
+
+  data.current_accept_languages = accept_languages;
+  data.default_locale_for_han = nullptr;
+  data.default_locale_for_han_computed = false;
 }
 
 }  // namespace blink
