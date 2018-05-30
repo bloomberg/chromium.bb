@@ -40,6 +40,11 @@ const base::Feature kAudioServiceAudioStreams{
 const base::Feature kAudioServiceOutOfProcess{
     "AudioServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable incremental marking for Blink's heap managed by the Oilpan garbage
+// collector.
+const base::Feature kBlinkHeapIncrementalMarking{
+    "BlinkHeapIncrementalMarking", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows swipe left/right from touchpad change browser navigation. Currently
 // only enabled by default on CrOS.
 const base::Feature kTouchpadOverscrollHistoryNavigation {

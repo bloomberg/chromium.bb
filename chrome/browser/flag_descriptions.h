@@ -55,6 +55,9 @@ extern const char kAppBannersDescription[];
 extern const char kAshSidebarName[];
 extern const char kAshSidebarDescription[];
 
+extern const char kEnableBlinkHeapIncrementalMarkingName[];
+extern const char kEnableBlinkHeapIncrementalMarkingDescription[];
+
 extern const char kSystemTrayUnifiedName[];
 extern const char kSystemTrayUnifiedDescription[];
 
