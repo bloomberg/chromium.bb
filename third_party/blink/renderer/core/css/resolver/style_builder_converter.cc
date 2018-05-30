@@ -156,8 +156,9 @@ FilterOperations StyleBuilderConverter::ConvertFilterOperations(
 }
 
 FilterOperations StyleBuilderConverter::ConvertOffscreenFilterOperations(
-    const CSSValue& value) {
-  return FilterOperationResolver::CreateOffscreenFilterOperations(value);
+    const CSSValue& value,
+    const Font& font) {
+  return FilterOperationResolver::CreateOffscreenFilterOperations(value, font);
 }
 
 static FontDescription::GenericFamilyType ConvertGenericFamily(

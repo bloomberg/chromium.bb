@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
 #include "third_party/blink/renderer/core/style/filter_operation.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
 
 namespace blink {
 
@@ -19,8 +21,10 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleMatrixFilter) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
+    FontDescription font_description;
+    Font font(font_description);
     FilterOperations fo =
-        FilterOperationResolver::CreateOffscreenFilterOperations(*value);
+        FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
     EXPECT_EQ(*fo.at(0), *BasicColorMatrixFilterOperation::Create(
                              0.5, FilterOperation::SEPIA));
@@ -34,8 +38,10 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleTransferFilter) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
+    FontDescription font_description;
+    Font font(font_description);
     FilterOperations fo =
-        FilterOperationResolver::CreateOffscreenFilterOperations(*value);
+        FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
     EXPECT_EQ(*fo.at(0), *BasicComponentTransferFilterOperation::Create(
                              0.5, FilterOperation::BRIGHTNESS));
@@ -49,8 +55,10 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleBlurFilter) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
+    FontDescription font_description;
+    Font font(font_description);
     FilterOperations fo =
-        FilterOperationResolver::CreateOffscreenFilterOperations(*value);
+        FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
     EXPECT_EQ(*fo.at(0),
               *BlurFilterOperation::Create(Length(10, LengthType::kFixed)));
@@ -64,8 +72,10 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleDropShadow) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
+    FontDescription font_description;
+    Font font(font_description);
     FilterOperations fo =
-        FilterOperationResolver::CreateOffscreenFilterOperations(*value);
+        FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
     EXPECT_EQ(*fo.at(0), *DropShadowFilterOperation::Create(ShadowData(
                              FloatPoint(10, 5), 1, 0, ShadowStyle::kNormal,
@@ -80,8 +90,10 @@ TSAN_TEST(FilterOperationResolverThreadedTest, CompoundFilter) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
     ASSERT_TRUE(value);
 
+    FontDescription font_description;
+    Font font(font_description);
     FilterOperations fo =
-        FilterOperationResolver::CreateOffscreenFilterOperations(*value);
+        FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     EXPECT_FALSE(fo.IsEmpty());
     ASSERT_EQ(fo.size(), 2ul);
     EXPECT_EQ(*fo.at(0), *BasicColorMatrixFilterOperation::Create(

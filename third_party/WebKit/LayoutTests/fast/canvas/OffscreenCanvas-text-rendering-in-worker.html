@@ -26,7 +26,8 @@
   ctx.strokeText("outside", 50, 70);
 
   ctx.fillStyle = "black";
-  ctx.font = "italic bold 30px courier";
+  ctx.filter = "drop-shadow(0 1ex black)";
+  ctx.font = "italic bold 16px courier";
   ctx.fillText("isn't it?", 10, 130);
 
   var im = ofc.transferToImageBitmap();

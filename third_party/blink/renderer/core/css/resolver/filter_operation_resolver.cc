@@ -209,7 +209,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
 }
 
 FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
-    const CSSValue& in_value) {
+    const CSSValue& in_value,
+    const Font& font) {
   FilterOperations operations;
 
   if (in_value.IsIdentifierValue()) {
@@ -217,8 +218,6 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     return operations;
   }
 
-  FontDescription font_description;
-  Font font(font_description);
   CSSToLengthConversionData::FontSizes font_sizes(
       kOffScreenCanvasEmFontSize, kOffScreenCanvasRemFontSize, &font);
   CSSToLengthConversionData::ViewportSize viewport_size(0, 0);

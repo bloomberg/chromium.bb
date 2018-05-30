@@ -196,6 +196,10 @@ sk_sp<PaintFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
   return GetState().GetFilterForOffscreenCanvas(Host()->Size(), this);
 }
 
+void OffscreenCanvasRenderingContext2D::SnapshotStateForFilter() {
+  ModifiableState().SetFontForFilter(AccessFont());
+}
+
 void OffscreenCanvasRenderingContext2D::ValidateStateStack() const {
 #if DCHECK_IS_ON()
   if (PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {

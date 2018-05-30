@@ -40,7 +40,8 @@ class CORE_EXPORT FilterOperationResolver {
   static FilterOperation::OperationType FilterOperationForType(CSSValueID);
   static FilterOperations CreateFilterOperations(StyleResolverState&,
                                                  const CSSValue&);
-  static FilterOperations CreateOffscreenFilterOperations(const CSSValue&);
+  static FilterOperations CreateOffscreenFilterOperations(const CSSValue&,
+                                                          const Font&);
 };
 
 }  // namespace blink
