@@ -22,8 +22,8 @@ Host *
   User fuchsia
   IdentitiesOnly yes
   IdentityFile {identity}
-  ServerAliveInterval 1
-  ServerAliveCountMax 1
+  ServerAliveInterval 2
+  ServerAliveCountMax 5
   ControlMaster auto
   ControlPersist 1m
   ControlPath /tmp/ssh-%r@%h:%p"""
