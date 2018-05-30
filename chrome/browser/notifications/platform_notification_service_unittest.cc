@@ -288,7 +288,7 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
       static_cast<extensions::TestExtensionSystem*>(
           extensions::ExtensionSystem::Get(profile_));
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       test_extension_system->CreateExtensionService(
           &command_line, base::FilePath() /* install_directory */,
           false /* autoupdate_enabled */);
