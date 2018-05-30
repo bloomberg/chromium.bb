@@ -8,8 +8,10 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -53,6 +55,19 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       const SubresourceFilterSafeBrowsingClient::CheckResult& result);
 
  private:
+  // Highest priority config for a check result.
+  struct ConfigResult {
+    base::Optional<Configuration> config;
+    bool warning;
+    ActivationList matched_list;
+
+    ConfigResult(base::Optional<Configuration> config,
+                 bool warning,
+                 ActivationList matched_list);
+    ~ConfigResult();
+    ConfigResult();
+    ConfigResult(const ConfigResult& result);
+  };
   void CheckCurrentUrl();
   void NotifyResult();
 
@@ -62,12 +77,13 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   bool HasFinishedAllSafeBrowsingChecks() const;
   // Gets the configuration with the highest priority among those activated.
   // Returns it, or none if no valid activated configurations.
-  base::Optional<Configuration> GetHighestPriorityConfiguration(
-      ActivationList matched_list);
+  ConfigResult GetHighestPriorityConfiguration(
+      const SubresourceFilterSafeBrowsingClient::CheckResult& result);
   // Gets the ActivationDecision for the given Configuration.
   // Returns it, or ACTIVATION_CONDITIONS_NOT_MET if no Configuration.
   ActivationDecision GetActivationDecision(
-      const base::Optional<Configuration>& config);
+      const std::vector<ConfigResult>& configurations,
+      ConfigResult* selected_config);
 
   // Returns whether a main-frame navigation satisfies the activation
   // |conditions| of a given configuration, except for |priority|.
