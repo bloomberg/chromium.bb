@@ -6,7 +6,7 @@
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
-#include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -21,28 +21,14 @@ namespace password_manager {
 
 namespace {
 
-// On iOS, id are used for field identification, whereas on other platforms
-// name field is used. Set id equal to name.
-// TODO(https://crbug.com/831123): Remove this method when the browser side form
-// parsing is ready.
-FormData PreprocessFormData(const FormData& form) {
-  FormData result_form = form;
-  for (auto& field : result_form.fields)
-    field.id = field.name;
-  return result_form;
-}
-
 // Helper function for calling form parsing and logging results if logging is
 // active.
 std::unique_ptr<autofill::PasswordForm> ParseFormAndMakeLogging(
     PasswordManagerClient* client,
     const FormData& form) {
-  // iOS form parsing is a prototype for parsing on all platforms. Call it for
-  // developing and experimentation purposes.
-  // TODO(https://crbug.com/831123): Call general form parsing instead of iOS
-  // one when it is ready.
+  // TODO(crbug.com/831123): Add predictions.
   std::unique_ptr<autofill::PasswordForm> password_form =
-      ParseFormData(PreprocessFormData(form), FormParsingMode::FILLING);
+      ParseFormData(form, nullptr, FormParsingMode::FILLING);
 
   if (password_manager_util::IsLoggingActive(client)) {
     BrowserSavePasswordProgressLogger logger(client->GetLogManager());
