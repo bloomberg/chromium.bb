@@ -88,9 +88,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
 
 class HEADLESS_EXPORT HeadlessBrowserContext::Observer {
  public:
-  // This will be delivered on the UI thread.
-  virtual void OnChildContentsCreated(HeadlessWebContents* parent,
-                                      HeadlessWebContents* child) {}
 
   // Indicates that a network request failed or was canceled. This will be
   // delivered on the IO thread.
