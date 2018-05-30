@@ -189,11 +189,6 @@ class LocationBarView : public LocationBar,
   // comments on |ime_inline_autocomplete_view_|.
   void SetImeInlineAutocompletion(const base::string16& text);
 
-  // Set if we should show a focus rect while the location entry field is
-  // focused. Used when the toolbar is in full keyboard accessibility mode.
-  // Repaints if necessary.
-  virtual void SetShowFocusRect(bool show);
-
   // Select all of the text. Needed when the user tabs through controls
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
@@ -319,6 +314,9 @@ class LocationBarView : public LocationBar,
   // Updates the color of the icon for the "clear all" button.
   void RefreshClearAllButtonIcon();
 
+  // Updates the focus ring.
+  void RefreshFocusRing();
+
   // Returns text to be placed in the location icon view.
   // - For secure/insecure pages, returns text describing the URL's security
   // level.
@@ -397,9 +395,6 @@ class LocationBarView : public LocationBar,
   // Returns the total amount of space reserved above or below the content,
   // which is the vertical edge thickness plus the padding next to it.
   static int GetTotalVerticalPadding();
-
-  // Returns the path to draw this LocationBarView's focus ring around.
-  SkPath GetFocusRingPath() const;
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
