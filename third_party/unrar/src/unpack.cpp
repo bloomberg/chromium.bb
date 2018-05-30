@@ -1,7 +1,7 @@
 // NOTE(vakh): The process.h file needs to be included first because "rar.hpp"
 // defines certain macros that cause symbol redefinition errors
 #if defined(UNRAR_NO_EXCEPTIONS)
-#include "base/process/process.h"
+#include "base/process/memory.h"
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
 
 #include "rar.hpp"
@@ -97,7 +97,7 @@ void Unpack::Init(size_t WinSize,bool Solid)
   if (Grow && Fragmented)
   {
 #if defined(UNRAR_NO_EXCEPTIONS)
-    base::Process::Current().Terminate(RARX_MEMORY, false);
+    base::TerminateBecauseOutOfMemory(0);
 #else
     throw std::bad_alloc();
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
@@ -112,7 +112,7 @@ void Unpack::Init(size_t WinSize,bool Solid)
       // We do not support growth for new fragmented window.
       // Also exclude RAR4 and small dictionaries.
 #if defined(UNRAR_NO_EXCEPTIONS)
-      base::Process::Current().Terminate(RARX_MEMORY, false);
+      base::TerminateBecauseOutOfMemory(WinSize);
 #else
       throw std::bad_alloc();
 #endif  // defined(UNRAR_NO_EXCEPTIONS)

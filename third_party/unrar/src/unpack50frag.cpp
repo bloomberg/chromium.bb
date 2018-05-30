@@ -49,7 +49,7 @@ void FragmentedWindow::Init(size_t WinSize)
     if (NewMem == NULL)
     {
 #if defined(UNRAR_NO_EXCEPTIONS)
-      base::Process::Current().Terminate(RARX_MEMORY, false);
+      base::TerminateBecauseOutOfMemory(Size);
 #else
       throw std::bad_alloc();
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
@@ -67,7 +67,7 @@ void FragmentedWindow::Init(size_t WinSize)
   if (TotalSize < WinSize)  // Not found enough free blocks.
   {
 #if defined(UNRAR_NO_EXCEPTIONS)
-    base::Process::Current().Terminate(RARX_MEMORY, false);
+    base::TerminateBecauseOutOfMemory(WinSize);
 #else
     throw std::bad_alloc();
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
