@@ -162,7 +162,7 @@ if (!is_win) {
         "//base",
       ]
 
-      defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR" ]
+      defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_CRITICAL" ]
       include_dirs = [ "breakpad/src" ]
 
       libfuzzer_options = [
