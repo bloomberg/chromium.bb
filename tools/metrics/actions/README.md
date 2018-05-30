@@ -162,6 +162,9 @@ obsolete, annotating them with the associated date or milestone in the obsolete
 tag entry.  If your user action is being replaced by a new version, we suggest
 noting that in the previous user action's description.
 
+A changelist that marks a user action as obsolete should be reviewed by all
+current owners.
+
 Deleting user action entries would be bad if someone accidentally reused your
 old user action name and which therefore corrupts new data with whatever old
 data is still coming in.  It's also useful to keep obsolete user action
