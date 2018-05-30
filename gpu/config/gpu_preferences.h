@@ -2,20 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PREFERENCES_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GPU_PREFERENCES_H_
+#ifndef GPU_CONFIG_GPU_PREFERENCES_H_
+#define GPU_CONFIG_GPU_PREFERENCES_H_
 
 #include <stddef.h>
 #include <vector>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 #include "media/media_buildflags.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gpu {
+
+// The size to set for the program cache for default and low-end device cases.
+#if !defined(OS_ANDROID)
+const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
+#else
+const size_t kDefaultMaxProgramCacheMemoryBytes = 2 * 1024 * 1024;
+const size_t kLowEndMaxProgramCacheMemoryBytes = 128 * 1024;
+#endif
 
 struct GPU_EXPORT GpuPreferences {
  public:
@@ -178,4 +185,4 @@ struct GPU_EXPORT GpuPreferences {
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_PREFERENCES_H_
+#endif  // GPU_CONFIG_GPU_PREFERENCES_H_
