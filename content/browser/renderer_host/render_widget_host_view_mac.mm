@@ -746,7 +746,7 @@ void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
 void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   browser_compositor_->SynchronizeVisualProperties(
-      metadata.viewport_size_in_pixels,
+      metadata.device_scale_factor, metadata.viewport_size_in_pixels,
       metadata.local_surface_id.value_or(viz::LocalSurfaceId()));
 }
 

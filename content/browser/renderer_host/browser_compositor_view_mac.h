@@ -90,6 +90,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   // Update the renderer's SurfaceId to reflect |new_size_in_pixels| in
   // anticipation of the NSView resizing during auto-resize.
   void SynchronizeVisualProperties(
+      float new_device_scale_factor,
       const gfx::Size& new_size_in_pixels,
       const viz::LocalSurfaceId& child_allocated_local_surface_id);
 
