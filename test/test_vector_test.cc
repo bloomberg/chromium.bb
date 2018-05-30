@@ -110,6 +110,7 @@ TEST_P(TestVectorTest, MD5Match) {
   OpenMD5File(md5_filename);
 
   // Set decode config and flags.
+  cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
   set_cfg(cfg);
   set_flags(flags);
 
@@ -117,7 +118,10 @@ TEST_P(TestVectorTest, MD5Match) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get(), cfg));
 }
 
-#if CONFIG_AV1_DECODER
+// TODO(yaowu): Current md5 check works only when CONFIG_LOWBITDEPTH is enabled,
+// remove CONFIG_LOWBITDEPTH when md5 check is reworked to be compatible with
+// CONFIG_LOWBITDEPTH = 0
+#if CONFIG_AV1_DECODER && CONFIG_LOWBITDEPTH
 AV1_INSTANTIATE_TEST_CASE(
     TestVectorTest,
     ::testing::Combine(
