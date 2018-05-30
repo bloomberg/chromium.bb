@@ -1827,6 +1827,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
 
   // Open keyboard in sticky mode.
   kb_controller->ShowKeyboard(true);
+  kb_controller->NotifyContentsLoaded();
 
   int shift =
       work_area.height() - kb_controller->GetContainerWindow()->bounds().y();

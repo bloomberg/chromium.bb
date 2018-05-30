@@ -117,6 +117,8 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   // content::WebContentsObserver overrides
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
   // The BrowserContext to use for creating the WebContents hosting the
   // keyboard.

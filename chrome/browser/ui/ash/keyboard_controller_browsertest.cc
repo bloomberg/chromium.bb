@@ -62,6 +62,8 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
     ui()->GetContentsWindow()->SetBounds(init_bounds);
+    // Mock KeyboardUI notifying KeyboardController that the contents loaded.
+    keyboard::KeyboardController::GetInstance()->NotifyContentsLoaded();
   }
 
   void FocusNonEditableNode() {
@@ -180,6 +182,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
       keyboard::KeyboardController::GetInstance();
   controller->ShowKeyboard(true);
   controller->ui()->GetContentsWindow()->SetBounds(test_bounds);
+  controller->NotifyContentsLoaded();
   gfx::Rect keyboard_bounds = controller->GetContainerWindow()->bounds();
   // Starts overscroll.
   controller->NotifyContentsBoundsChanging(keyboard_bounds);

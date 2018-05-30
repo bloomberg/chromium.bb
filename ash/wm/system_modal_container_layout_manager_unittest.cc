@@ -189,6 +189,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard->ui()->GetContentsWindow()->SetBounds(
             keyboard::KeyboardBoundsFromRootBounds(
                 Shell::GetPrimaryRootWindow()->bounds(), 100));
+        keyboard->NotifyContentsLoaded();
       }
     } else {
       keyboard->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);

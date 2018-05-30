@@ -302,6 +302,8 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
         controller_.ui()->GetContentsWindow()->SetBounds(
             KeyboardBoundsFromRootBounds(root_window()->bounds(),
                                          kDefaultVirtualKeyboardHeight));
+        // Simulate the keyboard contents finish loading
+        controller_.NotifyContentsLoaded();
       }
     }
   }
