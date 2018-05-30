@@ -1378,7 +1378,7 @@ def CMDdownload(parser, args):
   if not options.cache and options.use_symlinks:
     parser.error('--use-symlinks require the use of a cache with --cache')
 
-  cache = process_cache_options(options)
+  cache = process_cache_options(options, trim=True)
   cache.cleanup()
   options.target = unicode(os.path.abspath(options.target))
   if options.isolated:
@@ -1503,7 +1503,7 @@ def add_cache_options(parser):
   parser.add_option_group(cache_group)
 
 
-def process_cache_options(options, **kwargs):
+def process_cache_options(options, trim, **kwargs):
   if options.cache:
     policies = local_caching.CachePolicies(
         options.max_cache_size,
@@ -1518,6 +1518,7 @@ def process_cache_options(options, **kwargs):
         unicode(os.path.abspath(options.cache)),
         policies,
         isolated_format.get_hash_algo(options.namespace),
+        trim,
         **kwargs)
   else:
     return local_caching.MemoryContentAddressedCache()
