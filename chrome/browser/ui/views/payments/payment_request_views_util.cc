@@ -239,12 +239,16 @@ std::unique_ptr<views::ImageView> CreateInstrumentIconView(
   std::unique_ptr<views::ImageView> icon_view =
       std::make_unique<views::ImageView>();
   icon_view->set_can_process_events_within_subtree(false);
-  if (img != nullptr) {
+  if (img) {
     icon_view->SetImage(*img);
+    // We support max 32x32 for other instrument icons.
+    icon_view->SetImageSize(gfx::Size(32, 32));
   } else {
     icon_view->SetImage(ui::ResourceBundle::GetSharedInstance()
                             .GetImageNamed(icon_resource_id)
                             .AsImageSkia());
+    // Images from |icon_resource_id| are 32x20 credit cards.
+    icon_view->SetImageSize(gfx::Size(32, 20));
   }
   icon_view->SetTooltipText(tooltip_text);
   icon_view->SetPaintToLayer();

@@ -758,7 +758,6 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
         CreateInstrumentIconView(selected_instrument->icon_resource_id(),
                                  selected_instrument->icon_image_skia(),
                                  selected_instrument->GetLabel());
-    icon_view->SetImageSize(gfx::Size(32, 20));
 
     return builder.AccessibleContent(selected_instrument->GetLabel())
         .Id(DialogViewID::PAYMENT_SHEET_PAYMENT_METHOD_SECTION)
