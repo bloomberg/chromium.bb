@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mus.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mash.h"
 
 #include <algorithm>
 
-#include "chrome/browser/profiles/profiles_state.h"
+#include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/frame/browser_frame_mus.h"
+#include "chrome/browser/ui/views/frame/browser_frame_mash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -36,35 +36,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_layout_constants.h"
-#include "ash/public/cpp/window_properties.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
-#define FRAME_AVATAR_BUTTON
-#endif
-
 namespace {
-
-#if defined(FRAME_AVATAR_BUTTON)
-// Space between the new avatar button and the minimize button.
-constexpr int kAvatarButtonOffset = 5;
-#endif
-
-#if defined(FRAME_AVATAR_BUTTON)
-// Combines View::ConvertPointToTarget() and View::HitTest() for a given
-// |point|. Converts |point| from |src| to |dst| and hit tests it against |dst|.
-bool ConvertedHitTest(views::View* src,
-                      views::View* dst,
-                      const gfx::Point& point) {
-  DCHECK(src);
-  DCHECK(dst);
-  gfx::Point converted_point(point);
-  views::View::ConvertPointToTarget(src, dst, &converted_point);
-  return dst->HitTestPoint(converted_point);
-}
-#endif
 
 const views::WindowManagerFrameValues& frame_values() {
   return views::WindowManagerFrameValues::instance();
@@ -73,23 +45,22 @@ const views::WindowManagerFrameValues& frame_values() {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameViewMus, public:
+// BrowserNonClientFrameViewMash, public:
 
 // static
-const char BrowserNonClientFrameViewMus::kViewClassName[] =
-    "BrowserNonClientFrameViewMus";
+const char BrowserNonClientFrameViewMash::kViewClassName[] =
+    "BrowserNonClientFrameViewMash";
 
-BrowserNonClientFrameViewMus::BrowserNonClientFrameViewMus(
+BrowserNonClientFrameViewMash::BrowserNonClientFrameViewMash(
     BrowserFrame* frame,
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       window_icon_(nullptr),
-      tab_strip_(nullptr) {
-}
+      tab_strip_(nullptr) {}
 
-BrowserNonClientFrameViewMus::~BrowserNonClientFrameViewMus() {}
+BrowserNonClientFrameViewMash::~BrowserNonClientFrameViewMash() {}
 
-void BrowserNonClientFrameViewMus::Init() {
+void BrowserNonClientFrameViewMash::Init() {
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view()->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this, nullptr);
@@ -104,13 +75,13 @@ void BrowserNonClientFrameViewMus::Init() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameView:
 
-void BrowserNonClientFrameViewMus::OnBrowserViewInitViewsComplete() {
+void BrowserNonClientFrameViewMash::OnBrowserViewInitViewsComplete() {
   DCHECK(browser_view()->tabstrip());
   DCHECK(!tab_strip_);
   tab_strip_ = browser_view()->tabstrip();
 }
 
-gfx::Rect BrowserNonClientFrameViewMus::GetBoundsForTabStrip(
+gfx::Rect BrowserNonClientFrameViewMash::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
@@ -123,7 +94,7 @@ gfx::Rect BrowserNonClientFrameViewMus::GetBoundsForTabStrip(
   return bounds;
 }
 
-int BrowserNonClientFrameViewMus::GetTopInset(bool restored) const {
+int BrowserNonClientFrameViewMash::GetTopInset(bool restored) const {
   if (!ShouldPaint()) {
     // When immersive fullscreen unrevealed, tabstrip is offscreen with normal
     // tapstrip bounds, the top inset should reach this topmost edge.
@@ -144,16 +115,16 @@ int BrowserNonClientFrameViewMus::GetTopInset(bool restored) const {
   return header_height;
 }
 
-int BrowserNonClientFrameViewMus::GetThemeBackgroundXInset() const {
+int BrowserNonClientFrameViewMash::GetThemeBackgroundXInset() const {
   return 5;
 }
 
-void BrowserNonClientFrameViewMus::UpdateThrobber(bool running) {
+void BrowserNonClientFrameViewMash::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
 }
 
-void BrowserNonClientFrameViewMus::UpdateClientArea() {
+void BrowserNonClientFrameViewMash::UpdateClientArea() {
   std::vector<gfx::Rect> additional_client_area;
   int top_container_offset = 0;
   ImmersiveModeController* immersive_mode_controller =
@@ -215,7 +186,7 @@ void BrowserNonClientFrameViewMus::UpdateClientArea() {
   }
 }
 
-void BrowserNonClientFrameViewMus::UpdateMinimumSize() {
+void BrowserNonClientFrameViewMash::UpdateMinimumSize() {
   gfx::Size min_size = GetMinimumSize();
   aura::Window* frame_window = frame()->GetNativeWindow();
   const gfx::Size* previous_min_size =
@@ -226,12 +197,12 @@ void BrowserNonClientFrameViewMus::UpdateMinimumSize() {
   }
 }
 
-int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
+int BrowserNonClientFrameViewMash::GetTabStripLeftInset() const {
   return BrowserNonClientFrameView::GetTabStripLeftInset() +
          frame_values().normal_insets.left();
 }
 
-void BrowserNonClientFrameViewMus::OnTabsMaxXChanged() {
+void BrowserNonClientFrameViewMash::OnTabsMaxXChanged() {
   BrowserNonClientFrameView::OnTabsMaxXChanged();
   UpdateClientArea();
 }
@@ -239,32 +210,24 @@ void BrowserNonClientFrameViewMus::OnTabsMaxXChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView:
 
-gfx::Rect BrowserNonClientFrameViewMus::GetBoundsForClientView() const {
+gfx::Rect BrowserNonClientFrameViewMash::GetBoundsForClientView() const {
   // The ClientView must be flush with the top edge of the widget so that the
   // web contents can take up the entire screen in immersive fullscreen (with
   // or without the top-of-window views revealed). When in immersive fullscreen
   // and the top-of-window views are revealed, the TopContainerView paints the
   // window header by redirecting paints from its background to
-  // BrowserNonClientFrameViewMus.
+  // BrowserNonClientFrameViewMash.
   return bounds();
 }
 
-gfx::Rect BrowserNonClientFrameViewMus::GetWindowBoundsForClientBounds(
+gfx::Rect BrowserNonClientFrameViewMash::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   return client_bounds;
 }
 
-int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
+int BrowserNonClientFrameViewMash::NonClientHitTest(const gfx::Point& point) {
   // TODO(sky): figure out how this interaction should work.
   int hit_test = HTCLIENT;
-
-#if defined(FRAME_AVATAR_BUTTON)
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  if (hit_test == HTCAPTION && profile_switcher_view &&
-      ConvertedHitTest(this, profile_switcher_view, point)) {
-    return HTCLIENT;
-  }
-#endif
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
@@ -282,26 +245,26 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
   return hit_test;
 }
 
-void BrowserNonClientFrameViewMus::GetWindowMask(const gfx::Size& size,
-                                                 gfx::Path* window_mask) {
+void BrowserNonClientFrameViewMash::GetWindowMask(const gfx::Size& size,
+                                                  gfx::Path* window_mask) {
   // Aura does not use window masks.
 }
 
-void BrowserNonClientFrameViewMus::ResetWindowControls() {}
+void BrowserNonClientFrameViewMash::ResetWindowControls() {}
 
-void BrowserNonClientFrameViewMus::UpdateWindowIcon() {
+void BrowserNonClientFrameViewMash::UpdateWindowIcon() {
   if (window_icon_)
     window_icon_->SchedulePaint();
 }
 
-void BrowserNonClientFrameViewMus::UpdateWindowTitle() {}
+void BrowserNonClientFrameViewMash::UpdateWindowTitle() {}
 
-void BrowserNonClientFrameViewMus::SizeConstraintsChanged() {}
+void BrowserNonClientFrameViewMash::SizeConstraintsChanged() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::View:
 
-void BrowserNonClientFrameViewMus::OnPaint(gfx::Canvas* canvas) {
+void BrowserNonClientFrameViewMash::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldPaint())
     return;
 
@@ -311,30 +274,25 @@ void BrowserNonClientFrameViewMus::OnPaint(gfx::Canvas* canvas) {
     PaintContentEdge(canvas);
 }
 
-void BrowserNonClientFrameViewMus::Layout() {
+void BrowserNonClientFrameViewMash::Layout() {
   if (profile_indicator_icon())
     LayoutIncognitoButton();
-
-#if defined(FRAME_AVATAR_BUTTON)
-  if (GetProfileSwitcherButton())
-    LayoutProfileSwitcher();
-#endif
 
   BrowserNonClientFrameView::Layout();
 
   UpdateClientArea();
 }
 
-const char* BrowserNonClientFrameViewMus::GetClassName() const {
+const char* BrowserNonClientFrameViewMash::GetClassName() const {
   return kViewClassName;
 }
 
-void BrowserNonClientFrameViewMus::GetAccessibleNodeData(
+void BrowserNonClientFrameViewMash::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTitleBar;
 }
 
-gfx::Size BrowserNonClientFrameViewMus::GetMinimumSize() const {
+gfx::Size BrowserNonClientFrameViewMash::GetMinimumSize() const {
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
   const int min_frame_width = frame_values().max_title_bar_button_width +
                               frame_values().normal_insets.width();
@@ -351,8 +309,7 @@ gfx::Size BrowserNonClientFrameViewMus::GetMinimumSize() const {
   return gfx::Size(min_width, min_client_view_size.height());
 }
 
-void BrowserNonClientFrameViewMus::OnThemeChanged() {
-#if defined(OS_CHROMEOS)
+void BrowserNonClientFrameViewMash::OnThemeChanged() {
   gfx::ImageSkia active_frame_image = GetFrameImage(true);
   if (active_frame_image.isNull()) {
     frame()->GetNativeWindow()->ClearProperty(ash::kFrameImageActiveKey);
@@ -360,13 +317,12 @@ void BrowserNonClientFrameViewMus::OnThemeChanged() {
     frame()->GetNativeWindow()->SetProperty(
         ash::kFrameImageActiveKey, new gfx::ImageSkia(active_frame_image));
   }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabIconViewModel:
 
-bool BrowserNonClientFrameViewMus::ShouldTabIconViewAnimate() const {
+bool BrowserNonClientFrameViewMash::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to null check the selected
   // WebContents because in this condition there is not yet a selected tab.
@@ -374,28 +330,24 @@ bool BrowserNonClientFrameViewMus::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->IsLoading() : false;
 }
 
-gfx::ImageSkia BrowserNonClientFrameViewMus::GetFaviconForTabIconView() {
+gfx::ImageSkia BrowserNonClientFrameViewMash::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate)
     return gfx::ImageSkia();
   return delegate->GetWindowIcon();
 }
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameViewMus, protected:
+// BrowserNonClientFrameViewMash, protected:
 
 // BrowserNonClientFrameView:
-AvatarButtonStyle BrowserNonClientFrameViewMus::GetAvatarButtonStyle() const {
-#if defined(FRAME_AVATAR_BUTTON)
-  return AvatarButtonStyle::NATIVE;
-#else
+AvatarButtonStyle BrowserNonClientFrameViewMash::GetAvatarButtonStyle() const {
   return AvatarButtonStyle::NONE;
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameViewMus, private:
+// BrowserNonClientFrameViewMash, private:
 
-int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
+int BrowserNonClientFrameViewMash::GetTabStripRightInset() const {
   int right_inset = frame_values().normal_insets.right() +
                     frame_values().max_title_bar_button_width;
 
@@ -407,35 +359,17 @@ int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   if (!MD::IsRefreshUi())
     right_inset += kTabstripRightSpacing;
 
-#if defined(FRAME_AVATAR_BUTTON)
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  if (profile_switcher_view) {
-    right_inset +=
-        kAvatarButtonOffset + profile_switcher_view->GetPreferredSize().width();
-  }
-#endif
-
   return right_inset;
 }
 
-bool BrowserNonClientFrameViewMus::UsePackagedAppHeaderStyle() const {
+bool BrowserNonClientFrameViewMash::UsePackagedAppHeaderStyle() const {
   // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
   const Browser* const browser = browser_view()->browser();
   return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
          browser->is_app();
 }
 
-void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
-#if defined(FRAME_AVATAR_BUTTON)
-  views::View* profile_switcher_view = GetProfileSwitcherButton();
-  gfx::Size button_size = profile_switcher_view->GetPreferredSize();
-  int button_x = width() - GetTabStripRightInset();
-  profile_switcher_view->SetBounds(button_x, 0, button_size.width(),
-                                   button_size.height());
-#endif
-}
-
-bool BrowserNonClientFrameViewMus::ShouldPaint() const {
+bool BrowserNonClientFrameViewMash::ShouldPaint() const {
   if (!frame()->IsFullscreen())
     return true;
 
@@ -447,23 +381,18 @@ bool BrowserNonClientFrameViewMus::ShouldPaint() const {
          immersive_mode_controller->IsRevealed();
 }
 
-void BrowserNonClientFrameViewMus::PaintContentEdge(gfx::Canvas* canvas) {
+void BrowserNonClientFrameViewMash::PaintContentEdge(gfx::Canvas* canvas) {
   DCHECK(!UsePackagedAppHeaderStyle());
   const int bottom = frame_values().normal_insets.bottom();
-  canvas->FillRect(
-      gfx::Rect(0, bottom, width(), kClientEdgeThickness),
-      GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
+  canvas->FillRect(gfx::Rect(0, bottom, width(), kClientEdgeThickness),
+                   GetThemeProvider()->GetColor(
+                       ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR));
 }
 
-int BrowserNonClientFrameViewMus::GetHeaderHeight() const {
-#if defined(OS_CHROMEOS)
+int BrowserNonClientFrameViewMash::GetHeaderHeight() const {
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
   return GetAshLayoutSize(restored
                               ? ash::AshLayoutSize::kBrowserCaptionRestored
                               : ash::AshLayoutSize::kBrowserCaptionMaximized)
       .height();
-#else
-  return views::WindowManagerFrameValues::instance().normal_insets.top();
-#endif
 }

@@ -2,25 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_frame_mus.h"
+#include "chrome/browser/ui/views/frame/browser_frame_mash.h"
 
 #include <stdint.h>
 
 #include <memory>
 
-#include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_tree_host_mus_init_params.h"
-#include "ui/views/mus/desktop_window_tree_host_mus.h"
-#include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/window_manager_frame_values.h"
-
-#if defined(OS_CHROMEOS)
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -28,26 +15,33 @@
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_style.mojom.h"
 #include "chrome/browser/chromeos/ash_config.h"
+#include "chrome/browser/ui/browser_window_state.h"
+#include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#endif
+#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
+#include "ui/views/mus/desktop_window_tree_host_mus.h"
+#include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/window_manager_frame_values.h"
 
-BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
-                                 BrowserView* browser_view)
+BrowserFrameMash::BrowserFrameMash(BrowserFrame* browser_frame,
+                                   BrowserView* browser_view)
     : views::DesktopNativeWidgetAura(browser_frame),
       browser_frame_(browser_frame),
       browser_view_(browser_view) {
   DCHECK(browser_frame_);
   DCHECK(browser_view_);
-#if defined(OS_CHROMEOS)
-  // Not used with Mus on Chrome OS.
   DCHECK_EQ(chromeos::GetAshConfig(), ash::Config::MASH);
-#endif
 }
 
-BrowserFrameMus::~BrowserFrameMus() {}
+BrowserFrameMash::~BrowserFrameMash() {}
 
-views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
+views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   views::Widget::InitParams params;
   params.name = "BrowserFrame";
   params.native_widget = this;
@@ -59,7 +53,7 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   // Indicates mash shouldn't handle immersive, rather we will.
   properties[ui::mojom::WindowManager::kDisableImmersive_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(true);
-#if defined(OS_CHROMEOS)
+
   Browser* browser = browser_view_->browser();
   properties[ash::mojom::kAshWindowStyle_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
@@ -91,41 +85,38 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int64_t>(BrowserFrameAsh::kMdWebUiFrameColor));
   }
-#endif
+
   aura::WindowTreeHostMusInitParams window_tree_host_init_params =
       aura::CreateInitParamsForTopLevel(
           views::MusClient::Get()->window_tree_client(), std::move(properties));
   std::unique_ptr<views::DesktopWindowTreeHostMus> desktop_window_tree_host =
       std::make_unique<views::DesktopWindowTreeHostMus>(
           std::move(window_tree_host_init_params), browser_frame_, this);
-  // BrowserNonClientFrameViewMus::OnBoundsChanged() takes care of updating
+  // BrowserNonClientFrameViewMash::OnBoundsChanged() takes care of updating
   // the insets.
   desktop_window_tree_host->set_auto_update_client_area(false);
   SetDesktopWindowTreeHost(std::move(desktop_window_tree_host));
   return params;
 }
 
-bool BrowserFrameMus::UseCustomFrame() const {
+bool BrowserFrameMash::UseCustomFrame() const {
   return true;
 }
 
-bool BrowserFrameMus::UsesNativeSystemMenu() const {
+bool BrowserFrameMash::UsesNativeSystemMenu() const {
   return false;
 }
 
-bool BrowserFrameMus::ShouldSaveWindowPlacement() const {
-#if defined(OS_CHROMEOS)
+bool BrowserFrameMash::ShouldSaveWindowPlacement() const {
   return nullptr == GetWidget()->GetNativeWindow()->GetProperty(
                         ash::kRestoreBoundsOverrideKey);
-#else
-  return true;
-#endif
 }
 
-void BrowserFrameMus::GetWindowPlacement(
-    gfx::Rect* bounds, ui::WindowShowState* show_state) const {
+void BrowserFrameMash::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
   DesktopNativeWidgetAura::GetWindowPlacement(bounds, show_state);
-#if defined(OS_CHROMEOS)
+
   gfx::Rect* override_bounds = GetWidget()->GetNativeWindow()->GetProperty(
       ash::kRestoreBoundsOverrideKey);
   if (override_bounds && !override_bounds->IsEmpty()) {
@@ -134,7 +125,6 @@ void BrowserFrameMus::GetWindowPlacement(
         ash::ToWindowShowState(GetWidget()->GetNativeWindow()->GetProperty(
             ash::kRestoreWindowStateTypeOverrideKey));
   }
-#endif
 
   // Session restore might be unable to correctly restore other states.
   // For the record, https://crbug.com/396272
@@ -144,16 +134,16 @@ void BrowserFrameMus::GetWindowPlacement(
   }
 }
 
-bool BrowserFrameMus::PreHandleKeyboardEvent(
+bool BrowserFrameMash::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   return false;
 }
 
-bool BrowserFrameMus::HandleKeyboardEvent(
+bool BrowserFrameMash::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   return false;
 }
 
-int BrowserFrameMus::GetMinimizeButtonOffset() const {
+int BrowserFrameMash::GetMinimizeButtonOffset() const {
   return 0;
 }
