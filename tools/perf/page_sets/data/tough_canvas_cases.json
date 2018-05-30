@@ -1,75 +1,66 @@
 {
     "archives": {
-        "http://acko.net/dumpx/996b.html": {
+        "geo_apis": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM": {
+        "hakim": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://hakim.se/experiments/html5/magnetic/02/": {
+        "microsoft_tweet_map": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Graphics/HowStuffWorksGears/Default.html": {
+        "microsoft_video_city": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Graphics/TweetMap/Default.html": {
+        "microsoft_worker_fountains": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html": {
+        "microsoft_asteroid_belt": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Graphics/WorkerFountains/Default.html": {
+        "microsoft_fireflies": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Performance/AsteroidBelt/Default.html": {
+        "microsoft_fish_ie_tank": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.html": {
+        "microsoft_snow": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html": {
+        "microsoft_speed_reading": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Performance/LetItSnow/": {
+        "jarro_doverson": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://ie.microsoft.com/testdrive/Performance/SpeedReading/Default.html": {
+        "mix_10k": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://jarrodoverson.com/static/demos/particleSystem/": {
+        "runway": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://mix10k.visitmix.com/Entry/Details/169": {
+        "spielzeugz": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://mudcu.be/labs/JS1k/BreathingGalaxies.html": {
+        "man_in_blue": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://runway.countlessprojects.com/prototype/performance_test.html": {
+        "chip_tune": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://spielzeugz.de/html5/liquid-particles.html": {
+        "crafty_mind": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://themaninblue.com/experiment/AnimationBenchmark/canvas/": {
+        "effect_games": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://www.chiptune.com/starfield/starfield.html": {
+        "kevs_3d": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://www.craftymind.com/factory/guimark2/HTML5ChartingTest.html": {
+        "megi_dish": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         },
-        "http://www.effectgames.com/demos/canvascycle/": {
-            "DEFAULT": "tough_canvas_cases_001.wprgo"
-        },
-        "http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html": {
-            "DEFAULT": "tough_canvas_cases_001.wprgo"
-        },
-        "http://www.megidish.net/awjs/": {
-            "DEFAULT": "tough_canvas_cases_001.wprgo"
-        },
-        "http://www.smashcat.org/av/canvas_test/": {
+        "smash_cat": {
             "DEFAULT": "tough_canvas_cases_001.wprgo"
         }
     },
