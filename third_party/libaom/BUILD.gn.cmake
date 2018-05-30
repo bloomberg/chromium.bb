@@ -107,9 +107,6 @@ if (enable_av1_decoder) {
       sources = aom_dsp_common_asm_sse2
       sources += aom_dsp_common_asm_ssse3
       sources += aom_ports_asm_x86
-      if (current_cpu == "x64") {
-      }
-
       defines = [ "CHROMIUM" ]
       if (is_android) {
         # TODO(johannkoenig): this was for vp8 assembly. May no longer apply.
@@ -119,9 +116,7 @@ if (enable_av1_decoder) {
       }
       include_dirs = libaom_include_dirs
     }
-  }
 
-  if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
     # The following targets are deliberately source_set rather than
     # static_library. The :libaom target exposes these intrinsic implementations
     # via global function pointer symbols, which hides the object dependency at
@@ -204,12 +199,10 @@ if (enable_av1_decoder) {
       sources += aom_dsp_common_intrin_neon
     }
 
-    arm_assembly_sources = aom_dsp_common_asm_neon
-
     # Converts ARM assembly files to GAS style.
     action_foreach("convert_arm_assembly") {
       script = "//third_party/libvpx/run_perl.py"
-      sources = arm_assembly_sources
+      sources = aom_dsp_common_asm_neon
       gen_file =
           get_label_info("//third_party/libaom/source/libaom", "root_gen_dir") +
           "/{{source_root_relative_dir}}/{{source_file_part}}.S"
@@ -257,44 +250,18 @@ if (enable_av1_decoder) {
       configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_max" ]
     }
-
-    if (is_nacl) {
-      sources = libaom_srcs_generic
-    } else if (current_cpu == "x86") {
-      sources = libaom_srcs_x86
-    } else if (current_cpu == "x64") {
-      if (is_msan) {
-        sources = libaom_srcs_generic
-      } else {
-        sources = aom_av1_common_sources
-        sources += aom_av1_decoder_sources
-        sources += aom_dsp_common_sources
-        sources += aom_dsp_decoder_sources
-        sources += aom_mem_sources
-        sources += aom_rtcd_sources
-        sources += aom_scale_sources
-        sources += aom_sources
-        sources += aom_util_sources
-      }
-    } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
-      sources = libaom_srcs_mips
-    } else if (current_cpu == "arm") {
-      sources = aom_av1_common_sources
-      sources += aom_av1_decoder_sources
-      sources += aom_dsp_common_sources
-      sources += aom_dsp_decoder_sources
-      sources += aom_mem_sources
-      sources += aom_rtcd_sources
-      sources += aom_scale_sources
-      sources += aom_sources
-      sources += aom_util_sources
-    } else if (current_cpu == "arm64") {
-      sources = libaom_srcs_arm64
-    }
-
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     configs += [ ":libaom_config" ]
+    sources = aom_av1_common_sources
+    sources += aom_av1_decoder_sources
+    sources += aom_dsp_common_sources
+    sources += aom_dsp_decoder_sources
+    sources += aom_mem_sources
+    sources += aom_rtcd_sources
+    sources += aom_scale_sources
+    sources += aom_sources
+    sources += aom_util_sources
     deps = []
     if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
       deps += [
@@ -309,14 +276,13 @@ if (enable_av1_decoder) {
     }
     if (cpu_arch_full == "arm-neon" || cpu_arch_full == "arm-neon-cpu-detect") {
       deps += [
-        ":libaom_intrinsics_neon",
         ":libaom_assembly_arm",
+        ":libaom_intrinsics_neon",
       ]
     }
     if (is_android) {
       deps += [ "//third_party/android_tools:cpu_features" ]
     }
-
     public_configs = [ ":libaom_external_config" ]
   }
 }

@@ -43,6 +43,7 @@ function reset_dirs {
   mkdir "${TMP}"
   cd "${TMP}"
 
+  echo "Generate ${1} config files."
   rm -fr "${CFG}/${1}"
   mkdir -p "${CFG}/${1}/config"
 }
@@ -166,16 +167,18 @@ all_platforms+=" -DCONFIG_LOWBITDEPTH=1"
 #all_platforms+=" -DENABLE_AVX2=0"
 toolchain="-DCMAKE_TOOLCHAIN_FILE=${SRC}/build/cmake/toolchains"
 
-echo "Generate linux/ia32 config files."
 reset_dirs linux/ia32
 gen_config_files linux/ia32 "${toolchain}/x86-linux.cmake ${all_platforms}"
 # libaom_srcs.gni and aom_version.h are shared.
 cp libaom_srcs.gni "${BASE}"
-rm -f "${CFG}/aom_version.h"
-cp config/aom_version.h "${CFG}/config"
+if [ ! -f "${CFG}/config/aom_version.h" ]; then
+  # These steps can be removed after the first run.
+  rm -f "${CFG}/aom_version.h"
+  mkdir -p "${CFG}/config/"
+fi
+cp config/aom_version.h "${CFG}/config/"
 gen_rtcd_header linux/ia32 x86 #--disable-avx2
 
-echo "Generate linux/x64 config files."
 reset_dirs linux/x64
 gen_config_files linux/x64 "${all_platforms}"
 gen_rtcd_header linux/x64 x86_64 #--disable-avx2
@@ -183,7 +186,6 @@ gen_rtcd_header linux/x64 x86_64 #--disable-avx2
 # Windows looks like linux but with some minor tweaks. Cmake doesn't generate VS
 # project files on linux otherwise we would not resort to these hacks.
 
-echo "Generate win/x64 config files"
 reset_dirs win/x64
 cp "${CFG}/linux/x64/config"/* "${CFG}/win/x64/config/"
 sed -i.bak \
@@ -197,18 +199,15 @@ rm "${CFG}/win/x64/config/aom_config.h.bak"
 egrep "#define [A-Z0-9_]+ [01]" "${CFG}/win/x64/config/aom_config.h" \
   | awk '{print "%define " $2 " " $3}' > "${CFG}/win/x64/config/aom_config.asm"
 
-echo "Generate linux/arm config files."
 reset_dirs linux/arm
 gen_config_files linux/arm \
   "${toolchain}/armv7-linux-gcc.cmake -DENABLE_NEON=0 -DENABLE_NEON_ASM=0 ${all_platforms}"
 gen_rtcd_header linux/arm armv7 --disable-neon
 
-echo "Generate linux/arm-neon config files."
 reset_dirs linux/arm-neon
 gen_config_files linux/arm-neon "${toolchain}/armv7-linux-gcc.cmake ${all_platforms}"
 gen_rtcd_header linux/arm-neon armv7
 
-echo "Generate linux/arm-neon-cpu-detect config files."
 reset_dirs linux/arm-neon-cpu-detect
 gen_config_files linux/arm-neon-cpu-detect \
   "${toolchain}/armv7-linux-gcc.cmake -DCONFIG_RUNTIME_CPU_DETECT=1 ${all_platforms}"
