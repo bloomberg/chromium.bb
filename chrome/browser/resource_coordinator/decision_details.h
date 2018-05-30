@@ -193,7 +193,7 @@ class DecisionDetails {
   // success reasons.
   std::vector<std::string> GetFailureReasonStrings() const;
 
-  void ClearForTesting();
+  void Clear();
 
  private:
   bool CheckIfToggled();

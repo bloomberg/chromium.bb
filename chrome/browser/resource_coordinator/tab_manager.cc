@@ -627,7 +627,10 @@ content::WebContents* TabManager::DiscardTabImpl(DiscardReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (LifecycleUnit* lifecycle_unit : GetSortedLifecycleUnits()) {
-    if (lifecycle_unit->CanDiscard(reason) && lifecycle_unit->Discard(reason)) {
+    // TODO(chrisha): Report decision details!
+    DecisionDetails decision_details;
+    if (lifecycle_unit->CanDiscard(reason, &decision_details) &&
+        lifecycle_unit->Discard(reason)) {
       TabLifecycleUnitExternal* tab_lifecycle_unit_external =
           lifecycle_unit->AsTabLifecycleUnitExternal();
       // For now, all LifecycleUnits are TabLifecycleUnitExternals.
@@ -926,7 +929,9 @@ void TabManager::PerformStateTransitions() {
   for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
     // Freeze LifecycleUnits that have been in the background for more than
     // |kBackgroundTabFreezeTimeout|.
-    if (lifecycle_unit->CanFreeze()) {
+    // TODO(chrisha): Report decision details.
+    DecisionDetails freeze_details;
+    if (lifecycle_unit->CanFreeze(&freeze_details)) {
       const base::TimeDelta time_not_visible =
           now - lifecycle_unit->GetLastVisibleTime();
       const base::TimeDelta time_until_freeze =
@@ -942,7 +947,10 @@ void TabManager::PerformStateTransitions() {
 
     // Keep track of the discardable LifecycleUnit that has been non-visible for
     // the longest time. It might be discarded below.
-    if (lifecycle_unit->CanDiscard(DiscardReason::kProactive)) {
+    // TODO(chrisha): Report decision details.
+    DecisionDetails discard_details;
+    if (lifecycle_unit->CanDiscard(DiscardReason::kProactive,
+                                   &discard_details)) {
       if (!oldest_discardable_lifecycle_unit ||
           lifecycle_unit->GetLastVisibleTime() <
               oldest_discardable_lifecycle_unit->GetLastVisibleTime()) {

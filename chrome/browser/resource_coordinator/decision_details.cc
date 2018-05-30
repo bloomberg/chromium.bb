@@ -278,7 +278,7 @@ std::vector<std::string> DecisionDetails::GetFailureReasonStrings() const {
   return reasons;
 }
 
-void DecisionDetails::ClearForTesting() {
+void DecisionDetails::Clear() {
   reasons_.clear();
   toggled_ = false;
 }

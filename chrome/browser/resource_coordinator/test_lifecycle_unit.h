@@ -34,8 +34,9 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   bool Freeze() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanPurge() const override;
-  bool CanFreeze() const override;
-  bool CanDiscard(DiscardReason reason) const override;
+  bool CanFreeze(DecisionDetails* decision_details) const override;
+  bool CanDiscard(DiscardReason reason,
+                  DecisionDetails* decision_details) const override;
   bool Discard(DiscardReason discard_reason) override;
 
  private:
@@ -45,6 +46,19 @@ class TestLifecycleUnit : public LifecycleUnitBase {
 
   DISALLOW_COPY_AND_ASSIGN(TestLifecycleUnit);
 };
+
+// Helper funtions for testing CanDiscard policy.
+void ExpectCanDiscardTrue(const LifecycleUnit* lifecycle_unit,
+                          DiscardReason discard_reason);
+void ExpectCanDiscardTrueAllReasons(const LifecycleUnit* lifecycle_unit);
+void ExpectCanDiscardFalse(const LifecycleUnit* lifecycle_unit,
+                           DecisionFailureReason failure_reason,
+                           DiscardReason discard_reason);
+void ExpectCanDiscardFalseAllReasons(const LifecycleUnit* lifecycle_unit,
+                                     DecisionFailureReason failure_reason);
+void ExpectCanDiscardFalseTrivial(const LifecycleUnit* lifecycle_unit,
+                                  DiscardReason discard_reason);
+void ExpectCanDiscardFalseTrivialAllReasons(const LifecycleUnit* lu);
 
 }  // namespace resource_coordinator
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+#include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
@@ -123,35 +124,27 @@ TEST_F(TabLifecycleUnitTest, AsTabLifecycleUnitExternal) {
 TEST_F(TabLifecycleUnitTest, CanDiscardByDefault) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
                                       tab_strip_model_.get());
-
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, SetFocused) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
                                       tab_strip_model_.get());
   EXPECT_EQ(NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   tab_lifecycle_unit.SetFocused(true);
   tab_strip_model_->ActivateTabAt(0, false);
   web_contents_->WasShown();
   EXPECT_EQ(base::TimeTicks::Max(), tab_lifecycle_unit.GetLastFocusedTime());
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
+                                  DecisionFailureReason::LIVE_STATE_VISIBLE);
 
   tab_lifecycle_unit.SetFocused(false);
   tab_strip_model_->ActivateTabAt(1, false);
   web_contents_->WasHidden();
   EXPECT_EQ(test_clock_.NowTicks(), tab_lifecycle_unit.GetLastFocusedTime());
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
@@ -159,25 +152,21 @@ TEST_F(TabLifecycleUnitTest, AutoDiscardable) {
                                       tab_strip_model_.get());
 
   EXPECT_TRUE(tab_lifecycle_unit.IsAutoDiscardable());
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   EXPECT_CALL(observer_, OnAutoDiscardableStateChange(web_contents_, false));
   tab_lifecycle_unit.SetAutoDiscardable(false);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_FALSE(tab_lifecycle_unit.IsAutoDiscardable());
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(
+      &tab_lifecycle_unit,
+      DecisionFailureReason::LIVE_STATE_EXTENSION_DISALLOWED);
 
   EXPECT_CALL(observer_, OnAutoDiscardableStateChange(web_contents_, true));
   tab_lifecycle_unit.SetAutoDiscardable(true);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_TRUE(tab_lifecycle_unit.IsAutoDiscardable());
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardCrashed) {
@@ -185,10 +174,7 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardCrashed) {
                                       tab_strip_model_.get());
 
   web_contents_->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
-
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -197,9 +183,9 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardActive) {
                                       tab_strip_model_.get());
 
   tab_strip_model_->ActivateTabAt(0, false);
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+
+  ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
+                                  DecisionFailureReason::LIVE_STATE_VISIBLE);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -209,10 +195,7 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardInvalidURL) {
 
   content::WebContentsTester::For(web_contents_)
       ->SetLastCommittedURL(GURL("invalid :)"));
-
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardEmptyURL) {
@@ -220,9 +203,7 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardEmptyURL) {
                                       tab_strip_model_.get());
 
   content::WebContentsTester::For(web_contents_)->SetLastCommittedURL(GURL());
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseTrivialAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
@@ -241,15 +222,12 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardVideoCapture) {
           web_contents_, video_devices);
   video_stream_ui->OnStarted(base::RepeatingClosure());
 
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
+                                  DecisionFailureReason::LIVE_STATE_CAPTURING);
 
   video_stream_ui.reset();
 
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
@@ -258,37 +236,30 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
 
   // Cannot discard when the "recently audible" bit is set.
   tab_lifecycle_unit.SetRecentlyAudible(true);
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(
+      &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_PLAYING_AUDIO);
 
   // The "recently audible" bit is still set. The tab cannot be discarded.
   test_clock_.Advance(kTabAudioProtectionTime);
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(
+      &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_PLAYING_AUDIO);
 
   // The "recently audible" bit was unset less than
   // kTabAudioProtectionTime ago. The tab cannot be discarded.
   tab_lifecycle_unit.SetRecentlyAudible(false);
   test_clock_.Advance(kShortDelay);
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(
+      &tab_lifecycle_unit, DecisionFailureReason::LIVE_STATE_PLAYING_AUDIO);
 
   // The "recently audible" bit was unset kTabAudioProtectionTime ago. The tab
   // can be discarded.
   test_clock_.Advance(kTabAudioProtectionTime - kShortDelay);
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 
   // Calling SetRecentlyAudible(false) again does not change the fact that the
   // tab can be discarded.
   tab_lifecycle_unit.SetRecentlyAudible(false);
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {
@@ -298,9 +269,7 @@ TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {
   tab_lifecycle_unit.SetRecentlyAudible(false);
   // Since the tab was never audible, it should be possible to discard it,
   // even if there was a recent call to SetRecentlyAudible(false).
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardTrueAllReasons(&tab_lifecycle_unit);
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
@@ -309,9 +278,8 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
 
   content::WebContentsTester::For(web_contents_)
       ->SetMainFrameMimeType("application/pdf");
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+  ExpectCanDiscardFalseAllReasons(&tab_lifecycle_unit,
+                                  DecisionFailureReason::LIVE_STATE_IS_PDF);
 }
 
 TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
