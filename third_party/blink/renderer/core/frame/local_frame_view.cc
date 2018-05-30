@@ -2478,25 +2478,6 @@ bool LocalFrameView::IsActive() const {
   return page && page->GetFocusController().IsActive();
 }
 
-void LocalFrameView::InvalidatePaintForTickmarks() {
-  ScrollableArea* scrollable_area = LayoutViewportScrollableArea();
-  if (!scrollable_area)
-    return;
-  if (Scrollbar* scrollbar = scrollable_area->VerticalScrollbar()) {
-    scrollbar->SetNeedsPaintInvalidation(
-        static_cast<ScrollbarPart>(~kThumbPart));
-  }
-}
-
-void LocalFrameView::GetTickmarks(Vector<IntRect>& tickmarks) const {
-  if (!tickmarks_.IsEmpty()) {
-    tickmarks = tickmarks_;
-    return;
-  }
-  tickmarks =
-      GetFrame().GetDocument()->Markers().LayoutRectsForTextMatchMarkers();
-}
-
 void LocalFrameView::SetInputEventsScaleForEmulation(
     float content_scale_factor) {
   input_events_scale_factor_for_emulation_ = content_scale_factor;

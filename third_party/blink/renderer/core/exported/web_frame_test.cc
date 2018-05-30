@@ -5376,9 +5376,9 @@ TEST_F(WebFrameTest, SetTickmarks) {
 
   // Get the tickmarks for the original find request.
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
-  Scrollbar* scrollbar = frame_view->CreateScrollbar(kHorizontalScrollbar);
+  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
   Vector<IntRect> original_tickmarks;
-  scrollbar->GetTickmarks(original_tickmarks);
+  layout_viewport->GetTickmarks(original_tickmarks);
   EXPECT_EQ(4u, original_tickmarks.size());
 
   // Override the tickmarks.
@@ -5390,7 +5390,7 @@ TEST_F(WebFrameTest, SetTickmarks) {
 
   // Check the tickmarks are overriden correctly.
   Vector<IntRect> overriding_tickmarks_actual;
-  scrollbar->GetTickmarks(overriding_tickmarks_actual);
+  layout_viewport->GetTickmarks(overriding_tickmarks_actual);
   EXPECT_EQ(overriding_tickmarks_expected, overriding_tickmarks_actual);
 
   // Reset the tickmark behavior.
@@ -5399,7 +5399,7 @@ TEST_F(WebFrameTest, SetTickmarks) {
 
   // Check that the original tickmarks are returned
   Vector<IntRect> original_tickmarks_after_reset;
-  scrollbar->GetTickmarks(original_tickmarks_after_reset);
+  layout_viewport->GetTickmarks(original_tickmarks_after_reset);
   EXPECT_EQ(original_tickmarks, original_tickmarks_after_reset);
 }
 
@@ -11787,9 +11787,8 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
   RunPendingTasks();
 
   // Get the tickmarks for the original find request.
-  Scrollbar* scrollbar = frame_view->CreateScrollbar(kVerticalScrollbar);
   Vector<IntRect> original_tickmarks;
-  scrollbar->GetTickmarks(original_tickmarks);
+  frame_view->LayoutViewportScrollableArea()->GetTickmarks(original_tickmarks);
   EXPECT_EQ(1u, original_tickmarks.size());
 
   EXPECT_EQ(IntPoint(800, 2000), original_tickmarks[0].Location());

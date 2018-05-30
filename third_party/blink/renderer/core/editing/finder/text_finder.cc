@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -175,7 +176,7 @@ bool TextFinder::Find(int identifier,
     if (!options.find_next)
       ClearFindMatchesCache();
 
-    OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
+    InvalidatePaintForTickmarks();
     return false;
   }
   ScrollToVisible(active_match_);
@@ -347,7 +348,7 @@ void TextFinder::StopFindingAndClearSelection() {
   ResetActiveMatch();
 
   // Let the frame know that we don't want tickmarks anymore.
-  OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
+  InvalidatePaintForTickmarks();
 }
 
 void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
@@ -570,7 +571,7 @@ void TextFinder::FinishCurrentScopingEffort(int identifier) {
   last_find_request_completed_with_no_matches_ = !last_match_count_;
 
   // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
-  OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
+  InvalidatePaintForTickmarks();
 }
 
 void TextFinder::CancelPendingScopingEffort() {
@@ -894,11 +895,15 @@ void TextFinder::InvalidateIfNecessary() {
 
   int i = last_match_count_ / kStartSlowingDownAfter;
   next_invalidate_after_ += i * kSlowdown;
-  OwnerFrame().GetFrameView()->InvalidatePaintForTickmarks();
+  InvalidatePaintForTickmarks();
 }
 
 void TextFinder::FlushCurrentScoping() {
   FlushCurrentScopingEffort(find_request_identifier_);
+}
+
+void TextFinder::InvalidatePaintForTickmarks() {
+  OwnerFrame().GetFrame()->ContentLayoutObject()->InvalidatePaintForTickmarks();
 }
 
 void TextFinder::Trace(blink::Visitor* visitor) {

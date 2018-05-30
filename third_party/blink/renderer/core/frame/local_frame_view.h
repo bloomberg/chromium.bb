@@ -464,20 +464,9 @@ class CORE_EXPORT LocalFrameView final
   // returns false.
   bool IsSubtreeLayout() const { return !layout_subtree_root_list_.IsEmpty(); }
 
-  // Sets the tickmarks for the LocalFrameView, overriding the default behavior
-  // which is to display the tickmarks corresponding to find results.
-  // If |m_tickmarks| is empty, the default behavior is restored.
-  void SetTickmarks(const Vector<IntRect>& tickmarks) {
-    tickmarks_ = tickmarks;
-    InvalidatePaintForTickmarks();
-  }
-
-  void InvalidatePaintForTickmarks();
-
   IntSize MaximumScrollOffsetInt() const override;
 
   // ScrollableArea interface
-  void GetTickmarks(Vector<IntRect>&) const override;
   IntRect ScrollableAreaBoundingBox() const override;
   CompositorElementId GetCompositorElementId() const override;
   bool ScrollAnimatorEnabled() const override;
@@ -1160,8 +1149,6 @@ class CORE_EXPORT LocalFrameView final
   bool layout_size_fixed_to_frame_size_;
 
   TaskRunnerTimer<LocalFrameView> did_scroll_timer_;
-
-  Vector<IntRect> tickmarks_;
 
   bool needs_update_geometries_;
 

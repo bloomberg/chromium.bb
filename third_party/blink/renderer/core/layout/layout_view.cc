@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -887,6 +888,28 @@ void LayoutView::UpdateCounters() {
 
     ToLayoutCounter(layout_object)->UpdateCounter();
   }
+}
+
+Vector<IntRect> LayoutView::GetTickmarks() const {
+  if (!tickmarks_override_.IsEmpty())
+    return tickmarks_override_;
+
+  return GetDocument().Markers().LayoutRectsForTextMatchMarkers();
+}
+
+void LayoutView::OverrideTickmarks(const Vector<IntRect>& tickmarks) {
+  tickmarks_override_ = tickmarks;
+  InvalidatePaintForTickmarks();
+}
+
+void LayoutView::InvalidatePaintForTickmarks() {
+  ScrollableArea* scrollable_area = GetScrollableArea();
+  if (!scrollable_area)
+    return;
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+  if (!scrollbar)
+    return;
+  scrollbar->SetNeedsPaintInvalidation(static_cast<ScrollbarPart>(~kThumbPart));
 }
 
 }  // namespace blink

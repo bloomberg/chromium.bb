@@ -2329,12 +2329,8 @@ PaintLayerScrollableArea::GetCompositorAnimationTimeline() const {
 }
 
 void PaintLayerScrollableArea::GetTickmarks(Vector<IntRect>& tickmarks) const {
-  if (layer_->IsRootLayer()) {
-    tickmarks = GetLayoutBox()
-                    ->GetDocument()
-                    .Markers()
-                    .LayoutRectsForTextMatchMarkers();
-  }
+  if (layer_->IsRootLayer())
+    tickmarks = ToLayoutView(GetLayoutBox())->GetTickmarks();
 }
 
 PaintLayerScrollableArea*
