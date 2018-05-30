@@ -54,9 +54,9 @@ class GFX_EXPORT ShadowValue {
   // a uniform color.
   static Insets GetBlurRegion(const ShadowValues& shadows);
 
-  // Makes ShadowValues that should match MD style shadows for the given
-  // elevation.
+  // Makes ShadowValues matching MD or Refresh shadows for the given elevation.
   static ShadowValues MakeMdShadowValues(int elevation);
+  static ShadowValues MakeRefreshShadowValues(int elevation);
 
  private:
   gfx::Vector2d offset_;

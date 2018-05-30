@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -205,13 +206,18 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 
 // static
 NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
+  LayoutProvider* provider = LayoutProvider::Get();
   BubbleFrameView* frame = new BubbleFrameView(
-      LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_TITLE),
-      gfx::Insets());
+      provider->GetInsetsMetric(INSETS_DIALOG_TITLE), gfx::Insets());
   const BubbleBorder::Shadow kShadow = BubbleBorder::DIALOG_SHADOW;
-  std::unique_ptr<BubbleBorder> border(
-      new BubbleBorder(BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor));
+  std::unique_ptr<BubbleBorder> border = std::make_unique<BubbleBorder>(
+      BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor);
   border->set_use_theme_background_color(true);
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    border->SetCornerRadius(provider->GetCornerRadiusMetric(EMPHASIS_MEDIUM));
+    border->set_md_shadow_elevation(
+        provider->GetShadowElevationMetric(EMPHASIS_MEDIUM));
+  }
   frame->SetBubbleBorder(std::move(border));
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate)

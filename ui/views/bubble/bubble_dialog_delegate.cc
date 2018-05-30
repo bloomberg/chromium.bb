@@ -136,15 +136,22 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleDialogFrameView(title_margins_);
 
+  LayoutProvider* provider = LayoutProvider::Get();
   frame->set_footnote_margins(
-      LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
+      provider->GetInsetsMetric(INSETS_DIALOG_SUBSECTION));
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
   if (base::i18n::IsRTL() && mirror_arrow_in_rtl_)
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
-  frame->SetBubbleBorder(std::unique_ptr<BubbleBorder>(
-      new BubbleBorder(adjusted_arrow, shadow(), color())));
+  std::unique_ptr<BubbleBorder> border =
+      std::make_unique<BubbleBorder>(adjusted_arrow, shadow(), color());
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    border->SetCornerRadius(provider->GetCornerRadiusMetric(EMPHASIS_MEDIUM));
+    border->set_md_shadow_elevation(
+        provider->GetShadowElevationMetric(EMPHASIS_MEDIUM));
+  }
+  frame->SetBubbleBorder(std::move(border));
   return frame;
 }
 

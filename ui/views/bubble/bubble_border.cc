@@ -20,6 +20,7 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view.h"
@@ -423,8 +424,7 @@ const gfx::ShadowValues& BubbleBorder::GetShadowValues(
   gfx::ShadowValues shadows;
   if (elevation.has_value()) {
     DCHECK(elevation.value() >= 0);
-    shadows = gfx::ShadowValues(
-        gfx::ShadowValue::MakeMdShadowValues(elevation.value()));
+    shadows = LayoutProvider::Get()->MakeShadowValues(elevation.value());
   } else {
     constexpr int kSmallShadowVerticalOffset = 2;
     constexpr int kSmallShadowBlur = 4;

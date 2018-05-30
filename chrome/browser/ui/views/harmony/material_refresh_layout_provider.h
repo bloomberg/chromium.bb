@@ -18,6 +18,9 @@ class MaterialRefreshLayoutProvider : public HarmonyLayoutProvider {
   gfx::Insets GetInsetsMetric(int metric) const override;
   int GetCornerRadiusMetric(views::EmphasisMetric emphasis_metric,
                             const gfx::Size& size = gfx::Size()) const override;
+  int GetShadowElevationMetric(
+      views::EmphasisMetric emphasis_metric) const override;
+  gfx::ShadowValues MakeShadowValues(int elevation) const override;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_HARMONY_MATERIAL_REFRESH_LAYOUT_PROVIDER_H_

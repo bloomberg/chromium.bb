@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/style/typography_provider.h"
 #include "ui/views/views_export.h"
 
@@ -169,6 +170,10 @@ class VIEWS_EXPORT LayoutProvider {
 
   // Returns the shadow elevation metric for the given emphasis.
   virtual int GetShadowElevationMetric(EmphasisMetric emphasis_metric) const;
+
+  // Creates shadows for the given elevation. Use GetShadowElevationMetric for
+  // the appropriate elevation.
+  virtual gfx::ShadowValues MakeShadowValues(int elevation) const;
 
  private:
   DefaultTypographyProvider typography_provider_;

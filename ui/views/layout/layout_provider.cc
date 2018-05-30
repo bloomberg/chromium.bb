@@ -160,8 +160,13 @@ int LayoutProvider::GetCornerRadiusMetric(EmphasisMetric emphasis_metric,
 
 int LayoutProvider::GetShadowElevationMetric(
     EmphasisMetric emphasis_metric) const {
-  // Just return a value for now.
-  return 2;
+  // Return a value similar to the (deprecated) default shadow style for bubbles
+  // and dialogs.
+  return 3;
+}
+
+gfx::ShadowValues LayoutProvider::MakeShadowValues(int elevation) const {
+  return gfx::ShadowValue::MakeMdShadowValues(elevation);
 }
 
 }  // namespace views
