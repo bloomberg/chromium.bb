@@ -1,6 +1,5 @@
 Tests terminate execution.
 {
-    description : 1
     type : number
     value : 1
 }
