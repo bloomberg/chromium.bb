@@ -46,7 +46,6 @@ class SyncMessageFilter;
 
 namespace mojo {
 namespace edk {
-class IncomingBrokerClientInvitation;
 class OutgoingBrokerClientInvitation;
 class ScopedIPCSupport;
 }  // namespace edk
@@ -198,7 +197,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // We create the channel first without connecting it so we can add filters
   // prior to any messages being received, then connect it afterwards.
-  void ConnectChannel(mojo::edk::IncomingBrokerClientInvitation* invitation);
+  void ConnectChannel();
 
   // IPC message handlers.
 

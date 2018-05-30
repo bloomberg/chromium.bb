@@ -23,9 +23,10 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/configuration.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_POSIX)
@@ -68,22 +69,18 @@ void InitializeMojo() {
   mojo::edk::Init(config);
 }
 
-std::unique_ptr<mojo::edk::IncomingBrokerClientInvitation>
-InitializeMojoIPCChannel() {
-  mojo::edk::ScopedInternalPlatformHandle platform_channel;
+mojo::IncomingInvitation InitializeMojoIPCChannel() {
+  mojo::PlatformChannelEndpoint endpoint;
 #if defined(OS_WIN)
-  platform_channel =
-      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess());
+  endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+      *base::CommandLine::ForCurrentProcess());
 #elif defined(OS_POSIX)
-  platform_channel.reset(mojo::edk::InternalPlatformHandle(
-      base::GlobalDescriptors::GetInstance()->Get(
-          service_manager::kMojoIPCChannel)));
+  endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+      base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
+          service_manager::kMojoIPCChannel))));
 #endif
-  CHECK(platform_channel.is_valid());
-  return mojo::edk::IncomingBrokerClientInvitation::Accept(
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  std::move(platform_channel)));
+  CHECK(endpoint.is_valid());
+  return mojo::IncomingInvitation::Accept(std::move(endpoint));
 }
 
 ReplayProcess::ReplayProcess()
@@ -134,16 +131,17 @@ bool ReplayProcess::Initialize(int argc, const char** argv) {
   mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
       io_thread_.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
-  broker_client_invitation_ = InitializeMojoIPCChannel();
+  mojo_invitation_ =
+      std::make_unique<mojo::IncomingInvitation>(InitializeMojoIPCChannel());
 
   return true;
 }
 
 void ReplayProcess::OpenChannel() {
-  DCHECK(broker_client_invitation_);
+  DCHECK(mojo_invitation_);
   service_manager_connection_ = content::ServiceManagerConnection::Create(
       service_manager::mojom::ServiceRequest(
-          broker_client_invitation_->ExtractMessagePipe(
+          mojo_invitation_->ExtractMessagePipe(
               base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                   service_manager::switches::kServiceRequestChannelToken))),
       io_thread_.task_runner());

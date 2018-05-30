@@ -12,14 +12,12 @@ component("edk") {
 
   public = [
     "embedder/embedder.h",
-    "embedder/incoming_broker_client_invitation.h",
     "embedder/outgoing_broker_client_invitation.h",
     "embedder/peer_connection.h",
   ]
 
   sources = [
     "embedder/embedder.cc",
-    "embedder/incoming_broker_client_invitation.cc",
     "embedder/outgoing_broker_client_invitation.cc",
     "embedder/peer_connection.cc",
   ]

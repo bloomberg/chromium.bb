@@ -14,11 +14,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "mojo/edk/embedder/named_platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/desktop_process.h"
@@ -56,22 +56,16 @@ int DesktopProcessMain() {
   mojo::edk::ScopedIPCSupport ipc_support(
       io_task_runner->task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST);
-  mojo::edk::ScopedInternalPlatformHandle parent_pipe =
-      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
+  mojo::PlatformChannelEndpoint endpoint =
+      mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
           *command_line);
-  if (!parent_pipe.is_valid()) {
-    parent_pipe =
-        mojo::edk::NamedPlatformChannelPair::PassClientHandleFromParentProcess(
-            *command_line);
-  }
-  if (!parent_pipe.is_valid()) {
+  if (!endpoint.is_valid())
+    endpoint = mojo::NamedPlatformChannel::ConnectToServer(*command_line);
+  if (!endpoint.is_valid())
     return kInvalidCommandLineExitCode;
-  }
 
-  auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  std::move(parent_pipe)));
-  mojo::ScopedMessagePipeHandle message_pipe = invitation->ExtractMessagePipe(
+  auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
+  mojo::ScopedMessagePipeHandle message_pipe = invitation.ExtractMessagePipe(
       command_line->GetSwitchValueASCII(kMojoPipeToken));
   DesktopProcess desktop_process(ui_task_runner, input_task_runner,
                                  io_task_runner, std::move(message_pipe));
