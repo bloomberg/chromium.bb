@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
@@ -19,7 +20,9 @@
 namespace {
 
 static const char kAnimationIterationCountName[] = "animation-iteration-count";
+static const char kClassAttributeName[] = "class";
 static const char kInfinite[] = "infinite";
+static const char kNoFrameAvailableSpinnerClass[] = "dark";
 
 }  // namespace
 
@@ -45,6 +48,11 @@ MediaControlLoadingPanelElement::MediaControlLoadingPanelElement(
 //     | | +- #spinner-mask-1-background
 //     \ +- #spinner-mask-2
 //         +- #spinner-mask-2-background
+// +- #cutoff-1
+// +- #cutoff-2
+// +- #cutoff-3
+// +- #cutoff-4
+// +- #fake-timeline
 void MediaControlLoadingPanelElement::PopulateShadowDOM() {
   ShadowRoot* shadow_root = GetShadowRoot();
   DCHECK(!shadow_root->HasChildren());
@@ -66,12 +74,13 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
 
   // The spinner is responsible for rotating the elements below. The square
   // edges will be cut off by the frame above.
-  HTMLDivElement* spinner =
+  spinner_ =
       MediaControlElementsHelper::CreateDivWithId("spinner", spinner_frame);
+  SetSpinnerClassIfNecessary();
 
   // The layer performs a secondary "fill-unfill-rotate" animation.
   HTMLDivElement* layer =
-      MediaControlElementsHelper::CreateDivWithId("layer", spinner);
+      MediaControlElementsHelper::CreateDivWithId("layer", spinner_);
 
   // The spinner is split into two halves, one on the left (1) and the other
   // on the right (2). The mask elements stop the background from overlapping
@@ -90,6 +99,18 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
       "spinner-mask-2-background", mask2);
 
   event_listener_ = new MediaControlAnimationEventListener(this);
+
+  // The four cutoffs are responsible for filling the background of the loading
+  // panel with white, whilst leaving a small box in the middle that is
+  // transparent. This is where the spinner will be.
+  MediaControlElementsHelper::CreateDivWithId("cutoff-1", shadow_root);
+  MediaControlElementsHelper::CreateDivWithId("cutoff-2", shadow_root);
+  MediaControlElementsHelper::CreateDivWithId("cutoff-3", shadow_root);
+  MediaControlElementsHelper::CreateDivWithId("cutoff-4", shadow_root);
+
+  // The fake timeline creates a fake bar at the bottom to look like the
+  // timeline.
+  MediaControlElementsHelper::CreateDivWithId("fake-timeline", shadow_root);
 }
 
 void MediaControlLoadingPanelElement::RemovedFrom(
@@ -112,6 +133,7 @@ void MediaControlLoadingPanelElement::CleanupShadowDOM() {
   }
   shadow_root->RemoveChildren();
 
+  spinner_.Clear();
   mask1_background_.Clear();
   mask2_background_.Clear();
 }
@@ -199,6 +221,24 @@ void MediaControlLoadingPanelElement::OnAnimationEnd() {
 
 void MediaControlLoadingPanelElement::OnAnimationIteration() {
   animation_count_ += 1;
+  SetSpinnerClassIfNecessary();
+}
+
+void MediaControlLoadingPanelElement::SetSpinnerClassIfNecessary() {
+  if (!spinner_)
+    return;
+
+  HTMLVideoElement& video_element =
+      static_cast<HTMLVideoElement&>(MediaElement());
+  if (!video_element.ShouldDisplayPosterImage() &&
+      !video_element.HasAvailableVideoFrame()) {
+    if (!spinner_->hasAttribute(kClassAttributeName)) {
+      spinner_->setAttribute(kClassAttributeName,
+                             kNoFrameAvailableSpinnerClass);
+    }
+  } else {
+    spinner_->removeAttribute(kClassAttributeName);
+  }
 }
 
 Element& MediaControlLoadingPanelElement::WatchedAnimationElement() const {
@@ -210,6 +250,7 @@ void MediaControlLoadingPanelElement::Trace(blink::Visitor* visitor) {
   MediaControlAnimationEventListener::Observer::Trace(visitor);
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
+  visitor->Trace(spinner_);
   visitor->Trace(mask1_background_);
   visitor->Trace(mask2_background_);
 }
