@@ -89,6 +89,7 @@ class LocalNtpSource : public content::URLDataSource,
 
   // Overridden from NtpBackgroundServiceObserver:
   void OnCollectionInfoAvailable() override;
+  void OnCollectionImagesAvailable() override;
 
   // Overridden from OneGoogleBarServiceObserver:
   void OnOneGoogleBarDataUpdated() override;
@@ -98,7 +99,8 @@ class LocalNtpSource : public content::URLDataSource,
 
   Profile* const profile_;
 
-  std::vector<NtpBackgroundRequest> ntp_background_requests_;
+  std::vector<NtpBackgroundRequest> ntp_background_collections_requests_;
+  std::vector<NtpBackgroundRequest> ntp_background_image_info_requests_;
 
   NtpBackgroundService* ntp_background_service_;
 

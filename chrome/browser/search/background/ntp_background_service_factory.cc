@@ -42,15 +42,24 @@ KeyedService* NtpBackgroundServiceFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
-  std::string api_url = base::GetFieldTrialParamValueByFeature(
+  std::string collections_api_url = base::GetFieldTrialParamValueByFeature(
       features::kNtpBackgrounds, "background-collections-api-url");
-  base::Optional<GURL> override_api_url;
-  if (!api_url.empty()) {
-    override_api_url = GURL(api_url);
+  std::string collection_images_api_url =
+      base::GetFieldTrialParamValueByFeature(
+          features::kNtpBackgrounds, "background-collection-images-api-url");
+  base::Optional<GURL> collection_api_url_override;
+  base::Optional<GURL> collection_images_api_url_override;
+  if (!collections_api_url.empty()) {
+    collection_api_url_override = GURL(collections_api_url);
+  }
+  if (!collection_images_api_url.empty()) {
+    collection_images_api_url_override = GURL(collection_images_api_url);
   }
 
   auto url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
-  return new NtpBackgroundService(url_loader_factory, override_api_url);
+  return new NtpBackgroundService(url_loader_factory,
+                                  collection_api_url_override,
+                                  collection_images_api_url_override);
 }
