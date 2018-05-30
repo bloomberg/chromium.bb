@@ -19,9 +19,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/shared_memory_region.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
@@ -67,7 +67,9 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
     // Input image buffer ID.
     int32_t bitstream_buffer_id;
     // Memory mapped from |bitstream_buffer|.
-    SharedMemoryRegion shm;
+    UnalignedSharedMemory shm;
+    // Offset used for shm.
+    off_t offset;
     // Output frame buffer.
     scoped_refptr<VideoFrame> out_frame;
   };

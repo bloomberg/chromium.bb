@@ -22,6 +22,7 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
@@ -85,7 +86,7 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
  public:
   InputBuffer() = default;
   InputBuffer(uint32_t id,
-              std::unique_ptr<SharedMemoryRegion> shm,
+              std::unique_ptr<UnalignedSharedMemory> shm,
               base::OnceCallback<void(int32_t id)> release_cb)
       : id_(id), shm_(std::move(shm)), release_cb_(std::move(release_cb)) {}
   ~InputBuffer() {
@@ -97,11 +98,11 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
   // Indicates this is a dummy buffer for flush request.
   bool IsFlushRequest() const { return shm_ == nullptr; }
   int32_t id() const { return id_; }
-  SharedMemoryRegion* shm() const { return shm_.get(); }
+  UnalignedSharedMemory* shm() const { return shm_.get(); }
 
  private:
   const int32_t id_ = -1;
-  const std::unique_ptr<SharedMemoryRegion> shm_;
+  const std::unique_ptr<UnalignedSharedMemory> shm_;
   base::OnceCallback<void(int32_t id)> release_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(InputBuffer);
@@ -286,10 +287,11 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     DCHECK(flush_buffer->IsFlushRequest());
     input_buffers_.push(std::move(flush_buffer));
   } else {
-    std::unique_ptr<SharedMemoryRegion> shm(
-        new SharedMemoryRegion(bitstream_buffer, true));
-    RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
-                                 UNREADABLE_INPUT, );
+    auto shm = std::make_unique<UnalignedSharedMemory>(
+        bitstream_buffer.handle(), bitstream_buffer.size(), true);
+    RETURN_AND_NOTIFY_ON_FAILURE(
+        shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size()),
+        "Failed to map input buffer", UNREADABLE_INPUT, );
 
     auto input_buffer = std::make_unique<InputBuffer>(
         bitstream_buffer.id(), std::move(shm),

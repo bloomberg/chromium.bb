@@ -16,9 +16,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/shared_memory_region.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "third_party/libyuv/include/libyuv.h"
 
@@ -82,7 +82,7 @@ static unsigned int VaSurfaceFormatForJpeg(
 
 VaapiJpegDecodeAccelerator::DecodeRequest::DecodeRequest(
     int32_t bitstream_buffer_id,
-    std::unique_ptr<SharedMemoryRegion> shm,
+    std::unique_ptr<UnalignedSharedMemory> shm,
     const scoped_refptr<VideoFrame>& video_frame)
     : bitstream_buffer_id(bitstream_buffer_id),
       shm(std::move(shm)),
@@ -294,9 +294,9 @@ void VaapiJpegDecodeAccelerator::Decode(
   DVLOGF(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
             << " size: " << bitstream_buffer.size();
 
-  // SharedMemoryRegion will take over the |bitstream_buffer.handle()|.
-  std::unique_ptr<SharedMemoryRegion> shm(
-      new SharedMemoryRegion(bitstream_buffer, true));
+  // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
+  auto shm = std::make_unique<UnalignedSharedMemory>(
+      bitstream_buffer.handle(), bitstream_buffer.size(), true);
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
@@ -304,7 +304,7 @@ void VaapiJpegDecodeAccelerator::Decode(
     return;
   }
 
-  if (!shm->Map()) {
+  if (!shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
     VLOGF(1) << "Failed to map input buffer";
     NotifyErrorFromDecoderThread(bitstream_buffer.id(), UNREADABLE_INPUT);
     return;

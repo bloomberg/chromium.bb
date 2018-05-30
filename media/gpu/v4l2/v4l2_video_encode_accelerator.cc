@@ -23,7 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
-#include "media/gpu/shared_memory_region.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/video/h264_parser.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
@@ -87,10 +87,10 @@ static void CopyNALUPrependingStartCode(const uint8_t* src,
 namespace media {
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, std::unique_ptr<SharedMemoryRegion> shm)
+  BitstreamBufferRef(int32_t id, std::unique_ptr<UnalignedSharedMemory> shm)
       : id(id), shm(std::move(shm)) {}
   const int32_t id;
-  const std::unique_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<UnalignedSharedMemory> shm;
 };
 
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {}
@@ -314,9 +314,9 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  std::unique_ptr<SharedMemoryRegion> shm(
-      new SharedMemoryRegion(buffer, false));
-  if (!shm->Map()) {
+  auto shm = std::make_unique<UnalignedSharedMemory>(buffer.handle(),
+                                                     buffer.size(), false);
+  if (!shm->MapAt(buffer.offset(), buffer.size())) {
     NOTIFY_ERROR(kPlatformFailureError);
     return;
   }

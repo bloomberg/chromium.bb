@@ -84,7 +84,7 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::FromSharedMemoryHandle(
     const base::SharedMemoryHandle& handle,
     off_t offset,
     size_t size) {
-  auto shm = std::make_unique<UnalignedSharedMemory>(handle, true);
+  auto shm = std::make_unique<UnalignedSharedMemory>(handle, size, true);
   if (size == 0 || !shm->MapAt(offset, size))
     return nullptr;
   return base::WrapRefCounted(new DecoderBuffer(std::move(shm), size));

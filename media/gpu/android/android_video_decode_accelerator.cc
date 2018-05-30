@@ -35,13 +35,13 @@
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
 #include "media/gpu/android/avda_picture_buffer_manager.h"
 #include "media/gpu/android/content_video_view_overlay.h"
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android/promotion_hint_aggregator_impl.h"
-#include "media/gpu/shared_memory_region.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/video/picture.h"
@@ -248,7 +248,8 @@ AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
     const BitstreamBuffer& bitstream_buffer)
     : buffer(bitstream_buffer) {
   if (buffer.id() != -1)
-    memory.reset(new SharedMemoryRegion(buffer, true));
+    memory.reset(
+        new UnalignedSharedMemory(buffer.handle(), buffer.size(), true));
 }
 
 AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
@@ -655,16 +656,17 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     return true;
   }
 
-  std::unique_ptr<SharedMemoryRegion> shm;
+  std::unique_ptr<UnalignedSharedMemory> shm;
 
   if (pending_input_buf_index_ == -1) {
     // When |pending_input_buf_index_| is not -1, the buffer is already dequeued
     // from MediaCodec, filled with data and bitstream_buffer.handle() is
     // closed.
     shm = std::move(pending_bitstream_records_.front().memory);
+    auto* buffer = &pending_bitstream_records_.front().buffer;
 
-    if (!shm->Map()) {
-      NOTIFY_ERROR(UNREADABLE_INPUT, "SharedMemoryRegion::Map() failed");
+    if (!shm->MapAt(buffer->offset(), buffer->size())) {
+      NOTIFY_ERROR(UNREADABLE_INPUT, "UnalignedSharedMemory::Map() failed");
       return false;
     }
   }

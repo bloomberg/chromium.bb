@@ -16,14 +16,24 @@ namespace media {
 // Wrapper over base::SharedMemory that can be mapped at unaligned offsets.
 class MEDIA_EXPORT UnalignedSharedMemory {
  public:
-  UnalignedSharedMemory(const base::SharedMemoryHandle& handle, bool read_only);
+  // Creates an |UnalignedSharedMemory| instance from a
+  // |SharedMemoryHandle|. |size| sets the maximum size that may be mapped.
+  UnalignedSharedMemory(const base::SharedMemoryHandle& handle,
+                        size_t size,
+                        bool read_only);
   ~UnalignedSharedMemory();
 
+  // Map the shared memory region. Note that the passed |size| parameter should
+  // be less than or equal to |size()|.
   bool MapAt(off_t offset, size_t size);
+  size_t size() const { return size_; }
   void* memory() const;
 
  private:
   base::SharedMemory shm_;
+
+  // The size of the region associated with |shm_|.
+  size_t size_;
 
   // Offset withing |shm_| memory that data has been mapped; strictly less than
   // base::SysInfo::VMAllocationGranularity().

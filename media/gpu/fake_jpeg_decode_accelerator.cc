@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/gpu/shared_memory_region.h"
+#include "media/base/unaligned_shared_memory.h"
 
 namespace media {
 
@@ -41,10 +41,10 @@ void FakeJpegDecodeAccelerator::Decode(
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  // SharedMemoryRegion will take over the |bitstream_buffer.handle()|.
-  std::unique_ptr<SharedMemoryRegion> src_shm(
-      new SharedMemoryRegion(bitstream_buffer, true));
-  if (!src_shm->Map()) {
+  // src_shm will take over the |bitstream_buffer.handle()|.
+  std::unique_ptr<UnalignedSharedMemory> src_shm(new UnalignedSharedMemory(
+      bitstream_buffer.handle(), bitstream_buffer.size(), true));
+  if (!src_shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
     DLOG(ERROR) << "Unable to map shared memory in FakeJpegDecodeAccelerator";
     NotifyError(bitstream_buffer.id(), JpegDecodeAccelerator::UNREADABLE_INPUT);
     return;
@@ -60,7 +60,7 @@ void FakeJpegDecodeAccelerator::Decode(
 void FakeJpegDecodeAccelerator::DecodeOnDecoderThread(
     const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame,
-    std::unique_ptr<SharedMemoryRegion> src_shm) {
+    std::unique_ptr<UnalignedSharedMemory> src_shm) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   // Do not actually decode the Jpeg data.

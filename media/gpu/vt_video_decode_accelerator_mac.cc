@@ -29,7 +29,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/version.h"
 #include "media/base/limits.h"
-#include "media/gpu/shared_memory_region.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"

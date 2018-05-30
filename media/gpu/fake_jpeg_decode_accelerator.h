@@ -22,7 +22,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-class SharedMemoryRegion;
+class UnalignedSharedMemory;
 
 // Uses software-based decoding. The purpose of this class is to enable testing
 // of communication to the JpegDecodeAccelerator without requiring an actual
@@ -43,7 +43,7 @@ class MEDIA_GPU_EXPORT FakeJpegDecodeAccelerator
  private:
   void DecodeOnDecoderThread(const BitstreamBuffer& bitstream_buffer,
                              const scoped_refptr<VideoFrame>& video_frame,
-                             std::unique_ptr<SharedMemoryRegion> src_shm);
+                             std::unique_ptr<UnalignedSharedMemory> src_shm);
   void NotifyError(int32_t bitstream_buffer_id, Error error);
   void NotifyErrorOnClientThread(int32_t bitstream_buffer_id, Error error);
   void OnDecodeDoneOnClientThread(int32_t input_buffer_id);
