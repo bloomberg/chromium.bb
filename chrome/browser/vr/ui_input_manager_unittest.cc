@@ -50,6 +50,7 @@ class MockRect : public Rect {
   MOCK_METHOD1(OnHoverMove, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& position));
+  MOCK_METHOD1(OnTouchMove, void(const gfx::PointF& position));
   MOCK_METHOD2(OnScrollBegin,
                void(std::unique_ptr<blink::WebGestureEvent>,
                     const gfx::PointF&));
@@ -289,8 +290,11 @@ TEST_F(UiInputManagerTest, HoverClick) {
   Mock::VerifyAndClearExpectations(p_element);
 
   // Press the button while on the element.
-  EXPECT_CALL(*p_element, OnHoverMove(_));
   EXPECT_CALL(*p_element, OnButtonDown(_));
+  HandleInput(kForwardVector, kDown);
+  Mock::VerifyAndClearExpectations(p_element);
+
+  EXPECT_CALL(*p_element, OnTouchMove(_));
   HandleInput(kForwardVector, kDown);
   Mock::VerifyAndClearExpectations(p_element);
 
@@ -306,7 +310,8 @@ TEST_F(UiInputManagerTest, HoverClick) {
   Mock::VerifyAndClearExpectations(p_element);
 
   // Press while not on the element, move over the element, move away, then
-  // release. The element should receive hover events.
+  // release. The element should receive hover enter/leave, but not hover move
+  // nor touch events.
   HandleInput(kBackwardVector, kDown);
   EXPECT_CALL(*p_element, OnHoverEnter(_));
   HandleInput(kForwardVector, kDown);
@@ -314,11 +319,13 @@ TEST_F(UiInputManagerTest, HoverClick) {
   HandleInput(kBackwardVector, kUp);
   Mock::VerifyAndClearExpectations(p_element);
 
-  // Press on an element, move away, then release.
+  // Press on an element, move away, then release. The element should receive
+  // hover leave, but keep receiving touch move events until release.
   EXPECT_CALL(*p_element, OnHoverEnter(_));
   EXPECT_CALL(*p_element, OnButtonDown(_));
   HandleInput(kForwardVector, kDown);
   EXPECT_CALL(*p_element, OnHoverLeave());
+  EXPECT_CALL(*p_element, OnTouchMove(_));
   HandleInput(kBackwardVector, kDown);
   Mock::VerifyAndClearExpectations(p_element);
   EXPECT_CALL(*p_element, OnButtonUp(_));
@@ -327,7 +334,8 @@ TEST_F(UiInputManagerTest, HoverClick) {
 }
 
 // Test pressing the button while on an element, moving to another element, and
-// releasing the button. Upon release, the previous element should see its click
+// releasing the button. Before release, the first element should still receive
+// touch move events. Upon release, the previous element should see its click
 // and hover states cleared, and the new element should see a hover.
 TEST_F(UiInputManagerTest, ReleaseButtonOnAnotherElement) {
   StrictMock<MockRect>* p_front_element = CreateAndAddMockElement(-5.f);
@@ -342,6 +350,7 @@ TEST_F(UiInputManagerTest, ReleaseButtonOnAnotherElement) {
   HandleInput(kForwardVector, kDown);
   EXPECT_CALL(*p_front_element, OnHoverLeave());
   EXPECT_CALL(*p_back_element, OnHoverEnter(_));
+  EXPECT_CALL(*p_front_element, OnTouchMove(_));
   HandleInput(kBackwardVector, kDown);
   EXPECT_CALL(*p_back_element, OnHoverMove(_));
   EXPECT_CALL(*p_front_element, OnButtonUp(_));

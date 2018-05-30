@@ -116,18 +116,21 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
   }
 
   auto element_local_point = reticle_model->target_local_point;
+  UiElement* captured_element = nullptr;
   if (input_capture_element_id_) {
-    auto* captured = scene_->GetUiElementById(input_capture_element_id_);
-    if (captured && captured->IsVisible()) {
+    captured_element = scene_->GetUiElementById(input_capture_element_id_);
+    if (captured_element && captured_element->IsVisible()) {
       HitTestRequest request;
       request.ray_target = reticle_model->target_point;
       request.max_distance_to_plane = 2 * scene_->background_distance();
       HitTestResult result;
-      captured->HitTest(request, &result);
+      captured_element->HitTest(request, &result);
       element_local_point = result.local_hit_point;
       if (result.type == HitTestResult::Type::kNone) {
         element_local_point = kInvalidTargetPoint;
       }
+    } else {
+      captured_element = nullptr;
     }
   }
 
@@ -147,11 +150,15 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
     return;
   }
 
-  SendHoverEvents(target_element, reticle_model->target_local_point);
+  SendHoverEvents(target_element, reticle_model->target_local_point,
+                  controller_model.touchpad_button_state != ButtonState::DOWN);
+  if (controller_model.touchpad_button_state == ButtonState::DOWN &&
+      captured_element) {
+    captured_element->OnTouchMove(element_local_point);
+  }
   SendButtonDown(target_element, reticle_model->target_local_point,
                  controller_model.touchpad_button_state);
   SendButtonUp(element_local_point, controller_model.touchpad_button_state);
-
   previous_button_state_ = controller_model.touchpad_button_state;
 }
 
@@ -190,18 +197,14 @@ void UiInputManager::SendScrollEnd(GestureList* gesture_list,
     DCHECK_EQ(gesture_list->front()->GetType(),
               blink::WebInputEvent::kGestureScrollEnd);
   }
-  if (element) {
-    DCHECK(element->scrollable());
-  }
+  DCHECK(!element || element->scrollable());
   if (gesture_list->empty() || gesture_list->front()->GetType() !=
                                    blink::WebInputEvent::kGestureScrollEnd) {
     return;
   }
   DCHECK_LE(gesture_list->size(), 1LU);
   fling_target_id_ = input_capture_element_id_;
-  if (element) {
-    element->OnScrollEnd(std::move(gesture_list->front()), target_point);
-  }
+  element->OnScrollEnd(std::move(gesture_list->front()), target_point);
   gesture_list->erase(gesture_list->begin());
   input_capture_element_id_ = 0;
   in_scroll_ = false;
@@ -248,9 +251,11 @@ void UiInputManager::SendScrollUpdate(GestureList* gesture_list,
 }
 
 void UiInputManager::SendHoverEvents(UiElement* target,
-                                     const gfx::PointF& target_point) {
+                                     const gfx::PointF& target_point,
+                                     bool send_move) {
   if (target && target->id() == hover_target_id_) {
-    SendMove(target, target_point);
+    if (send_move)
+      target->OnHoverMove(target_point);
     return;
   }
 
@@ -263,23 +268,6 @@ void UiInputManager::SendHoverEvents(UiElement* target,
     target->OnHoverEnter(target_point);
     hover_target_id_ = target->id();
   }
-}
-
-void UiInputManager::SendMove(UiElement* element,
-                              const gfx::PointF& target_point) {
-  DCHECK(element);
-  if (!element) {
-    return;
-  }
-  // TODO(mthiesse, vollick): Content is currently way too sensitive to
-  // mouse moves for how noisy the controller is. It's almost impossible
-  // to click a link without unintentionally starting a drag event. For
-  // this reason we disable mouse moves, only delivering a down and up
-  // event.
-  if (element->name() == kContentQuad && in_click_) {
-    return;
-  }
-  element->OnHoverMove(target_point);
 }
 
 void UiInputManager::SendButtonDown(UiElement* target,
@@ -303,24 +291,19 @@ void UiInputManager::SendButtonDown(UiElement* target,
 
 bool UiInputManager::SendButtonUp(const gfx::PointF& target_point,
                                   ButtonState button_state) {
-  if (!in_click_) {
-    return false;
-  }
-  if (previous_button_state_ == button_state ||
+  if (!in_click_ || previous_button_state_ == button_state ||
       button_state != ButtonState::UP) {
     return false;
   }
   in_click_ = false;
-  if (!input_capture_element_id_) {
+  if (!input_capture_element_id_)
     return false;
-  }
   UiElement* element = scene_->GetUiElementById(input_capture_element_id_);
   if (element) {
     element->OnButtonUp(target_point);
     // Clicking outside of the focused element causes it to lose focus.
-    if (element->id() != focused_element_id_ && element->focusable()) {
+    if (element->id() != focused_element_id_ && element->focusable())
       UnfocusFocusedElement();
-    }
   }
 
   input_capture_element_id_ = 0;
