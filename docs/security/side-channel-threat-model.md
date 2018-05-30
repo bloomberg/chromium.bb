@@ -55,11 +55,6 @@ The implications of this are far-reaching:
   confidentiality from any origins running in that process, regardless of the
   same origin policy.
 
-Additionally, we should assume that it will eventually be possible to attack
-other userland processes (e.g. a renderer reading the browser’s memory). We do
-not yet have PoCs for this, and there are reasons to believe it will be hard to
-achieve in practice. We must not assume it’s impossible.
-
 Additionally, attackers may develop ways to read memory from other userland
 processes (e.g. a renderer reading the browser’s memory). We do not include
 those attacks in our threat model. The hardware, microcode, and OS must
