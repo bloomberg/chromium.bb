@@ -15,6 +15,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -26,6 +27,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_features.h"
@@ -371,6 +373,10 @@ void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {
   GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    GetShaderCacheFactorySingleton()->SetCacheInfo(
+        gpu::InProcessCommandBuffer::kGpuClientId, cache_dir);
+  }
 }
 
 }  // namespace content

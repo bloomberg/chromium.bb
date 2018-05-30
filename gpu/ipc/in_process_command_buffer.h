@@ -202,7 +202,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
 
-  static const int kGpuMemoryBufferClientId;
+  static const int kGpuClientId;
 
   // The serializer interface to the GPU service (i.e. thread).
   class Service {

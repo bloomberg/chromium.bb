@@ -514,7 +514,7 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
       gl_image = gpu_memory_buffer_factory_->AsImageFactory()
                      ->CreateImageForGpuMemoryBuffer(
                          handle, size, format, internalformat,
-                         gpu::InProcessCommandBuffer::kGpuMemoryBufferClientId,
+                         gpu::InProcessCommandBuffer::kGpuClientId,
                          gpu::kNullSurfaceHandle);
       if (!gl_image)
         return -1;

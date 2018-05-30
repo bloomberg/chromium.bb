@@ -61,6 +61,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -940,6 +941,16 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
+  bool oopd_enabled =
+      base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
+  if (oopd_enabled && client_id == gpu::InProcessCommandBuffer::kGpuClientId) {
+    // The display-compositor in the gpu process uses this special client id.
+    callback.Run(mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
+                 gpu::GpuFeatureInfo(),
+                 EstablishChannelStatus::GPU_ACCESS_DENIED);
+    return;
+  }
+
   DCHECK_EQ(preempts, allow_view_command_buffers);
   DCHECK_EQ(preempts, allow_real_time_streams);
   bool is_gpu_host = preempts;
@@ -953,6 +964,8 @@ void GpuProcessHost::EstablishGpuChannel(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id);
+    if (oopd_enabled)
+      CreateChannelCache(gpu::InProcessCommandBuffer::kGpuClientId);
   }
 }
 

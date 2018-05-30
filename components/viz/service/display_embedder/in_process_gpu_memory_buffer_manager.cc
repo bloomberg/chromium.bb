@@ -15,7 +15,7 @@ namespace viz {
 InProcessGpuMemoryBufferManager::InProcessGpuMemoryBufferManager(
     gpu::GpuChannelManager* channel_manager)
     : gpu_memory_buffer_support_(new gpu::GpuMemoryBufferSupport()),
-      client_id_(gpu::InProcessCommandBuffer::kGpuMemoryBufferClientId),
+      client_id_(gpu::InProcessCommandBuffer::kGpuClientId),
       channel_manager_(channel_manager),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
