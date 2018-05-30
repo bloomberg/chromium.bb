@@ -338,6 +338,9 @@ clocks, and we want the OWP to be able to support them.
 
 ### Gating Access To APIs That Enable Exploitation
 
+**Note:** This section explores ideas but we are not currently planning on
+implementing anything along these lines.
+
 Although we want to support applications that necessarily need access to
 features that enable exploitation, such as `SharedArrayBuffer`, we don’t
 necessarily need to make the features available unconditionally. For example, a
