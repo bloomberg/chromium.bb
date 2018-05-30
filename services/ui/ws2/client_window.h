@@ -78,7 +78,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
-  void set_capture_owner(WindowServiceClient* owner) { capture_owner_ = owner; }
+  void SetCaptureOwner(WindowServiceClient* owner);
   WindowServiceClient* capture_owner() const { return capture_owner_; }
 
   void set_focus_owner(WindowServiceClient* owner) { focus_owner_ = owner; }

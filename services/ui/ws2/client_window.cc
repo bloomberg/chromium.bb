@@ -161,6 +161,8 @@ class ClientWindowEventHandler : public ui::EventHandler {
       if (!client_window_->focus_owner())
         return;  // The local environment is going to process the event.
       target_client = client_window_->focus_owner();
+    } else if (client_window()->capture_owner()) {
+      target_client = client_window()->capture_owner();
     } else {
       // Prefer embedded over owner.
       target_client = !embedded ? owning : embedded;
@@ -281,6 +283,14 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
     return pointer_press_handlers_.count(pointer_id) > 0;
   }
 
+  // Called when the capture owner changes.
+  void OnCaptureOwnerChanged() {
+    // Changing the capture owner toggles between local and the client getting
+    // the event. The |pointer_press_handlers_| are no longer applicable
+    // (because the target is purely dicatated by capture owner).
+    pointer_press_handlers_.clear();
+  }
+
   // ClientWindowEventHandler:
   void OnEvent(ui::Event* event) override {
     // This code doesn't handle PointerEvents, because they should never be
@@ -302,6 +312,17 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
     // Gestures are always handled locally.
     if (ShouldIgnoreEvent(*event) || event->IsGestureEvent())
       return;
+
+    // If there is capture, send the event to the client that owns it. A null
+    // capture owner means the local environment should handle the event.
+    if (wm::CaptureController::Get()->GetCaptureWindow()) {
+      if (client_window()->capture_owner()) {
+        client_window()->capture_owner()->SendEventToClient(window(), *event);
+        event->StopPropagation();
+        return;
+      }
+      return;
+    }
 
     // This code does has two specific behaviors. It's used to ensure events
     // go to the right target (either local, or the remote client).
@@ -424,6 +445,15 @@ void ClientWindow::SetClientArea(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void ClientWindow::SetCaptureOwner(WindowServiceClient* owner) {
+  capture_owner_ = owner;
+  if (!IsTopLevel())
+    return;
+
+  return static_cast<TopLevelEventHandler*>(event_handler_.get())
+      ->OnCaptureOwnerChanged();
+}
+
 bool ClientWindow::DoesOwnerInterceptEvents() const {
   return embedding_ && embedding_->embedding_client_intercepts_events();
 }
@@ -477,6 +507,7 @@ ClientWindow::ClientWindow(aura::Window* window,
 }
 
 bool ClientWindow::IsHandlingPointerPressForTesting(PointerId pointer_id) {
+  DCHECK(IsTopLevel());
   return static_cast<TopLevelEventHandler*>(event_handler_.get())
       ->IsHandlingPointerPress(pointer_id);
 }
