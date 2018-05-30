@@ -106,9 +106,9 @@ class ComponentActiveDirectoryPolicyTest
                                     ::user_manager::kStubAdUserEmail);
 
     // Without this, user manager code will shut down Chrome since it can't
-    // determine whether policy is required.
+    // find any policy.
     command_line->AppendSwitchASCII(
-        ::chromeos::switches::kProfileRequiresPolicy, "false");
+        ::chromeos::switches::kAllowFailedPolicyFetchForTest, "true");
   }
 
   void SetUpOnMainThread() override {

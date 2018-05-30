@@ -275,13 +275,13 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   // command-line flag (required for ephemeral users who are not persisted
   // in the known_user database).
   const bool policy_required =
-      is_active_directory ||
-      (!command_line->HasSwitch(
-           chromeos::switches::kAllowFailedPolicyFetchForTest) &&
-       ((requires_policy_user_property ==
-         ProfileRequiresPolicy::kPolicyRequired) ||
-        (command_line->GetSwitchValueASCII(
-             chromeos::switches::kProfileRequiresPolicy) == "true")));
+      !command_line->HasSwitch(
+          chromeos::switches::kAllowFailedPolicyFetchForTest) &&
+      (is_active_directory ||
+       (requires_policy_user_property ==
+        ProfileRequiresPolicy::kPolicyRequired) ||
+       (command_line->GetSwitchValueASCII(
+            chromeos::switches::kProfileRequiresPolicy) == "true"));
 
   DCHECK(!(cannot_tell_if_policy_required && policy_required));
 
@@ -385,7 +385,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
 
   if (is_active_directory) {
     auto manager = std::make_unique<UserActiveDirectoryPolicyManager>(
-        account_id, policy_refresh_timeout,
+        account_id, policy_required, policy_refresh_timeout,
         base::BindOnce(&OnUserPolicyFatalError, account_id,
                        MetricUserPolicyChromeOSSessionAbortType::
                            kInitWithActiveDirectoryManagement),

@@ -110,7 +110,7 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
     return static_cast<MockCloudPolicyStore*>(policy_manager_->store());
   }
 
-  // Gets the store passed to the policy manager during construction.
+  // Gets the data manager passed to the policy manager during construction.
   MockCloudExternalDataManager* mock_external_data_manager() {
     DCHECK(policy_manager_);
     return static_cast<MockCloudExternalDataManager*>(
@@ -119,7 +119,8 @@ class ActiveDirectoryPolicyManagerTest : public testing::Test {
 
   // Initializes the policy manager and verifies expectations on mock classes.
   void InitPolicyManagerAndVerifyExpectations() {
-    EXPECT_CALL(*mock_store(), Load());
+    if (!mock_store()->is_initialized())
+      EXPECT_CALL(*mock_store(), Load());
     if (mock_external_data_manager()) {
       EXPECT_CALL(*mock_external_data_manager(),
                   Connect(scoped_refptr<net::URLRequestContextGetter>()));
@@ -167,8 +168,8 @@ class UserActiveDirectoryPolicyManagerTest
                        base::Unretained(this));
 
     policy_manager_ = std::make_unique<UserActiveDirectoryPolicyManager>(
-        account_id, initial_policy_fetch_timeout, std::move(exit_session),
-        std::make_unique<MockCloudPolicyStore>(),
+        account_id, true /* policy_required */, initial_policy_fetch_timeout,
+        std::move(exit_session), std::make_unique<MockCloudPolicyStore>(),
         std::make_unique<MockCloudExternalDataManager>());
 
     EXPECT_FALSE(
@@ -199,36 +200,39 @@ class UserActiveDirectoryPolicyManagerTest
   bool session_exit_expected_ = false;
 };
 
-TEST_F(UserActiveDirectoryPolicyManagerTest, DontWait) {
+TEST_F(UserActiveDirectoryPolicyManagerTest, DontWait_HasCachedPolicy) {
   CreatePolicyManager(base::TimeDelta());
 
   // Configure mock policy fetch to fail.
   mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
 
+  mock_store()->policy_ = std::make_unique<enterprise_management::PolicyData>();
+  mock_store()->NotifyStoreLoaded();
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
-  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-
-  // Simulate failed store load. Initialization is reported complete at this
-  // point.
-  mock_store()->NotifyStoreError();
-  EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-
-  // Process reply for mock policy fetch.
-  EXPECT_CALL(*mock_store(), Load());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-
-  // Simulate failed store load.
-  mock_store()->NotifyStoreError();
   EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
-// If the initial fetch timeout is infinite, initialization is only complete
-// after policy has been fetched and after that has been loaded.
+TEST_F(UserActiveDirectoryPolicyManagerTest, DontWait_NoCachedPolicy) {
+  CreatePolicyManager(base::TimeDelta());
+
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
+
+  mock_store()->NotifyStoreError();
+
+  ExpectSessionExit();
+  // Trigger mock policy fetch from authpolicyd.
+  InitPolicyManagerAndVerifyExpectations();
+
+  ExpectSessionExited();
+}
+
+// Initialization is only complete after policy has been fetched and after that
+// has been loaded.
 TEST_F(UserActiveDirectoryPolicyManagerTest,
-       WaitInfinite_LoadSuccess_FetchSuccess) {
-  CreatePolicyManager(base::TimeDelta::Max());
+       WaitFinite_LoadSuccess_FetchSuccess_LoadSuccess) {
+  CreatePolicyManager(base::TimeDelta::FromDays(365));
 
   // Configure mock policy fetch to succeed.
   mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_NONE);
@@ -251,11 +255,12 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
   EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
-// If the initial fetch timeout is infinite, initialization does not complete if
-// load after fetch fails.
+// Initialization is only complete after policy has been fetched and after that
+// has failed to load. Load failure should not prevent session start as long as
+// we have cached policy.
 TEST_F(UserActiveDirectoryPolicyManagerTest,
-       WaitInfinite_LoadSuccess_FetchSuccess_LoadFail) {
-  CreatePolicyManager(base::TimeDelta::Max());
+       WaitFinite_LoadSuccess_FetchSuccess_LoadFail) {
+  CreatePolicyManager(base::TimeDelta::FromDays(365));
 
   // Configure mock policy fetch to succeed.
   mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_NONE);
@@ -273,48 +278,9 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
-  ExpectSessionExit();
-
   // Simulate failed store load.
   mock_store()->NotifyStoreError();
-  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-
-  ExpectSessionExited();
-
-  // Simulate successful store load.
-  mock_store()->NotifyStoreLoaded();
   EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-}
-
-// If the initial fetch timeout is infinite, failure in policy fetch prevents
-// initialization from finishing, ever.
-TEST_F(UserActiveDirectoryPolicyManagerTest,
-       WaitInfinite_LoadSuccess_FetchFail) {
-  CreatePolicyManager(base::TimeDelta::Max());
-
-  // Configure mock policy fetch to fail.
-  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_UNKNOWN);
-
-  // Trigger mock policy fetch from authpolicyd.
-  InitPolicyManagerAndVerifyExpectations();
-
-  // Simulate successful store load.
-  mock_store()->policy_ = std::make_unique<enterprise_management::PolicyData>();
-  mock_store()->NotifyStoreLoaded();
-  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-
-  ExpectSessionExit();
-
-  // Process reply for mock policy fetch.
-  EXPECT_CALL(*mock_store(), Load());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-
-  ExpectSessionExited();
-
-  // Simulate successful store load.
-  mock_store()->NotifyStoreLoaded();
-  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
 // If the initial fetch timeout is not infinite, we're in best-effort mode but
@@ -421,21 +387,40 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
   // Simulate policy fetch timeout.
   user_policy_manager()->ForceTimeoutForTesting();
   EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+}
+
+// If load fails and fetch times out, we wait until fetch response is called.
+TEST_F(UserActiveDirectoryPolicyManagerTest,
+       WaitFinite_LoadFail_FetchTimeout_FetchSuccess) {
+  CreatePolicyManager(base::TimeDelta::FromDays(365));
+
+  // Configure mock policy fetch to fail.
+  mock_client_->SetRefreshUserPolicyCallbackError(authpolicy::ERROR_NONE);
+
+  // Trigger mock policy fetch from authpolicyd.
+  InitPolicyManagerAndVerifyExpectations();
+
+  mock_store()->NotifyStoreError();
+
+  // Simulate policy fetch timeout.
+  user_policy_manager()->ForceTimeoutForTesting();
+  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // Process reply for mock policy fetch.
   EXPECT_CALL(*mock_store(), Load());
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
-  // Simulate failed store load.
-  mock_store()->NotifyStoreError();
+  // Simulate successful store load.
+  mock_store()->policy_ = std::make_unique<enterprise_management::PolicyData>();
+  mock_store()->NotifyStoreLoaded();
   EXPECT_TRUE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 }
 
-// If the initial fetch timeout is not infinite, we're in best-effort mode but
-// without a successful policy load we still can't continue.
+// If load fails and fetch times out, we wait until fetch response is called.
+// Failure should end the session.
 TEST_F(UserActiveDirectoryPolicyManagerTest,
-       WaitFinite_LoadTimeout_FetchTimeout) {
+       WaitFinite_LoadFail_FetchTimeout_FetchFail) {
   CreatePolicyManager(base::TimeDelta::FromDays(365));
 
   // Configure mock policy fetch to fail.
@@ -444,17 +429,29 @@ TEST_F(UserActiveDirectoryPolicyManagerTest,
   // Trigger mock policy fetch from authpolicyd.
   InitPolicyManagerAndVerifyExpectations();
 
-  ExpectSessionExit();
+  mock_store()->NotifyStoreError();
 
   // Simulate policy fetch timeout.
   user_policy_manager()->ForceTimeoutForTesting();
   EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
-  ExpectSessionExited();
-
+  ExpectSessionExit();
   // Process reply for mock policy fetch.
   EXPECT_CALL(*mock_store(), Load());
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  ExpectSessionExited();
+}
+
+// Simulate long load by policy store.
+TEST_F(UserActiveDirectoryPolicyManagerTest, WaitFinite_FetchSucces_LongLoad) {
+  CreatePolicyManager(base::TimeDelta::FromDays(365));
+  // Trigger mock policy fetch from authpolicyd.
+  InitPolicyManagerAndVerifyExpectations();
+  // Process reply for mock policy fetch.
+  EXPECT_CALL(*mock_store(), Load());
+  base::RunLoop().RunUntilIdle();
+  user_policy_manager()->ForceTimeoutForTesting();
   EXPECT_FALSE(policy_manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
 
   // Simulate successful store load.

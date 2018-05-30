@@ -85,9 +85,12 @@ class ActiveDirectoryPolicyManager
   // Allows derived classes to cancel waiting for the initial policy fetch/load
   // and to flag the ConfigurationPolicyProvider ready (assuming all other
   // initialization tasks have completed) or to exit the session in case the
-  // requirements to continue have not been met. |success| denotes whether the
-  // policy fetch was successful.
-  virtual void CancelWaitForInitialPolicy(bool success) {}
+  // requirements to continue have not been met.
+  virtual void CancelWaitForInitialPolicy() {}
+
+  // Whether policy fetch has ever been reported as completed by authpolicyd
+  // during lifetime of the object (after Chrome was started).
+  bool fetch_ever_completed_ = false;
 
  private:
   // Called by scheduler with result of policy fetch. This covers policy
@@ -98,12 +101,6 @@ class ActiveDirectoryPolicyManager
   // Called right before policy is published. Expands e.g. ${machine_name} for
   // a selected set of policies.
   void ExpandVariables(PolicyMap* policy_map);
-
-  // Whether policy fetch has ever been reported as completed by authpolicyd.
-  bool fetch_ever_completed_ = false;
-
-  // Whether policy fetch has ever been reported as successful by authpolicyd.
-  bool fetch_ever_succeeded_ = false;
 
   // Store used to serialize policy, usually sends data to Session Manager.
   const std::unique_ptr<CloudPolicyStore> store_;
@@ -134,12 +131,13 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
   // is forced to false until either there has been a successful policy fetch
   // from the server and a subsequent successful load from session manager or
   // |initial_policy_fetch_timeout| has expired and there has been a successful
-  // load from session manager. The timeout may be set to TimeDelta::Max() to
-  // enforce successful policy fetch. In case the conditions for signaling
-  // initialization complete are not met, the user session is aborted by calling
-  // |exit_session|.
+  // load from session manager. If |policy_required| is true then the user
+  // session is aborted by calling |exit_session| if no policy was loaded from
+  // session manager and this is either immediate load in case of Chrome restart
+  // or policy fetch failed.
   UserActiveDirectoryPolicyManager(
       const AccountId& account_id,
+      bool policy_required,
       base::TimeDelta initial_policy_fetch_timeout,
       base::OnceClosure exit_session,
       std::unique_ptr<CloudPolicyStore> store,
@@ -157,7 +155,7 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
  protected:
   // ActiveDirectoryPolicyManager:
   void DoPolicyFetch(PolicyScheduler::TaskCallback callback) override;
-  void CancelWaitForInitialPolicy(bool success) override;
+  void CancelWaitForInitialPolicy() override;
 
  private:
   // Called when |initial_policy_timeout_| times out, to cancel the blocking
@@ -165,15 +163,15 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
   void OnBlockingFetchTimeout();
 
   // The user's account id.
-  AccountId account_id_;
+  const AccountId account_id_;
+
+  // If policy is required, but cannot be obtained (via fetch or load),
+  // |exit_session_| is called.
+  const bool policy_required_;
 
   // Whether we're waiting for a policy fetch to complete before reporting
   // IsInitializationComplete().
   bool waiting_for_initial_policy_fetch_ = false;
-
-  // Whether the user session is continued in case of failure of initial policy
-  // fetch.
-  bool initial_policy_fetch_may_fail_ = false;
 
   // A timer that puts a hard limit on the maximum time to wait for the initial
   // policy fetch/load.
