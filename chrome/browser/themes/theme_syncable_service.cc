@@ -210,7 +210,7 @@ void ThemeSyncableService::SetCurrentThemeFromThemeSpecifics(
     string id(theme_specifics.custom_theme_id());
     GURL update_url(theme_specifics.custom_theme_update_url());
     DVLOG(1) << "Applying theme " << id << " with update_url " << update_url;
-    ExtensionService* extensions_service =
+    extensions::ExtensionService* extensions_service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
     CHECK(extensions_service);
     const extensions::Extension* extension =

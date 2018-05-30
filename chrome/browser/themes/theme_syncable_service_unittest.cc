@@ -180,8 +180,9 @@ class ThemeSyncableServiceTest : public testing::Test {
     extensions::TestExtensionSystem* test_ext_system =
         static_cast<extensions::TestExtensionSystem*>(
                 extensions::ExtensionSystem::Get(profile_.get()));
-    ExtensionService* service = test_ext_system->CreateExtensionService(
-        &command_line, base::FilePath(kExtensionFilePath), false);
+    extensions::ExtensionService* service =
+        test_ext_system->CreateExtensionService(
+            &command_line, base::FilePath(kExtensionFilePath), false);
     EXPECT_TRUE(service->extensions_enabled());
     service->Init();
     base::RunLoop().RunUntilIdle();

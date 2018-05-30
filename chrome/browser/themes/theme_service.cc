@@ -293,7 +293,7 @@ void ThemeService::SetTheme(const Extension* extension) {
 
 void ThemeService::RevertToTheme(const Extension* extension) {
   DCHECK(extension->is_theme());
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(!service->IsExtensionEnabled(extension->id()));
   // |extension| is disabled when reverting to the previous theme via an
@@ -358,7 +358,7 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   if (!ignore_infobars && number_of_infobars_ != 0)
     return;
 
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;
@@ -830,7 +830,7 @@ void ThemeService::OnExtensionServiceReady() {
 }
 
 void ThemeService::MigrateTheme() {
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension =
       service ? service->GetExtensionById(GetThemeID(), false) : nullptr;
@@ -895,7 +895,7 @@ void ThemeService::OnThemeBuiltFromExtension(
     return;
   }
 
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;
