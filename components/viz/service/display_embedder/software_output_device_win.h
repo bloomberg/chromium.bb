@@ -27,7 +27,8 @@ CreateSoftwareOutputDeviceWinBrowser(HWND hwnd, OutputDeviceBacking* backing);
 VIZ_SERVICE_EXPORT std::unique_ptr<SoftwareOutputDevice>
 CreateSoftwareOutputDeviceWinGpu(HWND hwnd,
                                  OutputDeviceBacking* backing,
-                                 mojom::DisplayClient* display_client);
+                                 mojom::DisplayClient* display_client,
+                                 HWND* out_child_hwnd);
 
 }  // namespace viz
 

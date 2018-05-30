@@ -46,7 +46,12 @@ namespace {
 std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
   auto thread = std::make_unique<base::Thread>("VizCompositorThread");
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+#if defined(OS_WIN)
+  // Windows needs a UI message loop for child HWND. Other platforms can use the
+  // default message loop type.
+  thread_options.message_loop_type = base::MessageLoop::TYPE_UI;
+#endif
+
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif

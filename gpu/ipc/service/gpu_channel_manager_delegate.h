@@ -44,9 +44,11 @@ class GpuChannelManagerDelegate {
   virtual void ExitProcess() = 0;
 
 #if defined(OS_WIN)
-  virtual void SendAcceleratedSurfaceCreatedChildWindow(
-      SurfaceHandle parent_window,
-      SurfaceHandle child_window) = 0;
+  // Tells the delegate that |child_window| was created in the GPU process and
+  // to send an IPC to make SetParent() syscall. This syscall is blocked by the
+  // GPU sandbox and must be made in the browser process.
+  virtual void SendCreatedChildWindow(SurfaceHandle parent_window,
+                                      SurfaceHandle child_window) = 0;
 #endif
 
   // Sets the currently active URL.  Use GURL() to clear the URL.

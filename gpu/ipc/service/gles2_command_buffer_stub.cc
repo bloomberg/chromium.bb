@@ -377,8 +377,8 @@ void GLES2CommandBufferStub::DidCreateAcceleratedSurfaceChildWindow(
     SurfaceHandle parent_window,
     SurfaceHandle child_window) {
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  gpu_channel_manager->delegate()->SendAcceleratedSurfaceCreatedChildWindow(
-      parent_window, child_window);
+  gpu_channel_manager->delegate()->SendCreatedChildWindow(parent_window,
+                                                          child_window);
 }
 #endif
 

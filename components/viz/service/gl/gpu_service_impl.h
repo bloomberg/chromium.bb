@@ -149,9 +149,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                          const std::string& shader) override;
   void ExitProcess() override;
 #if defined(OS_WIN)
-  void SendAcceleratedSurfaceCreatedChildWindow(
-      gpu::SurfaceHandle parent_window,
-      gpu::SurfaceHandle child_window) override;
+  void SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
+                              gpu::SurfaceHandle child_window) override;
 #endif
   void SetActiveURL(const GURL& url) override;
 

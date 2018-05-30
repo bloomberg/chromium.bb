@@ -1243,8 +1243,8 @@ void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
   }
 
   // In the GPU process forward the request back to the browser process.
-  gpu_channel_manager_delegate_->SendAcceleratedSurfaceCreatedChildWindow(
-      parent_window, child_window);
+  gpu_channel_manager_delegate_->SendCreatedChildWindow(parent_window,
+                                                        child_window);
 }
 #endif
 

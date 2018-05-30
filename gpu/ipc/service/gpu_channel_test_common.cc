@@ -39,9 +39,8 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
                          const std::string& shader) override {}
   void ExitProcess() override {}
 #if defined(OS_WIN)
-  void SendAcceleratedSurfaceCreatedChildWindow(
-      SurfaceHandle parent_window,
-      SurfaceHandle child_window) override {}
+  void SendCreatedChildWindow(SurfaceHandle parent_window,
+                              SurfaceHandle child_window) override {}
 #endif
 
  private:

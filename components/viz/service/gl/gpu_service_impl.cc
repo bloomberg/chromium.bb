@@ -617,10 +617,9 @@ void GpuServiceImpl::ExitProcess() {
 }
 
 #if defined(OS_WIN)
-void GpuServiceImpl::SendAcceleratedSurfaceCreatedChildWindow(
-    gpu::SurfaceHandle parent_window,
-    gpu::SurfaceHandle child_window) {
-  DCHECK(main_runner_->BelongsToCurrentThread());
+void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
+                                            gpu::SurfaceHandle child_window) {
+  // This can be called from main or display compositor thread.
   (*gpu_host_)->SetChildSurface(parent_window, child_window);
 }
 #endif
