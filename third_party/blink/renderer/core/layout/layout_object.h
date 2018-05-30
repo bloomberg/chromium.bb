@@ -423,7 +423,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   UniqueObjectId UniqueId() const { return fragment_.UniqueId(); }
 
-  inline bool ShouldApplyPaintContainment() const;
+  inline bool ShouldApplyPaintContainment() const {
+    return StyleRef().ContainsPaint() &&
+           (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText();
+  }
 
  private:
   //////////////////////////////////////////
@@ -2813,10 +2816,6 @@ inline void MakeMatrixRenderable(TransformationMatrix& matrix,
                                  bool has3d_rendering) {
   if (!has3d_rendering)
     matrix.MakeAffine();
-}
-
-inline bool LayoutObject::ShouldApplyPaintContainment() const {
-  return StyleRef().ContainsPaint() && (!IsInline() || IsAtomicInlineLevel());
 }
 
 enum class LayoutObjectSide {

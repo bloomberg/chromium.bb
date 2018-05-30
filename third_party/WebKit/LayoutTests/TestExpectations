@@ -292,10 +292,9 @@ crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failu
 
 crbug.com/785212 external/wpt/css/css-contain/contain-layout-006.html [ Failure ]
 crbug.com/785212 external/wpt/css/css-contain/contain-layout-007.html [ Failure ]
-crbug.com/843329 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
-crbug.com/843329 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
-crbug.com/843329 external/wpt/css/css-contain/contain-paint-007.html [ Failure ]
-crbug.com/843329 external/wpt/css/css-contain/contain-paint-008.html [ Failure ]
+crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
+crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
+crbug.com/847274 external/wpt/css/css-contain/contain-paint-007.html [ Failure ]
 crbug.com/843329 external/wpt/css/css-contain/contain-size-005.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
