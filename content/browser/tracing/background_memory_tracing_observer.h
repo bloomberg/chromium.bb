@@ -19,13 +19,9 @@ class CONTENT_EXPORT BackgroundMemoryTracingObserver
   void OnTracingEnabled(
       BackgroundTracingConfigImpl::CategoryPreset preset) override;
 
-  bool enabled_for_testing() const { return enabled_; }
-
  private:
   BackgroundMemoryTracingObserver();
   ~BackgroundMemoryTracingObserver() override;
-
-  bool enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundMemoryTracingObserver);
 };
