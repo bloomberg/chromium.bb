@@ -60,6 +60,12 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   void RemovePendingWritesForStreamsAfter(
       spdy::SpdyStreamId last_good_stream_id);
 
+  // Change priority of all pending writes for the given stream.  Frames will be
+  // queued after other writes with |new_priority|.
+  void ChangePriorityOfWritesForStream(const base::WeakPtr<SpdyStream>& stream,
+                                       RequestPriority old_priority,
+                                       RequestPriority new_priority);
+
   // Removes all pending writes.
   void Clear();
 

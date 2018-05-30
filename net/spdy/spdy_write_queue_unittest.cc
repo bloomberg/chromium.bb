@@ -415,6 +415,55 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesForStream) {
             producer->ProduceBuffer()->GetRemainingData());
 }
 
+TEST_F(SpdyWriteQueueTest, ChangePriority) {
+  SpdyWriteQueue write_queue;
+
+  std::unique_ptr<SpdyBufferProducer> producer1 = IntToProducer(1);
+  std::unique_ptr<SpdyBufferProducer> producer2 = IntToProducer(2);
+  std::unique_ptr<SpdyBufferProducer> producer3 = IntToProducer(3);
+
+  std::unique_ptr<SpdyStream> stream1 = MakeTestStream(HIGHEST);
+  std::unique_ptr<SpdyStream> stream2 = MakeTestStream(MEDIUM);
+  std::unique_ptr<SpdyStream> stream3 = MakeTestStream(LOW);
+
+  write_queue.Enqueue(HIGHEST, spdy::SpdyFrameType::HEADERS,
+                      std::move(producer1), stream1->GetWeakPtr(),
+                      TRAFFIC_ANNOTATION_FOR_TESTS);
+  write_queue.Enqueue(MEDIUM, spdy::SpdyFrameType::DATA, std::move(producer2),
+                      stream2->GetWeakPtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
+  write_queue.Enqueue(LOW, spdy::SpdyFrameType::RST_STREAM,
+                      std::move(producer3), stream3->GetWeakPtr(),
+                      TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  write_queue.ChangePriorityOfWritesForStream(stream3->GetWeakPtr(), LOW,
+                                              HIGHEST);
+
+  spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
+  std::unique_ptr<SpdyBufferProducer> frame_producer;
+  base::WeakPtr<SpdyStream> stream;
+  MutableNetworkTrafficAnnotationTag traffic_annotation;
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
+                                  &traffic_annotation));
+  EXPECT_EQ(spdy::SpdyFrameType::HEADERS, frame_type);
+  EXPECT_EQ(1, ProducerToInt(std::move(frame_producer)));
+  EXPECT_EQ(stream1.get(), stream.get());
+
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
+                                  &traffic_annotation));
+  EXPECT_EQ(spdy::SpdyFrameType::RST_STREAM, frame_type);
+  EXPECT_EQ(3, ProducerToInt(std::move(frame_producer)));
+  EXPECT_EQ(stream3.get(), stream.get());
+
+  ASSERT_TRUE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
+                                  &traffic_annotation));
+  EXPECT_EQ(spdy::SpdyFrameType::DATA, frame_type);
+  EXPECT_EQ(2, ProducerToInt(std::move(frame_producer)));
+  EXPECT_EQ(stream2.get(), stream.get());
+
+  EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream,
+                                   &traffic_annotation));
+}
+
 }  // namespace
 
 }  // namespace net
