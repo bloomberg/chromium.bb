@@ -584,8 +584,8 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
     const blink::WebMediaStream& media_stream,
     PlayingState* state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  blink::WebVector<blink::WebMediaStreamTrack> web_tracks;
-  media_stream.AudioTracks(web_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> web_tracks =
+      media_stream.AudioTracks();
 
   for (const blink::WebMediaStreamTrack& web_track : web_tracks) {
     // WebRtcAudioRenderer can only render audio tracks received from a remote

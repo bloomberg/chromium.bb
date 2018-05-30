@@ -106,8 +106,8 @@ blink::WebMediaStreamTrack VideoTrackToPepperAdapter::GetFirstVideoTrack(
   }
 
   // Get the first video track from the stream.
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  stream.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      stream.VideoTracks();
   if (video_tracks.IsEmpty()) {
     LOG(ERROR) << "GetFirstVideoSource - no video tracks. url: " << url;
     return blink::WebMediaStreamTrack();

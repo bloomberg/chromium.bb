@@ -385,9 +385,9 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     audio_renderer_->Start();
 
     // Store the ID of audio track being played in |current_video_track_id_|
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
     if (!web_stream_.IsNull()) {
-      web_stream_.AudioTracks(audio_tracks);
+      blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+          web_stream_.AudioTracks();
       DCHECK_GT(audio_tracks.size(), 0U);
       current_audio_track_id_ = audio_tracks[0].Id();
     }
@@ -398,8 +398,8 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
     // Store the ID of video track being played in |current_video_track_id_|
     if (!web_stream_.IsNull()) {
-      blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-      web_stream_.VideoTracks(video_tracks);
+      blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+          web_stream_.VideoTracks();
       DCHECK_GT(video_tracks.size(), 0U);
       current_video_track_id_ = video_tracks[0].Id();
     }
@@ -458,9 +458,8 @@ void WebMediaPlayerMS::Reload() {
 void WebMediaPlayerMS::ReloadVideo() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!web_stream_.IsNull());
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  // VideoTracks() is a getter.
-  web_stream_.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      web_stream_.VideoTracks();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
   if (video_tracks.IsEmpty()) {
@@ -509,9 +508,8 @@ void WebMediaPlayerMS::ReloadAudio() {
   if (!frame)
     return;
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  // AudioTracks() is a getter.
-  web_stream_.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      web_stream_.AudioTracks();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
   if (audio_tracks.IsEmpty()) {

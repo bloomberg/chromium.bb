@@ -373,14 +373,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   void StopAllTracks(const blink::WebMediaStream& stream) {
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    stream.AudioTracks(audio_tracks);
-    for (const auto& track : audio_tracks)
+    for (const auto& track : stream.AudioTracks())
       MediaStreamAudioTrack::From(track)->Stop();
-
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    stream.VideoTracks(video_tracks);
-    for (const auto& track : video_tracks)
+    for (const auto& track : stream.VideoTracks())
       MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
   }
 
@@ -390,9 +385,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   bool AddStream(const blink::WebMediaStream& web_stream) {
     size_t senders_size_before_add = senders_.size();
-    blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
-    web_stream.AudioTracks(web_audio_tracks);
-    for (const auto& web_audio_track : web_audio_tracks) {
+    for (const auto& web_audio_track : web_stream.AudioTracks()) {
       auto sender = pc_handler_->AddTrack(
           web_audio_track, std::vector<blink::WebMediaStream>({web_stream}));
       if (sender) {
@@ -400,9 +393,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             static_cast<RTCRtpSender*>(sender.release())));
       }
     }
-    blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
-    web_stream.VideoTracks(web_video_tracks);
-    for (const auto& web_video_track : web_video_tracks) {
+    for (const auto& web_video_track : web_stream.VideoTracks()) {
       auto sender = pc_handler_->AddTrack(
           web_video_track, std::vector<blink::WebMediaStream>({web_stream}));
       if (sender) {
@@ -424,18 +415,14 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   bool RemoveStream(const blink::WebMediaStream& web_stream) {
     size_t senders_size_before_remove = senders_.size();
-    blink::WebVector<blink::WebMediaStreamTrack> web_audio_tracks;
-    web_stream.AudioTracks(web_audio_tracks);
     // TODO(hbos): With Unified Plan senders are not removed.
     // https://crbug.com/799030
-    for (const auto& web_audio_track : web_audio_tracks) {
+    for (const auto& web_audio_track : web_stream.AudioTracks()) {
       auto it = FindSenderForTrack(web_audio_track);
       if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()))
         senders_.erase(it);
     }
-    blink::WebVector<blink::WebMediaStreamTrack> web_video_tracks;
-    web_stream.VideoTracks(web_video_tracks);
-    for (const auto& web_video_track : web_video_tracks) {
+    for (const auto& web_video_track : web_stream.VideoTracks()) {
       auto it = FindSenderForTrack(web_video_track);
       if (it != senders_.end() && pc_handler_->RemoveTrack((*it).get()))
         senders_.erase(it);
@@ -827,14 +814,14 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
   blink::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  local_stream.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      local_stream.AudioTracks();
   MediaStreamAudioSource* native_audio_source =
       MediaStreamAudioSource::From(audio_tracks[0].Source());
   native_audio_source->StopSource();
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  local_stream.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      local_stream.VideoTracks();
   MediaStreamVideoSource* native_video_source =
       static_cast<MediaStreamVideoSource*>(
           video_tracks[0].Source().GetExtraData());
@@ -876,8 +863,8 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
   blink::WebMediaStream local_stream(
       CreateLocalMediaStream("local_stream"));
   EXPECT_TRUE(AddStream(local_stream));
-  blink::WebVector<blink::WebMediaStreamTrack> tracks;
-  local_stream.AudioTracks(tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> tracks =
+      local_stream.AudioTracks();
   ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
@@ -909,8 +896,8 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_GetStatsWithRemoteSelector) {
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(HasReceiverForEveryTrack(remote_stream, receivers));
 
-  blink::WebVector<blink::WebMediaStreamTrack> tracks;
-  webkit_stream.AudioTracks(tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> tracks =
+      webkit_stream.AudioTracks();
   ASSERT_LE(1ul, tracks.size());
 
   scoped_refptr<MockRTCStatsRequest> request(
@@ -926,9 +913,8 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   // added to the PeerConnection.
   blink::WebMediaStream local_stream(
       CreateLocalMediaStream("local_stream_2"));
-  blink::WebVector<blink::WebMediaStreamTrack> tracks;
-
-  local_stream.AudioTracks(tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> tracks =
+      local_stream.AudioTracks();
   blink::WebMediaStreamTrack component = tracks[0];
   mock_peer_connection_->SetGetStatsResult(false);
 
@@ -1323,13 +1309,13 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_RemoteTrackState) {
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(HasReceiverForEveryTrack(remote_stream, receivers));
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  webkit_stream.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      webkit_stream.AudioTracks();
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
             audio_tracks[0].Source().GetReadyState());
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  webkit_stream.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      webkit_stream.VideoTracks();
   EXPECT_EQ(blink::WebMediaStreamSource::kReadyStateLive,
             video_tracks[0].Source().GetReadyState());
 
@@ -1368,32 +1354,19 @@ TEST_F(RTCPeerConnectionHandlerTest,
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(HasReceiverForEveryTrack(remote_stream, receivers));
 
-  {
-    // Test in a small scope so that  |audio_tracks| don't hold on to destroyed
-    // source later.
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    webkit_stream.AudioTracks(audio_tracks);
-    EXPECT_EQ(1u, audio_tracks.size());
-  }
+  EXPECT_EQ(1u, webkit_stream.AudioTracks().size());
 
   // Remove the Webrtc audio track from the Webrtc MediaStream.
   scoped_refptr<webrtc::AudioTrackInterface> webrtc_track =
       remote_stream->GetAudioTracks()[0].get();
   InvokeRemoveTrack(remote_stream, webrtc_track.get());
-
-  {
-    blink::WebVector<blink::WebMediaStreamTrack> modified_audio_tracks1;
-    webkit_stream.AudioTracks(modified_audio_tracks1);
-    EXPECT_EQ(0u, modified_audio_tracks1.size());
-  }
+  EXPECT_EQ(0u, webkit_stream.AudioTracks().size());
 
   blink::WebHeap::CollectGarbageForTesting();
 
   // Add the WebRtc audio track again.
   InvokeAddTrack(remote_stream, webrtc_track.get());
-  blink::WebVector<blink::WebMediaStreamTrack> modified_audio_tracks2;
-  webkit_stream.AudioTracks(modified_audio_tracks2);
-  EXPECT_EQ(1u, modified_audio_tracks2.size());
+  EXPECT_EQ(1u, webkit_stream.AudioTracks().size());
 }
 
 // TODO(hbos): Enable when not mocking or remove test. https://crbug.com/788659
@@ -1415,34 +1388,21 @@ TEST_F(RTCPeerConnectionHandlerTest,
   InvokeOnAddStream(remote_stream);
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(HasReceiverForEveryTrack(remote_stream, receivers));
-
-  {
-    // Test in a small scope so that  |video_tracks| don't hold on to destroyed
-    // source later.
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    webkit_stream.VideoTracks(video_tracks);
-    EXPECT_EQ(1u, video_tracks.size());
-  }
+  EXPECT_EQ(1u, webkit_stream.VideoTracks().size());
 
   // Remove the Webrtc video track from the Webrtc MediaStream.
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
       remote_stream->GetVideoTracks()[0].get();
   InvokeRemoveTrack(remote_stream, webrtc_track.get());
   RunMessageLoopsUntilIdle();
-  {
-    blink::WebVector<blink::WebMediaStreamTrack> modified_video_tracks1;
-    webkit_stream.VideoTracks(modified_video_tracks1);
-    EXPECT_EQ(0u, modified_video_tracks1.size());
-  }
+  EXPECT_EQ(0u, webkit_stream.VideoTracks().size());
 
   blink::WebHeap::CollectGarbageForTesting();
 
   // Add the WebRtc video track again.
   InvokeAddTrack(remote_stream, webrtc_track.get());
   RunMessageLoopsUntilIdle();
-  blink::WebVector<blink::WebMediaStreamTrack> modified_video_tracks2;
-  webkit_stream.VideoTracks(modified_video_tracks2);
-  EXPECT_EQ(1u, modified_video_tracks2.size());
+  EXPECT_EQ(1u, webkit_stream.VideoTracks().size());
 }
 
 // TODO(hbos): Enable when not mocking or remove test. https://crbug.com/788659
@@ -1464,17 +1424,8 @@ TEST_F(RTCPeerConnectionHandlerTest,
   InvokeOnAddStream(remote_stream);
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(HasReceiverForEveryTrack(remote_stream, receivers));
-
-  {
-    // Test in a small scope so that  |audio_tracks| don't hold on to destroyed
-    // source later.
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    webkit_stream.AudioTracks(audio_tracks);
-    EXPECT_EQ(1u, audio_tracks.size());
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    webkit_stream.VideoTracks(video_tracks);
-    EXPECT_EQ(1u, video_tracks.size());
-  }
+  EXPECT_EQ(1u, webkit_stream.AudioTracks().size());
+  EXPECT_EQ(1u, webkit_stream.VideoTracks().size());
 
   // Remove the Webrtc tracks from the MediaStream.
   auto audio_track = remote_stream->GetAudioTracks()[0];
@@ -1482,15 +1433,8 @@ TEST_F(RTCPeerConnectionHandlerTest,
   auto video_track = remote_stream->GetVideoTracks()[0];
   InvokeRemoveTrack(remote_stream, video_track.get());
   RunMessageLoopsUntilIdle();
-
-  {
-    blink::WebVector<blink::WebMediaStreamTrack> modified_audio_tracks;
-    webkit_stream.AudioTracks(modified_audio_tracks);
-    EXPECT_EQ(0u, modified_audio_tracks.size());
-    blink::WebVector<blink::WebMediaStreamTrack> modified_video_tracks;
-    webkit_stream.VideoTracks(modified_video_tracks);
-    EXPECT_EQ(0u, modified_video_tracks.size());
-  }
+  EXPECT_EQ(0u, webkit_stream.AudioTracks().size());
+  EXPECT_EQ(0u, webkit_stream.VideoTracks().size());
 
   blink::WebHeap::CollectGarbageForTesting();
 
@@ -1500,12 +1444,8 @@ TEST_F(RTCPeerConnectionHandlerTest,
 
   blink::WebHeap::CollectGarbageForTesting();
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  webkit_stream.AudioTracks(audio_tracks);
-  EXPECT_EQ(1u, audio_tracks.size());
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  webkit_stream.VideoTracks(video_tracks);
-  EXPECT_EQ(1u, video_tracks.size());
+  EXPECT_EQ(1u, webkit_stream.AudioTracks().size());
+  EXPECT_EQ(1u, webkit_stream.VideoTracks().size());
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceCandidate) {

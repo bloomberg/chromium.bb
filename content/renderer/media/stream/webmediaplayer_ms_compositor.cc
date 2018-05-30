@@ -145,7 +145,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   if (!web_stream.IsNull())
-    web_stream.VideoTracks(video_tracks);
+    video_tracks = web_stream.VideoTracks();
 
   const bool remote_video =
       video_tracks.size() && video_tracks[0].Source().Remote();

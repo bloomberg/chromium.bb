@@ -1701,8 +1701,8 @@ void RTCPeerConnection::DidAddRemoteTrack(
     if (!stream) {
       // This is a new stream that we need to create.
       // Get or create audio tracks.
-      WebVector<WebMediaStreamTrack> audio_web_tracks;
-      web_stream.AudioTracks(audio_web_tracks);
+      WebVector<WebMediaStreamTrack> audio_web_tracks =
+          web_stream.AudioTracks();
       MediaStreamTrackVector audio_tracks;
       audio_tracks.ReserveCapacity(audio_web_tracks.size());
       for (const WebMediaStreamTrack& audio_web_track : audio_web_tracks) {
@@ -1715,8 +1715,8 @@ void RTCPeerConnection::DidAddRemoteTrack(
         audio_tracks.push_back(audio_track);
       }
       // Get or create video tracks.
-      WebVector<WebMediaStreamTrack> video_web_tracks;
-      web_stream.VideoTracks(video_web_tracks);
+      WebVector<WebMediaStreamTrack> video_web_tracks =
+          web_stream.VideoTracks();
       MediaStreamTrackVector video_tracks;
       video_tracks.ReserveCapacity(video_web_tracks.size());
       for (const WebMediaStreamTrack& video_web_track : video_web_tracks) {

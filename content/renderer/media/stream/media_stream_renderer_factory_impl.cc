@@ -59,8 +59,8 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoRenderer stream:"
            << web_stream.Id().Utf8();
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      web_stream.VideoTracks();
   if (video_tracks.IsEmpty() ||
       !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
     return nullptr;
@@ -76,8 +76,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     int render_frame_id,
     const std::string& device_id) {
   DCHECK(!web_stream.IsNull());
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      web_stream.AudioTracks();
   if (audio_tracks.IsEmpty()) {
     WebRtcLogMessage("No audio tracks in media stream (return null).");
     return nullptr;

@@ -25,8 +25,8 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
   void SetVideoTrack() {
     registry_.Init("stream URL");
     registry_.AddVideoTrack("test video track");
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().VideoTracks(video_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+        registry_.test_stream().VideoTracks();
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.
@@ -36,8 +36,8 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
     registry_.Init("stream URL");
     registry_.AddVideoTrack("test video track", VideoTrackAdapterSettings(),
                             noise_reduction, false, 0.0);
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    registry_.test_stream().VideoTracks(video_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+        registry_.test_stream().VideoTracks();
     track_ = video_tracks[0];
     // TODO(hta): Verify that track_ is valid. When constraints produce
     // no valid format, using the track will cause a crash.

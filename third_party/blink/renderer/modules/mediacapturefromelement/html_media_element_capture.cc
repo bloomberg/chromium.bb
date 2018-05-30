@@ -108,13 +108,11 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
         &web_stream, media_element_->GetWebMediaPlayer());
   }
 
-  WebVector<WebMediaStreamTrack> video_tracks;
-  web_stream.VideoTracks(video_tracks);
+  WebVector<WebMediaStreamTrack> video_tracks = web_stream.VideoTracks();
   for (const auto& track : video_tracks)
     media_stream_->AddTrackByComponent(track);
 
-  WebVector<WebMediaStreamTrack> audio_tracks;
-  web_stream.AudioTracks(audio_tracks);
+  WebVector<WebMediaStreamTrack> audio_tracks = web_stream.AudioTracks();
   for (const auto& track : audio_tracks)
     media_stream_->AddTrackByComponent(track);
 

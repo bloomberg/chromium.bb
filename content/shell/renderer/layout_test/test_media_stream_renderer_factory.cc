@@ -21,8 +21,7 @@ static const int kVideoCaptureFrameDurationMs = 33;
 bool IsMockMediaStreamWithVideo(const WebMediaStream& web_stream) {
   if (web_stream.IsNull())
     return false;
-  WebVector<WebMediaStreamTrack> video_tracks;
-  web_stream.VideoTracks(video_tracks);
+  WebVector<WebMediaStreamTrack> video_tracks = web_stream.VideoTracks();
   return video_tracks.size() > 0;
 }
 

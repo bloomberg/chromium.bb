@@ -469,10 +469,10 @@ class UserMediaClientImplTest : public ::testing::Test {
     EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
 
     blink::WebMediaStream desc = user_media_processor_->last_generated_stream();
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    desc.AudioTracks(audio_tracks);
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    desc.VideoTracks(video_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+        desc.AudioTracks();
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+        desc.VideoTracks();
 
     EXPECT_EQ(1u, audio_tracks.size());
     EXPECT_EQ(1u, video_tracks.size());
@@ -490,10 +490,10 @@ class UserMediaClientImplTest : public ::testing::Test {
 
     blink::WebMediaStream web_stream =
         user_media_processor_->last_generated_stream();
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    web_stream.AudioTracks(audio_tracks);
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    web_stream.VideoTracks(video_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+        web_stream.AudioTracks();
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+        web_stream.VideoTracks();
 
     EXPECT_EQ(audio_tracks.size(), 0U);
     EXPECT_EQ(video_tracks.size(), 1U);
@@ -515,10 +515,10 @@ class UserMediaClientImplTest : public ::testing::Test {
     EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
 
     blink::WebMediaStream desc = user_media_processor_->last_generated_stream();
-    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-    desc.AudioTracks(audio_tracks);
-    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-    desc.VideoTracks(video_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+        desc.AudioTracks();
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+        desc.VideoTracks();
 
     EXPECT_EQ(audio_tracks.size(), 1u);
     EXPECT_TRUE(video_tracks.empty());
@@ -617,20 +617,20 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   blink::WebMediaStream desc1 = RequestLocalMediaStream();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
 
-  blink::WebVector<blink::WebMediaStreamTrack> desc1_video_tracks;
-  desc1.VideoTracks(desc1_video_tracks);
-  blink::WebVector<blink::WebMediaStreamTrack> desc2_video_tracks;
-  desc2.VideoTracks(desc2_video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> desc1_video_tracks =
+      desc1.VideoTracks();
+  blink::WebVector<blink::WebMediaStreamTrack> desc2_video_tracks =
+      desc2.VideoTracks();
   EXPECT_EQ(desc1_video_tracks[0].Source().Id(),
             desc2_video_tracks[0].Source().Id());
 
   EXPECT_EQ(desc1_video_tracks[0].Source().GetExtraData(),
             desc2_video_tracks[0].Source().GetExtraData());
 
-  blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks;
-  desc1.AudioTracks(desc1_audio_tracks);
-  blink::WebVector<blink::WebMediaStreamTrack> desc2_audio_tracks;
-  desc2.AudioTracks(desc2_audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks =
+      desc1.AudioTracks();
+  blink::WebVector<blink::WebMediaStreamTrack> desc2_audio_tracks =
+      desc2.AudioTracks();
   EXPECT_EQ(desc1_audio_tracks[0].Source().Id(),
             desc2_audio_tracks[0].Source().Id());
 
@@ -647,20 +647,20 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   mock_dispatcher_host_.IncrementSessionId();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
 
-  blink::WebVector<blink::WebMediaStreamTrack> desc1_video_tracks;
-  desc1.VideoTracks(desc1_video_tracks);
-  blink::WebVector<blink::WebMediaStreamTrack> desc2_video_tracks;
-  desc2.VideoTracks(desc2_video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> desc1_video_tracks =
+      desc1.VideoTracks();
+  blink::WebVector<blink::WebMediaStreamTrack> desc2_video_tracks =
+      desc2.VideoTracks();
   EXPECT_NE(desc1_video_tracks[0].Source().Id(),
             desc2_video_tracks[0].Source().Id());
 
   EXPECT_NE(desc1_video_tracks[0].Source().GetExtraData(),
             desc2_video_tracks[0].Source().GetExtraData());
 
-  blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks;
-  desc1.AudioTracks(desc1_audio_tracks);
-  blink::WebVector<blink::WebMediaStreamTrack> desc2_audio_tracks;
-  desc2.AudioTracks(desc2_audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> desc1_audio_tracks =
+      desc1.AudioTracks();
+  blink::WebVector<blink::WebMediaStreamTrack> desc2_audio_tracks =
+      desc2.AudioTracks();
   EXPECT_NE(desc1_audio_tracks[0].Source().Id(),
             desc2_audio_tracks[0].Source().Id());
 
@@ -672,15 +672,15 @@ TEST_F(UserMediaClientImplTest, StopLocalTracks) {
   // Generate a stream with both audio and video.
   blink::WebMediaStream mixed_desc = RequestLocalMediaStream();
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  mixed_desc.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      mixed_desc.AudioTracks();
   MediaStreamTrack* audio_track = MediaStreamTrack::GetTrack(audio_tracks[0]);
   audio_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  mixed_desc.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      mixed_desc.VideoTracks();
   MediaStreamTrack* video_track = MediaStreamTrack::GetTrack(video_tracks[0]);
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
@@ -696,29 +696,29 @@ TEST_F(UserMediaClientImplTest, StopLocalTracksWhenTwoStreamUseSameDevices) {
   blink::WebMediaStream desc1 = RequestLocalMediaStream();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks1;
-  desc1.AudioTracks(audio_tracks1);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks1 =
+      desc1.AudioTracks();
   MediaStreamTrack* audio_track1 = MediaStreamTrack::GetTrack(audio_tracks1[0]);
   audio_track1->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_dispatcher_host_.stop_audio_device_counter());
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks2;
-  desc2.AudioTracks(audio_tracks2);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks2 =
+      desc2.AudioTracks();
   MediaStreamTrack* audio_track2 = MediaStreamTrack::GetTrack(audio_tracks2[0]);
   audio_track2->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks1;
-  desc1.VideoTracks(video_tracks1);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks1 =
+      desc1.VideoTracks();
   MediaStreamTrack* video_track1 = MediaStreamTrack::GetTrack(video_tracks1[0]);
   video_track1->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, mock_dispatcher_host_.stop_video_device_counter());
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks2;
-  desc2.VideoTracks(video_tracks2);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks2 =
+      desc2.VideoTracks();
   MediaStreamTrack* video_track2 = MediaStreamTrack::GetTrack(video_tracks2[0]);
   video_track2->Stop();
   base::RunLoop().RunUntilIdle();
@@ -823,15 +823,15 @@ TEST_F(UserMediaClientImplTest, StopTrackAfterReload) {
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
   EXPECT_EQ(1, mock_dispatcher_host_.stop_video_device_counter());
 
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  mixed_desc.AudioTracks(audio_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
+      mixed_desc.AudioTracks();
   MediaStreamTrack* audio_track = MediaStreamTrack::GetTrack(audio_tracks[0]);
   audio_track->Stop();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_dispatcher_host_.stop_audio_device_counter());
 
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  mixed_desc.VideoTracks(video_tracks);
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
+      mixed_desc.VideoTracks();
   MediaStreamTrack* video_track = MediaStreamTrack::GetTrack(video_tracks[0]);
   video_track->Stop();
   base::RunLoop().RunUntilIdle();
