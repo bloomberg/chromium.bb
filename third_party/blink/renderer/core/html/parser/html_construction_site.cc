@@ -691,7 +691,10 @@ void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
       ToHTMLFormElement(CreateElement(token, xhtmlNamespaceURI));
   if (!OpenElements()->HasTemplateInHTMLScope())
     form_ = form_element;
-  form_element->SetDemoted(is_demoted);
+  if (is_demoted) {
+    UseCounter::Count(OwnerDocumentForCurrentNode(),
+                      WebFeature::kDemotedFormElement);
+  }
   AttachLater(CurrentNode(), form_element);
   open_elements_.Push(HTMLStackItem::Create(form_element, token));
 }

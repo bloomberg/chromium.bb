@@ -398,6 +398,7 @@ TEST(CSSSelectorParserTest, AttributeSelectorUniversalInvalid) {
 TEST(CSSSelectorParserTest, InternalPseudo) {
   const char* test_cases[] = {"::-internal-whatever",
                               "::-internal-media-controls-text-track-list",
+                              ":-internal-is-html",
                               ":-internal-list-box",
                               ":-internal-shadow-host-has-appearance",
                               ":-internal-spatial-navigation-focus",

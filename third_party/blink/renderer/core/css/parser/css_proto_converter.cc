@@ -28,6 +28,7 @@ const std::string Converter::kViewportValueLookupTable[] = {
 
 const std::string Converter::kPseudoLookupTable[] = {
     "",  // This is just to fill the zeroth spot. It should not be used.
+    "-internal-is-html",
     "-internal-list-box",
     "-internal-media-controls-overlay-cast-button",
     "-internal-shadow-host-has-appearance",

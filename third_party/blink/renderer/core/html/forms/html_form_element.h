@@ -75,8 +75,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void submitFromJavaScript();
   void reset();
 
-  void SetDemoted(bool);
-
   void SubmitImplicitly(Event*, bool from_implicit_submission_trigger);
 
   String GetName() const;
@@ -117,7 +115,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
  private:
   explicit HTMLFormElement(Document&);
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
   void FinishParsingChildren() override;
@@ -131,9 +128,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   NamedItemType GetNamedItemType() const override {
     return NamedItemType::kName;
   }
-
-  void CloneNonAttributePropertiesFrom(const Element&,
-                                       CloneChildrenFlag) override;
 
   void SubmitDialog(FormSubmission*);
   void Submit(Event*, HTMLFormControlElement* submit_button);
@@ -186,7 +180,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   bool has_elements_associated_by_form_attribute_ : 1;
   bool did_finish_parsing_children_ : 1;
   bool is_in_reset_function_ : 1;
-  bool was_demoted_ : 1;
 };
 
 }  // namespace blink

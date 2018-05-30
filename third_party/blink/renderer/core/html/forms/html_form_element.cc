@@ -74,8 +74,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
       has_elements_associated_by_parser_(false),
       has_elements_associated_by_form_attribute_(false),
       did_finish_parsing_children_(false),
-      is_in_reset_function_(false),
-      was_demoted_(false) {
+      is_in_reset_function_(false) {
   static unsigned next_nique_renderer_form_id = 0;
   unique_renderer_form_id_ = next_nique_renderer_form_id++;
 }
@@ -103,41 +102,6 @@ bool HTMLFormElement::MatchesValidityPseudoClasses() const {
 bool HTMLFormElement::IsValidElement() {
   return !CheckInvalidControlsAndCollectUnhandled(
       nullptr, kCheckValidityDispatchNoEvent);
-}
-
-bool HTMLFormElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
-  if (!was_demoted_)
-    return HTMLElement::LayoutObjectIsNeeded(style);
-
-  ContainerNode* node = parentNode();
-  if (!node || !node->GetLayoutObject())
-    return HTMLElement::LayoutObjectIsNeeded(style);
-  LayoutObject* parent_layout_object = node->GetLayoutObject();
-  // FIXME: Shouldn't we also check for table caption (see |formIsTablePart|
-  // below).
-  // FIXME: This check is not correct for Shadow DOM.
-  bool parent_is_table_element_part =
-      (parent_layout_object->IsTable() && IsHTMLTableElement(*node)) ||
-      (parent_layout_object->IsTableRow() && IsHTMLTableRowElement(*node)) ||
-      (parent_layout_object->IsTableSection() && node->HasTagName(tbodyTag)) ||
-      (parent_layout_object->IsLayoutTableCol() && node->HasTagName(colTag)) ||
-      (parent_layout_object->IsTableCell() && IsHTMLTableRowElement(*node));
-
-  if (!parent_is_table_element_part)
-    return true;
-
-  EDisplay display = style.Display();
-  bool form_is_table_part =
-      display == EDisplay::kTable || display == EDisplay::kInlineTable ||
-      display == EDisplay::kTableRowGroup ||
-      display == EDisplay::kTableHeaderGroup ||
-      display == EDisplay::kTableFooterGroup ||
-      display == EDisplay::kTableRow ||
-      display == EDisplay::kTableColumnGroup ||
-      display == EDisplay::kTableColumn || display == EDisplay::kTableCell ||
-      display == EDisplay::kTableCaption;
-
-  return form_is_table_part;
 }
 
 Node::InsertionNotificationRequest HTMLFormElement::InsertedInto(
@@ -834,12 +798,6 @@ void HTMLFormElement::FinishParsingChildren() {
   did_finish_parsing_children_ = true;
 }
 
-void HTMLFormElement::CloneNonAttributePropertiesFrom(const Element& source,
-                                                      CloneChildrenFlag flag) {
-  was_demoted_ = ToHTMLFormElement(source).was_demoted_;
-  HTMLElement::CloneNonAttributePropertiesFrom(source, flag);
-}
-
 void HTMLFormElement::AnonymousNamedGetter(
     const AtomicString& name,
     RadioNodeListOrElement& return_value) {
@@ -881,12 +839,6 @@ void HTMLFormElement::AnonymousNamedGetter(
   }
 
   return_value.SetRadioNodeList(GetRadioNodeList(name, only_match_img));
-}
-
-void HTMLFormElement::SetDemoted(bool demoted) {
-  if (demoted)
-    UseCounter::Count(GetDocument(), WebFeature::kDemotedFormElement);
-  was_demoted_ = demoted;
 }
 
 void HTMLFormElement::InvalidateDefaultButtonStyle() const {
