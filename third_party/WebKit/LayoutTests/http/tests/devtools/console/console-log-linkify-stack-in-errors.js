@@ -78,7 +78,7 @@
   }
 
   function dumpMessages() {
-    ConsoleTestRunner.dumpConsoleMessages(false, true);
+    ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

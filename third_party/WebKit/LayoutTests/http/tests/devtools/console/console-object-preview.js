@@ -89,16 +89,12 @@
           console.log({null:null, undef:undefined, regexp: \/^[regexp]$\/g, bool: false});
   `);
 
-//   TestRunner.evaluateInPage('logToConsole()', step2);
-
-//   function step2() {
-    ConsoleTestRunner.dumpConsoleMessages(false, true);
-    TestRunner.addResult('Expanded all messages');
-    ConsoleTestRunner.expandConsoleMessages(step3);
-//   }
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.addResult('Expanded all messages');
+  ConsoleTestRunner.expandConsoleMessages(step3);
 
   function step3() {
-    ConsoleTestRunner.dumpConsoleMessages(false, true);
+    ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

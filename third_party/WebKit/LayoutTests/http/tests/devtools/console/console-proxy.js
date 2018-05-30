@@ -36,7 +36,7 @@
     consoleView._viewport.invalidate();
     var element = consoleView._visibleViewMessages[0].contentElement();
 
-    ConsoleTestRunner.dumpConsoleMessages(false, true);
+    ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.evaluateInPage('window.accessedGet', dumpAccessedGetAndExpand);
   }
 
@@ -49,7 +49,7 @@
     var element = Console.ConsoleView.instance()._visibleViewMessages[0].contentElement();
     dumpNoteVisible(element, 'info-note');
 
-    ConsoleTestRunner.dumpConsoleMessages(false, true);
+    ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.evaluateInPage('window.accessedGet', dumpAccessedGetAndCompleteTest);
   }
 
