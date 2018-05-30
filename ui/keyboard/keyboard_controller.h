@@ -200,6 +200,10 @@ class KEYBOARD_EXPORT KeyboardController
   void MoveToDisplayWithTransition(display::Display display,
                                    gfx::Rect new_bounds_in_local);
 
+  // Called by KeyboardUI when the keyboard contents have loaded. Shows
+  // the keyboard if show_on_content_update_ is true.
+  void NotifyContentsLoaded();
+
   // InputMethodKeyboardController overrides.
   bool DisplayVirtualKeyboard() override;
   void DismissVirtualKeyboard() override;
@@ -238,11 +242,8 @@ class KEYBOARD_EXPORT KeyboardController
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnShowImeIfNeeded() override;
 
-  // Sets the bounds of the container window. Shows the keyboard if contents
-  // is first loaded and show_on_content_update_ is true. Called by
-  // KeyboardLayoutManager.
-  void SetContainerBounds(const gfx::Rect& new_bounds,
-                          const bool contents_loaded);
+  // Sets the bounds of the container window.
+  void SetContainerBounds(const gfx::Rect& new_bounds);
 
   // Show virtual keyboard immediately with animation.
   void ShowKeyboardInternal(const display::Display& display);

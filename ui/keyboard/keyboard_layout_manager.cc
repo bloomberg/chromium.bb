@@ -65,10 +65,8 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
     return;
 
   SetChildBoundsDirect(contents_window_, gfx::Rect(new_bounds.size()));
-  const bool contents_loaded =
-      old_bounds.height() == 0 && new_bounds.height() > 0;
 
-  controller_->SetContainerBounds(new_bounds, contents_loaded);
+  controller_->SetContainerBounds(new_bounds);
 }
 
 }  // namespace keyboard

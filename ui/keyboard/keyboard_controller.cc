@@ -310,11 +310,10 @@ void KeyboardController::NotifyContentsBoundsChanging(
 
 void KeyboardController::MoveKeyboard(const gfx::Rect& new_bounds) {
   DCHECK(keyboard_visible());
-  SetContainerBounds(new_bounds, false);
+  SetContainerBounds(new_bounds);
 }
 
-void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds,
-                                            const bool contents_loaded) {
+void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds) {
   ui::LayerAnimator* animator = container_->layer()->GetAnimator();
   // Stops previous animation if a window resize is requested during animation.
   if (animator->is_animating())
@@ -322,30 +321,29 @@ void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds,
 
   container_->SetBounds(new_bounds);
 
-  if (contents_loaded) {
-    const bool should_show = show_on_content_update_;
-    if (state_ == KeyboardControllerState::LOADING_EXTENSION)
-      ChangeState(KeyboardControllerState::HIDDEN);
-    if (should_show) {
-      // The window height is set to 0 initially or before switch to an IME in a
-      // different extension. Virtual keyboard window may wait for this bounds
-      // change to correctly animate in.
-      if (keyboard_locked()) {
-        // Do not move the keyboard to another display after switch to an IME in
-        // a different extension.
-        ShowKeyboardInDisplay(
-            display_util_.GetNearestDisplayToWindow(GetContainerWindow()));
-      } else {
-        ShowKeyboard(false /* lock */);
-      }
-      return;
-    }
-  }
-
   // We need to send out this notification only if keyboard is visible since
   // the contents window is resized even if keyboard is hidden.
   if (keyboard_visible())
     NotifyContentsBoundsChanging(new_bounds);
+}
+
+void KeyboardController::NotifyContentsLoaded() {
+  const bool should_show = show_on_content_update_;
+  if (state_ == KeyboardControllerState::LOADING_EXTENSION)
+    ChangeState(KeyboardControllerState::HIDDEN);
+  if (should_show) {
+    // The window height is set to 0 initially or before switch to an IME in a
+    // different extension. Virtual keyboard window may wait for this bounds
+    // change to correctly animate in.
+    if (keyboard_locked()) {
+      // Do not move the keyboard to another display after switch to an IME in
+      // a different extension.
+      ShowKeyboardInDisplay(
+          display_util_.GetNearestDisplayToWindow(GetContainerWindow()));
+    } else {
+      ShowKeyboard(false /* lock */);
+    }
+  }
 }
 
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
@@ -444,8 +442,7 @@ void KeyboardController::HideAnimationFinished() {
       // |PopulateKeyboardContent| before showing animation, so we can set the
       // passed bounds directly.
       if (queued_container_type_->target_bounds())
-        SetContainerBounds(queued_container_type_->target_bounds().value(),
-                           false /* contents_loaded */);
+        SetContainerBounds(queued_container_type_->target_bounds().value());
       ShowKeyboard(false /* lock */);
     }
 
@@ -852,7 +849,7 @@ void KeyboardController::SetContainerType(
     // the passed callback now.
     SetContainerBehaviorInternal(type);
     if (target_bounds)
-      SetContainerBounds(target_bounds.value(), false /* contents_loaded */);
+      SetContainerBounds(target_bounds.value());
     DCHECK_EQ(GetActiveContainerType(), type);
     std::move(callback).Run(true /* change_successful */);
   }

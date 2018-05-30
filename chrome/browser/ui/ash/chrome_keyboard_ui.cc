@@ -540,3 +540,9 @@ void ChromeKeyboardUI::RenderViewCreated(
   int render_view_id = render_view_host->GetRoutingID();
   zoom_map->SetTemporaryZoomLevel(render_process_id, render_view_id, 0);
 }
+
+void ChromeKeyboardUI::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  keyboard_controller()->NotifyContentsLoaded();
+}
