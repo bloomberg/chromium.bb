@@ -1134,22 +1134,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                                   SiteInstanceRelation::RELATED);
   }
 
-  // (UGLY) HEURISTIC, process-per-site only:
-  //
-  // If this navigation is generated, then it probably corresponds to a search
-  // query.  Given that search results typically lead to users navigating to
-  // other sites, we don't really want to use the search engine hostname to
-  // determine the site instance for this navigation.
-  //
-  // NOTE: This can be removed once we have a way to transition between
-  //       RenderViews in response to a link click.
-  //
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kProcessPerSite) &&
-      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) {
-    return SiteInstanceDescriptor(current_instance_impl);
-  }
-
   if (!frame_tree_node_->IsMainFrame()) {
     SiteInstance* parent_site_instance =
         frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
