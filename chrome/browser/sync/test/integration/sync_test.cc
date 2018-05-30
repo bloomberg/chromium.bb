@@ -402,13 +402,24 @@ Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
 }
 
 Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
-  if (!preexisting_preferences_file_contents_.empty()) {
+  const auto& preference_contents_it =
+      preexisting_preferences_file_contents_.find(index);
+  if (preference_contents_it != preexisting_preferences_file_contents_.end() &&
+      !preference_contents_it->second.empty()) {
+    // The profile directory might not exist yet (e.g. for the verifier_
+    // profile).
+    if (!base::PathExists(profile_path) &&
+        !base::CreateDirectory(profile_path)) {
+      LOG(FATAL) << "Could not create profile directory: " << profile_path;
+    }
     base::FilePath pref_path(profile_path.Append(chrome::kPreferencesFilename));
-    const char* contents = preexisting_preferences_file_contents_.c_str();
-    size_t contents_length = preexisting_preferences_file_contents_.size();
-    if (base::WriteFile(pref_path, contents, contents_length) !=
-        static_cast<int>(contents_length)) {
-      LOG(FATAL) << "Preexisting Preferences file could not be written.";
+    int write_result =
+        base::WriteFile(pref_path, preference_contents_it->second.c_str(),
+                        preference_contents_it->second.size());
+    if (write_result !=
+        static_cast<int>(preference_contents_it->second.size())) {
+      LOG(FATAL) << "Preexisting Preferences file could not be written to "
+                 << pref_path;
     }
   }
 
@@ -1184,8 +1195,9 @@ arc::SyncArcPackageHelper* SyncTest::sync_arc_helper() {
 }
 
 void SyncTest::SetPreexistingPreferencesFileContents(
+    int index,
     const std::string& contents) {
-  preexisting_preferences_file_contents_ = contents;
+  preexisting_preferences_file_contents_[index] = contents;
 }
 
 bool SyncTest::ClearServerData(ProfileSyncServiceHarness* harness) {

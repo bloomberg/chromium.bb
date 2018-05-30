@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -26,12 +27,17 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/synced_pref_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::SyncChange;
 using syncer::SyncData;
+using testing::Eq;
+using testing::IsEmpty;
+using testing::Not;
 using testing::NotNull;
+using testing::SizeIs;
 
 namespace sync_preferences {
 
@@ -57,6 +63,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
  public:
   explicit TestSyncProcessorStub(syncer::SyncChangeList* output)
       : output_(output), fail_next_(false) {}
+
   syncer::SyncError ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override {
@@ -263,6 +270,23 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
   EXPECT_FALSE(FindValue(kListPrefName, out));
   EXPECT_TRUE(GetPreferenceValue(kListPrefName).Equals(expected_urls.get()));
   EXPECT_EQ(kNonDefaultCharsetValue, prefs_.GetString(kDefaultCharsetPrefName));
+}
+
+// Verifies that the implementation gracefully handles an initial remote sync
+// data of wrong type. The local version should not get modified in these cases.
+TEST_F(PrefServiceSyncableTest, ModelAssociationWithDataTypeMismatch) {
+  base::HistogramTester histogram_tester;
+  prefs_.SetString(kStringPrefName, kExampleUrl0);
+
+  syncer::SyncDataList in;
+  base::Value remote_int_value(123);
+  AddToRemoteDataList(kStringPrefName, remote_int_value, &in);
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+  EXPECT_THAT(out, IsEmpty());
+  histogram_tester.ExpectBucketCount("Sync.Preferences.RemotePrefTypeMismatch",
+                                     true, 1);
+  EXPECT_THAT(prefs_.GetString(kStringPrefName), Eq(kExampleUrl0));
 }
 
 class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
@@ -511,6 +535,134 @@ TEST_F(PrefServiceSyncableMergeTest, ShouldMergeSelectedDictionaryValues) {
   EXPECT_TRUE(GetPreferenceValue(kDictPrefName).Equals(&expected_dict));
 }
 
+TEST_F(PrefServiceSyncableMergeTest, InitWithUnknownPrefsValue) {
+  base::HistogramTester histogram_tester;
+  const std::string pref_name1 = "testing.whitelisted_pref1";
+  const std::string pref_name2 = "testing.whitelisted_pref2";
+  pref_registry_->WhitelistLateRegistrationPrefForSync(pref_name1);
+  pref_registry_->WhitelistLateRegistrationPrefForSync(pref_name2);
+
+  syncer::SyncDataList in;
+  AddToRemoteDataList(pref_name1, base::Value("remote_value1"), &in);
+  AddToRemoteDataList(pref_name2, base::Value("remote_value2"), &in);
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+  pref_registry_->RegisterStringPref(
+      pref_name1, "default_value",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  EXPECT_THAT(GetPreferenceValue(pref_name1).GetString(), Eq("remote_value1"));
+
+  histogram_tester.ExpectBucketCount("Sync.Preferences.SyncingUnknownPrefs", 2,
+                                     1);
+}
+
+TEST_F(PrefServiceSyncableMergeTest, ReceiveUnknownPrefsValue) {
+  base::HistogramTester histogram_tester;
+  const std::string pref_name = "testing.whitelisted_pref";
+  pref_registry_->WhitelistLateRegistrationPrefForSync(pref_name);
+
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
+
+  syncer::SyncChangeList remote_changes;
+  remote_changes.push_back(MakeRemoteChange(
+      1, pref_name, base::Value("remote_value"), SyncChange::ACTION_UPDATE));
+  pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
+  EXPECT_THAT(prefs_.IsPrefSynced(pref_name), Eq(true));
+
+  pref_registry_->RegisterStringPref(
+      pref_name, "default_value",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("remote_value"));
+}
+
+class ShouldNotBeNotifedObserver : public SyncedPrefObserver {
+ public:
+  ShouldNotBeNotifedObserver() {}
+  ~ShouldNotBeNotifedObserver() {}
+
+  void OnSyncedPrefChanged(const std::string& path, bool from_sync) override {
+    ADD_FAILURE() << "Unexpected notification about a pref change with path: '"
+                  << path << "' and from_sync: " << from_sync;
+  }
+};
+
+TEST_F(PrefServiceSyncableMergeTest, RegisterShouldClearTypeMismatchingData) {
+  base::HistogramTester histogram_tester;
+  const std::string pref_name = "testing.whitelisted_pref";
+  pref_registry_->WhitelistLateRegistrationPrefForSync(pref_name);
+  // Make sure no changes will be communicated to any synced pref listeners
+  // (those listeners are typically only used for metrics but we still don't
+  // want to inform them).
+  ShouldNotBeNotifedObserver observer;
+  prefs_.AddSyncedPrefObserver(pref_name, &observer);
+  syncer::SyncDataList in;
+  AddToRemoteDataList(pref_name, base::Value("remote_value"), &in);
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+  ASSERT_THAT(out, IsEmpty());
+
+  EXPECT_TRUE(user_prefs_->GetValue(pref_name, nullptr));
+
+  pref_registry_->RegisterListPref(
+      pref_name, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  EXPECT_TRUE(GetPreferenceValue(pref_name).GetList().empty());
+  EXPECT_FALSE(user_prefs_->GetValue(pref_name, nullptr));
+  // Make sure the removal of the value was not communicated to sync via the
+  // SyncProcessor.
+  EXPECT_THAT(out, IsEmpty());
+
+  histogram_tester.ExpectBucketCount(
+      "Sync.Preferences.ClearedLocalPrefOnTypeMismatch", true, 1);
+  prefs_.RemoveSyncedPrefObserver(pref_name, &observer);
+}
+
+TEST_F(PrefServiceSyncableMergeTest, ShouldIgnoreUpdatesToNotSyncablePrefs) {
+  const std::string pref_name = "testing.not_syncable_pref";
+  pref_registry_->RegisterStringPref(pref_name, "default_value",
+                                     PrefRegistry::NO_REGISTRATION_FLAGS);
+  syncer::SyncDataList in;
+  AddToRemoteDataList(pref_name, base::Value("remote_value"), &in);
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+  EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("default_value"));
+
+  syncer::SyncChangeList remote_changes;
+  remote_changes.push_back(MakeRemoteChange(
+      1, pref_name, base::Value("remote_value2"), SyncChange::ACTION_UPDATE));
+  pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
+  EXPECT_THAT(prefs_.IsPrefSynced(pref_name), Eq(false));
+
+  EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("default_value"));
+}
+
+TEST_F(PrefServiceSyncableMergeTest, GetAllSyncDataForLateRegisteredPrefs) {
+  const std::string pref_name = "testing.whitelisted_pref";
+  pref_registry_->WhitelistLateRegistrationPrefForSync(pref_name);
+
+  syncer::SyncDataList in;
+  AddToRemoteDataList(pref_name, base::Value("remote_value"), &in);
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+
+  syncer::SyncDataList all_data =
+      prefs_.GetSyncableService(syncer::PREFERENCES)
+          ->GetAllSyncData(syncer::PREFERENCES);
+  EXPECT_THAT(all_data, IsEmpty());
+
+  // Make sure the preference appears in the result once it's registered.
+  pref_registry_->RegisterStringPref(
+      pref_name, "default_value",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  all_data = prefs_.GetSyncableService(syncer::PREFERENCES)
+                 ->GetAllSyncData(syncer::PREFERENCES);
+  ASSERT_THAT(all_data, SizeIs(1));
+  EXPECT_THAT(all_data[0].GetSpecifics().preference().name(), Eq(pref_name));
+  EXPECT_THAT(all_data[0].GetSpecifics().preference().value(),
+              Eq("\"remote_value\""));
+}
+
 TEST_F(PrefServiceSyncableTest, FailModelAssociation) {
   syncer::SyncChangeList output;
   TestSyncProcessorStub* stub = new TestSyncProcessorStub(&output);
@@ -563,6 +715,24 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdate) {
 
   const base::Value& actual = GetPreferenceValue(kStringPrefName);
   EXPECT_TRUE(expected.Equals(&actual));
+}
+
+// Verifies that the implementation gracefully handles a remote update with the
+// wrong type. The local version should not get modified in these cases.
+TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdateTypeMismatch) {
+  base::HistogramTester histogram_tester;
+  GetPrefs()->SetString(kStringPrefName, kExampleUrl0);
+  InitWithNoSyncData();
+
+  base::Value remote_int_value(123);
+  syncer::SyncChangeList remote_changes;
+  remote_changes.push_back(MakeRemoteChange(
+      1, kStringPrefName, remote_int_value, SyncChange::ACTION_UPDATE));
+  pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
+
+  EXPECT_THAT(prefs_.GetString(kStringPrefName), Eq(kExampleUrl0));
+  histogram_tester.ExpectBucketCount("Sync.Preferences.RemotePrefTypeMismatch",
+                                     true, 1);
 }
 
 TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionAdd) {
