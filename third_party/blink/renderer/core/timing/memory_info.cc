@@ -43,13 +43,14 @@
 
 namespace blink {
 
-static const double kTwentyMinutesInSeconds = 20 * 60;
+static constexpr TimeDelta kTwentyMinutes = TimeDelta::FromMinutes(20);
+static constexpr TimeDelta kFiftyMs = TimeDelta::FromMilliseconds(50);
 
 static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
   v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_statistics);
   info.used_js_heap_size = heap_statistics.used_heap_size();
-  info.total_js_heap_size = heap_statistics.total_physical_size();
+  info.total_js_heap_size = heap_statistics.total_heap_size();
   info.js_heap_size_limit = heap_statistics.heap_size_limit();
 }
 
@@ -57,12 +58,10 @@ class HeapSizeCache {
   USING_FAST_MALLOC(HeapSizeCache);
 
  public:
-  HeapSizeCache()
-      : last_update_time_(CurrentTimeTicksInSeconds() -
-                          kTwentyMinutesInSeconds) {}
+  HeapSizeCache() {}
 
-  void GetCachedHeapSize(HeapInfo& info) {
-    MaybeUpdate();
+  void GetCachedHeapSize(HeapInfo& info, MemoryInfo::Precision precision) {
+    MaybeUpdate(precision);
     info = info_;
   }
 
@@ -73,25 +72,32 @@ class HeapSizeCache {
   }
 
  private:
-  void MaybeUpdate() {
-    // We rate-limit queries to once every twenty minutes to make it more
-    // difficult for attackers to compare memory usage before and after some
-    // event.
-    double now = CurrentTimeTicksInSeconds();
-    if (now - last_update_time_ >= kTwentyMinutesInSeconds) {
-      Update();
+  void MaybeUpdate(MemoryInfo::Precision precision) {
+    // We rate-limit queries to once every twenty minutes in the Bucketized case
+    // to make it more difficult for attackers to compare memory usage before
+    // and after some event. We limit to once every 50 ms in the Precise case to
+    // avoid exposing precise GC timings.
+    TimeTicks now = CurrentTimeTicks();
+    TimeDelta delta_allowed = precision == MemoryInfo::Precision::Bucketized
+                                  ? kTwentyMinutes
+                                  : kFiftyMs;
+    if (now - last_update_time_ >= delta_allowed) {
+      Update(precision);
       last_update_time_ = now;
     }
   }
 
-  void Update() {
+  void Update(MemoryInfo::Precision precision) {
     GetHeapSize(info_);
+    if (precision == MemoryInfo::Precision::Precise)
+      return;
+
     info_.used_js_heap_size = QuantizeMemorySize(info_.used_js_heap_size);
     info_.total_js_heap_size = QuantizeMemorySize(info_.total_js_heap_size);
     info_.js_heap_size_limit = QuantizeMemorySize(info_.js_heap_size_limit);
   }
 
-  double last_update_time_;
+  TimeTicks last_update_time_;
 
   HeapInfo info_;
   DISALLOW_COPY_AND_ASSIGN(HeapSizeCache);
@@ -149,11 +155,12 @@ size_t QuantizeMemorySize(size_t size) {
   return bucket_size_list[kNumberOfBuckets - 1];
 }
 
-MemoryInfo::MemoryInfo() {
+MemoryInfo::MemoryInfo(Precision precision) {
+  // With the experimental PreciseMemoryInfoEnabled flag on, we will not
+  // bucketize or cache values.
   if (RuntimeEnabledFeatures::PreciseMemoryInfoEnabled())
     GetHeapSize(info_);
-  else
-    HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_);
+  HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_, precision);
 }
 
 }  // namespace blink

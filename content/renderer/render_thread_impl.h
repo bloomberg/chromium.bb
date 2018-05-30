@@ -579,6 +579,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetProcessBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
   void ProcessPurgeAndSuspend() override;
+  void SetIsLockedToSite() override;
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);

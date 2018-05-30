@@ -121,6 +121,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString DatabaseCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
   viz::FrameSinkId GenerateFrameSinkId() override;
+  bool IsLockedToSite() const override;
 
   void GetPluginList(bool refresh,
                      const blink::WebSecurityOrigin& mainFrameOrigin,
@@ -262,6 +263,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void CloneSessionStorageNamespace(const std::string& source_namespace,
                                     const std::string& destination_namespace);
 
+  // Tells this platform that the renderer is locked to a site (i.e., a scheme
+  // plus eTLD+1, such as https://google.com), or to a more specific origin.
+  void SetIsLockedToSite();
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
@@ -295,6 +300,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // increments by 1, for every enable decrements by 1. When it reaches 0,
   // we tell the browser to enable fast termination.
   int sudden_termination_disables_;
+
+  // If true, the renderer process is locked to a site.
+  bool is_locked_to_site_;
 
   std::unique_ptr<blink::WebIDBFactory> web_idb_factory_;
 

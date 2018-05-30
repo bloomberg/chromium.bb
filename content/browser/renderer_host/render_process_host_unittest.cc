@@ -888,6 +888,31 @@ TEST_F(RenderProcessHostUnitTest,
   SetBrowserClientForTesting(regular_client);
 }
 
+// Check whether we notify the renderer that it has been locked to a site or
+// not. This should depend on the URL from the SiteInstance.
+TEST_F(RenderProcessHostUnitTest, RendererLockedToSite) {
+  struct TestData {
+    GURL test_url;
+    bool should_lock_renderer;
+  } tests[] = {{GURL("http://"), false},
+               {GURL("http://foo.com"), true},
+               {GURL("http://bar.foo.com"), true},
+               {GURL(""), false},
+               {GURL("google.com"), false},
+               {GURL("http:"), false},
+               {GURL("http://user:pass@google.com:99/foo;bar?q=a#ref"), true}};
+  for (const auto& test : tests) {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::CreateForURL(browser_context(), test.test_url);
+    auto* host =
+        static_cast<MockRenderProcessHost*>(site_instance->GetProcess());
+    if (AreAllSitesIsolatedForTesting())
+      EXPECT_EQ(test.should_lock_renderer, host->is_renderer_locked_to_site());
+    else
+      EXPECT_EQ(false, host->is_renderer_locked_to_site());
+  }
+}
+
 class SpareRenderProcessHostUnitTest : public RenderViewHostImplTestHarness {
  public:
   SpareRenderProcessHostUnitTest() {}

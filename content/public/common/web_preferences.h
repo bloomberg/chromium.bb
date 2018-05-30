@@ -81,9 +81,9 @@ CONTENT_EXPORT extern const char kCommonScript[];
 // A struct for managing blink's settings.
 //
 // Adding new values to this class probably involves updating
-// blink::WebSettings, content/common/view_messages.h, browser/tab_contents/
-// render_view_host_delegate_helper.cc, browser/profiles/profile.cc,
-// and content/public/common/common_param_traits_macros.h
+// blink::WebSettings, content/common/view_messages.h,
+// browser/profiles/profile.cc, and
+// content/public/common/common_param_traits_macros.h
 struct CONTENT_EXPORT WebPreferences {
   ScriptFontFamilyMap standard_font_family_map;
   ScriptFontFamilyMap fixed_font_family_map;

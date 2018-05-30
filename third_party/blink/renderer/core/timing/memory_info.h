@@ -52,14 +52,21 @@ class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MemoryInfo* Create() { return new MemoryInfo(); }
+  // Precision of the performance.memory() attribute. A Precise value means that
+  // the numbers will not be bucketized and only cached for a small amount of
+  // time (50 ms). A Bucketized value means that the numbers will be bucketized
+  // and cached for a long period of time (20 minutes).
+  enum class Precision { Precise, Bucketized };
+  static MemoryInfo* Create(Precision precision) {
+    return new MemoryInfo(precision);
+  }
 
   size_t totalJSHeapSize() const { return info_.total_js_heap_size; }
   size_t usedJSHeapSize() const { return info_.used_js_heap_size; }
   size_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
 
  private:
-  MemoryInfo();
+  explicit MemoryInfo(Precision precision);
 
   HeapInfo info_;
 };

@@ -183,8 +183,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanReadRawCookies(int child_id);
 
   // Sets the process as only permitted to use and see the cookies for the
-  // given origin.
-  void LockToOrigin(int child_id, const GURL& gurl);
+  // given origin. Most callers should use RenderProcessHostImpl::LockToOrigin
+  // instead of calling this directly.
+  void LockToOrigin(int child_id, const GURL& lock_url);
 
   // Used to indicate the result of comparing a process's origin lock to
   // another value:
