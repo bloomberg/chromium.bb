@@ -2309,6 +2309,7 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       break;
     case HTTOPLEFT:
     case HTBOTTOMRIGHT:
+    case HTOBJECT:  /* see blpwtk2_webviewimpl.cc: HTBOTTOMRIGHT is 'special' in Windows, so we don't use it */
       cursor = IDC_SIZENWSE;
       break;
     case HTTOPRIGHT:
