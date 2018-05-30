@@ -59,7 +59,6 @@ shared_library("chrome_elf") {
     ":nt_registry",
     ":security",
     ":third_party_dlls",
-    "//build/config:exe_and_shlib_deps",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static:primary_module",
     "//components/crash/content/app:crash_export_thunks",
@@ -169,7 +168,6 @@ executable("dll_hash_main") {
   ]
   deps = [
     ":dll_hash",
-    "//build/config:exe_and_shlib_deps",
     "//build/win:default_exe_manifest",
   ]
 }
@@ -370,9 +368,6 @@ shared_library("main_unittest_dll_1") {
   sources = [
     "third_party_dlls/main_unittest_dll_1.cc",
   ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
-  ]
 }
 
 shared_library("main_unittest_dll_2") {
@@ -380,9 +375,6 @@ shared_library("main_unittest_dll_2") {
   sources = [
     "third_party_dlls/main_unittest_dll_2.cc",
     "third_party_dlls/main_unittest_dll_2.def",
-  ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
   ]
 }
 
@@ -395,7 +387,6 @@ executable("third_party_dlls_test_exe") {
   deps = [
     ":third_party_dlls",
     "//base",
-    "//build/config:exe_and_shlib_deps",
     "//build/win:default_exe_manifest",
     "//chrome/install_static:install_static_util",
     "//components/crash/content/app:crash_export_stubs",
@@ -413,7 +404,6 @@ shared_library("blacklist_test_main_dll") {
     ":blacklist",
     ":nt_registry",
     "//base",
-    "//build/config:exe_and_shlib_deps",
     "//chrome/install_static:install_static_util",
     "//components/crash/content/app:test_support",
   ]
@@ -425,9 +415,6 @@ loadable_module("blacklist_test_dll_1") {
     "blacklist/test/blacklist_test_dll_1.cc",
     "blacklist/test/blacklist_test_dll_1.def",
   ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
-  ]
 }
 
 loadable_module("blacklist_test_dll_2") {
@@ -435,9 +422,6 @@ loadable_module("blacklist_test_dll_2") {
   sources = [
     "blacklist/test/blacklist_test_dll_2.cc",
     "blacklist/test/blacklist_test_dll_2.def",
-  ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
   ]
 }
 
@@ -451,9 +435,6 @@ loadable_module("blacklist_test_dll_3") {
   sources = [
     "blacklist/test/blacklist_test_dll_3.cc",
   ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
-  ]
 }
 
 shared_library("hook_util_test_dll") {
@@ -461,8 +442,5 @@ shared_library("hook_util_test_dll") {
   sources = [
     "hook_util/test/hook_util_test_dll.cc",
     "hook_util/test/hook_util_test_dll.h",
-  ]
-  deps = [
-    "//build/config:exe_and_shlib_deps",
   ]
 }

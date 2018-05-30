@@ -823,10 +823,7 @@ template("chrome_shared_library") {
   shared_library(target_name) {
     forward_variables_from(invoker, "*")
 
-    deps += [
-      "//build/config:exe_and_shlib_deps",
-      "//chrome:chrome_android_core",
-    ]
+    deps += [ "//chrome:chrome_android_core" ]
 
     if (use_order_profiling) {
       deps += [ "//tools/cygprofile" ]
@@ -1036,7 +1033,6 @@ if (!android_64bit_target_cpu ||
     ]
     deps = [
       "//android_webview:common",
-      "//build/config:exe_and_shlib_deps",
       "//chrome:chrome_android_core",
     ]
 
@@ -1076,7 +1072,6 @@ shared_library("chrome_sync_shell") {
   ]
   deps = [
     ":chrome_sync_shell_jni_registration($default_toolchain)",
-    "//build/config:exe_and_shlib_deps",
     "//chrome:chrome_android_core",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/sync",

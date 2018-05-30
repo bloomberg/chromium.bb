@@ -75,7 +75,6 @@ executable("flatc") {
   deps = [
     ":compiler_files",
     ":flatbuffers",
-    "//build/config:exe_and_shlib_deps",
   ]
 }
 

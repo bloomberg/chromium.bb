@@ -2005,7 +2005,6 @@ if (!is_ios) {
     ]
     deps = [
       ":base",
-      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//third_party/icu:icuuc",
     ]
@@ -2017,7 +2016,6 @@ if (!is_ios) {
     ]
     deps = [
       ":base",
-      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
     ]
   }
@@ -2039,9 +2037,6 @@ if (is_win) {
       "cfgmgr32.lib",
       "shell32.lib",
     ]
-    deps = [
-      "//build/config:exe_and_shlib_deps",
-    ]
   }
 
   loadable_module("scoped_handle_test_dll") {
@@ -2061,9 +2056,6 @@ if (is_win || is_mac) {
     shared_library("base_profiler_test_support_library") {
       sources = [
         "profiler/test_support_library.cc",
-      ]
-      deps = [
-        "//build/config:exe_and_shlib_deps",
       ]
     }
   }
