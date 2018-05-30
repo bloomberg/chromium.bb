@@ -890,6 +890,9 @@ extern const char kShowAllDialogsWithViewsToolkitDescription[];
 extern const char kShowAndroidFilesInFilesAppName[];
 extern const char kShowAndroidFilesInFilesAppDescription[];
 
+extern const char kFilesAppNewStyleNavigationName[];
+extern const char kFilesAppNewStyleNavigationDescription[];
+
 extern const char kShowAutofillSignaturesName[];
 extern const char kShowAutofillSignaturesDescription[];
 
