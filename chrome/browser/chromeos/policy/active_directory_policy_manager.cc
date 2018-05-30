@@ -118,7 +118,7 @@ void ActiveDirectoryPolicyManager::OnStoreLoaded(
     // Policy is guaranteed to be up to date with the previous fetch result
     // because OnPolicyFetched() cancels any potentially running Load()
     // operations.
-    CancelWaitForInitialPolicy(fetch_ever_succeeded_ /* success */);
+    CancelWaitForInitialPolicy();
   }
 }
 
@@ -130,7 +130,7 @@ void ActiveDirectoryPolicyManager::OnStoreError(
   // only required on the first load, but doesn't hurt in any case.
   PublishPolicy();
   if (fetch_ever_completed_) {
-    CancelWaitForInitialPolicy(false /* success */);
+    CancelWaitForInitialPolicy();
   }
 }
 
@@ -196,14 +196,9 @@ void ActiveDirectoryPolicyManager::CreateExtensionPolicyService(
 
 void ActiveDirectoryPolicyManager::OnPolicyFetched(bool success) {
   fetch_ever_completed_ = true;
-  if (success) {
-    fetch_ever_succeeded_ = true;
-  } else {
-    LOG(ERROR) << "Active Directory policy fetch failed.";
-    if (store_->is_initialized()) {
-      CancelWaitForInitialPolicy(false /* success */);
-    }
-  }
+  // In case of failure try to proceed with cached policy.
+  if (!success && store()->is_initialized())
+    CancelWaitForInitialPolicy();
   // Load/retrieve independently of success or failure to keep in sync with the
   // state in session manager. This cancels any potentially running Load()
   // operations thus it is guaranteed that at the next OnStoreLoaded()
@@ -237,6 +232,7 @@ void ActiveDirectoryPolicyManager::ExpandVariables(PolicyMap* policy_map) {
 
 UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
     const AccountId& account_id,
+    bool policy_required,
     base::TimeDelta initial_policy_fetch_timeout,
     base::OnceClosure exit_session,
     std::unique_ptr<CloudPolicyStore> store,
@@ -246,12 +242,13 @@ UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
           std::move(external_data_manager),
           POLICY_DOMAIN_EXTENSIONS /* extension_policy_domain */),
       account_id_(account_id),
+      policy_required_(policy_required),
       waiting_for_initial_policy_fetch_(
           !initial_policy_fetch_timeout.is_zero()),
-      initial_policy_fetch_may_fail_(!initial_policy_fetch_timeout.is_max()),
       exit_session_(std::move(exit_session)) {
+  DCHECK(!initial_policy_fetch_timeout.is_max());
   // Delaying initialization complete is intended for user policy only.
-  if (waiting_for_initial_policy_fetch_ && initial_policy_fetch_may_fail_) {
+  if (waiting_for_initial_policy_fetch_) {
     initial_policy_timeout_.Start(
         FROM_HERE, initial_policy_fetch_timeout,
         base::Bind(&UserActiveDirectoryPolicyManager::OnBlockingFetchTimeout,
@@ -262,6 +259,14 @@ UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
 UserActiveDirectoryPolicyManager::~UserActiveDirectoryPolicyManager() = default;
 
 void UserActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
+  DCHECK(store()->is_initialized() || waiting_for_initial_policy_fetch_);
+  if (store()->is_initialized() && !store()->has_policy() && policy_required_) {
+    // Exit the session in case of immediate load if policy is required.
+    LOG(ERROR) << "Policy from forced immediate load could not be obtained. "
+               << "Aborting profile initialization";
+    if (exit_session_)
+      std::move(exit_session_).Run();
+  }
   ActiveDirectoryPolicyManager::Init(registry);
 
   // Create the extension policy handler here. This is different from the device
@@ -294,8 +299,7 @@ void UserActiveDirectoryPolicyManager::DoPolicyFetch(
       account_id_, base::BindOnce(&RunRefreshCallback, std::move(callback)));
 }
 
-void UserActiveDirectoryPolicyManager::CancelWaitForInitialPolicy(
-    bool success) {
+void UserActiveDirectoryPolicyManager::CancelWaitForInitialPolicy() {
   if (!waiting_for_initial_policy_fetch_)
     return;
 
@@ -303,25 +307,13 @@ void UserActiveDirectoryPolicyManager::CancelWaitForInitialPolicy(
 
   // If the conditions to continue profile initialization are not met, the user
   // session is exited and initialization is not set as completed.
-  // TODO(tnagel): Maybe add code to retry policy fetch?
-  if (!store()->has_policy()) {
-    // If there's no policy at all (not even cached) the user session must not
-    // continue.
+  if (!store()->has_policy() && policy_required_) {
+    // If there's no policy at all (not even cached), but policy is required,
+    // the user session must not continue.
     LOG(ERROR) << "Policy could not be obtained. "
                << "Aborting profile initialization";
-    // Prevent duplicate exit session calls.
-    if (exit_session_) {
+    if (exit_session_)
       std::move(exit_session_).Run();
-    }
-    return;
-  }
-  if (!success && !initial_policy_fetch_may_fail_) {
-    LOG(ERROR) << "Policy fetch failed for the user. "
-               << "Aborting profile initialization";
-    // Prevent duplicate exit session calls.
-    if (exit_session_) {
-      std::move(exit_session_).Run();
-    }
     return;
   }
 
@@ -337,7 +329,13 @@ void UserActiveDirectoryPolicyManager::OnBlockingFetchTimeout() {
   DCHECK(waiting_for_initial_policy_fetch_);
   LOG(WARNING) << "Timed out while waiting for the policy fetch. "
                << "The session will start with the cached policy.";
-  CancelWaitForInitialPolicy(false /* success */);
+  if ((fetch_ever_completed_ && !store()->is_initialized()) ||
+      (!fetch_ever_completed_ && !store()->has_policy())) {
+    // Waiting for store to load if policy was fetched. Or for policy fetch to
+    // complete if there is no cached policy.
+    return;
+  }
+  CancelWaitForInitialPolicy();
 }
 
 DeviceActiveDirectoryPolicyManager::DeviceActiveDirectoryPolicyManager(
