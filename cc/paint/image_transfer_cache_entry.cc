@@ -164,7 +164,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   // TODO(enne): consider adding in the DeleteSkImageAndPreventCaching
   // optimization from GpuImageDecodeCache where we forcefully remove the
   // intermediate from Skia's cache.
-  return image_;
+  return !!image_;
 }
 
 }  // namespace cc
