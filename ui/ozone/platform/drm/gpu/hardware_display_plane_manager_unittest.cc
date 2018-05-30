@@ -81,11 +81,12 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
       {kTypePropId, "type"},
       {kInFormatsPropId, "IN_FORMATS"},
   };
-
+  // Always add an additional cursor plane.
+  ++planes_per_crtc;
   for (size_t i = 0; i < crtc_count; ++i) {
     ui::MockDrmDevice::CrtcProperties crtc_prop;
-    crtc_prop.id = i + 1;
     // Start ID at 1 cause 0 is an invalid ID.
+    crtc_prop.id = i + 1;
     crtc_properties_.emplace_back(std::move(crtc_prop));
 
     for (size_t j = 0; j < planes_per_crtc; ++j) {
@@ -94,11 +95,16 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
       plane_prop.crtc_mask = 1 << i;
       for (const auto& pair : property_names_) {
         uint32_t value = 0;
-        if (pair.first == kTypePropId)
-          value = j == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY;
-        else if (pair.first == kInFormatsPropId)
+        if (pair.first == kTypePropId) {
+          if (j == 0)
+            value = DRM_PLANE_TYPE_PRIMARY;
+          else if (j == planes_per_crtc - 1)
+            value = DRM_PLANE_TYPE_CURSOR;
+          else
+            value = DRM_PLANE_TYPE_OVERLAY;
+        } else if (pair.first == kInFormatsPropId) {
           value = kInFormatsBlobPropId;
-
+        }
         plane_prop.properties.push_back({.id = pair.first, .value = value});
       };
 
@@ -122,6 +128,24 @@ TEST_F(HardwareDisplayPlaneManagerTest, SinglePlaneAssignment) {
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns, crtc_properties_[0].id, nullptr));
   EXPECT_EQ(1u, state_.plane_list.size());
+}
+
+TEST_F(HardwareDisplayPlaneManagerTest, AddCursor) {
+  ui::OverlayPlaneList assigns;
+  assigns.push_back(ui::OverlayPlane(fake_buffer_, nullptr));
+
+  InitializeDrmState(/*crtc_count=*/2, /*planes_per_crtc=*/1);
+  fake_drm_->InitializeState(crtc_properties_, plane_properties_,
+                             property_names_, /* use_atomic= */ false);
+
+  bool cursor_found = false;
+  for (const auto& plane : fake_drm_->plane_manager()->planes()) {
+    if (plane->type() == ui::HardwareDisplayPlane::kCursor) {
+      cursor_found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(cursor_found);
 }
 
 TEST_F(HardwareDisplayPlaneManagerTest, BadCrtc) {
@@ -321,6 +345,7 @@ TEST_F(HardwareDisplayPlaneManagerTest,
        SetColorCorrectionOnAllCrtcPlanes_Success) {
   InitializeDrmState(/*crtc_count=*/1, /*planes_per_crtc=*/1);
   plane_properties_[0].properties.push_back({.id = kPlaneCtmId, .value = 0});
+  plane_properties_[1].properties.push_back({.id = kPlaneCtmId, .value = 0});
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, /* use_atomic= */ true);
 
