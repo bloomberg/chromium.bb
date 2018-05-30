@@ -59,6 +59,7 @@ static_library("ntp_tiles") {
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/service",
+    "//services/network/public/cpp",
     "//ui/base",
   ]
 }
@@ -100,6 +101,8 @@ source_set("unit_tests") {
     "//components/rappor:test_support",
     "//components/sync_preferences:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
