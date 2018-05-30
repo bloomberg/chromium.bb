@@ -316,6 +316,7 @@ test("ui_android_unittests") {
     "//cc:test_support",
     "//components/viz/host:host",
     "//components/viz/service:service",
+    "//components/viz/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

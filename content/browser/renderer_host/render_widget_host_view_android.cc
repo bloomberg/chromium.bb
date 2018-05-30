@@ -264,8 +264,10 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
 
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
   if (delegated_frame_host_) {
-    delegated_frame_host_->SynchronizeVisualProperties(
-        GetCompositorViewportPixelSize());
+    delegated_frame_host_->EmbedSurface(
+        local_surface_id_allocator_.GenerateId(),
+        GetCompositorViewportPixelSize(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
 
     // TODO(ericrk): This can be removed once surface synchronization is
     // enabled. https://crbug.com/835102
@@ -962,7 +964,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
   viz::BeginFrameAck ack = frame.metadata.begin_frame_ack;
   if (!has_content) {
-    DestroyDelegatedContent();
+    EvictDelegatedFrame();
 
     ack.has_damage = false;
     OnDidNotProduceFrame(ack);
@@ -981,14 +983,14 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
   OnFrameMetadataUpdated(std::move(metadata), is_transparent);
 }
 
-void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
+void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
   if (!delegated_frame_host_)
     return;
 
   DCHECK(delegated_frame_host_->HasDelegatedContent() ==
          frame_evictor_->HasFrame());
 
-  delegated_frame_host_->DestroyDelegatedContent();
+  delegated_frame_host_->EvictDelegatedFrame();
 
   if (frame_evictor_->HasFrame())
     frame_evictor_->DiscardedFrame();
@@ -1017,7 +1019,7 @@ void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
-  DestroyDelegatedContent();
+  EvictDelegatedFrame();
 }
 
 bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
@@ -1328,7 +1330,7 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
 
 void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
-  if (delegated_frame_host_->GetLocalSurfaceIdAllocator()->UpdateFromChild(
+  if (local_surface_id_allocator_.UpdateFromChild(
           metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
     // A synchronization event was initiated by the renderer so let's updated
     // the top/bottom bar controls now.
@@ -1336,6 +1338,12 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
                    metadata.top_controls_shown_ratio,
                    metadata.bottom_controls_height,
                    metadata.bottom_controls_shown_ratio);
+    if (delegated_frame_host_) {
+      delegated_frame_host_->EmbedSurface(
+          local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+          GetCompositorViewportPixelSize(),
+          cc::DeadlinePolicy::UseDefaultDeadline());
+    }
   }
   host()->SynchronizeVisualProperties();
 }
@@ -1513,10 +1521,6 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
 void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
   if (view_.parent())
     view_.RequestDisallowInterceptTouchEvent();
-}
-
-void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
-  DestroyDelegatedContent();
 }
 
 gfx::Vector2d RenderWidgetHostViewAndroid::GetOffsetFromRootSurface() {
@@ -1988,9 +1992,9 @@ RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
 }
 
 viz::LocalSurfaceId RenderWidgetHostViewAndroid::GetLocalSurfaceId() const {
-  if (delegated_frame_host_)
-    return delegated_frame_host_->GetLocalSurfaceId();
-  return viz::LocalSurfaceId();
+  if (!delegated_frame_host_)
+    return viz::LocalSurfaceId();
+  return local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 void RenderWidgetHostViewAndroid::OnRenderWidgetInit() {
@@ -2189,7 +2193,7 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
-  DestroyDelegatedContent();
+  EvictDelegatedFrame();
   DCHECK(ack_callbacks_.empty());
 }
 
@@ -2334,10 +2338,13 @@ base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor()
 }
 
 void RenderWidgetHostViewAndroid::DidNavigate() {
-  RenderWidgetHostViewBase::DidNavigate();
+  if (!delegated_frame_host_) {
+    RenderWidgetHostViewBase::DidNavigate();
+    return;
+  }
 
-  if (delegated_frame_host_)
-    delegated_frame_host_->DidNavigate();
+  SynchronizeVisualProperties();
+  delegated_frame_host_->DidNavigate();
 }
 
 viz::ScopedSurfaceIdAllocator

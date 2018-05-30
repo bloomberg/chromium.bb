@@ -8,8 +8,10 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/android/resources/resource_manager.h"
@@ -77,13 +79,10 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
         task_runner_(new base::TestMockTimeTaskRunner()),
         lock_manager_(task_runner_, &lock_manager_client_) {
     host_frame_sink_manager_.SetLocalManager(&frame_sink_manager_impl_);
+    frame_sink_manager_impl_.SetLocalClient(&host_frame_sink_manager_);
     view_.SetLayer(cc::SolidColorLayer::Create());
     frame_host_ = std::make_unique<DelegatedFrameHostAndroid>(
         &view_, &host_frame_sink_manager_, &client_, frame_sink_id_);
-  }
-
-  static viz::LocalSurfaceId GetFakeId() {
-    return viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create());
   }
 
   ui::CompositorLock* GetLock(CompositorLockClient* client,
@@ -92,14 +91,12 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
   }
 
   void SubmitCompositorFrame(const gfx::Size& frame_size = gfx::Size(10, 10)) {
-    viz::CompositorFrame frame;
-    auto render_pass = viz::RenderPass::Create();
-    render_pass->output_rect = gfx::Rect(frame_size);
-    frame.render_pass_list.push_back(std::move(render_pass));
-    frame.metadata.begin_frame_ack.sequence_number = 1;
-    frame.metadata.device_scale_factor = 1;
-    frame_host_->SubmitCompositorFrame(GetFakeId(), std::move(frame),
-                                       base::nullopt);
+    viz::CompositorFrame frame =
+        viz::CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(frame_size), gfx::Rect(frame_size))
+            .Build();
+    frame_host_->SubmitCompositorFrame(allocator_.GenerateId(),
+                                       std::move(frame), base::nullopt);
   }
 
   void SetUpValidFrame(const gfx::Size& frame_size) {
@@ -123,6 +120,7 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
   viz::HostFrameSinkManager host_frame_sink_manager_;
   MockDelegatedFrameHostAndroidClient client_;
   viz::FrameSinkId frame_sink_id_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
   std::unique_ptr<DelegatedFrameHostAndroid> frame_host_;
   MockCompositorLockManagerClient lock_manager_client_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
