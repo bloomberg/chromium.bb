@@ -27,3 +27,4 @@ noback sign \x0000 0
 space \x00a0 a		     NO-BREAK SPACE
 space \x001b 1b 	     ESCAPE
 space \xffff 123456789abcdef ENDSEGMENT
+replace \xFEFF
