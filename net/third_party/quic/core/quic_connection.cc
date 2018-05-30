@@ -315,6 +315,7 @@ QuicConnection::QuicConnection(
       received_stateless_reset_token_(0),
       last_control_frame_id_(kInvalidControlFrameId),
       is_path_degrading_(false),
+      processing_ack_frame_(false),
       handle_write_results_for_connectivity_probe_(GetQuicReloadableFlag(
           quic_handle_write_results_for_connectivity_probe)),
       use_path_degrading_alarm_(
@@ -921,6 +922,13 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
   DCHECK(connected_);
   DCHECK(framer_.use_incremental_ack_processing());
 
+  if (processing_ack_frame_) {
+    CloseConnection(QUIC_INVALID_ACK_DATA,
+                    "Received a new ack while processing an ack frame.",
+                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return false;
+  }
+
   // Since an ack frame was received, this is not a connectivity probe.
   // A probe only contains a PING and full padding.
   UpdatePacketContent(NOT_PADDED_PING);
@@ -958,7 +966,7 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
-
+  processing_ack_frame_ = true;
   sent_packet_manager_.OnAckFrameStart(largest_acked, ack_delay_time,
                                        time_of_last_received_packet_);
   return true;
@@ -994,6 +1002,7 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
   // acking packets which we never care about.
   // Send an ack to raise the high water mark.
   PostProcessAfterAckFrame(GetLeastUnacked() > start, acked_new_packet);
+  processing_ack_frame_ = false;
 
   return connected_;
 }
