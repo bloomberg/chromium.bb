@@ -212,14 +212,14 @@ class ScopedAutoAdvanceNowEnabler {
 
 class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
  public:
-  using MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration;
-  using MainThreadSchedulerImpl::OnIdlePeriodEnded;
-  using MainThreadSchedulerImpl::OnIdlePeriodStarted;
-  using MainThreadSchedulerImpl::OnPendingTasksChanged;
   using MainThreadSchedulerImpl::CompositorTaskQueue;
   using MainThreadSchedulerImpl::ControlTaskQueue;
   using MainThreadSchedulerImpl::DefaultTaskQueue;
+  using MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration;
   using MainThreadSchedulerImpl::InputTaskQueue;
+  using MainThreadSchedulerImpl::OnIdlePeriodEnded;
+  using MainThreadSchedulerImpl::OnIdlePeriodStarted;
+  using MainThreadSchedulerImpl::OnPendingTasksChanged;
   using MainThreadSchedulerImpl::V8TaskQueue;
   using MainThreadSchedulerImpl::VirtualTimeControlTaskQueue;
 
@@ -308,29 +308,35 @@ class MainThreadSchedulerImplTest : public testing::Test {
 
   void Initialize(std::unique_ptr<MainThreadSchedulerImplForTest> scheduler) {
     scheduler_ = std::move(scheduler);
+
     if (kLaunchingProcessIsBackgrounded) {
       scheduler_->SetRendererBackgrounded(false);
       // Reset the policy count as foregrounding would force an initial update.
       scheduler_->update_policy_count_ = 0;
       scheduler_->use_cases_.clear();
     }
+
     default_task_runner_ = scheduler_->DefaultTaskQueue();
     compositor_task_runner_ = scheduler_->CompositorTaskQueue();
     input_task_runner_ = scheduler_->InputTaskQueue();
-    loading_task_runner_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
-    loading_control_task_runner_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoadingControl, nullptr);
     idle_task_runner_ = scheduler_->IdleTaskRunner();
-    timer_task_runner_ = scheduler_->NewTimerTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
     v8_task_runner_ = scheduler_->V8TaskQueue();
-    fake_queue_ = scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
+
+    page_scheduler_ =
+        std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get(), false);
+    main_frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
+        nullptr, FrameScheduler::FrameType::kMainFrame);
+
+    loading_task_runner_ = main_frame_scheduler_->LoadingTaskQueue();
+    loading_control_task_runner_ =
+        main_frame_scheduler_->LoadingControlTaskQueue();
+    timer_task_runner_ = main_frame_scheduler_->ThrottleableTaskQueue();
   }
 
   void TearDown() override {
     DCHECK(!mock_task_runner_.get() || !message_loop_.get());
+    main_frame_scheduler_.reset();
+    page_scheduler_.reset();
     scheduler_->Shutdown();
     if (mock_task_runner_.get()) {
       // Check that all tests stop posting tasks.
@@ -592,11 +598,15 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   void AdvanceTimeWithTask(double duration) {
+    scoped_refptr<MainThreadTaskQueue> fake_queue =
+        scheduler_->NewLoadingTaskQueue(
+            MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
+
     base::TimeTicks start = clock_.NowTicks();
-    scheduler_->OnTaskStarted(fake_queue_.get(), fake_task_, start);
+    scheduler_->OnTaskStarted(fake_queue.get(), fake_task_, start);
     clock_.Advance(base::TimeDelta::FromSecondsD(duration));
     base::TimeTicks end = clock_.NowTicks();
-    scheduler_->OnTaskCompleted(fake_queue_.get(), fake_task_, start, end,
+    scheduler_->OnTaskCompleted(fake_queue.get(), fake_task_, start, end,
                                 base::nullopt);
   }
 
@@ -729,12 +739,14 @@ class MainThreadSchedulerImplTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   base::SimpleTestTickClock clock_;
   TaskQueue::Task fake_task_;
-  scoped_refptr<MainThreadTaskQueue> fake_queue_;
   // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
+  std::unique_ptr<PageSchedulerImpl> page_scheduler_;
+  std::unique_ptr<FrameSchedulerImpl> main_frame_scheduler_;
+
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
@@ -2511,6 +2523,8 @@ TEST_F(MainThreadSchedulerImplTest, BeginMainFrameOnCriticalPath) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
+  main_frame_scheduler_.reset();
+  page_scheduler_.reset();
   scheduler_->Shutdown();
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "D1 C1");

@@ -751,6 +751,8 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
       task_queue.get(), insert_result.first->second.get(), TaskQueuePolicy(),
       main_thread_only().current_policy.GetQueuePolicy(queue_class));
 
+  task_queue->SetQueuePriority(ComputePriority(task_queue.get()));
+
   if (task_queue->CanBeThrottled())
     AddQueueToWakeUpBudgetPool(task_queue.get());
 
@@ -777,9 +779,6 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewLoadingTaskQueue(
           .SetCanBeFrozen(
               RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled())
           .SetCanBeDeferred(true)
-          .SetUsedForImportantTasks(
-              queue_type ==
-              MainThreadTaskQueue::QueueType::kFrameLoadingControl)
           .SetFrameScheduler(frame_scheduler));
 }
 
@@ -1390,8 +1389,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   policy_may_need_update_.SetWhileLocked(false);
 
   base::TimeDelta expected_use_case_duration;
-  UseCase use_case = ComputeCurrentUseCase(now, &expected_use_case_duration);
-  main_thread_only().current_use_case = use_case;
+  main_thread_only().current_use_case =
+      ComputeCurrentUseCase(now, &expected_use_case_duration);
 
   base::TimeDelta touchstart_expected_flag_valid_for_duration;
   // TODO(skyostil): Consider handlers for all types of blocking gestures (e.g.,
@@ -1470,27 +1469,29 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::kRun;
   new_policy.rail_mode() = v8::PERFORMANCE_ANIMATION;
+  new_policy.use_case() = main_thread_only().current_use_case;
 
-  switch (use_case) {
+  switch (new_policy.use_case()) {
     case UseCase::kCompositorGesture:
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
-        new_policy.compositor_queue_policy().priority =
-            TaskQueue::kHighestPriority;
+        new_policy.compositor_priority() =
+            TaskQueue::QueuePriority::kHighestPriority;
       } else {
         // What we really want to do is priorize loading tasks, but that doesn't
         // seem to be safe. Instead we do that by proxy by deprioritizing
         // compositor tasks. This should be safe since we've already gone to the
         // pain of fixing ordering issues with them.
-        new_policy.compositor_queue_policy().priority = TaskQueue::kLowPriority;
+        new_policy.compositor_priority() =
+            TaskQueue::QueuePriority::kLowPriority;
       }
       break;
 
     case UseCase::kSynchronizedGesture:
-      new_policy.compositor_queue_policy().priority =
-          main_thread_compositing_is_fast ? TaskQueue::kHighestPriority
-                                          : TaskQueue::kNormalPriority;
+      new_policy.compositor_priority() = main_thread_compositing_is_fast
+                                             ? TaskQueue::kHighestPriority
+                                             : TaskQueue::kNormalPriority;
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
@@ -1504,9 +1505,10 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // about which things we should be prioritizing, so we don't attempt to
       // block expensive tasks because we don't know whether they were integral
       // to the page's functionality or not.
-      new_policy.compositor_queue_policy().priority =
-          main_thread_compositing_is_fast ? TaskQueue::kHighestPriority
-                                          : TaskQueue::kNormalPriority;
+      new_policy.compositor_priority() =
+          main_thread_compositing_is_fast
+              ? TaskQueue::QueuePriority::kHighestPriority
+              : TaskQueue::QueuePriority::kNormalPriority;
       break;
 
     case UseCase::kMainThreadGesture:
@@ -1514,8 +1516,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // by the main thread. Since we know the established gesture type, we can
       // be a little more aggressive about prioritizing compositing and input
       // handling over other tasks.
-      new_policy.compositor_queue_policy().priority =
-          TaskQueue::kHighestPriority;
+      new_policy.compositor_priority() =
+          TaskQueue::QueuePriority::kHighestPriority;
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
@@ -1525,9 +1527,9 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::kTouchstart:
+      new_policy.compositor_priority() =
+          TaskQueue::QueuePriority::kHighestPriority;
       new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-      new_policy.compositor_queue_policy().priority =
-          TaskQueue::kHighestPriority;
       new_policy.loading_queue_policy().is_blocked = true;
       new_policy.timer_queue_policy().is_blocked = true;
       // NOTE this is a nop due to the above.
@@ -1656,7 +1658,16 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   DCHECK(compositor_task_queue_->IsQueueEnabled());
+
+  Policy old_policy = main_thread_only().current_policy;
   main_thread_only().current_policy = new_policy;
+
+  if (ShouldUpdateTaskQueuePriorities(old_policy)) {
+    for (const auto& pair : task_runners_) {
+      MainThreadTaskQueue* task_queue = pair.first.get();
+      task_queue->SetQueuePriority(ComputePriority(task_queue));
+    }
+  }
 
   if (newly_frozen)
     Platform::Current()->RequestPurgeMemory();
@@ -1677,8 +1688,6 @@ void MainThreadSchedulerImpl::ApplyTaskQueuePolicy(
   // Make sure if there's no voter that the task queue is enabled.
   DCHECK(task_queue_enabled_voter ||
          old_task_queue_policy.IsQueueEnabled(task_queue));
-
-  task_queue->SetQueuePriority(new_task_queue_policy.GetPriority(task_queue));
 
   TimeDomainType old_time_domain_type =
       old_task_queue_policy.GetTimeDomainType(task_queue);
@@ -2207,16 +2216,6 @@ bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
   return true;
 }
 
-TaskQueue::QueuePriority MainThreadSchedulerImpl::TaskQueuePolicy::GetPriority(
-    MainThreadTaskQueue* task_queue) const {
-  base::Optional<TaskQueue::QueuePriority> fixed_priority =
-      task_queue->FixedPriority();
-  if (fixed_priority)
-    return fixed_priority.value();
-  return task_queue->UsedForImportantTasks() ? TaskQueue::kHighestPriority
-                                             : priority;
-}
-
 MainThreadSchedulerImpl::TimeDomainType
 MainThreadSchedulerImpl::TaskQueuePolicy::GetTimeDomainType(
     MainThreadTaskQueue* task_queue) const {
@@ -2234,7 +2233,6 @@ void MainThreadSchedulerImpl::TaskQueuePolicy::AsValueInto(
   state->SetBoolean("is_throttled", is_throttled);
   state->SetBoolean("is_blocked", is_blocked);
   state->SetBoolean("use_virtual_time", use_virtual_time);
-  state->SetString("priority", TaskQueue::PriorityToString(priority));
 }
 
 void MainThreadSchedulerImpl::Policy::AsValueInto(
@@ -2256,6 +2254,10 @@ void MainThreadSchedulerImpl::Policy::AsValueInto(
   state->EndDictionary();
 
   state->SetString("rail_mode", RAILModeToString(rail_mode()));
+  state->SetString("compositor_priority",
+                   TaskQueue::PriorityToString(compositor_priority()));
+  state->SetString("use_case", UseCaseToString(use_case()));
+
   state->SetBoolean("should_disable_throttling", should_disable_throttling());
   state->SetBoolean("frozen_when_backgrounded", frozen_when_backgrounded());
 }
@@ -2608,6 +2610,33 @@ void MainThreadSchedulerImpl::RecordTaskUkmImpl(
   builder.Record(ukm_recorder);
 }
 
+TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
+    MainThreadTaskQueue* task_queue) const {
+  DCHECK(task_queue);
+
+  // If |task_queue| is associated to a frame, the the frame scheduler computes
+  // the priority.
+  FrameSchedulerImpl* frame_scheduler = task_queue->GetFrameScheduler();
+
+  if (frame_scheduler) {
+    return frame_scheduler->ComputePriority(task_queue);
+  }
+
+  base::Optional<TaskQueue::QueuePriority> fixed_priority =
+      task_queue->FixedPriority();
+  if (fixed_priority) {
+    return fixed_priority.value();
+  }
+
+  if (task_queue->queue_class() ==
+      MainThreadTaskQueue::QueueClass::kCompositor) {
+    return main_thread_only().current_policy.compositor_priority();
+  }
+
+  // Default priority.
+  return TaskQueue::QueuePriority::kNormalPriority;
+}
+
 void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
   queueing_time_estimator_.OnBeginNestedRunLoop();
 
@@ -2756,6 +2785,14 @@ bool MainThreadSchedulerImpl::ShouldRecordTaskUkm(bool has_thread_time) {
 
   return main_thread_only().uniform_distribution(
              main_thread_only().random_generator) < sampling_rate;
+}
+
+bool MainThreadSchedulerImpl::ShouldUpdateTaskQueuePriorities(
+    Policy old_policy) const {
+  return old_policy.use_case() !=
+             main_thread_only().current_policy.use_case() ||
+         old_policy.compositor_priority() !=
+             main_thread_only().current_policy.compositor_priority();
 }
 
 // static

@@ -94,6 +94,12 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void SetPageKeepActiveForTracing(bool keep_active);
   void SetPageFrozenForTracing(bool frozen);
 
+  // Computes the priority of |task_queue| if it is associated to this frame
+  // scheduler. Note that the main's thread policy should be upto date to
+  // compute the correct priority.
+  base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
+      MainThreadTaskQueue* task_queue) const;
+
  protected:
   // This will construct a subframe that is not linked to any main thread or
   // page scheduler. Should be used only for testing purposes.
@@ -129,6 +135,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
+
+  // Updates the priorities of all the task queues associated with this
+  // frame scheduler.
+  void UpdateQueuePriorities();
 
   scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
   scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
