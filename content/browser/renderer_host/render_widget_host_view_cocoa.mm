@@ -238,15 +238,6 @@ void ExtractUnderlines(NSAttributedString* string,
   [[self window] makeFirstResponder:nil];
   [NSApp updateWindows];
 
-  // Debug key to check if the current input context still holds onto the view.
-  NSTextInputContext* currentContext = [NSTextInputContext currentInputContext];
-  auto* crashKey = base::debug::AllocateCrashKeyString(
-      "text-input-context-client", base::debug::CrashKeySize::Size32);
-  base::debug::ScopedCrashKeyString textInputContextCrashKey(
-      crashKey, currentContext && [currentContext client] == self
-                    ? "text input still held on"
-                    : "text input no longer held on");
-
   [super dealloc];
 }
 
