@@ -14,8 +14,8 @@ Polymer({
 
   properties: {
     /**
-     * Array of sites to display in the widget.
-     * @type {!Array<!SiteException>}
+     * Array of sites to display in the widget, grouped into their eTLD+1s.
+     * @type {!Array<!EffectiveTopLevelDomainPlus1>}
      */
     sites: {
       type: Array,
@@ -36,101 +36,53 @@ Polymer({
 
   /**
    * Retrieves a list of all known sites with site details.
-   * @return {!Promise<!Array<!RawSiteException>>}
    * @private
    */
-  getAllSitesList_: function() {
-    /** @type {!Array<!RawSiteException>} */
-    const promiseList = [];
-
+  populateList_: function() {
+    /** @type {!Array<settings.ContentSettingsTypes>} */
+    let contentTypes = [];
     const types = Object.values(settings.ContentSettingsTypes);
-    for (let i = 0; i < types.length; i++) {
+    for (let i = 0; i < types.length; ++i) {
       const type = types[i];
       // <if expr="not chromeos">
       if (type == settings.ContentSettingsTypes.PROTECTED_CONTENT)
         continue;
       // </if>
+      // Some categories store their data in a custom way.
       if (type == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
           type == settings.ContentSettingsTypes.ZOOM_LEVELS) {
-        // Some categories store their data in a custom way.
         continue;
       }
-
-      promiseList.push(this.browserProxy_.getExceptionList(type));
+      // These categories are gated behind flags.
+      if (type == settings.ContentSettingsTypes.SENSORS &&
+          !loadTimeData.getBoolean('enableSensorsContentSetting')) {
+        continue;
+      }
+      if (type == settings.ContentSettingsTypes.ADS &&
+          !loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter')) {
+        continue;
+      }
+      if (type == settings.ContentSettingsTypes.SOUND &&
+          !loadTimeData.getBoolean('enableSoundContentSetting')) {
+        continue;
+      }
+      if (type == settings.ContentSettingsTypes.CLIPBOARD &&
+          !loadTimeData.getBoolean('enableClipboardContentSetting')) {
+        continue;
+      }
+      if (type == settings.ContentSettingsTypes.PAYMENT_HANDLER &&
+          !loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
+        continue;
+      }
+      contentTypes.push(type);
     }
 
-    return Promise.all(promiseList);
-  },
-
-  /** @private */
-  populateList_: function() {
-    this.getAllSitesList_().then(this.processExceptions_.bind(this));
-  },
-
-  /**
-   * Process the exception list returned from the native layer.
-   * @param {!Array<!RawSiteException>} data List of sites (exceptions)
-   *     to process.
-   * @private
-   */
-  processExceptions_: function(data) {
-    const sites = /** @type {!Array<!RawSiteException>} */ ([]);
-    for (let i = 0; i < data.length; ++i) {
-      const exceptionList = data[i];
-      for (let k = 0; k < exceptionList.length; ++k) {
-        sites.push(exceptionList[k]);
-      }
-    }
-    this.sites = this.toSiteArray_(sites);
-  },
-
-  /**
-   * TODO(dschuyler): Move this processing to C++ handler.
-   * Converts a list of exceptions received from the C++ handler to
-   * full SiteException objects. The list is sorted by site name, then protocol
-   * and port and de-duped (by origin).
-   * @param {!Array<!RawSiteException>} sites A list of sites to convert.
-   * @return {!Array<!SiteException>} A list of full SiteExceptions. Sorted and
-   *    deduped.
-   * @private
-   */
-  toSiteArray_: function(sites) {
-    const self = this;
-    sites.sort(function(a, b) {
-      const url1 = self.toUrl(a.origin);
-      const url2 = self.toUrl(b.origin);
-      let comparison = url1.host.localeCompare(url2.host);
-      if (comparison == 0) {
-        comparison = url1.protocol.localeCompare(url2.protocol);
-        if (comparison == 0) {
-          comparison = url1.port.localeCompare(url2.port);
-          if (comparison == 0) {
-            // Compare hosts for the embedding origins.
-            let host1 = self.toUrl(a.embeddingOrigin);
-            let host2 = self.toUrl(b.embeddingOrigin);
-            host1 = (host1 == null) ? '' : host1.host;
-            host2 = (host2 == null) ? '' : host2.host;
-            return host1.localeCompare(host2);
-          }
-        }
-      }
-      return comparison;
+    this.browserProxy_.getAllSites(contentTypes).then((response) => {
+      let allSites = [];
+      response.forEach((etld1) => {
+        allSites = allSites.concat(etld1.origins);
+      });
+      this.sites = allSites;
     });
-    const results = /** @type {!Array<!SiteException>} */ ([]);
-    let lastOrigin = '';
-    let lastEmbeddingOrigin = '';
-    for (let i = 0; i < sites.length; ++i) {
-      // Remove duplicates.
-      if (sites[i].origin == lastOrigin &&
-          sites[i].embeddingOrigin == lastEmbeddingOrigin) {
-        continue;
-      }
-      /** @type {!SiteException} */
-      const siteException = this.expandSiteException(sites[i]);
-      results.push(siteException);
-      lastOrigin = siteException.origin;
-      lastEmbeddingOrigin = siteException.embeddingOrigin;
-    }
-    return results;
   },
 });

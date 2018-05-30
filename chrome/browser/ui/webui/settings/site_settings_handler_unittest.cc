@@ -355,6 +355,88 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
                   site_settings::SiteSettingSource::kDefault, 3U);
 }
 
+TEST_F(SiteSettingsHandlerTest, GetAllSites) {
+  base::ListValue get_all_sites_args;
+  get_all_sites_args.AppendString(kCallbackId);
+  base::Value category_list(base::Value::Type::LIST);
+  category_list.GetList().emplace_back(kNotifications);
+  category_list.GetList().emplace_back(kFlash);
+  get_all_sites_args.GetList().push_back(std::move(category_list));
+
+  // Test Chrome built-in defaults are marked as default.
+  handler()->HandleGetAllSites(&get_all_sites_args);
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+  EXPECT_EQ(kCallbackId, data.arg1()->GetString());
+  ASSERT_TRUE(data.arg2()->GetBool());
+
+  const base::Value::ListStorage& etld1_groups_empty = data.arg3()->GetList();
+  EXPECT_EQ(0UL, etld1_groups_empty.size());
+
+  // Add a couple of exceptions and check they appear in all sites.
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  const GURL url1("http://example.com");
+  const GURL url2("https://other.example.com");
+  std::string resource_identifier;
+  map->SetContentSettingDefaultScope(
+      url1, url1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, resource_identifier,
+      CONTENT_SETTING_BLOCK);
+  map->SetContentSettingDefaultScope(url2, url2, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     resource_identifier,
+                                     CONTENT_SETTING_ALLOW);
+  handler()->HandleGetAllSites(&get_all_sites_args);
+
+  const content::TestWebUI::CallData& data2 = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data2.function_name());
+
+  EXPECT_EQ(kCallbackId, data2.arg1()->GetString());
+  ASSERT_TRUE(data2.arg2()->GetBool());
+
+  const base::Value::ListStorage& etld1_groups = data2.arg3()->GetList();
+  EXPECT_EQ(1UL, etld1_groups.size());
+  for (const base::Value& etld1 : etld1_groups) {
+    const std::string& etld1_string = etld1.FindKey("etld1")->GetString();
+    const base::Value::ListStorage& origin_list =
+        etld1.FindKey("origins")->GetList();
+    EXPECT_EQ("example.com", etld1_string);
+    EXPECT_EQ(2UL, origin_list.size());
+    EXPECT_EQ(url1.spec(), origin_list[0].GetString());
+    EXPECT_EQ(url2.spec(), origin_list[1].GetString());
+  }
+
+  // Add an additional exception belonging to a different eTLD+1.
+  const GURL url3("https://example2.net");
+  map->SetContentSettingDefaultScope(url3, url3, CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     resource_identifier,
+                                     CONTENT_SETTING_BLOCK);
+  handler()->HandleGetAllSites(&get_all_sites_args);
+
+  const content::TestWebUI::CallData& data3 = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data3.function_name());
+
+  EXPECT_EQ(kCallbackId, data3.arg1()->GetString());
+  ASSERT_TRUE(data3.arg2()->GetBool());
+
+  const base::Value::ListStorage& etld1_groups_multiple =
+      data3.arg3()->GetList();
+  EXPECT_EQ(2UL, etld1_groups_multiple.size());
+  for (const base::Value& etld1 : etld1_groups_multiple) {
+    const std::string& etld1_string = etld1.FindKey("etld1")->GetString();
+    const base::Value::ListStorage& origin_list =
+        etld1.FindKey("origins")->GetList();
+    if (etld1_string == "example2.net") {
+      EXPECT_EQ(1UL, origin_list.size());
+      EXPECT_EQ(url3.spec(), origin_list[0].GetString());
+    } else {
+      EXPECT_EQ("example.com", etld1_string);
+    }
+  }
+}
+
 TEST_F(SiteSettingsHandlerTest, Origins) {
   const std::string google("https://www.google.com:443");
   const std::string uma_base("WebsiteSettings.Menu.PermissionChanged");

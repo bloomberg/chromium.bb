@@ -25,6 +25,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'clearFlashPref',
       'fetchUsbDevices',
       'fetchZoomLevels',
+      'getAllSites',
       'getDefaultValueForContentType',
       'getExceptionList',
       'getOriginPermissions',
@@ -184,6 +185,33 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   clearFlashPref(origin) {
     this.methodCalled('clearFlashPref', origin);
+  }
+
+  /** @override */
+  getAllSites(contentTypes) {
+    this.methodCalled('getAllSites', contentTypes);
+    const origins_set = new Set();
+
+    contentTypes.forEach((contentType) => {
+      this.prefs_.exceptions[contentType].forEach((exception) => {
+        if (exception.origin.includes('*'))
+          return;
+        origins_set.add(exception.origin);
+      });
+    });
+
+    const origins_array = [...origins_set];
+    let result = [];
+    origins_array.forEach((origin, index) => {
+      // Functionality to extract the eTLD+1 from an origin exists only on the
+      // C++ side, so just use a placeholder string in testing client-side code.
+      let entry = {};
+      entry['etld1'] = 'eTLD Name ' + index;
+      entry['origins'] = [origin];
+      result.push(entry);
+    });
+
+    return Promise.resolve(result);
   }
 
   /** @override */

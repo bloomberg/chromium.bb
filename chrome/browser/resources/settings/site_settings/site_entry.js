@@ -17,7 +17,7 @@ Polymer({
      * TODO(https://crbug.com/835712): This should be an object representing a
      * ETLD+1 site.
      */
-    site: Object,
+    site: String,
   },
 
   /** @override */
@@ -31,7 +31,7 @@ Polymer({
   onOriginTap_: function(event) {
     settings.navigateTo(
         settings.routes.SITE_SETTINGS_SITE_DETAILS,
-        new URLSearchParams('site=' + this.site.origin));
+        new URLSearchParams('site=' + this.site));
   },
 
 });

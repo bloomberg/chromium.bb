@@ -9,13 +9,13 @@
     <style include="settings-shared"></style>
     <div class="settings-box list-item" on-click="onOriginTap_"
         actionable>
-      <div class="favicon-image" style$="[[computeSiteIcon(site.origin)]]">
+      <div class="favicon-image" style$="[[computeSiteIcon(site)]]">
       </div>
       <div class="middle text-elide" id="displayName">
-        [[site.displayName]]
+        [[site]]
       </div>
       <paper-icon-button-light class="subpage-arrow">
-        <button aria-label$="[[site.displayName]]"
+        <button aria-label$="[[site]]"
             aria-describedby="displayName"></button>
       </paper-icon-button-light>
     </div>

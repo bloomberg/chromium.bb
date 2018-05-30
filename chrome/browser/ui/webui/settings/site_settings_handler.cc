@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 
 #include <algorithm>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -148,6 +150,10 @@ void SiteSettingsHandler::RegisterMessages() {
       base::BindRepeating(
           &SiteSettingsHandler::HandleGetDefaultValueForContentType,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getAllSites",
+      base::BindRepeating(&SiteSettingsHandler::HandleGetAllSites,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExceptionList",
       base::BindRepeating(&SiteSettingsHandler::HandleGetExceptionList,
@@ -484,6 +490,88 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
   base::DictionaryValue category;
   site_settings::GetContentCategorySetting(map, content_type, &category);
   ResolveJavascriptCallback(*callback_id, category);
+}
+
+void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  const base::ListValue* types;
+  CHECK(args->GetList(1, &types));
+
+  // Incognito contains incognito content settings plus non-incognito content
+  // settings. Thus if it exists, just get exceptions for the incognito profile.
+  Profile* profile = profile_;
+  if (profile_->HasOffTheRecordProfile() &&
+      profile_->GetOffTheRecordProfile() != profile_) {
+    profile = profile_->GetOffTheRecordProfile();
+  }
+  DCHECK(profile);
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  std::map<std::string, std::set<std::string>> all_sites_map;
+  // Convert |types| to a list of ContentSettingsTypes.
+  for (size_t i = 0; i < types->GetSize(); ++i) {
+    std::string type;
+    types->GetString(i, &type);
+    ContentSettingsType content_type =
+        site_settings::ContentSettingsTypeFromGroupName(type);
+
+    // TODO(https://crbug.com/835712): Add extension content settings, plus
+    // sites that use any non-zero amount of storage.
+
+    ContentSettingsForOneType entries;
+    map->GetSettingsForOneType(content_type, std::string(), &entries);
+    for (const ContentSettingPatternSource& e : entries) {
+      // Ignore default settings.
+      if (e.primary_pattern == ContentSettingsPattern::Wildcard() &&
+          e.source != SiteSettingSourceToString(
+                          site_settings::SiteSettingSource::kPreference)) {
+        continue;
+      }
+      // Ignore embedded content settings.
+      if (e.primary_pattern != e.secondary_pattern &&
+          e.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+        continue;
+      }
+      // TODO(https://crbug.com/835712): Add in embargoed exceptions.
+      const GURL url(e.primary_pattern.ToString());
+      // Ignore patterns.
+      if (url::Origin::Create(url).unique())
+        continue;
+
+      // Group origins via eTLD+1.
+      std::string etld1_string =
+          net::registry_controlled_domains::GetDomainAndRegistry(
+              url,
+              net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+      auto entry = all_sites_map.find(etld1_string);
+      if (entry == all_sites_map.end()) {
+        all_sites_map.emplace(etld1_string,
+                              std::set<std::string>({url.spec()}));
+      } else {
+        entry->second.insert(url.spec());
+      }
+    }
+  }
+
+  // Convert |all_sites_map| to a list of base::DictionaryValues.
+  base::Value result(base::Value::Type::LIST);
+  for (const auto& entry : all_sites_map) {
+    // eTLD+1 is the effective top level domain + 1.
+    base::Value eTLD1(base::Value::Type::DICTIONARY);
+    eTLD1.SetKey("etld1", base::Value(entry.first));
+    base::Value origin_list(base::Value::Type::LIST);
+    for (const std::string& origin : entry.second) {
+      origin_list.GetList().emplace_back(origin);
+    }
+    eTLD1.SetKey("origins", std::move(origin_list));
+    result.GetList().push_back(std::move(eTLD1));
+  }
+  ResolveJavascriptCallback(*callback_id, result);
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {

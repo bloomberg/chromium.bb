@@ -19,6 +19,16 @@ const ContentSettingProvider = {
 };
 
 /**
+ * Represents a list of sites, grouped under the same eTLD+1. For example, an
+ * origin "https://www.example.com" would be grouped together with
+ * "https://login.example.com" and "http://example.com" under a common eTLD+1 of
+ * "example.com".
+ * @typedef {{etld1: string,
+ *            origins: Array<string>}}
+ */
+let EffectiveTopLevelDomainPlus1;
+
+/**
  * The site exception information passed from the C++ handler.
  * See also: SiteException.
  * @typedef {{embeddingOrigin: string,
@@ -104,6 +114,15 @@ cr.define('settings', function() {
      * @return {!Promise<!DefaultContentSetting>}
      */
     getDefaultValueForContentType(contentType) {}
+
+    /**
+     * Gets a list of sites, grouped by eTLD+1, affected by any of the content
+     * settings specified by |contentTypes|.
+     * @param {string} contentTypes A list of the content types to retrieve
+     *     sites for.
+     * @return {!Promise<!Array<!EffectiveTopLevelDomainPlus1>>}
+     */
+    getAllSites(contentTypes) {}
 
     /**
      * Gets the exceptions (site list) for a particular category.
@@ -295,6 +314,11 @@ cr.define('settings', function() {
     /** @override */
     getDefaultValueForContentType(contentType) {
       return cr.sendWithPromise('getDefaultValueForContentType', contentType);
+    }
+
+    /** @override */
+    getAllSites(contentTypes) {
+      return cr.sendWithPromise('getAllSites', contentTypes);
     }
 
     /** @override */
