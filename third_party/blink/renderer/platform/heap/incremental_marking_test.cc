@@ -72,7 +72,7 @@ class BackingVisitor : public Visitor {
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) final {}
-  void Visit(void*, TraceWrapperDescriptor) final {}
+  void VisitWithWrappers(void*, TraceDescriptor) final {}
 
  private:
   std::vector<void*>* objects_;

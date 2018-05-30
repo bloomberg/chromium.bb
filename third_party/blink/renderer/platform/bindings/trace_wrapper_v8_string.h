@@ -35,9 +35,6 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
 
   virtual void Trace(Visitor* visitor) { visitor->Trace(string_); }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(string_);
-  }
   const char* NameInHeapSnapshot() const override {
     return "TraceWrapperV8String";
   }

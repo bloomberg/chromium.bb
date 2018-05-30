@@ -56,7 +56,7 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
   ScriptWrappableVisitorVerifier verifier;
   for (auto& marking_data : verifier_deque_) {
     // Check that all children of this object are marked.
-    marking_data.TraceWrappers(&verifier);
+    marking_data.Trace(&verifier);
   }
 #endif
 
@@ -203,7 +203,7 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(
     if (marking_deque_.IsEmpty()) {
       return false;
     }
-    marking_deque_.TakeFirst().TraceWrappers(this);
+    marking_deque_.TakeFirst().Trace(this);
   }
   return true;
 }
@@ -228,7 +228,7 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
 
   // Conservatively assume that the source object containing |dst_object| is
   // marked.
-  visitor->TraceWrappers(dst_object);
+  visitor->Trace(dst_object);
 }
 
 void ScriptWrappableMarkingVisitor::WriteBarrier(
@@ -239,7 +239,7 @@ void ScriptWrappableMarkingVisitor::WriteBarrier(
   if (!visitor->WrapperTracingInProgress())
     return;
   // Conservatively assume that the source object key is marked.
-  visitor->TraceWrappers(wrapper_map, key);
+  visitor->Trace(wrapper_map, key);
 }
 
 void ScriptWrappableMarkingVisitor::Visit(
@@ -252,20 +252,20 @@ void ScriptWrappableMarkingVisitor::Visit(
   traced_wrapper.Get().RegisterExternalReference(isolate_);
 }
 
-void ScriptWrappableMarkingVisitor::Visit(
+void ScriptWrappableMarkingVisitor::VisitWithWrappers(
     void* object,
-    TraceWrapperDescriptor wrapper_descriptor) {
+    TraceDescriptor descriptor) {
   HeapObjectHeader* header =
-      HeapObjectHeader::FromPayload(wrapper_descriptor.base_object_payload);
+      HeapObjectHeader::FromPayload(descriptor.base_object_payload);
   if (header->IsWrapperHeaderMarked())
     return;
   MarkWrapperHeader(header);
   DCHECK(tracing_in_progress_);
   DCHECK(header->IsWrapperHeaderMarked());
-  marking_deque_.push_back(MarkingDequeItem(wrapper_descriptor));
+  marking_deque_.push_back(MarkingDequeItem(descriptor));
 #if DCHECK_IS_ON()
   if (!advancing_tracing_) {
-    verifier_deque_.push_back(MarkingDequeItem(wrapper_descriptor));
+    verifier_deque_.push_back(MarkingDequeItem(descriptor));
   }
 #endif
 }

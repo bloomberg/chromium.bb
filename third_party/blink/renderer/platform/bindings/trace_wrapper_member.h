@@ -16,14 +16,10 @@ class Member;
 
 // TraceWrapperMember is used for Member fields that should participate in
 // wrapper tracing, i.e., strongly hold a ScriptWrappable alive. All
-// TraceWrapperMember fields must be traced in the class' |TraceWrappers|
-// method.
+// TraceWrapperMember fields must be traced in the class' |Trace| method.
 template <class T>
 class TraceWrapperMember : public Member<T> {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  // TODO(mlippautz): Enable the following check.
-  // static_assert(std::is_base_of<TraceWrapperBase, T>::value,
-  //               "T must inherit from TraceWrapperBase");
 
  public:
   TraceWrapperMember() : Member<T>(nullptr) {}

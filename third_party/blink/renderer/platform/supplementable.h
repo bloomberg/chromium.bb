@@ -105,19 +105,8 @@ namespace blink {
 template <typename T>
 class Supplementable;
 
-// Supplement<T>-specific version of TraceWrapperBase class. In order to support
-// wrapper-tracing from Supplementable<T> to Supplement<T> (especially when
-// crossing core/modules boundary), Supplement<T> needs to be wrapper-traceable.
-// This class provides a common API for all subclasses of Supplement<T> to
-// support wrapper-tracing.
-class PLATFORM_EXPORT TraceWrapperBaseForSupplement {
- public:
-  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {}
-};
-
 template <typename T>
-class Supplement : public GarbageCollectedMixin,
-                   public TraceWrapperBaseForSupplement {
+class Supplement : public GarbageCollectedMixin {
  public:
   // TODO(haraken): Remove the default constructor.
   // All Supplement objects should be instantiated with |supplementable_|.
@@ -205,10 +194,6 @@ class Supplementable : public GarbageCollectedMixin {
   }
 
   void Trace(blink::Visitor* visitor) override { visitor->Trace(supplements_); }
-  virtual void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    for (const auto& supplement : supplements_.Values())
-      visitor->TraceWrappers(supplement);
-  }
 
  protected:
   using SupplementMap = HeapHashMap<const char*,

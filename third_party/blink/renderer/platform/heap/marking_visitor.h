@@ -109,7 +109,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
                desc.callback);
   }
 
-  void Visit(void*, TraceWrapperDescriptor) final {
+  void VisitWithWrappers(void*, TraceDescriptor) final {
     // Ignore as the object is also passed to Visit(void*, TraceDescriptor).
   }
 

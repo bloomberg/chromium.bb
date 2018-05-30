@@ -35,8 +35,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
  public:
   static ScriptWrappableMarkingVisitor* CurrentVisitor(v8::Isolate*);
 
-  bool WrapperTracingInProgress() const { return tracing_in_progress_; }
-
   // Replace all dead objects in the marking deque with nullptr after Oilpan
   // garbage collection.
   static void InvalidateDeadObjectsInMarkingDeque(v8::Isolate*);
@@ -48,33 +46,14 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   //
   // On assignment 'x.a = y' during incremental marking the Dijkstra barrier
   // suggests checking the color of 'x' and only mark 'y' if 'x' is marked.
-
+  //
   // Since checking 'x' is expensive in the current setting, as it requires
   // either a back pointer or expensive lookup logic due to large objects and
   // multiple inheritance, just assume that 'x' is black. We assume here that
   // since an object 'x' is referenced for a write, it will generally also be
   // alive in the current GC cycle.
   template <typename T>
-  static void WriteBarrier(const T* dst_object) {
-    if (!ThreadState::IsAnyWrapperTracing() || !dst_object)
-      return;
-
-    const ThreadState* thread_state =
-        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-    DCHECK(thread_state);
-    // Bail out if tracing is not in progress.
-    if (!thread_state->IsWrapperTracing())
-      return;
-
-    // If the wrapper is already marked we can bail out here.
-    if (TraceTrait<T>::GetHeapObjectHeader(const_cast<T*>(dst_object))
-            ->IsWrapperHeaderMarked())
-      return;
-
-    CurrentVisitor(thread_state->GetIsolate())
-        ->Visit(const_cast<T*>(dst_object),
-                TraceWrapperDescriptorFor(dst_object));
-  }
+  inline static void WriteBarrier(const T* dst_object);
 
   static void WriteBarrier(v8::Isolate*,
                            const TraceWrapperV8Reference<v8::Value>&);
@@ -85,6 +64,8 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
 
   ScriptWrappableMarkingVisitor(v8::Isolate* isolate) : isolate_(isolate){};
   ~ScriptWrappableMarkingVisitor() override;
+
+  bool WrapperTracingInProgress() const { return tracing_in_progress_; }
 
   // v8::EmbedderHeapTracer interface.
 
@@ -99,9 +80,10 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   void EnterFinalPause() override;
   size_t NumberOfWrappersToTrace() override;
 
-  // Visitor interface.
+  // ScriptWrappableVisitor interface.
+
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override;
-  void Visit(void*, TraceWrapperDescriptor) override;
+  void VisitWithWrappers(void*, TraceDescriptor) override;
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) override;
   void VisitBackingStoreStrongly(void* object,
@@ -116,18 +98,17 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
  private:
   class MarkingDequeItem {
    public:
-    explicit MarkingDequeItem(const TraceWrapperDescriptor& wrapper_descriptor)
-        : raw_object_pointer_(wrapper_descriptor.base_object_payload),
-          trace_wrappers_callback_(wrapper_descriptor.trace_wrappers_callback) {
+    explicit MarkingDequeItem(const TraceDescriptor& descriptor)
+        : raw_object_pointer_(descriptor.base_object_payload),
+          trace_callback_(descriptor.callback) {
       DCHECK(raw_object_pointer_);
-      DCHECK(trace_wrappers_callback_);
+      DCHECK(trace_callback_);
     }
 
     // Traces wrappers if the underlying object has not yet been invalidated.
-    inline void TraceWrappers(ScriptWrappableVisitor* visitor) const {
+    inline void Trace(ScriptWrappableVisitor* visitor) const {
       if (raw_object_pointer_) {
-        trace_wrappers_callback_(visitor,
-                                 const_cast<void*>(raw_object_pointer_));
+        trace_callback_(visitor, const_cast<void*>(raw_object_pointer_));
       }
     }
 
@@ -139,7 +120,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
       return raw_object_pointer_ && !GetHeapObjectHeader()->IsMarked();
     }
 
-    // Invalidates the current wrapper marking data, i.e., calling TraceWrappers
+    // Invalidates the current wrapper marking data, i.e., calling Trace
     // will result in a noop.
     inline void Invalidate() { raw_object_pointer_ = nullptr; }
 
@@ -149,7 +130,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
     }
 
     const void* raw_object_pointer_;
-    TraceWrappersCallback trace_wrappers_callback_;
+    TraceCallback trace_callback_;
   };
 
   void MarkWrapperHeader(HeapObjectHeader*);
@@ -230,6 +211,28 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,
                            WriteBarrierOnHeapVectorSwap2);
 };
+
+template <typename T>
+inline void ScriptWrappableMarkingVisitor::WriteBarrier(const T* dst_object) {
+  if (!ThreadState::IsAnyWrapperTracing() || !dst_object)
+    return;
+
+  const ThreadState* thread_state =
+      ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
+  DCHECK(thread_state);
+  // Bail out if tracing is not in progress.
+  if (!thread_state->IsWrapperTracing())
+    return;
+
+  // If the wrapper is already marked we can bail out here.
+  if (TraceTrait<T>::GetHeapObjectHeader(const_cast<T*>(dst_object))
+          ->IsWrapperHeaderMarked())
+    return;
+
+  CurrentVisitor(thread_state->GetIsolate())
+      ->VisitWithWrappers(const_cast<T*>(dst_object),
+                          TraceDescriptorFor(dst_object));
+}
 
 }  // namespace blink
 

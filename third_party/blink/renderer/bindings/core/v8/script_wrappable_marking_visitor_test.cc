@@ -169,7 +169,7 @@ TEST(ScriptWrappableMarkingVisitorTest,
           ->GetScriptWrappableMarkingVisitor();
   visitor->TracePrologue();
 
-  visitor->TraceWrappersWithManualWriteBarrier(object);
+  visitor->TraceWithWrappers(object);
 
   EXPECT_EQ(visitor->MarkingDeque()->front().RawObjectPointer(), object);
 
@@ -249,9 +249,6 @@ class HandleContainer
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(handle_.Cast<v8::Value>());
-  }
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(handle_.Cast<v8::Value>());
   }
   const char* NameInHeapSnapshot() const override { return "HandleContainer"; }
 
@@ -455,10 +452,6 @@ class Mixin : public GarbageCollectedMixin {
 
   void Trace(Visitor* visitor) override { visitor->Trace(wrapper_in_mixin_); }
 
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const {
-    visitor->TraceWrappers(wrapper_in_mixin_);
-  }
-
  protected:
   DeathAwareScriptWrappable::Wrapper wrapper_in_mixin_;
 };
@@ -483,11 +476,6 @@ class Base : public blink::GarbageCollected<Base>,
   void Trace(Visitor* visitor) override {
     visitor->Trace(wrapper_in_base_);
     Mixin::Trace(visitor);
-  }
-
-  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
-    visitor->TraceWrappers(wrapper_in_base_);
-    Mixin::TraceWrappers(visitor);
   }
 
   const char* NameInHeapSnapshot() const override { return "HandleContainer"; }

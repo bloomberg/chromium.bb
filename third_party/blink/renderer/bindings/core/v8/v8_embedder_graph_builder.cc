@@ -109,9 +109,9 @@ void V8EmbedderGraphBuilder::VisitPersistentHandle(
   DomTreeState dom_tree_state = DomTreeStateFromWrapper(class_id, v8_value);
   EmbedderNode* graph_node = GraphNode(
       traceable, traceable->NameInHeapSnapshot(), wrapper, dom_tree_state);
-  const TraceWrapperDescriptor& wrapper_descriptor =
-      TraceWrapperDescriptorFor<ScriptWrappable>(traceable);
-  WorklistItem item = ToWorklistItem(graph_node, wrapper_descriptor);
+  const TraceDescriptor& descriptor =
+      TraceDescriptorFor<ScriptWrappable>(traceable);
+  WorklistItem item = ToWorklistItem(graph_node, descriptor);
   switch (graph_node->GetDomTreeState()) {
     case DomTreeState::kAttached:
       PushToWorklist(item);
@@ -135,8 +135,9 @@ void V8EmbedderGraphBuilder::Visit(
   }
 }
 
-void V8EmbedderGraphBuilder::Visit(void* object,
-                                   TraceWrapperDescriptor wrapper_descriptor) {
+void V8EmbedderGraphBuilder::VisitWithWrappers(
+    void* object,
+    TraceDescriptor wrapper_descriptor) {
   // Add an edge from the current parent to this object.
   // Also push the object to the worklist in order to process its members.
   const void* traceable = wrapper_descriptor.base_object_payload;
@@ -201,9 +202,8 @@ void V8EmbedderGraphBuilder::VisitPendingActivities() {
 
 V8EmbedderGraphBuilder::WorklistItem V8EmbedderGraphBuilder::ToWorklistItem(
     EmbedderNode* node,
-    const TraceWrapperDescriptor& wrapper_descriptor) const {
-  return {node, wrapper_descriptor.base_object_payload,
-          wrapper_descriptor.trace_wrappers_callback};
+    const TraceDescriptor& descriptor) const {
+  return {node, descriptor.base_object_payload, descriptor.callback};
 }
 
 void V8EmbedderGraphBuilder::PushToWorklist(WorklistItem item) const {
@@ -219,7 +219,7 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
     auto item = worklist_.back();
     worklist_.pop_back();
     ParentScope parent(this, item.node);
-    item.trace_wrappers_callback(this, const_cast<void*>(item.traceable));
+    item.trace_callback(this, const_cast<void*>(item.traceable));
   }
 }
 
