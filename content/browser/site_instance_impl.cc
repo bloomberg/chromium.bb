@@ -84,6 +84,11 @@ bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
   return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
+// static
+bool SiteInstanceImpl::IsOriginLockASite(const GURL& lock_url) {
+  return lock_url.has_scheme() && lock_url.has_host();
+}
+
 int32_t SiteInstanceImpl::GetId() {
   return id_;
 }
@@ -578,7 +583,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
         // strong protection. If only some sites are isolated, we need
         // additional logic to prevent the non-isolated sites from requesting
         // resources for isolated sites. https://crbug.com/509125
-        policy->LockToOrigin(process_->GetID(), site_);
+        process_->LockToOrigin(site_);
         break;
       }
       case CheckOriginLockResult::HAS_WRONG_LOCK:

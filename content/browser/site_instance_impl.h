@@ -39,6 +39,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const GURL& url);
   static bool ShouldAssignSiteForURL(const GURL& url);
 
+  // Returns whether |lock_url| is at least at the granularity of a site (i.e.,
+  // a scheme plus eTLD+1, like https://google.com).  Also returns true if the
+  // lock is to a more specific origin (e.g., https://accounts.google.com), but
+  // not if the lock is empty or applies to an entire scheme (e.g., file://).
+  static bool IsOriginLockASite(const GURL& lock_url);
+
   // See SiteInstance::IsSameWebSite.
   // This version allows comparing URLs without converting them to effective
   // URLs first, which is useful for avoiding OOPIFs when otherwise same-site

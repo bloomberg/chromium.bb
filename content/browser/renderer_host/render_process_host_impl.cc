@@ -2547,6 +2547,15 @@ bool RenderProcessHostImpl::HostHasNotBeenUsed() {
          pending_views_ == 0;
 }
 
+void RenderProcessHostImpl::LockToOrigin(const GURL& lock_url) {
+  ChildProcessSecurityPolicyImpl::GetInstance()->LockToOrigin(GetID(),
+                                                              lock_url);
+  // Notify renderer that it has been locked to a site, if |lock_url| has
+  // scheme and host.
+  if (SiteInstanceImpl::IsOriginLockASite(lock_url))
+    GetRendererInterface()->SetIsLockedToSite();
+}
+
 bool RenderProcessHostImpl::IsForGuestsOnly() const {
   return is_for_guests_only_;
 }

@@ -213,6 +213,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SetIsUsed() override;
 
   bool HostHasNotBeenUsed() override;
+  void LockToOrigin(const GURL& lock_url) override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 

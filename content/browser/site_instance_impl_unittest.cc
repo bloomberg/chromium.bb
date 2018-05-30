@@ -1233,4 +1233,17 @@ TEST_F(SiteInstanceTest, OriginalURL) {
   SetBrowserClientForTesting(regular_client);
 }
 
+TEST_F(SiteInstanceTest, IsOriginLockASite) {
+  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("http://")));
+  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("")));
+  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("google.com")));
+  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("http:")));
+  EXPECT_FALSE(SiteInstanceImpl::IsOriginLockASite(GURL("chrome:")));
+
+  EXPECT_TRUE(SiteInstanceImpl::IsOriginLockASite(GURL("http://foo.com")));
+  EXPECT_TRUE(SiteInstanceImpl::IsOriginLockASite(GURL("http://bar.foo.com")));
+  EXPECT_TRUE(SiteInstanceImpl::IsOriginLockASite(
+      GURL("http://user:pass@google.com:99/foo;bar?q=a#ref")));
+}
+
 }  // namespace content

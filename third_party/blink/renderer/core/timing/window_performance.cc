@@ -138,7 +138,14 @@ PerformanceNavigation* WindowPerformance::navigation() const {
 }
 
 MemoryInfo* WindowPerformance::memory() const {
-  return MemoryInfo::Create();
+  // The performance.memory() API has been improved so that we report precise
+  // values when the process is locked to a site. The intent (which changed
+  // course over time about what changes would be implemented) can be found at
+  // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/no00RdMnGio,
+  // and the relevant bug is https://crbug.com/807651.
+  return MemoryInfo::Create(Platform::Current()->IsLockedToSite()
+                                ? MemoryInfo::Precision::Precise
+                                : MemoryInfo::Precision::Bucketized);
 }
 
 bool WindowPerformance::shouldYield() const {

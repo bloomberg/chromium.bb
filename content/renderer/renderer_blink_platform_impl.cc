@@ -267,6 +267,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       compositor_thread_(nullptr),
       main_thread_(main_thread_scheduler->CreateMainThread()),
       sudden_termination_disables_(0),
+      is_locked_to_site_(false),
       default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       main_thread_scheduler_(main_thread_scheduler) {
@@ -688,6 +689,14 @@ WebString RendererBlinkPlatformImpl::DatabaseCreateOriginIdentifier(
 viz::FrameSinkId RendererBlinkPlatformImpl::GenerateFrameSinkId() {
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                           RenderThread::Get()->GenerateRoutingID());
+}
+
+bool RendererBlinkPlatformImpl::IsLockedToSite() const {
+  return is_locked_to_site_;
+}
+
+void RendererBlinkPlatformImpl::SetIsLockedToSite() {
+  is_locked_to_site_ = true;
 }
 
 bool RendererBlinkPlatformImpl::IsThreadedCompositingEnabled() {

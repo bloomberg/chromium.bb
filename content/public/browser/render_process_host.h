@@ -406,6 +406,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // crbug.com/738634.
   virtual bool HostHasNotBeenUsed() = 0;
 
+  // Locks this RenderProcessHost to the 'origin' |lock_url|. This method is
+  // public so that it can be called from SiteInstanceImpl, and used by
+  // MockRenderProcessHost. It isn't meant to be called outside of content.
+  // TODO(creis): Rename LockToOrigin to LockToPrincipal. See
+  // https://crbug.com/846155.
+  virtual void LockToOrigin(const GURL& lock_url) = 0;
+
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();

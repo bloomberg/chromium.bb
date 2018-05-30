@@ -1810,6 +1810,11 @@ void RenderThreadImpl::ProcessPurgeAndSuspend() {
       base::TimeDelta::FromMinutes(90));
 }
 
+void RenderThreadImpl::SetIsLockedToSite() {
+  DCHECK(blink_platform_impl_);
+  blink_platform_impl_->SetIsLockedToSite();
+}
+
 bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {
   DCHECK(memory_metrics);

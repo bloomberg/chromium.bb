@@ -331,7 +331,8 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
   ExecutionContext* execution_context = ToExecutionContext(context);
   DCHECK(execution_context);
   DCHECK(execution_context->IsDocument());
-  return ToV8(MemoryInfo::Create(), context->Global(), isolate);
+  return ToV8(MemoryInfo::Create(MemoryInfo::Precision::Bucketized),
+              context->Global(), isolate);
 }
 
 void MainThreadDebugger::installAdditionalCommandLineAPI(
