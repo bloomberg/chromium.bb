@@ -40,16 +40,13 @@ MediaElementEventQueue* MediaElementEventQueue::Create(
 
 MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
                                                ExecutionContext* context)
-    : owner_(owner),
-      timer_(context->GetTaskRunner(TaskType::kMediaElementEvent),
-             this,
-             &MediaElementEventQueue::TimerFired),
-      is_closed_(false) {}
+    : owner_(owner), context_(context), is_closed_(false) {}
 
 MediaElementEventQueue::~MediaElementEventQueue() = default;
 
 void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
+  visitor->Trace(context_);
   visitor->Trace(pending_events_);
 }
 
@@ -66,32 +63,35 @@ bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
   EventTarget* target = event->target() ? event->target() : owner_.Get();
   probe::AsyncTaskScheduled(target->GetExecutionContext(), event->type(),
                             event);
-  pending_events_.push_back(event);
 
-  if (!timer_.IsActive())
-    timer_.StartOneShot(TimeDelta(), from_here);
-
+  pending_events_.insert(event);
+  context_->GetTaskRunner(TaskType::kMediaElementEvent)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&MediaElementEventQueue::DispatchEvent,
+                           WrapPersistent(this), WrapPersistent(event)));
   return true;
 }
 
-void MediaElementEventQueue::TimerFired(TimerBase*) {
-  DCHECK(!timer_.IsActive());
-  DCHECK(!pending_events_.IsEmpty());
+bool MediaElementEventQueue::RemoveEvent(Event* event) {
+  auto found = pending_events_.find(event);
+  if (found == pending_events_.end())
+    return false;
+  pending_events_.erase(found);
+  return true;
+}
 
-  HeapVector<Member<Event>> pending_events;
-  pending_events_.swap(pending_events);
+void MediaElementEventQueue::DispatchEvent(Event* event) {
+  if (!RemoveEvent(event))
+    return;
 
-  for (const auto& pending_event : pending_events) {
-    Event* event = pending_event.Get();
-    EventTarget* target = event->target() ? event->target() : owner_.Get();
-    CString type(event->type().Ascii());
-    probe::AsyncTask async_task(target->GetExecutionContext(), event);
-    TRACE_EVENT_ASYNC_STEP_INTO1("event", "MediaElementEventQueue:enqueueEvent",
-                                 event, "dispatch", "type", type);
-    target->DispatchEvent(pending_event);
-    TRACE_EVENT_ASYNC_END1("event", "MediaElementEventQueue:enqueueEvent",
-                           event, "type", type);
-  }
+  EventTarget* target = event->target() ? event->target() : owner_.Get();
+  CString type(event->type().Ascii());
+  probe::AsyncTask async_task(target->GetExecutionContext(), event);
+  TRACE_EVENT_ASYNC_STEP_INTO1("event", "MediaElementEventQueue:enqueueEvent",
+                               event, "dispatch", "type", type);
+  target->DispatchEvent(event);
+  TRACE_EVENT_ASYNC_END1("event", "MediaElementEventQueue:enqueueEvent", event,
+                         "type", type);
 }
 
 void MediaElementEventQueue::Close() {
@@ -100,10 +100,7 @@ void MediaElementEventQueue::Close() {
 }
 
 void MediaElementEventQueue::CancelAllEvents() {
-  timer_.Stop();
-
-  for (const auto& pending_event : pending_events_) {
-    Event* event = pending_event.Get();
+  for (auto& event : pending_events_) {
     TRACE_EVENT_ASYNC_END2("event", "MediaElementEventQueue:enqueueEvent",
                            event, "type", event->type().Ascii(), "status",
                            "cancelled");
@@ -114,7 +111,7 @@ void MediaElementEventQueue::CancelAllEvents() {
 }
 
 bool MediaElementEventQueue::HasPendingEvents() const {
-  return pending_events_.size();
+  return pending_events_.size() > 0;
 }
 
 }  // namespace blink

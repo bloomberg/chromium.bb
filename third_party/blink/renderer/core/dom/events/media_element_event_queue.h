@@ -52,11 +52,12 @@ class CORE_EXPORT MediaElementEventQueue final
 
  private:
   MediaElementEventQueue(EventTarget*, ExecutionContext*);
-  void TimerFired(TimerBase*);
+  bool RemoveEvent(Event* event);
+  void DispatchEvent(Event* event);
 
   Member<EventTarget> owner_;
-  HeapVector<Member<Event>> pending_events_;
-  TaskRunnerTimer<MediaElementEventQueue> timer_;
+  Member<ExecutionContext> context_;
+  HeapHashSet<Member<Event>> pending_events_;
 
   bool is_closed_;
 };
