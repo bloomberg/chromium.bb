@@ -13,6 +13,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -27,7 +28,9 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
     : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
       text_height_(text_height),
       model_(model),
-      result_view_(result_view) {
+      result_view_(result_view),
+      initialized_(false),
+      animation_(new gfx::SlideAnimation(this)) {
   // TODO(krb): SetTooltipText(text);
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL,
@@ -44,29 +47,56 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   } else {
     SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
   }
-  visible_ = true;
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
+  animation_->SetSlideDuration(500);
+  SetElideBehavior(gfx::FADE_TAIL);
+}
+
+OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
+
+size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,
+                                                  base::string16* goal_text) {
+  if (full_text_width_ * 5 <= parent_width) {
+    *goal_text = l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT);
+    return full_text_width_;
+  }
+  if (short_text_width_ * 5 <= parent_width) {
+    *goal_text = l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT);
+    return short_text_width_;
+  }
+  *goal_text = base::string16();
+  if (icon_only_width_ * 5 <= parent_width)
+    return icon_only_width_;
+  return 0;
 }
 
 void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
-  visible_ = true;
-  if (full_text_width_ < parent_width / 5) {
-    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
-  } else if (short_text_width_ < parent_width / 5) {
-    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT));
-  } else if (icon_only_width_ < parent_width / 5) {
-    SetText(base::ASCIIToUTF16(""));
-  } else {
-    visible_ = false;
+  size_t preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
+  if (!initialized_) {
+    initialized_ = true;
+    goal_width_ = preferred_width;
+    animation_->Reset(1);
+    SetText(goal_text_);
+    return;
+  }
+  if (preferred_width != goal_width_) {
+    goal_width_ = preferred_width;
+    start_width_ = width();
+    // If growing/showing, set text-to-be and grow into it.
+    if (goal_width_ > start_width_)
+      SetText(goal_text_);
+    animation_->Reset(0);
+    animation_->Show();
   }
 }
 
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
-  if (!visible_)
-    return gfx::Size();
   gfx::Size size = MdTextButton::CalculatePreferredSize();
   // Bump height if odd.
   size.set_height(text_height_ + (text_height_ & 1) + 2 * kVerticalPadding);
+  int current_width = animation_->CurrentValueBetween(
+      static_cast<int>(start_width_), static_cast<int>(goal_width_));
+  size.set_width(current_width);
   return size;
 }
 
@@ -91,6 +121,20 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   if (state() == STATE_PRESSED)
     SetPressed();
   MdTextButton::StateChanged(old_state);
+}
+
+void OmniboxTabSwitchButton::AnimationProgressed(
+    const gfx::Animation* animation) {
+  if (animation != animation_.get()) {
+    MdTextButton::AnimationProgressed(animation);
+    return;
+  }
+
+  // If done shrinking, correct text.
+  if (animation_->GetCurrentValue() == 1 && goal_width_ < start_width_)
+    SetText(goal_text_);
+  result_view_->Layout();
+  result_view_->SchedulePaint();
 }
 
 void OmniboxTabSwitchButton::UpdateBackground() {

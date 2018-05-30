@@ -71,6 +71,7 @@ class OmniboxResultView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
+  void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -96,7 +97,6 @@ class OmniboxResultView : public views::View,
   void OpenMatch(WindowOpenDisposition disposition);
 
   // views::View:
-  void Layout() override;
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
