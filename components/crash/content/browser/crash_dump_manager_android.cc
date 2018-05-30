@@ -43,7 +43,9 @@ enum class ProcessedCrashCounts {
   kRendererForegroundVisibleSubframeCrash = 6,
   kGpuCrashAll = 7,
   kRendererCrashAll = 8,
-  kMaxValue = kRendererCrashAll
+  kRendererForegroundVisibleMainFrameIntentionalKill = 9,
+  kRendererForegroundVisibleNormalTermNoMinidump = 10,
+  kMaxValue = kRendererForegroundVisibleNormalTermNoMinidump
 };
 
 void LogCount(ProcessedCrashCounts type) {
@@ -73,25 +75,31 @@ void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
 
   if (info.process_type == content::PROCESS_TYPE_RENDERER) {
     if (app_foreground && renderer_visible) {
-      if (android_oom_kill) {
-        LogCount(
-            renderer_sub_frame
-                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom
-                : ProcessedCrashCounts::kRendererForegroundVisibleOom);
-      }
       if (has_crash_dump) {
         LogCount(
             renderer_sub_frame
                 ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeCrash
                 : ProcessedCrashCounts::kRendererForegroundVisibleCrash);
+      } else if (intentional_kill) {
+        LogCount(renderer_sub_frame
+                     ? ProcessedCrashCounts::
+                           kRendererForegroundVisibleSubframeIntentionalKill
+                     : ProcessedCrashCounts::
+                           kRendererForegroundVisibleMainFrameIntentionalKill);
+      } else if (info.normal_termination) {
+        LogCount(ProcessedCrashCounts::
+                     kRendererForegroundVisibleNormalTermNoMinidump);
+      } else {
+        DCHECK(android_oom_kill);
+        LogCount(
+            renderer_sub_frame
+                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom
+                : ProcessedCrashCounts::kRendererForegroundVisibleOom);
       }
     }
+
     if (app_foreground && intentional_kill) {
       LogCount(ProcessedCrashCounts::kRendererForegroundIntentionalKill);
-      if (renderer_visible && renderer_sub_frame) {
-        LogCount(ProcessedCrashCounts::
-                     kRendererForegroundVisibleSubframeIntentionalKill);
-      }
     }
     if (has_crash_dump) {
       LogCount(ProcessedCrashCounts::kRendererCrashAll);
