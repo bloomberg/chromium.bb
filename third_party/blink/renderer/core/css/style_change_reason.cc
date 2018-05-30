@@ -21,7 +21,7 @@ const char kDesignMode[] = "DesignMode";
 const char kFontSizeChange[] = "FontSizeChange";
 const char kFonts[] = "Fonts";
 const char kFrame[] = "Frame";
-const char kFullScreen[] = "FullScreen";
+const char kFullscreen[] = "Fullscreen";
 const char kInheritedStyleChangeFromParentFrame[] =
     "InheritedStyleChangeFromParentFrame";
 const char kInline[] = "Inline";

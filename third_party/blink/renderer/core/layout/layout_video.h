@@ -73,11 +73,6 @@ class LayoutVideo final : public LayoutMedia {
       LayoutUnit estimated_used_width = LayoutUnit()) const override;
   LayoutUnit MinimumReplacedHeight() const override;
 
-  LayoutUnit OffsetLeft(const Element*) const override;
-  LayoutUnit OffsetTop(const Element*) const override;
-  LayoutUnit OffsetWidth() const override;
-  LayoutUnit OffsetHeight() const override;
-
   CompositingReasons AdditionalCompositingReasons() const override;
 
   void UpdatePlayer();

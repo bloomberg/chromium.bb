@@ -5,12 +5,12 @@
         document.offsetWidth;
         frame.contentDocument.offsetWidth;
         var videoEnteredFullScreen = function() {
-            test("getComputedStyle(ancestor).position == 'static'");
+            test("getComputedStyle(document.documentElement).overflow == 'hidden'");
             endTest();
         };
         waitForEvent(frame.contentDocument, "webkitfullscreenchange", videoEnteredFullScreen);
 
-        test("getComputedStyle(ancestor).position == 'relative'");
+        test("getComputedStyle(document.documentElement).overflow == 'visible'");
 
         var x = frame.getBoundingClientRect().left + 10;
         var y = frame.getBoundingClientRect().top + 10;

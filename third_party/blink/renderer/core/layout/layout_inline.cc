@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -441,18 +440,6 @@ void LayoutInline::SplitInlines(LayoutBlockFlow* from_block,
                                 LayoutBoxModelObject* old_cont) {
   DCHECK(IsDescendantOf(from_block));
   DCHECK(!IsAnonymous());
-
-  // If we're splitting the inline containing the fullscreened element,
-  // |beforeChild| may be the layoutObject for the fullscreened element.
-  // However, that layoutObject is wrapped in a LayoutFullScreen, so |this| is
-  // not its parent. Since the splitting logic expects |this| to be the parent,
-  // set |beforeChild| to be the LayoutFullScreen.
-  if (Fullscreen* fullscreen = Fullscreen::FromIfExists(GetDocument())) {
-    const Element* fullscreen_element = fullscreen->FullscreenElement();
-    if (fullscreen_element && before_child &&
-        before_child->GetNode() == fullscreen_element)
-      before_child = fullscreen->FullScreenLayoutObject();
-  }
 
   // FIXME: Because splitting is O(n^2) as tags nest pathologically, we cap the
   // depth at which we're willing to clone.

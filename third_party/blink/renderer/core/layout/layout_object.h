@@ -550,12 +550,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsQuote() const { return IsOfType(kLayoutObjectQuote); }
   bool IsLayoutButton() const { return IsOfType(kLayoutObjectLayoutButton); }
   bool IsLayoutCustom() const { return IsOfType(kLayoutObjectLayoutCustom); }
-  bool IsLayoutFullScreen() const {
-    return IsOfType(kLayoutObjectLayoutFullScreen);
-  }
-  bool IsLayoutFullScreenPlaceholder() const {
-    return IsOfType(kLayoutObjectLayoutFullScreenPlaceholder);
-  }
   bool IsLayoutGrid() const { return IsOfType(kLayoutObjectLayoutGrid); }
   bool IsLayoutIFrame() const { return IsOfType(kLayoutObjectLayoutIFrame); }
   bool IsLayoutImage() const { return IsOfType(kLayoutObjectLayoutImage); }
@@ -775,8 +769,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
             Style()->Display() == EDisplay::kWebkitBox) &&
            Style()->StyleType() == kPseudoIdNone && IsLayoutBlock() &&
            !IsListMarker() && !IsLayoutFlowThread() &&
-           !IsLayoutMultiColumnSet() && !IsLayoutFullScreen() &&
-           !IsLayoutFullScreenPlaceholder();
+           !IsLayoutMultiColumnSet();
   }
   bool IsElementContinuation() const {
     return GetNode() && GetNode()->GetLayoutObject() != this;
@@ -2007,8 +2000,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectLayoutButton,
     kLayoutObjectLayoutCustom,
     kLayoutObjectLayoutFlowThread,
-    kLayoutObjectLayoutFullScreen,
-    kLayoutObjectLayoutFullScreenPlaceholder,
     kLayoutObjectLayoutGrid,
     kLayoutObjectLayoutIFrame,
     kLayoutObjectLayoutImage,

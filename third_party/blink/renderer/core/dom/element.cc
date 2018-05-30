@@ -1893,9 +1893,6 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
     }
   }
 
-  if (Fullscreen* fullscreen = Fullscreen::FromIfExists(GetDocument()))
-    fullscreen->ElementRemoved(*this);
-
   if (GetDocument().GetPage())
     GetDocument().GetPage()->GetPointerLockController().ElementRemoved(this);
 
@@ -1931,7 +1928,10 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
 
   GetDocument().GetRootScrollerController().ElementRemoved(*this);
 
-  GetDocument().RemoveFromTopLayer(this);
+  if (IsInTopLayer()) {
+    Fullscreen::ElementRemoved(*this);
+    GetDocument().RemoveFromTopLayer(this);
+  }
 
   ClearElementFlag(ElementFlags::kIsInCanvasSubtree);
 
@@ -2088,7 +2088,8 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
                                            ? CustomStyleForLayoutObject()
                                            : OriginalStyleForLayoutObject();
   if (!style) {
-    DCHECK(IsBeforePseudoElement() || IsAfterPseudoElement());
+    DCHECK(IsBeforePseudoElement() || IsAfterPseudoElement() ||
+           GetPseudoId() == kPseudoIdBackdrop);
     return nullptr;
   }
 
