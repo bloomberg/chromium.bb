@@ -208,8 +208,18 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
     return std::make_unique<SoftwareOutputDevice>();
 
 #if defined(OS_WIN)
-  return CreateSoftwareOutputDeviceWinGpu(
-      surface_handle, &output_device_backing_, display_client);
+  HWND child_hwnd;
+  auto device = CreateSoftwareOutputDeviceWinGpu(
+      surface_handle, &output_device_backing_, display_client, &child_hwnd);
+
+  // If |child_hwnd| isn't null then a new child HWND was created. Send an IPC
+  // to browser process for SetParent() syscall.
+  if (child_hwnd) {
+    gpu_channel_manager_delegate_->SendCreatedChildWindow(surface_handle,
+                                                          child_hwnd);
+  }
+
+  return device;
 #elif defined(OS_MACOSX)
   return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)
