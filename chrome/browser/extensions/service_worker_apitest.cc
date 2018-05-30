@@ -503,8 +503,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
-                       LoadingBackgroundPageBypassesServiceWorker) {
+IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, SWServedBackgroundPage) {
   const Extension* extension =
       StartTestFromBackgroundPage("fetch.js", kExpectSuccess);
 
@@ -526,23 +525,12 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest,
   process_manager()->WakeEventPage(extension->id(), base::DoNothing());
   BackgroundPageWatcher(process_manager(), extension).WaitForOpen();
 
-  // Content should not have been affected by the fetch, which would otherwise
-  // be "Caught fetch for...".
+  // The service worker should get a fetch event for the background page.
   background_page =
       process_manager()->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(background_page);
   content::WaitForLoadStop(background_page->host_contents());
 
-  // TODO(kalman): Everything you've read has been a LIE! It should be:
-  //
-  // EXPECT_EQ(kExpectedInnerText,
-  //           ExtractInnerText(background_page->host_contents()));
-  //
-  // but there is a bug, and we're actually *not* bypassing the service worker
-  // for background page loads! For now, let it pass (assert wrong behavior)
-  // because it's not a regression, but this must be fixed eventually.
-  //
-  // Tracked in crbug.com/532720.
   EXPECT_EQ("Caught a fetch for /background.html",
             ExtractInnerText(background_page->host_contents()));
 }
