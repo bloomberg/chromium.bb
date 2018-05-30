@@ -9,14 +9,19 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+namespace network {
+class SimpleURLLoader;
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
+}  // namespace network
 
 namespace assist_ranker {
 
 // Downloads Ranker models.
-class RankerURLFetcher : public net::URLFetcherDelegate {
+class RankerURLFetcher {
  public:
   // Callback type for Request().
   typedef base::Callback<void(bool, const std::string&)> Callback;
@@ -30,7 +35,7 @@ class RankerURLFetcher : public net::URLFetcherDelegate {
   };
 
   RankerURLFetcher();
-  ~RankerURLFetcher() override;
+  ~RankerURLFetcher();
 
   int max_retry_on_5xx() { return max_retry_on_5xx_; }
   void set_max_retry_on_5xx(int count) { max_retry_on_5xx_ = count; }
@@ -41,23 +46,22 @@ class RankerURLFetcher : public net::URLFetcherDelegate {
   // is omitted due to retry limitation.
   bool Request(const GURL& url,
                const Callback& callback,
-               net::URLRequestContextGetter* request_context);
+               network::mojom::URLLoaderFactory* url_loader_factory);
 
   // Gets internal state.
   State state() { return state_; }
 
-  // net::URLFetcherDelegate implementation:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
  private:
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+
   // URL to send the request.
   GURL url_;
 
   // Internal state.
   enum State state_;
 
-  // URLFetcher instance.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // SimpleURLLoader instance.
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // Callback passed at Request(). It will be invoked when an asynchronous
   // fetch operation is finished.
