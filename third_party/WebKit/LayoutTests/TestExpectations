@@ -4807,3 +4807,6 @@ crbug.com/846920 http/tests/devtools/device-orientation-success.js [ Pass Failur
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 crbug.com/847205 [ Mac ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Crash Timeout ]
+
+# Sheriff 2018-05-30
+crbug.com/847373 [ Mac Linux ] virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-workers-force-update-on-page-load.js [ Pass Timeout ]
