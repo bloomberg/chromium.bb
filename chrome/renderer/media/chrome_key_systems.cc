@@ -77,8 +77,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.storageidtest";
   static const char kExternalClearKeyDifferentGuidTestKeySystem[] =
       "org.chromium.externalclearkey.differentguid";
-  static const char kExternalClearKeyCdmProxyTestKeySystem[] =
-      "org.chromium.externalclearkey.cdmproxytest";
+  static const char kExternalClearKeyCdmProxyKeySystem[] =
+      "org.chromium.externalclearkey.cdmproxy";
 
   std::vector<media::VideoCodec> supported_video_codecs;
   bool supports_persistent_license;
@@ -134,9 +134,9 @@ static void AddExternalClearKey(
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
       kExternalClearKeyDifferentGuidTestKeySystem));
 
-  // A key system that triggers CDM Proxy test in ClearKeyCdm.
-  concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
-      kExternalClearKeyCdmProxyTestKeySystem));
+  // A key system that requires the use of CdmProxy.
+  concrete_key_systems->emplace_back(
+      new cdm::ExternalClearKeyProperties(kExternalClearKeyCdmProxyKeySystem));
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/library_cdm/clear_key_cdm/cdm_proxy_test.h"
+#include "media/cdm/library_cdm/clear_key_cdm/cdm_proxy_handler.h"
 
 #include <stdint.h>
 #include <algorithm>
@@ -14,48 +14,48 @@
 
 namespace media {
 
-CdmProxyTest::CdmProxyTest(CdmHostProxy* cdm_host_proxy)
+CdmProxyHandler::CdmProxyHandler(CdmHostProxy* cdm_host_proxy)
     : cdm_host_proxy_(cdm_host_proxy) {}
 
-CdmProxyTest::~CdmProxyTest() {}
+CdmProxyHandler::~CdmProxyHandler() {}
 
-void CdmProxyTest::Run(CompletionCB completion_cb) {
+void CdmProxyHandler::Initialize(InitCB init_cb) {
   DVLOG(1) << __func__;
-  completion_cb_ = std::move(completion_cb);
+  init_cb_ = std::move(init_cb);
 
   cdm_proxy_ = cdm_host_proxy_->RequestCdmProxy(this);
   if (!cdm_proxy_) {
-    OnTestComplete(false);
+    FinishInitialization(false);
     return;
   }
 
   cdm_proxy_->Initialize();
 }
 
-void CdmProxyTest::SetKey(const std::vector<uint8_t>& response) {
+void CdmProxyHandler::SetKey(const std::vector<uint8_t>& response) {
   cdm_proxy_->SetKey(crypto_session_id_, nullptr, 0, response.data(),
                      response.size());
 }
 
-void CdmProxyTest::OnTestComplete(bool success) {
+void CdmProxyHandler::FinishInitialization(bool success) {
   DVLOG(1) << __func__ << ": success = " << success;
-  std::move(completion_cb_).Run(success);
+  std::move(init_cb_).Run(success);
 }
 
-void CdmProxyTest::OnInitialized(Status status,
-                                 Protocol protocol,
-                                 uint32_t crypto_session_id) {
+void CdmProxyHandler::OnInitialized(Status status,
+                                    Protocol protocol,
+                                    uint32_t crypto_session_id) {
   DVLOG(1) << __func__ << ": status = " << status;
 
   if (status != Status::kOk ||
       crypto_session_id != kClearKeyCdmProxyCryptoSessionId) {
-    OnTestComplete(false);
+    FinishInitialization(false);
     return;
   }
 
   // Only one CdmProxy can be created during the lifetime of the CDM instance.
   if (cdm_host_proxy_->RequestCdmProxy(this)) {
-    OnTestComplete(false);
+    FinishInitialization(false);
     return;
   }
 
@@ -64,15 +64,15 @@ void CdmProxyTest::OnInitialized(Status status,
                       kClearKeyCdmProxyInputData.size(), 0);
 }
 
-void CdmProxyTest::OnProcessed(Status status,
-                               const uint8_t* output_data,
-                               uint32_t output_data_size) {
+void CdmProxyHandler::OnProcessed(Status status,
+                                  const uint8_t* output_data,
+                                  uint32_t output_data_size) {
   DVLOG(1) << __func__ << ": status = " << status;
 
   if (status != Status::kOk ||
       !std::equal(output_data, output_data + output_data_size,
                   kClearKeyCdmProxyOutputData.begin())) {
-    OnTestComplete(false);
+    FinishInitialization(false);
     return;
   }
 
@@ -80,21 +80,21 @@ void CdmProxyTest::OnProcessed(Status status,
                                        kClearKeyCdmProxyInputData.size());
 }
 
-void CdmProxyTest::OnMediaCryptoSessionCreated(Status status,
-                                               uint32_t crypto_session_id,
-                                               uint64_t output_data) {
+void CdmProxyHandler::OnMediaCryptoSessionCreated(Status status,
+                                                  uint32_t crypto_session_id,
+                                                  uint64_t output_data) {
   DVLOG(1) << __func__ << ": status = " << status;
 
   if (status != Status::kOk ||
       crypto_session_id != kClearKeyCdmProxyMediaCryptoSessionId) {
-    OnTestComplete(false);
+    FinishInitialization(false);
     return;
   }
 
-  OnTestComplete(true);
+  FinishInitialization(true);
 }
 
-void CdmProxyTest::NotifyHardwareReset() {
+void CdmProxyHandler::NotifyHardwareReset() {
   DVLOG(1) << __func__;
   NOTREACHED();
 }

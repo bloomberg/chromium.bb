@@ -36,6 +36,7 @@ var EME_SESSION_CLOSED_AND_ERROR = 'EME_SESSION_CLOSED_AND_ERROR';
 var UNIT_TEST_RESULT_HEADER = 'UNIT_TEST_RESULT';
 
 // Available EME key systems to use.
+// TODO(xhwang): Unify naming in this list.
 var WIDEVINE_KEYSYSTEM = 'com.widevine.alpha';
 var CLEARKEY = 'org.w3.clearkey';
 var EXTERNAL_CLEARKEY = 'org.chromium.externalclearkey';
@@ -50,7 +51,7 @@ var CRASH_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.crash';
 var VERIFY_HOST_FILES_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.verifycdmhosttest';
 var STORAGE_ID_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.storageidtest';
-var CDM_PROXY_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.cdmproxytest';
+var EXTERNAL_CLEARKEY_CDM_PROXY = 'org.chromium.externalclearkey.cdmproxy';
 
 // Key system name:value map to show on the document page.
 var KEY_SYSTEMS = {
