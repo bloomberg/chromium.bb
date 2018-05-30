@@ -23,6 +23,9 @@
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
     Leave site?
   </message>
+ <message name="IDS_BEFOREUNLOAD_APP_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for apps.">
+    Leave app?
+  </message>
   <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which navigates the user away from the page.">
     Leave
   </message>
@@ -33,6 +36,9 @@
   <!-- "Before Reload" Dialog Box strings (same as "Before Unload" but when reloading rather than unloading the page -->
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads.">
     Reload site?
+  </message>
+  <message name="IDS_BEFORERELOAD_APP_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog for reloads of apps.">
+    Reload app?
   </message>
   <message name="IDS_BEFORERELOAD_MESSAGEBOX_OK_BUTTON_LABEL" desc="The text on the button which reloads the page.">
     Reload
