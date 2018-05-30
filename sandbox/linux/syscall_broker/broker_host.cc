@@ -186,6 +186,7 @@ void StatFileForIPC(const BrokerCommandSet& allowed_command_set,
                     const BrokerPermissionList& permission_list,
                     BrokerCommand command_type,
                     const std::string& requested_filename,
+                    bool follow_links,
                     BrokerSimpleMessage* reply) {
   const char* file_to_access = nullptr;
   if (!CommandStatIsSafe(allowed_command_set, permission_list,
@@ -195,7 +196,9 @@ void StatFileForIPC(const BrokerCommandSet& allowed_command_set,
   }
   if (command_type == COMMAND_STAT) {
     struct stat sb;
-    if (stat(file_to_access, &sb) < 0) {
+    int sts =
+        follow_links ? stat(file_to_access, &sb) : lstat(file_to_access, &sb);
+    if (sts < 0) {
       RAW_CHECK(reply->AddIntToMessage(-errno));
       return;
     }
@@ -211,7 +214,9 @@ void StatFileForIPC(const BrokerCommandSet& allowed_command_set,
     return;
 #else
     struct stat64 sb;
-    if (stat64(file_to_access, &sb) < 0) {
+    int sts = follow_links ? stat64(file_to_access, &sb)
+                           : lstat64(file_to_access, &sb);
+    if (sts < 0) {
       RAW_CHECK(reply->AddIntToMessage(-errno));
       return;
     }
@@ -316,9 +321,12 @@ bool HandleRemoteCommand(const BrokerCommandSet& allowed_command_set,
       const char* requested_filename;
       if (!message->ReadString(&requested_filename))
         return false;
+      int follow_links;
+      if (!message->ReadInt(&follow_links))
+        return false;
       StatFileForIPC(allowed_command_set, permission_list,
                      static_cast<BrokerCommand>(command_type),
-                     requested_filename, reply);
+                     requested_filename, !!follow_links, reply);
       break;
     }
     case COMMAND_UNLINK: {
