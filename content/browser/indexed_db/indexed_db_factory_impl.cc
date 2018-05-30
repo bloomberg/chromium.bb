@@ -379,10 +379,13 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
       OpenBackingStore(origin, data_directory, request_context_getter,
                        &data_loss_info, &disk_full, &s);
   if (!backing_store.get()) {
-    callbacks->OnError(
-        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
-                               "Internal error opening backing store for "
-                               "indexedDB.webkitGetDatabaseNames."));
+    IndexedDBDatabaseError error(
+        blink::kWebIDBDatabaseExceptionUnknownError,
+        ASCIIToUTF16("Internal error opening backing store for "
+                     "indexedDB.webkitGetDatabaseNames."));
+    callbacks->OnError(error);
+    if (s.IsCorruption())
+      HandleBackingStoreCorruption(origin, error);
     return;
   }
 
