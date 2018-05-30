@@ -48,11 +48,12 @@ class WidgetBoundsWatcher : public views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(WidgetBoundsWatcher);
 };
 
+// Tests both BrowserFrameAsh and BrowserFrameMus.
 class BrowserTestParam : public InProcessBrowserTest,
                          public testing::WithParamInterface<bool> {
  public:
-  BrowserTestParam() {}
-  ~BrowserTestParam() {}
+  BrowserTestParam() = default;
+  ~BrowserTestParam() override = default;
 
   bool CreateV1App() { return GetParam(); }
 
