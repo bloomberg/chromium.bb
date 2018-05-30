@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
@@ -42,25 +43,39 @@ void RecordAppLaunchHistogram(CrostiniAppLaunchAppType app_type) {
                                 CrostiniAppLaunchAppType::kCount);
 }
 
-void MaybeLaunchTerminal(Profile* profile,
-                         crostini::ConciergeClientResult result) {
-  if (result == crostini::ConciergeClientResult::SUCCESS) {
-    crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
-        profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
-  }
+void OnLaunchFailed(const std::string& app_id) {
+  // TODO(timloh): Consider displaying a notification of some sort.
 }
 
-void MaybeLaunchContainerApplication(
-    Profile* profile,
-    crostini::CrostiniRegistryService::Registration registration,
-    crostini::ConciergeClientResult result) {
-  if (result == crostini::ConciergeClientResult::SUCCESS) {
-    // TODO(timloh): Do something if launching failed, as otherwise the app
-    // launcher remains open and there's no feedback.
-    crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
-        profile, registration.VmName(), registration.ContainerName(),
-        registration.DesktopFileId(), base::DoNothing());
+void OnCrostiniRestarted(const std::string& app_id,
+                         base::OnceClosure callback,
+                         crostini::ConciergeClientResult result) {
+  if (result != crostini::ConciergeClientResult::SUCCESS) {
+    OnLaunchFailed(app_id);
+    return;
   }
+  std::move(callback).Run();
+}
+
+void OnContainerApplicationLaunched(const std::string& app_id,
+                                    crostini::ConciergeClientResult result) {
+  if (result != crostini::ConciergeClientResult::SUCCESS)
+    OnLaunchFailed(app_id);
+}
+
+void LaunchTerminal(Profile* profile) {
+  crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
+      profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+}
+
+void LaunchContainerApplication(
+    Profile* profile,
+    const std::string& app_id,
+    crostini::CrostiniRegistryService::Registration registration) {
+  crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
+      profile, registration.VmName(), registration.ContainerName(),
+      registration.DesktopFileId(),
+      base::BindOnce(OnContainerApplicationLaunched, app_id));
 }
 
 }  // namespace
@@ -88,22 +103,6 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
   auto* crostini_manager = crostini::CrostiniManager::GetInstance();
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
-
-  if (app_id == kCrostiniTerminalId) {
-    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
-
-    if (!crostini_manager->IsCrosTerminaInstalled() ||
-        !IsCrostiniEnabled(profile)) {
-      ShowCrostiniInstallerView(profile, CrostiniUISurface::kAppList);
-    } else {
-      crostini_manager->RestartCrostini(
-          profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-          base::BindOnce(&MaybeLaunchTerminal, profile));
-    }
-    registry_service->AppLaunched(app_id);
-    return;
-  }
-
   base::Optional<crostini::CrostiniRegistryService::Registration> registration =
       registry_service->GetRegistration(app_id);
   if (!registration) {
@@ -112,12 +111,33 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
     return;
   }
 
-  RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
-  crostini_manager->RestartCrostini(
-      profile, registration->VmName(), registration->ContainerName(),
-      base::BindOnce(&MaybeLaunchContainerApplication, profile,
-                     std::move(*registration)));
+  // Store these as we move |registration| into LaunchContainerApplication().
+  const std::string vm_name = registration->VmName();
+  const std::string container_name = registration->ContainerName();
+
+  base::OnceClosure launch_closure;
+  if (app_id == kCrostiniTerminalId) {
+    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
+
+    if (!crostini_manager->IsCrosTerminaInstalled() ||
+        !IsCrostiniEnabled(profile)) {
+      ShowCrostiniInstallerView(profile, CrostiniUISurface::kAppList);
+      return;
+    }
+
+    launch_closure = base::BindOnce(&LaunchTerminal, profile);
+  } else {
+    RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
+    launch_closure = base::BindOnce(&LaunchContainerApplication, profile,
+                                    app_id, std::move(*registration));
+  }
+
+  // Update the last launched time.
   registry_service->AppLaunched(app_id);
+
+  crostini_manager->RestartCrostini(
+      profile, vm_name, container_name,
+      base::BindOnce(OnCrostiniRestarted, app_id, std::move(launch_closure)));
 }
 
 std::string CryptohomeIdForProfile(Profile* profile) {
