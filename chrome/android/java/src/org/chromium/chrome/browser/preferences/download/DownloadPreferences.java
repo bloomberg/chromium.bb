@@ -50,8 +50,7 @@ public class DownloadPreferences
 
     private void updateData() {
         if (mLocationChangePref != null) {
-            mLocationChangePref.setSummary(
-                    PrefServiceBridge.getInstance().getDownloadDefaultDirectory());
+            mLocationChangePref.updateSummary();
         }
 
         if (mLocationPromptEnabledPref != null) {

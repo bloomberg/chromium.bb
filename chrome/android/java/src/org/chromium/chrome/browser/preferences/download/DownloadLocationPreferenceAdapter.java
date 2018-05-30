@@ -101,9 +101,11 @@ public class DownloadLocationPreferenceAdapter
         editor.putString(
                 DownloadPreferences.PREF_LOCATION_CHANGE, option.location.getAbsolutePath());
         editor.apply();
-        mPreference.setSummary(option.location.getAbsolutePath());
 
         mSelectedPosition = selectedId;
+
+        // Update the preference after selected position is updated.
+        mPreference.updateSummary();
 
         option.recordDirectoryOptionType();
 
