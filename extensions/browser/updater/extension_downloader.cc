@@ -116,8 +116,11 @@ bool ShouldRetryRequest(const net::URLRequestStatus& status,
                         int response_code) {
   // Retry if the response code is a server error, or the request failed because
   // of network errors as opposed to file errors.
-  return ((response_code >= 500 && status.is_success()) ||
-          status.status() == net::URLRequestStatus::FAILED);
+  return (response_code >= 500 && status.is_success()) ||
+         status.status() == net::URLRequestStatus::FAILED ||
+         // Note: URLRequestJob::OnSuspend() results in a canceled status; if
+         // the request is suspended, we should retry.
+         status.status() == net::URLRequestStatus::CANCELED;
 }
 
 // This parses and updates a URL query such that the value of the |authuser|
