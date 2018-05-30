@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_native_views.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -119,6 +120,11 @@ class AutofillPopupViewNativeViewsTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
+    // The layout provider is meant to be a singleton, but it is not initialized
+    // for unit tests. Constructing one here makes it globally available, which
+    // is later used by the view during initialization.
+    layout_provider_ = std::make_unique<ChromeLayoutProvider>();
+
     CreateWidget();
     generator_.reset(new ui::test::EventGenerator(widget_.GetNativeWindow()));
   }
@@ -157,6 +163,7 @@ class AutofillPopupViewNativeViewsTest : public views::ViewsTestBase {
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
  private:
+  std::unique_ptr<ChromeLayoutProvider> layout_provider_;
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewNativeViewsTest);
 };
 

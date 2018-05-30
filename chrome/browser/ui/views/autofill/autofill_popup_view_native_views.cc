@@ -51,6 +51,11 @@ const SkColor kSelectedBackgroundColor = gfx::kGoogleGrey200;
 const SkColor kFooterBackgroundColor = gfx::kGoogleGrey050;
 const SkColor kSeparatorColor = gfx::kGoogleGrey200;
 
+int GetCornerRadius() {
+  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_LOW);
+}
+
 }  // namespace
 
 namespace autofill {
@@ -99,14 +104,18 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   }
 
  protected:
-  AutofillPopupItemView(AutofillPopupController* controller, int line_number)
-      : AutofillPopupRowView(controller, line_number) {}
+  AutofillPopupItemView(AutofillPopupController* controller,
+                        int line_number,
+                        int extra_bottom_padding = 0)
+      : AutofillPopupRowView(controller, line_number),
+        extra_bottom_padding_(extra_bottom_padding) {}
 
   // AutofillPopupRowView:
   void CreateContent() override {
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal,
-        gfx::Insets(0, views::MenuConfig::instance().item_left_margin)));
+        gfx::Insets(extra_bottom_padding_,
+                    views::MenuConfig::instance().item_left_margin)));
 
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -179,6 +188,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
     layout->SetFlexForView(spacer, /*flex=*/resize ? 1 : 0);
   }
 
+  const int extra_bottom_padding_;
   views::Label* text_label_ = nullptr;
   views::Label* subtext_label_ = nullptr;
 
@@ -220,9 +230,10 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   ~AutofillPopupFooterView() override = default;
 
   static AutofillPopupFooterView* Create(AutofillPopupController* controller,
-                                         int line_number) {
-    AutofillPopupFooterView* result =
-        new AutofillPopupFooterView(controller, line_number);
+                                         int line_number,
+                                         int extra_bottom_padding) {
+    AutofillPopupFooterView* result = new AutofillPopupFooterView(
+        controller, line_number, extra_bottom_padding);
     result->Init();
     return result;
   }
@@ -245,8 +256,10 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   }
 
  private:
-  AutofillPopupFooterView(AutofillPopupController* controller, int line_number)
-      : AutofillPopupItemView(controller, line_number) {
+  AutofillPopupFooterView(AutofillPopupController* controller,
+                          int line_number,
+                          int extra_bottom_padding)
+      : AutofillPopupItemView(controller, line_number, extra_bottom_padding) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
 
@@ -493,20 +506,16 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     footer_container->SetBackground(
         views::CreateSolidBackground(kFooterBackgroundColor));
 
-    views::BoxLayout* footer_layout =
-        footer_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kVertical,
-            gfx::Insets(/*top=*/0,
-                        /*left=*/0,
-                        /*bottom=*/
-                        views::MenuConfig::instance().menu_vertical_border_size,
-                        /*right=*/0)));
+    views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     footer_layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
     while (line_number < controller_->GetLineCount()) {
-      rows_.push_back(
-          AutofillPopupFooterView::Create(controller_, line_number));
+      rows_.push_back(AutofillPopupFooterView::Create(
+          controller_, line_number,
+          line_number == controller_->GetLineCount() - 1 ? GetCornerRadius()
+                                                         : 0));
       footer_container->AddChildView(rows_.back());
       line_number++;
     }
@@ -536,8 +545,7 @@ std::unique_ptr<views::Border> AutofillPopupViewNativeViews::CreateBorder() {
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
       SK_ColorWHITE);
-  border->SetCornerRadius(
-      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW));
+  border->SetCornerRadius(GetCornerRadius());
   border->set_md_shadow_elevation(
       ChromeLayoutProvider::Get()->GetShadowElevationMetric(
           views::EMPHASIS_LOW));
