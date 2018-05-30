@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_networking_host.h"
+#include "components/feed/core/feed_scheduler_host.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace feed {
@@ -22,15 +23,18 @@ namespace feed {
 class FeedHostService : public KeyedService {
  public:
   FeedHostService(std::unique_ptr<FeedImageManager> image_manager,
-                  std::unique_ptr<FeedNetworkingHost> networking_host);
+                  std::unique_ptr<FeedNetworkingHost> networking_host,
+                  std::unique_ptr<FeedSchedulerHost> scheduler_host);
   ~FeedHostService() override;
 
   FeedImageManager* GetImageManager();
   FeedNetworkingHost* GetNetworkingHost();
+  FeedSchedulerHost* GetSchedulerHost();
 
  private:
   std::unique_ptr<FeedImageManager> image_manager_;
   std::unique_ptr<FeedNetworkingHost> networking_host_;
+  std::unique_ptr<FeedSchedulerHost> scheduler_host_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedHostService);
 };

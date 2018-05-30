@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_ANDROID_FEED_FEED_NETWORK_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_FEED_FEED_NETWORK_BRIDGE_H_
 
+#include <jni.h>
+
 #include "base/android/scoped_java_ref.h"
+#include "base/macros.h"
 
 namespace feed {
 

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("feed_core") {
   sources = [
     "feed_host_service.cc",
@@ -12,6 +16,8 @@ source_set("feed_core") {
     "feed_image_manager.h",
     "feed_networking_host.cc",
     "feed_networking_host.h",
+    "feed_scheduler_host.cc",
+    "feed_scheduler_host.h",
     "time_serialization.cc",
     "time_serialization.h",
   ]
@@ -36,6 +42,14 @@ source_set("feed_core") {
     "//services/network/public/mojom",
     "//third_party/zlib/google:compression_utils",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("feed_core_java_enums_srcjar") {
+    sources = [
+      "feed_scheduler_host.h",
+    ]
+  }
 }
 
 source_set("core_unit_tests") {

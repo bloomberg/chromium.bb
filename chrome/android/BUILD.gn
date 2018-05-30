@@ -337,6 +337,7 @@ android_library("chrome_java") {
 
   # Include sources from feed_java_sources.gni.
   java_files += feed_java_sources
+  srcjar_deps += feed_srcjar_deps
 
   if (enable_vr) {
     java_files += chrome_vr_java_sources

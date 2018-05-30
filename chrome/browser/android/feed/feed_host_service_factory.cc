@@ -14,6 +14,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/feed/core/feed_host_service.h"
+#include "components/feed/core/feed_image_manager.h"
+#include "components/feed/core/feed_networking_host.h"
+#include "components/feed/core/feed_scheduler_host.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/version_info/version_info.h"
@@ -79,8 +82,11 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   auto image_manager = std::make_unique<FeedImageManager>(
       std::move(image_fetcher), std::move(image_database));
 
+  auto scheduler_host = std::make_unique<FeedSchedulerHost>();
+
   return new FeedHostService(std::move(image_manager),
-                             std::move(networking_host));
+                             std::move(networking_host),
+                             std::move(scheduler_host));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(

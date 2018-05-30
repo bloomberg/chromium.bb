@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/feed/feed_network_bridge.h"
 
-#include <jni.h>
-
 #include <utility>
 #include <vector>
 
