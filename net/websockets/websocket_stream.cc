@@ -250,10 +250,10 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
   }
 
   void OnFinishOpeningHandshake() {
-    WebSocketDispatchOnFinishOpeningHandshake(connect_delegate(),
-                                              url_request_->url(),
-                                              url_request_->response_headers(),
-                                              url_request_->response_time());
+    WebSocketDispatchOnFinishOpeningHandshake(
+        connect_delegate(), url_request_->url(),
+        url_request_->response_headers(), url_request_->GetSocketAddress(),
+        url_request_->response_time());
   }
 
   WebSocketStream::ConnectDelegate* connect_delegate() const {
@@ -469,12 +469,13 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     WebSocketStream::ConnectDelegate* connect_delegate,
     const GURL& url,
     const scoped_refptr<HttpResponseHeaders>& headers,
+    const HostPortPair& socket_address,
     base::Time response_time) {
   DCHECK(connect_delegate);
   if (headers.get()) {
     connect_delegate->OnFinishOpeningHandshake(
-        std::make_unique<WebSocketHandshakeResponseInfo>(url, headers,
-                                                         response_time));
+        std::make_unique<WebSocketHandshakeResponseInfo>(
+            url, headers, socket_address, response_time));
   }
 }
 

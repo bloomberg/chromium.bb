@@ -34,6 +34,7 @@
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/websocket.mojom.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -1037,6 +1038,15 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* frame,
       bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* factory_request);
+
+  // Allows the embedder to intercept a WebSocket connection. |*request|
+  // is always valid upon entry and MUST be valid upon return. The embedder
+  // may swap out the value of |*request| for its own.
+  //
+  // Always called on the UI thread and only when the Network Service is
+  // enabled.
+  virtual void WillCreateWebSocket(RenderFrameHost* frame,
+                                   network::mojom::WebSocketRequest* request);
 
   // Allows the embedder to returns a list of request interceptors that can
   // intercept a navigation request.

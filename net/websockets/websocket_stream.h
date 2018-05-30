@@ -31,6 +31,7 @@ class Origin;
 
 namespace net {
 
+class HostPortPair;
 class HttpRequestHeaders;
 class NetLogWithSource;
 class URLRequest;
@@ -243,6 +244,7 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     WebSocketStream::ConnectDelegate* connect_delegate,
     const GURL& gurl,
     const scoped_refptr<HttpResponseHeaders>& headers,
+    const HostPortPair& socket_address,
     base::Time response_time);
 
 }  // namespace net

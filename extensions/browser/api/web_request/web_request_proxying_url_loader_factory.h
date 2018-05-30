@@ -141,11 +141,13 @@ class WebRequestProxyingURLLoaderFactory
       content::ResourceContext* resource_context,
       int render_process_id,
       int render_frame_id,
+      scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       WebRequestAPI::ProxySet* proxies);
+
   ~WebRequestProxyingURLLoaderFactory() override;
 
   static void StartProxying(
@@ -153,6 +155,7 @@ class WebRequestProxyingURLLoaderFactory
       content::ResourceContext* resource_context,
       int render_process_id,
       int render_frame_id,
+      scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
@@ -179,13 +182,13 @@ class WebRequestProxyingURLLoaderFactory
   content::ResourceContext* const resource_context_;
   const int render_process_id_;
   const int render_frame_id_;
+  scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   InfoMap* const info_map_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
-  uint64_t next_request_id_ = 1;
 
   std::map<int32_t, std::unique_ptr<InProgressRequest>> requests_;
 

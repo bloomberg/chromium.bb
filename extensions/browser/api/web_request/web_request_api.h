@@ -34,6 +34,7 @@
 #include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/websocket.mojom.h"
 
 class ExtensionWebRequestTimeTracker;
 class GURL;
@@ -115,6 +116,26 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
     DISALLOW_COPY_AND_ASSIGN(ProxySet);
   };
 
+  class RequestIDGenerator
+      : public base::RefCountedThreadSafe<RequestIDGenerator> {
+   public:
+    RequestIDGenerator() = default;
+    int64_t Generate() {
+      DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+      return ++id_;
+    }
+
+   private:
+    friend class base::RefCountedThreadSafe<RequestIDGenerator>;
+    ~RequestIDGenerator() {}
+
+    // Although this initialization can be done in a thread other than the IO
+    // thread, we expect at least one memory barrier before actually calling
+    // Generate in the IO thread, so we don't protect the variable with a lock.
+    int64_t id_ = 0;
+    DISALLOW_COPY_AND_ASSIGN(RequestIDGenerator);
+  };
+
   explicit WebRequestAPI(content::BrowserContext* context);
   ~WebRequestAPI() override;
 
@@ -138,6 +159,15 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       bool is_navigation,
       network::mojom::URLLoaderFactoryRequest* factory_request);
 
+  // If any WebRequest event listeners are currently active for this
+  // BrowserContext, |*request| is swapped out for a new request which proxies
+  // through an internal WebSocket implementation. This supports lifetime
+  // observation and control on behalf of the WebRequest API.
+  //
+  // Only used when the Network Service is enabled.
+  void MaybeProxyWebSocket(content::RenderFrameHost* frame,
+                           network::mojom::WebSocketRequest* request);
+
  private:
   friend class BrowserContextKeyedAPIFactory<WebRequestAPI>;
 
@@ -155,6 +185,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
 
   // Active proxies. Only used when the Network Service is enabled.
   scoped_refptr<ProxySet> proxies_;
+
+  scoped_refptr<RequestIDGenerator> request_id_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestAPI);
 };

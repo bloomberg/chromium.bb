@@ -621,6 +621,10 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
   return false;
 }
 
+void ContentBrowserClient::WillCreateWebSocket(
+    RenderFrameHost* frame,
+    network::mojom::WebSocketRequest* request) {}
+
 network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,

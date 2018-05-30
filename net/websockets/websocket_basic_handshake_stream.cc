@@ -403,10 +403,9 @@ void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(
 
 void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
   DCHECK(http_response_info_);
-  WebSocketDispatchOnFinishOpeningHandshake(connect_delegate_,
-                                            url_,
-                                            http_response_info_->headers,
-                                            http_response_info_->response_time);
+  WebSocketDispatchOnFinishOpeningHandshake(
+      connect_delegate_, url_, http_response_info_->headers,
+      http_response_info_->socket_address, http_response_info_->response_time);
 }
 
 int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {

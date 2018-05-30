@@ -20,6 +20,7 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_version.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"

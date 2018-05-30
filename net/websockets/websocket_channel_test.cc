@@ -1576,7 +1576,8 @@ TEST_F(WebSocketChannelEventInterfaceTest, FinishHandshakeRequest) {
   auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   auto response_info = std::make_unique<WebSocketHandshakeResponseInfo>(
-      GURL("ws://www.example.com/"), response_headers, base::Time());
+      GURL("ws://www.example.com/"), response_headers, HostPortPair(),
+      base::Time());
   connect_data_.argument_saver.connect_delegate->OnFinishOpeningHandshake(
       std::move(response_info));
   base::RunLoop().RunUntilIdle();
@@ -1600,7 +1601,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FailJustAfterHandshake) {
   auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   auto response_info = std::make_unique<WebSocketHandshakeResponseInfo>(
-      url, response_headers, base::Time());
+      url, response_headers, HostPortPair(), base::Time());
   connect_delegate->OnStartOpeningHandshake(std::move(request_info));
   connect_delegate->OnFinishOpeningHandshake(std::move(response_info));
 

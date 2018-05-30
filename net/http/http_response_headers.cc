@@ -1287,4 +1287,12 @@ bool HttpResponseHeaders::IsChunkEncoded() const {
       HasHeaderValue("Transfer-Encoding", "chunked");
 }
 
+bool HttpResponseHeaders::IsCookieResponseHeader(StringPiece name) {
+  for (const char* cookie_header : kCookieResponseHeaders) {
+    if (base::EqualsCaseInsensitiveASCII(cookie_header, name))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace net
