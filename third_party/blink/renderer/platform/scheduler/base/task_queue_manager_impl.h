@@ -164,15 +164,12 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     kTaskQueueManagerDeleted,
   };
 
-  using IncomingImmediateWorkMap =
-      std::unordered_map<internal::TaskQueueImpl*, internal::EnqueueOrder>;
-
   struct AnyThread {
     AnyThread();
     ~AnyThread();
 
     // Task queues with newly available work on the incoming queue.
-    IncomingImmediateWorkMap has_incoming_immediate_work;
+    internal::IncomingImmediateWorkList* incoming_immediate_work_list = nullptr;
   };
 
   // TaskQueueManager maintains a queue of non-nestable tasks since they're
@@ -236,6 +233,12 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_delete;
 
+    // Scratch space used to store the contents of
+    // any_thread().incoming_immediate_work_list for use by
+    // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
+    // memory allocations.
+    std::vector<internal::TaskQueueImpl*> queues_to_reload;
+
     bool task_was_run_on_quiescence_monitored_queue = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
@@ -275,10 +278,16 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
                                        internal::EnqueueOrder enqueue_order,
                                        bool queue_is_blocked);
 
+  // Returns true if |task_queue| was added to the list, or false if it was
+  // already in the list.  If |task_queue| was inserted, the |order| is set
+  // with |enqueue_order|.
+  bool AddToIncomingImmediateWorkList(internal::TaskQueueImpl* task_queue,
+                                      internal::EnqueueOrder enqueue_order);
+  void RemoveFromIncomingImmediateWorkList(internal::TaskQueueImpl* task_queue);
+
   // Calls |ReloadImmediateWorkQueueIfEmpty| on all queues in
-  // |queues_to_reload|.
-  void ReloadEmptyWorkQueues(
-      const IncomingImmediateWorkMap& queues_to_reload) const;
+  // |main_thread_only().queues_to_reload|.
+  void ReloadEmptyWorkQueues();
 
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) override;

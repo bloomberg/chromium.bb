@@ -35,6 +35,12 @@ namespace internal {
 class WorkQueue;
 class WorkQueueSets;
 
+struct IncomingImmediateWorkList {
+  IncomingImmediateWorkList* next = nullptr;
+  TaskQueueImpl* queue = nullptr;
+  internal::EnqueueOrder order;
+};
+
 // TaskQueueImpl has four main queues:
 //
 // Immediate (non-delayed) tasks:
@@ -236,6 +242,11 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   const WorkQueue* immediate_work_queue() const {
     return main_thread_only().immediate_work_queue.get();
+  }
+
+  // Protected by TaskQueueManagerImpl's AnyThread lock.
+  IncomingImmediateWorkList* immediate_work_list_storage() {
+    return &immediate_work_list_storage_;
   }
 
   // Enqueues any delayed tasks which should be run now on the
@@ -446,6 +457,9 @@ class PLATFORM_EXPORT TaskQueueImpl {
     immediate_incoming_queue_lock_.AssertAcquired();
     return immediate_incoming_queue_;
   }
+
+  // Protected by TaskQueueManagerImpl's AnyThread lock.
+  IncomingImmediateWorkList immediate_work_list_storage_;
 
   const bool should_monitor_quiescence_;
   const bool should_notify_observers_;

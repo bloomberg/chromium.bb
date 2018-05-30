@@ -258,7 +258,7 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
 
   max_tasks_in_flight_ = 200;
   Benchmark(
-      "run 10000 delayed tasks with eight queues",
+      "run 10000 delayed tasks with thirty two queues",
       BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
                     Unretained(this), 10000));
 }
@@ -306,7 +306,7 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
 
   max_tasks_in_flight_ = 200;
   Benchmark(
-      "run 10000 immediate tasks with eight queues",
+      "run 10000 immediate tasks with thirty two queues",
       BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
                     Unretained(this), 10000));
 }
