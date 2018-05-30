@@ -141,10 +141,9 @@ void DecryptingAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   DVLOG(2) << "Reset() - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ == kIdle ||
-         state_ == kPendingDecode ||
-         state_ == kWaitingForKey ||
-         state_ == kDecodeFinished) << state_;
+  DCHECK(state_ == kIdle || state_ == kPendingDecode ||
+         state_ == kWaitingForKey || state_ == kDecodeFinished)
+      << state_;
   DCHECK(init_cb_.is_null());  // No Reset() during pending initialization.
   DCHECK(reset_cb_.is_null());
 
@@ -194,9 +193,8 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
 void DecryptingAudioDecoder::InitializeDecoder() {
   state_ = kPendingDecoderInit;
   decryptor_->InitializeAudioDecoder(
-      config_,
-      BindToCurrentLoop(base::Bind(
-          &DecryptingAudioDecoder::FinishInitialization, weak_this_)));
+      config_, BindToCurrentLoop(base::Bind(
+                   &DecryptingAudioDecoder::FinishInitialization, weak_this_)));
 }
 
 void DecryptingAudioDecoder::FinishInitialization(bool success) {
@@ -204,12 +202,12 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kPendingDecoderInit) << state_;
   DCHECK(!init_cb_.is_null());
-  DCHECK(reset_cb_.is_null());  // No Reset() before initialization finished.
+  DCHECK(reset_cb_.is_null());   // No Reset() before initialization finished.
   DCHECK(decode_cb_.is_null());  // No Decode() before initialization finished.
 
   if (!success) {
-    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName()
-                                 << ": failed to init decoder on decryptor";
+    MEDIA_LOG(DEBUG, media_log_)
+        << GetDisplayName() << ": failed to init decoder on decryptor";
     base::ResetAndReturn(&init_cb_).Run(false);
     decryptor_ = NULL;
     state_ = kError;
@@ -221,9 +219,8 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
       new AudioTimestampHelper(config_.samples_per_second()));
 
   decryptor_->RegisterNewKeyCB(
-      Decryptor::kAudio,
-      BindToCurrentLoop(
-          base::Bind(&DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
+      Decryptor::kAudio, BindToCurrentLoop(base::Bind(
+                             &DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
   base::ResetAndReturn(&init_cb_).Run(true);
@@ -240,8 +237,8 @@ void DecryptingAudioDecoder::DecodePendingBuffer() {
 
   decryptor_->DecryptAndDecodeAudio(
       pending_buffer_to_decode_,
-      BindToCurrentLoop(base::Bind(
-          &DecryptingAudioDecoder::DeliverFrame, weak_this_, buffer_size)));
+      BindToCurrentLoop(base::Bind(&DecryptingAudioDecoder::DeliverFrame,
+                                   weak_this_, buffer_size)));
 }
 
 void DecryptingAudioDecoder::DeliverFrame(
@@ -271,7 +268,7 @@ void DecryptingAudioDecoder::DeliverFrame(
   if (status == Decryptor::kError) {
     DVLOG(2) << "DeliverFrame() - kError";
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": decode error";
-    state_ = kDecodeFinished; // TODO add kError state
+    state_ = kDecodeFinished;  // TODO add kError state
     base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
@@ -281,8 +278,8 @@ void DecryptingAudioDecoder::DeliverFrame(
         scoped_pending_buffer_to_decode->decrypt_config()->key_id();
     std::string missing_key_id = base::HexEncode(key_id.data(), key_id.size());
     DVLOG(1) << "DeliverFrame() - no key for key ID " << missing_key_id;
-    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no key for key ID "
-                                 << missing_key_id;
+    MEDIA_LOG(DEBUG, media_log_)
+        << GetDisplayName() << ": no key for key ID " << missing_key_id;
 
     // Set |pending_buffer_to_decode_| back as we need to try decoding the
     // pending buffer again when new key is added to the decryptor.
@@ -290,8 +287,8 @@ void DecryptingAudioDecoder::DeliverFrame(
 
     if (need_to_try_again_if_nokey_is_returned) {
       // The |state_| is still kPendingDecode.
-      MEDIA_LOG(INFO, media_log_) << GetDisplayName()
-                                  << ": key was added, resuming decode";
+      MEDIA_LOG(INFO, media_log_)
+          << GetDisplayName() << ": key was added, resuming decode";
       DecodePendingBuffer();
       return;
     }
@@ -334,8 +331,8 @@ void DecryptingAudioDecoder::OnKeyAdded() {
   }
 
   if (state_ == kWaitingForKey) {
-    MEDIA_LOG(INFO, media_log_) << GetDisplayName()
-                                << ": key added, resuming decode";
+    MEDIA_LOG(INFO, media_log_)
+        << GetDisplayName() << ": key added, resuming decode";
     state_ = kPendingDecode;
     DecodePendingBuffer();
   }
@@ -352,8 +349,7 @@ void DecryptingAudioDecoder::DoReset() {
 void DecryptingAudioDecoder::ProcessDecodedFrames(
     const Decryptor::AudioFrames& frames) {
   for (Decryptor::AudioFrames::const_iterator iter = frames.begin();
-       iter != frames.end();
-       ++iter) {
+       iter != frames.end(); ++iter) {
     scoped_refptr<AudioBuffer> frame = *iter;
 
     DCHECK(!frame->end_of_stream()) << "EOS frame returned.";

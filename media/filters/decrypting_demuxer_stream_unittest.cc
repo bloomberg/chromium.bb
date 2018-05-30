@@ -41,8 +41,10 @@ static const uint8_t kFakeIv[DecryptConfig::kDecryptionKeySize] = {0};
 static scoped_refptr<DecoderBuffer> CreateFakeEncryptedStreamBuffer(
     bool is_clear) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kFakeBufferSize));
-  std::string iv = is_clear ? std::string() :
-      std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv));
+  std::string iv = is_clear
+                       ? std::string()
+                       : std::string(reinterpret_cast<const char*>(kFakeIv),
+                                     arraysize(kFakeIv));
   if (!is_clear) {
     buffer->set_decrypt_config(DecryptConfig::CreateCencConfig(
         std::string(reinterpret_cast<const char*>(kFakeKeyId),
@@ -227,8 +229,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     EXPECT_CALL(*input_audio_stream_, Read(_))
         .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
     EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-        .WillRepeatedly(RunCallback<2>(Decryptor::kNoKey,
-                                       scoped_refptr<DecoderBuffer>()));
+        .WillRepeatedly(
+            RunCallback<2>(Decryptor::kNoKey, scoped_refptr<DecoderBuffer>()));
     EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: no key for key ID"));
     EXPECT_CALL(*this, OnWaitingForDecryptionKey());
     demuxer_stream_->Read(base::Bind(&DecryptingDemuxerStreamTest::BufferReady,
@@ -343,8 +345,8 @@ TEST_F(DecryptingDemuxerStreamTest, Read_DecryptError) {
   EXPECT_CALL(*input_audio_stream_, Read(_))
       .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
   EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
-      .WillRepeatedly(RunCallback<2>(Decryptor::kError,
-                                     scoped_refptr<DecoderBuffer>()));
+      .WillRepeatedly(
+          RunCallback<2>(Decryptor::kError, scoped_refptr<DecoderBuffer>()));
   EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: decrypt error"));
   ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
 }
