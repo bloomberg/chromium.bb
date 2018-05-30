@@ -111,6 +111,7 @@ class DisplayConfigurationObserver;
 class DisplayErrorObserver;
 class DisplayPrefs;
 class DisplayShutdownObserver;
+class DisplaySpeakerController;
 class DockedMagnifierController;
 class DragDropController;
 class EventClientImpl;
@@ -743,6 +744,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;
+  std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FirstRunHelper> first_run_helper_;
   std::unique_ptr<FocusCycler> focus_cycler_;

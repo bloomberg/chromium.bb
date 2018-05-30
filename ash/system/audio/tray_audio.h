@@ -11,8 +11,6 @@
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "ui/display/display_observer.h"
 
 namespace ash {
 
@@ -25,9 +23,7 @@ class DetailedViewDelegate;
 
 // The system tray item for audio input and output.
 class ASH_EXPORT TrayAudio : public TrayImageItem,
-                             public chromeos::CrasAudioHandler::AudioObserver,
-                             public display::DisplayObserver,
-                             public chromeos::PowerManagerClient::Observer {
+                             public chromeos::CrasAudioHandler::AudioObserver {
  public:
   explicit TrayAudio(SystemTray* system_tray);
   ~TrayAudio() override;
@@ -40,12 +36,6 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   bool pop_up_volume_view_for_testing() { return pop_up_volume_view_; }
 
  private:
-  // Overridden from display::DisplayObserver.
-  void OnDisplayAdded(const display::Display& new_display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
 
@@ -63,12 +53,6 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;
   void OnActiveInputNodeChanged() override;
-
-  // Overridden from chromeos::PowerManagerClient::Observer.
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
-
-  // Swaps the left and right channels on yoga devices based on orientation.
-  void ChangeInternalSpeakerChannelMode();
 
   // Updates the UI views.
   void Update();
