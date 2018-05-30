@@ -180,6 +180,7 @@ public class SiteChannelsManager {
     public String getChannelIdForOrigin(String origin) {
         SiteChannel channel = getSiteChannelForOrigin(origin);
         // Fall back to generic Sites channel if a channel for this origin doesn't exist.
+        // TODO(crbug.com/802380) Stop using this channel as a fallback and fully deprecate it.
         return channel == null ? ChannelDefinitions.CHANNEL_ID_SITES : channel.getId();
     }
 }

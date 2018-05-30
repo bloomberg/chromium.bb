@@ -15,9 +15,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /**
  * Java unit tests for ChannelDefinitions.
@@ -28,7 +26,6 @@ public class ChannelDefinitionsTest {
     public TestRule processor = new Features.JUnitProcessor();
 
     @Test
-    @EnableFeatures(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)
     public void testNoOverlapBetweenStartupAndLegacyChannelIds() throws Exception {
         assertThat(ChannelDefinitions.getStartupChannelIds(),
                 everyItem(not(isIn(ChannelDefinitions.getLegacyChannelIds()))));

@@ -13,7 +13,6 @@ import android.os.Build;
 import android.support.annotation.StringDef;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -127,11 +126,9 @@ public class ChannelDefinitions {
                             R.string.notification_category_screen_capture,
                             NotificationManager.IMPORTANCE_HIGH, CHANNEL_GROUP_ID_GENERAL));
 
-            // Not adding sites channel to startup channels because we now use dynamic site
-            // channels by default, so notifications will only be posted to this channel if the
-            // SiteNotificationChannels flag is disabled. In that case, it's fine for the channel
-            // to only appear when the first notification is posted when the flag's disabled.
-            // TODO(crbug.com/758553) Deprecate this channel properly when the flag is removed.
+            // Not adding sites channel to startup channels because notifications may be posted to
+            // this channel if no site-specific channel could be found.
+            // TODO(crbug.com/802380) Stop using this channel as a fallback and fully deprecate it.
             map.put(CHANNEL_ID_SITES,
                     new PredefinedChannel(CHANNEL_ID_SITES, R.string.notification_category_sites,
                             NotificationManager.IMPORTANCE_DEFAULT, CHANNEL_GROUP_ID_GENERAL));
@@ -161,7 +158,7 @@ public class ChannelDefinitions {
      * added to this array so they can be deleted on upgrade.
      * We also want to keep track of old channel ids so they aren't accidentally reused.
      */
-    private static final String[] LEGACY_CHANNEL_IDS = {};
+    private static final String[] LEGACY_CHANNEL_IDS = {ChannelDefinitions.CHANNEL_ID_SITES};
 
     // Map defined in static inner class so it's only initialized lazily.
     private static class PredefinedChannelGroups {
@@ -192,15 +189,6 @@ public class ChannelDefinitions {
      */
     static List<String> getLegacyChannelIds() {
         List<String> legacyChannels = new ArrayList<>(Arrays.asList(LEGACY_CHANNEL_IDS));
-        // When the SiteNotificationChannels feature is enabled, we use dynamically-created channels
-        // for different sites, so we no longer need the generic predefined 'Sites' channel.
-        // Err on the side of deleting it if we can't tell if the flag is enabled, because it will
-        // always be recreated if it is actually required.
-        // TODO(crbug.com/758553) Put CHANNEL_ID_SITES in LEGACY_CHANNEL_IDS once flag is gone.
-        if (!ChromeFeatureList.isInitialized()
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)) {
-            legacyChannels.add(ChannelDefinitions.CHANNEL_ID_SITES);
-        }
         return legacyChannels;
     }
 
