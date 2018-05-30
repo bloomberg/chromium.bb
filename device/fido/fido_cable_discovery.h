@@ -56,6 +56,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   ~FidoCableDiscovery() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
+                           TestUnregisterAdvertisementUponDestruction);
+
   // BluetoothAdapter::Observer:
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
   void DeviceChanged(BluetoothAdapter* adapter,
