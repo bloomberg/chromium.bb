@@ -4,6 +4,7 @@
 
 var chrome;
 var mockCommandLinePrivate;
+var metrics;
 
 /**
  * Set string data.
@@ -29,6 +30,8 @@ function setUp() {
     }
   };
   mockCommandLinePrivate = new MockCommandLinePrivate();
+
+  metrics = {recordSmallCount: function() {}};
 
   window.webkitResolveLocalFileSystemURLEntries = {};
   window.webkitResolveLocalFileSystemURL = function(url, callback) {
