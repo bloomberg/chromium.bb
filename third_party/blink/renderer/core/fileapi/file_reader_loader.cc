@@ -93,7 +93,7 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
   MojoResult result =
       CreateDataPipe(nullptr, &producer_handle, &consumer_handle_);
   if (result != MOJO_RESULT_OK) {
-    Failed(FileError::kNotReadableErr);
+    Failed(FileError::kNotReadableErr, FailureType::kMojoPipeCreation);
     return;
   }
 
@@ -108,14 +108,16 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
     if (received_on_complete_)
       return;
     if (!received_all_data_) {
-      Failed(FileError::kNotReadableErr);
+      Failed(FileError::kNotReadableErr, FailureType::kSyncDataNotAllLoaded);
       return;
     }
 
     // Wait for OnComplete
     binding_.WaitForIncomingMethodCall();
-    if (!received_on_complete_)
-      Failed(FileError::kNotReadableErr);
+    if (!received_on_complete_) {
+      Failed(FileError::kNotReadableErr,
+             FailureType::kSyncOnCompleteNotReceived);
+    }
   }
 }
 
@@ -198,11 +200,16 @@ void FileReaderLoader::Cleanup() {
   }
 }
 
-void FileReaderLoader::Failed(FileError::ErrorCode error_code) {
+void FileReaderLoader::Failed(FileError::ErrorCode error_code,
+                              FailureType type) {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, failure_histogram,
+                                  ("Storage.Blob.FileReaderLoader.FailureType",
+                                   static_cast<int>(FailureType::kCount)));
   // If an error was already reported, don't report this error again.
   if (error_code_ != FileError::kOK)
     return;
   error_code_ = error_code;
+  failure_histogram.Count(static_cast<int>(type));
   Cleanup();
   if (client_)
     client_->DidFail(error_code_);
@@ -218,13 +225,14 @@ void FileReaderLoader::OnStartLoading(uint64_t total_bytes) {
     // so to call ArrayBuffer's create function.
     // FIXME: Support reading more than the current size limit of ArrayBuffer.
     if (total_bytes > std::numeric_limits<unsigned>::max()) {
-      Failed(FileError::kNotReadableErr);
+      Failed(FileError::kNotReadableErr, FailureType::kTotalBytesTooLarge);
       return;
     }
 
     raw_data_ = std::make_unique<ArrayBufferBuilder>(total_bytes);
     if (!raw_data_->IsValid()) {
-      Failed(FileError::kNotReadableErr);
+      Failed(FileError::kNotReadableErr,
+             FailureType::kArrayBufferBuilderCreation);
       return;
     }
     raw_data_->SetVariableCapacity(false);
@@ -253,7 +261,7 @@ void FileReaderLoader::OnReceivedData(const char* data, unsigned data_length) {
   if (!bytes_appended) {
     raw_data_.reset();
     bytes_loaded_ = 0;
-    Failed(FileError::kNotReadableErr);
+    Failed(FileError::kNotReadableErr, FailureType::kArrayBufferBuilderAppend);
     return;
   }
   bytes_loaded_ += bytes_appended;
@@ -305,13 +313,15 @@ void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
                                   file_reader_loader_read_errors_histogram,
                                   ("Storage.Blob.FileReaderLoader.ReadError"));
-  if (status != net::OK || data_length != total_bytes_) {
-    net_error_ = status;
-    if (net_error_ != net::OK)
-      file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
+  if (status != net::OK) {
+    file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
     Failed(status == net::ERR_FILE_NOT_FOUND ? FileError::kNotFoundErr
-                                             : FileError::kNotReadableErr);
+                                             : FileError::kNotReadableErr,
+           FailureType::kBackendReadError);
     return;
+  }
+  if (data_length != total_bytes_) {
+    Failed(FileError::kNotReadableErr, FailureType::kReadSizesIncorrect);
   }
 
   received_on_complete_ = true;
@@ -321,8 +331,10 @@ void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
 
 void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
   if (result != MOJO_RESULT_OK) {
-    if (!received_all_data_)
-      Failed(FileError::kNotReadableErr);
+    if (!received_all_data_) {
+      Failed(FileError::kNotReadableErr,
+             FailureType::kDataPipeNotReadableWithBytesLeft);
+    }
     return;
   }
 
@@ -341,12 +353,14 @@ void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
     }
     if (result == MOJO_RESULT_FAILED_PRECONDITION) {
       // Pipe closed.
-      if (!received_all_data_)
-        Failed(FileError::kNotReadableErr);
+      if (!received_all_data_) {
+        Failed(FileError::kNotReadableErr, FailureType::kMojoPipeClosedEarly);
+      }
       return;
     }
     if (result != MOJO_RESULT_OK) {
-      Failed(FileError::kNotReadableErr);
+      Failed(FileError::kNotReadableErr,
+             FailureType::kMojoPipeUnexpectedReadError);
       return;
     }
     OnReceivedData(static_cast<const char*>(buffer), num_bytes);
