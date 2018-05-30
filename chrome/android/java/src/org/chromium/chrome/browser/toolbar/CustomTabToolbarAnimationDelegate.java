@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -38,7 +39,7 @@ class CustomTabToolbarAnimationDelegate {
     private final AnimatorSet mSecurityButtonShowAnimator;
     private final AnimatorSet mSecurityButtonHideAnimator;
 
-    private TextView mUrlBar;
+    private UrlBar mUrlBar;
     private TextView mTitleBar;
     private int mSecurityButtonWidth;
     // A flag controlling whether the animation has run before.
@@ -97,7 +98,7 @@ class CustomTabToolbarAnimationDelegate {
         mShouldRunTitleAnimation = enabled;
     }
 
-    void prepareTitleAnim(TextView urlBar, TextView titleBar) {
+    void prepareTitleAnim(UrlBar urlBar, TextView titleBar) {
         mTitleBar = titleBar;
         mUrlBar = urlBar;
         mUrlBar.setPivotX(0f);
@@ -128,6 +129,9 @@ class CustomTabToolbarAnimationDelegate {
         mUrlBar.getLocationInWindow(oldLoc);
 
         mUrlBar.requestLayout();
+
+        // Recalculate proportion of shown text in the URL bar and scroll it after font size changed
+        mUrlBar.scrollDisplayText();
         mUrlBar.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
