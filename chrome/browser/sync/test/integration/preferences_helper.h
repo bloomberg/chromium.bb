@@ -12,11 +12,18 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "components/prefs/json_pref_store.h"
 
 class PrefChangeRegistrar;
 class PrefService;
+class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace preferences_helper {
 
@@ -25,6 +32,9 @@ PrefService* GetPrefs(int index);
 
 // Used to access the preferences within the verifier sync profile.
 PrefService* GetVerifierPrefs();
+
+// Provides access to the syncable pref registy of a profile.
+user_prefs::PrefRegistrySyncable* GetRegistry(Profile* profile);
 
 // Inverts the value of the boolean preference with name |pref_name| in the
 // profile with index |index|. Also inverts its value in |verifier| if
@@ -66,6 +76,10 @@ void ChangeFilePathPref(int index,
 void ChangeListPref(int index,
                     const char* pref_name,
                     const base::ListValue& new_value);
+
+// Reads preferences from a given profile's pref file (after flushing) and loads
+// them into a new created pref store.
+scoped_refptr<PrefStore> BuildPrefStoreFromPrefsFile(Profile* profile);
 
 // Used to verify that the boolean preference with name |pref_name| has the
 // same value across all profiles. Also checks |verifier| if DisableVerifier()

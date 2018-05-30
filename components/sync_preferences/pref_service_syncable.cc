@@ -27,6 +27,10 @@
 
 namespace sync_preferences {
 
+// TODO(tschumann): Handing out pointers to this in the constructor is an
+// anti-pattern. Instead, introduce a factory method which first constructs
+// the PrefServiceSyncable instance and then the members which need a reference
+// to the PrefServiceSycnable instance.
 PrefServiceSyncable::PrefServiceSyncable(
     std::unique_ptr<PrefNotifierImpl> pref_notifier,
     std::unique_ptr<PrefValueStore> pref_value_store,
@@ -39,13 +43,18 @@ PrefServiceSyncable::PrefServiceSyncable(
     : PrefService(std::move(pref_notifier),
                   std::move(pref_value_store),
                   std::move(user_prefs),
-                  std::move(pref_registry),
+                  pref_registry,
                   std::move(read_error_callback),
                   async),
       pref_service_forked_(false),
-      pref_sync_associator_(pref_model_associator_client, syncer::PREFERENCES),
+      unknown_pref_accessor_(this, pref_registry.get(), user_pref_store_.get()),
+      pref_sync_associator_(pref_model_associator_client,
+                            syncer::PREFERENCES,
+                            &unknown_pref_accessor_),
       priority_pref_sync_associator_(pref_model_associator_client,
-                                     syncer::PRIORITY_PREFERENCES) {
+                                     syncer::PRIORITY_PREFERENCES,
+                                     &unknown_pref_accessor_),
+      pref_registry_(std::move(pref_registry)) {
   pref_sync_associator_.SetPrefService(this);
   priority_pref_sync_associator_.SetPrefService(this);
 
@@ -69,9 +78,7 @@ PrefServiceSyncable::PrefServiceSyncable(
 
 PrefServiceSyncable::~PrefServiceSyncable() {
   // Remove our callback from the registry, since it may outlive us.
-  user_prefs::PrefRegistrySyncable* registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get());
-  registry->SetSyncableRegistrationCallback(
+  pref_registry_->SetSyncableRegistrationCallback(
       user_prefs::PrefRegistrySyncable::SyncableRegistrationCallback());
 }
 
@@ -84,8 +91,7 @@ PrefServiceSyncable::CreateIncognitoPrefService(
   auto pref_notifier = std::make_unique<PrefNotifierImpl>();
 
   scoped_refptr<user_prefs::PrefRegistrySyncable> forked_registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get())
-          ->ForkForIncognito();
+      pref_registry_->ForkForIncognito();
 
   auto overlay = base::MakeRefCounted<InMemoryPrefStore>();
   if (delegate) {
@@ -179,9 +185,13 @@ void PrefServiceSyncable::AddRegisteredSyncablePreference(
     uint32_t flags) {
   DCHECK(FindPreference(path));
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
-    pref_sync_associator_.RegisterPref(path.c_str());
+    DCHECK(!pref_sync_associator_.models_associated() ||
+           pref_registry_->IsWhitelistedLateRegistrationPref(path));
+    pref_sync_associator_.RegisterPref(path);
   } else if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
-    priority_pref_sync_associator_.RegisterPref(path.c_str());
+    DCHECK(!priority_pref_sync_associator_.models_associated() ||
+           pref_registry_->IsWhitelistedLateRegistrationPref(path));
+    priority_pref_sync_associator_.RegisterPref(path);
   }
 }
 

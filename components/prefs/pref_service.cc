@@ -68,9 +68,9 @@ PrefService::PrefService(
     bool async)
     : pref_notifier_(std::move(pref_notifier)),
       pref_value_store_(std::move(pref_value_store)),
-      pref_registry_(std::move(pref_registry)),
       user_pref_store_(std::move(user_prefs)),
-      read_error_callback_(std::move(read_error_callback)) {
+      read_error_callback_(std::move(read_error_callback)),
+      pref_registry_(std::move(pref_registry)) {
   pref_notifier_->SetPrefService(this);
 
   DCHECK(pref_registry_);
