@@ -60,7 +60,9 @@ NSString* const kRequestDesktopOrMobileSiteActivityType =
 }
 
 - (UIImage*)activityImage {
-  return nil;
+  if (self.userAgent == web::UserAgentType::MOBILE)
+    return [UIImage imageNamed:@"activity_services_request_desktop_site"];
+  return [UIImage imageNamed:@"activity_services_request_mobile_site"];
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {

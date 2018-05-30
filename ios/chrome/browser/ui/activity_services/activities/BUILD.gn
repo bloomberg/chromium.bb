@@ -19,8 +19,11 @@ source_set("activities") {
   deps = [
     "resources:activity_services_add_bookmark",
     "resources:activity_services_edit_bookmark",
+    "resources:activity_services_find_in_page",
     "resources:activity_services_print",
     "resources:activity_services_read_later",
+    "resources:activity_services_request_desktop_site",
+    "resources:activity_services_request_mobile_site",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",

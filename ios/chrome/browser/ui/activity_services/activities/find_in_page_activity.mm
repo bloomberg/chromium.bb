@@ -51,7 +51,7 @@ NSString* const kFindInPageActivityType =
 }
 
 - (UIImage*)activityImage {
-  return nil;
+  return [UIImage imageNamed:@"activity_services_find_in_page"];
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
