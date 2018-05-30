@@ -73,6 +73,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       std::unique_ptr<URLRequestContextBuilderMojo> builder,
       net::URLRequestContext** url_request_context);
 
+  // Sets the HostResolver used by the NetworkService. Must be called before any
+  // NetworkContexts have been created. Used in the legacy path only.
+  // TODO(mmenke): Remove once the NetworkService can create a correct
+  // HostResolver for ChromeOS.
+  void SetHostResolver(std::unique_ptr<net::HostResolver> host_resolver);
+
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.
   void Bind(mojom::NetworkServiceRequest request);

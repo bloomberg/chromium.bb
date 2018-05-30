@@ -1084,9 +1084,6 @@ void ProfileIOData::Init(
     builder->set_network_delegate(std::move(network_delegate));
   }
 
-  builder->set_shared_host_resolver(
-      io_thread_globals->system_request_context->host_resolver());
-
   builder->set_shared_http_auth_handler_factory(
       io_thread_globals->system_request_context->http_auth_handler_factory());
 
@@ -1177,6 +1174,7 @@ void ProfileIOData::Init(
     main_request_context_owner_ = std::move(builder)->Create(
         std::move(profile_params_->main_network_context_params).get(),
         io_thread_globals->quic_disabled, io_thread->net_log(),
+        io_thread_globals->deprecated_host_resolver.get(),
         io_thread_globals->deprecated_network_quality_estimator.get());
     main_request_context_ =
         main_request_context_owner_.url_request_context.get();

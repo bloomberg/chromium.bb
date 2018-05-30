@@ -59,6 +59,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
       mojom::NetworkContextParams* params,
       bool quic_disabled,
       net::NetLog* net_log,
+      net::HostResolver* host_resolver,
       net::NetworkQualityEstimator* network_quality_estimator);
 
  private:

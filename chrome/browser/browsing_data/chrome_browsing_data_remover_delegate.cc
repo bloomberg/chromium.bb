@@ -206,14 +206,6 @@ void ClearNetworkPredictorOnIOThread(chrome_browser_net::Predictor* predictor) {
   predictor->DiscardAllResults();
 }
 
-void ClearHostnameResolutionCacheOnIOThread(
-    IOThread* io_thread,
-    base::RepeatingCallback<bool(const std::string&)> host_filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  io_thread->ClearHostCache(host_filter);
-}
-
 #if defined(OS_ANDROID)
 void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
   // Precache code was removed in M61 but the sqlite database file could be
@@ -436,17 +428,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history. We have no mechanism to track when these items were
     // created, so we'll not honor the time range.
-    // TODO(msramek): We can use the plugin filter here because plugins, same
-    // as the hostname resolution cache, key their entries by hostname. Rename
-    // BuildPluginFilter() to something more general to reflect this use.
-    if (g_browser_process->io_thread()) {
-      BrowserThread::PostTaskAndReply(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&ClearHostnameResolutionCacheOnIOThread,
-                         g_browser_process->io_thread(),
-                         filter_builder.BuildPluginFilter()),
-          CreatePendingTaskCompletionClosure());
-    }
+    BrowserContext::GetDefaultStoragePartition(profile_)
+        ->GetNetworkContext()
+        ->ClearHostCache(filter_builder.BuildNetworkServiceFilter(),
+                         CreatePendingTaskCompletionClosureForMojo());
+
     if (profile_->GetNetworkPredictor()) {
       // TODO(dmurph): Support all backends with filter (crbug.com/113621).
       BrowserThread::PostTaskAndReply(

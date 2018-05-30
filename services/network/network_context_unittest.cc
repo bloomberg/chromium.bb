@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -1101,6 +1102,113 @@ TEST_F(NetworkContextTest, ClearChannelIdWithNoService) {
                                    nullptr /* filter */,
                                    base::BindOnce(run_loop.QuitClosure()));
   run_loop.Run();
+}
+
+TEST_F(NetworkContextTest, ClearHostCache) {
+  // List of domains added to the host cache before running each test case.
+  const char* kDomains[] = {
+      "domain0", "domain1", "domain2", "domain3",
+  };
+
+  // Each bit correponds to one of the 4 domains above.
+  enum Domains {
+    NO_DOMAINS = 0x0,
+    DOMAIN0 = 0x1,
+    DOMAIN1 = 0x2,
+    DOMAIN2 = 0x4,
+    DOMAIN3 = 0x8,
+  };
+
+  const struct {
+    // True if the ClearDataFilter should be a nullptr.
+    bool null_filter;
+    network::mojom::ClearDataFilter::Type type;
+    // Bit field of Domains that appear in the filter. The origin vector is
+    // never populated.
+    int filter_domains;
+    // Only domains that are expected to remain in the host cache.
+    int expected_cached_domains;
+  } kTestCases[] = {
+      // A null filter should delete everything. The filter type and filter
+      // domain lists are ignored.
+      {
+          true /* null_filter */,
+          network::mojom::ClearDataFilter::Type::KEEP_MATCHES,
+          NO_DOMAINS /* filter_domains */,
+          NO_DOMAINS /* expected_cached_domains */
+      },
+      // An empty DELETE_MATCHES filter should delete nothing.
+      {
+          false /* null_filter */,
+          network::mojom::ClearDataFilter::Type::DELETE_MATCHES,
+          NO_DOMAINS /* filter_domains */,
+          DOMAIN0 | DOMAIN1 | DOMAIN2 | DOMAIN3 /* expected_cached_domains */
+      },
+      // An empty KEEP_MATCHES filter should delete everything.
+      {
+          false /* null_filter */,
+          network::mojom::ClearDataFilter::Type::KEEP_MATCHES,
+          NO_DOMAINS /* filter_domains */,
+          NO_DOMAINS /* expected_cached_domains */
+      },
+      // Test a non-empty DELETE_MATCHES filter.
+      {
+          false /* null_filter */,
+          network::mojom::ClearDataFilter::Type::DELETE_MATCHES,
+          DOMAIN0 | DOMAIN2 /* filter_domains */,
+          DOMAIN1 | DOMAIN3 /* expected_cached_domains */
+      },
+      // Test a non-empty KEEP_MATCHES filter.
+      {
+          false /* null_filter */,
+          network::mojom::ClearDataFilter::Type::KEEP_MATCHES,
+          DOMAIN0 | DOMAIN2 /* filter_domains */,
+          DOMAIN0 | DOMAIN2 /* expected_cached_domains */
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(CreateContextParams());
+    net::HostCache* host_cache =
+        network_context->url_request_context()->host_resolver()->GetHostCache();
+    ASSERT_TRUE(host_cache);
+
+    // Add the 4 test domains to the host cache.
+    for (const auto* domain : kDomains) {
+      host_cache->Set(
+          net::HostCache::Key(domain, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
+          net::HostCache::Entry(net::OK, net::AddressList(),
+                                net::HostCache::Entry::SOURCE_UNKNOWN),
+          base::TimeTicks::Now(), base::TimeDelta::FromDays(1));
+    }
+    // Sanity check.
+    EXPECT_EQ(base::size(kDomains), host_cache->entries().size());
+
+    // Set up and run the filter, according to |test_case|.
+    network::mojom::ClearDataFilterPtr clear_data_filter;
+    if (!test_case.null_filter) {
+      clear_data_filter = network::mojom::ClearDataFilter::New();
+      clear_data_filter->type = test_case.type;
+      for (size_t i = 0; i < base::size(kDomains); ++i) {
+        if (test_case.filter_domains & (1 << i))
+          clear_data_filter->domains.push_back(kDomains[i]);
+      }
+    }
+    base::RunLoop run_loop;
+    network_context->ClearHostCache(std::move(clear_data_filter),
+                                    run_loop.QuitClosure());
+    run_loop.Run();
+
+    // Check that only the expected domains remain in the cache.
+    for (size_t i = 0; i < base::size(kDomains); ++i) {
+      bool expect_domain_cached =
+          ((test_case.expected_cached_domains & (1 << i)) != 0);
+      EXPECT_EQ(expect_domain_cached,
+                host_cache->HasEntry(kDomains[i], nullptr /* source_out */,
+                                     nullptr /* stale_out */));
+    }
+  }
 }
 
 TEST_F(NetworkContextTest, ClearHttpAuthCache) {

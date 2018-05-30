@@ -35,6 +35,7 @@
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_channel_id_store.h"
@@ -122,15 +123,30 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
   }
 };
 
-// Predicate function to determine if the given |channel_id_server_id| matches
-// the |filter_type| and |filter_domains| from a |mojom::ClearDataFilter|.
-bool MatchesClearChannelIdFilter(mojom::ClearDataFilter_Type filter_type,
-                                 std::set<std::string> filter_domains,
-                                 const std::string& channel_id_server_id) {
-  bool found_domain =
-      filter_domains.find(channel_id_server_id) != filter_domains.end();
+// Predicate function to determine if the given |domain| matches the
+// |filter_type| and |filter_domains| from a |mojom::ClearDataFilter|.
+bool MatchesDomainFilter(mojom::ClearDataFilter_Type filter_type,
+                         std::set<std::string> filter_domains,
+                         const std::string& domain) {
+  bool found_domain = filter_domains.find(domain) != filter_domains.end();
   return (filter_type == mojom::ClearDataFilter_Type::DELETE_MATCHES) ==
          found_domain;
+}
+
+// Returns a callback that checks if a domain matches the |filter|. |filter|
+// must contain no origins. A null filter matches everything.
+base::RepeatingCallback<bool(const std::string& host_name)> MakeDomainFilter(
+    mojom::ClearDataFilter* filter) {
+  if (!filter)
+    return base::BindRepeating([](const std::string&) { return true; });
+
+  DCHECK(filter->origins.empty())
+      << "Origin filtering not allowed in a domain-only filter";
+
+  std::set<std::string> filter_domains;
+  filter_domains.insert(filter->domains.begin(), filter->domains.end());
+  return base::BindRepeating(&MatchesDomainFilter, filter->type,
+                             std::move(filter_domains));
 }
 
 // Generic functions but currently only used for reporting.
@@ -232,7 +248,8 @@ NetworkContext::NetworkContext(
       binding_(this, std::move(request)) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
-      network_service->net_log(), network_service->network_quality_estimator(),
+      network_service->net_log(), network_service->host_resolver(),
+      network_service->network_quality_estimator(),
       network_service_->sth_reporter(), &ct_tree_tracker_,
       &require_ct_delegate_, &certificate_report_sender_,
       &user_agent_settings_);
@@ -400,28 +417,21 @@ void NetworkContext::ClearChannelIds(base::Time start_time,
     return;
   }
 
-  base::RepeatingCallback<bool(const std::string& channel_id_server_id)>
-      filter_predicate;
-  if (filter) {
-    DCHECK(filter->origins.empty())
-        << "Origin filtering not allowed in a ClearChannelIds request as "
-           "channel IDs are only keyed by domain.";
-
-    std::set<std::string> filter_domains;
-    filter_domains.insert(filter->domains.begin(), filter->domains.end());
-    filter_predicate = base::BindRepeating(
-        &MatchesClearChannelIdFilter, filter->type, std::move(filter_domains));
-  } else {
-    filter_predicate =
-        base::BindRepeating([](const std::string&) { return true; });
-  }
-
   channel_id_store->DeleteForDomainsCreatedBetween(
-      std::move(filter_predicate), start_time, end_time,
+      MakeDomainFilter(filter.get()), start_time, end_time,
       base::BindOnce(
           &OnClearedChannelIds,
           base::RetainedRef(url_request_context_->ssl_config_service()),
           std::move(callback)));
+}
+
+void NetworkContext::ClearHostCache(mojom::ClearDataFilterPtr filter,
+                                    ClearHostCacheCallback callback) {
+  net::HostCache* host_cache =
+      url_request_context_->host_resolver()->GetHostCache();
+  DCHECK(host_cache);
+  host_cache->ClearForHosts(MakeDomainFilter(filter.get()));
+  std::move(callback).Run();
 }
 
 void NetworkContext::ClearHttpAuthCache(base::Time start_time,
@@ -632,6 +642,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     mojom::NetworkContextParams* network_context_params,
     bool quic_disabled,
     net::NetLog* net_log,
+    net::HostResolver* host_resolver,
     net::NetworkQualityEstimator* network_quality_estimator,
     certificate_transparency::STHReporter* sth_reporter,
     std::unique_ptr<certificate_transparency::TreeStateTracker>*
@@ -642,6 +653,9 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
+
+  if (host_resolver)
+    builder->set_shared_host_resolver(host_resolver);
 
   if (network_quality_estimator)
     builder->set_network_quality_estimator(network_quality_estimator);
@@ -947,8 +961,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       net::HttpAuthHandlerRegistryFactory::Create(
           http_auth_preferences_.get(), network_service_->host_resolver());
 
-  builder.set_shared_host_resolver(network_service_->host_resolver());
-
   builder.SetHttpAuthHandlerFactory(std::move(http_auth_handler_factory));
 
   if (g_cert_verifier_for_testing) {
@@ -969,6 +981,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       &builder, network_context_params,
       network_service_ ? network_service_->quic_disabled() : false,
       network_service_ ? network_service_->net_log() : nullptr,
+      network_service_ ? network_service_->host_resolver() : nullptr,
       network_service_ ? network_service_->network_quality_estimator()
                        : nullptr,
       network_service_ ? network_service_->sth_reporter() : nullptr,
