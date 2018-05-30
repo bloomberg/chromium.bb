@@ -582,7 +582,7 @@ void DeviceStatusCollector::ActivityStorage::FilterActivityPeriodsByUsers(
   base::DictionaryValue filtered_activity_periods;
   ProcessActivityPeriods(*stored_activity_periods, reporting_users,
                          &filtered_activity_periods);
-  pref_service_->Set(prefs::kDeviceActivityTimes, filtered_activity_periods);
+  pref_service_->Set(pref_name_, filtered_activity_periods);
 }
 
 std::vector<DeviceStatusCollector::ActivityStorage::ActivityPeriod>
