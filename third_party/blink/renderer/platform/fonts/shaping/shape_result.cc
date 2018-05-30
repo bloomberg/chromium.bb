@@ -832,7 +832,7 @@ float ShapeResult::LineLeftBounds() const {
   const RunInfo& run = *runs_.front();
   const bool is_horizontal_run = run.IsHorizontal();
   const SimpleFontData& font_data = *run.font_data_;
-  DCHECK(!run.glyph_data_.IsEmpty()) << ToString();
+  DCHECK(!run.glyph_data_.IsEmpty()) << *this;
   const unsigned character_index = run.glyph_data_.front().character_index;
   GlyphBoundsAccumulator bounds(0.f);
   for (const auto& glyph : run.glyph_data_) {
@@ -853,7 +853,7 @@ float ShapeResult::LineRightBounds() const {
   const RunInfo& run = *runs_.back();
   const bool is_horizontal_run = run.IsHorizontal();
   const SimpleFontData& font_data = *run.font_data_;
-  DCHECK(!run.glyph_data_.IsEmpty()) << ToString();
+  DCHECK(!run.glyph_data_.IsEmpty()) << *this;
   const unsigned character_index = run.glyph_data_.back().character_index;
   GlyphBoundsAccumulator bounds(width_);
   for (auto glyph_it = run.glyph_data_.rbegin();
@@ -1086,6 +1086,11 @@ String ShapeResult::ToString() const {
   StringBuilder output;
   ToString(&output);
   return output.ToString();
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const ShapeResult& shape_result) {
+  return ostream << shape_result.ToString();
 }
 
 }  // namespace blink
