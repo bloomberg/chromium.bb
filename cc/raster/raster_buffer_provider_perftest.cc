@@ -18,7 +18,6 @@
 #include "cc/raster/zero_copy_raster_buffer_provider.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
-#include "cc/test/fake_resource_provider.h"
 #include "cc/tiles/tile_task_manager.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
@@ -501,14 +500,12 @@ class RasterBufferProviderPerfTest
 
  private:
   void Create3dResourceProvider() {
-    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
-        compositor_context_provider_.get());
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
-    resource_provider_ =
-        FakeResourceProvider::CreateClientResourceProvider(nullptr);
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
   }
 
   std::string TestModifierString() const {
@@ -571,8 +568,7 @@ class RasterBufferProviderCommonPerfTest
  public:
   // Overridden from testing::Test:
   void SetUp() override {
-    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
-        compositor_context_provider_.get());
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
     resource_pool_ = std::make_unique<ResourcePool>(
         resource_provider_.get(), compositor_context_provider_.get(),
         task_runner_, ResourcePool::kDefaultExpirationDelay, false);

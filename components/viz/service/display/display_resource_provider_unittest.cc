@@ -364,8 +364,8 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   bool use_gpu() const { return use_gpu_; }
 
   void MakeChildResourceProvider() {
-    child_resource_provider_ = std::make_unique<ClientResourceProvider>(
-        child_context_provider_.get(), child_needs_sync_token_);
+    child_resource_provider_ =
+        std::make_unique<ClientResourceProvider>(child_needs_sync_token_);
   }
 
   static ReturnCallback GetReturnCallback(
@@ -739,9 +739,8 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
   if (!use_gpu())
     return;
 
-  bool need_sync_tokens = false;
   auto no_token_resource_provider = std::make_unique<ClientResourceProvider>(
-      child_context_provider_.get(), need_sync_tokens);
+      /*delegated_sync_points_required=*/true);
 
   GLuint external_texture_id = child_gl_->CreateExternalTexture();
 
@@ -1000,7 +999,6 @@ class ResourceProviderTestImportedResourceGLFilters {
     child_context_provider->BindToCurrentThread();
 
     auto child_resource_provider = std::make_unique<ClientResourceProvider>(
-        child_context_provider.get(),
         /*delegated_sync_points_required=*/true);
 
     unsigned texture_id = 1;
@@ -1156,7 +1154,6 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider = std::make_unique<ClientResourceProvider>(
-      child_context_provider.get(),
       /*delegated_sync_points_required=*/true);
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,

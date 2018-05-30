@@ -12,11 +12,11 @@
 #include "base/run_loop.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
@@ -26,6 +26,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
@@ -47,16 +48,14 @@ class SoftwareRendererTest : public testing::Test {
     output_surface_->BindToClient(&output_surface_client_);
 
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ =
-        cc::FakeResourceProvider::CreateDisplayResourceProvider(
-            nullptr, shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        nullptr, shared_bitmap_manager_.get());
     renderer_ = std::make_unique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider());
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
-    child_resource_provider_ =
-        cc::FakeResourceProvider::CreateClientResourceProvider(nullptr);
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
   }
 
   DisplayResourceProvider* resource_provider() const {

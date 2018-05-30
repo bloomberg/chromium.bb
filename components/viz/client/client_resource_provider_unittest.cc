@@ -26,8 +26,7 @@ class ClientResourceProviderTest : public testing::TestWithParam<bool> {
         context_provider_(TestContextProvider::Create()),
         bound_(context_provider_->BindToCurrentThread()),
         provider_(std::make_unique<ClientResourceProvider>(
-            use_gpu_ ? context_provider_.get() : nullptr,
-            delegated_sync_points_required_)) {
+            /*delegated_sync_points_required=*/true)) {
     DCHECK_EQ(bound_, gpu::ContextResult::kSuccess);
   }
 
@@ -70,7 +69,6 @@ class ClientResourceProviderTest : public testing::TestWithParam<bool> {
   bool use_gpu_;
   scoped_refptr<TestContextProvider> context_provider_;
   gpu::ContextResult bound_;
-  bool delegated_sync_points_required_ = true;
   std::unique_ptr<ClientResourceProvider> provider_;
 };
 

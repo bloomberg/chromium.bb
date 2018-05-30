@@ -43,8 +43,7 @@ class ContextProvider;
 // created on (in practice, the impl thread).
 class VIZ_CLIENT_EXPORT ClientResourceProvider {
  public:
-  ClientResourceProvider(ContextProvider* compositor_context_provider,
-                         bool delegated_sync_points_required);
+  explicit ClientResourceProvider(bool delegated_sync_points_required);
   ~ClientResourceProvider();
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
@@ -82,14 +81,6 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(ResourceId id);
 
-  bool IsTextureFormatSupported(ResourceFormat format) const;
-
-  // Returns true if the provided |format| can be used as a render buffer.
-  // Note that render buffer support implies texture support.
-  bool IsRenderBufferFormatSupported(ResourceFormat format) const;
-
-  bool IsSoftware() const { return !compositor_context_provider_; }
-
   class VIZ_CLIENT_EXPORT ScopedSkSurface {
    public:
     ScopedSkSurface(GrContext* gr_context,
@@ -116,7 +107,6 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
 
   THREAD_CHECKER(thread_checker_);
   const bool delegated_sync_points_required_;
-  ContextProvider* const compositor_context_provider_;
 
   base::flat_map<ResourceId, ImportedResource> imported_resources_;
   // The ResourceIds in ClientResourceProvider start from 1 to avoid

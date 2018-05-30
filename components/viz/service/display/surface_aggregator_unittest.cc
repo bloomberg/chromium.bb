@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "cc/test/fake_resource_provider.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -2955,9 +2954,8 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test,
  public:
   void SetUp() override {
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ =
-        cc::FakeResourceProvider::CreateDisplayResourceProvider(
-            nullptr, shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        nullptr, shared_bitmap_manager_.get());
 
     aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), false);

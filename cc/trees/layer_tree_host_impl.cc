@@ -3045,8 +3045,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
     max_texture_size_ = 16 * 1024;
   }
 
+  // TODO(danakj): Move delegated_sync_points_required to LayerTreeSettings,
+  // then don't recreate this when the LayerTreeFrameSink changes.
   resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
-      layer_tree_frame_sink_->context_provider(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required);
   resource_pool_ = std::make_unique<ResourcePool>(
       resource_provider_.get(), layer_tree_frame_sink_->context_provider(),

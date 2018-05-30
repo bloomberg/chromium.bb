@@ -4,7 +4,6 @@
 
 #include "cc/base/lap_timer.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -36,9 +35,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     context_provider_->BindToCurrentThread();
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
 
-    resource_provider_ =
-        cc::FakeResourceProvider::CreateDisplayResourceProvider(
-            context_provider_.get(), shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        context_provider_.get(), shared_bitmap_manager_.get());
   }
 
   void RunTest(int num_surfaces,
