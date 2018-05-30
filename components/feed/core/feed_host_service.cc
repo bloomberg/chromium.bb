@@ -10,9 +10,11 @@ namespace feed {
 
 FeedHostService::FeedHostService(
     std::unique_ptr<FeedImageManager> image_manager,
-    std::unique_ptr<FeedNetworkingHost> networking_host)
+    std::unique_ptr<FeedNetworkingHost> networking_host,
+    std::unique_ptr<FeedSchedulerHost> scheduler_host)
     : image_manager_(std::move(image_manager)),
-      networking_host_(std::move(networking_host)) {}
+      networking_host_(std::move(networking_host)),
+      scheduler_host_(std::move(scheduler_host)) {}
 
 FeedHostService::~FeedHostService() = default;
 
@@ -22,6 +24,10 @@ FeedImageManager* FeedHostService::GetImageManager() {
 
 FeedNetworkingHost* FeedHostService::GetNetworkingHost() {
   return networking_host_.get();
+}
+
+FeedSchedulerHost* FeedHostService::GetSchedulerHost() {
+  return scheduler_host_.get();
 }
 
 }  // namespace feed
