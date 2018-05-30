@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -53,6 +54,13 @@ void TranslateService::Initialize() {
       translate::TranslateDownloadManager::GetInstance();
   download_manager->set_request_context(
       g_browser_process->system_request_context());
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  // Manager will be null if called from InitializeForTesting.
+  if (system_network_context_manager) {
+    download_manager->set_url_loader_factory(
+        system_network_context_manager->GetSharedURLLoaderFactory());
+  }
   download_manager->set_application_locale(
       g_browser_process->GetApplicationLocale());
 }

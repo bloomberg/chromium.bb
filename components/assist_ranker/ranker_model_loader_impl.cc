@@ -22,6 +22,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/assist_ranker/proto/ranker_model.pb.h"
 #include "components/assist_ranker/ranker_url_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace assist_ranker {
 namespace {
@@ -90,7 +91,7 @@ void SaveToFile(const GURL& model_url,
 RankerModelLoaderImpl::RankerModelLoaderImpl(
     ValidateModelCallback validate_model_cb,
     OnModelAvailableCallback on_model_available_cb,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::FilePath model_path,
     GURL model_url,
     std::string uma_prefix)
@@ -99,7 +100,7 @@ RankerModelLoaderImpl::RankerModelLoaderImpl(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       validate_model_cb_(std::move(validate_model_cb)),
       on_model_available_cb_(std::move(on_model_available_cb)),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       model_path_(std::move(model_path)),
       model_url_(std::move(model_url)),
       uma_prefix_(std::move(uma_prefix)),
@@ -222,7 +223,7 @@ void RankerModelLoaderImpl::StartLoadFromURL() {
       url_fetcher_->Request(model_url_,
                             base::Bind(&RankerModelLoaderImpl::OnURLFetched,
                                        weak_ptr_factory_.GetWeakPtr()),
-                            request_context_getter_.get());
+                            url_loader_factory_.get());
 
   // |url_fetcher_| maintains a request retry counter. If all allowed attempts
   // have already been exhausted, then the loader is finished and has abandoned
