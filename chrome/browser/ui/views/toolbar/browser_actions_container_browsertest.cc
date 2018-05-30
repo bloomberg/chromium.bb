@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarViewsBrowserTest, MultipleWindows) {
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
 
   // Drag and drop.
-  first->toolbar_actions_bar()->OnDragStarted();
+  first->toolbar_actions_bar()->OnDragStarted(0u);
   first->OnDragUpdated(target_event);
 
   // Semi-random placement for a regression test for crbug.com/539744.

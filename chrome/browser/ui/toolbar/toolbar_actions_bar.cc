@@ -104,7 +104,6 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       suppress_layout_(false),
       suppress_animation_(true),
       should_check_extension_bubble_(!main_bar),
-      is_drag_in_progress_(false),
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
       is_showing_bubble_(false),
@@ -254,7 +253,8 @@ bool ToolbarActionsBar::NeedsOverflow() const {
   // popped out action (because the action will pop back into overflow when the
   // menu opens).
   return GetEndIndexInBounds() != toolbar_actions_.size() ||
-         is_drag_in_progress_ || (popped_out_action_ && !is_popped_out_sticky_);
+         is_drag_in_progress() ||
+         (popped_out_action_ && !is_popped_out_sticky_);
 }
 
 gfx::Rect ToolbarActionsBar::GetFrameForIndex(
@@ -387,11 +387,13 @@ void ToolbarActionsBar::OnResizeComplete(int width) {
   model_->SetVisibleIconCount(resized_count);
 }
 
-void ToolbarActionsBar::OnDragStarted() {
-  // All drag-and-drop commands should go to the main bar.
-  ToolbarActionsBar* main_bar = in_overflow_mode() ? main_bar_ : this;
-  DCHECK(!main_bar->is_drag_in_progress_);
-  main_bar->is_drag_in_progress_ = true;
+void ToolbarActionsBar::OnDragStarted(size_t index_of_dragged_item) {
+  if (in_overflow_mode()) {
+    main_bar_->OnDragStarted(index_of_dragged_item);
+    return;
+  }
+  DCHECK(!is_drag_in_progress());
+  index_of_dragged_item_ = index_of_dragged_item;
 }
 
 void ToolbarActionsBar::OnDragEnded() {
@@ -401,8 +403,8 @@ void ToolbarActionsBar::OnDragEnded() {
     return;
   }
 
-  DCHECK(is_drag_in_progress_);
-  is_drag_in_progress_ = false;
+  DCHECK(is_drag_in_progress());
+  index_of_dragged_item_.reset();
   for (ToolbarActionsBarObserver& observer : observers_)
     observer.OnToolbarActionDragDone();
 }
@@ -426,6 +428,11 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
                          dropped_index);
   if (delta)
     model_->SetVisibleIconCount(model_->visible_icon_count() + delta);
+}
+
+const base::Optional<size_t> ToolbarActionsBar::IndexOfDraggedItem() const {
+  DCHECK(!in_overflow_mode());
+  return index_of_dragged_item_;
 }
 
 void ToolbarActionsBar::OnAnimationEnded() {
