@@ -917,26 +917,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       SubsequentLockCallSupersedesPreviousCall) {
-  // TODO(joedow): Added per code review feedback.
-  // Steps: 1. Request all keys, verify keys are locked
-  //        2. Request subset of keys, verify the subset of keys are locked, but
-  //           non-requested keys are no longer locked
-  //        3. Request all keys again, verify keys are now locked
-}
-
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
-                       BrowserShortcutsHandledCorrectly) {
-  // TODO(joedow): Added per code review feedback.
-  // Steps: 1. Request keyboard lock for all keys
-  //        2. Simulate browser shortcut (Ctrl+T)
-  //        3. Verify new tab is not created
-  //        4. Unlock keyboard
-  //        5. Simulate browser shortcut (Ctrl+T)
-  //        6. Verify new tab was created
-}
-
-IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
                        InnerContentsFullscreenBehavior) {
   // TODO(joedow): Added per code review feedback.  Need to define the behavior
   // for KeyboardLock when an attached InnerWebContents goes fullscreen.

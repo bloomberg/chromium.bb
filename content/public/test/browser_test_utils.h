@@ -484,6 +484,9 @@ bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents);
 // Returns the RenderWidgetHost that holds the mouse lock.
 RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents);
 
+// Returns the RenderWidgetHost that holds the keyboard lock.
+RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents);
+
 // Returns true if inner |interstitial_page| is connected to an outer
 // WebContents.
 bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page);
