@@ -39,6 +39,11 @@ WindowDimmer::WindowDimmer(aura::Window* parent)
   parent->AddObserver(this);
   parent->StackChildAtTop(window_);
 
+  // The window is not fully opaque. Set the transparent bit so that it
+  // interacts properly with aura::WindowOcclusionTracker.
+  // https://crbug.com/833814
+  window_->SetTransparent(true);
+
   window_->SetBounds(gfx::Rect(parent_->bounds().size()));
 }
 
