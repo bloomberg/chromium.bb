@@ -259,7 +259,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                                           WindowOpenDisposition disposition) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
-    ExtensionService* service =
+    extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(profile())->extension_service();
     const Extension* extension =
         service->GetExtensionById(last_loaded_extension_id(), false);
@@ -271,7 +271,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   ash::ShelfID CreateShortcut(const char* name) {
-    ExtensionService* service =
+    extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(profile())->extension_service();
     LoadExtension(test_data_dir_.AppendASCII(name));
 

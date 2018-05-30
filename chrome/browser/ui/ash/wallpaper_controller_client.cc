@@ -489,7 +489,7 @@ void WallpaperControllerClient::UpdateRegisteredDeviceWallpaper() {
 void WallpaperControllerClient::OpenWallpaperPicker() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return;

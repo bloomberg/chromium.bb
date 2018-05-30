@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(
     ExtensionUninstallDialogViewBrowserTest,
     DISABLED_EnsureExtensionUninstallURLIsActiveTabAfterUninstall) {
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
           ->extension_service();
   extension_service->AddExtension(extension.get());
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(
     ExtensionUninstallDialogViewBrowserTest,
     DISABLED_EnsureCWSReportAbusePageIsActiveTabAfterUninstall) {
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
           ->extension_service();
   SetUninstallURL(

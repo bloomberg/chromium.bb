@@ -1019,7 +1019,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   // |item_delegate_manager_| owns |test_controller_|.
   ash::ShelfItemDelegate* test_controller_ = nullptr;
 
-  ExtensionService* extension_service_ = nullptr;
+  extensions::ExtensionService* extension_service_ = nullptr;
 
   app_list::AppListSyncableService* app_service_ = nullptr;
 

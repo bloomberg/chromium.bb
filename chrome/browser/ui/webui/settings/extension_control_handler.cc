@@ -29,8 +29,9 @@ void ExtensionControlHandler::HandleDisableExtension(
     const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
-  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-      Profile::FromWebUI(web_ui()))->extension_service();
+  extensions::ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))
+          ->extension_service();
   DCHECK(extension_service);
   extension_service->DisableExtension(
       extension_id, extensions::disable_reason::DISABLE_USER_ACTION);

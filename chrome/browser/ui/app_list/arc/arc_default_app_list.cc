@@ -144,7 +144,7 @@ void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
 
   // Register Play Store as default app. Some services and ArcSupportHost may
   // not be available in tests.
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(context_)->extension_service();
   const extensions::Extension* arc_host =
       service ? service->GetInstalledExtension(arc::kPlayStoreAppId) : nullptr;

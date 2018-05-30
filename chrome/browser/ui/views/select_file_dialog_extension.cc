@@ -248,7 +248,7 @@ void SelectFileDialogExtension::ExtensionTerminated(
   if (profile_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ExtensionService::ReloadExtension,
+        base::Bind(&extensions::ExtensionService::ReloadExtension,
                    base::Unretained(extensions::ExtensionSystem::Get(profile_)
                                         ->extension_service()),
                    extension_id));

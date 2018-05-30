@@ -206,7 +206,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Bookmarks) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
-  ExtensionService* extensions =
+  extensions::ExtensionService* extensions =
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   ASSERT_TRUE(extensions);
 

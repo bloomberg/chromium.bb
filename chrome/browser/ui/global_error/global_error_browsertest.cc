@@ -93,7 +93,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
         return content::Details<GlobalError>(details).ptr()->HasBubbleView();
       }));
   Profile* profile = browser()->profile();
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile);

@@ -505,8 +505,9 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   builder.SetManifest(manifest.Build());
 
   // Install extension.
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-                                  browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   EXPECT_CALL(provider_, RefreshPolicies());
   service->OnExtensionInstalled(builder.Build().get(), syncer::StringOrdinal(),
                                 0);

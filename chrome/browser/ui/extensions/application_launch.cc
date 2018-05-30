@@ -61,16 +61,14 @@ namespace {
 // This class manages its own lifetime.
 class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
  public:
-  EnableViaDialogFlow(
-      ExtensionService* service,
-      Profile* profile,
-      const std::string& extension_id,
-      const base::Closure& callback)
+  EnableViaDialogFlow(extensions::ExtensionService* service,
+                      Profile* profile,
+                      const std::string& extension_id,
+                      const base::Closure& callback)
       : service_(service),
         profile_(profile),
         extension_id_(extension_id),
-        callback_(callback) {
-  }
+        callback_(callback) {}
 
   ~EnableViaDialogFlow() override {}
 
@@ -93,7 +91,7 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 
   void ExtensionEnableFlowAborted(bool user_initiated) override { delete this; }
 
-  ExtensionService* service_;
+  extensions::ExtensionService* service_;
   Profile* profile_;
   std::string extension_id_;
   base::Closure callback_;
@@ -396,7 +394,7 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
     return;
   Profile* profile = params.profile;
 
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service->IsExtensionEnabled(extension->id()) ||
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(

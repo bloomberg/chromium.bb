@@ -335,7 +335,7 @@ const std::vector<GURL> AppInfoSummaryPanel::GetLicenseUrls() const {
     return std::vector<GURL>();
 
   std::vector<GURL> license_urls;
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(service);
   const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
