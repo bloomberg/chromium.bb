@@ -391,7 +391,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   };
   void AddBeginFrameRequest(BeginFrameRequestType request);
   void ClearBeginFrameRequest(BeginFrameRequestType request);
-  void AcknowledgeBeginFrame(const viz::BeginFrameAck& ack);
+  void AcknowledgeBeginFrame();
   void StartObservingRootWindow();
   void StopObservingRootWindow();
   void SendBeginFramePaused();
