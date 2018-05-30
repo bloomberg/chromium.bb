@@ -685,22 +685,13 @@ video::-internal-media-controls-loading-panel {
   right: 0;
   bottom: 0;
   overflow: hidden;
-  opacity: .5;
+  z-index: 1;
+  pointer-events: none;
 }
 
 audio::-internal-media-controls-loading-panel,
 video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-loading-panel"] {
   display: none;
-}
-
-.state-loading-metadata div[pseudo="-webkit-media-controls-panel" i] {
-  background-image: none;
-}
-
-.state-loading-metadata div[pseudo="-internal-media-controls-button-panel" i],
-.state-loading-metadata input[pseudo="-webkit-media-controls-timeline" i],
-.state-loading-metadata input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
-  opacity: 0;
 }
 
 /**
