@@ -1354,7 +1354,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mNativeInitialized = true;
         OfflineContentAggregatorNotificationBridgeUiFactory.instance();
         maybeRemoveWindowBackground();
-        DownloadManagerService.getDownloadManagerService().onActivityLaunched(this);
+        DownloadManagerService.getDownloadManagerService().onActivityLaunched();
 
         if (getSavedInstanceState() == null && getIntent() != null) {
             VrShellDelegate.onNewIntentWithNative(this, getIntent());

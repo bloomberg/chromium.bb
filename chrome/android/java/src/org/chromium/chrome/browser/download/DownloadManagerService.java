@@ -31,7 +31,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
@@ -384,16 +383,12 @@ public class DownloadManagerService
     /**
      * Called when browser activity is launched. For background resumption and cancellation, this
      * will not be called.
-     * @param activity The activity being launched.
      */
-    public void onActivityLaunched(ChromeActivity activity) {
+    public void onActivityLaunched() {
         DownloadNotificationService.clearResumptionAttemptLeft();
 
         DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
                 /*isOffTheRecord=*/false);
-
-        mInfoBarController.setTabModelSelector(activity.getTabModelSelector());
-        mIncognitoInfoBarController.setTabModelSelector(activity.getTabModelSelector());
     }
 
     /**
