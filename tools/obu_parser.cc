@@ -21,35 +21,34 @@
 namespace aom_tools {
 
 // Basic OBU syntax
-// 4 bytes: length
 // 8 bits: Header
 //   7
 //     forbidden bit
 //   6,5,4,3
 //     type bits
-//   2,1
-//     reserved bits
+//   2
+//     extension flag bit
+//   1
+//     has size field bit
 //   0
-//     extension bit
+//     reserved bit
 const uint32_t kObuForbiddenBitMask = 0x1;
 const uint32_t kObuForbiddenBitShift = 7;
 const uint32_t kObuTypeBitsMask = 0xF;
 const uint32_t kObuTypeBitsShift = 3;
 const uint32_t kObuExtensionFlagBitMask = 0x1;
 const uint32_t kObuExtensionFlagBitShift = 2;
-const uint32_t kObuHasPayloadLengthFlagBitMask = 0x1;
-const uint32_t kObuHasPayloadLengthFlagBitShift = 1;
+const uint32_t kObuHasSizeFieldBitMask = 0x1;
+const uint32_t kObuHasSizeFieldBitShift = 1;
 
-// When extension bit is set:
+// When extension flag bit is set:
 // 8 bits: extension header
 // 7,6,5
 //   temporal ID
 // 4,3
 //   spatial ID
-// 2,1
-//   quality ID
-// 0
-//   reserved bit
+// 2,1,0
+//   reserved bits
 const uint32_t kObuExtTemporalIdBitsMask = 0x7;
 const uint32_t kObuExtTemporalIdBitsShift = 5;
 const uint32_t kObuExtSpatialIdBitsMask = 0x3;
@@ -61,9 +60,9 @@ bool ValidObuType(int obu_type) {
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
     case OBU_TILE_GROUP:
-    case OBU_REDUNDANT_FRAME_HEADER:
-    case OBU_FRAME:
     case OBU_METADATA:
+    case OBU_FRAME:
+    case OBU_REDUNDANT_FRAME_HEADER:
     case OBU_TILE_LIST:
     case OBU_PADDING: return true;
   }
@@ -88,8 +87,7 @@ bool ParseObuHeader(uint8_t obu_header_byte, ObuHeader *obu_header) {
   obu_header->has_extension =
       (obu_header_byte >> kObuExtensionFlagBitShift) & kObuExtensionFlagBitMask;
   obu_header->has_size_field =
-      (obu_header_byte >> kObuHasPayloadLengthFlagBitShift) &
-      kObuHasPayloadLengthFlagBitMask;
+      (obu_header_byte >> kObuHasSizeFieldBitShift) & kObuHasSizeFieldBitMask;
   return true;
 }
 
@@ -118,37 +116,21 @@ void PrintObuHeader(const ObuHeader *header) {
 }
 
 bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
-  const int kObuHeaderLengthSizeBytes = 1;
-  const int kMinimumBytesRequired = 1 + kObuHeaderLengthSizeBytes;
+  const int kObuHeaderSizeBytes = 1;
+  const int kMinimumBytesRequired = 1 + kObuHeaderSizeBytes;
   int consumed = 0;
   int obu_overhead = 0;
   ObuHeader obu_header;
   while (consumed < length) {
     const int remaining = length - consumed;
     if (remaining < kMinimumBytesRequired) {
-      if (remaining > 0) {
-        fprintf(stderr,
-                "OBU parse error. Did not consume all data, %d bytes "
-                "remain.\n",
-                remaining);
-      }
-      return false;
-    }
-
-    size_t length_field_size = 0;
-    int current_obu_length = 0;
-    int obu_header_size = 0;
-
-    obu_overhead += (int)length_field_size;
-
-    if (current_obu_length > remaining) {
       fprintf(stderr,
-              "OBU parsing failed at offset %d with bad length of %d "
-              "and %d bytes left.\n",
-              consumed, current_obu_length, remaining);
+              "OBU parse error. Did not consume all data, %d bytes remain.\n",
+              remaining);
       return false;
     }
-    consumed += (int)length_field_size;
+
+    int obu_header_size = 0;
 
     memset(&obu_header, 0, sizeof(obu_header));
     const uint8_t obu_header_byte = *(data + consumed);
@@ -162,10 +144,10 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
 
     if (obu_header.has_extension) {
       const uint8_t obu_ext_header_byte =
-          *(data + consumed + kObuHeaderLengthSizeBytes);
+          *(data + consumed + kObuHeaderSizeBytes);
       if (!ParseObuExtensionHeader(obu_ext_header_byte, &obu_header)) {
         fprintf(stderr, "OBU extension parsing failed at offset %d.\n",
-                consumed);
+                consumed + kObuHeaderSizeBytes);
         return false;
       }
 
@@ -176,10 +158,23 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     PrintObuHeader(&obu_header);
 
     uint64_t obu_size = 0;
-    aom_uleb_decode(data + consumed + obu_header_size, remaining, &obu_size,
-                    &length_field_size);
-    current_obu_length = static_cast<int>(obu_size);
-    consumed += obu_header_size + (int)length_field_size + current_obu_length;
+    size_t length_field_size = 0;
+    if (aom_uleb_decode(data + consumed + obu_header_size,
+                        remaining - obu_header_size, &obu_size,
+                        &length_field_size) != 0) {
+      fprintf(stderr, "OBU size parsing failed at offset %d.\n",
+              consumed + obu_header_size);
+      return false;
+    }
+    int current_obu_length = static_cast<int>(obu_size);
+    if (obu_header_size + static_cast<int>(length_field_size) +
+            current_obu_length >
+        remaining) {
+      fprintf(stderr, "OBU parsing failed: not enough OBU data.\n");
+      return false;
+    }
+    consumed += obu_header_size + static_cast<int>(length_field_size) +
+                current_obu_length;
     printf("      length:      %d\n",
            static_cast<int>(obu_header_size + length_field_size +
                             current_obu_length));
