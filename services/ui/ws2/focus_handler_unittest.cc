@@ -16,7 +16,6 @@
 #include "services/ui/ws2/window_service_test_setup.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -28,10 +27,7 @@ namespace ws2 {
 namespace {
 
 TEST(FocusHandlerTest, FocusTopLevel) {
-  aura::test::TestWindowDelegate test_window_delegate;
   WindowServiceTestSetup setup;
-  test_window_delegate.set_can_focus(true);
-  setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
   aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
 
@@ -43,11 +39,19 @@ TEST(FocusHandlerTest, FocusTopLevel) {
   EXPECT_TRUE(top_level->HasFocus());
 }
 
-TEST(FocusHandlerTest, FocusChild) {
-  aura::test::TestWindowDelegate test_window_delegate;
+TEST(FocusHandlerTest, FocusNull) {
   WindowServiceTestSetup setup;
-  test_window_delegate.set_can_focus(true);
-  setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  EXPECT_TRUE(setup.client_test_helper()->SetFocus(top_level));
+  EXPECT_TRUE(top_level->HasFocus());
+  EXPECT_TRUE(setup.client_test_helper()->SetFocus(nullptr));
+  EXPECT_FALSE(top_level->HasFocus());
+}
+
+TEST(FocusHandlerTest, FocusChild) {
+  WindowServiceTestSetup setup;
   aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -71,10 +75,7 @@ TEST(FocusHandlerTest, FocusChild) {
 }
 
 TEST(FocusHandlerTest, NotifyOnFocusChange) {
-  aura::test::TestWindowDelegate test_window_delegate;
   WindowServiceTestSetup setup;
-  test_window_delegate.set_can_focus(true);
-  setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
   aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -101,10 +102,7 @@ TEST(FocusHandlerTest, NotifyOnFocusChange) {
 }
 
 TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
-  aura::test::TestWindowDelegate test_window_delegate;
   WindowServiceTestSetup setup;
-  test_window_delegate.set_can_focus(true);
-  setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
   aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -151,10 +149,7 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
 }
 
 TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
-  aura::test::TestWindowDelegate test_window_delegate;
   WindowServiceTestSetup setup;
-  test_window_delegate.set_can_focus(true);
-  setup.delegate()->set_delegate_for_next_top_level(&test_window_delegate);
   aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
   ASSERT_TRUE(top_level);
   top_level->Show();

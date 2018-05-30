@@ -115,13 +115,13 @@ void WindowServiceClientTestHelper::SetEventTargetingPolicy(
 }
 
 Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
-  return window_service_client_->TransportIdForWindow(window);
+  return window ? window_service_client_->TransportIdForWindow(window)
+                : kInvalidTransportId;
 }
 
 bool WindowServiceClientTestHelper::SetFocus(aura::Window* window) {
   return window_service_client_->SetFocusImpl(
-      window_service_client_->MakeClientWindowId(
-          window_service_client_->TransportIdForWindow(window)));
+      window_service_client_->MakeClientWindowId(TransportIdForWindow(window)));
 }
 
 void WindowServiceClientTestHelper::SetCanFocus(aura::Window* window,
