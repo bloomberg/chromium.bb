@@ -17,7 +17,7 @@ class VRDisplayHost;
 // listening for device activation.
 class BrowserXrDevice : public device::VRDeviceEventListener {
  public:
-  explicit BrowserXrDevice(device::VRDevice* device);
+  explicit BrowserXrDevice(device::VRDevice* device, bool is_fallback);
   ~BrowserXrDevice() override;
 
   device::VRDevice* GetDevice() { return device_; }
@@ -42,6 +42,9 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
   VRDisplayHost* GetPresentingDisplayHost() { return presenting_display_host_; }
   void UpdateListeningForActivate(VRDisplayHost* display);
 
+  // Methods called by VRDeviceManager to inspect the device.
+  bool IsFallbackDevice() { return is_fallback_; }
+
  private:
   void OnListeningForActivate(bool is_listening);
   void OnRequestPresentResult(
@@ -56,6 +59,7 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
   std::set<VRDisplayHost*> displays_;
   VRDisplayHost* listening_for_activation_display_host_ = nullptr;
   VRDisplayHost* presenting_display_host_ = nullptr;
+  bool is_fallback_;
 
   base::WeakPtrFactory<BrowserXrDevice> weak_ptr_factory_;
 };

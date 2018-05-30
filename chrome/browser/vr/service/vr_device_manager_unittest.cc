@@ -25,8 +25,9 @@ namespace {
 
 class VRDeviceManagerForTesting : public VRDeviceManager {
  public:
-  explicit VRDeviceManagerForTesting(ProviderList providers)
-      : VRDeviceManager(std::move(providers)) {}
+  explicit VRDeviceManagerForTesting(ProviderList providers,
+                                     ProviderList fallback_providers)
+      : VRDeviceManager(std::move(providers), std::move(fallback_providers)) {}
   ~VRDeviceManagerForTesting() override = default;
 
   size_t NumberOfConnectedServices() {
@@ -62,7 +63,9 @@ class VRDeviceManagerTest : public testing::Test {
     provider_ = new device::FakeVRDeviceProvider();
     providers.emplace_back(
         std::unique_ptr<device::FakeVRDeviceProvider>(provider_));
-    new VRDeviceManagerForTesting(std::move(providers));
+    std::vector<std::unique_ptr<device::VRDeviceProvider>> fallback_providers;
+    new VRDeviceManagerForTesting(std::move(providers),
+                                  std::move(fallback_providers));
   }
 
   void TearDown() override { EXPECT_FALSE(VRDeviceManager::HasInstance()); }

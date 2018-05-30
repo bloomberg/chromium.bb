@@ -53,7 +53,8 @@ class VR_EXPORT VRDeviceManager {
   using ProviderList = std::vector<std::unique_ptr<device::VRDeviceProvider>>;
 
   // Used by tests to supply providers.
-  explicit VRDeviceManager(ProviderList providers);
+  explicit VRDeviceManager(ProviderList providers,
+                           ProviderList fallback_providers);
 
   // Used by tests to check on device state.
   device::VRDevice* GetDevice(unsigned int index);
@@ -65,10 +66,11 @@ class VR_EXPORT VRDeviceManager {
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();
 
-  void AddDevice(device::VRDevice* device);
+  void AddDevice(bool is_fallback, device::VRDevice* device);
   void RemoveDevice(device::VRDevice* device);
 
   ProviderList providers_;
+  ProviderList fallback_providers_;
 
   // VRDevices are owned by their providers, each correspond to a
   // BrowserXrDevice that is owned by VRDeviceManager.

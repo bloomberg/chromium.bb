@@ -9,8 +9,8 @@
 
 namespace vr {
 
-BrowserXrDevice::BrowserXrDevice(device::VRDevice* device)
-    : device_(device), weak_ptr_factory_(this) {
+BrowserXrDevice::BrowserXrDevice(device::VRDevice* device, bool is_fallback)
+    : device_(device), is_fallback_(is_fallback), weak_ptr_factory_(this) {
   device_->SetVRDeviceEventListener(this);
 }
 

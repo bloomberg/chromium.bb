@@ -204,8 +204,4 @@ Quaternion VROrientationDevice::WorldSpaceToUserOrientedSpace(Quaternion q) {
   return q;
 }
 
-bool VROrientationDevice::IsFallbackDevice() {
-  return true;
-};
-
 }  // namespace device

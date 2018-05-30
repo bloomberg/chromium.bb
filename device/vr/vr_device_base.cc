@@ -32,10 +32,6 @@ mojom::VRDisplayInfoPtr VRDeviceBase::GetVRDisplayInfo() {
   return display_info_.Clone();
 }
 
-bool VRDeviceBase::IsFallbackDevice() {
-  return false;
-};
-
 void VRDeviceBase::OnExitPresent() {
   if (listener_)
     listener_->OnExitPresent();
