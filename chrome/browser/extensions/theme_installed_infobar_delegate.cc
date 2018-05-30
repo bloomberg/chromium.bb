@@ -25,13 +25,14 @@
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-void ThemeInstalledInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                           ExtensionService* extension_service,
-                                           ThemeService* theme_service,
-                                           const std::string& theme_name,
-                                           const std::string& theme_id,
-                                           const std::string& previous_theme_id,
-                                           bool previous_using_system_theme) {
+void ThemeInstalledInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    extensions::ExtensionService* extension_service,
+    ThemeService* theme_service,
+    const std::string& theme_name,
+    const std::string& theme_id,
+    const std::string& previous_theme_id,
+    bool previous_using_system_theme) {
   // Create the new infobar.
   std::unique_ptr<infobars::InfoBar> new_infobar(
       infobar_service->CreateConfirmInfoBar(
@@ -64,7 +65,7 @@ void ThemeInstalledInfoBarDelegate::Create(InfoBarService* infobar_service,
 }
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
-    ExtensionService* extension_service,
+    extensions::ExtensionService* extension_service,
     ThemeService* theme_service,
     const std::string& theme_name,
     const std::string& theme_id,

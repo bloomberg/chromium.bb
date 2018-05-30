@@ -199,8 +199,9 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, InstallAndRunningState) {
   EXPECT_TRUE(IsAppInstalledInMainFrame());
 
   // Disable the extension and verify the state.
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   service->DisableExtension(
       extension->id(),
       extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE);

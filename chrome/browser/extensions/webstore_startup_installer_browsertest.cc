@@ -158,9 +158,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
           .Build();
   ASSERT_TRUE(hosted_app.get());
 
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser()->profile())->
-          extension_service();
+  extensions::ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
 

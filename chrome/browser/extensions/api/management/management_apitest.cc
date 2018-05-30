@@ -157,8 +157,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
   LoadExtensions();
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
                                         false));
 
@@ -183,8 +184,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                        MAYBE_ManagementPolicyProhibited) {
   LoadExtensions();
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
                                         false));
 
@@ -200,8 +202,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
 
   // Load an extension that calls launchApp() on any app that gets
   // installed.
@@ -257,8 +260,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
 #define MAYBE_LaunchTabApp LaunchTabApp
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
 
   // Load an extension that calls launchApp() on any app that gets
   // installed.

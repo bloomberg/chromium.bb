@@ -569,7 +569,7 @@ void ExtensionSyncService::DeleteThemeDoNotUse(const Extension& theme) {
       theme.id(), CreateSyncData(theme).GetSyncData());
 }
 
-ExtensionService* ExtensionSyncService::extension_service() const {
+extensions::ExtensionService* ExtensionSyncService::extension_service() const {
   return ExtensionSystem::Get(profile_)->extension_service();
 }
 

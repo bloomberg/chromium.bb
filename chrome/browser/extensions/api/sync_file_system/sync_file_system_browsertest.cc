@@ -77,7 +77,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         SyncFileSystemServiceFactory::GetInstance();
 
     content::BrowserContext* context = browser()->profile();
-    ExtensionServiceInterface* extension_service =
+    extensions::ExtensionServiceInterface* extension_service =
         extensions::ExtensionSystem::Get(context)->extension_service();
 
     std::unique_ptr<drive_backend::SyncEngine::DriveServiceFactory>

@@ -119,7 +119,7 @@ class ExtensionDisabledGlobalErrorTest
     return extension;
   }
 
-  ExtensionService* service_;
+  extensions::ExtensionService* service_;
   ExtensionRegistry* registry_;
   base::ScopedTempDir scoped_temp_dir_;
   base::FilePath path_v1_;

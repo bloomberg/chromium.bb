@@ -47,7 +47,7 @@ class ExtensionCrashRecoveryTest : public extensions::ExtensionBrowserTest {
         std::make_unique<NotificationDisplayServiceTester>(profile());
   }
 
-  ExtensionService* GetExtensionService() {
+  extensions::ExtensionService* GetExtensionService() {
     return extensions::ExtensionSystem::Get(browser()->profile())->
         extension_service();
   }
