@@ -245,16 +245,21 @@ class TestImporter(object):
             self.git_cl.run(['set-close'])
             return False
 
-        if self.git_cl.all_success(cq_try_results):
-            _log.info('CQ appears to have passed; trying to commit.')
-            self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
-            self.git_cl.run(['set-commit'])
-            self.git_cl.wait_for_closed_status()
+        if not self.git_cl.all_success(cq_try_results):
+            _log.error('CQ appears to have failed; aborting.')
+            self.git_cl.run(['set-close'])
+            return False
+
+        _log.info('CQ appears to have passed; trying to commit.')
+        self.git_cl.run(['upload', '-f', '--send-mail'])  # Turn off WIP mode.
+        self.git_cl.run(['set-commit'])
+
+        if self.git_cl.wait_for_closed_status():
             _log.info('Update completed.')
             return True
 
+        _log.error('Cannot submit CL; aborting.')
         self.git_cl.run(['set-close'])
-        _log.error('CQ appears to have failed; aborting.')
         return False
 
     def blink_try_bots(self):

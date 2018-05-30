@@ -109,7 +109,7 @@ class TestImporterTest(LoggingTestCase):
             ['git', 'cl', 'set-commit'],
         ])
 
-    def test_run_commit_queue_for_cl_fails(self):
+    def test_run_commit_queue_for_cl_fail_cq(self):
         host = MockHost()
         host.filesystem.write_text_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
@@ -129,6 +129,32 @@ class TestImporterTest(LoggingTestCase):
         ])
         self.assertEqual(importer.git_cl.calls, [
             ['git', 'cl', 'try'],
+            ['git', 'cl', 'set-close'],
+        ])
+
+    def test_run_commit_queue_for_cl_fail_to_land(self):
+        host = MockHost()
+        host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations', '')
+        importer = TestImporter(host)
+        # Only the latest job for each builder is counted.
+        importer.git_cl = MockGitCL(host, status='lgtm', try_job_results={
+            Build('cq-builder-a', 120): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('cq-builder-a', 123): TryJobStatus('COMPLETED', 'SUCCESS'),
+        })
+        importer.git_cl.wait_for_closed_status = lambda: False
+        success = importer.run_commit_queue_for_cl()
+        self.assertFalse(success)
+        self.assertLog([
+            'INFO: Triggering CQ try jobs.\n',
+            'INFO: All jobs finished.\n',
+            'INFO: CQ appears to have passed; trying to commit.\n',
+            'ERROR: Cannot submit CL; aborting.\n',
+        ])
+        self.assertEqual(importer.git_cl.calls, [
+            ['git', 'cl', 'try'],
+            ['git', 'cl', 'upload', '-f', '--send-mail'],
+            ['git', 'cl', 'set-commit'],
             ['git', 'cl', 'set-close'],
         ])
 
