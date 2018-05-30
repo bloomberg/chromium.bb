@@ -4526,6 +4526,8 @@ if (!is_android) {
       sources += [
         "ppapi/ppapi_test.cc",
         "ppapi/ppapi_test.h",
+        "ppapi/ppapi_test_select_file_dialog_factory.cc",
+        "ppapi/ppapi_test_select_file_dialog_factory.h",
       ]
     }
 

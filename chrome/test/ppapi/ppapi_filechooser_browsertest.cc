@@ -12,16 +12,12 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
+#include "chrome/test/ppapi/ppapi_test_select_file_dialog_factory.h"
 #include "components/download/quarantine/quarantine.h"
 #include "ppapi/shared_impl/test_utils.h"
-#include "ui/shell_dialogs/select_file_dialog.h"
-#include "ui/shell_dialogs/select_file_dialog_factory.h"
-#include "ui/shell_dialogs/select_file_policy.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -33,108 +29,6 @@ using safe_browsing::SafeBrowsingService;
 #endif
 
 namespace {
-
-class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
- public:
-  using SelectedFileInfoList = std::vector<ui::SelectedFileInfo>;
-
-  enum Mode {
-    RESPOND_WITH_FILE_LIST,
-    CANCEL,
-    REPLACE_BASENAME,
-    NOT_REACHED,
-  };
-
-  TestSelectFileDialogFactory(Mode mode,
-                              const SelectedFileInfoList& selected_file_info)
-      : selected_file_info_(selected_file_info), mode_(mode) {
-    // Only safe because this class is 'final'
-    ui::SelectFileDialog::SetFactory(this);
-  }
-
-  // SelectFileDialogFactory
-  ui::SelectFileDialog* Create(
-      ui::SelectFileDialog::Listener* listener,
-      std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new SelectFileDialog(listener, std::move(policy),
-                                selected_file_info_, mode_);
-  }
-
- private:
-  class SelectFileDialog : public ui::SelectFileDialog {
-   public:
-    SelectFileDialog(Listener* listener,
-                     std::unique_ptr<ui::SelectFilePolicy> policy,
-                     const SelectedFileInfoList& selected_file_info,
-                     Mode mode)
-        : ui::SelectFileDialog(listener, std::move(policy)),
-          selected_file_info_(selected_file_info),
-          mode_(mode) {}
-
-   protected:
-    // ui::SelectFileDialog
-    void SelectFileImpl(Type type,
-                        const base::string16& title,
-                        const base::FilePath& default_path,
-                        const FileTypeInfo* file_types,
-                        int file_type_index,
-                        const base::FilePath::StringType& default_extension,
-                        gfx::NativeWindow owning_window,
-                        void* params) override {
-      switch (mode_) {
-        case RESPOND_WITH_FILE_LIST:
-          break;
-
-        case CANCEL:
-          EXPECT_EQ(0u, selected_file_info_.size());
-          break;
-
-        case REPLACE_BASENAME:
-          EXPECT_EQ(1u, selected_file_info_.size());
-          for (auto& selected_file : selected_file_info_) {
-            selected_file =
-                ui::SelectedFileInfo(selected_file.file_path.DirName().Append(
-                                         default_path.BaseName()),
-                                     selected_file.local_path.DirName().Append(
-                                         default_path.BaseName()));
-          }
-          break;
-
-        case NOT_REACHED:
-          ADD_FAILURE() << "Unexpected SelectFileImpl invocation.";
-      }
-
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&SelectFileDialog::RespondToFileSelectionRequest, this,
-                     params));
-    }
-    bool HasMultipleFileTypeChoicesImpl() override { return false; }
-
-    // BaseShellDialog
-    bool IsRunning(gfx::NativeWindow owning_window) const override {
-      return false;
-    }
-    void ListenerDestroyed() override {}
-
-   private:
-    void RespondToFileSelectionRequest(void* params) {
-      if (selected_file_info_.size() == 0)
-        listener_->FileSelectionCanceled(params);
-      else if (selected_file_info_.size() == 1)
-        listener_->FileSelectedWithExtraInfo(selected_file_info_.front(), 0,
-                                             params);
-      else
-        listener_->MultiFilesSelectedWithExtraInfo(selected_file_info_, params);
-    }
-
-    SelectedFileInfoList selected_file_info_;
-    Mode mode_;
-  };
-
-  std::vector<ui::SelectedFileInfo> selected_file_info_;
-  Mode mode_;
-};
 
 class PPAPIFileChooserTest : public OutOfProcessPPAPITest {};
 
@@ -282,18 +176,18 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Open_Success) {
       static_cast<int>(sizeof(kContents) - 1),
       base::WriteFile(existing_filename, kContents, sizeof(kContents) - 1));
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(existing_filename, existing_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
   RunTestViaHTTP("FileChooser_OpenSimple");
 }
 
 IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Open_Cancel) {
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::CANCEL,
-      TestSelectFileDialogFactory::SelectedFileInfoList());
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::CANCEL,
+      PPAPITestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_OpenCancel");
 }
 
@@ -303,11 +197,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_SaveAs_Success) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath suggested_filename = temp_dir.GetPath().AppendASCII("foo");
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(suggested_filename, suggested_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
 
   RunTestViaHTTP("FileChooser_SaveAsSafeDefaultName");
   ASSERT_TRUE(base::PathExists(suggested_filename));
@@ -320,11 +214,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath suggested_filename = temp_dir.GetPath().AppendASCII("foo");
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(suggested_filename, suggested_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
 
   RunTestViaHTTP("FileChooser_SaveAsSafeDefaultName");
   base::FilePath actual_filename =
@@ -343,11 +237,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath suggested_filename = temp_dir.GetPath().AppendASCII("foo");
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(suggested_filename, suggested_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
 
   RunTestViaHTTP("FileChooser_SaveAsUnsafeDefaultName");
   base::FilePath actual_filename =
@@ -360,9 +254,9 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_SaveAs_Cancel) {
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::CANCEL,
-      TestSelectFileDialogFactory::SelectedFileInfoList());
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::CANCEL,
+      PPAPITestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_SaveAsCancel");
 }
 
@@ -378,11 +272,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath suggested_filename = temp_dir.GetPath().AppendASCII("foo");
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(suggested_filename, suggested_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
 
   RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableAllowed");
   base::FilePath actual_filename =
@@ -411,11 +305,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath suggested_filename = temp_dir.GetPath().AppendASCII("foo");
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(suggested_filename, suggested_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
 
   RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableAllowed");
   base::FilePath actual_filename =
@@ -435,9 +329,9 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
       std::make_pair(base::FilePath::StringType(FILE_PATH_LITERAL(".exe")),
                      safe_browsing::DownloadCheckResult::DANGEROUS));
 
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::NOT_REACHED,
-      TestSelectFileDialogFactory::SelectedFileInfoList());
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::NOT_REACHED,
+      PPAPITestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableDisallowed");
 }
 
@@ -449,9 +343,9 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
       std::make_pair(base::FilePath::StringType(FILE_PATH_LITERAL(".exe")),
                      safe_browsing::DownloadCheckResult::DANGEROUS));
 
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::NOT_REACHED,
-      TestSelectFileDialogFactory::SelectedFileInfoList());
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::NOT_REACHED,
+      PPAPITestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_SaveAsDangerousExtensionListDisallowed");
 }
 
@@ -470,11 +364,11 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
   safe_browsing_test_configuration_.default_result =
       safe_browsing::DownloadCheckResult::DANGEROUS;
 
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
+  PPAPITestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
   file_info_list.push_back(
       ui::SelectedFileInfo(existing_filename, existing_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
+  PPAPITestSelectFileDialogFactory test_dialog_factory(
+      PPAPITestSelectFileDialogFactory::RESPOND_WITH_FILE_LIST, file_info_list);
   RunTestViaHTTP("FileChooser_OpenSimple");
 }
 

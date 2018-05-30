@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/ppb_testing_private.h"
+#include "ppapi/cpp/dev/file_chooser_dev.h"
 #include "ppapi/cpp/directory_entry.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
@@ -52,22 +53,18 @@ bool TestFileRef::Init() {
 }
 
 std::string TestFileRef::MakeExternalFileRef(pp::FileRef* file_ref_ext) {
-  pp::URLRequestInfo request(instance_);
-  request.SetURL("test_url_loader_data/hello.txt");
-  request.SetStreamToFile(true);
+  pp::FileChooser_Dev file_chooser(instance(), PP_FILECHOOSERMODE_OPEN, "*");
+  ASSERT_FALSE(file_chooser.is_null());
 
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  TestCompletionCallbackWithOutput<std::vector<pp::FileRef> >
+      filechooser_callback(instance_->pp_instance(), callback_type());
+  filechooser_callback.WaitForResult(
+      file_chooser.Show(filechooser_callback.GetCallback()));
 
-  pp::URLLoader loader(instance_);
-  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_OK, callback.result());
+  const std::vector<pp::FileRef>& output_ref = filechooser_callback.output();
+  ASSERT_EQ(1u, output_ref.size());
 
-  pp::URLResponseInfo response_info(loader.GetResponseInfo());
-  ASSERT_FALSE(response_info.is_null());
-  ASSERT_EQ(200, response_info.GetStatusCode());
-
-  *file_ref_ext = pp::FileRef(response_info.GetBodyAsFileRef());
+  *file_ref_ext = output_ref[0];
   ASSERT_EQ(PP_FILESYSTEMTYPE_EXTERNAL, file_ref_ext->GetFileSystemType());
   PASS();
 }

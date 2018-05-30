@@ -135,13 +135,6 @@ PPAPITestBase::PPAPITestBase() {
 }
 
 void PPAPITestBase::SetUp() {
-  // TODO(mek): Migrate the FileRef tests to no longer depend on StreamToFile.
-  if (base::StartsWith(
-          ::testing::UnitTest::GetInstance()->current_test_info()->name(),
-          "FileRef", base::CompareCase::SENSITIVE)) {
-    scoped_feature_list_.InitAndEnableFeature(ppapi::features::kStreamToFile);
-  }
-
   EnablePixelOutput();
   InProcessBrowserTest::SetUp();
 }
