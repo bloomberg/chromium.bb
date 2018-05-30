@@ -91,8 +91,7 @@ SignedExchangeHandler::SignedExchangeHandler(
 
   if (!SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
           content_type, &version_) ||
-      (version_ != SignedExchangeVersion::kB0 &&
-       version_ != SignedExchangeVersion::kB1)) {
+      version_ != SignedExchangeVersion::kB1) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
                                   weak_factory_.GetWeakPtr(),
@@ -101,7 +100,7 @@ SignedExchangeHandler::SignedExchangeHandler(
         devtools_proxy_.get(), "SignedExchangeHandler::SignedExchangeHandler",
         base::StringPrintf("Unsupported version of the content type. Currentry "
                            "content type must be "
-                           "\"application/signed-exchange;v={b0,b1}\". But the "
+                           "\"application/signed-exchange;v=b1\". But the "
                            "response content type was \"%s\"",
                            content_type.c_str()));
     return;
@@ -346,10 +345,6 @@ bool SignedExchangeHandler::CheckOCSPStatus(
   //
   // OCSP verification is done in CertVerifier::Verify(), so we just check the
   // result here.
-
-  // The b0 implementation checkpoint has no OCSP check.
-  if (version_ == SignedExchangeVersion::kB0)
-    return true;
 
   if (ocsp_result.response_status != net::OCSPVerifyResult::PROVIDED ||
       ocsp_result.revocation_status != net::OCSPRevocationStatus::GOOD)

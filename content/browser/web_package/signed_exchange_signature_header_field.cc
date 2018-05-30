@@ -297,9 +297,7 @@ bool SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
   if (it == parameterised_label.params.end()) {
     *version_param = base::nullopt;
   } else {
-    if (it->second == "b0")
-      *version_param = SignedExchangeVersion::kB0;
-    else if (it->second == "b1")
+    if (it->second == "b1")
       *version_param = SignedExchangeVersion::kB1;
     else
       return false;

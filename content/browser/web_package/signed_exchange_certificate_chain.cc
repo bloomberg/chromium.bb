@@ -4,7 +4,6 @@
 
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 
-#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -12,66 +11,11 @@
 #include "components/cbor/cbor_reader.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/public/common/content_switches.h"
 #include "net/cert/x509_certificate.h"
 
 namespace content {
 
 namespace {
-
-bool ConsumeByte(base::span<const uint8_t>* data, uint8_t* out) {
-  if (data->empty())
-    return false;
-  *out = (*data)[0];
-  *data = data->subspan(1);
-  return true;
-}
-
-bool Consume2Bytes(base::span<const uint8_t>* data, uint16_t* out) {
-  if (data->size() < 2)
-    return false;
-  *out = ((*data)[0] << 8) | (*data)[1];
-  *data = data->subspan(2);
-  return true;
-}
-
-bool Consume3Bytes(base::span<const uint8_t>* data, uint32_t* out) {
-  if (data->size() < 3)
-    return false;
-  *out = ((*data)[0] << 16) | ((*data)[1] << 8) | (*data)[2];
-  *data = data->subspan(3);
-  return true;
-}
-
-std::unique_ptr<SignedExchangeCertificateChain> ParseB0(
-    base::span<const uint8_t> message,
-    SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeCertificateChain::ParseB0");
-  base::Optional<std::vector<base::StringPiece>> der_certs =
-      SignedExchangeCertificateChain::GetCertChainFromMessage(message);
-  if (!der_certs) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB0",
-        "Failed to parse the response as a TLS 1.3 Certificate message.");
-    return nullptr;
-  }
-
-  scoped_refptr<net::X509Certificate> cert =
-      net::X509Certificate::CreateFromDERCertChain(*der_certs);
-  if (!cert) {
-    signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy, "SignedExchangeCertificateChain::ParseB0",
-        "X509Certificate::CreateFromDERCertChain failed.");
-    return nullptr;
-  }
-
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeCertificateChain::ParseB1");
-  // The V0 certificate format doesn't support OCSP nor SCT.
-  return base::WrapUnique(
-      new SignedExchangeCertificateChain(cert, "" /* ocsp */, "" /* sct */));
-}
 
 // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
 std::unique_ptr<SignedExchangeCertificateChain> ParseB1(
@@ -224,71 +168,8 @@ SignedExchangeCertificateChain::Parse(
     SignedExchangeVersion version,
     base::span<const uint8_t> cert_response_body,
     SignedExchangeDevToolsProxy* devtools_proxy) {
-  switch (version) {
-    case SignedExchangeVersion::kB0:
-      return ParseB0(cert_response_body, devtools_proxy);
-    case SignedExchangeVersion::kB1:
-      return ParseB1(cert_response_body, devtools_proxy);
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-// static
-base::Optional<std::vector<base::StringPiece>>
-SignedExchangeCertificateChain::GetCertChainFromMessage(
-    base::span<const uint8_t> message) {
-  uint8_t cert_request_context_size = 0;
-  if (!ConsumeByte(&message, &cert_request_context_size)) {
-    DVLOG(1) << "Can't read certificate request request context size.";
-    return base::nullopt;
-  }
-  if (cert_request_context_size != 0) {
-    DVLOG(1) << "Invalid certificate request context size: "
-             << static_cast<int>(cert_request_context_size);
-    return base::nullopt;
-  }
-  uint32_t cert_list_size = 0;
-  if (!Consume3Bytes(&message, &cert_list_size)) {
-    DVLOG(1) << "Can't read certificate list size.";
-    return base::nullopt;
-  }
-
-  if (cert_list_size != message.size()) {
-    DVLOG(1) << "Certificate list size error: cert_list_size=" << cert_list_size
-             << " remaining=" << message.size();
-    return base::nullopt;
-  }
-
-  std::vector<base::StringPiece> certs;
-  while (!message.empty()) {
-    uint32_t cert_data_size = 0;
-    if (!Consume3Bytes(&message, &cert_data_size)) {
-      DVLOG(1) << "Can't read certificate data size.";
-      return base::nullopt;
-    }
-    if (message.size() < cert_data_size) {
-      DVLOG(1) << "Certificate data size error: cert_data_size="
-               << cert_data_size << " remaining=" << message.size();
-      return base::nullopt;
-    }
-    certs.emplace_back(base::StringPiece(
-        reinterpret_cast<const char*>(message.data()), cert_data_size));
-    message = message.subspan(cert_data_size);
-
-    uint16_t extensions_size = 0;
-    if (!Consume2Bytes(&message, &extensions_size)) {
-      DVLOG(1) << "Can't read extensions size.";
-      return base::nullopt;
-    }
-    if (message.size() < extensions_size) {
-      DVLOG(1) << "Extensions size error: extensions_size=" << extensions_size
-               << " remaining=" << message.size();
-      return base::nullopt;
-    }
-    message = message.subspan(extensions_size);
-  }
-  return certs;
+  DCHECK_EQ(version, SignedExchangeVersion::kB1);
+  return ParseB1(cert_response_body, devtools_proxy);
 }
 
 SignedExchangeCertificateChain::SignedExchangeCertificateChain(
