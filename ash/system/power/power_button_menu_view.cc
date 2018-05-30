@@ -5,6 +5,7 @@
 #include "ash/system/power/power_button_menu_view.h"
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/new_window_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -37,6 +38,7 @@ constexpr int kPaddingBetweenMenuItems = 8;
 
 using PowerButtonPosition = PowerButtonController::PowerButtonPosition;
 
+constexpr base::Feature PowerButtonMenuView::kEnableFeedbackItem;
 constexpr base::TimeDelta PowerButtonMenuView::kMenuAnimationDuration;
 
 PowerButtonMenuView::PowerButtonMenuView(
@@ -158,41 +160,54 @@ void PowerButtonMenuView::CreateItems() {
           l10n_util::GetStringUTF16(
               IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
       AddChildView(lock_screen_item_);
+
+      if (base::FeatureList::IsEnabled(kEnableFeedbackItem)) {
+        feedback_item_ = new PowerButtonMenuItemView(
+            this, kSystemPowerButtonMenuFeedbackIcon,
+            l10n_util::GetStringUTF16(
+                IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON));
+        AddChildView(feedback_item_);
+      }
     }
   }
 }
 
 void PowerButtonMenuView::Layout() {
-  const gfx::Rect rect(GetContentsBounds());
+  gfx::Rect rect(GetContentsBounds());
+  const gfx::Size item_size(power_off_item_->GetPreferredSize());
+  rect.set_size(item_size);
   gfx::Rect power_off_rect(rect);
-  power_off_rect.set_size(power_off_item_->GetPreferredSize());
   const int y_offset =
       kMenuItemVerticalPadding - PowerButtonMenuItemView::kItemBorderThickness;
   const int power_off_x_offset = kMenuItemHorizontalPadding -
                                  PowerButtonMenuItemView::kItemBorderThickness;
-  power_off_rect.Offset(gfx::Vector2d(power_off_x_offset, y_offset));
+  power_off_rect.Offset(power_off_x_offset, y_offset);
   power_off_item_->SetBoundsRect(power_off_rect);
 
   if (sign_out_item_) {
     gfx::Rect sign_out_rect(rect);
-    sign_out_rect.set_size(sign_out_item_->GetPreferredSize());
     const int padding_between_items_with_border =
         kPaddingBetweenMenuItems -
         2 * PowerButtonMenuItemView::kItemBorderThickness;
-    const int sign_out_x_offset = power_off_x_offset +
-                                  power_off_item_->GetPreferredSize().width() +
+    const int sign_out_x_offset = power_off_x_offset + item_size.width() +
                                   padding_between_items_with_border;
-    sign_out_rect.Offset(gfx::Vector2d(sign_out_x_offset, y_offset));
+    sign_out_rect.Offset(sign_out_x_offset, y_offset);
     sign_out_item_->SetBoundsRect(sign_out_rect);
 
     if (lock_screen_item_) {
       gfx::Rect lock_screen_rect(rect);
-      lock_screen_rect.set_size(lock_screen_item_->GetPreferredSize());
-      lock_screen_rect.Offset(gfx::Vector2d(
-          sign_out_x_offset + sign_out_item_->GetPreferredSize().width() +
-              padding_between_items_with_border,
-          y_offset));
+      const int lock_screen_x_offset = sign_out_x_offset + item_size.width() +
+                                       padding_between_items_with_border;
+      lock_screen_rect.Offset(lock_screen_x_offset, y_offset);
       lock_screen_item_->SetBoundsRect(lock_screen_rect);
+
+      if (feedback_item_) {
+        gfx::Rect feedback_rect(rect);
+        feedback_rect.Offset(lock_screen_x_offset + item_size.width() +
+                                 padding_between_items_with_border,
+                             y_offset);
+        feedback_item_->SetBoundsRect(feedback_rect);
+      }
     }
   }
 }
@@ -224,6 +239,8 @@ gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
     width += one_item_x_offset;
     if (lock_screen_item_)
       width += one_item_x_offset;
+    if (feedback_item_)
+      width += one_item_x_offset;
   }
   menu_size.set_width(width);
   return menu_size;
@@ -243,10 +260,13 @@ void PowerButtonMenuView::ButtonPressed(views::Button* sender,
   } else if (sender == lock_screen_item_) {
     RecordMenuActionHistogram(PowerButtonMenuActionType::kLockScreen);
     shell->session_controller()->LockScreen();
-    shell->power_button_controller()->DismissMenu();
+  } else if (sender == feedback_item_) {
+    RecordMenuActionHistogram(PowerButtonMenuActionType::kFeedback);
+    shell->new_window_controller()->OpenFeedbackPage();
   } else {
     NOTREACHED() << "Invalid sender";
   }
+  shell->power_button_controller()->DismissMenu();
 }
 
 void PowerButtonMenuView::OnImplicitAnimationsCompleted() {

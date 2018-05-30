@@ -78,6 +78,10 @@ bool PowerButtonControllerTestApi::MenuHasLockScreenItem() const {
          GetPowerButtonMenuView()->lock_screen_item_for_test();
 }
 
+bool PowerButtonControllerTestApi::MenuHasFeedbackItem() const {
+  return IsMenuOpened() && GetPowerButtonMenuView()->feedback_item_for_test();
+}
+
 PowerButtonScreenshotController*
 PowerButtonControllerTestApi::GetScreenshotController() {
   return controller_->screenshot_controller_.get();

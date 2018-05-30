@@ -562,13 +562,11 @@ void PowerButtonController::ParsePowerButtonPositionSwitch() {
 
 void PowerButtonController::UpdatePowerButtonEventUMAHistogram(
     uint32_t up_state) {
-  if (up_state & UP_SHOWING_ANIMATION_CANCELLED) {
+  if (up_state & UP_SHOWING_ANIMATION_CANCELLED)
     RecordPressInLaptopModeHistogram(PowerButtonPressType::kTapWithoutMenu);
-  }
 
-  if (up_state & UP_MENU_TIMER_WAS_RUNNING) {
+  if (up_state & UP_MENU_TIMER_WAS_RUNNING)
     RecordPressInTabletModeHistogram(PowerButtonPressType::kTapWithoutMenu);
-  }
 
   if (menu_shown_when_power_button_down_) {
     if (up_state & UP_PRE_SHUTDOWN_TIMER_WAS_RUNNING) {
