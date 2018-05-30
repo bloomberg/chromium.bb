@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
-#include "third_party/blink/renderer/core/offscreencanvas/image_encode_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -57,9 +57,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   // API Methods
   ImageBitmap* transferToImageBitmap(ScriptState*, ExceptionState&);
-  ScriptPromise convertToBlob(ScriptState*,
-                              const ImageEncodeOptions&,
-                              ExceptionState&);
 
   const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
@@ -71,7 +68,7 @@ class CORE_EXPORT OffscreenCanvas final
   bool HasPlaceholderCanvas() {
     return placeholder_canvas_id_ != kInvalidDOMNodeId;
   }
-  bool IsNeutered() const { return is_neutered_; }
+  bool IsNeutered() const override { return is_neutered_; }
   void SetNeutered();
   CanvasRenderingContext* GetCanvasRenderingContext(
       ExecutionContext*,

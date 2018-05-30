@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -63,6 +64,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   // TODO(fserb): remove this.
   virtual bool IsOffscreenCanvas() const { return false; }
+  virtual bool IsNeutered() const { return false; }
 
   virtual void Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
                       const SkIRect& damage_rect) {
@@ -80,6 +82,10 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   bool Is2d() const;
   CanvasColorParams ColorParams() const;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider();
+
+  ScriptPromise convertToBlob(ScriptState*,
+                              const ImageEncodeOptions&,
+                              ExceptionState&) const;
 
  protected:
   ~CanvasRenderingContextHost() override {}

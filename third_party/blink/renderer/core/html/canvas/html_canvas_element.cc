@@ -887,7 +887,9 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
       ToStaticBitmapImage(kBackBuffer, kPreferNoAcceleration);
   if (image_bitmap) {
     async_creator = CanvasAsyncBlobCreator::Create(
-        image_bitmap, encoding_mime_type, callback, start_time, &GetDocument());
+        image_bitmap, encoding_mime_type, callback,
+        CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, start_time,
+        &GetDocument());
   }
 
   if (async_creator) {

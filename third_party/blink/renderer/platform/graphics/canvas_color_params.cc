@@ -43,31 +43,35 @@ CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
       pixel_format_(pixel_format),
       opacity_mode_(opacity_mode) {}
 
-CanvasColorParams::CanvasColorParams(const SkImageInfo& info) {
+CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
+                                     SkColorType color_type) {
   color_space_ = kSRGBCanvasColorSpace;
   pixel_format_ = kRGBA8CanvasPixelFormat;
   // When there is no color space information, the SkImage is in legacy mode and
   // the color type is kN32_SkColorType (which translates to kRGBA8 canvas pixel
   // format).
-  if (!info.colorSpace())
+  if (!color_space)
     return;
   // kSRGBCanvasColorSpace covers sRGB and linear-rgb. We need to check for
   // Rec2020 and P3.
   if (SkColorSpace::Equals(
-          info.colorSpace(),
+          color_space.get(),
           SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
                                 SkColorSpace::kRec2020_Gamut)
               .get()))
     color_space_ = kRec2020CanvasColorSpace;
   else if (SkColorSpace::Equals(
-               info.colorSpace(),
+               color_space.get(),
                SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
                                      SkColorSpace::kDCIP3_D65_Gamut)
                    .get()))
     color_space_ = kP3CanvasColorSpace;
-  if (info.colorType() == kRGBA_F16_SkColorType)
+  if (color_type == kRGBA_F16_SkColorType)
     pixel_format_ = kF16CanvasPixelFormat;
 }
+
+CanvasColorParams::CanvasColorParams(const SkImageInfo& info)
+    : CanvasColorParams(info.refColorSpace(), info.colorType()) {}
 
 void CanvasColorParams::SetCanvasColorSpace(CanvasColorSpace color_space) {
   color_space_ = color_space;

@@ -40,6 +40,8 @@ interface HTMLCanvasElement : HTMLElement
     [MeasureAs=CanvasToDataURL, RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
 
     [MeasureAs=CanvasToBlob, RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
+
+    [RuntimeEnabled=CanvasColorManagement, MeasureAs=CanvasConvertToBlob, RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
 };
 
 // https://html.spec.whatwg.org/multipage/canvas.html#blobcallback

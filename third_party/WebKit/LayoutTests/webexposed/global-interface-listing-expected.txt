@@ -2451,6 +2451,7 @@ interface HTMLCanvasElement : HTMLElement
     getter width
     method captureStream
     method constructor
+    method convertToBlob
     method getContext
     method toBlob
     method toDataURL
