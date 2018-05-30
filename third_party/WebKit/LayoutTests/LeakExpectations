@@ -75,6 +75,8 @@ crbug.com/835802 [ Linux ] fast/loader/scroll-position-restored-on-back-at-load-
 crbug.com/836278 [ Linux ] external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
 crbug.com/836278 [ Linux ] virtual/threaded/external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
 
+crbug.com/847868 [ Linux ] fast/events/drag-remove-iframe-crash.html [ Pass Leak ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #
