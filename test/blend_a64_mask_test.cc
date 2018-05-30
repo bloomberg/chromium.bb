@@ -75,7 +75,7 @@ class BlendA64MaskTest : public FunctionEquivalenceTest<BlendA64Func> {
 
   uint8_t Rand1() { return this->rng_.Rand8() & 1; }
 
-  void Common() {
+  void RunTest() {
     w_ = 4 << this->rng_(MAX_SB_SIZE_LOG2 - 1);
     h_ = 4 << this->rng_(MAX_SB_SIZE_LOG2 - 1);
 
@@ -107,7 +107,8 @@ class BlendA64MaskTest : public FunctionEquivalenceTest<BlendA64Func> {
     for (int r = 0; r < h_; ++r) {
       for (int c = 0; c < w_; ++c) {
         ASSERT_EQ(dst_ref_[dst_offset_ + r * dst_stride_ + c],
-                  dst_tst_[dst_offset_ + r * dst_stride_ + c]);
+                  dst_tst_[dst_offset_ + r * dst_stride_ + c])
+            << w_ << "x" << h_ << " r: " << r << " c: " << c;
       }
     }
   }
@@ -171,7 +172,7 @@ TEST_P(BlendA64MaskTest8B, RandomValues) {
     for (int i = 0; i < kMaxMaskSize; ++i)
       mask_[i] = rng_(AOM_BLEND_A64_MAX_ALPHA + 1);
 
-    Common();
+    RunTest();
   }
 }
 
@@ -187,7 +188,7 @@ TEST_P(BlendA64MaskTest8B, ExtremeValues) {
     for (int i = 0; i < kMaxMaskSize; ++i)
       mask_[i] = rng_(2) + AOM_BLEND_A64_MAX_ALPHA - 1;
 
-    Common();
+    RunTest();
   }
 }
 
@@ -241,7 +242,7 @@ TEST_P(BlendA64MaskTest8B_d16, RandomValues) {
     for (int i = 0; i < kMaxMaskSize; ++i)
       mask_[i] = rng_(AOM_BLEND_A64_MAX_ALPHA + 1);
 
-    Common();
+    RunTest();
   }
 }
 
@@ -258,7 +259,7 @@ TEST_P(BlendA64MaskTest8B_d16, ExtremeValues) {
     for (int i = 0; i < kMaxMaskSize; ++i)
       mask_[i] = AOM_BLEND_A64_MAX_ALPHA - 1;
 
-    Common();
+    RunTest();
   }
 }
 
@@ -317,7 +318,7 @@ TEST_P(BlendA64MaskTestHBD, RandomValues) {
     for (int i = 0; i < kMaxMaskSize; ++i)
       mask_[i] = rng_(AOM_BLEND_A64_MAX_ALPHA + 1);
 
-    Common();
+    RunTest();
   }
 }
 
@@ -342,7 +343,7 @@ TEST_P(BlendA64MaskTestHBD, ExtremeValues) {
     for (int i = 0; i < kMaxMaskSize; ++i)
       mask_[i] = rng_(2) + AOM_BLEND_A64_MAX_ALPHA - 1;
 
-    Common();
+    RunTest();
   }
 }
 
@@ -352,4 +353,104 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestFuncsHBD(aom_highbd_blend_a64_mask_c,
                                    aom_highbd_blend_a64_mask_sse4_1)));
 #endif  // HAVE_SSE4_1
+
+//////////////////////////////////////////////////////////////////////////////
+// HBD _d16 version
+//////////////////////////////////////////////////////////////////////////////
+
+typedef void (*FHBD_D16)(uint8_t *dst, uint32_t dst_stride,
+                         const CONV_BUF_TYPE *src0, uint32_t src0_stride,
+                         const CONV_BUF_TYPE *src1, uint32_t src1_stride,
+                         const uint8_t *mask, uint32_t mask_stride, int h,
+                         int w, int suby, int subx, ConvolveParams *conv_params,
+                         const int bd);
+typedef libaom_test::FuncParam<FHBD_D16> TestFuncsHBD_d16;
+
+class BlendA64MaskTestHBD_d16
+    : public BlendA64MaskTest<FHBD_D16, uint16_t, uint16_t> {
+ protected:
+  // max number of bits used by the source
+  static const int kSrcMaxBitsMask = (1 << 14) - 1;
+  static const int kSrcMaxBitsMaskHBD = (1 << 16) - 1;
+
+  void Execute(const uint16_t *p_src0, const uint16_t *p_src1) {
+    ConvolveParams conv_params;
+    conv_params.round_0 = (bit_depth_ == 12) ? ROUND0_BITS + 2 : ROUND0_BITS;
+    conv_params.round_1 = COMPOUND_ROUND1_BITS;
+
+    params_.ref_func(CONVERT_TO_BYTEPTR(dst_ref_ + dst_offset_), dst_stride_,
+                     p_src0 + src0_offset_, src0_stride_, p_src1 + src1_offset_,
+                     src1_stride_, mask_, kMaxMaskWidth, h_, w_, suby_, subx_,
+                     &conv_params, bit_depth_);
+    if (params_.tst_func) {
+      ASM_REGISTER_STATE_CHECK(params_.tst_func(
+          CONVERT_TO_BYTEPTR(dst_tst_ + dst_offset_), dst_stride_,
+          p_src0 + src0_offset_, src0_stride_, p_src1 + src1_offset_,
+          src1_stride_, mask_, kMaxMaskWidth, h_, w_, suby_, subx_,
+          &conv_params, bit_depth_));
+    }
+  }
+
+  int bit_depth_;
+  int src_max_bits_mask_;
+};
+
+TEST_P(BlendA64MaskTestHBD_d16, RandomValues) {
+  if (params_.tst_func == NULL) return;
+  for (int iter = 0; iter < kIterations && !HasFatalFailure(); ++iter) {
+    switch (rng_(3)) {
+      case 0: bit_depth_ = 8; break;
+      case 1: bit_depth_ = 10; break;
+      default: bit_depth_ = 12; break;
+    }
+    src_max_bits_mask_ =
+        (bit_depth_ == 8) ? kSrcMaxBitsMask : kSrcMaxBitsMaskHBD;
+
+    for (int i = 0; i < kBufSize; ++i) {
+      dst_ref_[i] = rng_.Rand8();
+      dst_tst_[i] = rng_.Rand8();
+
+      src0_[i] = rng_.Rand16() & src_max_bits_mask_;
+      src1_[i] = rng_.Rand16() & src_max_bits_mask_;
+    }
+
+    for (int i = 0; i < kMaxMaskSize; ++i)
+      mask_[i] = rng_(AOM_BLEND_A64_MAX_ALPHA + 1);
+
+    RunTest();
+  }
+}
+
+TEST_P(BlendA64MaskTestHBD_d16, SaturatedValues) {
+  for (bit_depth_ = 8; bit_depth_ <= 12; bit_depth_ += 2) {
+    src_max_bits_mask_ =
+        (bit_depth_ == 8) ? kSrcMaxBitsMask : kSrcMaxBitsMaskHBD;
+
+    for (int i = 0; i < kBufSize; ++i) {
+      dst_ref_[i] = 0;
+      dst_tst_[i] = (1 << bit_depth_) - 1;
+
+      src0_[i] = src_max_bits_mask_;
+      src1_[i] = src_max_bits_mask_;
+    }
+
+    for (int i = 0; i < kMaxMaskSize; ++i) mask_[i] = AOM_BLEND_A64_MAX_ALPHA;
+
+    RunTest();
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    C, BlendA64MaskTestHBD_d16,
+    ::testing::Values(TestFuncsHBD_d16(aom_highbd_blend_a64_d16_mask_c, NULL)));
+
+// TODO(slavarnway): Enable the following in the avx2 commit. (56501)
+#if 0
+#if HAVE_AVX2
+INSTANTIATE_TEST_CASE_P(
+    SSE4_1, BlendA64MaskTestHBD,
+    ::testing::Values(TestFuncsHBD(aom_highbd_blend_a64_mask_c,
+                                   aom_highbd_blend_a64_mask_avx2)));
+#endif  // HAVE_AVX2
+#endif
 }  // namespace
