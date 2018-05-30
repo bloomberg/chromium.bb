@@ -8,16 +8,17 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 #include <unicode/uscript.h>
 
 struct hb_language_impl_t;
 
 namespace blink {
-
-class Hyphenation;
 
 enum class LineBreakIteratorMode { kDefault, kNormal, kStrict, kLoose };
 
@@ -63,6 +64,18 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
   static scoped_refptr<LayoutLocale> CreateForTesting(const AtomicString&);
   static void SetHyphenationForTesting(const AtomicString&,
                                        scoped_refptr<Hyphenation>);
+
+  struct PerThreadData {
+    HashMap<AtomicString, scoped_refptr<LayoutLocale>, CaseFoldingHash>
+        locale_map;
+    const LayoutLocale* default_locale = nullptr;
+    const LayoutLocale* system_locale = nullptr;
+    const LayoutLocale* default_locale_for_han = nullptr;
+    bool default_locale_for_han_computed = false;
+    String current_accept_languages;
+  };
+
+  static void AcceptLanguagesChanged(const String&);
 
  private:
   explicit LayoutLocale(const AtomicString&);
