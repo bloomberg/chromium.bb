@@ -11,9 +11,9 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "device/bluetooth/test/mock_bluetooth_advertisement.h"
 #include "device/fido/fido_ble_device.h"
 #include "device/fido/fido_ble_uuids.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -112,6 +112,16 @@ MATCHER_P2(IsAdvertisementContent,
   return true;
 }
 
+class CableMockBluetoothAdvertisement : public BluetoothAdvertisement {
+ public:
+  MOCK_METHOD2(Unregister,
+               void(const SuccessCallback& success_callback,
+                    const ErrorCallback& error_callback));
+
+ private:
+  ~CableMockBluetoothAdvertisement() override = default;
+};
+
 // Mock BLE adapter that abstracts out authenticator logic with the following
 // logic:
 //  - Responds to BluetoothAdapter::RegisterAdvertisement() by always invoking
@@ -150,18 +160,23 @@ class CableMockAdapter : public MockBluetoothAdapter {
   void ExpectRegisterAdvertisementWithResponse(
       bool simulate_success,
       base::span<const uint8_t> expected_client_eid,
-      base::StringPiece expected_uuid_formatted_client_eid) {
+      base::StringPiece expected_uuid_formatted_client_eid,
+      scoped_refptr<CableMockBluetoothAdvertisement> advertisement_ptr =
+          nullptr) {
+    if (!advertisement_ptr)
+      advertisement_ptr =
+          base::MakeRefCounted<CableMockBluetoothAdvertisement>();
+
     EXPECT_CALL(*this,
                 RegisterAdvertisement(
                     IsAdvertisementContent(expected_client_eid,
                                            expected_uuid_formatted_client_eid),
                     _, _))
         .WillOnce(::testing::WithArgs<1, 2>(
-            [simulate_success](const auto& success_callback,
-                               const auto& failure_callback) {
+            [simulate_success, advertisement_ptr](
+                const auto& success_callback, const auto& failure_callback) {
               simulate_success
-                  ? success_callback.Run(
-                        base::MakeRefCounted<MockBluetoothAdvertisement>())
+                  ? success_callback.Run(advertisement_ptr)
                   : failure_callback.Run(BluetoothAdvertisement::ErrorCode::
                                              INVALID_ADVERTISEMENT_ERROR_CODE);
             }));
@@ -336,6 +351,28 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
   scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
+  auto cable_discovery = CreateDiscovery();
+  CableMockBluetoothAdvertisement* advertisement =
+      new CableMockBluetoothAdvertisement();
+  EXPECT_CALL(*advertisement, Unregister(_, _)).Times(1);
+
+  ::testing::InSequence testing_sequence;
+  auto mock_adapter =
+      base::MakeRefCounted<::testing::NiceMock<CableMockAdapter>>();
+  mock_adapter->ExpectSuccessCallbackToSetPowered();
+  mock_adapter->ExpectRegisterAdvertisementWithResponse(
+      true /* simulate_success */, kClientEid, kUuidFormattedClientEid,
+      base::WrapRefCounted(advertisement));
+
+  BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
+  cable_discovery->Start();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(1u, cable_discovery->advertisements_.size());
+  cable_discovery.reset();
 }
 
 }  // namespace device

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -128,9 +129,11 @@ FidoCableDiscovery::FidoCableDiscovery(
     std::vector<CableDiscoveryData> discovery_data)
     : discovery_data_(std::move(discovery_data)), weak_factory_(this) {}
 
-// Destruction of FidoCableDiscovery will unregister |advertisements_| on
-// best-effort basis.
-FidoCableDiscovery::~FidoCableDiscovery() = default;
+// This is a workaround for https://crbug.com/846522
+FidoCableDiscovery::~FidoCableDiscovery() {
+  for (auto advertisement : advertisements_)
+    advertisement.second->Unregister(base::DoNothing(), base::DoNothing());
+}
 
 void FidoCableDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
