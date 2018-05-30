@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
 #include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/layout/traced_layout_object.h"
@@ -1032,8 +1033,7 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
       }
       layout_subtree_root_list_.Clear();
     } else {
-      if (HasOrthogonalWritingModeRoots() &&
-          !RuntimeEnabledFeatures::LayoutNGEnabled())
+      if (HasOrthogonalWritingModeRoots())
         LayoutOrthogonalWritingModeRoots();
       GetLayoutView()->UpdateLayout();
     }
@@ -2081,6 +2081,11 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
       root.IsColumnSpanAll() ||
       !root.StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
       ToLayoutBox(root).IsGridItem() || root.IsTablePart())
+    return false;
+
+  // Do not lay out objects managed by LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() &&
+      (root.IsLayoutBlock() && IsLayoutNGContainingBlock(ToLayoutBlock(&root))))
     return false;
 
   RemoveFloatingObjectsForSubtreeRoot(root);
