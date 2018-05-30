@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CreateDisable) {
                   ->GetTestInterface()
                   ->GetService(service_path, &profile_path, &properties));
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   extension_service->DisableExtension(
       extension_id_, extensions::disable_reason::DISABLE_USER_ACTION);
@@ -471,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CreateBlacklist) {
                   ->GetTestInterface()
                   ->GetService(service_path, &profile_path, &properties));
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   extension_service->BlacklistExtensionForTest(extension_id_);
   content::RunAllPendingInMessageLoop();

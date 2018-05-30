@@ -30,11 +30,12 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
+namespace extensions {
+
 namespace {
 
-extensions::ComponentLoader* GetComponentLoader(BrowserContext* context) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(context);
+ComponentLoader* GetComponentLoader(BrowserContext* context) {
+  ExtensionSystem* extension_system = ExtensionSystem::Get(context);
   ExtensionService* extension_service = extension_system->extension_service();
   return extension_service->component_loader();
 }
@@ -42,7 +43,7 @@ extensions::ComponentLoader* GetComponentLoader(BrowserContext* context) {
 void LoadGaiaAuthExtension(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  extensions::ComponentLoader* component_loader = GetComponentLoader(context);
+  ComponentLoader* component_loader = GetComponentLoader(context);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
@@ -58,12 +59,10 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
 
 void UnloadGaiaAuthExtension(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetComponentLoader(context)->Remove(extensions::kGaiaAuthExtensionId);
+  GetComponentLoader(context)->Remove(kGaiaAuthExtensionId);
 }
 
 }  // namespace
-
-namespace extensions {
 
 GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(BrowserContext* context)
     : browser_context_(context),

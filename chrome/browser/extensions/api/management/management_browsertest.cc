@@ -206,8 +206,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallRequiresConfirm) {
   // Installing the extension without an auto confirming UI should result in
   // it being disabled, since good.crx has permissions that require approval.
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   std::string id = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
   ASSERT_FALSE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 0));
   ASSERT_TRUE(service->GetExtensionById(id, true));
@@ -357,8 +358,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
 
   // Install version 1 of the extension.
   ExtensionTestMessageListener listener1("v1 installed", false);
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
   const size_t size_before = registry->enabled_extensions().size();
   ASSERT_TRUE(registry->disabled_extensions().is_empty());
@@ -460,8 +462,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // Install version 1 of the extension.
   ExtensionTestMessageListener listener1("v1 installed", false);
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
   const size_t enabled_size_before = registry->enabled_extensions().size();
   const size_t disabled_size_before = registry->disabled_extensions().size();
@@ -505,8 +508,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
 
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -540,9 +544,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
       service->pending_extension_manager();
 
   // The code that reads external_extensions.json uses this method to inform
-  // the ExtensionService of an extension to download.  Using the real code
-  // is race-prone, because instantating the ExtensionService starts a read
-  // of external_extensions.json before this test function starts.
+  // the extensions::ExtensionService of an extension to download.  Using the
+  // real code is race-prone, because instantating the
+  // extensions::ExtensionService starts a read of external_extensions.json
+  // before this test function starts.
 
   EXPECT_TRUE(pending_extension_manager->AddFromExternalUpdateUrl(
       kExtensionId,
@@ -610,8 +615,9 @@ const char kForceInstallNotEmptyHelp[] =
 
 // See http://crbug.com/57378 for flakiness details.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
 
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -698,8 +704,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                        MAYBE_PolicyOverridesUserInstall) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
   const char kExtensionId[] = "ogjcoiohnmldgjemafoockdghcjciccf";
   const size_t size_before = registry->enabled_extensions().size();

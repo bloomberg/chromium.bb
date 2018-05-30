@@ -260,7 +260,7 @@ void ExtensionUpdater::TimerFired() {
 
   // If the user has overridden the update frequency, don't bother reporting
   // this.
-  if (frequency_seconds_ == extensions::kDefaultUpdateFrequencySeconds) {
+  if (frequency_seconds_ == kDefaultUpdateFrequencySeconds) {
     Time last = Time::FromInternalValue(prefs_->GetInt64(
         pref_names::kLastUpdateCheck));
     if (last.ToInternalValue() != 0) {
@@ -600,8 +600,7 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
 
       // Source parameter ensures that we only see the completion event for the
       // the installer we started.
-      registrar_.Add(this,
-                     extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      registrar_.Add(this, NOTIFICATION_CRX_INSTALLER_DONE,
                      content::Source<CrxInstaller>(installer));
     } else {
       for (const int request_id : crx_file.request_ids) {
@@ -621,9 +620,9 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
 void ExtensionUpdater::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  DCHECK_EQ(extensions::NOTIFICATION_CRX_INSTALLER_DONE, type);
+  DCHECK_EQ(NOTIFICATION_CRX_INSTALLER_DONE, type);
 
-  registrar_.Remove(this, extensions::NOTIFICATION_CRX_INSTALLER_DONE, source);
+  registrar_.Remove(this, NOTIFICATION_CRX_INSTALLER_DONE, source);
   crx_install_is_running_ = false;
 
   // If installing this file didn't succeed, we may need to re-download it.
@@ -635,8 +634,7 @@ void ExtensionUpdater::Observe(int type,
                 : ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR,
       ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
 
-  extensions::CrxInstaller* installer =
-      content::Source<extensions::CrxInstaller>(source).ptr();
+  CrxInstaller* installer = content::Source<CrxInstaller>(source).ptr();
   const FetchedCRXFile& crx_file = current_crx_file_;
   if (!extension && installer->hash_check_failed() &&
       !crx_file.callback.is_null()) {
@@ -663,7 +661,7 @@ void ExtensionUpdater::Observe(int type,
 
 void ExtensionUpdater::NotifyStarted() {
   content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+      NOTIFICATION_EXTENSION_UPDATING_STARTED,
       content::Source<Profile>(profile_),
       content::NotificationService::NoDetails());
 }

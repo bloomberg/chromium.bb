@@ -144,7 +144,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     ASSERT_EQ(num_expected_extensions,
               GetNonComponentEnabledExtensionCount(browser()->profile()));
 
-    ExtensionService* service =
+    extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(browser()->profile())
             ->extension_service();
     ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());

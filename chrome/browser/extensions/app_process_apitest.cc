@@ -313,8 +313,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessBackgroundInstances) {
 #define MAYBE_BookmarkAppGetsNormalProcess BookmarkAppGetsNormalProcess
 #endif
 IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
   extensions::ProcessMap* process_map =
       extensions::ProcessMap::Get(browser()->profile());
 
