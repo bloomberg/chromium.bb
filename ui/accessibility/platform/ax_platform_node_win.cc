@@ -1278,6 +1278,41 @@ STDMETHODIMP AXPlatformNodeWin::get_accessibleWithCaret(IUnknown** accessible,
 }
 
 //
+// IAccessibleEx implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::GetObjectForChild(LONG child_id,
+                                                  IAccessibleEx** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OBJECT_FOR_CHILD);
+  // No support for child IDs in this implementation.
+  COM_OBJECT_VALIDATE_1_ARG(result);
+  *result = nullptr;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::GetIAccessiblePair(IAccessible** accessible,
+                                                   LONG* child_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IACCESSIBLE_PAIR);
+  COM_OBJECT_VALIDATE_2_ARGS(accessible, child_id);
+  *accessible = static_cast<IAccessible*>(this);
+  (*accessible)->AddRef();
+  *child_id = CHILDID_SELF;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP
+AXPlatformNodeWin::ConvertReturnedElement(IRawElementProviderSimple* element,
+                                          IAccessibleEx** acc) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_CONVERT_RETURNED_ELEMENT);
+  return E_NOTIMPL;
+}
+
+//
 // IAccessibleTable methods.
 //
 
@@ -2398,6 +2433,158 @@ STDMETHODIMP AXPlatformNodeWin::get_attributes(LONG offset,
 }
 
 //
+// IRawElementProviderSimple implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
+                                                   IUnknown** result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  switch (pattern_id) {
+    // Supported by IAccessibleEx.
+    case UIA_DockPatternId:
+    case UIA_ExpandCollapsePatternId:
+    case UIA_GridPatternId:
+    case UIA_GridItemPatternId:
+    case UIA_MultipleViewPatternId:
+    case UIA_RangeValuePatternId:
+    case UIA_ScrollPatternId:
+    case UIA_ScrollItemPatternId:
+    case UIA_SynchronizedInputPatternId:
+    case UIA_TablePatternId:
+    case UIA_TableItemPatternId:
+    case UIA_TransformPatternId:
+      // TODO(suproteem): Implementations where applicable.
+      *result = nullptr;
+      break;
+    // TODO(suproteem): Add checks for control role.
+    case UIA_InvokePatternId:
+    case UIA_SelectionItemPatternId:
+    case UIA_SelectionPatternId:
+    case UIA_TogglePatternId:
+    case UIA_ValuePatternId:
+    case UIA_WindowPatternId:
+
+    // Overlap with MSAA, not supported.
+    case UIA_AnnotationPatternId:
+    case UIA_CustomNavigationPatternId:
+    case UIA_DragPatternId:
+    case UIA_DropTargetPatternId:
+    case UIA_ItemContainerPatternId:
+    case UIA_LegacyIAccessiblePatternId:
+    case UIA_ObjectModelPatternId:
+    case UIA_SpreadsheetPatternId:
+    case UIA_SpreadsheetItemPatternId:
+    case UIA_StylesPatternId:
+    case UIA_TextChildPatternId:
+    case UIA_TextEditPatternId:
+    case UIA_TextPatternId:
+    case UIA_TextPattern2Id:
+    case UIA_TransformPattern2Id:
+    case UIA_VirtualizedItemPatternId:
+      *result = nullptr;
+      break;
+  }
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
+                                                 VARIANT* result) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
+  COM_OBJECT_VALIDATE_1_ARG(result);
+
+  switch (property_id) {
+    // Supported by IAccessibleEx.
+    case UIA_AriaPropertiesPropertyId:
+    case UIA_AriaRolePropertyId:
+    case UIA_AutomationIdPropertyId:
+    case UIA_ClassNamePropertyId:
+    case UIA_ClickablePointPropertyId:
+    case UIA_ControllerForPropertyId:
+    case UIA_CulturePropertyId:
+    case UIA_DescribedByPropertyId:
+    case UIA_FlowsToPropertyId:
+    case UIA_FrameworkIdPropertyId:
+    case UIA_IsContentElementPropertyId:
+    case UIA_IsControlElementPropertyId:
+    case UIA_IsDataValidForFormPropertyId:
+    case UIA_IsRequiredForFormPropertyId:
+    case UIA_ItemStatusPropertyId:
+    case UIA_ItemTypePropertyId:
+    case UIA_LabeledByPropertyId:
+    case UIA_LocalizedControlTypePropertyId:
+    case UIA_OrientationPropertyId:
+      // TODO(suproteem): Implementations where applicable.
+      result->vt = VT_EMPTY;
+      break;
+    // Covered by MSAA.
+    case UIA_BoundingRectanglePropertyId:
+    case UIA_HasKeyboardFocusPropertyId:
+    case UIA_HelpTextPropertyId:
+    case UIA_IsEnabledPropertyId:
+    case UIA_IsKeyboardFocusablePropertyId:
+    case UIA_IsOffscreenPropertyId:
+    case UIA_IsPasswordPropertyId:
+    case UIA_NamePropertyId:
+    case UIA_NativeWindowHandlePropertyId:
+    case UIA_ProcessIdPropertyId:
+      result->vt = VT_EMPTY;
+      break;
+    // Overlap with MSAA, not supported.
+    case UIA_AcceleratorKeyPropertyId:
+    case UIA_AccessKeyPropertyId:
+    case UIA_AnnotationObjectsPropertyId:
+    case UIA_AnnotationTypesPropertyId:
+    case UIA_CenterPointPropertyId:
+    case UIA_ControlTypePropertyId:
+    case UIA_CustomControlTypeId:
+    case UIA_FillColorPropertyId:
+    case UIA_FillTypePropertyId:
+    case UIA_FlowsFromPropertyId:
+    case UIA_FullDescriptionPropertyId:
+    case UIA_GroupControlTypeId:
+    case UIA_HeadingLevelPropertyId:
+    case UIA_IsPeripheralPropertyId:
+    case UIA_LandmarkTypePropertyId:
+    case UIA_LevelPropertyId:
+    case UIA_LiveSettingPropertyId:
+    case UIA_LocalizedLandmarkTypePropertyId:
+    case UIA_MenuControlTypeId:
+    case UIA_OptimizeForVisualContentPropertyId:
+    case UIA_OutlineColorPropertyId:
+    case UIA_OutlineThicknessPropertyId:
+    case UIA_PaneControlTypeId:
+    case UIA_PositionInSetPropertyId:
+    case UIA_ProviderDescriptionPropertyId:
+    case UIA_RotationPropertyId:
+    case UIA_RuntimeIdPropertyId:
+    case UIA_SizeOfSetPropertyId:
+    case UIA_SizePropertyId:
+    case UIA_ToolBarControlTypeId:
+    case UIA_ToolTipControlTypeId:
+    case UIA_VisualEffectsPropertyId:
+    case UIA_WindowControlTypeId:
+      // MSAA-to-UIA Proxy.
+      result->vt = VT_EMPTY;
+      break;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_ProviderOptions(ProviderOptions* ret) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROVIDER_OPTIONS);
+  return E_NOTIMPL;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_HostRawElementProvider(
+    IRawElementProviderSimple** provider) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER);
+  return E_NOTIMPL;
+}
+
+//
 // IServiceProvider implementation.
 //
 
@@ -2420,6 +2607,9 @@ STDMETHODIMP AXPlatformNodeWin::QueryService(
       guidService == IID_IAccessibleText) {
     return QueryInterface(riid, object);
   }
+
+  // TODO(suproteem): Include IAccessibleEx in the list, potentially checking
+  // for version.
 
   *object = nullptr;
   return E_FAIL;
