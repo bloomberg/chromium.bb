@@ -95,6 +95,7 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnableLayeredAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyFrameLoading(bool);
+  BLINK_PLATFORM_EXPORT static void EnableLazyFrameVisibleLoadTimeMetrics(bool);
   BLINK_PLATFORM_EXPORT static void EnableLazyParseCSS(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaCapture(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaSession(bool);

@@ -658,6 +658,9 @@
       name: "LazyFrameLoading",
     },
     {
+      name: "LazyFrameVisibleLoadTimeMetrics",
+    },
+    {
       name: "LazyInitializeMediaControls",
       // This is enabled by features::kLazyInitializeMediaControls.
     },

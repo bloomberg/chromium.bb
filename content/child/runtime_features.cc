@@ -405,6 +405,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (base::FeatureList::IsEnabled(features::kLazyFrameLoading))
     WebRuntimeFeatures::EnableLazyFrameLoading(true);
+  if (base::FeatureList::IsEnabled(features::kLazyFrameVisibleLoadTimeMetrics))
+    WebRuntimeFeatures::EnableLazyFrameVisibleLoadTimeMetrics(true);
 
   WebRuntimeFeatures::EnableV8ContextSnapshot(
       base::FeatureList::IsEnabled(features::kV8ContextSnapshot));

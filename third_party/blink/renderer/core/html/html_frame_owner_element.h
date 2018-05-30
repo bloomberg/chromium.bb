@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -173,6 +174,11 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
       FrameLoadType,
       const HeapVector<Member<IntersectionObserverEntry>>&);
 
+  void RecordMetricsOnVisibilityChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>&);
+
+  void RecordVisibilityMetricsIfLoadedAndVisible();
+
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   SandboxFlags sandbox_flags_;
@@ -181,6 +187,19 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   Member<IntersectionObserver> lazy_load_intersection_observer_;
   bool should_lazy_load_children_;
+
+  // Keeps track of whether this frame was initially visible on the page.
+  bool is_initially_above_the_fold_ = false;
+  bool has_above_the_fold_been_set_ = false;
+
+  // Used to record visibility-related metrics related to lazy load. This is an
+  // IntersectionObserver instead of just an ElementVisibilityObserver so that
+  // hidden frames can be detected in order to avoid recording metrics for them.
+  Member<IntersectionObserver> lazy_load_visibility_metrics_observer_;
+  // Set when the frame first becomes visible (i.e. appears in the viewport).
+  TimeTicks time_when_first_visible_;
+  // Set when the first load event is dispatched for this frame.
+  TimeTicks time_when_first_load_finished_;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, IsFrameOwnerElement());

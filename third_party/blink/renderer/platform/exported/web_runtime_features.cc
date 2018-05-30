@@ -180,6 +180,10 @@ void WebRuntimeFeatures::EnableLazyFrameLoading(bool enable) {
   RuntimeEnabledFeatures::SetLazyFrameLoadingEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableLazyFrameVisibleLoadTimeMetrics(bool enable) {
+  RuntimeEnabledFeatures::SetLazyFrameVisibleLoadTimeMetricsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLazyParseCSS(bool enable) {
   RuntimeEnabledFeatures::SetLazyParseCSSEnabled(enable);
 }

@@ -9,13 +9,24 @@
 
 namespace blink {
 
-SimWebFrameClient::SimWebFrameClient(SimTest& test) : test_(&test) {}
+SimWebFrameClient::SimWebFrameClient(SimTest& test)
+    : test_(&test),
+      effective_connection_type_(WebEffectiveConnectionType::kTypeUnknown) {}
 
 void SimWebFrameClient::DidAddMessageToConsole(const WebConsoleMessage& message,
                                                const WebString& source_name,
                                                unsigned source_line,
                                                const WebString& stack_trace) {
   test_->AddConsoleMessage(message.text);
+}
+
+WebEffectiveConnectionType SimWebFrameClient::GetEffectiveConnectionType() {
+  return effective_connection_type_;
+}
+
+void SimWebFrameClient::SetEffectiveConnectionTypeForTesting(
+    WebEffectiveConnectionType effective_connection_type) {
+  effective_connection_type_ = effective_connection_type;
 }
 
 }  // namespace blink
