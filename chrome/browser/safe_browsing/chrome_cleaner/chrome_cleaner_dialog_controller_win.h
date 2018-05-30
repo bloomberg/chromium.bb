@@ -52,6 +52,8 @@ class ChromeCleanerDialogController {
   // Returns whether logs upload is currently enabled. Used to set the dialog's
   // default permission checkbox state.
   virtual bool LogsEnabled() = 0;
+  // Returns whether logs upload is currently managed by policy.
+  virtual bool LogsManaged() = 0;
 
  protected:
   virtual ~ChromeCleanerDialogController() {}

@@ -36,6 +36,7 @@ class MockChromeCleanerController
   MOCK_METHOD0(Reboot, void());
   MOCK_METHOD0(IsAllowedByPolicy, bool());
   MOCK_METHOD0(IsReportingAllowedByPolicy, bool());
+  MOCK_METHOD0(IsReportingManagedByPolicy, bool());
 };
 
 }  // namespace safe_browsing

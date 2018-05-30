@@ -47,6 +47,7 @@ class ChromeCleanerDialogControllerImpl
   void DetailsButtonClicked(bool logs_enabled) override;
   void SetLogsEnabled(bool logs_enabled) override;
   bool LogsEnabled() override;
+  bool LogsManaged() override;
 
   // ChromeCleanerController::Observer overrides.
   void OnIdle(ChromeCleanerController::IdleReason idle_reason) override;
