@@ -45,7 +45,7 @@ void ModelPPM::RestartModelRare()
   if (MinContext == NULL)
   {
 #if defined(UNRAR_NO_EXCEPTIONS)
-    base::Process::Current().Terminate(RARX_MEMORY, false);
+    base::TerminateBecauseOutOfMemory(0);
 #else
     throw std::bad_alloc();
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
@@ -58,7 +58,7 @@ void ModelPPM::RestartModelRare()
   if (FoundState == NULL)
   {
 #if defined(UNRAR_NO_EXCEPTIONS)
-    base::Process::Current().Terminate(RARX_MEMORY, false);
+    base::TerminateBecauseOutOfMemory(0);
 #else
     throw std::bad_alloc();
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
