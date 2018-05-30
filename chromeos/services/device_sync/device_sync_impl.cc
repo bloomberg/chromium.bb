@@ -45,7 +45,7 @@ DeviceSyncImpl::Factory* DeviceSyncImpl::Factory::test_factory_instance_ =
     nullptr;
 
 // static
-std::unique_ptr<DeviceSyncImpl> DeviceSyncImpl::Factory::NewInstance(
+std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::NewInstance(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
@@ -70,7 +70,7 @@ void DeviceSyncImpl::Factory::SetInstanceForTesting(Factory* test_factory) {
 
 DeviceSyncImpl::Factory::~Factory() = default;
 
-std::unique_ptr<DeviceSyncImpl> DeviceSyncImpl::Factory::BuildInstance(
+std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
@@ -126,16 +126,6 @@ DeviceSyncImpl::~DeviceSyncImpl() {
 
   if (remote_device_provider_)
     remote_device_provider_->RemoveObserver(this);
-}
-
-void DeviceSyncImpl::BindRequest(mojom::DeviceSyncRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
-void DeviceSyncImpl::AddObserver(mojom::DeviceSyncObserverPtr observer,
-                                 AddObserverCallback callback) {
-  observers_.AddPtr(std::move(observer));
-  std::move(callback).Run();
 }
 
 void DeviceSyncImpl::ForceEnrollmentNow(ForceEnrollmentNowCallback callback) {
@@ -260,14 +250,13 @@ void DeviceSyncImpl::OnEnrollmentFinished(bool success) {
   if (status_ == Status::WAITING_FOR_ENROLLMENT)
     CompleteInitializationAfterSuccessfulEnrollment();
 
-  observers_.ForAllPtrs(
-      [](auto* observer) { observer->OnEnrollmentFinished(); });
+  NotifyOnEnrollmentFinished();
 }
 
 void DeviceSyncImpl::OnSyncDeviceListChanged() {
   PA_LOG(INFO) << "DeviceSyncImpl: Synced devices changed; notifying "
                << "observers.";
-  observers_.ForAllPtrs([](auto* observer) { observer->OnNewDevicesSynced(); });
+  NotifyOnNewDevicesSynced();
 }
 
 void DeviceSyncImpl::ProcessPrimaryAccountInfo(

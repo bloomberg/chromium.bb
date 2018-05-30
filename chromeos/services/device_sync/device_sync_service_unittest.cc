@@ -416,7 +416,7 @@ class DeviceSyncServiceTest : public testing::Test {
     ~FakeDeviceSyncImplFactory() override = default;
 
     // DeviceSyncImpl::Factory:
-    std::unique_ptr<DeviceSyncImpl> BuildInstance(
+    std::unique_ptr<DeviceSyncBase> BuildInstance(
         identity::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,

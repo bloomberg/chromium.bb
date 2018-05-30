@@ -16,6 +16,8 @@ static_library("device_sync") {
     "cryptauth_enroller_factory_impl.h",
     "cryptauth_token_fetcher_impl.cc",
     "cryptauth_token_fetcher_impl.h",
+    "device_sync_base.cc",
+    "device_sync_base.h",
     "device_sync_impl.cc",
     "device_sync_impl.h",
     "device_sync_service.cc",
@@ -50,6 +52,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_device_sync.cc",
+    "fake_device_sync.h",
     "fake_device_sync_observer.cc",
     "fake_device_sync_observer.h",
   ]
@@ -61,6 +65,7 @@ static_library("test_support") {
   deps = [
     ":device_sync",
     "//base",
+    "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
     "//testing/gtest",
   ]
@@ -80,6 +85,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos/services/device_sync/public/cpp:unit_tests",
     "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//components/cryptauth",
