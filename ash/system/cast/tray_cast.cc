@@ -332,39 +332,6 @@ CastTrayView::CastTrayView(SystemTrayItem* tray_item)
 
 CastTrayView::~CastTrayView() = default;
 
-// This view displays a list of cast receivers that can be clicked on and casted
-// to. It is activated by clicking on the chevron inside of
-// |CastSelectDefaultView|.
-class CastDetailedView : public TrayDetailedView {
- public:
-  CastDetailedView(DetailedViewDelegate* delegate,
-                   const std::vector<mojom::SinkAndRoutePtr>& sinks_and_routes);
-  ~CastDetailedView() override;
-
-  // Makes the detail view think the view associated with the given receiver_id
-  // was clicked. This will start a cast.
-  void SimulateViewClickedForTest(const std::string& receiver_id);
-
-  // Updates the list of available receivers.
-  void UpdateReceiverList(
-      const std::vector<mojom::SinkAndRoutePtr>& sinks_routes);
-
- private:
-  void CreateItems();
-
-  void UpdateReceiverListFromCachedData();
-
-  // TrayDetailedView:
-  void HandleViewClicked(views::View* view) override;
-
-  // A mapping from the receiver id to the receiver/activity data.
-  std::map<std::string, ash::mojom::SinkAndRoutePtr> sinks_and_routes_;
-  // A mapping from the view pointer to the associated activity id.
-  std::map<views::View*, ash::mojom::CastSinkPtr> view_to_sink_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastDetailedView);
-};
-
 CastDetailedView::CastDetailedView(
     DetailedViewDelegate* delegate,
     const std::vector<mojom::SinkAndRoutePtr>& sinks_routes)
