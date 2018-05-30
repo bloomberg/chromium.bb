@@ -1090,6 +1090,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoSpatialNavigationFocus:
       DCHECK(is_ua_rule_);
       return MatchesSpatialNavigationFocusPseudoClass(element);
+    case CSSSelector::kPseudoIsHtml:
+      DCHECK(is_ua_rule_);
+      return element.GetDocument().IsHTMLDocument();
     case CSSSelector::kPseudoListBox:
       DCHECK(is_ua_rule_);
       return MatchesListBoxPseudoClass(element);

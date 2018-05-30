@@ -158,6 +158,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoShadow:
     case CSSSelector::kPseudoSpatialNavigationFocus:
+    case CSSSelector::kPseudoIsHtml:
     case CSSSelector::kPseudoListBox:
     case CSSSelector::kPseudoHostHasAppearance:
     case CSSSelector::kPseudoSlotted:

@@ -366,6 +366,10 @@ form {
     margin-top: 0__qem;
 }
 
+:-webkit-any(table, thead, tbody, tfoot, tr) > form:-internal-is-html {
+  display: none !important;
+}
+
 label {
     cursor: default;
 }
