@@ -627,8 +627,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong, readonly) DialogPresenter* dialogPresenter;
 // The object that manages keyboard commands on behalf of the BVC.
 @property(nonatomic, strong, readonly) KeyCommandsProvider* keyCommandsProvider;
-// Whether the current tab can enable the request desktop menu item.
-@property(nonatomic, assign, readonly) BOOL canUseDesktopUserAgent;
 // Whether the sharing menu should be enabled.
 @property(nonatomic, assign, readonly) BOOL canShowShareMenu;
 // Helper method to check web controller canShowFindBar method.
@@ -1194,15 +1192,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _keyCommandsProvider = [_dependencyFactory newKeyCommandsProvider];
   }
   return _keyCommandsProvider;
-}
-
-- (BOOL)canUseDesktopUserAgent {
-  Tab* tab = [_model currentTab];
-  if ([self isTabNativePage:tab])
-    return NO;
-
-  // If |useDesktopUserAgent| is |NO|, allow useDesktopUserAgent.
-  return !tab.usesDesktopUserAgent;
 }
 
 // Whether the sharing menu should be shown.
@@ -5071,10 +5060,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)requestDesktopSite {
+  if (self.userAgentType != web::UserAgentType::MOBILE)
+    return;
   [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::DESKTOP];
 }
 
 - (void)requestMobileSite {
+  if (self.userAgentType != web::UserAgentType::DESKTOP)
+    return;
   [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::MOBILE];
 }
 

@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
+#include "ios/web/public/user_agent.h"
 #include "url/gurl.h"
 
 @interface ShareToData : NSObject
@@ -18,6 +19,7 @@
                  title:(NSString*)title
        isOriginalTitle:(BOOL)isOriginalTitle
        isPagePrintable:(BOOL)isPagePrintable
+             userAgent:(web::UserAgentType)userAgent
     thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator;
 
 // The URL to be shared with share extensions. This URL is the canonical URL of
@@ -34,6 +36,7 @@
 @property(nonatomic, readonly, copy) NSString* title;
 @property(nonatomic, readonly, assign) BOOL isOriginalTitle;
 @property(nonatomic, readonly, assign) BOOL isPagePrintable;
+@property(nonatomic, readonly, assign) web::UserAgentType userAgent;
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) ThumbnailGeneratorBlock thumbnailGenerator;
 
