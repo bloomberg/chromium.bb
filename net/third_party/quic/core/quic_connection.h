@@ -1317,6 +1317,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // True if the peer is unreachable on the current path.
   bool is_path_degrading_;
 
+  // True if an ack frame is being processed.
+  bool processing_ack_frame_;
+
   // Latched valure of
   // quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe.
   const bool handle_write_results_for_connectivity_probe_;
