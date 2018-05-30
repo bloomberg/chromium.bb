@@ -12,11 +12,12 @@ namespace blink {
 
 typedef ScriptData::PairedBracketType PairedBracketType;
 
-const int ScriptData::kMaxScriptCount = 20;
+constexpr int ScriptRunIterator::kMaxScriptCount;
+constexpr int ScriptData::kMaxScriptCount;
 
 ScriptData::~ScriptData() = default;
 
-void ICUScriptData::GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
+void ICUScriptData::GetScripts(UChar32 ch, UScriptCodeList& dst) const {
   ICUError status;
   // Leave room to insert primary script. It's not strictly necessary but
   // it ensures that the result won't ever be greater than kMaxScriptCount,
