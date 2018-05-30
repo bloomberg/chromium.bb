@@ -45,6 +45,7 @@ namespace blink {
 class ComputedStyle;
 class FullscreenOptions;
 class LayoutFullScreen;
+class ScriptPromiseResolver;
 
 // The Fullscreen class implements most of the Fullscreen API Standard,
 // https://fullscreen.spec.whatwg.org/, especially its algorithms. It is a
@@ -80,12 +81,13 @@ class CORE_EXPORT Fullscreen final
   };
 
   static void RequestFullscreen(Element&);
-  static void RequestFullscreen(Element&,
-                                const FullscreenOptions&,
-                                RequestType);
+  static ScriptPromise RequestFullscreen(Element&,
+                                         const FullscreenOptions&,
+                                         RequestType,
+                                         ScriptState* state = nullptr);
 
   static void FullyExitFullscreen(Document&);
-  static void ExitFullscreen(Document&);
+  static ScriptPromise ExitFullscreen(Document&, ScriptState* state = nullptr);
 
   static bool FullscreenEnabled(Document&);
   Element* FullscreenElement() const {
@@ -122,9 +124,12 @@ class CORE_EXPORT Fullscreen final
   static void ContinueRequestFullscreen(Document&,
                                         Element&,
                                         RequestType,
+                                        ScriptPromiseResolver* resolver,
                                         bool error);
 
-  static void ContinueExitFullscreen(Document*, bool resize);
+  static void ContinueExitFullscreen(Document*,
+                                     ScriptPromiseResolver* resolver,
+                                     bool resize);
 
   void ClearFullscreenElementStack();
   void PopFullscreenElementStack();
@@ -135,12 +140,39 @@ class CORE_EXPORT Fullscreen final
 
   using ElementStackEntry = std::pair<Member<Element>, RequestType>;
   using ElementStack = HeapVector<ElementStackEntry>;
-  ElementStack pending_requests_;
   ElementStack fullscreen_element_stack_;
 
   LayoutFullScreen* full_screen_layout_object_;
   LayoutRect saved_placeholder_frame_rect_;
   scoped_refptr<ComputedStyle> saved_placeholder_computed_style_;
+
+  // Stores the pending request, promise and the type for executing
+  // the asynchronous portion of the request.
+  class PendingRequest : public GarbageCollectedFinalized<PendingRequest> {
+   public:
+    PendingRequest(Element* element,
+                   RequestType type,
+                   ScriptPromiseResolver* resolver);
+    virtual ~PendingRequest();
+    virtual void Trace(blink::Visitor* visitor);
+
+    Element* element() { return element_; }
+    RequestType type() { return type_; }
+    ScriptPromiseResolver* resolver() { return resolver_; }
+
+   private:
+    Member<Element> element_;
+    RequestType type_;
+    Member<ScriptPromiseResolver> resolver_;
+
+    DISALLOW_COPY_AND_ASSIGN(PendingRequest);
+  };
+  using PendingRequests = HeapVector<Member<PendingRequest>>;
+  PendingRequests pending_requests_;
+
+  using PendingExit = ScriptPromiseResolver;
+  using PendingExits = HeapVector<Member<PendingExit>>;
+  PendingExits pending_exits_;
 };
 
 inline Fullscreen* Fullscreen::FromIfExists(Document& document) {

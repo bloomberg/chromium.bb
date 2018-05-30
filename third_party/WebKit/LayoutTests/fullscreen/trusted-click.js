@@ -38,9 +38,17 @@ function trusted_click(test, callback, container,
     }
 }
 
+function silence_rejection(promise) {
+  // Keep the promise resolution silent. Otherwise unhandledrejection
+  // may fire for the failure test cases.
+  if (promise) promise.catch(() => {});
+}
+
 // Invokes element.requestFullscreen() from a trusted click.
 function trusted_request(test, element, container, clickRectInRootFrameCoordinate)
 {
-    trusted_click(test, () => element.requestFullscreen(), container || element.parentNode,
+    trusted_click(test, () => {
+        silence_rejection(element.requestFullscreen());
+    }, container || element.parentNode,
                   clickRectInRootFrameCoordinate);
 }

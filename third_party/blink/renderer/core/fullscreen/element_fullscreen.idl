@@ -9,7 +9,7 @@
 ] partial interface Element {
     // TODO(dtapuska): If RuntimeEnabled=FullscreenUnprefixed is shipped before RuntimeEnabled=FullscreenOptions
     // we need to split the optional FullscreenOptions out controlled by RuntimeEnabled=FullscreenOptions
-    [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen(optional FullscreenOptions options);
+    [CallWith=ScriptState, RuntimeEnabled=FullscreenUnprefixed] Promise<void> requestFullscreen(optional FullscreenOptions options);
 
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;

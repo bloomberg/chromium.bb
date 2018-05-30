@@ -23,8 +23,8 @@ async_test(t => {
   });
 
   trusted_click(t, () => {
-    b.requestFullscreen();
-    a.requestFullscreen();
+    silence_rejection(b.requestFullscreen());
+    silence_rejection(a.requestFullscreen());
   }, document.body);
 });
 </script>
