@@ -101,7 +101,8 @@ AppLauncherHandler::AppInstallInfo::AppInstallInfo() {}
 
 AppLauncherHandler::AppInstallInfo::~AppInstallInfo() {}
 
-AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
+AppLauncherHandler::AppLauncherHandler(
+    extensions::ExtensionService* extension_service)
     : extension_service_(extension_service),
       ignore_changes_(false),
       attempted_bookmark_app_install_(false),
@@ -111,10 +112,9 @@ AppLauncherHandler::~AppLauncherHandler() {
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
 }
 
-void AppLauncherHandler::CreateAppInfo(
-    const Extension* extension,
-    ExtensionService* service,
-    base::DictionaryValue* value) {
+void AppLauncherHandler::CreateAppInfo(const Extension* extension,
+                                       extensions::ExtensionService* service,
+                                       base::DictionaryValue* value) {
   // The items which are to be written into |value| are also described in
   // chrome/browser/resources/ntp4/page_list_view.js in @typedef for AppInfo.
   // Please update it whenever you add or remove any keys here.
@@ -823,7 +823,7 @@ void AppLauncherHandler::ExtensionEnableFlowAborted(bool user_initiated) {
       extension_service_->GetExtensionById(extension_id_prompting_, true);
   std::string histogram_name = user_initiated ? "ReEnableCancel"
                                               : "ReEnableAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(
+  extensions::ExtensionService::RecordPermissionMessagesHistogram(
       extension, histogram_name.c_str());
 
   extension_enable_flow_.reset();

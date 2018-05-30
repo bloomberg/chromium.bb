@@ -115,7 +115,8 @@ syncer::SyncData GetSyncDataFromSyncItem(
                                            specifics);
 }
 
-bool AppIsDefault(ExtensionService* service, const std::string& id) {
+bool AppIsDefault(extensions::ExtensionService* service,
+                  const std::string& id) {
   return service && extensions::ExtensionPrefs::Get(service->profile())
                         ->WasInstalledByDefault(id);
 }
@@ -127,7 +128,8 @@ bool IsUnRemovableDefaultApp(const std::string& id) {
          id == genius_app::kGeniusAppId;
 }
 
-void UninstallExtension(ExtensionService* service, const std::string& id) {
+void UninstallExtension(extensions::ExtensionService* service,
+                        const std::string& id) {
   if (service && service->GetInstalledExtension(id)) {
     service->UninstallExtension(id, extensions::UNINSTALL_REASON_SYNC,
                                 nullptr /* error */);

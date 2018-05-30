@@ -29,7 +29,7 @@ namespace syncfs_internals {
 namespace {
 
 void ConvertExtensionStatusToDictionary(
-    const base::WeakPtr<ExtensionService>& extension_service,
+    const base::WeakPtr<extensions::ExtensionService>& extension_service,
     const base::Callback<void(const base::ListValue&)>& callback,
     const std::map<GURL, std::string>& status_map) {
   if (!extension_service) {
@@ -87,7 +87,7 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
     return;
   }
 
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service) {
     callback.Run(base::ListValue());

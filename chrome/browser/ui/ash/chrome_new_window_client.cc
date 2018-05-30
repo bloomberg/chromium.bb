@@ -165,7 +165,7 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
 void ChromeNewWindowClient::OpenFileManager() {
   using file_manager::kFileManagerAppId;
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  const ExtensionService* const service =
+  const extensions::ExtensionService* const service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service || !extensions::util::IsAppLaunchableWithoutEnabling(
                       kFileManagerAppId, profile)) {

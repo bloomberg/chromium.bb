@@ -57,7 +57,7 @@ void ExtensionEnableFlow::Start() {
 }
 
 void ExtensionEnableFlow::Run() {
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = service->GetExtensionById(extension_id_, true);
   if (!extension) {
@@ -87,7 +87,7 @@ void ExtensionEnableFlow::Run() {
 void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile_);
-  ExtensionService* service = system->extension_service();
+  extensions::ExtensionService* service = system->extension_service();
   const Extension* extension = service->GetExtensionById(extension_id_, true);
 
   bool abort =
@@ -182,7 +182,7 @@ void ExtensionEnableFlow::OnExtensionUninstalled(
 void ExtensionEnableFlow::InstallPromptDone(
     ExtensionInstallPrompt::Result result) {
   if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
-    ExtensionService* service =
+    extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
 
     // The extension can be uninstalled in another window while the UI was

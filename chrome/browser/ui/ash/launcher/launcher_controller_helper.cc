@@ -44,7 +44,7 @@ namespace {
 
 const extensions::Extension* GetExtensionForTab(Profile* profile,
                                                 content::WebContents* tab) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!extension_service || !extension_service->extensions_enabled())
     return nullptr;

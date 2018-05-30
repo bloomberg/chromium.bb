@@ -2592,7 +2592,7 @@ bool Browser::MaybeCreateBackgroundContents(
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  ExtensionService* extensions_service =
+  extensions::ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 
   if (!opener_url.is_valid() || frame_name.empty() || !extensions_service ||

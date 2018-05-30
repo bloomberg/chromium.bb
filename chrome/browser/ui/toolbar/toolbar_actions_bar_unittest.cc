@@ -607,7 +607,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestNeedsOverflow) {
 // TODO(catmullings): Convert this from TEST_P to TEST_F since there is no test
 // parameter dependence.
 TEST_P(ToolbarActionsBarUnitTest, ReuploadExtensionFailed) {
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile());

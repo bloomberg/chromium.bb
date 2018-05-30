@@ -100,7 +100,7 @@ void FontHandler::HandleOpenAdvancedFontSettings(
 }
 
 const extensions::Extension* FontHandler::GetAdvancedFontSettingsExtension() {
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service->IsExtensionEnabled(kAdvancedFontSettingsExtensionId))
     return nullptr;

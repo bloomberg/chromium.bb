@@ -560,7 +560,7 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
         base::FilePath(), extensions::Manifest::UNPACKED, manifest,
         extensions::Extension::NO_FLAGS, arc::kPlayStoreAppId, &error);
 
-    ExtensionService* extension_service =
+    extensions::ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile_.get())->extension_service();
     extension_service->AddExtension(arc_support_host_.get());
   }
