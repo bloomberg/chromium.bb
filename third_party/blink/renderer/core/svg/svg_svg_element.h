@@ -53,7 +53,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
   float IntrinsicHeight() const;
   FloatSize CurrentViewportSize() const;
   FloatRect CurrentViewBoxRect() const;
-  SVGPreserveAspectRatio* CurrentPreserveAspectRatio() const;
+  const SVGPreserveAspectRatio* CurrentPreserveAspectRatio() const;
 
   float currentScale() const;
   void setCurrentScale(float scale);
@@ -111,14 +111,11 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   void Trace(blink::Visitor*) override;
 
-  SVGViewSpec* ViewSpec() const { return view_spec_; }
-  void SetViewSpec(SVGViewSpec*);
-
  private:
   explicit SVGSVGElement(Document&);
   ~SVGSVGElement() override;
 
-  SVGViewSpec& EnsureViewSpec();
+  void SetViewSpec(const SVGViewSpec*);
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
@@ -163,7 +160,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   Member<SMILTimeContainer> time_container_;
   Member<SVGPoint> translation_;
-  Member<SVGViewSpec> view_spec_;
+  Member<const SVGViewSpec> view_spec_;
   float current_scale_;
 
   friend class SVGCurrentTranslateTearOff;

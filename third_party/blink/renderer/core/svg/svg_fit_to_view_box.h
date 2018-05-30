@@ -36,7 +36,7 @@ class QualifiedName;
 class SVGFitToViewBox : public GarbageCollectedMixin {
  public:
   static AffineTransform ViewBoxToViewTransform(const FloatRect& view_box_rect,
-                                                SVGPreserveAspectRatio*,
+                                                const SVGPreserveAspectRatio*,
                                                 float view_width,
                                                 float view_height);
 

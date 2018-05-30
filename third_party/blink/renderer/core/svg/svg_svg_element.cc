@@ -151,7 +151,7 @@ void SVGSVGElement::UpdateUserTransform() {
 
 bool SVGSVGElement::ZoomAndPanEnabled() const {
   SVGZoomAndPanType zoom_and_pan = this->zoomAndPan();
-  if (view_spec_)
+  if (view_spec_ && view_spec_->ZoomAndPan() != kSVGZoomAndPanUnknown)
     zoom_and_pan = view_spec_->ZoomAndPan();
   return zoom_and_pan == kSVGZoomAndPanMagnify;
 }
@@ -600,7 +600,7 @@ bool SVGSVGElement::ShouldSynthesizeViewBox() const {
 }
 
 FloatRect SVGSVGElement::CurrentViewBoxRect() const {
-  if (view_spec_)
+  if (view_spec_ && view_spec_->ViewBox())
     return view_spec_->ViewBox()->Value();
 
   FloatRect use_view_box = viewBox()->CurrentValue()->Value();
@@ -623,8 +623,9 @@ FloatRect SVGSVGElement::CurrentViewBoxRect() const {
   return FloatRect(FloatPoint(), synthesized_view_box_size);
 }
 
-SVGPreserveAspectRatio* SVGSVGElement::CurrentPreserveAspectRatio() const {
-  if (view_spec_)
+const SVGPreserveAspectRatio* SVGSVGElement::CurrentPreserveAspectRatio()
+    const {
+  if (view_spec_ && view_spec_->PreserveAspectRatio())
     return view_spec_->PreserveAspectRatio();
 
   if (!HasValidViewBox() && ShouldSynthesizeViewBox()) {
@@ -687,10 +688,10 @@ AffineTransform SVGSVGElement::ViewBoxToViewTransform(float view_width,
   AffineTransform ctm = SVGFitToViewBox::ViewBoxToViewTransform(
       CurrentViewBoxRect(), CurrentPreserveAspectRatio(), view_width,
       view_height);
-  if (!view_spec_)
+  if (!view_spec_ || !view_spec_->Transform())
     return ctm;
 
-  SVGTransformList* transform_list = view_spec_->Transform();
+  const SVGTransformList* transform_list = view_spec_->Transform();
   if (transform_list->IsEmpty())
     return ctm;
 
@@ -701,7 +702,7 @@ AffineTransform SVGSVGElement::ViewBoxToViewTransform(float view_width,
   return ctm;
 }
 
-void SVGSVGElement::SetViewSpec(SVGViewSpec* view_spec) {
+void SVGSVGElement::SetViewSpec(const SVGViewSpec* view_spec) {
   // Even if the viewspec object itself doesn't change, it could still
   // have been mutated, so only treat a "no viewspec" -> "no viewspec"
   // transition as a no-op.
@@ -715,30 +716,29 @@ void SVGSVGElement::SetViewSpec(SVGViewSpec* view_spec) {
 void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
                                      Element* anchor_node) {
   if (fragment_identifier.StartsWith("svgView(")) {
-    SVGViewSpec* view_spec = SVGViewSpec::CreateForElement(*this);
-    if (view_spec->ParseViewSpec(fragment_identifier)) {
+    SVGViewSpec* view_spec =
+        SVGViewSpec::CreateFromFragment(fragment_identifier);
+    if (view_spec) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kSVGSVGElementFragmentSVGView);
       SetViewSpec(view_spec);
       return;
     }
   }
-
-  SetViewSpec(nullptr);
-
-  if (!IsSVGViewElement(anchor_node))
+  if (IsSVGViewElement(anchor_node)) {
+    // Spec: If the SVG fragment identifier addresses a 'view' element within an
+    // SVG document (e.g., MyDrawing.svg#MyView) then the root 'svg' element is
+    // displayed in the SVG viewport. Any view specification attributes included
+    // on the given 'view' element override the corresponding view specification
+    // attributes on the root 'svg' element.
+    SVGViewSpec* view_spec =
+        SVGViewSpec::CreateForViewElement(ToSVGViewElement(*anchor_node));
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kSVGSVGElementFragmentSVGViewElement);
+    SetViewSpec(view_spec);
     return;
-
-  // Spec: If the SVG fragment identifier addresses a 'view' element within an
-  // SVG document (e.g., MyDrawing.svg#MyView) then the root 'svg' element is
-  // displayed in the SVG viewport. Any view specification attributes included
-  // on the given 'view' element override the corresponding view specification
-  // attributes on the root 'svg' element.
-  SVGViewSpec* view_spec = SVGViewSpec::CreateForElement(*this);
-  view_spec->InheritViewAttributesFromElement(ToSVGViewElement(*anchor_node));
-  UseCounter::Count(GetDocument(),
-                    WebFeature::kSVGSVGElementFragmentSVGViewElement);
-  SetViewSpec(view_spec);
+  }
+  SetViewSpec(nullptr);
 }
 
 void SVGSVGElement::FinishParsingChildren() {
