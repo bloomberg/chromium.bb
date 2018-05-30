@@ -13,16 +13,74 @@ proto_library("proto") {
   ]
 }
 
-source_set("safe_browsing") {
+source_set("file_type_policies") {
   sources = [
     "file_type_policies.cc",
     "file_type_policies.h",
   ]
 
-  if (safe_browsing_mode == 1) {
-    sources += [
+  deps = [
+    ":proto",
+    "//base",
+    "//chrome/browser:resources",
+    "//ui/base",
+  ]
+}
+
+if (safe_browsing_mode == 1) {
+  source_set("archive_analyzer_results") {
+    sources = [
       "archive_analyzer_results.cc",
       "archive_analyzer_results.h",
+    ]
+    deps = [
+      "//base",
+    ]
+    public_deps = [
+      "//components/safe_browsing:csd_proto",
+    ]
+  }
+
+  source_set("rar_analyzer") {
+    sources = [
+      "rar_analyzer.cc",
+      "rar_analyzer.h",
+    ]
+
+    deps = [
+      ":archive_analyzer_results",
+      ":file_type_policies",
+      "//base",
+      "//third_party/unrar:unrar",
+    ]
+
+    defines = [
+      "_FILE_OFFSET_BITS=64",
+      "LARGEFILE_SOURCE",
+      "RAR_SMP",
+      "SILENT",
+
+      # The following is set to disable certain macro definitions in the unrar
+      # source code.
+      "CHROMIUM_UNRAR",
+
+      # Disables exceptions in unrar, replaces them with process termination.
+      "UNRAR_NO_EXCEPTIONS",
+    ]
+
+    public_deps = [
+      "//components/safe_browsing:csd_proto",
+    ]
+  }
+}
+
+source_set("safe_browsing") {
+  deps = [
+    ":file_type_policies",
+  ]
+
+  if (safe_browsing_mode == 1) {
+    sources = [
       "binary_feature_extractor.cc",
       "binary_feature_extractor.h",
       "binary_feature_extractor_mac.cc",
@@ -44,17 +102,20 @@ source_set("safe_browsing") {
     if (is_posix) {
       sources += [ "binary_feature_extractor_posix.cc" ]
     }
-  }
 
-  public_deps = [
-    "//base:i18n",
-    "//chrome/browser:resources",
-    "//chrome/common:mojo_bindings",
-    "//chrome/common/safe_browsing:proto",
-    "//components/safe_browsing:csd_proto",
-    "//crypto",
-    "//ipc",
-    "//third_party/zlib/google:zip",
-    "//ui/base",
-  ]
+    deps += [
+      ":archive_analyzer_results",
+      ":rar_analyzer",
+    ]
+
+    public_deps = [
+      ":proto",
+      "//base:i18n",
+      "//chrome/common:mojo_bindings",
+      "//components/safe_browsing:csd_proto",
+      "//crypto",
+      "//ipc",
+      "//third_party/zlib/google:zip",
+    ]
+  }
 }

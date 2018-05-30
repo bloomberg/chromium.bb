@@ -26,7 +26,8 @@ interface SafeArchiveAnalyzer {
 
   // Build flag FULL_SAFE_BROWSING: Analyze the |rar_file| for malicious
   // download protection.
-  AnalyzeRarFile(mojo_base.mojom.FilePath rar_file)
+  AnalyzeRarFile(mojo_base.mojom.File rar_file,
+                 mojo_base.mojom.FilePath rar_file_path)
       => (SafeArchiveAnalyzerResults results);
 };
 
