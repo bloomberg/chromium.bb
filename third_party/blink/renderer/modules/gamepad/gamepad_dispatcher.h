@@ -34,16 +34,6 @@ class GamepadDispatcher final
                               device::mojom::blink::GamepadHapticsManager::
                                   ResetVibrationActuatorCallback);
 
-  struct ConnectionChange {
-    DISALLOW_NEW();
-    device::Gamepad pad;
-    unsigned index;
-  };
-
-  const ConnectionChange& LatestConnectionChange() const {
-    return latest_change_;
-  }
-
   void Trace(blink::Visitor*) override;
 
  private:
@@ -62,8 +52,6 @@ class GamepadDispatcher final
   void DispatchDidConnectOrDisconnectGamepad(unsigned index,
                                              const device::Gamepad&,
                                              bool connected);
-
-  ConnectionChange latest_change_;
 
   device::mojom::blink::GamepadHapticsManagerPtr gamepad_haptics_manager_;
 };
