@@ -4,8 +4,16 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 
+#include "base/atomicops.h"
 #include "base/time/time_override.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
+
+// windows.h #defines MemoryBarrier on x64. So we copy this bit
+// from base/atomicops.h to be independent of the include order in this file.
+#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
+#undef MemoryBarrier
+#endif
 
 namespace blink {
 namespace scheduler {
@@ -23,21 +31,31 @@ AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
       helper_(helper),
       initial_time_ticks_(initial_time_ticks),
       initial_time_(initial_time),
-      previous_time_(initial_time),
-      time_overrides_(
-          policy == BaseTimeOverridePolicy::OVERRIDE
-              ? std::make_unique<base::subtle::ScopedTimeClockOverrides>(
-                    &AutoAdvancingVirtualTimeDomain::GetVirtualTime,
-                    &AutoAdvancingVirtualTimeDomain::GetVirtualTimeTicks,
-                    nullptr)
-              : nullptr) {
-  helper_->AddTaskObserver(this);
+      previous_time_(initial_time) {
   DCHECK_EQ(AutoAdvancingVirtualTimeDomain::g_time_domain_, nullptr);
   AutoAdvancingVirtualTimeDomain::g_time_domain_ = this;
+
+  // GetVirtualTime / GetVirtualTimeTicks access g_time_domain_.
+  base::subtle::MemoryBarrier();
+
+  if (policy == BaseTimeOverridePolicy::OVERRIDE) {
+    time_overrides_ = std::make_unique<base::subtle::ScopedTimeClockOverrides>(
+        &AutoAdvancingVirtualTimeDomain::GetVirtualTime,
+        &AutoAdvancingVirtualTimeDomain::GetVirtualTimeTicks, nullptr);
+  }
+
+  helper_->AddTaskObserver(this);
 }
 
 AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
   helper_->RemoveTaskObserver(this);
+
+  time_overrides_.reset();
+
+  // GetVirtualTime / GetVirtualTimeTicks (the functions we may have
+  // temporariliy installed in the constructor) access g_time_domain_.
+  base::subtle::MemoryBarrier();
+
   DCHECK_EQ(AutoAdvancingVirtualTimeDomain::g_time_domain_, this);
   AutoAdvancingVirtualTimeDomain::g_time_domain_ = nullptr;
 }
