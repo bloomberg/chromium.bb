@@ -229,6 +229,10 @@
 # https://crbug.com/839982
 -ExtensionApiTest.SharedWorker_ControlledByServiceWorker
 
+# Fails due to a Linux sandbox issue with file deletions.
+# https://crbug.com/846800
+-BrowsingDataRemoverBrowserTest.StorageRemovedFromDisk
+
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
