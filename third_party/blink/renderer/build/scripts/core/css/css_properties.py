@@ -164,7 +164,7 @@ class CSSProperties(object):
             updated_alias['alias_for'] = alias['alias_for']
             updated_alias['aliased_property'] = aliased_property['name'].to_upper_camel_case()
             updated_alias['property_id'] = enum_for_css_property_alias(
-                alias['name'].original)
+                alias['name'])
             updated_alias['enum_value'] = aliased_property['enum_value'] + \
                 self._alias_offset
             self._aliases[i] = updated_alias
@@ -175,12 +175,12 @@ class CSSProperties(object):
                 property_[key] = value
 
         # Basic info.
-        name = property_['name'].original
+        name = property_['name']
         property_['property_id'] = enum_for_css_property(name)
-        property_['is_internal'] = name.startswith('-internal-')
+        property_['is_internal'] = name.original.startswith('-internal-')
         method_name = property_['name_for_methods']
         if not method_name:
-            method_name = property_['name'].to_upper_camel_case().replace('Webkit', '')
+            method_name = name.to_upper_camel_case().replace('Webkit', '')
         set_if_none(property_, 'inherited', False)
 
         # Initial function, Getters and Setters for ComputedStyle.
