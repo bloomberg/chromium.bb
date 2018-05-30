@@ -1456,6 +1456,12 @@ const char kShowAndroidFilesInFilesAppName[] =
 const char kShowAndroidFilesInFilesAppDescription[] =
     "Show Android files in Files app if Android is enabled on the device.";
 
+const char kFilesAppNewStyleNavigationName[] =
+    "Use new-style navigation in the Files app";
+const char kFilesAppNewStyleNavigationDescription[] =
+    "Enables the new-style navigation in the Files app, which displays a "
+    R"("My Files" root for Downloads, Linux and Play files)";
+
 const char kShowAutofillSignaturesName[] = "Show autofill signatures.";
 const char kShowAutofillSignaturesDescription[] =
     "Annotates web forms with Autofill signatures as HTML attributes. Also "

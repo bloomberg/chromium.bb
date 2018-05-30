@@ -1350,6 +1350,21 @@ util.isTouchModeEnabled = function() {
 };
 
 /**
+ * Returns if the new-style navigation should be used.
+ * @return {!Promise<boolean>} Resolves with true if flag
+ * "new-files-app-navigation" is enabled.
+ */
+util.isNewNavigationEnabled = function() {
+  return new Promise(resolve => {
+    chrome.commandLinePrivate.hasSwitch(
+        'new-files-app-navigation', isEnabled => {
+          resolve(isEnabled);
+        });
+  });
+};
+
+
+/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of
