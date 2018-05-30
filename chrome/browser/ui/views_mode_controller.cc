@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views_mode_controller.h"
 
+#include "base/feature_list.h"
 #include "chrome/common/chrome_features.h"
 #include "ui/base/ui_base_features.h"
 
@@ -12,7 +13,8 @@
 namespace views_mode_controller {
 
 bool IsViewsBrowserCocoa() {
-  return features::IsViewsBrowserCocoa();
+  return features::IsViewsBrowserCocoa() &&
+         !base::FeatureList::IsEnabled(features::kUiFood);
 }
 
 }  // namespace views_mode_controller
