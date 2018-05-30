@@ -361,7 +361,10 @@ config("cfi_linker") {
   # turned on either.
   # CFG seems to lead to random corruption with incremental linking so turn off
   # CFG in component builds. https://crbug.com/812421
-  if (!is_debug && !is_component_build) {
+  # ASan and CFG leads to slow process startup. Chromium's test runner uses
+  # lots of child processes, so this means things are really slow. Disable CFG
+  # for now. https://crbug.com/846966
+  if (!is_debug && !is_component_build && !is_asan) {
     # Turn on CFG in msvc linker, regardless of compiler used. Turn off CFG for
     # longjmp (new in VS 2017) because it relies on compiler support which we do
     # not have enabled.
