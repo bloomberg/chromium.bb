@@ -433,6 +433,7 @@ java_cpp_template("resource_id_javagen") {
 junit_binary("chrome_junit_tests") {
   # From java_sources.gni.
   java_files = chrome_junit_test_java_sources
+
   deps = [
     ":app_hooks_java",
     ":chrome_java",
@@ -596,6 +597,10 @@ android_library("chrome_test_java") {
     "//ui/base/mojo:mojo_bindings_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
+
+  if (enable_feed_in_chrome) {
+    deps += feed_conformance_test_deps
+  }
 
   deps += android_extra_test_deps
 
