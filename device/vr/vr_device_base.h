@@ -39,7 +39,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
       mojom::VRRequestPresentOptionsPtr present_options,
       mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void ExitPresent() override;
-  bool IsFallbackDevice() override;
   void SetListeningForActivate(bool is_listening) override;
 
   bool IsAccessAllowed(VRDisplayImpl* display);
