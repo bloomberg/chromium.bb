@@ -1,3 +1,1 @@
-# This should match ui/file_manager/file_manager/OWNERS
-hirono@chromium.org
-yoshiki@chromium.org
+file://ui/file_manager/OWNERS
