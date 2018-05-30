@@ -65,7 +65,8 @@ void VideoFrameSubmitter::EnableSubmission(
   // need to construct VideoFrameSubmitter later in order to do this.
   frame_sink_id_ = id;
   frame_sink_destroyed_callback_ = frame_sink_destroyed_callback;
-  StartSubmitting();
+  if (resource_provider_->IsInitialized())
+    StartSubmitting();
 }
 
 void VideoFrameSubmitter::StopUsingProvider() {
