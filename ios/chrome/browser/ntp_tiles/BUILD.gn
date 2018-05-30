@@ -27,6 +27,7 @@ source_set("ntp_tiles") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/suggestions",
     "//ios/web",
+    "//services/network/public/cpp",
   ]
 }
 

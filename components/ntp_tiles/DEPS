@@ -16,6 +16,8 @@ include_rules = [
   "+components/variations",
   "+jni",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+ui/gfx",
   "+ui/base",
 ]

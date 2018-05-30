@@ -33,8 +33,9 @@
 #include "components/ntp_tiles/section_type.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -275,10 +276,10 @@ class PopularSitesFactoryForTest {
  public:
   PopularSitesFactoryForTest(
       sync_preferences::TestingPrefServiceSyncable* pref_service)
-      : prefs_(pref_service),
-        url_fetcher_factory_(/*default_factory=*/nullptr),
-        url_request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())) {
+      : prefs_(pref_service) {
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
     PopularSitesImpl::RegisterProfilePrefs(pref_service->registry());
   }
 
@@ -286,9 +287,9 @@ class PopularSitesFactoryForTest {
     prefs_->SetString(prefs::kPopularSitesOverrideCountry, "IN");
     prefs_->SetString(prefs::kPopularSitesOverrideVersion, "5");
 
-    url_fetcher_factory_.ClearFakeResponses();
-    url_fetcher_factory_.SetFakeResponse(
-        GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_IN_5.json"),
+    test_url_loader_factory_.ClearResponses();
+    test_url_loader_factory_.AddResponse(
+        "https://www.gstatic.com/chrome/ntp/suggested_sites_IN_5.json",
         R"([{
               "title": "PopularSite1",
               "url": "http://popularsite1/",
@@ -299,11 +300,10 @@ class PopularSitesFactoryForTest {
               "url": "http://popularsite2/",
               "favicon_url": "http://popularsite2/favicon.ico"
             },
-           ])",
-        net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+           ])");
 
-    url_fetcher_factory_.SetFakeResponse(
-        GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_US_5.json"),
+    test_url_loader_factory_.AddResponse(
+        "https://www.gstatic.com/chrome/ntp/suggested_sites_US_5.json",
         R"([{
               "title": "ESPN",
               "url": "http://www.espn.com",
@@ -317,11 +317,10 @@ class PopularSitesFactoryForTest {
               "url": "http://news.google.com",
               "favicon_url": "http://news.google.com/favicon.ico"
             },
-           ])",
-        net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+           ])");
 
-    url_fetcher_factory_.SetFakeResponse(
-        GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_IN_6.json"),
+    test_url_loader_factory_.AddResponse(
+        "https://www.gstatic.com/chrome/ntp/suggested_sites_IN_6.json",
         R"([{
               "section": 1, // PERSONALIZED
               "sites": [{
@@ -363,22 +362,21 @@ class PopularSitesFactoryForTest {
                     // Intentionally empty site list.
                 ]
             }
-        ])",
-        net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+        ])");
   }
 
   std::unique_ptr<PopularSites> New() {
     return std::make_unique<PopularSitesImpl>(
         prefs_,
         /*template_url_service=*/nullptr,
-        /*variations_service=*/nullptr, url_request_context_.get(),
+        /*variations_service=*/nullptr, test_shared_loader_factory_,
         base::Bind(JsonUnsafeParser::Parse));
   }
 
  private:
   PrefService* prefs_;
-  net::FakeURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
 // CallbackList-like container without Subscription, mimicking the

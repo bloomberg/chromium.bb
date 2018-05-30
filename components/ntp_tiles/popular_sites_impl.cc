@@ -33,8 +33,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "base/json/json_reader.h"
@@ -46,7 +47,6 @@
 #include "components/ntp_tiles/country_code_ios.h"
 #endif
 
-using net::URLFetcher;
 using variations::VariationsService;
 
 namespace ntp_tiles {
@@ -271,12 +271,12 @@ PopularSitesImpl::PopularSitesImpl(
     PrefService* prefs,
     const TemplateURLService* template_url_service,
     VariationsService* variations_service,
-    net::URLRequestContextGetter* download_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ParseJSONCallback parse_json)
     : prefs_(prefs),
       template_url_service_(template_url_service),
       variations_(variations_service),
-      download_context_(download_context),
+      url_loader_factory_(std::move(url_loader_factory)),
       parse_json_(std::move(parse_json)),
       is_fallback_(false),
       sections_(
@@ -452,30 +452,33 @@ void PopularSitesImpl::FetchPopularSites() {
           policy_exception_justification:
             "Not implemented, considered not useful."
         })");
-  fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this,
-                                traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(), data_use_measurement::DataUseUserData::NTP_TILES);
-  fetcher_->SetRequestContext(download_context_);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetAutomaticallyRetryOnNetworkChanges(1);
-  fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = pending_url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::NTP_TILES
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->SetRetryOptions(
+      1, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&PopularSitesImpl::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
-void PopularSitesImpl::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK_EQ(fetcher_.get(), source);
-  std::unique_ptr<net::URLFetcher> free_fetcher = std::move(fetcher_);
+void PopularSitesImpl::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  simple_url_loader_.reset();
 
-  std::string json_string;
-  if (!(source->GetStatus().is_success() &&
-        source->GetResponseCode() == net::HTTP_OK &&
-        source->GetResponseAsString(&json_string))) {
+  if (!response_body) {
     OnDownloadFailed();
     return;
   }
 
-  parse_json_.Run(json_string,
+  parse_json_.Run(*response_body,
                   base::Bind(&PopularSitesImpl::OnJsonParsed,
                              weak_ptr_factory_.GetWeakPtr()),
                   base::Bind(&PopularSitesImpl::OnJsonParseFailed,

@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -28,9 +29,9 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,7 +99,9 @@ class PopularSitesTest : public ::testing::Test {
             // No "title_source" (like in v5 or earlier). Defaults to TITLE_TAG.
         },
         prefs_(new sync_preferences::TestingPrefServiceSyncable()),
-        url_fetcher_factory_(nullptr) {
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {
     PopularSitesImpl::RegisterProfilePrefs(prefs_->registry());
   }
 
@@ -132,8 +135,7 @@ class PopularSitesTest : public ::testing::Test {
                          const TestPopularSiteVector& sites) {
     std::string sites_string;
     base::JSONWriter::Write(*CreateListFromTestSites(sites), &sites_string);
-    url_fetcher_factory_.SetFakeResponse(GURL(url), sites_string, net::HTTP_OK,
-                                         net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(url, sites_string);
   }
 
   void RespondWithV6JSON(const std::string& url,
@@ -147,18 +149,15 @@ class PopularSitesTest : public ::testing::Test {
     }
     std::string sites_string;
     base::JSONWriter::Write(sections_value, &sites_string);
-    url_fetcher_factory_.SetFakeResponse(GURL(url), sites_string, net::HTTP_OK,
-                                         net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(url, sites_string);
   }
 
   void RespondWithData(const std::string& url, const std::string& data) {
-    url_fetcher_factory_.SetFakeResponse(GURL(url), data, net::HTTP_OK,
-                                         net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(url, data);
   }
 
   void RespondWith404(const std::string& url) {
-    url_fetcher_factory_.SetFakeResponse(GURL(url), "404", net::HTTP_NOT_FOUND,
-                                         net::URLRequestStatus::SUCCESS);
+    test_url_loader_factory_.AddResponse(url, "", net::HTTP_NOT_FOUND);
   }
 
   void ReregisterProfilePrefs() {
@@ -182,11 +181,7 @@ class PopularSitesTest : public ::testing::Test {
   base::Optional<bool> FetchAllSections(
       bool force_download,
       std::map<SectionType, PopularSites::SitesVector>* sections) {
-    scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
-        new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get()));
-    std::unique_ptr<PopularSites> popular_sites =
-        CreatePopularSites(url_request_context.get());
+    std::unique_ptr<PopularSites> popular_sites = CreatePopularSites();
 
     base::RunLoop loop;
     base::Optional<bool> save_success;
@@ -204,12 +199,11 @@ class PopularSitesTest : public ::testing::Test {
     return save_success;
   }
 
-  std::unique_ptr<PopularSites> CreatePopularSites(
-      net::URLRequestContextGetter* context) {
+  std::unique_ptr<PopularSites> CreatePopularSites() {
     return std::make_unique<PopularSitesImpl>(
         prefs_.get(),
         /*template_url_service=*/nullptr,
-        /*variations_service=*/nullptr, context,
+        /*variations_service=*/nullptr, test_shared_loader_factory_,
         base::Bind(JsonUnsafeParser::Parse));
   }
 
@@ -219,15 +213,12 @@ class PopularSitesTest : public ::testing::Test {
 
   base::MessageLoopForUI ui_loop_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs_;
-  net::FakeURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
 
 TEST_F(PopularSitesTest, ContainsDefaultTilesRightAfterConstruction) {
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
-
-  auto popular_sites = CreatePopularSites(url_request_context.get());
+  auto popular_sites = CreatePopularSites();
   EXPECT_THAT(
       popular_sites->sections(),
       ElementsAre(Pair(SectionType::PERSONALIZED,
@@ -239,10 +230,7 @@ TEST_F(PopularSitesTest, IsEmptyOnConstructionIfDisabledByTrial) {
   override_features.InitAndDisableFeature(kPopularSitesBakedInContentFeature);
   ReregisterProfilePrefs();
 
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
-  auto popular_sites = CreatePopularSites(url_request_context.get());
+  auto popular_sites = CreatePopularSites();
 
   EXPECT_THAT(popular_sites->sections(),
               ElementsAre(Pair(SectionType::PERSONALIZED, IsEmpty())));
@@ -311,11 +299,7 @@ TEST_F(PopularSitesTest, PopulatesWithDefaultResoucesOnFailure) {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 TEST_F(PopularSitesTest, AddsIconResourcesToDefaultPages) {
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
-  std::unique_ptr<PopularSites> popular_sites =
-      CreatePopularSites(url_request_context.get());
+  std::unique_ptr<PopularSites> popular_sites = CreatePopularSites();
 
   const PopularSites::SitesVector& sites =
       popular_sites->sections().at(SectionType::PERSONALIZED);
@@ -334,11 +318,7 @@ TEST_F(PopularSitesTest, ProvidesDefaultSitesUntilCallbackReturns) {
   RespondWithV5JSON(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_5.json",
       {kWikipedia});
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
-  std::unique_ptr<PopularSites> popular_sites =
-      CreatePopularSites(url_request_context.get());
+  std::unique_ptr<PopularSites> popular_sites = CreatePopularSites();
 
   base::RunLoop loop;
   base::Optional<bool> save_success = false;
