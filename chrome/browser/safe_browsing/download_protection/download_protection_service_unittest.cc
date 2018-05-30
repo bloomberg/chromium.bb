@@ -2528,7 +2528,8 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
   auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
   EXPECT_EQ("http://example.com/a.exe",
             captured_args.FindKey("url")->GetString());
-  EXPECT_EQ(hash, captured_args.FindKey("downloadDigestSha256")->GetString());
+  EXPECT_EQ(base::HexEncode(hash.data(), hash.size()),
+            captured_args.FindKey("downloadDigestSha256")->GetString());
   EXPECT_EQ(target_path.MaybeAsASCII(),
             captured_args.FindKey("fileName")->GetString());
 

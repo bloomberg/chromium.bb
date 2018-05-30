@@ -498,10 +498,12 @@ void DownloadProtectionService::OnDangerousDownloadOpened(
       signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
                      : std::string();
 
+  std::string raw_digest_sha256 = item->GetHash();
   extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-      ->OnDangerousDownloadOpened(item->GetURL(),
-                                  item->GetTargetFilePath().AsUTF8Unsafe(),
-                                  item->GetHash(), username);
+      ->OnDangerousDownloadOpened(
+          item->GetURL(), item->GetTargetFilePath().AsUTF8Unsafe(),
+          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+          username);
 }
 
 }  // namespace safe_browsing
