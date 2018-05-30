@@ -27,6 +27,7 @@
 namespace breakpad {
 
 namespace {
+
 base::LazyInstance<CrashDumpManager>::Leaky g_instance =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -98,6 +99,23 @@ void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
   }
 }
 
+class DefaultUploader : public CrashDumpManager::Uploader {
+ public:
+  DefaultUploader() = default;
+  ~DefaultUploader() override = default;
+
+  // CrashDumpManager::Uploader:
+  void TryToUploadCrashDump(const base::FilePath& crash_dump_path) override {
+    // Hop over to Java to attempt to attach the logcat to the crash. This may
+    // fail, which is ok -- if it does, the crash will still be uploaded on the
+    // next browser start.
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaLocalRef<jstring> j_dump_path =
+        base::android::ConvertUTF8ToJavaString(env, crash_dump_path.value());
+    Java_CrashDumpManager_tryToUploadMinidump(env, j_dump_path);
+  }
+};
+
 }  // namespace
 
 CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
@@ -119,7 +137,6 @@ CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
                        other.process_type,
                        other.was_oom_protected_status,
                        other.app_state) {
-  file_size = other.file_size;
   status = other.status;
 }
 
@@ -132,7 +149,8 @@ CrashDumpManager* CrashDumpManager::GetInstance() {
 bool CrashDumpManager::IsForegroundOom(const CrashDumpDetails& details) {
   // If the crash is size 0, it is an OOM.
   return details.process_type == content::PROCESS_TYPE_RENDERER &&
-         details.was_oom_protected_status && details.file_size == 0 &&
+         details.was_oom_protected_status &&
+         details.status == CrashDumpStatus::kEmptyDump &&
          details.app_state ==
              base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
 }
@@ -148,7 +166,8 @@ void CrashDumpManager::RemoveObserver(Observer* observer) {
 CrashDumpManager::CrashDumpManager()
     : async_observers_(
           base::MakeRefCounted<
-              base::ObserverListThreadSafe<CrashDumpManager::Observer>>()) {}
+              base::ObserverListThreadSafe<CrashDumpManager::Observer>>()),
+      uploader_(std::make_unique<DefaultUploader>()) {}
 
 CrashDumpManager::~CrashDumpManager() {}
 
@@ -274,14 +293,8 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
   }
   VLOG(1) << "Crash minidump successfully generated: " << dest_path.value();
 
-  // Hop over to Java to attempt to attach the logcat to the crash. This may
-  // fail, which is ok -- if it does, the crash will still be uploaded on the
-  // next browser start.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> j_dest_path =
-      base::android::ConvertUTF8ToJavaString(env, dest_path.value());
-  Java_CrashDumpManager_tryToUploadMinidump(env, j_dest_path);
   details.status = CrashDumpStatus::kValidDump;
+  uploader_->TryToUploadCrashDump(dest_path);
   NotifyObservers(details);
 }
 

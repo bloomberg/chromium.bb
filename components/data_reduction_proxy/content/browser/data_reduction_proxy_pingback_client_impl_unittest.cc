@@ -171,7 +171,9 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     breakpad::CrashDumpManager::CrashDumpDetails details = {
         kCrashProcessId, content::PROCESS_TYPE_RENDERER, oom,
         base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES};
-    details.file_size = oom ? 0 : 1;
+    details.status =
+        oom ? breakpad::CrashDumpManager::CrashDumpStatus::kEmptyDump
+            : breakpad::CrashDumpManager::CrashDumpStatus::kValidDump;
     static_cast<breakpad::CrashDumpManager::Observer*>(pingback_client_.get())
         ->OnCrashDumpProcessed(details);
 #endif
