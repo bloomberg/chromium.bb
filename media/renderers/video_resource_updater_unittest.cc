@@ -102,7 +102,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
-        context_provider_.get(), /*delegated_sync_points_required=*/true);
+        /*delegated_sync_points_required=*/true);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForHardware(

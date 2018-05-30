@@ -428,7 +428,6 @@ cc_static_library("test_support") {
     "test/fake_recording_source.cc",
     "test/fake_recording_source.h",
     "test/fake_rendering_stats_instrumentation.h",
-    "test/fake_resource_provider.h",
     "test/fake_scoped_ui_resource.cc",
     "test/fake_scoped_ui_resource.h",
     "test/fake_scrollbar.cc",

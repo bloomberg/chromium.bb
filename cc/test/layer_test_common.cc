@@ -225,10 +225,7 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
   surface_impl->set_occlusion_in_content_space(
       Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
                 SimpleEnclosedRegion()));
-  surface_impl->AppendQuads(resource_provider()->IsSoftware()
-                                ? DRAW_MODE_SOFTWARE
-                                : DRAW_MODE_HARDWARE,
-                            render_pass_.get(), &data);
+  surface_impl->AppendQuads(DRAW_MODE_HARDWARE, render_pass_.get(), &data);
 }
 
 void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {

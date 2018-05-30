@@ -9,8 +9,9 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/test/fake_resource_provider.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +23,7 @@ class ResourcePoolTest : public testing::Test {
   void SetUp() override {
     context_provider_ = viz::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
-        context_provider_.get());
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ = std::make_unique<ResourcePool>(
         resource_provider_.get(), context_provider_.get(), task_runner_,

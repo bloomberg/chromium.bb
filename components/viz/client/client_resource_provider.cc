@@ -49,10 +49,8 @@ struct ClientResourceProvider::ImportedResource {
 };
 
 ClientResourceProvider::ClientResourceProvider(
-    ContextProvider* compositor_context_provider,
     bool delegated_sync_points_required)
-    : delegated_sync_points_required_(delegated_sync_points_required),
-      compositor_context_provider_(compositor_context_provider) {
+    : delegated_sync_points_required_(delegated_sync_points_required) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -182,70 +180,6 @@ void ClientResourceProvider::RemoveImportedResource(ResourceId id) {
                                    imported.returned_lost);
     imported_resources_.erase(it);
   }
-}
-
-bool ClientResourceProvider::IsTextureFormatSupported(
-    ResourceFormat format) const {
-  gpu::Capabilities caps;
-  if (compositor_context_provider_)
-    caps = compositor_context_provider_->ContextCapabilities();
-
-  switch (format) {
-    case ALPHA_8:
-    case RGBA_4444:
-    case RGBA_8888:
-    case RGB_565:
-    case LUMINANCE_8:
-      return true;
-    case BGRA_8888:
-      return caps.texture_format_bgra8888;
-    case ETC1:
-      return caps.texture_format_etc1;
-    case RED_8:
-      return caps.texture_rg;
-    case R16_EXT:
-      return caps.texture_norm16;
-    case LUMINANCE_F16:
-    case RGBA_F16:
-      return caps.texture_half_float_linear;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool ClientResourceProvider::IsRenderBufferFormatSupported(
-    ResourceFormat format) const {
-  gpu::Capabilities caps;
-  if (compositor_context_provider_)
-    caps = compositor_context_provider_->ContextCapabilities();
-
-  switch (format) {
-    case RGBA_4444:
-    case RGBA_8888:
-    case RGB_565:
-      return true;
-    case BGRA_8888:
-      return caps.render_buffer_format_bgra8888;
-    case RGBA_F16:
-      // TODO(ccameron): This will always return false on pixel tests, which
-      // makes it un-test-able until we upgrade Mesa.
-      // https://crbug.com/687720
-      return caps.texture_half_float_linear &&
-             caps.color_buffer_half_float_rgba;
-    case LUMINANCE_8:
-    case ALPHA_8:
-    case RED_8:
-    case ETC1:
-    case LUMINANCE_F16:
-    case R16_EXT:
-      // We don't currently render into these formats. If we need to render into
-      // these eventually, we should expand this logic.
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(

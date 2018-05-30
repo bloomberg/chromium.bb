@@ -29,7 +29,7 @@ void VideoFrameResourceProvider::Initialize(
     viz::SharedBitmapReporter* shared_bitmap_reporter) {
   context_provider_ = media_context_provider;
   resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
-      media_context_provider, true);
+      /*delegated_sync_points_required=*/true);
 
   int max_texture_size;
   if (context_provider_) {

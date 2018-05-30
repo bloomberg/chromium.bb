@@ -10,7 +10,6 @@
 #include "base/containers/flat_map.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
 #include "components/viz/client/client_resource_provider.h"
@@ -523,15 +522,12 @@ class OverlayTest : public testing::Test {
         new OverlayCandidateValidatorType);
 
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ =
-        cc::FakeResourceProvider::CreateDisplayResourceProvider(
-            provider_.get(), shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        provider_.get(), shared_bitmap_manager_.get());
 
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
-    child_resource_provider_ =
-        cc::FakeResourceProvider::CreateClientResourceProvider(
-            child_provider_.get());
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
 
     overlay_processor_ =
         std::make_unique<OverlayProcessor>(output_surface_.get());
@@ -577,8 +573,8 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
 
   auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
   std::unique_ptr<DisplayResourceProvider> resource_provider =
-      cc::FakeResourceProvider::CreateDisplayResourceProvider(
-          provider.get(), shared_bitmap_manager.get());
+      std::make_unique<DisplayResourceProvider>(provider.get(),
+                                                shared_bitmap_manager.get());
 
   auto overlay_processor =
       std::make_unique<DefaultOverlayProcessor>(&output_surface);
@@ -2585,17 +2581,14 @@ class GLRendererWithOverlaysTest : public testing::Test {
     output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ =
-        cc::FakeResourceProvider::CreateDisplayResourceProvider(provider_.get(),
-                                                                nullptr);
+        std::make_unique<DisplayResourceProvider>(provider_.get(), nullptr);
 
     provider_->support()->SetScheduleOverlayPlaneCallback(base::Bind(
         &MockOverlayScheduler::Schedule, base::Unretained(&scheduler_)));
 
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
-    child_resource_provider_ =
-        cc::FakeResourceProvider::CreateClientResourceProvider(
-            child_provider_.get());
+    child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
   }
 
   void Init(bool use_validator) {

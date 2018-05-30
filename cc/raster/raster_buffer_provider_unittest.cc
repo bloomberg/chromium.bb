@@ -27,7 +27,6 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_raster_source.h"
-#include "cc/test/fake_resource_provider.h"
 #include "cc/tiles/tile_task_manager.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/platform_color.h"
@@ -297,14 +296,12 @@ class RasterBufferProviderTest
     context_provider_->BindToCurrentThread();
     worker_context_provider_ = viz::TestContextProvider::CreateWorker();
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
-    resource_provider_ = FakeResourceProvider::CreateClientResourceProvider(
-        context_provider_.get());
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
   }
 
   void CreateSoftwareResourceProvider() {
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
-    resource_provider_ =
-        FakeResourceProvider::CreateClientResourceProvider(nullptr);
+    resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
   }
 
   void OnTimeout() {
