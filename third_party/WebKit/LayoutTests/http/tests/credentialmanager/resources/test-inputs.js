@@ -70,7 +70,7 @@ var ATTESTATION_OBJECT = new TextEncoder("utf-8").encode("attestationObject");
 var AUTHENTICATOR_DATA = new TextEncoder("utf-8").encode("authenticatorData");
 var SIGNATURE = new TextEncoder("utf-8").encode("signature");
 var CABLE_REGISTRATION  = {
-    version: 1,
+    versions: [1],
     rpPublicKey: new TextEncoder("utf-8").encode("SixteenByteRpKey"),
 };
 

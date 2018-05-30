@@ -135,8 +135,8 @@ struct CableAuthentication {
 
 // Cloud-assisted BLE extension data for makeCredential.
 struct CableRegistration {
-  // The requested caBLE version.
-  int32 version;
+  // The caBLE versions supported by the relying party.
+  array<int32> versions;
 
   // The 65-byte ECDSA ephemeral public key belonging to the relying party
   // for use in establishing an encrypted caBLE channel with an authenticator.
