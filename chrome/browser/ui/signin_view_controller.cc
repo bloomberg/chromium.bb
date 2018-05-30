@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/signin_view_controller.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -21,6 +23,7 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -36,6 +39,7 @@ signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
       return signin_metrics::Reason::REASON_UNKNOWN_REASON;
   }
 }
+#endif
 
 }  // namespace
 
@@ -58,6 +62,10 @@ void SigninViewController::ShowSignin(
     Browser* browser,
     signin_metrics::AccessPoint access_point) {
   DCHECK(ShouldShowSigninForMode(mode));
+
+#if defined(OS_CHROMEOS)
+  ShowModalSigninDialog(mode, browser, access_point);
+#else   // defined(OS_CHROMEOS)
   if (signin::IsDicePrepareMigrationEnabled()) {
     std::string email;
     if (GetSigninReasonFromMode(mode) ==
@@ -72,6 +80,7 @@ void SigninViewController::ShowSignin(
   } else {
     ShowModalSigninDialog(mode, browser, access_point);
   }
+#endif  // defined(OS_CHROMEOS)
 }
 
 void SigninViewController::ShowModalSigninDialog(
@@ -145,6 +154,7 @@ void SigninViewController::ResetModalSigninDelegate() {
   delegate_ = nullptr;
 }
 
+#if !defined(OS_CHROMEOS)
 void SigninViewController::ShowDiceSigninTab(
     profiles::BubbleViewMode mode,
     Browser* browser,
@@ -171,6 +181,7 @@ void SigninViewController::ShowDiceSigninTab(
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
   tab_helper->InitializeSigninFlow(access_point, signin_reason, promo_action);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {

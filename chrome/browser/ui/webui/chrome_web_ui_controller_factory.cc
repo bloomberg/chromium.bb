@@ -150,6 +150,7 @@
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/components/proximity_auth/webui/proximity_auth_ui.h"
 #include "chromeos/components/proximity_auth/webui/url_constants.h"
 #endif
@@ -197,7 +198,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -437,6 +437,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SyncFileSystemInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<SystemInfoUI>;
+  // Inline login UI is available on all platforms except Android.
+  if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
+    return &NewWebUI<InlineLoginUI>;
 #endif  // !defined(OS_ANDROID)
 #if defined(OS_WIN)
   if (url.host_piece() == chrome::kChromeUIConflictsHost)
@@ -512,8 +515,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InspectUI>;
 #endif
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
-    return &NewWebUI<InlineLoginUI>;
   if (url.host_piece() == chrome::kChromeUIMdUserManagerHost)
     return &NewWebUI<MDUserManagerUI>;
   if (url.host_piece() == chrome::kChromeUISigninErrorHost &&
