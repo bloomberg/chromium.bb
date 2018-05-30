@@ -1094,6 +1094,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       resource_context, std::move(mojo_request), std::move(url_loader_client));
 
   if (handler) {
+    RecordFetchRequestMode(request_data.url, request_data.method,
+                           request_data.fetch_request_mode);
     const bool is_initiated_by_fetch_api =
         request_data.fetch_request_context_type == REQUEST_CONTEXT_TYPE_FETCH;
     BeginRequestInternal(std::move(new_request), std::move(handler),
@@ -1745,6 +1747,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       -1,  // route_id
       std::move(handler));
 
+  RecordFetchRequestMode(new_request->url(), new_request->method(),
+                         network::mojom::FetchRequestMode::kNavigate);
   BeginRequestInternal(std::move(new_request), std::move(handler),
                        false /* is_initiated_by_fetch_api */);
 }
@@ -2321,6 +2325,28 @@ void ResourceDispatcherHostImpl::RunAuthRequiredCallback(
 
   // Clears the LoginDelegate associated with the request.
   loader->ClearLoginDelegate();
+}
+
+// static
+void ResourceDispatcherHostImpl::RecordFetchRequestMode(
+    const GURL& url,
+    base::StringPiece method,
+    network::mojom::FetchRequestMode mode) {
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+
+  std::string lower_method = base::ToLowerASCII(method);
+  if (method == "get") {
+    UMA_HISTOGRAM_ENUMERATION("Net.ResourceDispatcherHost.RequestMode.Get",
+                              mode);
+  } else if (method == "post") {
+    UMA_HISTOGRAM_ENUMERATION("Net.ResourceDispatcherHost.RequestMode.Post",
+                              mode);
+    if (url.has_port()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.ResourceDispatcherHost.RequestMode.Post.WithPort", mode);
+    }
+  }
 }
 
 // static
