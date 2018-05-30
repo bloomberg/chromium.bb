@@ -12,9 +12,10 @@ namespace vr {
 struct Sounds {
   SoundId hover_enter = kSoundNone;
   SoundId hover_leave = kSoundNone;
+  SoundId hover_move = kSoundNone;
   SoundId button_down = kSoundNone;
   SoundId button_up = kSoundNone;
-  SoundId hover_move = kSoundNone;
+  SoundId touch_move = kSoundNone;
 };
 
 }  // namespace vr

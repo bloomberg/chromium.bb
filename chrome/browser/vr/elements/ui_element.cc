@@ -209,6 +209,17 @@ void UiElement::OnButtonUp(const gfx::PointF& position) {
   }
 }
 
+void UiElement::OnTouchMove(const gfx::PointF& position) {
+  if (GetSounds().touch_move != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().touch_move);
+  }
+  if (event_handlers_.touch_move) {
+    event_handlers_.touch_move.Run(position);
+  } else if (parent() && bubble_events()) {
+    parent()->OnTouchMove(position);
+  }
+}
+
 void UiElement::OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
                               const gfx::PointF& position) {}
 void UiElement::OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,

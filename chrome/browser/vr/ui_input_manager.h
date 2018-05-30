@@ -85,7 +85,9 @@ class VR_EXPORT UiInputManager {
   void SendScrollUpdate(GestureList* gesture_list,
                         const gfx::PointF& target_point);
 
-  void SendHoverEvents(UiElement* target, const gfx::PointF& target_point);
+  void SendHoverEvents(UiElement* target,
+                       const gfx::PointF& target_point,
+                       bool send_move);
   void SendMove(UiElement* element, const gfx::PointF& target_point);
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
