@@ -6,6 +6,10 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("secure_channel") {
   sources = [
+    "active_connection_manager.cc",
+    "active_connection_manager.h",
+    "active_connection_manager_impl.cc",
+    "active_connection_manager_impl.h",
     "authenticated_channel.cc",
     "authenticated_channel.h",
     "authenticated_channel_impl.cc",
@@ -56,6 +60,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_active_connection_manager.cc",
+    "fake_active_connection_manager.h",
     "fake_authenticated_channel.cc",
     "fake_authenticated_channel.h",
     "fake_connect_to_device_operation.cc",
@@ -94,6 +100,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "active_connection_manager_impl_unittest.cc",
     "authenticated_channel_impl_unittest.cc",
     "connect_to_device_operation_base_unittest.cc",
     "connect_to_device_operation_factory_base_unittest.cc",
