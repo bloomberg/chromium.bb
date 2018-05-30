@@ -169,7 +169,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
   // out the underlying heap reference.
   RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
 
-  PersistentNodeSlots* slots = persistent_region_->slots_;
+  PersistentNodeSlots* slots = persistent_region_.slots_;
   while (slots) {
     for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
       if (slots->slot_[i].IsUnused())
@@ -199,7 +199,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
 void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
   RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
   int persistent_count = 0;
-  for (PersistentNodeSlots* slots = persistent_region_->slots_; slots;
+  for (PersistentNodeSlots* slots = persistent_region_.slots_; slots;
        slots = slots->next_) {
     for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
       const PersistentNode& node = slots->slot_[i];
@@ -211,7 +211,7 @@ void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
     }
   }
 #if DCHECK_IS_ON()
-  DCHECK_EQ(persistent_count, persistent_region_->persistent_count_);
+  DCHECK_EQ(persistent_count, persistent_region_.persistent_count_);
 #endif
 }
 #endif
