@@ -704,6 +704,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 <td></td>
 </tr>
 
+<tr>
+<td>Reverse Iterator Adaptor</td>
+<td><code>std::make_reverse_iterator()</code></td>
+<td>For a given iterator, deduces the type of a corresponding reverse iterator and constructs it.</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/make_reverse_iterator">std::make_reverse_iterator</a></td>
+<td>Useful to reduce boilerplate when constructing reverse iterators. The alternative is using <code>std::reverse_iterator<T>(i)</code> where <code>T</code> is the, usually long, type of the iterator <code>i</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/qOE1XA0b6Dk">Discussion thread</a></td>
+</tr>
+
 </tbody>
 </table>
 

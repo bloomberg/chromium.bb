@@ -326,9 +326,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
   const FormFieldData* focusable_username = nullptr;
   const FormFieldData* username = nullptr;
   // Do reverse search to find the closest candidates preceding the password.
-  for (auto it = std::reverse_iterator<
-           std::vector<const FormFieldData*>::const_iterator>(
-           first_relevant_password_it);
+  for (auto it = std::make_reverse_iterator(first_relevant_password_it);
        it != fields.rend(); ++it) {
     if ((*it)->form_control_type == "password")
       continue;
