@@ -28,6 +28,7 @@ using protocol::Response;
 
 namespace EmulationAgentState {
 static const char kScriptExecutionDisabled[] = "scriptExecutionDisabled";
+static const char kScrollbarsHidden[] = "scrollbarsHidden";
 static const char kTouchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char kMaxTouchPoints[] = "maxTouchPoints";
 static const char kEmulatedMedia[] = "emulatedMedia";
@@ -71,8 +72,12 @@ void InspectorEmulationAgent::Restore() {
     return;
 
   // Following code only runs for pages.
-  setScriptExecutionDisabled(state_->booleanProperty(
-      EmulationAgentState::kScriptExecutionDisabled, false));
+  if (state_->booleanProperty(EmulationAgentState::kScriptExecutionDisabled,
+                              false)) {
+    GetWebViewImpl()->GetDevToolsEmulator()->SetScriptExecutionDisabled(true);
+  }
+  if (state_->booleanProperty(EmulationAgentState::kScrollbarsHidden, false))
+    GetWebViewImpl()->GetDevToolsEmulator()->SetScrollbarsHidden(true);
   setTouchEmulationEnabled(
       state_->booleanProperty(EmulationAgentState::kTouchEventEmulationEnabled,
                               false),
@@ -151,6 +156,7 @@ Response InspectorEmulationAgent::disable() {
   if (enabled_)
     instrumenting_agents_->removeInspectorEmulationAgent(this);
   setScriptExecutionDisabled(false);
+  setScrollbarsHidden(false);
   setTouchEmulationEnabled(false, Maybe<int>());
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
@@ -185,8 +191,25 @@ Response InspectorEmulationAgent::setScriptExecutionDisabled(bool value) {
   Response response = AssertPage();
   if (!response.isSuccess())
     return response;
+  if (state_->booleanProperty(EmulationAgentState::kScriptExecutionDisabled,
+                              false) == value) {
+    return response;
+  }
   state_->setBoolean(EmulationAgentState::kScriptExecutionDisabled, value);
   GetWebViewImpl()->GetDevToolsEmulator()->SetScriptExecutionDisabled(value);
+  return response;
+}
+
+Response InspectorEmulationAgent::setScrollbarsHidden(bool hidden) {
+  Response response = AssertPage();
+  if (!response.isSuccess())
+    return response;
+  if (state_->booleanProperty(EmulationAgentState::kScrollbarsHidden, false) ==
+      hidden) {
+    return response;
+  }
+  state_->setBoolean(EmulationAgentState::kScrollbarsHidden, hidden);
+  GetWebViewImpl()->GetDevToolsEmulator()->SetScrollbarsHidden(hidden);
   return response;
 }
 

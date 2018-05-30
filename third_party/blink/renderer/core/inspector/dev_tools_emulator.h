@@ -35,6 +35,7 @@ class CORE_EXPORT DevToolsEmulator final
   void SetViewportStyle(WebViewportStyle);
   void SetPluginsEnabled(bool);
   void SetScriptEnabled(bool);
+  void SetHideScrollbars(bool);
   void SetDoubleTapToZoomEnabled(bool);
   bool DoubleTapToZoomEnabled() const;
   void SetAvailablePointerTypes(int);
@@ -52,6 +53,7 @@ class CORE_EXPORT DevToolsEmulator final
   bool ResizeIsDeviceSizeChange();
   void SetTouchEventEmulationEnabled(bool, int max_touch_points);
   void SetScriptExecutionDisabled(bool);
+  void SetScrollbarsHidden(bool);
 
   // Notify the DevToolsEmulator about a scroll or scale change of the main
   // frame. Updates the transform for a viewport override.
@@ -112,6 +114,9 @@ class CORE_EXPORT DevToolsEmulator final
 
   bool embedder_script_enabled_;
   bool script_execution_disabled_;
+
+  bool embedder_hide_scrollbars_;
+  bool scrollbars_hidden_;
 };
 
 }  // namespace blink
