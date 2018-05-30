@@ -346,23 +346,23 @@ def get_waterfall_config():
       {
        'gpu': '10de:1cb3',
        'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
-           'build92-m1', 'build93-m1',
-           'build94-m1', 'build95-m1', 'build96-m1'
+           'build202-m7', 'build203-m7',
+           'build204-m7', 'build205-m7', 'build206-m7'
           ],
        'perf_tests': [
-         ('angle_perftests', 'build94-m1'),
-         ('load_library_perf_tests', 'build94-m1'),
+         ('angle_perftests', 'build204-m7'),
+         ('load_library_perf_tests', 'build204-m7'),
          # crbug.com/735679
-         # ('performance_browser_tests', 'build94-m1'),
-         ('media_perftests', 'build95-m1')
+         # ('performance_browser_tests', 'build204-m7'),
+         ('media_perftests', 'build205-m7')
         ],
         'perf_tests_with_args': [
-         ('passthrough_command_buffer_perftests', 'build94-m1',
+         ('passthrough_command_buffer_perftests', 'build204-m7',
           ['--use-cmd-decoder=passthrough', '--use-angle=gl-null'],
           'command_buffer_perftests'),
-         ('validating_command_buffer_perftests', 'build94-m1',
+         ('validating_command_buffer_perftests', 'build204-m7',
           ['--use-cmd-decoder=validating', '--use-stub'],
           'command_buffer_perftests')]
       }
