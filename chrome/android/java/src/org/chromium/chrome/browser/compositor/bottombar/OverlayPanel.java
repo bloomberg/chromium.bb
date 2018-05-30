@@ -482,6 +482,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         } else {
             setBasePageTextControlsVisibility(false);
         }
+        if (mContent != null) {
+            mContent.setPanelTopOffset((int) ((mViewportHeight - getHeight()) / mPxToDp));
+        }
     }
 
     @Override
