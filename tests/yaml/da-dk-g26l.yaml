@@ -392,8 +392,6 @@ tests:
   - ["~X |Z", "⠘⠠⠨⠠⠭ ⠘⠸⠨⠠⠵"]
   - ["5É", "⠼⠑⠨⠐⠑"]
 
-
-table: [tables/unicode.dis, tables/da-dk-g26l.ctb]
 flags: {testmode: backward}
 tests:
 # Test characters
