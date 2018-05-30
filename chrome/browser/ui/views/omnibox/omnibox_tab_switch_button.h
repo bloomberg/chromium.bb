@@ -10,16 +10,23 @@
 class OmniboxPopupContentsView;
 class OmniboxResultView;
 
+namespace gfx {
+class SlideAnimation;
+}
+
 class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
   OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
                          OmniboxResultView* result_view,
                          int text_height);
 
+  ~OmniboxTabSwitchButton() override;
+
   // views::View
   gfx::Size CalculatePreferredSize() const override;
 
   // views::Button
+  void AnimationProgressed(const gfx::Animation* animation) override;
   void StateChanged(ButtonState old_state) override;
 
   // Called by parent views to change background on external (not mouse related)
@@ -39,6 +46,10 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // pressed.
   void SetPressed();
 
+  // Helper function to translate parent width into goal width, and
+  // pass back the text at that width.
+  size_t CalculateGoalWidth(size_t parent_width, base::string16* goal_text);
+
   static constexpr int kVerticalPadding = 3;
   const int text_height_;
   OmniboxPopupContentsView* model_;
@@ -50,8 +61,13 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   static size_t short_text_width_;
   static size_t full_text_width_;
 
-  // To remember case of not being visible at all.
-  bool visible_;
+  // To distinguish start-up case, where we don't want animation.
+  bool initialized_;
+  // Animation starting width, and final value.
+  size_t start_width_, goal_width_;
+  // The text to be displayed when we reach |goal_width_|.
+  base::string16 goal_text_;
+  std::unique_ptr<gfx::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };

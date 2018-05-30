@@ -226,6 +226,39 @@ void OmniboxResultView::ButtonPressed(views::Button* button,
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, views::View overrides:
 
+void OmniboxResultView::Layout() {
+  views::View::Layout();
+  // NOTE: While animating the keyword match, both matches may be visible.
+  int suggestion_width = width();
+  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
+  if (keyword_match) {
+    const int icon_width = keyword_view_->icon()->width() +
+                           GetIconAlignmentOffset() + (HorizontalPadding() * 2);
+    const int max_kw_x = width() - icon_width;
+    suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
+  }
+  if (suggestion_tab_switch_button_) {
+    suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
+    const gfx::Size ts_button_size =
+        suggestion_tab_switch_button_->GetPreferredSize();
+    if (ts_button_size.width() > 0) {
+      suggestion_tab_switch_button_->SetSize(ts_button_size);
+
+      // It looks nice to have the same margin on top, bottom and right side.
+      const int margin =
+          (suggestion_view_->height() - ts_button_size.height()) / 2;
+      suggestion_width -= ts_button_size.width() + margin;
+      suggestion_tab_switch_button_->SetPosition(
+          gfx::Point(suggestion_width, margin));
+      suggestion_tab_switch_button_->SetVisible(true);
+    } else {
+      suggestion_tab_switch_button_->SetVisible(false);
+    }
+  }
+  keyword_view_->SetBounds(suggestion_width, 0, width(), height());
+  suggestion_view_->SetBounds(0, 0, suggestion_width, height());
+}
+
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton())
     model_->SetSelectedLine(model_index_);
@@ -335,39 +368,6 @@ void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, views::View overrides, private:
-
-void OmniboxResultView::Layout() {
-  views::View::Layout();
-  // NOTE: While animating the keyword match, both matches may be visible.
-  int suggestion_width = width();
-  AutocompleteMatch* keyword_match = match_.associated_keyword.get();
-  if (keyword_match) {
-    const int icon_width = keyword_view_->icon()->width() +
-                           GetIconAlignmentOffset() + (HorizontalPadding() * 2);
-    const int max_kw_x = width() - icon_width;
-    suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
-  }
-  if (suggestion_tab_switch_button_) {
-    suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
-    const gfx::Size ts_button_size =
-        suggestion_tab_switch_button_->GetPreferredSize();
-    if (ts_button_size.width() > 0) {
-      suggestion_tab_switch_button_->SetSize(ts_button_size);
-
-      // It looks nice to have the same margin on top, bottom and right side.
-      const int margin =
-          (suggestion_view_->height() - ts_button_size.height()) / 2;
-      suggestion_width -= ts_button_size.width() + margin;
-      suggestion_tab_switch_button_->SetPosition(
-          gfx::Point(suggestion_width, margin));
-      suggestion_tab_switch_button_->SetVisible(true);
-    } else {
-      suggestion_tab_switch_button_->SetVisible(false);
-    }
-  }
-  keyword_view_->SetBounds(suggestion_width, 0, width(), height());
-  suggestion_view_->SetBounds(0, 0, suggestion_width, height());
-}
 
 const char* OmniboxResultView::GetClassName() const {
   return "OmniboxResultView";
