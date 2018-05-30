@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -33,6 +35,17 @@ namespace {
 constexpr base::TimeDelta kUnspecifiedWorkerThreadLoadTrackerReportingInterval =
     base::TimeDelta::FromSeconds(1);
 
+// Worker throttling trial
+const char kWorkerThrottlingTrial[] = "BlinkSchedulerDedicatedWorkerThrottling";
+const char kWorkerThrottlingMaxBudgetParam[] = "max_budget_ms";
+const char kWorkerThrottlingRecoveryRateParam[] = "recovery_rate";
+const char kWorkerThrottlingMaxDelayParam[] = "max_delay_ms";
+
+constexpr base::TimeDelta kDefaultMaxBudget = base::TimeDelta::FromSeconds(1);
+constexpr double kDefaultRecoveryRate = 0.01;
+constexpr base::TimeDelta kDefaultMaxThrottlingDelay =
+    base::TimeDelta::FromSeconds(60);
+
 void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
@@ -47,6 +60,43 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
     double monotonic_time_in_seconds) {
   return base::TimeTicks() +
          base::TimeDelta::FromSecondsD(monotonic_time_in_seconds);
+}
+
+base::Optional<base::TimeDelta> GetMaxBudgetLevel() {
+  int max_budget_level_ms;
+  if (!base::StringToInt(
+          base::GetFieldTrialParamValue(kWorkerThrottlingTrial,
+                                        kWorkerThrottlingMaxBudgetParam),
+          &max_budget_level_ms)) {
+    return kDefaultMaxBudget;
+  }
+  if (max_budget_level_ms < 0)
+    return base::nullopt;
+  return base::TimeDelta::FromMilliseconds(max_budget_level_ms);
+}
+
+double GetBudgetRecoveryRate() {
+  double recovery_rate;
+  if (!base::StringToDouble(
+          base::GetFieldTrialParamValue(kWorkerThrottlingTrial,
+                                        kWorkerThrottlingRecoveryRateParam),
+          &recovery_rate)) {
+    return kDefaultRecoveryRate;
+  }
+  return recovery_rate;
+}
+
+base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
+  int max_throttling_delay_ms;
+  if (!base::StringToInt(
+          base::GetFieldTrialParamValue(kWorkerThrottlingTrial,
+                                        kWorkerThrottlingMaxDelayParam),
+          &max_throttling_delay_ms)) {
+    return kDefaultMaxThrottlingDelay;
+  }
+  if (max_throttling_delay_ms < 0)
+    return base::nullopt;
+  return base::TimeDelta::FromMilliseconds(max_throttling_delay_ms);
 }
 
 }  // namespace
@@ -188,6 +238,10 @@ void WorkerThreadScheduler::OnTaskCompleted(
     base::Optional<base::TimeDelta> thread_time) {
   worker_metrics_helper_.RecordTaskMetrics(worker_task_queue, task, start, end,
                                            thread_time);
+
+  if (task_queue_throttler_) {
+    task_queue_throttler_->OnTaskRunTimeReported(worker_task_queue, start, end);
+  }
 }
 
 SchedulerHelper* WorkerThreadScheduler::GetSchedulerHelperForTesting() {
@@ -241,6 +295,19 @@ void WorkerThreadScheduler::CreateTaskQueueThrottler() {
       this, &traceable_variable_controller_);
   wake_up_budget_pool_ =
       task_queue_throttler_->CreateWakeUpBudgetPool("worker_wake_up_pool");
+  cpu_time_budget_pool_ =
+      task_queue_throttler_->CreateCPUTimeBudgetPool("worker_cpu_time_pool");
+
+  base::TimeTicks now = GetTickClock()->NowTicks();
+  cpu_time_budget_pool_->SetMaxBudgetLevel(now, GetMaxBudgetLevel());
+  cpu_time_budget_pool_->SetTimeBudgetRecoveryRate(now,
+                                                   GetBudgetRecoveryRate());
+  cpu_time_budget_pool_->SetMaxThrottlingDelay(now, GetMaxThrottlingDelay());
+}
+
+void WorkerThreadScheduler::SetCPUTimeBudgetPoolForTesting(
+    CPUTimeBudgetPool* cpu_time_budget_pool) {
+  cpu_time_budget_pool_ = cpu_time_budget_pool;
 }
 
 }  // namespace scheduler

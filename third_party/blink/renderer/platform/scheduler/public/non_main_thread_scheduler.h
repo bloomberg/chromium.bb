@@ -25,6 +25,7 @@ class WorkerSchedulerProxy;
 class WorkerScheduler;
 class TaskQueueThrottler;
 class WakeUpBudgetPool;
+class CPUTimeBudgetPool;
 
 // TODO(yutak): Rename this class to NonMainThreadSchedulerImpl and consider
 // changing all non-impl scheduler classes to have only static methods.
@@ -99,6 +100,9 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
     return task_queue_throttler_.get();
   }
   WakeUpBudgetPool* wake_up_budget_pool() const { return wake_up_budget_pool_; }
+  CPUTimeBudgetPool* cpu_time_budget_pool() const {
+    return cpu_time_budget_pool_;
+  }
 
  protected:
   explicit NonMainThreadScheduler(
@@ -126,6 +130,7 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   // Owned by |task_queue_throttler_|.
   WakeUpBudgetPool* wake_up_budget_pool_ = nullptr;
+  CPUTimeBudgetPool* cpu_time_budget_pool_ = nullptr;
 
  private:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
