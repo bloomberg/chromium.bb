@@ -1468,6 +1468,10 @@ RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)->GetMouseLockWidget();
 }
 
+RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents) {
+  return static_cast<WebContentsImpl*>(web_contents)->GetKeyboardLockWidget();
+}
+
 bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
   InterstitialPageImpl* impl =
       static_cast<InterstitialPageImpl*>(interstitial_page);
