@@ -1138,6 +1138,10 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 		utf32 = ch & (0XFF - first0Bit[numBytes]);
 		for (k = 0; k < numBytes; k++) {
 			if (in >= MAXSTRING) break;
+			if (out >= MAXSTRING) {
+				result->length = lastOutSize;
+				return 1;
+			}
 			if (token->chars[in] < 128 || (token->chars[in] & 0x0040)) {
 				compileWarning(nested, "invalid UTF-8. Assuming Latin-1.");
 				result->chars[out++] = token->chars[lastIn];

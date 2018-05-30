@@ -11,8 +11,9 @@ issues]].
 - Add =maxOutputLength= option in YAML tests.
 
 ** Bug fixes
-- Fix a buffer overflow in table parsing thanks to Samuel Thibault.
-  Fixes CVE-2018-11410.
+- Fix a bunch of buffer overflow errors in table parsing thanks to
+  Samuel Thibault and Christian Egli (CVE-2018-11410 and
+  CVE-2018-11440).
 - Fix input-output mapping of context rules thanks to Bert Frees.
 - Fix back tracking with all caps words thanks to Bert Frees.
 - Fix context rules with lookback thanks to Bert Frees.
