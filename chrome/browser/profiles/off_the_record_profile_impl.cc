@@ -60,6 +60,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/http/transport_security_state.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -200,6 +201,12 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
       io_data_->GetResourceContextNoInit());
 #endif
 
+  // Clears any data the network stack contains that may be related to the
+  // OTR session. Must be done before DestroyBrowserContextServices, since
+  // the NetworkContext is managed by one such service.
+  GetDefaultStoragePartition(this)->GetNetworkContext()->ClearHostCache(
+      nullptr, network::mojom::NetworkContext::ClearHostCacheCallback());
+
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
 
@@ -208,10 +215,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
 #endif
-
-  // Clears any data the network stack contains that may be related to the
-  // OTR session.
-  g_browser_process->io_thread()->ChangedToOnTheRecord();
 
   // This must be called before ProfileIOData::ShutdownOnUIThread but after
   // other profile-related destroy notifications are dispatched.

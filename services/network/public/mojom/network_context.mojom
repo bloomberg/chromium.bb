@@ -312,6 +312,14 @@ interface NetworkContext {
                   mojo_base.mojom.Time end_time,
                   ClearDataFilter? filter) => ();
 
+  // Clears the host cache. This will affect all NetworkContexts that share the
+  // same HostResolved as the NetworkContext this is called on.
+  //
+  // If a non-null |filter| is specified, will clear only entries for domains
+  // matching the filter. Filtering by origins is not supported. If |filter| is
+  // non-null, |filter.origins| must be empty.
+  ClearHostCache(ClearDataFilter? filter) => ();
+
   // Clears all entries from the HTTP Auth cache that were added since
   // |start_time|. Supports unbounded delete using null Time value.
   ClearHttpAuthCache(mojo_base.mojom.Time start_time) => ();

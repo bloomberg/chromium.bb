@@ -33,6 +33,7 @@
 
 namespace net {
 class CertVerifier;
+class HostResolver;
 class HttpAuthPreferences;
 class NetworkQualityEstimator;
 class ReportSender;
@@ -135,6 +136,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        base::Time end_time,
                        mojom::ClearDataFilterPtr filter,
                        ClearChannelIdsCallback callback) override;
+  void ClearHostCache(mojom::ClearDataFilterPtr filter,
+                      ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
                           ClearHttpAuthCacheCallback callback) override;
   void ClearReportingCacheReports(
@@ -202,6 +205,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::NetworkContextParams* network_context_params,
       bool quic_disabled,
       net::NetLog* net_log,
+      net::HostResolver* host_resolver,
       net::NetworkQualityEstimator* network_quality_estimator,
       certificate_transparency::STHReporter* sth_reporter,
       std::unique_ptr<certificate_transparency::TreeStateTracker>*

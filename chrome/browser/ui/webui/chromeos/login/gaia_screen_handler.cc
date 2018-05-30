@@ -37,7 +37,6 @@
 #include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,6 +67,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -194,16 +195,6 @@ void UpdateAuthParams(base::DictionaryValue* params,
 
 void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.Scraping.VerificationResult", success);
-}
-
-// The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
-// thread.
-void ClearDnsCache(IOThread* io_thread) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (browser_shutdown::IsTryingToQuit())
-    return;
-
-  io_thread->ClearHostCache(base::Callback<bool(const std::string&)>());
 }
 
 void PushFrontIMIfNotExists(const std::string& input_method,
@@ -882,15 +873,23 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
 }
 
 void GaiaScreenHandler::StartClearingDnsCache() {
-  if (dns_clear_task_running_ || !g_browser_process->io_thread())
+  if (dns_clear_task_running_ ||
+      !g_browser_process->system_network_context_manager()) {
     return;
+  }
 
   dns_cleared_ = false;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ClearDnsCache, g_browser_process->io_thread()),
-      base::BindOnce(&GaiaScreenHandler::OnDnsCleared,
-                     weak_factory_.GetWeakPtr()));
+
+  g_browser_process->system_network_context_manager()
+      ->GetContext()
+      ->ClearHostCache(nullptr /* filter */,
+                       // Need to ensure that even if the network service
+                       // crashes, OnDnsCleared() is invoked.
+                       mojo::WrapCallbackWithDropHandler(
+                           base::BindOnce(&GaiaScreenHandler::OnDnsCleared,
+                                          weak_factory_.GetWeakPtr()),
+                           base::BindOnce(&GaiaScreenHandler::OnDnsCleared,
+                                          weak_factory_.GetWeakPtr())));
   dns_clear_task_running_ = true;
 }
 

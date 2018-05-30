@@ -126,6 +126,10 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<net::NetworkQualityEstimator>
         deprecated_network_quality_estimator;
 
+    // HostResolver only for use in dummy in-process
+    // URLRequestContext when network service is enabled.
+    std::unique_ptr<net::HostResolver> deprecated_host_resolver;
+
     std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
         network_quality_observer;
 
@@ -162,18 +166,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   net_log::ChromeNetLog* net_log();
 
-  // Handles changing to On The Record mode, discarding confidential data.
-  void ChangedToOnTheRecord();
-
   // Returns a getter for the URLRequestContext.  Only called on the UI thread.
   net::URLRequestContextGetter* system_url_request_context_getter();
-
-  // Clears the host cache. Intended to be used to prevent exposing recently
-  // visited sites on about:net-internals/#dns and about:dns pages.  Must be
-  // called on the IO thread. If |host_filter| is not null, only hosts matched
-  // by it are deleted from the cache.
-  void ClearHostCache(
-      const base::Callback<bool(const std::string&)>& host_filter);
 
   // Dynamically disables QUIC for all NetworkContexts using the IOThread's
   // NetworkService. Re-enabling Quic dynamically is not supported for
@@ -196,8 +190,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
   std::unique_ptr<net::HttpAuthHandlerFactory> CreateDefaultAuthHandlerFactory(
       net::HostResolver* host_resolver);
-
-  void ChangedToOnTheRecordOnIOThread();
 
   void UpdateDnsClientEnabled();
   void UpdateServerWhitelist();

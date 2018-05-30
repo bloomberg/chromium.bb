@@ -191,6 +191,12 @@ NetworkService::CreateNetworkContextWithBuilder(
   return network_context;
 }
 
+void NetworkService::SetHostResolver(
+    std::unique_ptr<net::HostResolver> host_resolver) {
+  DCHECK(network_contexts_.empty());
+  host_resolver_ = std::move(host_resolver);
+}
+
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
   return base::WrapUnique(
       new NetworkService(std::make_unique<service_manager::BinderRegistry>()));

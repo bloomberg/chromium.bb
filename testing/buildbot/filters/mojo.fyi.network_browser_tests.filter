@@ -10,7 +10,6 @@
 -DomainReliabilityBrowserTest.Upload
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
--NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.SuccessfulLoad
 -PolicyTest.DefaultCookiesSetting
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
@@ -21,6 +20,12 @@
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebstoreInstallerBrowserTest.SimultaneousInstall
 -WebViewTest.WebViewInBackgroundPage
+
+# about:net-internals should be largely removed before shipping the network
+# service.
+# https://crbug.com/678391
+-NetInternalsTest.netInternalsSessionBandwidthSucceed
+-NetInternalsTest.netInternalsDnsViewIncognitoClears
 
 # Move ChromeExpectCTReporter to services/network
 # https://crbug.com/844032
