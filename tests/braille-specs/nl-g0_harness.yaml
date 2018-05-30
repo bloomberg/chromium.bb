@@ -35,7 +35,7 @@
 #
 # ----------------------------------------------------------------------------------------------
 
-display: unicode.dis
+display: unicode-without-blank.dis
 table:
   locale: nl
   grade: 0

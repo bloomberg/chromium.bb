@@ -41,6 +41,8 @@
 
 # The 2007 unification of french computer braille tables is based on the cp1252 character set
 
+include basic-spaces.uti
+
 undefined 0
 
 include latinLetterDef8Dots.uti

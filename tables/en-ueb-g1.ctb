@@ -46,6 +46,8 @@
 #  Modified by Mike Gray <mgray@aph.org>
 #              Joseph Lee <joseph.lee22590@gmail.com>
 
+include basic-spaces.uti
+
 include en-ueb-chardefs.uti UEB specific char defs.
 #   some dots are undefined now
 include en-ueb-math.ctb UEB math from common linear format

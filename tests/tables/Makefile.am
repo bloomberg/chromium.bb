@@ -4,8 +4,6 @@ EXTRA_DIST =					\
 	bad.ctb					\
 	begcaps_endcaps.utb			\
 	context-ignored.utb			\
-	emphasis-full.utb			\
-	emphasis-no-context.utb			\
 	empty.ctb				\
 	large.ctb				\
 	loop.ctb				\

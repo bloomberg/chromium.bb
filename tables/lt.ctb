@@ -33,6 +33,7 @@
 # This file is based on the standard, but does not exactly follow it. Some standard
 # definitions are commented out, some changed, and some extra ones are added.
 
+include basic-spaces.uti
 
 ###
 ### WHITESPACE

@@ -42,6 +42,7 @@
 # https://github.com/liblouis/liblouis/tree/formal_braille_spec#pistekirjoituksen-perusteet
 
 # Includes
+include basic-spaces.uti
 include latinLetterDef6Dots.uti
 include digits6Dots.uti
 include litdigits6Dots.uti

@@ -1,5 +1,6 @@
 table: |
-  include tables/unicode.dis
+  include tables/unicode-without-blank.dis
+  include tables/basic-spaces.uti
   uplow Aa 1
 
   uppercase B 12
@@ -28,7 +29,8 @@ tests:
     - ⠁⠁ ⠃⠃ ⠉⠉ ⠙⠙ ⠑⠑ ⠋⠋ ⠛⠛ ⠓⠓
 
 table: |
-  include tables/unicode.dis
+  include tables/unicode-without-blank.dis
+  include tables/basic-spaces.uti
   uplow Aa 1
 
   uppercase B 12

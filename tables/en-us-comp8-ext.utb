@@ -41,6 +41,7 @@
 #    * Computer Braille Code, BANA, 2000:
 #      <http://brailleauthority.org/cbc/cbc2000.pdf>
 
+include basic-spaces.uti
 
 # --------------------------------------------------------------------------
 # Standard includes

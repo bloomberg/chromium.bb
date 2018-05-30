@@ -20,6 +20,8 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+include basic-spaces.uti
+
 space \t 9 tab
 space \s 0 blank
 space \x00a0 a unbreakable space

@@ -29,6 +29,8 @@
 # Implements basic math symbols described at:
 # http://teiresias.muni.cz/czbraille8/?strana=norma
 
+include basic-spaces.uti
+
 include digits8Dots.uti
 include cs-letterDef8Dots.uti
 

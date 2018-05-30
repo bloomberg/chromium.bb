@@ -41,6 +41,8 @@
 # Display opcodes
 include da-dk-octobraille.dis
 
+include basic-spaces.uti
+
 ### Character definitions ###
 
 sign \x0000 8 NULL

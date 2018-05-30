@@ -1,3 +1,5 @@
+include tables/basic-spaces.uti
+
 space \t 9
 space \n 0
 

@@ -29,6 +29,7 @@
 #     Derived from the Czech braille table by Bert Frees and Jan Halousek
 # -------------------------------------------------------------------------------
 
+include basic-spaces.uti
 include sk-chardefs.cti
 include braille-patterns.cti
 include sk-translation.cti

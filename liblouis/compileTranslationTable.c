@@ -3932,21 +3932,6 @@ compileTranslationTable(const char *tableList, CharacterClass **characterClasses
 	/* Initialize emphClasses array */
 	table->emphClasses[0] = NULL;
 
-	/* Compile things that are necesary for the proper operation of
-	 * liblouis or liblouisxml or liblouisutdml */
-	compileString("space \\s 0", characterClasses, characterClassAttribute, opcodeLengths,
-			newRuleOffset, newRule, ruleNames, &table);
-	compileString("noback sign \\x0000 0", characterClasses, characterClassAttribute,
-			opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
-	compileString("space \\x00a0 a unbreakable space", characterClasses,
-			characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames,
-			&table);
-	compileString("space \\x001b 1b escape", characterClasses, characterClassAttribute,
-			opcodeLengths, newRuleOffset, newRule, ruleNames, &table);
-	compileString("space \\xffff 123456789abcdef ENDSEGMENT", characterClasses,
-			characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames,
-			&table);
-
 	/* Compile all subtables in the list */
 	if (!(tableFiles = _lou_resolveTable(tableList, NULL))) {
 		errorCount++;
