@@ -2429,7 +2429,7 @@ void UiSceneCreator::CreateOverflowMenu() {
           kOverflowMenuNewIncognitoTabItem, IDS_VR_MENU_NEW_INCOGNITO_TAB,
           base::BindRepeating(
               [](UiBrowserInterface* browser) { browser->OpenNewTab(true); }),
-          base::BindRepeating([](Model* m) { return true; }),
+          base::BindRepeating([](Model* m) { return !m->incognito; }),
       },
       {kOverflowMenuCloseAllIncognitoTabsItem, IDS_VR_MENU_CLOSE_INCOGNITO_TABS,
        base::BindRepeating([](UiBrowserInterface* browser) {
