@@ -34,6 +34,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_backend.h"
 #include "storage/browser/test/test_file_system_context.h"
+#include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
@@ -154,25 +155,27 @@ void ShutdownFileSystemContextOnIOThread(
 
 class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
  protected:
-  FileSystemURLLoaderFactoryTest() : weak_factory_(this) {}
+  FileSystemURLLoaderFactoryTest() {}
   ~FileSystemURLLoaderFactoryTest() override = default;
 
   void SetUpOnMainThread() override {
     feature_list_.InitAndEnableFeature(network::features::kNetworkService);
 
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
     special_storage_policy_ = new MockSpecialStoragePolicy;
+
+    // We use a test FileSystemContext which runs on the main thread, so we
+    // can work with it synchronously.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_system_context_ =
         CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
-
-    // We use the main thread so that we can get the root path synchronously.
+    base::RunLoop run_loop;
     file_system_context_->OpenFileSystem(
         GURL("http://remote/"), storage::kFileSystemTypeTemporary,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&FileSystemURLLoaderFactoryTest::OnOpenFileSystem,
-                       weak_factory_.GetWeakPtr()));
-    base::RunLoop().RunUntilIdle();
+                       run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
+
     ContentBrowserTest::SetUpOnMainThread();
   }
 
@@ -333,6 +336,14 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
   network::mojom::URLLoaderPtr loader_;
 
  private:
+  static void OnOpenFileSystem(base::OnceClosure done_closure,
+                               const GURL& root_url,
+                               const std::string& name,
+                               base::File::Error result) {
+    ASSERT_EQ(base::File::FILE_OK, result);
+    std::move(done_closure).Run();
+  }
+
   storage::FileSystemFileUtil* file_util() {
     return file_system_context_->sandbox_delegate()->sync_file_util();
   }
@@ -342,12 +353,6 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
         new FileSystemOperationContext(file_system_context_.get()));
     context->set_allowed_bytes_growth(1024);
     return context;
-  }
-
-  void OnOpenFileSystem(const GURL& root_url,
-                        const std::string& name,
-                        base::File::Error result) {
-    ASSERT_EQ(base::File::FILE_OK, result);
   }
 
   RenderFrameHost* render_frame_host() const {
@@ -393,7 +398,6 @@ class FileSystemURLLoaderFactoryTest : public ContentBrowserTest {
   base::test::ScopedFeatureList feature_list_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  base::WeakPtrFactory<FileSystemURLLoaderFactoryTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLLoaderFactoryTest);
 };
