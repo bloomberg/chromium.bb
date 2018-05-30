@@ -44,7 +44,6 @@
 namespace blink {
 
 typedef int ExceptionCode;
-class ScriptPromiseResolver;
 class ScriptState;
 
 // ExceptionState is a scope-like class and provides a way to throw an exception
@@ -129,9 +128,6 @@ class CORE_EXPORT ExceptionState {
 
   // This method clears out the exception which |this| has.
   ScriptPromise Reject(ScriptState*);
-
-  // This method clears out the exception which |this| has.
-  void Reject(ScriptPromiseResolver*);
 
   ContextType Context() const { return context_; }
   const char* PropertyName() const { return property_name_; }
