@@ -34,7 +34,7 @@ class MockScriptData : public ScriptData {
     return &mock_script_data;
   }
 
-  void GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const override {
+  void GetScripts(UChar32 ch, UScriptCodeList& dst) const override {
     DCHECK_GE(ch, kMockCharMin);
     DCHECK_LT(ch, kMockCharLimit);
 
@@ -663,7 +663,7 @@ TEST_F(ScriptRunIteratorICUDataTest, ValidateICUMaxScriptExtensions) {
 TEST_F(ScriptRunIteratorICUDataTest, ICUDataGetScriptsReturnsAllExtensions) {
   int max_extensions;
   UChar32 cp = GetACharWithMaxExtensions(&max_extensions);
-  Vector<UScriptCode> extensions;
+  ScriptData::UScriptCodeList extensions;
   ICUScriptData::Instance()->GetScripts(cp, extensions);
 
   // It's possible that GetScripts adds the primary script to the list of
@@ -673,7 +673,7 @@ TEST_F(ScriptRunIteratorICUDataTest, ICUDataGetScriptsReturnsAllExtensions) {
 }
 
 TEST_F(ScriptRunIteratorICUDataTest, CommonHaveNoMoreThanOneExtension) {
-  Vector<UScriptCode> extensions;
+  ScriptData::UScriptCodeList extensions;
   for (UChar32 cp = 0; cp < 0x110000; ++cp) {
     ICUScriptData::Instance()->GetScripts(cp, extensions);
     UScriptCode primary = extensions.at(0);
