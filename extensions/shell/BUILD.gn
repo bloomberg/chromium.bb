@@ -267,7 +267,6 @@ if (is_mac) {
     ]
     deps = [
       ":app_shell_framework_bundle_data",
-      "//build/config:exe_and_shlib_deps",
       "//content/public/app:both",
       "//extensions:shell_and_test_pak",
     ]
@@ -287,7 +286,6 @@ if (is_mac) {
 
     deps = [
       ":app_shell_lib",
-      "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
       "//content/public/app:both",
       "//extensions:shell_and_test_pak",
@@ -454,7 +452,6 @@ if (is_mac) {
     ]
     deps = [
       ":app_shell_framework+link",
-      "//build/config:exe_and_shlib_deps",
       "//content/public/app:both",
     ]
     ldflags = [
