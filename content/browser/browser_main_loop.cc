@@ -261,13 +261,13 @@ static void GLibLogHandler(const gchar* log_domain,
   if ((always_fatal_flags | fatal_flags) & log_level) {
     LOG(DFATAL) << log_domain << ": " << message;
   } else if (log_level & (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL)) {
-    LOG(ERROR) << log_domain << ": " << message;
 #if defined(THREAD_SANITIZER)
     // TODO(thomasanderson): This is temporary debugging for
     // https://crbug.com/821704.  Revert this CL once we have the stack trace:
     // https://chromium-review.googlesource.com/#/c/chromium/src/+/1069247
     base::debug::StackTrace().Print();
 #endif
+    LOG(ERROR) << log_domain << ": " << message;
   } else if (log_level & (G_LOG_LEVEL_WARNING)) {
     LOG(WARNING) << log_domain << ": " << message;
   } else if (log_level &
