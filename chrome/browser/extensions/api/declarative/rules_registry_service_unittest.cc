@@ -10,12 +10,18 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,6 +128,51 @@ TEST_F(RulesRegistryServiceTest, TestConstructionAndMultiThreading) {
                      registry_service.GetRulesRegistry(key, "io"), 0));
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RulesRegistryServiceTest, DefaultRulesRegistryRegistered) {
+  struct {
+    version_info::Channel channel;
+    bool expect_api_enabled;
+  } test_cases[] = {
+      {version_info::Channel::UNKNOWN, true},
+      {version_info::Channel::STABLE, false},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Testing Channel %s",
+        version_info::GetChannelString(test_case.channel).c_str()));
+    ScopedCurrentChannel scoped_channel(test_case.channel);
+
+    ASSERT_EQ(test_case.expect_api_enabled,
+              FeatureProvider::GetAPIFeature("declarativeWebRequest")
+                  ->IsAvailableToEnvironment()
+                  .is_available());
+
+    TestingProfile profile;
+    RulesRegistryService registry_service(&profile);
+
+    // The default web request rules registry should only be created if the API
+    // is enabled.
+    EXPECT_EQ(
+        test_case.expect_api_enabled,
+        registry_service
+                .GetRulesRegistry(RulesRegistryService::kDefaultRulesRegistryID,
+                                  declarative_webrequest_constants::kOnRequest)
+                .get() != nullptr);
+
+    // Content rules registry should always be created.
+    EXPECT_TRUE(registry_service.GetRulesRegistry(
+        RulesRegistryService::kDefaultRulesRegistryID,
+        declarative_content_constants::kOnPageChanged));
+    EXPECT_TRUE(registry_service.content_rules_registry());
+
+    // Rules registries for web views should always be created.
+    const int kWebViewRulesRegistryID = 1;
+    EXPECT_TRUE(registry_service.GetRulesRegistry(
+        kWebViewRulesRegistryID, declarative_webrequest_constants::kOnRequest));
+  }
 }
 
 }  // namespace extensions

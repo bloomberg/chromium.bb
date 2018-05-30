@@ -50,6 +50,8 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/version_info/channel.h"
+#include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,6 +86,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -3319,12 +3322,29 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestZoomBeforeNavigation) {
   TestHelper("testZoomBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
+// Test fixture to run the test on multiple channels.
+class WebViewChannelTest
+    : public WebViewTest,
+      public testing::WithParamInterface<version_info::Channel> {
+ public:
+  WebViewChannelTest() : channel_(GetParam()) {}
+
+ private:
+  extensions::ScopedCurrentChannel channel_;
+  DISALLOW_COPY_AND_ASSIGN(WebViewChannelTest);
+};
+
 // This test verify that the set of rules registries of a webview will be
 // removed from RulesRegistryService after the webview is gone.
 // http://crbug.com/438327
-IN_PROC_BROWSER_TEST_F(
-    WebViewTest,
+IN_PROC_BROWSER_TEST_P(
+    WebViewChannelTest,
     DISABLED_Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
+  ASSERT_EQ(extensions::GetCurrentChannel(), GetParam());
+  SCOPED_TRACE(
+      base::StringPrintf("Testing Channel %s",
+                         version_info::GetChannelString(GetParam()).c_str()));
+
   LoadAppWithGuest("web_view/rules_registry");
 
   content::WebContents* embedder_web_contents = GetEmbedderWebContents();
@@ -3348,12 +3368,12 @@ IN_PROC_BROWSER_TEST_F(
   extensions::RulesRegistryService* registry_service =
       extensions::RulesRegistryService::Get(profile);
   extensions::TestRulesRegistry* rules_registry =
-      new extensions::TestRulesRegistry(
-          content::BrowserThread::UI, "ui", rules_registry_id);
+      new extensions::TestRulesRegistry(content::BrowserThread::UI, "ui",
+                                        rules_registry_id);
   registry_service->RegisterRulesRegistry(base::WrapRefCounted(rules_registry));
 
-  EXPECT_TRUE(registry_service->GetRulesRegistry(
-      rules_registry_id, "ui").get());
+  EXPECT_TRUE(
+      registry_service->GetRulesRegistry(rules_registry_id, "ui").get());
 
   // Kill the embedder's render process, so the webview will go as well.
   base::Process process = base::Process::DeprecatedGetProcessFromHandle(
@@ -3364,12 +3384,17 @@ IN_PROC_BROWSER_TEST_F(
   process.Terminate(0, false);
   observer->WaitForEmbedderRenderProcessTerminate();
 
-  EXPECT_FALSE(registry_service->GetRulesRegistry(
-      rules_registry_id, "ui").get());
+  EXPECT_FALSE(
+      registry_service->GetRulesRegistry(rules_registry_id, "ui").get());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
                        Shim_WebViewWebRequestRegistryHasNoPersistentCache) {
+  ASSERT_EQ(extensions::GetCurrentChannel(), GetParam());
+  SCOPED_TRACE(
+      base::StringPrintf("Testing Channel %s",
+                         version_info::GetChannelString(GetParam()).c_str()));
+
   LoadAppWithGuest("web_view/rules_registry");
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
@@ -3388,15 +3413,22 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
   // Get an existing registered rule for the guest.
   extensions::RulesRegistry* registry =
-      registry_service->GetRulesRegistry(
-          rules_registry_id,
-          extensions::declarative_webrequest_constants::kOnRequest).get();
+      registry_service
+          ->GetRulesRegistry(
+              rules_registry_id,
+              extensions::declarative_webrequest_constants::kOnRequest)
+          .get();
 
   ASSERT_TRUE(registry);
   ASSERT_TRUE(registry->rules_cache_delegate_for_testing());
   EXPECT_EQ(extensions::RulesCacheDelegate::Type::kEphemeral,
             registry->rules_cache_delegate_for_testing()->type());
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        WebViewChannelTest,
+                        testing::Values(version_info::Channel::UNKNOWN,
+                                        version_info::Channel::STABLE));
 
 // This test verifies that webview.contentWindow works inside an iframe.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebViewInsideFrame) {
