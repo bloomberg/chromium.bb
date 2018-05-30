@@ -111,7 +111,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // RunExtensionSubtest, you may. For example, if a test calls
   // RunExtensionSubtest then asserts that the Extension was installed, it will
   // fail on win debug builds.
-  bool ExtensionSubtestsAreSkipped();
+  virtual bool ExtensionSubtestsAreSkipped();
 
   // If not empty, Load |extension_name|, load |page_url| and wait for pass /
   // fail notification from the extension API on the page. Note that if

@@ -35,6 +35,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_prefs_scope.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
 
 using content::BrowserThread;
@@ -252,9 +253,13 @@ ContentSettingsContentSettingSetFunction::Run() {
   }
 
   if (incognito) {
-    // Regular profiles can't access incognito unless include_incognito is true.
-    if (!browser_context()->IsOffTheRecord() && !include_incognito())
+    // Regular profiles can't access incognito unless the extension is allowed
+    // to run in incognito contexts.
+    if (!browser_context()->IsOffTheRecord() &&
+        !extensions::util::IsIncognitoEnabled(extension_id(),
+                                              browser_context())) {
       return RespondNow(Error(pref_keys::kIncognitoErrorMessage));
+    }
   } else {
     // Incognito profiles can't access regular mode ever, they only exist in
     // split mode.
