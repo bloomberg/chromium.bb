@@ -3,8 +3,5 @@ FAIL setLocalDescription(pranswer) from stable state should reject with InvalidS
 FAIL setLocalDescription(pranswer) should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
 PASS setLocalDescription(pranswer) can be applied multiple times while still in have-local-pranswer
 FAIL setLocalDescription(answer) from have-local-pranswer state should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
-PASS Test onsignalingstatechange event for setLocalDescription(pranswer) should succeed
-PASS Test onsignalingstatechange event for setLocalDescription(pranswer) can be applied multiple times while still in have-local-pranswer
-PASS Test onsignalingstatechange event for setLocalDescription(answer) from have-local-pranswer state should succeed
 Harness: the test ran to completion.
 
