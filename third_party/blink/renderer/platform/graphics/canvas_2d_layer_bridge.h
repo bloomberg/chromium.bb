@@ -58,7 +58,6 @@ class TextureLayer;
 namespace blink {
 
 class Canvas2DLayerBridgeTest;
-class CanvasResourceProvider;
 class SharedContextRateLimiter;
 class StaticBitmapImage;
 
@@ -163,16 +162,14 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   };
 
   void SetLoggerForTesting(std::unique_ptr<Logger>);
-  CanvasResourceProvider* GetResourceProvider() const {
-    return resource_provider_.get();
-  }
   CanvasResourceProvider* GetOrCreateResourceProvider(
       AccelerationHint = kPreferAcceleration);
-  void ResetResourceProvider();
+  CanvasResourceProvider* ResourceProvider() const;
 
  private:
   bool IsHidden() { return is_hidden_; }
   bool CheckResourceProviderValid();
+  void ResetResourceProvider();
 
   void StartRecording();
   void SkipQueuedDrawCommands();
@@ -181,7 +178,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   bool ShouldAccelerate(AccelerationHint) const;
 
-  std::unique_ptr<CanvasResourceProvider> resource_provider_;
   std::unique_ptr<PaintRecorder> recorder_;
   sk_sp<SkImage> hibernation_image_;
   scoped_refptr<cc::TextureLayer> layer_;

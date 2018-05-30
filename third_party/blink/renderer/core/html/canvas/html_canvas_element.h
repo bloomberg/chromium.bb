@@ -221,8 +221,8 @@ class CORE_EXPORT HTMLCanvasElement final
                            unsigned resource_id) override;
   void Trace(blink::Visitor*) override;
 
-  void CreateCanvas2DLayerBridgeForTesting(std::unique_ptr<Canvas2DLayerBridge>,
-                                           const IntSize&);
+  void SetCanvas2DLayerBridgeForTesting(std::unique_ptr<Canvas2DLayerBridge>,
+                                        const IntSize&);
 
   static void RegisterRenderingContextFactory(
       std::unique_ptr<CanvasRenderingContextFactory>);
@@ -311,7 +311,7 @@ class CORE_EXPORT HTMLCanvasElement final
   std::unique_ptr<Canvas2DLayerBridge> CreateAccelerated2dBuffer(
       int* msaa_sample_count);
   std::unique_ptr<Canvas2DLayerBridge> CreateUnaccelerated2dBuffer();
-  void CreateCanvas2DLayerBridgeInternal(std::unique_ptr<Canvas2DLayerBridge>);
+  void SetCanvas2DLayerBridgeInternal(std::unique_ptr<Canvas2DLayerBridge>);
 
   void SetSurfaceSize(const IntSize&);
 
