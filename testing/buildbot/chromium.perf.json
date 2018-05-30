@@ -19,7 +19,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -51,7 +51,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -85,7 +85,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -117,7 +117,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -151,7 +151,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -183,7 +183,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -217,7 +217,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -249,7 +249,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -283,7 +283,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -315,7 +315,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -349,7 +349,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -381,7 +381,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -415,7 +415,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -447,7 +447,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -481,7 +481,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -513,7 +513,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -547,7 +547,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -579,7 +579,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -613,7 +613,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -645,7 +645,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -679,7 +679,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -711,7 +711,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device7",
@@ -745,7 +745,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device7",
@@ -777,7 +777,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -811,7 +811,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -834,7 +834,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -866,7 +866,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -900,7 +900,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -932,7 +932,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -966,7 +966,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -998,7 +998,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -1032,7 +1032,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -1064,7 +1064,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -1098,7 +1098,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -1121,7 +1121,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device2",
@@ -1153,7 +1153,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -1187,7 +1187,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -1219,7 +1219,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -1253,7 +1253,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -1285,7 +1285,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device1",
@@ -1317,7 +1317,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device1",
@@ -1351,7 +1351,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device1",
@@ -1383,7 +1383,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -1417,7 +1417,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -1449,7 +1449,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device7",
@@ -1483,7 +1483,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device7",
@@ -1515,7 +1515,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -1549,7 +1549,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -1581,7 +1581,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -1615,7 +1615,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -1647,7 +1647,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -1681,7 +1681,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -1713,7 +1713,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device7",
@@ -1745,7 +1745,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -1779,7 +1779,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -1811,7 +1811,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -1845,7 +1845,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -1877,7 +1877,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -1911,7 +1911,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -1943,7 +1943,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -1977,7 +1977,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -2009,7 +2009,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -2043,7 +2043,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -2075,7 +2075,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -2109,7 +2109,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -2141,7 +2141,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -2175,7 +2175,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -2207,7 +2207,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -2241,7 +2241,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -2273,7 +2273,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -2307,7 +2307,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -2339,7 +2339,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -2373,7 +2373,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -2405,7 +2405,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -2439,7 +2439,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -2471,7 +2471,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device7",
@@ -2505,7 +2505,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device7",
@@ -2537,7 +2537,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -2571,7 +2571,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -2603,7 +2603,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -2637,7 +2637,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -2669,7 +2669,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device2",
@@ -2703,7 +2703,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device2",
@@ -2735,7 +2735,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -2769,7 +2769,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -2801,7 +2801,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -2835,7 +2835,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -2867,7 +2867,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device2",
@@ -2901,7 +2901,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device2",
@@ -2933,7 +2933,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device3",
@@ -2967,7 +2967,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device3",
@@ -2999,7 +2999,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -3033,7 +3033,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -3065,7 +3065,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -3099,7 +3099,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device2",
@@ -3131,7 +3131,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -3165,7 +3165,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -3197,7 +3197,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -3231,7 +3231,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -3263,7 +3263,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -3297,7 +3297,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -3329,7 +3329,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -3363,7 +3363,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -3395,7 +3395,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device7",
@@ -3429,7 +3429,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device7",
@@ -3461,7 +3461,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -3495,7 +3495,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device3",
@@ -3527,7 +3527,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device7",
@@ -3561,7 +3561,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device7",
@@ -3593,7 +3593,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -3627,7 +3627,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -3659,7 +3659,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device1",
@@ -3693,7 +3693,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device1",
@@ -3725,7 +3725,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -3759,7 +3759,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -3791,7 +3791,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -3823,7 +3823,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device4",
@@ -3857,7 +3857,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device4",
@@ -3891,7 +3891,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -3923,7 +3923,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -3955,7 +3955,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device4",
@@ -3989,7 +3989,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device4",
@@ -4023,7 +4023,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device2",
@@ -4055,7 +4055,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -4089,7 +4089,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device4",
@@ -4121,7 +4121,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -4155,7 +4155,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device5",
@@ -4187,7 +4187,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device7",
@@ -4221,7 +4221,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device7",
@@ -4253,7 +4253,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device1",
@@ -4287,7 +4287,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device1",
@@ -4319,7 +4319,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -4353,7 +4353,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -4385,7 +4385,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -4419,7 +4419,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device1",
@@ -4451,7 +4451,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -4485,7 +4485,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -4517,7 +4517,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -4551,7 +4551,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device6",
@@ -4583,7 +4583,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -4617,7 +4617,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device4",
@@ -4649,7 +4649,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -4683,7 +4683,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build200-b7--device5",
@@ -4715,7 +4715,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device3",
@@ -4749,7 +4749,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device3",
@@ -4781,7 +4781,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device3",
@@ -4815,7 +4815,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device3",
@@ -4847,7 +4847,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -4881,7 +4881,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device6",
@@ -4904,7 +4904,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device2",
@@ -4936,7 +4936,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device5",
@@ -4968,7 +4968,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device4",
@@ -5002,7 +5002,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device4",
@@ -5036,7 +5036,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device5",
@@ -5068,7 +5068,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build201-b7--device7",
@@ -5100,7 +5100,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -5134,7 +5134,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device3",
@@ -5166,7 +5166,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
@@ -5200,7 +5200,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KOT49H0",
+              "device_os": "KOT49H",
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "id": "build199-b7--device6",
