@@ -150,7 +150,7 @@ bool CreateGDocFile(const base::FilePath& file_path,
                     const GURL& url,
                     const std::string& resource_id) {
   std::string content =
-      base::StringPrintf("{\"url\": \"%s\", \"resource_id\": \"%s\"}",
+      base::StringPrintf(R"({"url": "%s", "resource_id": "%s"})",
                          url.spec().c_str(), resource_id.c_str());
   return base::WriteFile(file_path, content.data(), content.size()) ==
          static_cast<int>(content.size());

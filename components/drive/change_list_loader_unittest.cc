@@ -103,7 +103,7 @@ class ChangeListLoaderTest : public testing::Test {
 
     cache_.reset(new FileCache(metadata_storage_.get(), temp_dir_.GetPath(),
                                base::ThreadTaskRunnerHandle::Get().get(),
-                               NULL /* free_disk_space_getter */));
+                               nullptr /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
 
     metadata_.reset(new ResourceMetadata(
