@@ -50,6 +50,7 @@
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
+#include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 #include "extensions/browser/api_activity_monitor.h"
@@ -389,7 +390,8 @@ void WebRequestAPI::ProxySet::Shutdown() {
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
     : browser_context_(context),
       info_map_(ExtensionSystem::Get(browser_context_)->info_map()),
-      proxies_(base::MakeRefCounted<ProxySet>()) {
+      proxies_(base::MakeRefCounted<ProxySet>()),
+      request_id_generator_(base::MakeRefCounted<RequestIDGenerator>()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   for (size_t i = 0; i < arraysize(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
@@ -495,10 +497,42 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           // which takes a net::URLRequest*.
           is_navigation ? -1 : frame->GetProcess()->GetID(),
           is_navigation ? MSG_ROUTING_NONE : frame->GetRoutingID(),
-          std::move(navigation_ui_data), base::Unretained(info_map_),
-          std::move(proxied_request), std::move(target_factory_info),
-          proxies_));
+          request_id_generator_, std::move(navigation_ui_data),
+          base::Unretained(info_map_), std::move(proxied_request),
+          std::move(target_factory_info), proxies_));
   return true;
+}
+
+void WebRequestAPI::MaybeProxyWebSocket(
+    content::RenderFrameHost* frame,
+    network::mojom::WebSocketRequest* request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const auto* rules_registry_service =
+      BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
+          browser_context_);
+  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
+      declarative_net_request::RulesMonitorService>::Get(browser_context_);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      (listener_count_ == 0 &&
+       !rules_registry_service->HasAnyRegisteredRules() &&
+       !rules_monitor_service->HasAnyRegisteredRulesets())) {
+    return;
+  }
+
+  network::mojom::WebSocketPtrInfo proxied_socket_ptr_info;
+  auto proxied_request = std::move(*request);
+  *request = mojo::MakeRequest(&proxied_socket_ptr_info);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &WebRequestProxyingWebSocket::StartProxying,
+          frame->GetProcess()->GetID(), frame->GetRoutingID(),
+          request_id_generator_, frame->GetLastCommittedOrigin(),
+          frame->GetProcess()->GetBrowserContext(),
+          frame->GetProcess()->GetBrowserContext()->GetResourceContext(),
+          base::Unretained(info_map_), std::move(proxied_socket_ptr_info),
+          std::move(proxied_request), proxies_));
 }
 
 // Represents a single unique listener to an event, along with whatever filter

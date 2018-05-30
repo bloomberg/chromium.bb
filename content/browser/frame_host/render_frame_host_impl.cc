@@ -4598,6 +4598,8 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
 
 void RenderFrameHostImpl::CreateWebSocket(
     network::mojom::WebSocketRequest request) {
+  GetContentClient()->browser()->WillCreateWebSocket(this, &request);
+
   // This is to support usage of WebSockets in cases in which there is an
   // associated RenderFrame. This is important for showing the correct security
   // state of the page and also honoring user override of bad certificates.

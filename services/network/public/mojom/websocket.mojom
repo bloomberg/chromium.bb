@@ -5,6 +5,7 @@
 module network.mojom;
 
 import "url/mojom/url.mojom";
+import "services/network/public/mojom/network_param.mojom";
 
 enum WebSocketMessageType {
   CONTINUATION,
@@ -29,8 +30,10 @@ struct WebSocketHandshakeRequest {
 
 struct WebSocketHandshakeResponse {
   url.mojom.Url url;
+  HttpVersion http_version;
   int32 status_code;
   string status_text;
+  HostPortPair socket_address;
   array<HttpHeader> headers;
   string headers_text;
 };
@@ -45,8 +48,8 @@ interface WebSocketClient {
 
   // Notify the renderer that the browser has finished an opening handshake.
   // This message precedes AddChannelResponse.
-  // This message is for showing the response in the inspector and
-  // can be omitted if the inspector is not active.
+  // |response| may contains cookie-related headers when the client has
+  // an access to raw cookie information.
   OnFinishOpeningHandshake(WebSocketHandshakeResponse response);
 
   // Response to an AddChannelRequest. |selected_protocol| is the sub-protocol

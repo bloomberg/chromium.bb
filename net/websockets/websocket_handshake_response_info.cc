@@ -15,8 +15,12 @@ namespace net {
 WebSocketHandshakeResponseInfo::WebSocketHandshakeResponseInfo(
     const GURL& url,
     scoped_refptr<HttpResponseHeaders> headers,
+    const HostPortPair& socket_address,
     base::Time response_time)
-    : url(url), headers(std::move(headers)), response_time(response_time) {}
+    : url(url),
+      headers(std::move(headers)),
+      socket_address(socket_address),
+      response_time(response_time) {}
 
 WebSocketHandshakeResponseInfo::~WebSocketHandshakeResponseInfo() = default;
 

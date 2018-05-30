@@ -137,12 +137,9 @@
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
 
-# https://crbug.com/721400
-# WebSocket with the network service
--DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
--DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
+# https://crbug.com/841827
+# WebRequest API + WebSocket + OnAuthRequired
 -ExtensionWebRequestApiTest.WebSocketRequestAuthRequired
--ExtensionWebRequestApiTest.WebSocketRequest
 
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.

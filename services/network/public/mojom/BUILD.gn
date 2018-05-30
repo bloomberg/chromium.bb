@@ -51,6 +51,7 @@ mojom("udp_socket_interface") {
 # cause problems. See https://crbug.com/822732.
 mojom("websocket_mojom") {
   sources = [
+    "network_param.mojom",
     "websocket.mojom",
   ]
 
@@ -81,7 +82,6 @@ mojom("mojom") {
     "http_request_headers.mojom",
     "network_change_manager.mojom",
     "network_context.mojom",
-    "network_param.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
     "network_types.mojom",

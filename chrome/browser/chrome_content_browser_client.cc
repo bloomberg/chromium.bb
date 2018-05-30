@@ -4132,6 +4132,23 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #endif
 }
 
+void ChromeContentBrowserClient::WillCreateWebSocket(
+    content::RenderFrameHost* frame,
+    network::mojom::WebSocketRequest* request) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  auto* web_request_api =
+      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+          frame->GetProcess()->GetBrowserContext());
+
+  // NOTE: Some unit test environments do not initialize
+  // BrowserContextKeyedAPI factories for e.g. WebRequest.
+  if (!web_request_api)
+    return;
+
+  web_request_api->MaybeProxyWebSocket(frame, request);
+#endif
+}
+
 network::mojom::NetworkContextPtr
 ChromeContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,

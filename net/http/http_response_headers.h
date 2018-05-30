@@ -286,6 +286,10 @@ class NET_EXPORT HttpResponseHeaders
   // Returns the raw header string.
   const std::string& raw_headers() const { return raw_headers_; }
 
+  // Returns true if |name| is a cookie related header name. This is consistent
+  // with |PERSIST_SANS_COOKIES|.
+  static bool IsCookieResponseHeader(base::StringPiece name);
+
  private:
   friend class base::RefCountedThreadSafe<HttpResponseHeaders>;
 

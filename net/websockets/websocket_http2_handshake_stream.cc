@@ -378,7 +378,7 @@ void WebSocketHttp2HandshakeStream::OnFinishOpeningHandshake() {
   DCHECK(http_response_info_);
   WebSocketDispatchOnFinishOpeningHandshake(
       connect_delegate_, request_info_->url, http_response_info_->headers,
-      http_response_info_->response_time);
+      http_response_info_->socket_address, http_response_info_->response_time);
 }
 
 void WebSocketHttp2HandshakeStream::OnFailure(const std::string& message) {

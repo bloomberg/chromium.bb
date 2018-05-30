@@ -28,6 +28,8 @@ source_set("web_request") {
     "web_request_permissions.h",
     "web_request_proxying_url_loader_factory.cc",
     "web_request_proxying_url_loader_factory.h",
+    "web_request_proxying_websocket.cc",
+    "web_request_proxying_websocket.h",
     "web_request_resource_type.cc",
     "web_request_resource_type.h",
     "web_request_time_tracker.cc",

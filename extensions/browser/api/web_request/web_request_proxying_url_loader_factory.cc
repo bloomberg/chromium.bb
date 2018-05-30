@@ -410,6 +410,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     content::ResourceContext* resource_context,
     int render_process_id,
     int render_frame_id,
+    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
     network::mojom::URLLoaderFactoryRequest loader_request,
@@ -419,6 +420,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
       resource_context_(resource_context),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
+      request_id_generator_(std::move(request_id_generator)),
       navigation_ui_data_(std::move(navigation_ui_data)),
       info_map_(info_map),
       proxies_(proxies) {
@@ -438,6 +440,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     content::ResourceContext* resource_context,
     int render_process_id,
     int render_frame_id,
+    scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     InfoMap* info_map,
     network::mojom::URLLoaderFactoryRequest loader_request,
@@ -449,8 +452,8 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
 
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, resource_context, render_process_id, render_frame_id,
-      std::move(navigation_ui_data), info_map, std::move(loader_request),
-      std::move(target_factory_info), proxies.get());
+      std::move(request_id_generator), std::move(navigation_ui_data), info_map,
+      std::move(loader_request), std::move(target_factory_info), proxies.get());
 
   proxies->AddProxy(std::move(proxy));
 }
@@ -469,7 +472,7 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
   // needs to be unique per-BrowserContext so extensions can make sense of it.
   // Note that |network_service_request_id_| by contrast is not necessarily
   // unique, so we don't use it for identity here.
-  const uint64_t web_request_id = next_request_id_++;
+  const uint64_t web_request_id = request_id_generator_->Generate();
   auto result = requests_.emplace(
       web_request_id,
       std::make_unique<InProgressRequest>(
