@@ -97,6 +97,8 @@ class PLATFORM_EXPORT LayoutRectOutsets {
            Bottom() == other.Bottom() && Left() == other.Left();
   }
 
+  String ToString() const;
+
  private:
   LayoutUnit top_;
   LayoutUnit right_;
@@ -144,6 +146,9 @@ inline LayoutRectOutsets EnclosingLayoutRectOutsets(
                            LayoutUnit::FromFloatCeil(rect.Bottom()),
                            LayoutUnit::FromFloatCeil(rect.Left()));
 }
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const LayoutRectOutsets&);
 
 }  // namespace blink
 
