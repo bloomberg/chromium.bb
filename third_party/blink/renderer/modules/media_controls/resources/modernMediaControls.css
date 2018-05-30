@@ -551,6 +551,7 @@ video::-internal-media-controls-overflow-menu-list-item:focus,
 audio::-internal-media-controls-text-track-list-item:focus,
 video::-internal-media-controls-text-track-list-item:focus {
   background-color: #e0e0e0;
+  outline: none;
 }
 
 audio::-internal-media-controls-text-track-list-header,
