@@ -213,7 +213,7 @@ message DeviceCertUploadRequest {
   // Type of certificate. If omitted, will be guessed from the other fields.
   optional CertificateType certificate_type = 2;
   // Enrollment identifier if provided.
-  optional string enrollment_id = 3;
+  optional bytes enrollment_id = 3;
 }
 
 // Response from server to device for cert upload request.

@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -61,17 +62,18 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
  public:
   EnrollmentPolicyObserverTest() {
     policy_client_.SetDMToken("fake_dm_token");
+
+    std::vector<uint8_t> eid;
+    EXPECT_TRUE(base::HexStringToBytes(kEnrollmentId, &eid));
+    enrollment_id_.assign(reinterpret_cast<const char*>(eid.data()),
+                          eid.size());
+    cryptohome_client_.set_tpm_attestation_enrollment_id(
+        true /* ignore_cache */, enrollment_id_);
   }
 
  protected:
   static constexpr char kEnrollmentId[] =
-      "6fcc0ebddec3db95cdcf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
-
-  void SetUp() override {
-    DeviceSettingsTestBase::SetUp();
-    cryptohome_client_.set_tpm_attestation_enrollment_id(
-        true /* ignore_cache */, kEnrollmentId);
-  }
+      "6fcc0ebddec3db9500cf82476d594f4d60db934c5b47fa6085c707b2a93e205b";
 
   void SetUpEnrollmentIdNeeded(bool enrollment_id_needed) {
     if (enrollment_id_needed) {
@@ -103,6 +105,7 @@ class EnrollmentPolicyObserverTest : public DeviceSettingsTestBase {
   FakeCryptohomeClient cryptohome_client_;
   StrictMock<MockAttestationFlow> attestation_flow_;
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
+  std::string enrollment_id_;
 };
 
 constexpr char EnrollmentPolicyObserverTest::kEnrollmentId[];
@@ -132,7 +135,7 @@ TEST_F(EnrollmentPolicyObserverTest, GetCertificateUnspecifiedFailure) {
 TEST_F(EnrollmentPolicyObserverTest, GetCertificateBadRequestFailure) {
   EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
       .WillOnce(WithArgs<4>(Invoke(CertCallbackBadRequestFailure)));
-  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentId(kEnrollmentId, _))
+  EXPECT_CALL(policy_client_, UploadEnterpriseEnrollmentId(enrollment_id_, _))
       .WillOnce(WithArgs<1>(Invoke(StatusCallbackSuccess)));
   SetUpDevicePolicy(true);
   Run();

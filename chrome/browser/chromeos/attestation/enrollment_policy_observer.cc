@@ -187,10 +187,14 @@ void EnrollmentPolicyObserver::GetEnrollmentId() {
 
 void EnrollmentPolicyObserver::HandleEnrollmentId(
     const std::string& enrollment_id) {
+  if (enrollment_id.empty()) {
+    LOG(WARNING) << "EnrollmentPolicyObserver: The enrollment identifier"
+                    " obtained is empty.";
+  }
   policy_client_->UploadEnterpriseEnrollmentId(
       enrollment_id,
-      base::Bind(&EnrollmentPolicyObserver::OnUploadComplete,
-                 weak_factory_.GetWeakPtr(), "Enrollment Identifier"));
+      base::BindRepeating(&EnrollmentPolicyObserver::OnUploadComplete,
+                          weak_factory_.GetWeakPtr(), "Enrollment Identifier"));
 }
 
 void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {
