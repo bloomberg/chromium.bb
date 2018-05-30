@@ -18,7 +18,8 @@ ClientChange::ClientChange(ClientChangeTracker* tracker,
     : tracker_(tracker), type_(type) {
   DCHECK(!tracker_->current_change_);
   tracker_->current_change_ = this;
-  window_tracker_.Add(window);
+  if (window)
+    window_tracker_.Add(window);
 }
 
 ClientChange::~ClientChange() {
