@@ -2183,7 +2183,7 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
 
   CHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
 
-  if (GetNumActiveStreams() == 0) {
+  if (GetNumActiveStreams() == 0 && GetNumDrainingStreams() == 0) {
     HistogramAndLogMigrationFailure(migration_net_log,
                                     MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
@@ -2331,7 +2331,7 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
     NetworkChangeNotifier::NetworkHandle network,
     const NetLogWithSource& migration_net_log) {
   // Close idle sessions.
-  if (GetNumActiveStreams() == 0) {
+  if (GetNumActiveStreams() == 0 && GetNumDrainingStreams() == 0) {
     HistogramAndLogMigrationFailure(migration_net_log,
                                     MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
