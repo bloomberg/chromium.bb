@@ -15,6 +15,7 @@
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
 #include "ash/system/cast/tray_cast.h"
+#include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
@@ -232,8 +233,7 @@ void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowCastDetailedView() {
-  // TODO(tetsui): Implement Cast's own DetailedViewController.
-  ShowSystemTrayItemDetailedView(system_tray_->GetTrayCast());
+  ShowDetailedView(std::make_unique<UnifiedCastDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowAccessibilityDetailedView() {
