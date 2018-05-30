@@ -6,10 +6,13 @@ package org.chromium.device.geolocation;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Factory to create a LocationProvider to allow us to inject a mock for tests.
  */
+@JNINamespace("device")
 public class LocationProviderFactory {
     private static LocationProviderFactory.LocationProvider sProviderImpl;
     private static boolean sUseGmsCoreLocationProvider;
@@ -43,6 +46,7 @@ public class LocationProviderFactory {
         sProviderImpl = provider;
     }
 
+    @CalledByNative
     public static void useGmsCoreLocationProvider() {
         sUseGmsCoreLocationProvider = true;
     }

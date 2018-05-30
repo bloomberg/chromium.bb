@@ -2450,6 +2450,13 @@ std::string ChromeContentBrowserClient::GetGeolocationApiKey() {
   return google_apis::GetAPIKey();
 }
 
+#if defined(OS_ANDROID)
+bool ChromeContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
+  // Indicate that Chrome uses the GMS core location provider.
+  return true;
+}
+#endif
+
 QuotaPermissionContext*
 ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();

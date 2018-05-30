@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/public/cpp/location_provider.h"
@@ -55,15 +56,21 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
   // instantiated on the same thread. Ownership is NOT returned.
   static GeolocationProviderImpl* GetInstance();
 
-  // Optional: Provide a callback to produce a request context for network
-  // geolocation requests. Provide a Google API key for network geolocation
-  // requests. Provide a callback which can return a custom location provider
-  // from embedder. Call before using Init() on the singleton GetInstance().
-  static void SetGeolocationGlobals(
+  // Optional: Provide global configuration to Geolocation. Should be called
+  // before using Init() on the singleton GetInstance().
+  // |request_context_producer| : a callback to produce a request context for
+  // network geolocation requests.
+  // |api_key| : a Google API key for network geolocation requests.
+  // |custom_location_provider_getter| : a callback which returns a custom
+  // location provider from embedder.
+  // |use_gms_core_location_provider| : For android only, a flag indicates
+  // whether using the GMS core location provider.
+  static void SetGeolocationConfiguration(
       const GeolocationProvider::RequestContextProducer
           request_context_producer,
       const std::string& api_key,
-      const CustomLocationProviderCallback& callback);
+      const CustomLocationProviderCallback& custom_location_provider_getter,
+      bool use_gms_core_location_provider = false);
 
   void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);
 

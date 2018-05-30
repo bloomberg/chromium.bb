@@ -557,6 +557,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // * Default implementation returns empty string, meaning send no API key.
   virtual std::string GetGeolocationApiKey();
 
+#if defined(OS_ANDROID)
+  // Allows an embedder to decide whether to use the GmsCoreLocationProvider.
+  virtual bool ShouldUseGmsCoreGeolocationProvider();
+#endif
+
   // Allow the embedder to specify a string version of the storage partition
   // config with a site.
   virtual std::string GetStoragePartitionIdForSite(

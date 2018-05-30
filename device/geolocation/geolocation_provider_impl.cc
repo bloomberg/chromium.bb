@@ -19,6 +19,11 @@
 #include "device/geolocation/location_arbitrator.h"
 #include "device/geolocation/public/cpp/geoposition.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "jni/LocationProviderFactory_jni.h"
+#endif
+
 namespace device {
 
 namespace {
@@ -35,13 +40,22 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 }
 
 // static
-void GeolocationProviderImpl::SetGeolocationGlobals(
+void GeolocationProviderImpl::SetGeolocationConfiguration(
     const GeolocationProvider::RequestContextProducer request_context_producer,
     const std::string& api_key,
-    const CustomLocationProviderCallback& callback) {
+    const CustomLocationProviderCallback& custom_location_provider_getter,
+    bool use_gms_core_location_provider) {
   g_request_context_producer.Get() = request_context_producer;
   g_api_key.Get() = api_key;
-  g_custom_location_provider_callback.Get() = callback;
+  g_custom_location_provider_callback.Get() = custom_location_provider_getter;
+  if (use_gms_core_location_provider) {
+#if defined(OS_ANDROID)
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_LocationProviderFactory_useGmsCoreLocationProvider(env);
+#else
+    NOTREACHED() << "GMS core location provider is only available for Android";
+#endif
+  }
 }
 
 std::unique_ptr<GeolocationProvider::Subscription>

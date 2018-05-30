@@ -220,6 +220,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
           callback) override;
   std::string GetGeolocationApiKey() override;
+
+#if defined(OS_ANDROID)
+  bool ShouldUseGmsCoreGeolocationProvider() override;
+#endif
+
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
   void GetQuotaSettings(
       content::BrowserContext* context,
