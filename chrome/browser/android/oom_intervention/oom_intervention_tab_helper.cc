@@ -4,11 +4,10 @@
 
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/android/oom_intervention/oom_intervention_config.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
 #include "chrome/browser/ui/android/infobars/near_oom_infobar.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -58,22 +57,6 @@ void RecordInterventionStateOnCrash(bool accepted) {
       "Memory.Experimental.OomIntervention.InterventionStateOnCrash", accepted);
 }
 
-// Field trial parameter names.
-const char kRendererPauseParamName[] = "pause_renderer";
-const char kShouldDetectInRenderer[] = "detect_in_renderer";
-
-bool RendererPauseIsEnabled() {
-  static bool enabled = base::GetFieldTrialParamByFeatureAsBool(
-      features::kOomIntervention, kRendererPauseParamName, false);
-  return enabled;
-}
-
-bool ShouldDetectInRenderer() {
-  static bool enabled = base::GetFieldTrialParamByFeatureAsBool(
-      features::kOomIntervention, kShouldDetectInRenderer, true);
-  return enabled;
-}
-
 }  // namespace
 
 // static
@@ -87,8 +70,6 @@ OomInterventionTabHelper::OomInterventionTabHelper(
       decider_(OomInterventionDecider::GetForBrowserContext(
           web_contents->GetBrowserContext())),
       binding_(this),
-      renderer_memory_workload_threshold_(
-          NearOomMonitor::GetInstance()->renderer_workload_threshold()),
       weak_ptr_factory_(this) {
   OutOfMemoryReporter::FromWebContents(web_contents)->AddObserver(this);
   shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
@@ -269,7 +250,7 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
   if (near_oom_detected_time_)
     return;
 
-  if (ShouldDetectInRenderer()) {
+  if (OomInterventionConfig::GetInstance()->should_detect_in_renderer()) {
     if (binding_.is_bound())
       return;
     StartDetectionInRenderer();
@@ -281,7 +262,7 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
 }
 
 void OomInterventionTabHelper::StopMonitoring() {
-  if (ShouldDetectInRenderer()) {
+  if (OomInterventionConfig::GetInstance()->should_detect_in_renderer()) {
     ResetInterfaces();
   } else {
     subscription_.reset();
@@ -289,7 +270,8 @@ void OomInterventionTabHelper::StopMonitoring() {
 }
 
 void OomInterventionTabHelper::StartDetectionInRenderer() {
-  bool trigger_intervention = RendererPauseIsEnabled();
+  auto* config = OomInterventionConfig::GetInstance();
+  bool trigger_intervention = config->is_renderer_pause_enabled();
   if (trigger_intervention && decider_) {
     DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
     const std::string& host = web_contents()->GetVisibleURL().host();
@@ -307,11 +289,11 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   binding_.Bind(mojo::MakeRequest(&host));
   intervention_->StartDetection(
       std::move(host), shared_metrics_buffer_.Duplicate(),
-      renderer_memory_workload_threshold_, trigger_intervention);
+      config->renderer_workload_threshold(), trigger_intervention);
 }
 
 void OomInterventionTabHelper::OnNearOomDetected() {
-  DCHECK(!ShouldDetectInRenderer());
+  DCHECK(!OomInterventionConfig::GetInstance()->should_detect_in_renderer());
   DCHECK_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
   DCHECK(!near_oom_detected_time_);
   subscription_.reset();
