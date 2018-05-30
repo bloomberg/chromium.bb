@@ -43,6 +43,11 @@ const char kAppBannersDescription[] =
 const char kAshSidebarName[] = "Sidebar";
 const char kAshSidebarDescription[] = "Enable the experimental sidebar.";
 
+const char kEnableBlinkHeapIncrementalMarkingName[] =
+    "Blink Heap Incremental Marking";
+const char kEnableBlinkHeapIncrementalMarkingDescription[] =
+    "Enable incremental marking in Blink";
+
 const char kSystemTrayUnifiedName[] = "New system menu";
 const char kSystemTrayUnifiedDescription[] =
     "Enable the experimental system menu.";

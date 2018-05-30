@@ -35,6 +35,10 @@
 
 namespace blink {
 
+void WebRuntimeFeatures::EnableBlinkHeapIncrementalMarking(bool enable) {
+  RuntimeEnabledFeatures::SetHeapIncrementalMarkingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableExperimentalFeatures(bool enable) {
   RuntimeEnabledFeatures::SetExperimentalFeaturesEnabled(enable);
 }

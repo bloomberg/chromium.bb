@@ -27710,6 +27710,7 @@ from previous Chrome versions.
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
+  <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
@@ -28530,6 +28531,7 @@ from previous Chrome versions.
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
+  <int value="2123183411" label="BlinkHeapIncrementalMarking:enabled"/>
   <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>

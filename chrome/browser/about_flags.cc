@@ -3843,16 +3843,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutoplayIgnoreWebAudioDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kAutoplayIgnoreWebAudio)},
 
-    // NOTE: Adding a new flag requires adding a corresponding entry to enum
-    // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
-    // Histograms" in tools/metrics/histograms/README.md (run the
-    // AboutFlagsHistogramTest unit test to verify this process).
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"uifood", flag_descriptions::kUiFoodName,
      flag_descriptions::kUiFoodDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kUiFood)},
 #endif
+
+    {"enable-blink-heap-incremental-marking",
+     flag_descriptions::kEnableBlinkHeapIncrementalMarkingName,
+     flag_descriptions::kEnableBlinkHeapIncrementalMarkingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBlinkHeapIncrementalMarking)},
+
+    // NOTE: Adding a new flag requires adding a corresponding entry to enum
+    // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
+    // Histograms" in tools/metrics/histograms/README.md (run the
+    // AboutFlagsHistogramTest unit test to verify this process).
 };
 
 class FlagsStateSingleton {
