@@ -155,6 +155,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                  'cups'}),
     GroupEntry(group='tun', gid=413, users={'crosvm', 'shill'}),
     GroupEntry(group='gpio', gid=414, users={'modem'}),
+    GroupEntry(group='shill', gid=20104, users={'shill', 'ipsec'}),
 ))
 
 GROUP_BASELINE_FREON = dict((e.group, e) for e in (
