@@ -143,8 +143,11 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
   if (lifecycle_unit()) {
     if (lifecycle_unit_sort_key_.last_focused_time == base::TimeTicks::Max())
       return ProcessType::FOCUSED_TAB;
-    if (!lifecycle_unit()->CanDiscard(DiscardReason::kProactive))
+    DecisionDetails decision_details;
+    if (!lifecycle_unit()->CanDiscard(DiscardReason::kProactive,
+                                      &decision_details)) {
       return ProcessType::PROTECTED_BACKGROUND_TAB;
+    }
     return ProcessType::BACKGROUND_TAB;
   }
   NOTREACHED() << "Unexpected process type";
@@ -530,7 +533,10 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 
 bool TabManagerDelegate::KillTab(LifecycleUnit* lifecycle_unit,
                                  DiscardReason reason) {
-  return lifecycle_unit->CanDiscard(reason) && lifecycle_unit->Discard(reason);
+  // TODO(chrisha): Report decision details!
+  DecisionDetails decision_details;
+  return lifecycle_unit->CanDiscard(reason, &decision_details) &&
+         lifecycle_unit->Discard(reason);
 }
 
 chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {

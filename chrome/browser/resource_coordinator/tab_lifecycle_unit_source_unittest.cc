@@ -15,6 +15,7 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
@@ -85,13 +86,6 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
 bool IsFocused(LifecycleUnit* lifecycle_unit) {
   return lifecycle_unit->GetLastFocusedTime() == base::TimeTicks::Max();
 }
-
-#define EXPECT_FOR_ALL_DISCARD_REASONS(lifecycle_unit, method, value)    \
-  do {                                                                   \
-    EXPECT_EQ(value, lifecycle_unit->method(DiscardReason::kExternal));  \
-    EXPECT_EQ(value, lifecycle_unit->method(DiscardReason::kProactive)); \
-    EXPECT_EQ(value, lifecycle_unit->method(DiscardReason::kUrgent));    \
-  } while (false)
 
 class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
  protected:
@@ -259,10 +253,10 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                   &second_lifecycle_unit);
 
     // Detach the non-active tab. Verify that it can no longer be discarded.
-    EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
+    ExpectCanDiscardTrueAllReasons(first_lifecycle_unit);
     std::unique_ptr<content::WebContents> owned_contents =
         tab_strip_model_->DetachWebContentsAt(0);
-    EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, false);
+    ExpectCanDiscardFalseTrivialAllReasons(first_lifecycle_unit);
 
     // Create a second tab strip.
     NoUnloadListenerTabStripModelDelegate other_tab_strip_model_delegate;
@@ -278,7 +272,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     // Insert the tab into the second tab strip without focusing it. Verify that
     // it can be discarded.
     other_tab_strip_model.AppendWebContents(std::move(owned_contents), false);
-    EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
+    ExpectCanDiscardTrueAllReasons(first_lifecycle_unit);
 
     EXPECT_EQ(LifecycleState::ACTIVE, first_lifecycle_unit->GetState());
     EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
@@ -399,7 +393,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
         tab_strip_model_->GetWebContentsAt(0);
 
     // It should be possible to discard the background tab.
-    EXPECT_FOR_ALL_DISCARD_REASONS(background_lifecycle_unit, CanDiscard, true);
+    ExpectCanDiscardTrueAllReasons(background_lifecycle_unit);
 
     // Discard the tab.
     EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());
@@ -428,14 +422,15 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
     // It shouldn't be possible to discard the background tab again, except for
     // an urgent discard on ChromeOS.
-    EXPECT_FALSE(
-        background_lifecycle_unit->CanDiscard(DiscardReason::kExternal));
-    EXPECT_FALSE(
-        background_lifecycle_unit->CanDiscard(DiscardReason::kProactive));
+    ExpectCanDiscardFalseTrivial(background_lifecycle_unit,
+                                 DiscardReason::kExternal);
+    ExpectCanDiscardFalseTrivial(background_lifecycle_unit,
+                                 DiscardReason::kProactive);
 #if defined(OS_CHROMEOS)
-    EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
+    ExpectCanDiscardTrue(background_lifecycle_unit, DiscardReason::kUrgent);
 #else
-    EXPECT_FALSE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
+    ExpectCanDiscardFalseTrivial(background_lifecycle_unit,
+                                 DiscardReason::kUrgent);
 #endif
   }
 
@@ -638,7 +633,7 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
   task_runner_->FastForwardBy(kShortDelay);
 
   // It should be possible to discard the background tab.
-  EXPECT_FOR_ALL_DISCARD_REASONS(background_lifecycle_unit, CanDiscard, true);
+  ExpectCanDiscardTrueAllReasons(background_lifecycle_unit);
 
   // Discard the tab. Use DiscardReason::kUrgent to force the discard.
   EXPECT_EQ(LifecycleState::ACTIVE, background_lifecycle_unit->GetState());

@@ -13,12 +13,14 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/decision_details.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "content/public/browser/visibility.h"
 
 namespace resource_coordinator {
 
+class DecisionDetails;
 class LifecycleUnitObserver;
 class TabLifecycleUnitExternal;
 
@@ -126,11 +128,20 @@ class LifecycleUnit {
   // not on a LifecycleUnit. https://crbug.com/775644
   virtual bool CanPurge() const = 0;
 
-  // Returns true if this LifecycleUnit can be frozen.
-  virtual bool CanFreeze() const = 0;
+  // Returns true if this LifecycleUnit can be frozen. Full details regarding
+  // the policy decision are recorded in |decision_details|, for logging.
+  // Returning false but with an empty |decision_details| means the transition
+  // is not possible for a trivial reason that doesn't need to be reported (ie,
+  // the page is already frozen).
+  virtual bool CanFreeze(DecisionDetails* decision_details) const = 0;
 
-  // Returns true if this LifecycleUnit can be discared.
-  virtual bool CanDiscard(DiscardReason reason) const = 0;
+  // Returns true if this LifecycleUnit can be discarded. Full details regarding
+  // the policy decision are recorded in the |decision_details|, for logging.
+  // Returning false but with an empty |decision_details| means the transition
+  // is not possible for a trivial reason that doesn't need to be reported
+  // (ie, the page is already discarded).
+  virtual bool CanDiscard(DiscardReason reason,
+                          DecisionDetails* decision_details) const = 0;
 
   // Discards this LifecycleUnit.
   //

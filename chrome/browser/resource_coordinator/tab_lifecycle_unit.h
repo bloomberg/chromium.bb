@@ -86,8 +86,9 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool Freeze() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanPurge() const override;
-  bool CanFreeze() const override;
-  bool CanDiscard(DiscardReason reason) const override;
+  bool CanFreeze(DecisionDetails* decision_details) const override;
+  bool CanDiscard(DiscardReason reason,
+                  DecisionDetails* decision_details) const override;
   bool Discard(DiscardReason discard_reason) override;
 
   // TabLifecycleUnitExternal:
@@ -109,6 +110,10 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   friend class TabLifecycleUnitSource;
 
  private:
+  // Determines if the tab is a media tab, and populates an optional
+  // |decision_details| with full details.
+  bool IsMediaTabImpl(DecisionDetails* decision_details) const;
+
   // For non-urgent discarding, sends a request for freezing to occur prior to
   // discarding the tab.
   void RequestFreezeForDiscard(DiscardReason reason);

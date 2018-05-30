@@ -230,14 +230,15 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanPurge() const {
   return !IsMediaTab();
 }
 
-bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze() const {
+bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
+    DecisionDetails* decision_details) const {
+  DCHECK(decision_details->reasons().empty());
+
+  // Leave the |decision_details| empty and return immediately for "trivial"
+  // rejection reasons. These aren't worth reporting about, as they have nothing
+  // to do with the content itself.
+
   if (IsFrozen())
-    return false;
-
-  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
-    return false;
-
-  if (IsMediaTab())
     return false;
 
   // Allow a page to load fully before freezing it.
@@ -246,11 +247,39 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze() const {
     return false;
   }
 
-  return true;
+  // TODO(chrisha): Integrate local database observations into this policy
+  // decision.
+
+  // We deliberately run through all of the logic without early termination.
+  // This ensures that the decision details lists all possible reasons that the
+  // transition can be denied.
+
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
+    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
+
+  // Do not freeze tabs that are casting/mirroring/playing audio.
+  IsMediaTabImpl(decision_details);
+
+  // TODO(chrisha): Add integration of feature policy and global whitelist
+  // logic. In the meantime, the only success reason is because the heuristic
+  // deems the operation to be safe.
+  if (decision_details->reasons().empty()) {
+    decision_details->AddReason(
+        DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE);
+    DCHECK(decision_details->IsPositive());
+  }
+  return decision_details->IsPositive();
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
-    DiscardReason reason) const {
+    DiscardReason reason,
+    DecisionDetails* decision_details) const {
+  DCHECK(decision_details->reasons().empty());
+
+  // Leave the |decision_details| empty and return immediately for "trivial"
+  // rejection reasons. These aren't worth reporting about, as they have nothing
+  // to do with the content itself.
+
   // Can't discard a tab that isn't in a TabStripModel.
   if (!tab_strip_model_)
     return false;
@@ -262,15 +291,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   if (GetWebContents()->IsCrashed())
     return false;
 
-#if defined(OS_CHROMEOS)
-  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
-    return false;
-#else
-  // Do not discard the tab if it is currently active in its window.
-  if (tab_strip_model_->GetActiveWebContents() == GetWebContents())
-    return false;
-#endif  // defined(OS_CHROMEOS)
-
   // Do not discard tabs that don't have a valid URL (most probably they have
   // just been opened and discarding them would lose the URL).
   // TODO(fdoray): Look into a workaround to be able to kill the tab without
@@ -280,39 +300,68 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     return false;
   }
 
+  // Do not discard a tab that has already been discarded. Since this is being
+  // removed there is no way to communicate that to the heuristic. Treat this
+  // as a "trivial" rejection reason for now and return with an empty decision
+  // details.
+  // TODO(fdoray): Allow tabs to be discarded more than once.
+  // https://crbug.com/794622
+  if (discard_count_ > 0) {
+#if defined(OS_CHROMEOS)
+    // On ChromeOS this can be ignored for urgent discards, where running out of
+    // memory leads to a kernel panic.
+    if (reason != DiscardReason::kUrgent)
+      return false;
+#else
+    return false;
+#endif  // defined(OS_CHROMEOS)
+  }
+
+// TODO(chrisha): Integrate local database observations into this policy
+// decision.
+
+// We deliberately run through all of the logic without early termination.
+// This ensures that the decision details lists all possible reasons that the
+// transition can be denied.
+
+#if defined(OS_CHROMEOS)
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
+    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
+#else
+  // Do not discard the tab if it is currently active in its window.
+  if (tab_strip_model_->GetActiveWebContents() == GetWebContents())
+    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
+#endif  // defined(OS_CHROMEOS)
+
   // Do not discard tabs in which the user has entered text in a form.
   if (GetWebContents()->GetPageImportanceSignals().had_form_interaction)
-    return false;
+    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_FORM_ENTRY);
 
-  // Do not discard media tabs as it's too distruptive to the user experience.
-  if (IsMediaTab())
-    return false;
+  // Do not discard tabs that are casting/mirroring/playing audio.
+  IsMediaTabImpl(decision_details);
 
   // Do not discard PDFs as they might contain entry that is not saved and they
   // don't remember their scrolling positions. See crbug.com/547286 and
   // crbug.com/65244.
   // TODO(fdoray): Remove this workaround when the bugs are fixed.
   if (GetWebContents()->GetContentsMimeType() == "application/pdf")
-    return false;
+    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_IS_PDF);
 
   // Do not discard a tab that was explicitly disallowed to.
-  if (!IsAutoDiscardable())
-    return false;
+  if (!IsAutoDiscardable()) {
+    decision_details->AddReason(
+        DecisionFailureReason::LIVE_STATE_EXTENSION_DISALLOWED);
+  }
 
-#if defined(OS_CHROMEOS)
-  // The following protections are ignored on ChromeOS during urgent discard,
-  // because running out of memory would lead to a kernel panic.
-  if (reason == DiscardReason::kUrgent)
-    return true;
-#endif  // defined(OS_CHROMEOS)
-
-  // Do not discard a tab that has already been discarded.
-  // TODO(fdoray): Allow tabs to be discarded more than once.
-  // https://crbug.com/794622
-  if (discard_count_ > 0)
-    return false;
-
-  return true;
+  // TODO(chrisha): Add integration of feature policy and global whitelist
+  // logic. In the meantime, the only success reason is because the heuristic
+  // deems the operation to be safe.
+  if (decision_details->reasons().empty()) {
+    decision_details->AddReason(
+        DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE);
+    DCHECK(decision_details->IsPositive());
+  }
+  return decision_details->IsPositive();
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
@@ -438,25 +487,7 @@ content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTab() const {
-  // TODO(fdoray): Consider being notified of audible, capturing and mirrored
-  // state changes via WebContentsDelegate::NavigationStateChanged().
-  // https://crbug.com/775644
-
-  if (recently_audible_time_ == base::TimeTicks::Max() ||
-      (!recently_audible_time_.is_null() &&
-       NowTicks() - recently_audible_time_ < kTabAudioProtectionTime)) {
-    return true;
-  }
-
-  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  if (media_indicator->IsCapturingUserMedia(GetWebContents()) ||
-      media_indicator->IsBeingMirrored(GetWebContents())) {
-    return true;
-  }
-
-  return false;
+  return IsMediaTabImpl(nullptr);
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsAutoDiscardable() const {
@@ -500,6 +531,44 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
   return discard_count_;
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTabImpl(
+    DecisionDetails* decision_details) const {
+  // TODO(fdoray): Consider being notified of audible, capturing and mirrored
+  // state changes via WebContentsDelegate::NavigationStateChanged() and/or
+  // WebContentsObserver::OnAudioStateChanged and/or RecentlyAudibleHelper.
+  // https://crbug.com/775644
+
+  bool is_media_tab = false;
+
+  if (recently_audible_time_ == base::TimeTicks::Max() ||
+      (!recently_audible_time_.is_null() &&
+       NowTicks() - recently_audible_time_ < kTabAudioProtectionTime)) {
+    is_media_tab = true;
+    if (decision_details) {
+      decision_details->AddReason(
+          DecisionFailureReason::LIVE_STATE_PLAYING_AUDIO);
+    }
+  }
+
+  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
+
+  if (media_indicator->IsCapturingUserMedia(GetWebContents())) {
+    is_media_tab = true;
+    if (decision_details)
+      decision_details->AddReason(DecisionFailureReason::LIVE_STATE_CAPTURING);
+  }
+
+  if (media_indicator->IsBeingMirrored(GetWebContents())) {
+    is_media_tab = true;
+    if (decision_details)
+      decision_details->AddReason(DecisionFailureReason::LIVE_STATE_MIRRORING);
+  }
+
+  return is_media_tab;
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::OnDiscardedStateChange() {

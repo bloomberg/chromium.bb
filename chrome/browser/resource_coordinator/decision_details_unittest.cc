@@ -142,7 +142,7 @@ TEST(DecisionDetailsTest, DecisionDetails) {
   EXPECT_TRUE(details.toggled());
 
   // Clear and go back to the initial state.
-  details.ClearForTesting();
+  details.Clear();
   EXPECT_EQ(0u, details.reasons().size());
   EXPECT_FALSE(details.IsPositive());
   EXPECT_FALSE(details.toggled());
