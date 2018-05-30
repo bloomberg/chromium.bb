@@ -1446,7 +1446,7 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
 TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
   struct TestState {
     int64_t database_id;
-    const int64_t object_store_id = 99;
+    int64_t object_store_id = 99;
   } state;
 
   // The database metadata needs to be written so we can verify the blob entry
@@ -1568,6 +1568,9 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
             EXPECT_TRUE(found);
             EXPECT_EQ(3, found_int);
+
+            // Clean up Transactions, etc on the IDB thread.
+            *state = TestState();
           },
           base::Unretained(backing_store()), key1_, value1_,
           base::Unretained(&state)));
@@ -1582,7 +1585,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
   struct TestState {
     int64_t database_id;
-    const int64_t object_store_id = 99;
+    int64_t object_store_id = 99;
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1;
     scoped_refptr<TestCallback> callback1;
     std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3;
@@ -1677,6 +1680,9 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
             const std::string schema_version_key = SchemaVersionKey::Encode();
             indexed_db::PutInt(transaction.get(), schema_version_key, 2);
             ASSERT_TRUE(transaction->Commit().ok());
+
+            // Clean up Transactions, etc on the IDB thread.
+            *state = TestState();
           },
           base::Unretained(this), base::Unretained(&state)));
   RunAllTasksUntilIdle();
