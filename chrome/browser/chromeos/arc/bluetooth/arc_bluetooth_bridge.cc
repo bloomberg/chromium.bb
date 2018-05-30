@@ -820,8 +820,10 @@ void ArcBluetoothBridge::OnNotificationsStop(
 void ArcBluetoothBridge::EnableAdapter(EnableAdapterCallback callback) {
   DCHECK(bluetooth_adapter_);
   if (IsPowerChangeInitiatedByLocal(AdapterPowerState::TURN_ON)) {
+    BLUETOOTH_LOG(EVENT) << "Received a request to enable adapter (local)";
     DequeueLocalPowerChange(AdapterPowerState::TURN_ON);
   } else {
+    BLUETOOTH_LOG(EVENT) << "Received a request to enable adapter (remote)";
     if (!bluetooth_adapter_->IsPowered()) {
       EnqueueRemotePowerChange(AdapterPowerState::TURN_ON, std::move(callback));
       return;
@@ -834,8 +836,10 @@ void ArcBluetoothBridge::EnableAdapter(EnableAdapterCallback callback) {
 void ArcBluetoothBridge::DisableAdapter(DisableAdapterCallback callback) {
   DCHECK(bluetooth_adapter_);
   if (IsPowerChangeInitiatedByLocal(AdapterPowerState::TURN_OFF)) {
+    BLUETOOTH_LOG(EVENT) << "Received a request to disable adapter (local)";
     DequeueLocalPowerChange(AdapterPowerState::TURN_OFF);
   } else {
+    BLUETOOTH_LOG(EVENT) << "Received a request to disable adapter (remote)";
     if (bluetooth_adapter_->IsPowered()) {
       EnqueueRemotePowerChange(AdapterPowerState::TURN_OFF,
                                std::move(callback));
@@ -1510,6 +1514,8 @@ void ArcBluetoothBridge::SendBluetoothPoweredStateBroadcast(
   bool write_success = base::JSONWriter::Write(extras, &extras_json);
   DCHECK(write_success);
 
+  BLUETOOTH_LOG(EVENT) << "Sending Android intent to set power: "
+                       << (powered == AdapterPowerState::TURN_ON);
   intent_instance->SendBroadcast(
       ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
           "SET_BLUETOOTH_STATE"),
