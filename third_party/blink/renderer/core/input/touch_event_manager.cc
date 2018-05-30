@@ -19,12 +19,34 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 namespace {
+
+// Returns true if there are event listeners of |handler_class| on |touch_node|
+// or any of its ancestors inside the document (including DOMWindow).
+bool HasEventHandlerInAncestorPath(
+    Node* touch_node,
+    EventHandlerRegistry::EventHandlerClass handler_class) {
+  Document& document = touch_node->GetDocument();
+  const EventTargetSet* event_target_set =
+      document.GetFrame()->GetEventHandlerRegistry().EventHandlerTargets(
+          handler_class);
+
+  if (event_target_set->Contains(document.domWindow()))
+    return true;
+
+  for (Node& ancestor : NodeTraversal::InclusiveAncestorsOf(*touch_node)) {
+    if (event_target_set->Contains(&ancestor))
+      return true;
+  }
+
+  return false;
+}
 
 bool HasTouchHandlers(const EventHandlerRegistry& registry) {
   return registry.HasEventHandlers(
@@ -464,6 +486,9 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     }
   }
 
+  if (should_enforce_vertical_scroll_)
+    event_result = EnsureVerticalScrollIsPossible(event_result);
+
   // Suppress following touchmoves within the slop region if the touchstart is
   // not consumed.
   if (all_touch_points_pressed &&
@@ -547,10 +572,24 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
 
   TouchAction effective_touch_action =
       TouchActionUtil::ComputeEffectiveTouchAction(*touch_node);
-  if (effective_touch_action != TouchAction::kTouchActionAuto) {
-    frame_->GetPage()->GetChromeClient().SetTouchAction(frame_,
-                                                        effective_touch_action);
 
+  should_enforce_vertical_scroll_ =
+      IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kVerticalScroll) &&
+      !touch_sequence_document_->GetFrame()->IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kVerticalScroll);
+  if (should_enforce_vertical_scroll_ &&
+      HasEventHandlerInAncestorPath(
+          touch_node, EventHandlerRegistry::kTouchStartOrMoveEventBlocking)) {
+    delayed_effective_touch_action_ = delayed_effective_touch_action_.value_or(
+                                          TouchAction::kTouchActionAuto) &
+                                      effective_touch_action;
+  }
+  if (effective_touch_action != TouchAction::kTouchActionAuto) {
+    if (!delayed_effective_touch_action_) {
+      frame_->GetPage()->GetChromeClient().SetTouchAction(
+          frame_, effective_touch_action);
+    }
     // Combine the current touch action sequence with the touch action
     // for the current finger press.
     current_touch_action_ &= effective_touch_action;
@@ -648,10 +687,44 @@ void TouchEventManager::AllTouchesReleasedCleanup() {
   touch_sequence_document_.Clear();
   current_touch_action_ = TouchAction::kTouchActionAuto;
   last_coalesced_touch_event_ = WebTouchEvent();
+  // Ideally, we should have DCHECK(!delayed_effective_touch_action_) but we do
+  // we do actually get here from HandleTouchPoint(). Supposedly, if there has
+  // been a |touch_sequence_document_| and nothing in the |touch_attribute_map_|
+  // we still get here and if |touch_sequence_document| was of the type which
+  // cannot block scroll, then the flag is certainly set
+  // (https://crbug.com/345372).
+  delayed_effective_touch_action_ = base::nullopt;
+  should_enforce_vertical_scroll_ = false;
 }
 
 bool TouchEventManager::IsAnyTouchActive() const {
   return !touch_attribute_map_.IsEmpty();
+}
+
+WebInputEventResult TouchEventManager::EnsureVerticalScrollIsPossible(
+    WebInputEventResult event_result) {
+  bool prevent_defaulted =
+      event_result == WebInputEventResult::kHandledApplication;
+  if (prevent_defaulted && delayed_effective_touch_action_) {
+    // Make sure that only vertical scrolling is permitted.
+    *delayed_effective_touch_action_ &= TouchAction::kTouchActionPanY;
+  }
+
+  if (delayed_effective_touch_action_) {
+    // If 'touchstart' is preventDefault()-ed then we can proceed with reporting
+    // the effective 'touch-action'.
+    // TODO(ekaramad): This does not block horizontal scroll after enforcing
+    // vertical scrolling. We should ideally send the 'touch-action' to browser
+    // after the first 'touchmove' event has been dispatched.
+    // (https://crbug.com/844493).
+    frame_->GetPage()->GetChromeClient().SetTouchAction(
+        frame_, delayed_effective_touch_action_.value());
+    delayed_effective_touch_action_ = base::nullopt;
+  }
+
+  // If the event was canceled the result is ignored to make sure vertical
+  // scrolling is possible.
+  return prevent_defaulted ? WebInputEventResult::kNotHandled : event_result;
 }
 
 }  // namespace blink
