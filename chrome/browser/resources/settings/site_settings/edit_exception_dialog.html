@@ -8,7 +8,13 @@
 
 <dom-module id="settings-edit-exception-dialog">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      cr-dialog {
+        --cr-dialog-body: {
+          height: 68px;
+        };
+      }
+    </style>
     <cr-dialog id="dialog">
       <div slot="title">$i18n{editSiteTitle}</div>
       <div slot="body">
