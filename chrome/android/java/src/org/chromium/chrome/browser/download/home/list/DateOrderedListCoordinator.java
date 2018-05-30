@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
+import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 
 /**
@@ -17,7 +18,8 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 public class DateOrderedListCoordinator {
     private final FilterCoordinator mFilterCoordinator;
 
-    private final DateOrderedListModel mModel;
+    private final ListItemModel mModel;
+    private final DecoratedListItemModel mDecoratedModel;
     private final DateOrderedListMediator mMediator;
     private final DateOrderedListView mView;
 
@@ -27,13 +29,15 @@ public class DateOrderedListCoordinator {
      * @param provider The {@link OfflineContentProvider} to visually represent.
      */
     public DateOrderedListCoordinator(Context context, OfflineContentProvider provider) {
-        mModel = new DateOrderedListModel();
+        mModel = new ListItemModel();
+        mDecoratedModel = new DecoratedListItemModel(mModel);
         mMediator = new DateOrderedListMediator(provider, mModel);
-        mView = new DateOrderedListView(context, mModel);
+        mView = new DateOrderedListView(context, mDecoratedModel);
 
         // Hook up the FilterCoordinator with our mediator.
         mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(filter -> mMediator.onFilterTypeSelected(filter));
+        mDecoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
     }
 
     /** Tears down this coordinator. */
