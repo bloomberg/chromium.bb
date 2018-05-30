@@ -396,7 +396,10 @@ void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
-  icon_->SetImage(icon);
+  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
+      icon, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kTileIconSize, kTileIconSize)));
+  icon_->SetImage(resized);
 }
 
 void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
