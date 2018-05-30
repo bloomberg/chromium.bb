@@ -288,10 +288,6 @@ extern const base::Feature kShowTrustedPublisherURL;
 
 extern const base::Feature kSiteSettings;
 
-#if defined(OS_ANDROID)
-extern const base::Feature kSiteNotificationChannels;
-#endif
-
 extern const base::Feature kSitePerProcess;
 
 extern const base::Feature kSitePerProcessOnlyForHighMemoryClients;

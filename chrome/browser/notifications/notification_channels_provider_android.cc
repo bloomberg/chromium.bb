@@ -239,31 +239,6 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
   prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, true);
 }
 
-void NotificationChannelsProviderAndroid::UnmigrateChannelsIfNecessary(
-    PrefService* prefs,
-    content_settings::ProviderInterface* pref_provider) {
-  if (!platform_supports_channels_ ||
-      !prefs->GetBoolean(prefs::kMigratedToSiteNotificationChannels)) {
-    return;
-  }
-  std::unique_ptr<content_settings::RuleIterator> it(
-      GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-                      false /* incognito */));
-  while (it && it->HasNext()) {
-    const content_settings::Rule& rule = it->Next();
-    pref_provider->SetWebsiteSetting(rule.primary_pattern,
-                                     rule.secondary_pattern,
-                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                     content_settings::ResourceIdentifier(),
-                                     new base::Value(rule.value->Clone()));
-  }
-  for (auto& channel : bridge_->GetChannels())
-    bridge_->DeleteChannel(channel.id);
-  cached_channels_.clear();
-
-  prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, false);
-}
-
 void NotificationChannelsProviderAndroid::ClearBlockedChannelsIfNecessary(
     PrefService* prefs,
     TemplateURLService* template_url_service) {

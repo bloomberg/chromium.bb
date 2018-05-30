@@ -112,8 +112,6 @@ class FakeNotificationChannelsBridge
 class NotificationChannelsProviderAndroidTest : public testing::Test {
  public:
   NotificationChannelsProviderAndroidTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteNotificationChannels);
     profile_ = std::make_unique<TestingProfile>();
     // Creating a test profile creates an (inaccessible) NCPA and migrates
     // (zero) channels, setting the 'migrated' pref to true in the process, so
@@ -637,59 +635,6 @@ TEST_F(NotificationChannelsProviderAndroidTest,
   channels_provider_->MigrateToChannelsIfNecessary(profile_->GetPrefs(),
                                                    old_provider.get());
   EXPECT_EQ(fake_bridge_->GetChannels().size(), 0u);
-}
-
-TEST_F(NotificationChannelsProviderAndroidTest,
-       UnmigrateChannels_DeletesChannelsAndUpdatesPrefProvider) {
-  InitChannelsProvider(true /* should_use_channels */);
-  auto mock_pref_provider = std::make_unique<content_settings::MockProvider>();
-  profile_->GetPrefs()->SetBoolean(prefs::kMigratedToSiteNotificationChannels,
-                                   true);
-
-  // Give the channels provider some notification settings to provide.
-  ContentSettingsPattern blocked_pattern =
-      ContentSettingsPattern::FromURLNoWildcard(GURL("https://blocked.com"));
-  ContentSettingsPattern allowed_pattern =
-      ContentSettingsPattern::FromURLNoWildcard(GURL("https://allowed.com"));
-  channels_provider_->SetWebsiteSetting(
-      blocked_pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      new base::Value(CONTENT_SETTING_BLOCK));
-  channels_provider_->SetWebsiteSetting(
-      allowed_pattern, ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      new base::Value(CONTENT_SETTING_ALLOW));
-  ASSERT_EQ(fake_bridge_->GetChannels().size(), 2u);
-
-  channels_provider_->UnmigrateChannelsIfNecessary(profile_->GetPrefs(),
-                                                   mock_pref_provider.get());
-  EXPECT_EQ(fake_bridge_->GetChannels().size(), 0u);
-
-  std::unique_ptr<content_settings::RuleIterator> it =
-      mock_pref_provider->GetRuleIterator(
-          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-          content_settings::ResourceIdentifier(), false /* incognito */);
-  bool checked_allowed = false;
-  bool checked_blocked = false;
-  for (size_t i = 0; i < 2; ++i) {
-    ASSERT_TRUE(it->HasNext());
-    const content_settings::Rule& rule = it->Next();
-    if (rule.primary_pattern == allowed_pattern) {
-      ASSERT_FALSE(checked_allowed);
-      EXPECT_EQ(CONTENT_SETTING_ALLOW,
-                content_settings::ValueToContentSetting(rule.value.get()));
-      checked_allowed = true;
-    } else {
-      ASSERT_FALSE(checked_blocked);
-      ASSERT_EQ(rule.primary_pattern, blocked_pattern);
-      EXPECT_EQ(CONTENT_SETTING_BLOCK,
-                content_settings::ValueToContentSetting(rule.value.get()));
-      checked_blocked = true;
-    }
-  }
-  EXPECT_FALSE(it->HasNext());
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      prefs::kMigratedToSiteNotificationChannels));
 }
 
 TEST_F(NotificationChannelsProviderAndroidTest,
