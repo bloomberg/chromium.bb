@@ -54,6 +54,8 @@ public class DownloadLocationPreferenceAdapter
 
         RadioButton radioButton = view.findViewById(R.id.radio_button);
         radioButton.setChecked(getSelectedItemId() == position);
+        radioButton.setTag(position);
+        radioButton.setOnClickListener(this);
 
         view.setEnabled(isEnabled(position));
 
