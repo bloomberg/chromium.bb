@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <cmath>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,44 +17,38 @@
 namespace display {
 namespace {
 
-// The maximum logical resolution width allowed when zooming out for a display.
-constexpr int kDefaultMaxZoomWidth = 4096;
-
-// The minimum logical resolution width allowed when zooming in for a display.
-constexpr int kDefaultMinZoomWidth = 640;
-
 // The total number of display zoom factors to enumerate.
 constexpr int kNumOfZoomFactors = 9;
+
+// A pair representing the list of zoom values for a given minimum display
+// resolution width.
+using ZoomListBucket = std::pair<int, std::array<float, kNumOfZoomFactors>>;
+
+// For displays with a device scale factor of unity, we use a static list of
+// initialized zoom values. For a given resolution width of a display, we can
+// find its associated list of zoom values by simply finding the last bucket
+// with a width less than the given resolution width.
+// Ex. A resolution width of 1024, we will use the bucket with the width of 960.
+constexpr std::array<ZoomListBucket, 8> kZoomListBuckets{{
+    {0, {0.60f, 0.65f, 0.70f, 0.75f, 0.80f, 0.85f, 0.90f, 0.95f, 1.f}},
+    {720, {0.70f, 0.75f, 0.80f, 0.85f, 0.90f, 0.95f, 1.f, 1.05f, 1.10f}},
+    {800, {0.75f, 0.80f, 0.85f, 0.90f, 0.95f, 1.f, 1.05f, 1.10f, 1.15f}},
+    {960, {0.90f, 0.95f, 1.f, 1.05f, 1.10f, 1.15f, 1.20f, 1.25f, 1.30f}},
+    {1280, {1.f, 1.10f, 1.15f, 1.20f, 1.25f, 1.30f, 1.50f, 1.70f, 1.80f}},
+    {1920, {1.f, 1.10f, 1.15f, 1.20f, 1.30f, 1.40f, 1.50f, 1.75f, 2.00f}},
+    {3840, {1.f, 1.10f, 1.20f, 1.40f, 1.60f, 1.80f, 2.00f, 2.20f, 2.40f}},
+    {5120, {1.f, 1.25f, 1.50f, 1.75f, 2.00f, 2.25f, 2.50f, 2.75f, 3.00f}},
+}};
 
 bool WithinEpsilon(float a, float b) {
   return std::abs(a - b) < std::numeric_limits<float>::epsilon();
 }
 
-// Clamps the delta between consecutive zoom factors to a user friendly and UI
-// friendly value.
-float ClampToUserFriendlyDelta(float delta) {
-  // NOTE: If these thresholds are updated, please also update aura-shell.xml.
-  // The list of deltas between two consecutive zoom level. Any display must
-  // have one of these values as the difference between two consecutive zoom
-  // level.
-  // The array of pair represents which user friendly delta value must the given
-  // raw |delta| be clamped to.
-  // std::pair::first - represents the threshold.
-  // std::pair::second - represents the user friendly clamped delta
-  constexpr std::array<std::pair<float, float>, 7> kZoomFactorDeltas = {
-      {{0.05f, 0.05f},
-       {0.1f, 0.1f},
-       {0.15f, 0.15f},
-       {0.2f, 0.2f},
-       {0.25f, 0.25f},
-       {0.7f, 0.3f},
-       {1.f, 0.5f}}};
-  std::size_t delta_index = 0;
-  while (delta_index < kZoomFactorDeltas.size() &&
-         delta >= kZoomFactorDeltas[delta_index].first) {
-    delta_index++;
-  }
-  return kZoomFactorDeltas[delta_index - 1].second;
+// Returns the user friendly delta to be used for the given |dsf|.
+float FindDeltaForDsf(float dsf) {
+  DCHECK_GT(dsf, 1.f);
+  const float raw_delta = (1.f - 1.f / dsf) / (kNumOfZoomFactors - 1.f);
+  return raw_delta > 0.05f ? 0.1f : 0.05f;
 }
 
 }  // namespace
@@ -117,59 +112,60 @@ bool IsPhysicalDisplayType(DisplayConnectionType type) {
 }
 
 std::vector<float> GetDisplayZoomFactors(const ManagedDisplayMode& mode) {
+  // Internal displays have an internal device scale factor greater than 1
+  // associated with them. This means that if we use the usual logic, we would
+  // end up with a list of zoom levels that the user may not find very useful.
+  // Take for example the pixelbook with device scale factor of 2. Based on the
+  // usual approach, we would get a zoom range of 100% to 180% with a step of
+  // 10% between each consecutive levels. This means:
+  //   1. Users will not be able to go to the native resolution which is
+  //      achieved at 50% zoom level.
+  //   2. Due to the device scale factor, the display already has a low DPI and
+  //      users dont want to zoom in, they mostly want to zoom out and add more
+  //      pixels to the screen. But we only provide a zoom list of 90% to 130%.
+  // This clearly shows we need a different logic to handle internal displays
+  // which have lower DPI due to the device scale factor associated with them.
+  //
+  // OTOH if we look at an external display with a device scale factor of 1 but
+  // the same resolution as the pixel book, the DPI would usually be very high
+  // and users mostly want to zoom in to reduce the number of pixels on the
+  // screen. So having a range of 90% to 130% makes sense.
+  // TODO(malaykeshav): Investigate if we can use DPI instead of resolution or
+  // device scale factor to decide the list of zoom levels.
+  if (mode.device_scale_factor() > 1.f)
+    return GetDisplayZoomFactorForDsf(mode.device_scale_factor());
+
+  // There may be cases where the device scale factor is less than 1. This can
+  // happen during testing or local linux builds.
   const int effective_width = std::round(
       static_cast<float>(mode.size().width()) / mode.device_scale_factor());
 
-  // We want to support displays greater than 4K. This is added to ensure the
-  // zoom does not break in such cases.
-  const int max_width = std::max(effective_width, kDefaultMaxZoomWidth);
-  const int min_width = std::min(effective_width, kDefaultMinZoomWidth);
+  std::size_t index = kZoomListBuckets.size() - 1;
+  while (index > 0 && effective_width < kZoomListBuckets[index].first)
+    index--;
+  DCHECK_GE(effective_width, kZoomListBuckets[index].first);
 
-  // The logical resolution will vary from half of the mode resolution to double
-  // the mode resolution.
-  int max_effective_width =
-      std::min(static_cast<int>(std::round(effective_width * 2.f)), max_width);
-  int min_effective_width =
-      std::max(static_cast<int>(std::round(effective_width / 2.f)), min_width);
+  const auto& zoom_array = kZoomListBuckets[index].second;
+  return std::vector<float>(zoom_array.begin(), zoom_array.end());
+}
 
-  // If either the maximum width or minimum width was reached in the above step
-  // and clamping was performed, then update the total range of logical
-  // resolutions and ensure that everything lies within the maximum and minimum
-  // resolution range.
-  const int interval = std::round(static_cast<float>(effective_width) * 1.5f);
-  if (max_effective_width == max_width)
-    min_effective_width = std::max(max_effective_width - interval, min_width);
-  if (min_effective_width == min_width)
-    max_effective_width = std::min(min_effective_width + interval, max_width);
+std::vector<float> GetDisplayZoomFactorForDsf(float dsf) {
+  DCHECK(!WithinEpsilon(dsf, 1.f));
+  DCHECK_GT(dsf, 1.f);
 
-  float max_zoom = static_cast<float>(effective_width) /
-                   static_cast<float>(min_effective_width);
-  float min_zoom = static_cast<float>(effective_width) /
-                   static_cast<float>(max_effective_width);
+  const float delta = FindDeltaForDsf(dsf);
+  const float inverse_dsf = 1.f / dsf;
+  int zoom_out_count = std::ceil((1.f - inverse_dsf) / delta);
+  zoom_out_count = std::min(zoom_out_count, kNumOfZoomFactors - 1);
 
-  float delta =
-      (max_zoom - min_zoom) / static_cast<float>(kNumOfZoomFactors - 1);
+  const float min_zoom = 1.f - delta * zoom_out_count;
 
-  // Number of zoom values above 100% zoom.
-  const int zoom_in_count = std::round((max_zoom - 1.f) / delta);
-
-  // Number of zoom values below 100% zoom.
-  const int zoom_out_count = kNumOfZoomFactors - zoom_in_count - 1;
-
-  delta = ClampToUserFriendlyDelta(delta);
-
-  // Populate the zoom values list.
-  min_zoom = 1.f - delta * zoom_out_count;
   std::vector<float> zoom_values;
   for (int i = 0; i < kNumOfZoomFactors; i++)
     zoom_values.push_back(min_zoom + i * delta);
 
-  // Make sure the inverse of the internal device scale factor is included in
-  // the list. This ensures that the users have a way to go to the native
-  // resolution and 1.0 effective device scale factor.
-  InsertDsfIntoList(&zoom_values, 1.f / mode.device_scale_factor());
-
-  DCHECK_EQ(zoom_values.size(), static_cast<std::size_t>(kNumOfZoomFactors));
+  // Ensure the inverse dsf is in the list.
+  zoom_values[0] = inverse_dsf;
   return zoom_values;
 }
 
@@ -194,7 +190,7 @@ void InsertDsfIntoList(std::vector<float>* zoom_values, float dsf) {
 
   // We dont need to add |dsf| to the list if it is already in the list.
   auto it = std::lower_bound(zoom_values->begin(), zoom_values->end(), dsf);
-  if (WithinEpsilon(*it, dsf))
+  if (it != zoom_values->end() && WithinEpsilon(*it, dsf))
     return;
 
   if (it == zoom_values->begin()) {
