@@ -31,6 +31,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -419,6 +420,7 @@ void Fullscreen::ContextDestroyed(ExecutionContext*) {
     full_screen_layout_object_->Destroy();
 
   pending_requests_.clear();
+  pending_exits_.clear();
   fullscreen_element_stack_.clear();
 }
 
@@ -429,9 +431,10 @@ void Fullscreen::RequestFullscreen(Element& pending) {
   RequestFullscreen(pending, FullscreenOptions(), RequestType::kPrefixed);
 }
 
-void Fullscreen::RequestFullscreen(Element& pending,
-                                   const FullscreenOptions& options,
-                                   RequestType request_type) {
+ScriptPromise Fullscreen::RequestFullscreen(Element& pending,
+                                            const FullscreenOptions& options,
+                                            RequestType request_type,
+                                            ScriptState* script_state) {
   RequestFullscreenScope scope;
 
   // 1. Let |pending| be the context object.
@@ -440,12 +443,24 @@ void Fullscreen::RequestFullscreen(Element& pending,
   Document& document = pending.GetDocument();
 
   // 3. Let |promise| be a new promise.
-  // TODO(foolip): Promises. https://crbug.com/644637
+  // For optimization allocate the ScriptPromiseResolver just after step 4.
+  ScriptPromiseResolver* resolver = nullptr;
 
   // 4. If |pendingDoc| is not fully active, then reject |promise| with a
   // TypeError exception and return |promise|.
-  if (!document.IsActive() || !document.GetFrame())
-    return;
+  if (!document.IsActive() || !document.GetFrame()) {
+    if (!script_state)
+      return ScriptPromise();
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), "Document not active"));
+  }
+
+  if (script_state) {
+    // We should only be creating promises for unprefixed variants.
+    DCHECK_EQ(Fullscreen::RequestType::kUnprefixed, request_type);
+    resolver = ScriptPromiseResolver::Create(script_state);
+  }
 
   bool for_cross_process_descendant =
       request_type == RequestType::kPrefixedForCrossProcessDescendant;
@@ -474,6 +489,7 @@ void Fullscreen::RequestFullscreen(Element& pending,
     error = true;
 
   // 7. Return |promise|, and run the remaining steps in parallel.
+  ScriptPromise promise = resolver ? resolver->Promise() : ScriptPromise();
 
   // 8. If |error| is false: Resize |pendingDoc|'s top-level browsing context's
   // document's viewport's dimensions to match the dimensions of the screen of
@@ -486,7 +502,7 @@ void Fullscreen::RequestFullscreen(Element& pending,
     }
 
     From(document).pending_requests_.push_back(
-        std::make_pair(&pending, request_type));
+        new PendingRequest(&pending, request_type, resolver));
     LocalFrame& frame = *document.GetFrame();
     frame.GetChromeClient().EnterFullscreen(frame, options);
   } else {
@@ -494,9 +510,11 @@ void Fullscreen::RequestFullscreen(Element& pending,
     // synchronously because when |error| is true, |ContinueRequestFullscreen()|
     // will only queue a task and return. This is indistinguishable from, e.g.,
     // enqueueing a microtask to continue at step 9.
-    ContinueRequestFullscreen(document, pending, request_type,
+    ContinueRequestFullscreen(document, pending, request_type, resolver,
                               true /* error */);
   }
+
+  return promise;
 }
 
 void Fullscreen::DidEnterFullscreen() {
@@ -513,10 +531,11 @@ void Fullscreen::DidEnterFullscreen() {
     return;
   }
 
-  ElementStack requests;
+  PendingRequests requests;
   requests.swap(pending_requests_);
-  for (const ElementStackEntry& request : requests) {
-    ContinueRequestFullscreen(*GetDocument(), *request.first, request.second,
+  for (const Member<PendingRequest>& request : requests) {
+    ContinueRequestFullscreen(*GetDocument(), *request->element(),
+                              request->type(), request->resolver(),
                               false /* error */);
   }
 }
@@ -524,6 +543,7 @@ void Fullscreen::DidEnterFullscreen() {
 void Fullscreen::ContinueRequestFullscreen(Document& document,
                                            Element& pending,
                                            RequestType request_type,
+                                           ScriptPromiseResolver* resolver,
                                            bool error) {
   DCHECK(document.IsActive());
   DCHECK(document.GetFrame());
@@ -543,6 +563,13 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
 
     // 10.2. Reject |promise| with a TypeError exception and terminate these
     // steps.
+    if (resolver) {
+      ScriptState::Scope scope(resolver->GetScriptState());
+      // TODO(dtapuska): Change error to be something useful instead of just a
+      // boolean and return this to the user.
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(), "fullscreen error"));
+    }
     return;
   }
 
@@ -594,6 +621,10 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
   }
 
   // 14. Resolve |promise| with undefined.
+  if (resolver) {
+    ScriptState::Scope scope(resolver->GetScriptState());
+    resolver->Resolve();
+  }
 }
 
 // https://fullscreen.spec.whatwg.org/#fully-exit-fullscreen
@@ -619,14 +650,24 @@ void Fullscreen::FullyExitFullscreen(Document& document) {
 }
 
 // https://fullscreen.spec.whatwg.org/#exit-fullscreen
-void Fullscreen::ExitFullscreen(Document& doc) {
+ScriptPromise Fullscreen::ExitFullscreen(Document& doc,
+                                         ScriptState* script_state) {
   // 1. Let |promise| be a new promise.
-  // TODO(foolip): Promises. https://crbug.com/644637
+  // ScriptPromiseResolver is allocated after step 2.
+  ScriptPromiseResolver* resolver = nullptr;
 
   // 2. If |doc| is not fully active or |doc|'s fullscreen element is null, then
   // reject |promise| with a TypeError exception and return |promise|.
-  if (!doc.IsActive() || !doc.GetFrame() || !FullscreenElementFrom(doc))
-    return;
+  if (!doc.IsActive() || !doc.GetFrame() || !FullscreenElementFrom(doc)) {
+    if (!script_state)
+      return ScriptPromise();
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(), "Document not active"));
+  }
+
+  if (script_state)
+    resolver = ScriptPromiseResolver::Create(script_state);
 
   // 3. Let |resize| be false.
   bool resize = false;
@@ -656,27 +697,48 @@ void Fullscreen::ExitFullscreen(Document& doc) {
   }
 
   // 7. Return |promise|, and run the remaining steps in parallel.
+  ScriptPromise promise = resolver ? resolver->Promise() : ScriptPromise();
 
   // 8. If |resize| is true, resize |doc|'s viewport to its "normal" dimensions.
   if (resize) {
+    From(doc).pending_exits_.push_back(resolver);
     LocalFrame& frame = *doc.GetFrame();
     frame.GetChromeClient().ExitFullscreen(frame);
   } else {
     // Note: We are past the "in parallel" point, and |ContinueExitFullscreen()|
     // will change script-observable state (document.fullscreenElement)
     // synchronously, so we have to continue asynchronously.
-    Microtask::EnqueueMicrotask(WTF::Bind(
-        ContinueExitFullscreen, WrapWeakPersistent(&doc), false /* resize */));
+    Microtask::EnqueueMicrotask(
+        WTF::Bind(ContinueExitFullscreen, WrapPersistent(&doc),
+                  WrapPersistent(resolver), false /* resize */));
   }
+  return promise;
 }
 
 void Fullscreen::DidExitFullscreen() {
-  ContinueExitFullscreen(GetDocument(), true /* resize */);
+  Document* document = GetDocument();
+  PendingExits exits;
+  exits.swap(pending_exits_);
+  // Allow a UA originated fullscreen exit to complete.
+  if (exits.IsEmpty()) {
+    ContinueExitFullscreen(document, nullptr, true /* resize */);
+  } else {
+    for (const Member<PendingExit>& exit : exits)
+      ContinueExitFullscreen(document, exit, true /* resize */);
+  }
 }
 
-void Fullscreen::ContinueExitFullscreen(Document* doc, bool resize) {
-  if (!doc || !doc->IsActive() || !doc->GetFrame())
+void Fullscreen::ContinueExitFullscreen(Document* doc,
+                                        ScriptPromiseResolver* resolver,
+                                        bool resize) {
+  if (!doc || !doc->IsActive() || !doc->GetFrame()) {
+    if (resolver) {
+      ScriptState::Scope scope(resolver->GetScriptState());
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          resolver->GetScriptState()->GetIsolate(), "Document is not active"));
+    }
     return;
+  }
 
   if (resize) {
     // See comment for step 6.
@@ -685,8 +747,13 @@ void Fullscreen::ContinueExitFullscreen(Document* doc, bool resize) {
 
   // 9. If |doc|'s fullscreen element is null, then resolve |promise| with
   // undefined and terminate these steps.
-  if (!FullscreenElementFrom(*doc))
+  if (!FullscreenElementFrom(*doc)) {
+    if (resolver) {
+      ScriptState::Scope scope(resolver->GetScriptState());
+      resolver->Resolve();
+    }
     return;
+  }
 
   // 10. Let |exitDocs| be the result of collecting documents to unfullscreen
   // given |doc|.
@@ -743,6 +810,10 @@ void Fullscreen::ContinueExitFullscreen(Document* doc, bool resize) {
   }
 
   // 14. Resolve |promise| with undefined.
+  if (resolver) {
+    ScriptState::Scope scope(resolver->GetScriptState());
+    resolver->Resolve();
+  }
 }
 
 // https://fullscreen.spec.whatwg.org/#dom-document-fullscreenenabled
@@ -910,9 +981,22 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
 
 void Fullscreen::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_requests_);
+  visitor->Trace(pending_exits_);
   visitor->Trace(fullscreen_element_stack_);
   Supplement<Document>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+}
+
+Fullscreen::PendingRequest::PendingRequest(Element* element,
+                                           RequestType type,
+                                           ScriptPromiseResolver* resolver)
+    : element_(element), type_(type), resolver_(resolver) {}
+
+Fullscreen::PendingRequest::~PendingRequest() = default;
+
+void Fullscreen::PendingRequest::Trace(blink::Visitor* visitor) {
+  visitor->Trace(element_);
+  visitor->Trace(resolver_);
 }
 
 }  // namespace blink

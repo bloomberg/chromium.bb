@@ -27,7 +27,7 @@
     [LenientSetter, RuntimeEnabled=FullscreenUnprefixed] readonly attribute boolean fullscreenEnabled;
     [LenientSetter, Unscopable, RuntimeEnabled=FullscreenUnprefixed, ImplementedAs=fullscreenElement] readonly attribute boolean fullscreen;
 
-    [RuntimeEnabled=FullscreenUnprefixed] void exitFullscreen();
+    [CallWith=ScriptState, RuntimeEnabled=FullscreenUnprefixed] Promise<void> exitFullscreen();
 
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
@@ -35,12 +35,12 @@
     // Mozilla version
     [MeasureAs=PrefixedDocumentIsFullscreen, ImplementedAs=fullscreenElement] readonly attribute boolean webkitIsFullScreen;
     [MeasureAs=PrefixedDocumentCurrentFullScreenElement, ImplementedAs=fullscreenElement] readonly attribute Element webkitCurrentFullScreenElement;
-    [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=exitFullscreen] void webkitCancelFullScreen();
+    [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=webkitExitFullscreen] void webkitCancelFullScreen();
 
     // W3C version
     [MeasureAs=PrefixedDocumentFullscreenEnabled, ImplementedAs=fullscreenEnabled] readonly attribute boolean webkitFullscreenEnabled;
     [MeasureAs=PrefixedDocumentFullscreenElement, ImplementedAs=fullscreenElement] readonly attribute Element webkitFullscreenElement;
-    [MeasureAs=PrefixedDocumentExitFullscreen, ImplementedAs=exitFullscreen] void webkitExitFullscreen();
+    [MeasureAs=PrefixedDocumentExitFullscreen, ImplementedAs=webkitExitFullscreen] void webkitExitFullscreen();
 
     attribute EventHandler onwebkitfullscreenchange;
     attribute EventHandler onwebkitfullscreenerror;

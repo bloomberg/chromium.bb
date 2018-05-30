@@ -37,8 +37,14 @@ Element* DocumentFullscreen::fullscreenElement(Document& document) {
   return Fullscreen::FullscreenElementForBindingFrom(document);
 }
 
-void DocumentFullscreen::exitFullscreen(Document& document) {
-  Fullscreen::ExitFullscreen(document);
+ScriptPromise DocumentFullscreen::exitFullscreen(ScriptState* script_state,
+                                                 Document& document) {
+  return Fullscreen::ExitFullscreen(document, script_state);
+}
+
+void DocumentFullscreen::webkitExitFullscreen(Document& document) {
+  ScriptPromise promise = Fullscreen::ExitFullscreen(document);
+  DCHECK(promise.IsEmpty());
 }
 
 }  // namespace blink

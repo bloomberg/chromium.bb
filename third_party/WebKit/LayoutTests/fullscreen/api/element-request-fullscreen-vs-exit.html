@@ -17,9 +17,9 @@ async_test(t => {
     document.onfullscreenchange = t.step_func_done();
     document.onfullscreenerror = t.unreached_func("fullscreenerror event");
 
-    target.requestFullscreen();
+    silence_rejection(target.requestFullscreen());
     assert_equals(document.fullscreenElement, null, "fullscreenElement after requestFullscreen()");
-    document.exitFullscreen();
+    silence_rejection(document.exitFullscreen());
     assert_equals(document.fullscreenElement, null, "fullscreenElement after exitFullscreen()");
   }, document.body);
 });
