@@ -75,14 +75,6 @@ struct ParseTiming {
   mojo_base.mojom.TimeDelta? parse_blocked_on_script_execution_from_document_write_duration;
 };
 
-struct StyleSheetTiming {
-  // Total time spent parsing author style sheets, before the first contentful
-  // paint.
-  mojo_base.mojom.TimeDelta? author_style_sheet_parse_duration_before_fcp;
-  // Time spent in Document::updateStyle before FCP.
-  mojo_base.mojom.TimeDelta? update_style_duration_before_fcp;
-};
-
 struct InteractiveTiming {
   // The first time the page is considered 'interactive'. This is determined
   // using heuristics based on main thread and network activity. Time delta is
@@ -130,7 +122,6 @@ struct PageLoadTiming {
   InteractiveTiming interactive_timing;
   PaintTiming paint_timing;
   ParseTiming parse_timing;
-  StyleSheetTiming style_sheet_timing;
 
   // If you add additional members, also be sure to update page_load_timing.h.
 };
