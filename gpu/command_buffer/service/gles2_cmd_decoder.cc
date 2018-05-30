@@ -8566,27 +8566,22 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     return;
   }
 
-  base::CheckedNumeric<GLint> src_width_temp = srcX1;
-  src_width_temp -= srcX0;
-  base::CheckedNumeric<GLint> src_height_temp = srcY1;
-  src_height_temp -= srcY0;
-  base::CheckedNumeric<GLint> dst_width_temp = dstX1;
-  dst_width_temp -= dstX0;
-  base::CheckedNumeric<GLint> dst_height_temp = dstY1;
-  dst_height_temp -= dstY0;
-  if (!src_width_temp.Abs().IsValid() || !src_height_temp.Abs().IsValid() ||
-      !dst_width_temp.Abs().IsValid() || !dst_height_temp.Abs().IsValid()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
-                       "the width or height of src or dst region overflowed");
-    return;
-  }
 
   if (workarounds().adjust_src_dst_region_for_blitframebuffer) {
     gfx::Size read_size = GetBoundReadFramebufferSize();
     gfx::Rect src_bounds(0, 0, read_size.width(), read_size.height());
     GLint src_x = srcX1 > srcX0 ? srcX0 : srcX1;
     GLint src_y = srcY1 > srcY0 ? srcY0 : srcY1;
+    base::CheckedNumeric<GLint> src_width_temp = srcX1;
+    src_width_temp -= srcX0;
+    base::CheckedNumeric<GLint> src_height_temp = srcY1;
+    src_height_temp -= srcY0;
     GLuint src_width = 0, src_height = 0;
+    if (!src_width_temp.IsValid() || !src_height_temp.IsValid()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "the width or height of src region overflow");
+      return;
+    }
     if (!src_width_temp.Abs().AssignIfValid(&src_width))
       src_width = 0;
     if (!src_height_temp.Abs().AssignIfValid(&src_height))
