@@ -118,6 +118,8 @@ class CAPTURE_EXPORT CameraDeviceContext {
 
   void SetScreenRotation(int screen_rotation);
 
+  int GetCameraFrameOrientation();
+
  private:
   friend class StreamBufferManagerTest;
 

@@ -27,6 +27,25 @@ cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
   return &(camera_metadata->entries.value()[(*iter)->index]);
 }
 
+void AddOrUpdateMetadataEntry(cros::mojom::CameraMetadataPtr* to,
+                              cros::mojom::CameraMetadataEntryPtr entry) {
+  auto* e = GetMetadataEntry(*to, entry->tag);
+  if (e) {
+    (*to)->data_count += entry->data.size() - (*e)->data.size();
+    (*to)->data_capacity = std::max((*to)->data_capacity, (*to)->data_count);
+    (*e)->count = entry->count;
+    (*e)->data = std::move(entry->data);
+  } else {
+    entry->index = (*to)->entries->size();
+    (*to)->entry_count += 1;
+    (*to)->entry_capacity = std::max((*to)->entry_capacity, (*to)->entry_count);
+    (*to)->data_count += entry->data.size();
+    (*to)->data_capacity = std::max((*to)->data_capacity, (*to)->data_count);
+    (*to)->entries->push_back(std::move(entry));
+    SortCameraMetadata(to);
+  }
+}
+
 void SortCameraMetadata(cros::mojom::CameraMetadataPtr* camera_metadata) {
   if (!camera_metadata || !(*camera_metadata) ||
       !(*camera_metadata)->entries.has_value()) {
