@@ -87,6 +87,13 @@
   white-space: nowrap;
 }
 
+#hangouts-local-present-checkbox {
+  --cr-checkbox-label-container: {
+    -webkit-padding-start: 14px;
+  }
+  align-items: start;
+}
+
 #hangouts-local-present-checkbox-subtitle {
   display: block;
   font-size: 0.8em;
