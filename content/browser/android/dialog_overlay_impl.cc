@@ -38,14 +38,14 @@ static jlong JNI_DialogOverlayImpl_Init(JNIEnv* env,
   // reprojection video surface.
   RenderWidgetHostViewBase* rwhvb =
       static_cast<RenderWidgetHostViewBase*>(rfhi->GetView());
-  if (rwhvb->IsInVR())
+  if (!rwhvb || rwhvb->IsInVR())
     return 0;
 
   WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
       content::WebContents::FromRenderFrameHost(rfhi));
 
   // If the overlay would not be immediately used, fail the request.
-  if (!rfhi->IsCurrent() || web_contents_impl->IsHidden())
+  if (!rfhi->IsCurrent() || !web_contents_impl || web_contents_impl->IsHidden())
     return 0;
 
   // Dialog-based overlays are not supported for persistent video.
