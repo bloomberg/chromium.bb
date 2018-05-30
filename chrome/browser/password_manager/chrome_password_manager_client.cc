@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/form_submission_tracker_util.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/hsts_query.h"
@@ -58,6 +59,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -634,6 +636,14 @@ void ChromePasswordManagerClient::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // Logging has no sense on WebUI sites.
   log_manager_->SetSuspended(web_contents()->GetWebUI() != nullptr);
+  int current_process_id =
+      navigation_handle->GetStartingSiteInstance()->GetProcess()->GetID();
+  content::RenderFrameHost* current_frame_host =
+      web_contents()->FindFrameByFrameTreeNodeId(
+          navigation_handle->GetFrameTreeNodeId(), current_process_id);
+  password_manager::NotifyOnStartNavigation(
+      navigation_handle, driver_factory_->GetDriverForFrame(current_frame_host),
+      &password_manager_);
 }
 
 gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
