@@ -954,26 +954,16 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
   viz::CompositorFrameMetadata metadata = frame.metadata.Clone();
 
-  bool has_content = !current_surface_size_.IsEmpty();
-
   base::Closure ack_callback =
       base::Bind(&RenderWidgetHostViewAndroid::SendReclaimCompositorResources,
                  weak_ptr_factory_.GetWeakPtr(), true /* is_swap_ack */);
 
   ack_callbacks_.push(ack_callback);
 
-  viz::BeginFrameAck ack = frame.metadata.begin_frame_ack;
-  if (!has_content) {
-    EvictDelegatedFrame();
-
-    ack.has_damage = false;
-    OnDidNotProduceFrame(ack);
-  } else {
-    delegated_frame_host_->SubmitCompositorFrame(
-        local_surface_id, std::move(frame), std::move(hit_test_region_list));
-    frame_evictor_->SwappedFrame(!host()->is_hidden());
-    AcknowledgeBeginFrame(ack);
-  }
+  delegated_frame_host_->SubmitCompositorFrame(
+      local_surface_id, std::move(frame), std::move(hit_test_region_list));
+  frame_evictor_->SwappedFrame(!host()->is_hidden());
+  AcknowledgeBeginFrame();
 
   if (host()->is_hidden())
     RunAckCallbacks();
@@ -1008,11 +998,10 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
   }
 
   delegated_frame_host_->DidNotProduceFrame(ack);
-  AcknowledgeBeginFrame(ack);
+  AcknowledgeBeginFrame();
 }
 
-void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
-    const viz::BeginFrameAck& ack) {
+void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame() {
   // AcknowledgeBeginFrame is not called for the synchronous compositor path.
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
