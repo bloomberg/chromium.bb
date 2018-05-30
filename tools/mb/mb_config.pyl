@@ -403,8 +403,8 @@
       'Linux Compile Perf FYI': 'official_goma_perf',
       'Android Builder Perf FYI': 'official_goma_minimal_symbols_android',
       'Android arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_arm64',
-      'Android CFI Builder Perf FYI': 'official_goma_minimal_symbols_android_cfi',
-      'Android CFI arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_cfi_arm64',
+      'Android CFI Builder Perf FYI': 'official_goma_minimal_symbols_android_thin_lto',
+      'Android CFI arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_thin_lto_arm64',
       'Battor Agent Linux': 'release_bot',
       'Battor Agent Mac': 'release_bot',
       'Battor Agent Win': 'release_bot',
@@ -1435,12 +1435,12 @@
       'official', 'goma', 'minimal_symbols', 'android', 'arm64',
     ],
 
-    'official_goma_minimal_symbols_android_cfi': [
-      'official', 'goma', 'minimal_symbols', 'android', 'cfi',
+    'official_goma_minimal_symbols_android_thin_lto': [
+      'official', 'goma', 'minimal_symbols', 'android', 'thin_lto',
     ],
 
-    'official_goma_minimal_symbols_android_cfi_arm64': [
-      'official', 'goma', 'minimal_symbols', 'android', 'cfi', 'arm64',
+    'official_goma_minimal_symbols_android_thin_lto_arm64': [
+      'official', 'goma', 'minimal_symbols', 'android', 'thin_lto', 'arm64',
     ],
 
     'official_goma_x86': [
