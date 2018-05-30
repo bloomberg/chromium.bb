@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
+#include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalDuplicatedMediaKey) {
   ASSERT_TRUE(catcher.GetNextResult());
 
   Browser* incognito_browser = CreateIncognitoBrowser();  // Ditto.
-  WindowController* controller =
+  BrowserExtensionWindowController* controller =
       incognito_browser->extension_window_controller();
 
   ui_controls::SendKeyPress(controller->window()->GetNativeWindow(),

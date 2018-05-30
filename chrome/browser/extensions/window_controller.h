@@ -17,7 +17,6 @@
 #include "chrome/common/extensions/api/windows.h"
 
 class Browser;  // TODO(stevenjb) eliminate this dependency.
-class GURL;
 class Profile;
 
 namespace ui {
@@ -73,11 +72,6 @@ class WindowController {
   // Returns false if the window is in a state where closing the window is not
   // permitted and sets |reason| if not NULL.
   virtual bool CanClose(Reason* reason) const = 0;
-
-  // Set the window's fullscreen state. |extension_url| provides the url
-  // associated with the extension (used by FullscreenController).
-  virtual void SetFullscreenMode(bool is_fullscreen,
-                                 const GURL& extension_url) const = 0;
 
   // Returns a Browser if available. Defaults to returning NULL.
   // TODO(stevenjb): Temporary workaround. Eliminate this.

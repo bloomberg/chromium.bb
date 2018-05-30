@@ -29,6 +29,13 @@ BrowserExtensionWindowController::~BrowserExtensionWindowController() {
   WindowControllerList::GetInstance()->RemoveExtensionWindow(this);
 }
 
+void BrowserExtensionWindowController::SetFullscreenMode(
+    bool is_fullscreen,
+    const GURL& extension_url) const {
+  if (browser_->window()->IsFullscreen() != is_fullscreen)
+    browser_->ToggleFullscreenModeWithExtension(extension_url);
+}
+
 int BrowserExtensionWindowController::GetWindowId() const {
   return static_cast<int>(browser_->session_id().id());
 }
@@ -45,13 +52,6 @@ bool BrowserExtensionWindowController::CanClose(Reason* reason) const {
     return false;
   }
   return true;
-}
-
-void BrowserExtensionWindowController::SetFullscreenMode(
-    bool is_fullscreen,
-    const GURL& extension_url) const {
-  if (browser_->window()->IsFullscreen() != is_fullscreen)
-    browser_->ToggleFullscreenModeWithExtension(extension_url);
 }
 
 Browser* BrowserExtensionWindowController::GetBrowser() const {
