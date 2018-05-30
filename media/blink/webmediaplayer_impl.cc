@@ -2076,13 +2076,11 @@ void WebMediaPlayerImpl::OnIdleTimeout() {
 }
 
 void WebMediaPlayerImpl::OnPlay() {
-  Play();
-  client_->PlaybackStateChanged();
+  client_->RequestPlay();
 }
 
 void WebMediaPlayerImpl::OnPause() {
-  Pause();
-  client_->PlaybackStateChanged();
+  client_->RequestPause();
 }
 
 void WebMediaPlayerImpl::OnSeekForward(double seconds) {
@@ -2192,7 +2190,7 @@ void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
   UpdatePlayState();
 
   // We already told the delegate we're paused when remoting started.
-  client_->PlaybackStateChanged();
+  client_->RequestPause();
   client_->DisconnectedFromRemoteDevice();
 }
 

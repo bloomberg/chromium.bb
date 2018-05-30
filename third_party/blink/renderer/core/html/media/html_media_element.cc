@@ -3288,18 +3288,6 @@ void HTMLMediaElement::DurationChanged(double duration, bool request_seek) {
     Seek(duration);
 }
 
-void HTMLMediaElement::PlaybackStateChanged() {
-  BLINK_MEDIA_LOG << "playbackStateChanged(" << (void*)this << ")";
-
-  if (!GetWebMediaPlayer())
-    return;
-
-  if (GetWebMediaPlayer()->Paused())
-    PauseInternal();
-  else
-    PlayInternal();
-}
-
 void HTMLMediaElement::RequestSeek(double time) {
   // The player is the source of this seek request.
   setCurrentTime(time);
@@ -4262,6 +4250,14 @@ gfx::ColorSpace HTMLMediaElement::TargetColorSpace() {
 
 bool HTMLMediaElement::WasAutoplayInitiated() {
   return autoplay_policy_->WasAutoplayInitiated();
+}
+
+void HTMLMediaElement::RequestPlay() {
+  PlayInternal();
+}
+
+void HTMLMediaElement::RequestPause() {
+  PauseInternal();
 }
 
 bool HTMLMediaElement::MediaShouldBeOpaque() const {
