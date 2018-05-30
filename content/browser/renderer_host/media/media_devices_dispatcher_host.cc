@@ -36,15 +36,18 @@ std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
 ToVectorAudioInputDeviceCapabilitiesPtr(
     const std::vector<blink::mojom::AudioInputDeviceCapabilities>&
         capabilities_vector,
-    const url::Origin& security_origin,
-    const std::string& salt) {
+    const MediaDeviceSaltAndOrigin& salt_and_origin) {
   std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr> result;
   result.reserve(capabilities_vector.size());
   for (auto& capabilities : capabilities_vector) {
     blink::mojom::AudioInputDeviceCapabilitiesPtr capabilities_ptr =
         blink::mojom::AudioInputDeviceCapabilities::New();
     capabilities_ptr->device_id =
-        GetHMACForMediaDeviceID(salt, security_origin, capabilities.device_id);
+        GetHMACForMediaDeviceID(salt_and_origin.device_id_salt,
+                                salt_and_origin.origin, capabilities.device_id);
+    capabilities_ptr->group_id =
+        GetHMACForMediaDeviceID(salt_and_origin.group_id_salt,
+                                salt_and_origin.origin, capabilities.group_id);
     capabilities_ptr->parameters = capabilities.parameters;
     result.push_back(std::move(capabilities_ptr));
   }
@@ -292,8 +295,7 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputDeviceFormats(
 }
 
 struct MediaDevicesDispatcherHost::AudioInputCapabilitiesRequest {
-  std::string device_id_salt;
-  url::Origin security_origin;
+  MediaDeviceSaltAndOrigin salt_and_origin;
   GetAudioInputCapabilitiesCallback client_callback;
 };
 
@@ -302,8 +304,7 @@ void MediaDevicesDispatcherHost::GetDefaultAudioInputDeviceID(
     const MediaDeviceSaltAndOrigin& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   pending_audio_input_capabilities_requests_.push_back(
-      AudioInputCapabilitiesRequest{salt_and_origin.device_id_salt,
-                                    salt_and_origin.origin,
+      AudioInputCapabilitiesRequest{salt_and_origin,
                                     std::move(client_callback)});
   if (pending_audio_input_capabilities_requests_.size() > 1U)
     return;
@@ -337,7 +338,7 @@ void MediaDevicesDispatcherHost::GotAudioInputEnumeration(
   DCHECK_EQ(num_pending_audio_input_parameters_, 0U);
   for (const auto& device_info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
     blink::mojom::AudioInputDeviceCapabilities capabilities(
-        device_info.device_id,
+        device_info.device_id, device_info.group_id,
         media::AudioParameters::UnavailableDeviceParams());
     if (device_info.device_id == default_device_id)
       current_audio_input_capabilities_.insert(
@@ -386,8 +387,7 @@ void MediaDevicesDispatcherHost::FinalizeGetAudioInputCapabilities() {
   for (auto& request : pending_audio_input_capabilities_requests_) {
     std::move(request.client_callback)
         .Run(ToVectorAudioInputDeviceCapabilitiesPtr(
-            current_audio_input_capabilities_, request.security_origin,
-            request.device_id_salt));
+            current_audio_input_capabilities_, request.salt_and_origin));
   }
 
   current_audio_input_capabilities_.clear();

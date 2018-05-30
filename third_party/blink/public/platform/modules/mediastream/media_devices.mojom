@@ -35,6 +35,7 @@ struct VideoInputDeviceCapabilities {
 
 struct AudioInputDeviceCapabilities {
   string device_id;
+  string group_id;
   media.mojom.AudioParameters parameters;
 };
 

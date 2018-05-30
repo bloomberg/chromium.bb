@@ -445,10 +445,12 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
       if (source->device().type == MEDIA_DEVICE_AUDIO_CAPTURE)
         audio_source = static_cast<MediaStreamAudioSource*>(source);
     }
-    if (audio_source)
+    if (audio_source) {
       capabilities.emplace_back(audio_source);
-    else
-      capabilities.emplace_back(device->device_id, device->parameters);
+    } else {
+      capabilities.emplace_back(device->device_id, device->group_id,
+                                device->parameters);
+    }
   }
 
   SelectAudioSettings(web_request, capabilities);

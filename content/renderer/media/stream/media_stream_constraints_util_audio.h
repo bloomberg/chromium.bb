@@ -41,10 +41,12 @@ class CONTENT_EXPORT AudioDeviceCaptureCapability {
   AudioDeviceCaptureCapability();
 
   // This creates an AudioDeviceCaptureCapability where the device ID is limited
-  // to |device_id| and other settings are limited by the given |parameters|.
-  // |device_id| must not be empty. Intended to be used by getUserMedia() with
-  // device capture for devices that are not currently in use.
+  // to |device_id|, the group ID is limited to |group_id| and other settings
+  // are limited by the given |parameters|. |device_id| must not be empty.
+  // Intended to be used by getUserMedia() with device capture for devices that
+  // are not currently in use.
   AudioDeviceCaptureCapability(std::string device_id,
+                               std::string group_id,
                                const media::AudioParameters& parameters);
 
   // This creates an AudioDeviceCaptureCapability where the device ID and other
@@ -52,6 +54,8 @@ class CONTENT_EXPORT AudioDeviceCaptureCapability {
   // used by applyConstraints() for both device and content capture, and by
   // getUserMedia() with device capture for devices that are currently in use.
   explicit AudioDeviceCaptureCapability(MediaStreamAudioSource* source);
+
+  AudioDeviceCaptureCapability(const AudioDeviceCaptureCapability& other);
 
   // If this capability represents a device currently in use, this method
   // returns a pointer to the MediaStreamAudioSource object associated with the
@@ -64,6 +68,9 @@ class CONTENT_EXPORT AudioDeviceCaptureCapability {
   // processing constraints.
   const std::string& DeviceID() const;
 
+  // Returns the group ID of the device associated with this capability.
+  const std::string& GroupID() const;
+
   // Returns the audio parameters for the device associated with this
   // capability. If DeviceID() returns an empty string, these parameters contain
   // default values that work well for content capture.
@@ -72,6 +79,7 @@ class CONTENT_EXPORT AudioDeviceCaptureCapability {
  private:
   MediaStreamAudioSource* source_ = nullptr;
   std::string device_id_;
+  std::string group_id_;
   media::AudioParameters parameters_;
 };
 

@@ -217,6 +217,9 @@ class SingleDeviceCandidateSet {
     if (!capability.DeviceID().empty())
       device_id_set_ = DiscreteSet<std::string>({capability.DeviceID()});
 
+    if (!capability.GroupID().empty())
+      group_id_set_ = DiscreteSet<std::string>({capability.GroupID()});
+
     MediaStreamAudioSource* source = capability.source();
 
     if (!source) {
@@ -322,6 +325,13 @@ class SingleDeviceCandidateSet {
       return;
     }
 
+    group_id_set_ = group_id_set_.Intersection(
+        StringSetFromConstraint(constraint_set.group_id));
+    if (group_id_set_.IsEmpty()) {
+      failed_constraint_name_ = constraint_set.group_id.GetName();
+      return;
+    }
+
     goog_array_geometry_set_ = goog_array_geometry_set_.Intersection(
         StringSetFromConstraint(constraint_set.goog_array_geometry));
     if (goog_array_geometry_set_.IsEmpty()) {
@@ -376,6 +386,16 @@ class SingleDeviceCandidateSet {
       for (const blink::WebString& ideal_value :
            constraint_set.device_id.Ideal()) {
         if (device_id_set_.Contains(ideal_value.Utf8())) {
+          fitness += 1.0;
+          break;
+        }
+      }
+    }
+
+    if (constraint_set.group_id.HasIdeal()) {
+      for (const blink::WebString& ideal_value :
+           constraint_set.group_id.Ideal()) {
+        if (group_id_set_.Contains(ideal_value.Utf8())) {
           fitness += 1.0;
           break;
         }
@@ -544,6 +564,7 @@ class SingleDeviceCandidateSet {
 
   const char* failed_constraint_name_ = nullptr;
   DiscreteSet<std::string> device_id_set_;
+  DiscreteSet<std::string> group_id_set_;
   std::array<DiscreteSet<bool>, NUM_BOOL_CONSTRAINTS> bool_sets_;
   DiscreteSet<std::string> goog_array_geometry_set_;
   DiscreteSet<std::string> echo_cancellation_type_set_;
@@ -657,13 +678,24 @@ AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
 
 AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
     std::string device_id,
+    std::string group_id,
     const media::AudioParameters& parameters)
-    : device_id_(std::move(device_id)), parameters_(parameters) {
+    : device_id_(std::move(device_id)),
+      group_id_(std::move(group_id)),
+      parameters_(parameters) {
   DCHECK(!device_id_.empty());
 }
 
+AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
+    const AudioDeviceCaptureCapability& other) = default;
+
 const std::string& AudioDeviceCaptureCapability::DeviceID() const {
   return source_ ? source_->device().id : device_id_;
+}
+
+const std::string& AudioDeviceCaptureCapability::GroupID() const {
+  return source_ && source_->device().group_id ? *source_->device().group_id
+                                               : group_id_;
 }
 
 const media::AudioParameters& AudioDeviceCaptureCapability::Parameters() const {
