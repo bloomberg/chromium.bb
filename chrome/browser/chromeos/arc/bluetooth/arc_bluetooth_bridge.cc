@@ -76,6 +76,10 @@ constexpr uint32_t kGattWritePermission =
     BluetoothGattCharacteristic::Permission::PERMISSION_WRITE_ENCRYPTED |
     BluetoothGattCharacteristic::Permission::
         PERMISSION_WRITE_ENCRYPTED_AUTHENTICATED;
+// Bluetooth Spec Vol 3, Part G, 3.3.3.3 Client Characteristic Configuration.
+constexpr uint8_t DISABLE_NOTIFICATION_VALUE = 0;
+constexpr uint8_t ENABLE_NOTIFICATION_VALUE = 1;
+constexpr uint8_t ENABLE_INDICATION_VALUE = 2;
 constexpr int32_t kInvalidGattAttributeHandle = -1;
 constexpr int32_t kInvalidAdvertisementHandle = -1;
 // Bluetooth Specification Version 4.2 Vol 3 Part F Section 3.2.2
@@ -1588,26 +1592,49 @@ void ArcBluetoothBridge::WriteGattDescriptor(
   DCHECK(descriptor);
   DCHECK(descriptor->GetPermissions() & kGattWritePermission);
 
-  // To register / deregister GATT notification, we need to
-  // 1) Write to CCC Descriptor to enable/disable the notification
-  // 2) Ask BT hw to register / deregister the notification
-  // The Chrome API groups both steps into one API, and does not support writing
-  // directly to the CCC Descriptor. Therefore, until we fix
-  // https://crbug.com/622832, we return successfully when we encounter this.
-  // TODO(http://crbug.com/622832)
-  if (descriptor->GetUUID() ==
-      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
-    OnGattOperationDone(std::move(callback));
-    return;
-  }
-
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  descriptor->WriteRemoteDescriptor(
-      value->value, base::Bind(&OnGattOperationDone, repeating_callback),
-      base::Bind(&OnGattOperationError, repeating_callback));
+  if (value->value.empty()) {
+    repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+
+  if (descriptor->GetUUID() !=
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()) {
+    descriptor->WriteRemoteDescriptor(
+        value->value, base::Bind(&OnGattOperationDone, repeating_callback),
+        base::Bind(&OnGattOperationError, repeating_callback));
+    return;
+  }
+
+  BluetoothRemoteGattCharacteristic* characteristic =
+      descriptor->GetCharacteristic();
+  std::string char_id_str = characteristic->GetIdentifier();
+  auto it = notification_session_.find(char_id_str);
+  if (it == notification_session_.end()) {
+    repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+
+  // Stop the previous session while keeping this client registered.
+  it->second.reset();
+  switch (value->value[0]) {
+    case DISABLE_NOTIFICATION_VALUE:
+      repeating_callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+      return;
+    case ENABLE_NOTIFICATION_VALUE:
+    case ENABLE_INDICATION_VALUE:
+      characteristic->StartNotifySession(
+          base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
+                     weak_factory_.GetWeakPtr(), repeating_callback,
+                     char_id_str),
+          base::Bind(&OnGattOperationError, repeating_callback));
+      return;
+    default:
+      repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+  }
 }
 
 void ArcBluetoothBridge::OnGattNotifyStartDone(
@@ -1615,6 +1642,8 @@ void ArcBluetoothBridge::OnGattNotifyStartDone(
     const std::string char_string_id,
     std::unique_ptr<BluetoothGattNotifySession> notify_session) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Hold on to |notify_session|. Destruction of |notify_session| is equivalent
+  // to stopping this session.
   notification_session_[char_string_id] = std::move(notify_session);
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
@@ -1626,21 +1655,21 @@ void ArcBluetoothBridge::RegisterForGattNotification(
     RegisterForGattNotificationCallback callback) {
   BluetoothRemoteGattCharacteristic* characteristic = FindGattCharacteristic(
       std::move(remote_addr), std::move(service_id), std::move(char_id));
-
-  if (!characteristic) {
+  if (characteristic == nullptr) {
     LOG(WARNING) << __func__ << " Characteristic is not existed.";
+    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
     return;
   }
 
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
-  // the callee interface.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  characteristic->StartNotifySession(
-      base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
-                 weak_factory_.GetWeakPtr(), repeating_callback,
-                 characteristic->GetIdentifier()),
-      base::Bind(&OnGattOperationError, repeating_callback));
+  std::string char_id_str = characteristic->GetIdentifier();
+  if (base::ContainsKey(notification_session_, char_id_str)) {
+    // There can be only one notification session per characteristic.
+    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+
+  notification_session_.emplace(char_id_str, nullptr);
+  std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
 
 void ArcBluetoothBridge::DeregisterForGattNotification(
@@ -1652,23 +1681,21 @@ void ArcBluetoothBridge::DeregisterForGattNotification(
 
   BluetoothRemoteGattCharacteristic* characteristic = FindGattCharacteristic(
       std::move(remote_addr), std::move(service_id), std::move(char_id));
-
-  if (!characteristic) {
+  if (characteristic == nullptr) {
     LOG(WARNING) << __func__ << " Characteristic is not existed.";
+    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
     return;
   }
 
-  // TODO(rkc): Return an error code when failing. crbug.com/771055
   std::string char_id_str = characteristic->GetIdentifier();
   auto it = notification_session_.find(char_id_str);
   if (it == notification_session_.end()) {
     LOG(WARNING) << "Notification session not found " << char_id_str;
+    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
     return;
   }
-  std::unique_ptr<BluetoothGattNotifySession> notify = std::move(it->second);
   notification_session_.erase(it);
-  notify->Stop(
-      base::Bind(&OnGattOperationDone, base::Passed(std::move(callback))));
+  std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
 
 void ArcBluetoothBridge::ReadRemoteRssi(mojom::BluetoothAddressPtr remote_addr,
