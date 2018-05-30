@@ -277,8 +277,7 @@ void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
   // another request in the queue with the same level of detail, there's no
   // point in enqueuing this request.
   if (another_dump_is_queued &&
-      (args.dump_type == MemoryDumpType::PERIODIC_INTERVAL ||
-       args.dump_type == MemoryDumpType::PEAK_MEMORY_USAGE)) {
+      args.dump_type == MemoryDumpType::PERIODIC_INTERVAL) {
     for (const auto& request : queued_memory_dump_requests_) {
       if (request.args.level_of_detail == args.level_of_detail) {
         VLOG(1) << "RequestGlobalMemoryDump("

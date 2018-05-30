@@ -76,8 +76,6 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
   MOCK_METHOD0(Destructor, void());
   MOCK_METHOD2(OnMemoryDump,
                bool(const MemoryDumpArgs& args, ProcessMemoryDump* pmd));
-  MOCK_METHOD1(PollFastMemoryTotal, void(uint64_t* memory_total));
-  MOCK_METHOD0(SuspendFastMemoryPolling, void());
 
   MockMemoryDumpProvider() : enable_mock_destructor(false) {
     ON_CALL(*this, OnMemoryDump(_, _))
@@ -85,10 +83,6 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
             Invoke([](const MemoryDumpArgs&, ProcessMemoryDump* pmd) -> bool {
               return true;
             }));
-
-    ON_CALL(*this, PollFastMemoryTotal(_))
-        .WillByDefault(
-            Invoke([](uint64_t* memory_total) -> void { NOTREACHED(); }));
   }
 
   ~MockMemoryDumpProvider() override {
@@ -453,57 +447,6 @@ TEST_F(MemoryTracingIntegrationTest, TestWhitelistingMDP) {
   EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                                        MemoryDumpLevelOfDetail::BACKGROUND));
   DisableTracing();
-}
-
-TEST_F(MemoryTracingIntegrationTest, TestPollingOnDumpThread) {
-  InitializeClientProcess(mojom::ProcessType::RENDERER);
-  std::unique_ptr<MockMemoryDumpProvider> mdp1(new MockMemoryDumpProvider());
-  std::unique_ptr<MockMemoryDumpProvider> mdp2(new MockMemoryDumpProvider());
-  mdp1->enable_mock_destructor = true;
-  mdp2->enable_mock_destructor = true;
-  EXPECT_CALL(*mdp1, Destructor());
-  EXPECT_CALL(*mdp2, Destructor());
-
-  MemoryDumpProvider::Options options;
-  options.is_fast_polling_supported = true;
-  RegisterDumpProvider(mdp1.get(), nullptr, options);
-
-  base::RunLoop run_loop;
-  auto test_task_runner = base::ThreadTaskRunnerHandle::Get();
-  auto quit_closure = run_loop.QuitClosure();
-  MemoryDumpManager* mdm = mdm_.get();
-
-  EXPECT_CALL(*mdp1, PollFastMemoryTotal(_))
-      .WillOnce(Invoke([&mdp2, options, this](uint64_t*) {
-        RegisterDumpProvider(mdp2.get(), nullptr, options);
-      }))
-      .WillOnce(Return())
-      .WillOnce(Invoke([mdm, &mdp2](uint64_t*) {
-        mdm->UnregisterAndDeleteDumpProviderSoon(std::move(mdp2));
-      }))
-      .WillOnce(Invoke([test_task_runner, quit_closure](uint64_t*) {
-        test_task_runner->PostTask(FROM_HERE, quit_closure);
-      }))
-      .WillRepeatedly(Return());
-
-  // We expect a call to |mdp1| because it is still registered at the time the
-  // Peak detector is Stop()-ed (upon OnTraceLogDisabled(). We do NOT expect
-  // instead a call for |mdp2|, because that gets unregisterd before the Stop().
-  EXPECT_CALL(*mdp1, SuspendFastMemoryPolling()).Times(1);
-  EXPECT_CALL(*mdp2, SuspendFastMemoryPolling()).Times(0);
-
-  // |mdp2| should invoke exactly twice:
-  // - once after the registrarion, when |mdp1| hits the first Return()
-  // - the 2nd time when |mdp1| unregisters |mdp1|. The unregistration is
-  //   posted and will necessarily happen after the polling task.
-  EXPECT_CALL(*mdp2, PollFastMemoryTotal(_)).Times(2).WillRepeatedly(Return());
-
-  EnableMemoryInfraTracingWithTraceConfig(
-      base::trace_event::TraceConfigMemoryTestUtil::
-          GetTraceConfig_PeakDetectionTrigger(1));
-  run_loop.Run();
-  DisableTracing();
-  mdm_->UnregisterAndDeleteDumpProviderSoon(std::move(mdp1));
 }
 
 // Regression test for https://crbug.com/766274 .

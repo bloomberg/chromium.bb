@@ -16,14 +16,12 @@ EnumTraits<memory_instrumentation::mojom::DumpType,
       return memory_instrumentation::mojom::DumpType::PERIODIC_INTERVAL;
     case base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED:
       return memory_instrumentation::mojom::DumpType::EXPLICITLY_TRIGGERED;
-    case base::trace_event::MemoryDumpType::PEAK_MEMORY_USAGE:
-      return memory_instrumentation::mojom::DumpType::PEAK_MEMORY_USAGE;
     case base::trace_event::MemoryDumpType::SUMMARY_ONLY:
       return memory_instrumentation::mojom::DumpType::SUMMARY_ONLY;
     default:
       CHECK(false) << "Invalid type: " << static_cast<uint8_t>(type);
       // This should not be reached. Just return a random value.
-      return memory_instrumentation::mojom::DumpType::PEAK_MEMORY_USAGE;
+      return memory_instrumentation::mojom::DumpType::PERIODIC_INTERVAL;
   }
 }
 
@@ -38,9 +36,6 @@ bool EnumTraits<memory_instrumentation::mojom::DumpType,
       break;
     case memory_instrumentation::mojom::DumpType::EXPLICITLY_TRIGGERED:
       *out = base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED;
-      break;
-    case memory_instrumentation::mojom::DumpType::PEAK_MEMORY_USAGE:
-      *out = base::trace_event::MemoryDumpType::PEAK_MEMORY_USAGE;
       break;
     case memory_instrumentation::mojom::DumpType::SUMMARY_ONLY:
       *out = base::trace_event::MemoryDumpType::SUMMARY_ONLY;

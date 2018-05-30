@@ -54,8 +54,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   ~ClientProcessImpl() override;
 
   // Implements base::trace_event::MemoryDumpManager::RequestGlobalDumpCallback.
-  // This function will be called by the MemoryDumpScheduler::OnTick and
-  // MemoryPeakDetector.
+  // This function will be called by the MemoryDumpScheduler::OnTick.
   void RequestGlobalMemoryDump_NoCallback(
       base::trace_event::MemoryDumpType type,
       base::trace_event::MemoryDumpLevelOfDetail level_of_detail);

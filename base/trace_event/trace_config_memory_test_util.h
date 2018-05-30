@@ -144,32 +144,6 @@ class TraceConfigMemoryTestUtil {
         "}",
         MemoryDumpManager::kTraceCategory, period_ms);
   }
-
-  static std::string GetTraceConfig_PeakDetectionTrigger(int heavy_period) {
-    return StringPrintf(
-        "{"
-        "\"enable_argument_filter\":false,"
-        "\"enable_systrace\":false,"
-        "\"excluded_categories\":["
-        "\"*\""
-        "],"
-        "\"included_categories\":["
-        "\"%s\""
-        "],"
-        "\"memory_dump_config\":{"
-        "\"allowed_dump_modes\":[\"background\",\"light\",\"detailed\"],"
-        "\"triggers\":["
-        "{"
-        "\"min_time_between_dumps_ms\":%d,"
-        "\"mode\":\"detailed\","
-        "\"type\":\"peak_memory_usage\""
-        "}"
-        "]"
-        "},"
-        "\"record_mode\":\"record-until-full\""
-        "}",
-        MemoryDumpManager::kTraceCategory, heavy_period);
-  }
 };
 
 }  // namespace trace_event
