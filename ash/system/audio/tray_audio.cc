@@ -14,17 +14,11 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "ui/display/display.h"
-#include "ui/display/manager/display_manager.h"
-#include "ui/display/manager/managed_display_info.h"
-#include "ui/display/screen.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
 using chromeos::CrasAudioHandler;
-using chromeos::DBusThreadManager;
 
 TrayAudio::TrayAudio(SystemTray* system_tray)
     : TrayImageItem(system_tray, kSystemTrayVolumeMuteIcon, UMA_AUDIO),
@@ -35,13 +29,9 @@ TrayAudio::TrayAudio(SystemTray* system_tray)
           std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->AddAudioObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
 TrayAudio::~TrayAudio() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
@@ -152,62 +142,6 @@ void TrayAudio::OnActiveOutputNodeChanged() {
 
 void TrayAudio::OnActiveInputNodeChanged() {
   Update();
-}
-
-void TrayAudio::ChangeInternalSpeakerChannelMode() {
-  // Swap left/right channel only if it is in Yoga mode.
-  bool swap = false;
-  if (display::Display::HasInternalDisplay()) {
-    const display::ManagedDisplayInfo& display_info =
-        Shell::Get()->display_manager()->GetDisplayInfo(
-            display::Display::InternalDisplayId());
-    if (display_info.GetActiveRotation() == display::Display::ROTATE_180)
-      swap = true;
-  }
-  CrasAudioHandler::Get()->SwapInternalSpeakerLeftRightChannel(swap);
-}
-
-void TrayAudio::OnDisplayAdded(const display::Display& new_display) {
-  if (!new_display.IsInternal())
-    return;
-  ChangeInternalSpeakerChannelMode();
-
-  // This event will be triggered when the lid of the device is opened to exit
-  // the docked mode, we should always start or re-start HDMI re-discovering
-  // grace period right after this event.
-  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
-}
-
-void TrayAudio::OnDisplayRemoved(const display::Display& old_display) {
-  if (!old_display.IsInternal())
-    return;
-  ChangeInternalSpeakerChannelMode();
-
-  // This event will be triggered when the lid of the device is closed to enter
-  // the docked mode, we should always start or re-start HDMI re-discovering
-  // grace period right after this event.
-  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
-}
-
-void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
-                                        uint32_t changed_metrics) {
-  if (!display.IsInternal())
-    return;
-
-  if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)
-    ChangeInternalSpeakerChannelMode();
-
-  // The event could be triggered multiple times during the HDMI display
-  // transition, we don't need to restart HDMI re-discovering grace period
-  // it is already started earlier.
-  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(false);
-}
-
-void TrayAudio::SuspendDone(const base::TimeDelta& sleep_duration) {
-  // This event is triggered when the device resumes after earlier suspension,
-  // we should always start or re-start HDMI re-discovering
-  // grace period right after this event.
-  CrasAudioHandler::Get()->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::Update() {

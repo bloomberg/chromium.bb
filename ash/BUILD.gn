@@ -552,6 +552,8 @@ component("ash") {
     "system/accessibility/select_to_speak_tray.h",
     "system/audio/audio_detailed_view.cc",
     "system/audio/audio_detailed_view.h",
+    "system/audio/display_speaker_controller.cc",
+    "system/audio/display_speaker_controller.h",
     "system/audio/tray_audio.cc",
     "system/audio/tray_audio.h",
     "system/audio/unified_volume_slider_controller.cc",

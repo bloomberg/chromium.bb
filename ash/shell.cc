@@ -87,6 +87,7 @@
 #include "ash/shell_state.h"
 #include "ash/shutdown_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "ash/system/audio/display_speaker_controller.h"
 #include "ash/system/bluetooth/bluetooth_notification_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
@@ -863,6 +864,7 @@ Shell::~Shell() {
   voice_interaction_controller_.reset();
   key_accessibility_enabler_.reset();
 
+  display_speaker_controller_.reset();
   screen_switch_check_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
@@ -975,6 +977,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
+  display_speaker_controller_ = std::make_unique<DisplaySpeakerController>();
   policy_recommendation_restorer_ =
       std::make_unique<PolicyRecommendationRestorer>();
   screen_switch_check_controller_ =
