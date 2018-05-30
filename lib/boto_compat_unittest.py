@@ -36,7 +36,7 @@ class FixBotoCertsTest(cros_test_lib.TempDirTestCase):
     boto_config = os.path.join(self.tempdir, 'boto.cfg')
     osutils.WriteFile(boto_config, '[S]\nk = v')
     os.environ['BOTO_CONFIG'] = boto_config
-    
+
     with boto_compat.FixBotoCerts(strict=True):
       config = ConfigParser.SafeConfigParser()
       config.read(os.environ['BOTO_CONFIG'])

@@ -325,7 +325,7 @@ class TestUrlConstruction(cros_test_lib.TestCase):
   def testConstructLegolandBuildURL(self):
     """Tests generating Legoland build URLs."""
     output = tree_status.ConstructLegolandBuildURL('bbid')
-    expected = ('http://cros-goldeneye/chromeos/healthmonitoring/'
-                'buildDetails?buildbucketId=bbid')
+    expected = ('https://cros-goldeneye.corp.google.com/chromeos/'
+                'healthmonitoring/buildDetails?buildbucketId=bbid')
 
     self.assertEqual(output, expected)

@@ -15,15 +15,9 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import tree_status
 
 site_config = config_lib.GetConfig()
-
-
-# URL to open a build details page.
-BUILD_DETAILS_PATTERN = (
-    'http://cros-goldeneye/chromeos/healthmonitoring/buildDetails?'
-    'buildbucketId=%(buildbucket_id)s'
-)
 
 
 class RemoteRequestFailure(Exception):
@@ -33,15 +27,6 @@ class RemoteRequestFailure(Exception):
 # Contains the results of a single scheduled build.
 ScheduledBuild = collections.namedtuple(
     'ScheduledBuild', ('buildbucket_id', 'build_config', 'url', 'created_ts'))
-
-
-def TryJobUrl(buildbucket_id):
-  """Get link to the build UI for a given build.
-
-  Returns:
-    The URL as a string to view the given build.
-  """
-  return BUILD_DETAILS_PATTERN % {'buildbucket_id': buildbucket_id}
 
 
 def SlaveBuildSet(master_buildbucket_id):
@@ -184,7 +169,7 @@ class RequestBuild(object):
            buildbucket_lib.GetErrorMessage(content)))
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
-    url = TryJobUrl(buildbucket_id)
+    url = tree_status.ConstructLegolandBuildURL(buildbucket_id)
     created_ts = buildbucket_lib.GetBuildCreated_ts(content)
 
     result = ScheduledBuild(buildbucket_id, self.build_config, url, created_ts)
