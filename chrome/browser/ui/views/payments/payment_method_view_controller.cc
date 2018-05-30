@@ -103,7 +103,6 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     std::unique_ptr<views::ImageView> icon_view = CreateInstrumentIconView(
         instrument_->icon_resource_id(), instrument_->icon_image_skia(),
         instrument_->GetLabel());
-    icon_view->SetImageSize(gfx::Size(32, 20));
     return icon_view;
   }
 
