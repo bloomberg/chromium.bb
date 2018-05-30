@@ -3,13 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json5_generator
-from name_utilities import (
-    enum_value_name,
-    enum_for_css_property,
-    enum_for_css_property_alias
-)
+from blinkbuild.name_style_converter import NameStyleConverter
 from core.css.field_alias_expander import FieldAliasExpander
+import json5_generator
+from name_utilities import enum_for_css_property, enum_for_css_property_alias
 
 
 # These values are converted using CSSPrimitiveValue in the setter function,
@@ -214,8 +211,8 @@ class CSSProperties(object):
             type_name = property_['type_name']
             if (property_['field_template'] == 'keyword' or
                     property_['field_template'] == 'multi_keyword'):
-                default_value = type_name + '::' + \
-                    enum_value_name(property_['default_value'])
+                default_value = (type_name + '::' + NameStyleConverter(
+                    property_['default_value']).to_enum_value())
             elif (property_['field_template'] == 'external' or
                   property_['field_template'] == 'primitive' or
                   property_['field_template'] == 'pointer'):

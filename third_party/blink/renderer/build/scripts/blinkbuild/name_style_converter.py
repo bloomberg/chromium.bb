@@ -215,3 +215,10 @@ class NameStyleConverter(object):
         elif suffix:
             camel_suffix = suffix[0].upper() + suffix[1:].lower()
         return camel_prefix + self.to_upper_camel_case() + camel_suffix
+
+    def to_enum_value(self):
+        """Represents this name as an enum value in Blink C++ style.
+
+        i.e. kUpperCamelCase
+        """
+        return 'k' + self.to_upper_camel_case()
