@@ -72,8 +72,8 @@ const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
 #endif
 const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
-const char kExternalClearKeyCdmProxyTestKeySystem[] =
-    "org.chromium.externalclearkey.cdmproxytest";
+const char kExternalClearKeyCdmProxyKeySystem[] =
+    "org.chromium.externalclearkey.cdmproxy";
 #endif
 
 // Supported media types.
@@ -863,8 +863,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
 
   // ClearKeyCdmProxy only supports decrypt-only.
   RunSimpleEncryptedMediaTest("bear-a_enc-a.webm", kWebMVorbisAudioOnly,
-                              kExternalClearKeyCdmProxyTestKeySystem,
-                              SrcType::MSE);
+                              kExternalClearKeyCdmProxyKeySystem, SrcType::MSE);
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

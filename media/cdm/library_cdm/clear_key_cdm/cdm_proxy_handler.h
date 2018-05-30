@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_PROXY_TEST_H_
-#define MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_PROXY_TEST_H_
+#ifndef MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_PROXY_HANDLER_H_
+#define MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_PROXY_HANDLER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -13,20 +13,23 @@ namespace media {
 
 class CdmHostProxy;
 
-class CdmProxyTest : public cdm::CdmProxyClient {
+class CdmProxyHandler : public cdm::CdmProxyClient {
  public:
-  using CompletionCB = base::OnceCallback<void(bool success)>;
+  using InitCB = base::OnceCallback<void(bool success)>;
 
-  explicit CdmProxyTest(CdmHostProxy* cdm_host_proxy);
-  ~CdmProxyTest() override;
+  explicit CdmProxyHandler(CdmHostProxy* cdm_host_proxy);
+  ~CdmProxyHandler() override;
 
-  // Runs the test and returns the test result through |completion_cb|.
-  void Run(CompletionCB completion_cb);
+  // Initializes the CdmProxyHandler and returns the result through |init_cb|.
+  // This will request and initialize the CdmProxy, create media crypto session
+  // and do some trivial procesing for better test coverage.
+  void Initialize(InitCB init_cb);
 
+  // Push a response that contains a license to the CdmProxy.
   void SetKey(const std::vector<uint8_t>& response);
 
  private:
-  void OnTestComplete(bool success);
+  void FinishInitialization(bool success);
 
   // cdm::CdmProxyClient implementation.
   void OnInitialized(Status status,
@@ -41,13 +44,13 @@ class CdmProxyTest : public cdm::CdmProxyClient {
   void NotifyHardwareReset() final;
 
   CdmHostProxy* const cdm_host_proxy_ = nullptr;
-  CompletionCB completion_cb_;
+  InitCB init_cb_;
   cdm::CdmProxy* cdm_proxy_ = nullptr;
   uint32_t crypto_session_id_ = 0u;
 
-  DISALLOW_COPY_AND_ASSIGN(CdmProxyTest);
+  DISALLOW_COPY_AND_ASSIGN(CdmProxyHandler);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_PROXY_TEST_H_
+#endif  // MEDIA_CDM_LIBRARY_CDM_CLEAR_KEY_CDM_CDM_PROXY_HANDLER_H_
