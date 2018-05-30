@@ -80,6 +80,12 @@ SimCompositor& SimTest::Compositor() {
   return compositor_;
 }
 
+void SimTest::SetEffectiveConnectionTypeForTesting(
+    WebEffectiveConnectionType effective_connection_type) {
+  web_frame_client_.SetEffectiveConnectionTypeForTesting(
+      effective_connection_type);
+}
+
 void SimTest::AddConsoleMessage(const String& message) {
   console_messages_.push_back(message);
 }

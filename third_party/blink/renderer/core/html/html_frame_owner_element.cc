@@ -22,7 +22,9 @@
 
 #include <limits>
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -270,6 +272,11 @@ void HTMLFrameOwnerElement::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 void HTMLFrameOwnerElement::DispatchLoad() {
+  if (time_when_first_load_finished_.is_null()) {
+    time_when_first_load_finished_ = CurrentTimeTicks();
+    RecordVisibilityMetricsIfLoadedAndVisible();
+  }
+
   DispatchScopedEvent(Event::Create(EventTypeNames::load));
 }
 
@@ -399,8 +406,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   if (IsPlugin())
     request.SetSkipServiceWorker(true);
 
-  if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled() &&
-      should_lazy_load_children_ &&
+  if (should_lazy_load_children_ &&
       // Only http:// or https:// URLs are eligible for lazy loading, excluding
       // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
       // that it doesn't make sense to lazily load.
@@ -418,17 +424,37 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     // the viewport or visible.
     should_lazy_load_children_ = false;
 
-    lazy_load_intersection_observer_ = IntersectionObserver::Create(
-        {Length(kLazyLoadRootMarginPx, kFixed)},
-        {std::numeric_limits<float>::min()}, &GetDocument(),
-        WTF::BindRepeating(&HTMLFrameOwnerElement::LoadIfHiddenOrNearViewport,
-                           WrapWeakPersistent(this), request, child_load_type));
+    if (RuntimeEnabledFeatures::LazyFrameVisibleLoadTimeMetricsEnabled()) {
+      DCHECK(time_when_first_visible_.is_null());
+      DCHECK(!lazy_load_visibility_metrics_observer_);
 
-    lazy_load_intersection_observer_->observe(this);
-  } else {
-    child_frame->Loader().StartNavigation(
-        FrameLoadRequest(&GetDocument(), request), child_load_type);
+      lazy_load_visibility_metrics_observer_ = IntersectionObserver::Create(
+          {}, {std::numeric_limits<float>::min()}, &GetDocument(),
+          WTF::BindRepeating(
+              &HTMLFrameOwnerElement::RecordMetricsOnVisibilityChanged,
+              WrapWeakPersistent(this)));
+
+      lazy_load_visibility_metrics_observer_->observe(this);
+    }
+
+    if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
+      DCHECK(!lazy_load_intersection_observer_);
+
+      lazy_load_intersection_observer_ = IntersectionObserver::Create(
+          {Length(kLazyLoadRootMarginPx, kFixed)},
+          {std::numeric_limits<float>::min()}, &GetDocument(),
+          WTF::BindRepeating(&HTMLFrameOwnerElement::LoadIfHiddenOrNearViewport,
+                             WrapWeakPersistent(this), request,
+                             child_load_type));
+
+      lazy_load_intersection_observer_->observe(this);
+      return true;
+    }
   }
+
+  child_frame->Loader().StartNavigation(
+      FrameLoadRequest(&GetDocument(), request), child_load_type);
+
   return true;
 }
 
@@ -457,6 +483,103 @@ void HTMLFrameOwnerElement::LoadIfHiddenOrNearViewport(
                        frame_load_type);
 }
 
+void HTMLFrameOwnerElement::RecordMetricsOnVisibilityChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  DCHECK(!entries.IsEmpty());
+  DCHECK_EQ(this, entries.back()->target());
+
+  if (IsFrameProbablyHidden(*entries.back()->boundingClientRect())) {
+    lazy_load_visibility_metrics_observer_->disconnect();
+    lazy_load_visibility_metrics_observer_.Clear();
+    return;
+  }
+
+  if (!has_above_the_fold_been_set_) {
+    is_initially_above_the_fold_ = entries.back()->isIntersecting();
+    has_above_the_fold_been_set_ = true;
+  }
+
+  if (!entries.back()->isIntersecting())
+    return;
+
+  DCHECK(time_when_first_visible_.is_null());
+  time_when_first_visible_ = CurrentTimeTicks();
+  RecordVisibilityMetricsIfLoadedAndVisible();
+
+  lazy_load_visibility_metrics_observer_->disconnect();
+  lazy_load_visibility_metrics_observer_.Clear();
+}
+
+void HTMLFrameOwnerElement::RecordVisibilityMetricsIfLoadedAndVisible() {
+  if (time_when_first_load_finished_.is_null() ||
+      time_when_first_visible_.is_null() || !GetDocument().GetFrame()) {
+    return;
+  }
+
+  DCHECK(has_above_the_fold_been_set_);
+
+  TimeDelta visible_load_delay =
+      time_when_first_load_finished_ - time_when_first_visible_;
+  if (visible_load_delay < TimeDelta())
+    visible_load_delay = TimeDelta();
+
+  switch (GetDocument().GetFrame()->Client()->GetEffectiveConnectionType()) {
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      if (is_initially_above_the_fold_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.AboveTheFold.Slow2G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold.Slow2G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kType2G:
+      if (is_initially_above_the_fold_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.AboveTheFold.2G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold.2G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kType3G:
+      if (is_initially_above_the_fold_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.AboveTheFold.3G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold.3G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kType4G:
+      if (is_initially_above_the_fold_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.AboveTheFold.4G",
+            visible_load_delay);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold.4G",
+            visible_load_delay);
+      }
+      break;
+
+    case WebEffectiveConnectionType::kTypeUnknown:
+    case WebEffectiveConnectionType::kTypeOffline:
+      // No VisibleLoadTime histograms are recorded for these effective
+      // connection types.
+      break;
+  }
+}
+
 void HTMLFrameOwnerElement::CancelPendingLazyLoad() {
   if (!lazy_load_intersection_observer_)
     return;
@@ -472,6 +595,7 @@ void HTMLFrameOwnerElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(content_frame_);
   visitor->Trace(embedded_content_view_);
   visitor->Trace(lazy_load_intersection_observer_);
+  visitor->Trace(lazy_load_visibility_metrics_observer_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);
 }

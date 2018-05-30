@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_TEST_H_
 
 #include <gtest/gtest.h>
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_network.h"
@@ -41,6 +42,8 @@ class SimTest : public testing::Test {
   SimCompositor& Compositor();
 
   Vector<String>& ConsoleMessages() { return console_messages_; }
+
+  void SetEffectiveConnectionTypeForTesting(WebEffectiveConnectionType);
 
  private:
   friend class SimWebFrameClient;
