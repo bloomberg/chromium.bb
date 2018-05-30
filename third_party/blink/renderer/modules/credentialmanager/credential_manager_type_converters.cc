@@ -426,7 +426,7 @@ CableRegistrationPtr
 TypeConverter<CableRegistrationPtr, blink::CableRegistrationData>::Convert(
     const blink::CableRegistrationData& data) {
   auto entity = CableRegistration::New();
-  entity->version = data.version();
+  entity->versions = data.versions();
   entity->relying_party_public_key =
       ConvertFixedSizeArray(data.rpPublicKey(), 65);
   if (entity->relying_party_public_key.IsEmpty()) {
