@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
@@ -73,10 +74,12 @@ views::MenuItemView* DiceAccountsMenu::BuildMenu() {
   gfx::Image default_icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           profiles::GetPlaceholderAvatarIconResourceID());
+#if !defined(OS_MACOSX)
   // Add spacing at top.
   menu->AppendMenuItemImpl(
       0, base::string16(), base::string16(), base::string16(), nullptr,
       gfx::ImageSkia(), views::MenuItemView::SEPARATOR, ui::SPACING_SEPARATOR);
+#endif
   // Add a menu item for each account.
   for (size_t idx = 0; idx < accounts_.size(); idx++) {
     views::MenuItemView* item = menu->AppendMenuItemWithIcon(
@@ -90,10 +93,12 @@ views::MenuItemView* DiceAccountsMenu::BuildMenu() {
       l10n_util::GetStringUTF16(IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON),
       SizeAndCircleIcon(default_icon));
   item->SetMargins(kVerticalItemMargins, kVerticalItemMargins);
+#if !defined(OS_MACOSX)
   // Add spacing at bottom.
   menu->AppendMenuItemImpl(
       0, base::string16(), base::string16(), base::string16(), nullptr,
       gfx::ImageSkia(), views::MenuItemView::SEPARATOR, ui::SPACING_SEPARATOR);
+#endif
 
   menu->set_has_icons(true);
   return menu;
