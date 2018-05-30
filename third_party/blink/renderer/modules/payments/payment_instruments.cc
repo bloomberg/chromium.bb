@@ -307,7 +307,7 @@ void PaymentInstruments::OnRequestPermission(
           details.capabilities(), instrument->supported_networks,
           instrument->supported_types, exception_state);
       if (exception_state.HadException()) {
-        exception_state.Reject(resolver);
+        resolver->Reject(exception_state);
         return;
       }
     }
@@ -373,7 +373,7 @@ void PaymentInstruments::onGetPaymentInstrument(
                                    stored_instrument->stringified_capabilities,
                                    exception_state)));
     if (exception_state.HadException()) {
-      exception_state.Reject(resolver);
+      resolver->Reject(exception_state);
       return;
     }
   }

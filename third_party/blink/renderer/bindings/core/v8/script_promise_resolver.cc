@@ -24,6 +24,12 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
   }
 }
 
+void ScriptPromiseResolver::Reject(ExceptionState& exception_state) {
+  DCHECK(exception_state.HadException());
+  Reject(exception_state.GetException());
+  exception_state.ClearException();
+}
+
 void ScriptPromiseResolver::Pause() {
   timer_.Stop();
 }

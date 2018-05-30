@@ -104,11 +104,6 @@ ScriptPromise ExceptionState::Reject(ScriptState* script_state) {
   return promise;
 }
 
-void ExceptionState::Reject(ScriptPromiseResolver* resolver) {
-  resolver->Reject(GetException());
-  ClearException();
-}
-
 void ExceptionState::SetException(ExceptionCode ec,
                                   const String& message,
                                   v8::Local<v8::Value> exception) {

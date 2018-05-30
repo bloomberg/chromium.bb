@@ -73,6 +73,9 @@ class CORE_EXPORT ScriptPromiseResolver
   void Resolve() { Resolve(ToV8UndefinedGenerator()); }
   void Reject() { Reject(ToV8UndefinedGenerator()); }
 
+  // Reject with a given exception.
+  void Reject(ExceptionState&);
+
   ScriptState* GetScriptState() { return script_state_.get(); }
 
   // Note that an empty ScriptPromise will be returned after resolve or
