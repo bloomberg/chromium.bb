@@ -1590,7 +1590,10 @@ void WebFormControlElementToFormField(
     const base::string16 typed_value =
         *field_value_and_properties_map->at(element).first;
 
-    if (!ScriptModifiedUsernameAcceptable(value, typed_value,
+    // The typed value is preserved for all passwords. It is also preserved for
+    // potential usernames, as long as the |value| is not deemed acceptable.
+    if (field->form_control_type == "password" ||
+        !ScriptModifiedUsernameAcceptable(value, typed_value,
                                           *field_value_and_properties_map)) {
       field->typed_value = typed_value;
     }
