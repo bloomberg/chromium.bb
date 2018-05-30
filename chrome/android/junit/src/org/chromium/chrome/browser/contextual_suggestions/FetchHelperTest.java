@@ -418,6 +418,32 @@ public final class FetchHelperTest {
         verify(mDelegate, times(1)).requestSuggestions(DIFFERENT_URL);
     }
 
+    @Test
+    public void canonicalUrl_readinessStateIsNull() {
+        doReturn(true).when(mTab).isLoading();
+
+        FetchHelper helper = createFetchHelper();
+
+        doReturn(mFrameHost).when(mWebContents).getMainFrame();
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                if (invocation.getArguments()[0] instanceof Callback) {
+                    closeTab(mTab);
+                    @SuppressWarnings("unchecked")
+                    Callback<String> callback = (Callback<String>) invocation.getArguments()[0];
+                    callback.onResult(DIFFERENT_URL);
+                }
+                return null;
+            }
+        })
+                .when(mFrameHost)
+                .getCanonicalUrlForSharing(any());
+        getTabObserver().onPageLoadFinished(mTab);
+        runUntilFetchPossible();
+        verify(mDelegate, times(0)).requestSuggestions(DIFFERENT_URL);
+    }
+
     private void addTab(Tab tab) {
         getTabModelObserver().didAddTab(tab, TabLaunchType.FROM_LINK);
     }
