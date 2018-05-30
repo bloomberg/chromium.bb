@@ -102,7 +102,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
-  void SnapshotStateForFilter() final {}
+  void SnapshotStateForFilter() final;
 
   void ValidateStateStack() const final;
 

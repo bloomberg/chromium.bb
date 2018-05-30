@@ -286,7 +286,8 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
     return resolved_filter_;
 
   FilterOperations operations =
-      FilterOperationResolver::CreateOffscreenFilterOperations(*filter_value_);
+      FilterOperationResolver::CreateOffscreenFilterOperations(
+          *filter_value_, font_for_filter_);
 
   // We can't reuse m_fillFlags and m_strokeFlags for the filter, since these
   // incorporate the global alpha, which isn't applicable here.

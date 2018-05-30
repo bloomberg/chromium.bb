@@ -105,7 +105,8 @@ class StyleBuilderConverter {
       const CSSValue&);
   static FilterOperations ConvertFilterOperations(StyleResolverState&,
                                                   const CSSValue&);
-  static FilterOperations ConvertOffscreenFilterOperations(const CSSValue&);
+  static FilterOperations ConvertOffscreenFilterOperations(const CSSValue&,
+                                                           const Font&);
   template <typename T>
   static T ConvertFlags(StyleResolverState&, const CSSValue&);
   static FontDescription::FamilyDescription ConvertFontFamily(
