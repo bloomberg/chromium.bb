@@ -1615,6 +1615,16 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
   return false;
 }
 
+RenderFrameMetadataProvider* RenderFrameMetadataProviderFromFrameTreeNode(
+    FrameTreeNode* node) {
+  DCHECK(node);
+  DCHECK(node->current_frame_host());
+  DCHECK(node->current_frame_host()->GetRenderWidgetHost());
+  return node->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->render_frame_metadata_provider();
+}
+
 RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
     WebContents* web_contents) {
   DCHECK(web_contents);
@@ -1893,6 +1903,11 @@ RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
   render_frame_metadata_provider_->AddObserver(this);
   render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(true);
 }
+
+RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
+    FrameTreeNode* node)
+    : RenderFrameSubmissionObserver(
+          RenderFrameMetadataProviderFromFrameTreeNode(node)) {}
 
 RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
     WebContents* web_contents)
