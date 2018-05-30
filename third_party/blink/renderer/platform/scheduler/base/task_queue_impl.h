@@ -394,9 +394,10 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // PartitionAlloc.
   using TaskDeque = circular_deque<Task>;
 
-  // Extracts all the tasks from the immediate incoming queue and clears it.
+  // Extracts all the tasks from the immediate incoming queue and swaps it with
+  // |queue| which must be empty.
   // Can be called from any thread.
-  TaskDeque TakeImmediateIncomingQueue();
+  void ReloadEmptyImmediateQueue(TaskDeque* queue);
 
   void TraceQueueSize() const;
   static void QueueAsValueInto(const TaskDeque& queue,

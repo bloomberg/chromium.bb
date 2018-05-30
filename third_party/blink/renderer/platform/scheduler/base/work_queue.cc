@@ -117,7 +117,7 @@ void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
 void WorkQueue::ReloadEmptyImmediateQueue() {
   DCHECK(tasks_.empty());
 
-  tasks_ = task_queue_->TakeImmediateIncomingQueue();
+  task_queue_->ReloadEmptyImmediateQueue(&tasks_);
   if (tasks_.empty())
     return;
 
@@ -135,7 +135,7 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   // NB immediate tasks have a different pipeline to delayed ones.
   if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
     // Short-circuit the queue reload so that OnPopQueue does the right thing.
-    tasks_ = task_queue_->TakeImmediateIncomingQueue();
+    task_queue_->ReloadEmptyImmediateQueue(&tasks_);
   }
   // OnPopQueue calls GetFrontTaskEnqueueOrder which checks BlockedByFence() so
   // we don't need to here.
@@ -156,7 +156,7 @@ bool WorkQueue::RemoveAllCanceledTasksFromFront() {
     // NB immediate tasks have a different pipeline to delayed ones.
     if (queue_type_ == QueueType::kImmediate && tasks_.empty()) {
       // Short-circuit the queue reload so that OnPopQueue does the right thing.
-      tasks_ = task_queue_->TakeImmediateIncomingQueue();
+      task_queue_->ReloadEmptyImmediateQueue(&tasks_);
     }
     work_queue_sets_->OnPopQueue(this);
     task_queue_->TraceQueueSize();
