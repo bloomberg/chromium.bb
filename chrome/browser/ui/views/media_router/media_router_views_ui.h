@@ -27,8 +27,12 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
                     MediaCastMode cast_mode) override;
   void StopCasting(const std::string& route_id) override;
 
+  // MediaRouterUIBase:
+  std::vector<MediaSinkWithCastModes> GetEnabledSinks() const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, NotifyObserver);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterViewsUITest, RemovePseudoSink);
 
   // MediaRouterUIBase:
   void OnRoutesUpdated(

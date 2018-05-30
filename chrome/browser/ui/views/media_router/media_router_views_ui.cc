@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
@@ -67,6 +68,19 @@ void MediaRouterViewsUI::StartCasting(const std::string& sink_id,
 
 void MediaRouterViewsUI::StopCasting(const std::string& route_id) {
   TerminateRoute(route_id);
+}
+
+std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
+    const {
+  std::vector<MediaSinkWithCastModes> sinks =
+      MediaRouterUIBase::GetEnabledSinks();
+  // Remove the pseudo-sink, since it's only used in the WebUI dialog.
+  // TODO(takumif): Remove this once we've removed pseudo-sink from Cloud MRP.
+  base::EraseIf(sinks, [](const MediaSinkWithCastModes& sink) {
+    return base::StartsWith(sink.sink.id(),
+                            "pseudo:", base::CompareCase::SENSITIVE);
+  });
+  return sinks;
 }
 
 void MediaRouterViewsUI::OnRoutesUpdated(

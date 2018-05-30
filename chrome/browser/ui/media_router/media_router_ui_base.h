@@ -108,7 +108,7 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
 
   // Returns a subset of |sinks_| that should be listed in the dialog. This
   // excludes the wired display that the initiator WebContents is on.
-  std::vector<MediaSinkWithCastModes> GetEnabledSinks() const;
+  virtual std::vector<MediaSinkWithCastModes> GetEnabledSinks() const;
 
   // Returns a source name that can be shown in the dialog.
   std::string GetTruncatedPresentationRequestSourceName() const;
