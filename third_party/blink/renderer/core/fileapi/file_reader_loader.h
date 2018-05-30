@@ -107,8 +107,28 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   bool HasFinishedLoading() const { return finished_loading_; }
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class FailureType {
+    kMojoPipeCreation = 0,
+    kSyncDataNotAllLoaded = 1,
+    kSyncOnCompleteNotReceived = 2,
+    kTotalBytesTooLarge = 3,
+    kArrayBufferBuilderCreation = 4,
+    kArrayBufferBuilderAppend = 5,
+    kBackendReadError = 6,
+    kReadSizesIncorrect = 7,
+    kDataPipeNotReadableWithBytesLeft = 8,
+    kMojoPipeClosedEarly = 9,
+    // Any MojoResult error we aren't expecting during data pipe reading falls
+    // into this bucket. If there are a large number of errors reported here,
+    // then there can be a new enumeration reported for mojo pipe errors.
+    kMojoPipeUnexpectedReadError = 10,
+    kCount
+  };
+
   void Cleanup();
-  void Failed(FileError::ErrorCode);
+  void Failed(FileError::ErrorCode, FailureType type);
 
   void OnStartLoading(uint64_t total_bytes);
   void OnReceivedData(const char* data, unsigned data_length);
