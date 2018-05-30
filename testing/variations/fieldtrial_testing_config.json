@@ -2108,8 +2108,8 @@
                 {
                     "name": "Enabled_Forced",
                     "params": {
-                        "non_ssl_http_rtt_multiplier": "6",
-                        "ssl_http_rtt_multiplier": "8"
+                        "non_ssl_http_rtt_multiplier": "5",
+                        "ssl_http_rtt_multiplier": "10"
                     }
                 }
             ]
