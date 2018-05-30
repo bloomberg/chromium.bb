@@ -35,14 +35,6 @@ LoginUIServiceFactory* LoginUIServiceFactory::GetInstance() {
   return base::Singleton<LoginUIServiceFactory>::get();
 }
 
-// static
-base::Closure LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(
-    Profile* profile) {
-  return base::Bind(
-      &LoginUIService::ShowLoginPopup,
-      base::Unretained(LoginUIServiceFactory::GetForProfile(profile)));
-}
-
 KeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new LoginUIService(static_cast<Profile*>(profile));
