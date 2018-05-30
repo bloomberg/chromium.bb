@@ -4,8 +4,9 @@
 
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
@@ -33,7 +34,8 @@ bool RendererPermissionsPolicyDelegate::IsRestrictedUrl(
     return true;
   }
 
-  if (SearchBouncer::GetInstance()->IsNewTabPage(document_url)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kInstantProcess)) {
     if (error)
       *error = errors::kCannotScriptNtp;
     return true;

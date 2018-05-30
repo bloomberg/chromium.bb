@@ -20,8 +20,10 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
@@ -796,6 +798,65 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptBypassingSandbox) {
       "example.com", "/extensions/page_with_sandbox_csp.html");
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Test fixture which sets a custom NTP Page.
+// TODO(karandeepb): Similar logic to set up a custom NTP is used elsewhere as
+// well. Abstract this away into a reusable test fixture class.
+class NTPInterceptionTest : public ExtensionApiTest {
+ public:
+  NTPInterceptionTest()
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  // ExtensionApiTest override:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    test_data_dir_ = test_data_dir_.AppendASCII("ntp_content_script");
+    https_test_server_.ServeFilesFromDirectory(test_data_dir_);
+    ASSERT_TRUE(https_test_server_.Start());
+
+    GURL ntp_url = https_test_server_.GetURL("/fake_ntp.html");
+    local_ntp_test_utils::SetUserSelectedDefaultSearchProvider(
+        profile(), https_test_server_.base_url().spec(), ntp_url.spec());
+  }
+
+  const net::EmbeddedTestServer* https_test_server() const {
+    return &https_test_server_;
+  }
+
+ private:
+  net::EmbeddedTestServer https_test_server_;
+  DISALLOW_COPY_AND_ASSIGN(NTPInterceptionTest);
+};
+
+// Ensure extensions can't inject a content script into the New Tab page.
+// Regression test for crbug.com/844428.
+IN_PROC_BROWSER_TEST_F(NTPInterceptionTest, ContentScript) {
+  // Load an extension which tries to inject a script into every frame.
+  ExtensionTestMessageListener listener("ready", false /*will_reply*/);
+  const Extension* extension = LoadExtension(test_data_dir_);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  // Create a corresponding off the record profile for the current profile. This
+  // is necessary to reproduce crbug.com/844428, which occurs in part due to
+  // incorrect handling of multiple profiles by the NTP code.
+  Browser* incognito_browser = CreateIncognitoBrowser(profile());
+  ASSERT_TRUE(incognito_browser);
+
+  // Ensure that the extension isn't able to inject the script into the New Tab
+  // Page.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(search::IsInstantNTP(web_contents));
+
+  bool script_injected_in_ntp = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents,
+      "window.domAutomationController.send(document.title !== 'Fake NTP');",
+      &script_injected_in_ntp));
+  EXPECT_FALSE(script_injected_in_ntp);
 }
 
 }  // namespace extensions
