@@ -5273,12 +5273,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)URLDidChangeWithoutDocumentChange:(const GURL&)newURL {
   DCHECK(newURL == net::GURLWithNSURL([_webView URL]));
+  DCHECK(!_documentURL.host().empty() || _documentURL.SchemeIsFile());
 
   if (base::FeatureList::IsEnabled(
           web::features::kCrashOnUnexpectedURLChange)) {
     if (_documentURL.GetOrigin() != newURL.GetOrigin()) {
-      if (newURL.username().find(_documentURL.host()) != std::string::npos ||
-          newURL.password().find(_documentURL.host()) != std::string::npos) {
+      if (!_documentURL.host().empty() &&
+          (newURL.username().find(_documentURL.host()) != std::string::npos ||
+           newURL.password().find(_documentURL.host()) != std::string::npos)) {
         CHECK(false);
       }
     }
