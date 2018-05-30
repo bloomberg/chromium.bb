@@ -33175,6 +33175,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="UNREGISTRATION_FAILED"/>
 </enum>
 
+<enum name="NotificationHelperNotificationActivatorStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Chrome exe missing"/>
+  <int value="2" label="Launch chrome failed"/>
+  <int value="3" label="Launch id empty"/>
+  <int value="4" label="AllowSetForegroundWindow call failed"/>
+</enum>
+
 <enum name="NotifierType">
   <int value="0" label="Application"/>
   <int value="1" label="Arc++"/>
