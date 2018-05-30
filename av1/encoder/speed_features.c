@@ -165,6 +165,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mode_pruning_based_on_two_pass_partition_search = 1;
     sf->prune_ext_partition_types_search_level = 2;
     sf->use_fast_interpolation_filter_search = 1;
+    sf->skip_repeat_interpolation_filter_search = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->tx_type_search.ml_tx_split_thresh = 40;
     sf->model_based_prune_tx_search_level = 0;
@@ -490,6 +491,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_transform_domain_distortion = 0;
   sf->gm_search_type = GM_FULL_SEARCH;
   sf->use_fast_interpolation_filter_search = 0;
+  sf->skip_repeat_interpolation_filter_search = 0;
   sf->use_hash_based_trellis = 0;
 
   // Set decoder side speed feature to use less dual sgr modes

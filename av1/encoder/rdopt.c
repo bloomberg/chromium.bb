@@ -7453,6 +7453,50 @@ static INLINE int64_t interpolation_filter_rd(
   return 0;
 }
 
+// check if there is saved result match with this search
+static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
+                                         MB_MODE_INFO *const mi) {
+  for (int i = 0; i < 2; ++i) {
+    const MV *mv = &mi->mv[i].as_mv;
+    if ((st->ref_frames[i] != mi->ref_frame[i]) || (st->mv[i].row != mv->row) ||
+        (st->mv[i].col != mv->col)) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static INLINE int find_interp_filter_in_stats(MACROBLOCK *x,
+                                              MB_MODE_INFO *const mbmi) {
+  const int comp_idx = mbmi->compound_idx;
+  const int offset = x->interp_filter_stats_idx[comp_idx];
+  for (int j = 0; j < offset; ++j) {
+    const INTERPOLATION_FILTER_STATS *st = &x->interp_filter_stats[comp_idx][j];
+    if (is_interp_filter_match(st, mbmi)) {
+      mbmi->interp_filters = st->filters;
+      return j;
+    }
+  }
+  return -1;  // no match result found
+}
+
+static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
+                                                  MB_MODE_INFO *const mbmi) {
+  const int comp_idx = mbmi->compound_idx;
+  const int offset = x->interp_filter_stats_idx[comp_idx];
+  if (offset < MAX_INTERP_FILTER_STATS) {
+    const MV mv0 = mbmi->mv[0].as_mv;
+    const MV mv1 = mbmi->mv[1].as_mv;
+    INTERPOLATION_FILTER_STATS stat = {
+      mbmi->interp_filters,
+      { mv0, mv1 },
+      { mbmi->ref_frame[0], mbmi->ref_frame[1] },
+    };
+    x->interp_filter_stats[comp_idx][offset] = stat;
+    x->interp_filter_stats_idx[comp_idx]++;
+  }
+}
+
 static int64_t interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     int mi_row, int mi_col, const BUFFER_SET *const tmp_dst,
@@ -7463,24 +7507,30 @@ static int64_t interpolation_filter_search(
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
+  const int need_search =
+      av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
   int i, tmp_rate;
   int64_t tmp_dist;
 
   (void)single_filter;
-
+  int match_found = -1;
   const InterpFilter assign_filter = cm->interp_filter;
-  set_default_interp_filters(mbmi, assign_filter);
-
+  if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
+    match_found = find_interp_filter_in_stats(x, mbmi);
+  }
+  if (!need_search || match_found == -1) {
+    set_default_interp_filters(mbmi, assign_filter);
+  }
   *switchable_rate = av1_get_switchable_rate(cm, x, xd);
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
   model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate, &tmp_dist,
                   skip_txfm_sb, skip_sse_sb, NULL, NULL, NULL);
   *rd = RDCOST(x->rdmult, *switchable_rate + tmp_rate, tmp_dist);
 
-  if (assign_filter != SWITCHABLE) {
+  if (assign_filter != SWITCHABLE || match_found != -1) {
     return 0;
   }
-  if (!av1_is_interp_needed(xd) || !av1_is_interp_search_needed(xd)) {
+  if (!need_search) {
     assert(mbmi->interp_filters ==
            av1_broadcast_interp_filter(EIGHTTAP_REGULAR));
     return 0;
@@ -7523,6 +7573,11 @@ static int64_t interpolation_filter_search(
     }
   }
   swap_dst_buf(xd, dst_bufs, num_planes);
+  // save search results
+  if (cpi->sf.skip_repeat_interpolation_filter_search) {
+    assert(match_found == -1);
+    save_interp_filter_search_stat(x, mbmi);
+  }
   return 0;
 }
 
@@ -9367,6 +9422,10 @@ static void set_params_rd_pick_inter_mode(
     x->use_default_inter_tx_type = 1;
   else
     x->use_default_inter_tx_type = 0;
+  if (cpi->sf.skip_repeat_interpolation_filter_search) {
+    x->interp_filter_stats_idx[0] = 0;
+    x->interp_filter_stats_idx[1] = 0;
+  }
 }
 
 static void search_palette_mode(const AV1_COMP *cpi, MACROBLOCK *x,

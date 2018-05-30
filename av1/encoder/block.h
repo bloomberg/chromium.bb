@@ -166,6 +166,13 @@ typedef struct {
   int sample_counts;                // Number of samples collected.
 } FIRST_PARTITION_PASS_STATS;
 
+#define MAX_INTERP_FILTER_STATS 64
+typedef struct {
+  InterpFilters filters;
+  MV mv[2];
+  int8_t ref_frames[2];
+} INTERPOLATION_FILTER_STATS;
+
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
@@ -182,6 +189,10 @@ struct macroblock {
 
   FIRST_PARTITION_PASS_STATS
   first_partition_pass_stats[FIRST_PARTITION_PASS_STATS_TABLES];
+
+  // [comp_idx][saved stat_idx]
+  INTERPOLATION_FILTER_STATS interp_filter_stats[2][MAX_INTERP_FILTER_STATS];
+  int interp_filter_stats_idx[2];
 
   // Activate constrained coding block partition search range.
   int use_cb_search_range;
