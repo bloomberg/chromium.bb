@@ -212,9 +212,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'BasicMouseInterfaceTest.testMoveAndClick',
     'BasicMouseInterfaceTest.testShouldClickElementInIFrame',
     'CombinedInputActionsTest.testCanClickOnLinks',
-
-     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
-    'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
