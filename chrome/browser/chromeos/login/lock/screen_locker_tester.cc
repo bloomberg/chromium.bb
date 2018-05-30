@@ -18,7 +18,6 @@
 #include "chromeos/login/auth/fake_extended_authenticator.h"
 #include "chromeos/login/auth/stub_authenticator.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_utils.h"
@@ -108,7 +107,7 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 
   WebUIScreenLockerTester() {}
 
-  content::RenderViewHost* RenderViewHost() const;
+  content::RenderFrameHost* GetMainFrame() const;
 
   // Returns the ScreenLockerWebUI object.
   WebUIScreenLocker* webui_screen_locker() const;
@@ -120,17 +119,15 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 };
 
 void WebUIScreenLockerTester::SetPassword(const std::string& password) {
-  webui()->GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::ASCIIToUTF16(base::StringPrintf(
-          "$('pod-row').pods[0].passwordElement.value = '%s';",
-          password.c_str())));
+  GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(
+      base::StringPrintf("$('pod-row').pods[0].passwordElement.value = '%s';",
+                         password.c_str())));
 }
 
 std::string WebUIScreenLockerTester::GetPassword() {
   std::string result;
   std::unique_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
-      RenderViewHost()->GetMainFrame(),
-      "$('pod-row').pods[0].passwordElement.value;");
+      GetMainFrame(), "$('pod-row').pods[0].passwordElement.value;");
   CHECK(v->GetAsString(&result));
   return result;
 }
@@ -144,7 +141,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
 
   // Verify that "reauth" warning is hidden.
   std::unique_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
-      RenderViewHost()->GetMainFrame(),
+      GetMainFrame(),
       "window.getComputedStyle("
       "    $('pod-row').pods[0].querySelector('.reauth-hint-container'))"
       "        .display == 'none'");
@@ -153,7 +150,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
 
   // Attempt to sign in.
   LoginAttemptObserver login;
-  v = content::ExecuteScriptAndGetValue(RenderViewHost()->GetMainFrame(),
+  v = content::ExecuteScriptAndGetValue(GetMainFrame(),
                                         "$('pod-row').pods[0].activate();");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
@@ -172,8 +169,8 @@ views::Widget* WebUIScreenLockerTester::GetChildWidget() const {
   return webui_screen_locker()->lock_window_;
 }
 
-content::RenderViewHost* WebUIScreenLockerTester::RenderViewHost() const {
-  return webui()->GetWebContents()->GetRenderViewHost();
+content::RenderFrameHost* WebUIScreenLockerTester::GetMainFrame() const {
+  return webui()->GetWebContents()->GetMainFrame();
 }
 
 WebUIScreenLocker* WebUIScreenLockerTester::webui_screen_locker() const {
