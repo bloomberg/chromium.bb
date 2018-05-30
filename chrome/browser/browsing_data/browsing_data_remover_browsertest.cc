@@ -4,12 +4,15 @@
 
 #include <stddef.h>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -22,6 +25,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -51,13 +55,81 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using content::BrowserThread;
 using content::BrowsingDataFilterBuilder;
 
 namespace {
 static const char* kExampleHost = "example.com";
+static const char* kLocalHost = "localhost";
+
+// Check if |file| matches any regex in |whitelist|.
+bool IsFileWhitelisted(const std::string& file,
+                       const std::vector<std::string>& whitelist) {
+  for (const std::string& pattern : whitelist) {
+    if (RE2::PartialMatch(file, pattern))
+      return true;
+  }
+  return false;
 }
+
+// Searches the user data directory for files that contain |hostname| in the
+// filename or as part of the content. Returns the number of files that
+// do not match any regex in |whitelist|.
+bool CheckUserDirectoryForString(const std::string& hostname,
+                                 const std::vector<std::string>& whitelist) {
+  base::FilePath user_data_dir =
+      g_browser_process->profile_manager()->user_data_dir();
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FileEnumerator enumerator(
+      user_data_dir, true /* recursive */,
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
+  int found = 0;
+  for (base::FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    // Remove |user_data_dir| part from path.
+    std::string file =
+        path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe().substr(
+            user_data_dir.AsUTF8Unsafe().length());
+
+    // Check file name.
+    if (file.find(hostname) != std::string::npos) {
+      if (IsFileWhitelisted(file, whitelist)) {
+        LOG(INFO) << "Whitelisted: " << file;
+      } else {
+        found++;
+        LOG(WARNING) << "Found file name: " << file;
+      }
+    }
+
+    // Check file content.
+    if (enumerator.GetInfo().IsDirectory())
+      continue;
+    std::string content;
+    if (!base::ReadFileToString(path, &content)) {
+      LOG(INFO) << "Could not read: " << file;
+      continue;
+    }
+    size_t pos = content.find(hostname);
+    if (pos != std::string::npos) {
+      if (IsFileWhitelisted(file, whitelist)) {
+        LOG(INFO) << "Whitelisted: " << file;
+        continue;
+      }
+      found++;
+      // Print surrounding text of the match.
+      std::string partial_content = content.substr(
+          pos < 30 ? 0 : pos - 30,
+          std::min(content.size() - 1, pos + hostname.size() + 30));
+      LOG(WARNING) << "Found file content: " << file << "\n"
+                   << partial_content << "\n";
+    }
+  }
+  return found;
+}
+
+}  // namespace
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
@@ -177,19 +249,19 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void SetDataForType(const std::string& type) {
-    ASSERT_TRUE(RunScriptAndGetBool("set" + type + "()"));
+    ASSERT_TRUE(RunScriptAndGetBool("set" + type + "()"))
+        << "Couldn't create data for: " << type;
   }
 
   int GetSiteDataCount() {
     base::RunLoop run_loop;
     int count = -1;
-    (new SiteDataCountingHelper(
-         browser()->profile(), base::Time(),
-         base::Bind(&BrowsingDataRemoverBrowserTest::OnCookieCountResult,
-                    base::Unretained(this), base::Unretained(&run_loop),
-                    base::Unretained(&count))))
+    (new SiteDataCountingHelper(browser()->profile(), base::Time(),
+                                base::BindLambdaForTesting([&](int c) {
+                                  count = c;
+                                  run_loop.Quit();
+                                })))
         ->CountAndDestroySelfWhenFinished();
-
     run_loop.Run();
     return count;
   }
@@ -222,11 +294,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         static_cast<browsing_data::BrowsingDataCounter::FinishedResult*>(
             result.get())
             ->Value();
-    run_loop->Quit();
-  }
-
-  void OnCookieCountResult(base::RunLoop* run_loop, int* out_count, int count) {
-    *out_count = count;
     run_loop->Quit();
   }
 
@@ -465,6 +532,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, CookieDeletion) {
   TestSiteData("Cookie");
 }
 
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionCookieDeletion) {
+  TestSiteData("SessionCookie");
+}
+
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, LocalStorageDeletion) {
   TestSiteData("LocalStorage");
 }
@@ -519,4 +590,69 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, IndexedDbDeletion) {
 // Test that empty indexed dbs are deleted correctly.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyIndexedDb) {
   TestEmptySiteData("IndexedDb");
+}
+
+// Test that storage doesn't leave any traces on disk.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       PRE_PRE_StorageRemovedFromDisk) {
+  ASSERT_EQ(0, GetSiteDataCount());
+  ASSERT_EQ(0, CheckUserDirectoryForString(kLocalHost, {}));
+  // To use secure-only features on a host name, we need an https server.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(
+      net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+  base::FilePath path;
+  base::PathService::Get(content::DIR_TEST_DATA, &path);
+  https_server.ServeFilesFromDirectory(path);
+  ASSERT_TRUE(https_server.Start());
+
+  GURL url = https_server.GetURL(kLocalHost, "/browsing_data/site_data.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  const std::vector<std::string> types{
+      "Cookie",    "LocalStorage", "FileSystem",    "SessionStorage",
+      "IndexedDb", "WebSql",       "ServiceWorker", "CacheStorage",
+  };
+  for (const std::string& type : types) {
+    SetDataForType(type);
+    EXPECT_TRUE(HasDataForType(type));
+  }
+  // TODO(crbug.com/846297): Add more datatypes for testing. E.g. notifications,
+  // payment handler, content settings, autofill, ...?
+}
+
+// Restart after creating the data to ensure that everything was written to
+// disk.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       PRE_StorageRemovedFromDisk) {
+  EXPECT_EQ(1, GetSiteDataCount());
+  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+                content::BrowsingDataRemover::DATA_TYPE_CACHE |
+                ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
+                ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS);
+  EXPECT_EQ(0, GetSiteDataCount());
+}
+
+// Check if any data remains after a deletion and a Chrome restart to force
+// all writes to be finished.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
+  // Deletions should remove all traces of browsing data from disk
+  // but there are a few bugs that need to be fixed.
+  // Any addition to this list must have an associated TODO().
+  static const std::vector<std::string> whitelist = {
+    // TODO(crbug.com/823071): LevelDB logs are not deleted immediately.
+    "File System/Origins/[0-9]*.log",
+    "Local Storage/leveldb/[0-9]*.log",
+    "Service Worker/Database/[0-9]*.log",
+    "Session Storage/[0-9]*.log",
+
+#if defined(OS_CHROMEOS)
+    // TODO(crbug.com/846297): Many leveldb files remain on ChromeOS. I couldn't
+    // reproduce this in manual testing, so it might be a timing issue when
+    // Chrome is closed after the second test?
+    "[0-9]{6}",
+#endif
+  };
+  int found = CheckUserDirectoryForString(kLocalHost, whitelist);
+  EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
 }
