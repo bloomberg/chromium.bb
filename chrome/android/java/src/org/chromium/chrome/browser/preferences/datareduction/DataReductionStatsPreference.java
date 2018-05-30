@@ -155,9 +155,14 @@ public class DataReductionStatsPreference extends Preference {
     }
 
     private void setDetailText() {
+        final Context context = getContext();
         updateDetailData();
         mStartDateTextView.setText(mStartDatePhrase);
+        mStartDateTextView.setContentDescription(context.getString(
+                R.string.data_reduction_start_date_content_description, mStartDatePhrase));
         mEndDateTextView.setText(mEndDatePhrase);
+        mEndDateTextView.setContentDescription(context.getString(
+                R.string.data_reduction_end_date_content_description, mEndDatePhrase));
         if (mDataUsageTextView != null) mDataUsageTextView.setText(mReceivedTotalPhrase);
         if (mDataSavingsTextView != null) mDataSavingsTextView.setText(mSavingsTotalPhrase);
     }

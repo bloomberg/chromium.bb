@@ -9057,6 +9057,7 @@ Called by update_net_error_codes.py.-->
   <int value="24" label="Site breakdown sorted by data saved"/>
   <int value="25" label="Site breakdown sorted by data used"/>
   <int value="26" label="Site breakdown expanded to see more sites"/>
+  <int value="27" label="Site breakdown sorted by hostname"/>
 </enum>
 
 <enum name="DataReductionProxyWarmupURLFetchAttemptEvent">

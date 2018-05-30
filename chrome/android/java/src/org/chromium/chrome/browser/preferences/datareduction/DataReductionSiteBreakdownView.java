@@ -39,6 +39,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private int mNumDataUseItemsToDisplay = 10;
 
     private TableLayout mTableLayout;
+    private TextView mHostnameTitle;
     private TextView mDataUsedTitle;
     private TextView mDataSavedTitle;
     private List<DataReductionDataUseItem> mDataUseItems;
@@ -52,14 +53,29 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTableLayout = (TableLayout) findViewById(R.id.data_reduction_proxy_breakdown_table);
+        mHostnameTitle = (TextView) findViewById(R.id.data_reduction_breakdown_site_title);
         mDataUsedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_used_title);
         mDataSavedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_saved_title);
+
+        mHostnameTitle.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DataReductionProxyUma.dataReductionProxyUIAction(
+                        DataReductionProxyUma.ACTION_SITE_BREAKDOWN_SORTED_BY_HOSTNAME);
+                setTextViewUnsortedAttributes(mDataSavedTitle);
+                setTextViewUnsortedAttributes(mDataUsedTitle);
+                setTextViewSortedAttributes(mHostnameTitle);
+                Collections.sort(mDataUseItems, new HostnameComparator());
+                updateSiteBreakdown();
+            }
+        });
 
         mDataUsedTitle.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 DataReductionProxyUma.dataReductionProxyUIAction(
                         DataReductionProxyUma.ACTION_SITE_BREAKDOWN_SORTED_BY_DATA_USED);
+                setTextViewUnsortedAttributes(mHostnameTitle);
                 setTextViewUnsortedAttributes(mDataSavedTitle);
                 setTextViewSortedAttributes(mDataUsedTitle);
                 Collections.sort(mDataUseItems, new DataUsedComparator());
@@ -72,6 +88,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             public void onClick(View v) {
                 DataReductionProxyUma.dataReductionProxyUIAction(
                         DataReductionProxyUma.ACTION_SITE_BREAKDOWN_SORTED_BY_DATA_SAVED);
+                setTextViewUnsortedAttributes(mHostnameTitle);
                 setTextViewUnsortedAttributes(mDataUsedTitle);
                 setTextViewSortedAttributes(mDataSavedTitle);
                 Collections.sort(mDataUseItems, new DataSavedComparator());
@@ -85,6 +102,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (mTextViewsNeedAttributesSet) {
             mTextViewsNeedAttributesSet = false;
+            setTextViewUnsortedAttributes(mHostnameTitle);
             setTextViewUnsortedAttributes(mDataUsedTitle);
             setTextViewSortedAttributes(mDataSavedTitle);
         }
@@ -96,6 +114,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
      */
     public void setAndDisplayDataUseItems(List<DataReductionDataUseItem> items) {
         mDataUseItems = items;
+        setTextViewUnsortedAttributes(mHostnameTitle);
         setTextViewUnsortedAttributes(mDataUsedTitle);
         setTextViewSortedAttributes(mDataSavedTitle);
         Collections.sort(mDataUseItems, new DataSavedComparator());
@@ -145,6 +164,23 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             return drawables[0];
         }
         return drawables[2];
+    }
+
+    /**
+     * Sorts the DataReductionDataUseItems by hostname.
+     */
+    private static final class HostnameComparator
+            implements Comparator<DataReductionDataUseItem>, Serializable {
+        @Override
+        public int compare(DataReductionDataUseItem lhs, DataReductionDataUseItem rhs) {
+            // Force the 'Other' category to the bottom of the list.
+            if (OTHER_HOST_NAME.equals(lhs.getHostname())) {
+                return 1;
+            } else if (OTHER_HOST_NAME.equals(rhs.getHostname())) {
+                return -1;
+            }
+            return lhs.getHostname().compareTo(rhs.getHostname());
+        }
     }
 
     /**
@@ -220,8 +256,18 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
                             R.string.data_reduction_breakdown_other_host_name);
                 }
                 hostnameView.setText(hostName);
-                dataUsedView.setText(mDataUseItems.get(i).getFormattedDataUsed(getContext()));
-                dataSavedView.setText(mDataUseItems.get(i).getFormattedDataSaved(getContext()));
+
+                final CharSequence dataUsed =
+                        mDataUseItems.get(i).getFormattedDataUsed(getContext());
+                dataUsedView.setText(dataUsed);
+                dataUsedView.setContentDescription(getResources().getString(
+                        R.string.data_reduction_breakdown_used_content_description, dataUsed));
+
+                final CharSequence dataSaved =
+                        mDataUseItems.get(i).getFormattedDataSaved(getContext());
+                dataSavedView.setText(dataSaved);
+                dataSavedView.setContentDescription(getResources().getString(
+                        R.string.data_reduction_breakdown_saved_content_description, dataSaved));
 
                 mTableLayout.addView(row, i + 1);
             } else {

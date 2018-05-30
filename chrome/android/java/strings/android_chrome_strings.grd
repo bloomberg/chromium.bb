@@ -1129,14 +1129,35 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_USAGE_LABEL" desc="Data Reduction statistics label that states the amount of data that was used by Chrome when Data Saver is enabled.">
         data used
       </message>
+      <message name="IDS_DATA_REDUCTION_START_DATE_CONTENT_DESCRIPTION" desc="This label is used in the device screen reader to describe the starting date that data savings are computed from. This will always be used in the form 'Start date: February 28'.">
+        Start date <ph name="date">%1$s<ex>Feb 28</ex></ph>
+      </message>
+      <message name="IDS_DATA_REDUCTION_END_DATE_CONTENT_DESCRIPTION" desc="This label is used in the device screen reader to describe the end date that data savings are computed until. This will always be used in the form 'End date: February 28'..">
+        End date <ph name="date">%1$s<ex>Feb 28</ex></ph>
+      </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_SITE_TITLE" desc="Title for the sites column on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
         Site
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SITE_HEADER_CONTENT_DESCRIPTION" desc="This label is used to state that by clicking the associated button, the displayed table will be sorted by website domain name. This is used in the device's screen reader and is not displayed visually to the user.">
+        Sort by site
       </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_USED_TITLE" desc="Title for the data used column on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved.">
         Used
       </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_USED_HEADER_CONTENT_DESCRIPTION" desc="This label is used to state that by clicking the associated button, the displayed table will be sorted descending by the amount of mobile data that was used when viewing a webpage. This is used in the device's screen reader and is not displayed visually to the user.">
+        Sort by amount of data used
+      </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_TITLE" desc="Title for the data saved column on the Data Reduction statistics page. The breakdown lists for the top ten sites with the greatest amount of data usage or mobile data that was saved. Data Saver allows users to to reduce their mobile data usage by compressing network traffic.">
         Saved
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_HEADER_CONTENT_DESCRIPTION" desc="This label is used to state that by clicking the associated button, the displayed table will be sorted descending by the amount of mobile data that was saved when viewing a webpage by using Chrome's Data Saver feature. This is used in the device's screen reader and is not displayed visually to the user.">
+        Sort by amount of data saved
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_USED_CONTENT_DESCRIPTION" desc="This label is used as a suffix to describe the amount of mobile data that was used to view a webpage. It is used in the form '0 bytes used'.">
+        <ph name="amount">%1$s<ex>0 bytes</ex></ph> used
+      </message>
+      <message name="IDS_DATA_REDUCTION_BREAKDOWN_SAVED_CONTENT_DESCRIPTION" desc="This label is used as a suffix to describe the amount of mobile data that was saved when viewing a webpage by using Chrome's Data Saver feature. It is used in the form '0 bytes used'.">
+        <ph name="amount">%1$s<ex>0 bytes</ex></ph> saved
       </message>
       <message name="IDS_DATA_REDUCTION_BREAKDOWN_REMAINING_SITES_LABEL" desc="Title for the the remaining sites on the Data Reduction statistics page. The breakdown lists the top ten sites with the greatest amount of data usage or mobile data that was saved and then groups the remaining sites together.">
         Remaining sites (<ph name="NUMBER_OF_SITES">%1$d<ex>35</ex></ph>)
