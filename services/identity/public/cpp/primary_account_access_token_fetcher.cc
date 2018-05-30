@@ -129,21 +129,6 @@ void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
   StartAccessTokenRequest();
 }
 
-void PrimaryAccountAccessTokenFetcher::OnRefreshTokensLoaded() {
-  DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
-  DCHECK(waiting_for_refresh_token_);
-  DCHECK(!waiting_for_sign_in_);
-  DCHECK(!access_token_request_);
-
-  // All refresh tokens were loaded, but we didn't get one for the account we
-  // care about. We probably won't get one any time soon.
-  // Attempt to fetch an access token anyway, so that the token service will
-  // provide us with an appropriate error code.
-  waiting_for_refresh_token_ = false;
-  token_service_->RemoveObserver(this);
-  StartAccessTokenRequest();
-}
-
 void PrimaryAccountAccessTokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,

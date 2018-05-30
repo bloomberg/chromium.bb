@@ -68,7 +68,6 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokensLoaded() override;
 
   // OAuth2TokenService::Consumer implementation.
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
