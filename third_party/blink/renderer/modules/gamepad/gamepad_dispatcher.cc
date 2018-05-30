@@ -72,8 +72,6 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
   DCHECK(index < device::Gamepads::kItemsLengthCap);
   DCHECK_EQ(connected, gamepad.connected);
 
-  latest_change_.pad = gamepad;
-  latest_change_.index = index;
   NotifyControllers();
 }
 
