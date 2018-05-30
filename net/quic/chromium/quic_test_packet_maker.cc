@@ -124,17 +124,17 @@ QuicTestPacketMaker::MakeAckAndPingPacket(
   }
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(&ack));
-  DVLOG(1) << "Adding frame: " << frames[0];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ <= quic::QUIC_VERSION_43) {
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(quic::QuicFrame(&stop_waiting));
-    DVLOG(1) << "Adding frame: " << frames[1];
+    DVLOG(1) << "Adding frame: " << frames.back();
   }
 
   frames.push_back(quic::QuicFrame(quic::QuicPingFrame()));
-  DVLOG(1) << "Adding frame: " << frames[2];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
@@ -223,18 +223,19 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   }
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(&ack));
-  DVLOG(1) << "Adding frame: " << frames[0];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ <= quic::QUIC_VERSION_43) {
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(quic::QuicFrame(&stop_waiting));
-    DVLOG(1) << "Adding frame: " << frames[1];
+    DVLOG(1) << "Adding frame: " << frames.back();
   }
 
   quic::QuicRstStreamFrame rst(1, stream_id, error_code, bytes_written);
   frames.push_back(quic::QuicFrame(&rst));
   DVLOG(1) << "Adding frame: " << frames[2];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
@@ -280,13 +281,13 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   }
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(&ack));
-  DVLOG(1) << "Adding frame: " << frames[0];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ <= quic::QUIC_VERSION_43) {
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(quic::QuicFrame(&stop_waiting));
-    DVLOG(1) << "Adding frame: " << frames[1];
+    DVLOG(1) << "Adding frame: " << frames.back();
   }
 
   quic::QuicConnectionCloseFrame close;
@@ -294,7 +295,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   close.error_details = quic_error_details;
 
   frames.push_back(quic::QuicFrame(&close));
-  DVLOG(1) << "Adding frame: " << frames[2];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
@@ -391,13 +392,14 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
                           clock_->Now(), perspective_);
   quic::QuicFrames frames;
   quic::QuicFrame ack_frame(&ack);
-  DVLOG(1) << "Adding frame: " << ack_frame;
   frames.push_back(ack_frame);
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ <= quic::QUIC_VERSION_43) {
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(quic::QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames.back();
   }
 
   std::unique_ptr<quic::QuicPacket> packet(
@@ -477,11 +479,13 @@ QuicTestPacketMaker::MakeAckAndDataPacket(
   }
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(&ack));
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ <= quic::QUIC_VERSION_43) {
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(quic::QuicFrame(&stop_waiting));
+    DVLOG(1) << "Adding frame: " << frames.back();
   }
 
   quic::QuicStreamFrame stream_frame(stream_id, fin, offset, data);
@@ -963,13 +967,13 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
   }
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(&ack));
-  DVLOG(1) << "Adding frame: " << frames[0];
+  DVLOG(1) << "Adding frame: " << frames.back();
 
   quic::QuicStopWaitingFrame stop_waiting;
   if (version_ <= quic::QUIC_VERSION_43) {
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(quic::QuicFrame(&stop_waiting));
-    DVLOG(1) << "Adding frame: " << frames[1];
+    DVLOG(1) << "Adding frame: " << frames.back();
   }
 
   const bool exclusive = client_headers_include_h2_stream_dependency_;
