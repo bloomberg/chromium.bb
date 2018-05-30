@@ -7,11 +7,12 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chrome/browser/resource_coordinator/lifecycle_state.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "content/public/browser/visibility.h"
 
 namespace resource_coordinator {
+
+using ::mojom::LifecycleUnitState;
 
 // Base class for a LifecycleUnit.
 class LifecycleUnitBase : public LifecycleUnit {
@@ -22,13 +23,13 @@ class LifecycleUnitBase : public LifecycleUnit {
   // LifecycleUnit:
   int32_t GetID() const override;
   base::TimeTicks GetLastVisibleTime() const override;
-  LifecycleState GetState() const override;
+  LifecycleUnitState GetState() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
 
  protected:
   // Sets the state of this LifecycleUnit to |state| and notifies observers.
-  void SetState(LifecycleState state);
+  void SetState(LifecycleUnitState state);
 
   // Notifies observers that the visibility of the LifecycleUnit has changed.
   void OnLifecycleUnitVisibilityChanged(content::Visibility visibility);
@@ -45,7 +46,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   const int32_t id_ = ++next_id_;
 
   // Current state of this LifecycleUnit.
-  LifecycleState state_ = LifecycleState::ACTIVE;
+  LifecycleUnitState state_ = LifecycleUnitState::ACTIVE;
 
   base::TimeTicks last_visible_time_;
 

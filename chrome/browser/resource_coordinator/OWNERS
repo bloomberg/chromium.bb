@@ -4,3 +4,6 @@ fdoray@chromium.org
 
 # ChromeOS tab manager related implementation.
 per-file *chromeos*=cylee@chromium.org
+
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS

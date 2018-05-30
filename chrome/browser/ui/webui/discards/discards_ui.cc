@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -96,9 +97,8 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->title = base::UTF16ToUTF8(lifecycle_unit->GetTitle());
       info->visibility =
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
+      info->state = lifecycle_unit->GetState();
       info->is_media = tab_lifecycle_unit_external->IsMediaTab();
-      info->is_frozen = tab_lifecycle_unit_external->IsFrozen();
-      info->is_discarded = tab_lifecycle_unit_external->IsDiscarded();
       info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
       info->utility_rank = rank++;
       const base::TimeTicks last_focused_time =
@@ -177,6 +177,9 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
   // Full paths (relative to src) are important for Mojom generated files.
   source->AddResourcePath("chrome/browser/ui/webui/discards/discards.mojom.js",
                           IDR_ABOUT_DISCARDS_MOJO_JS);
+  source->AddResourcePath(
+      "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.js",
+      IDR_ABOUT_DISCARDS_LIFECYCLE_UNIT_STATE_MOJO_JS);
   source->SetDefaultResource(IDR_ABOUT_DISCARDS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);

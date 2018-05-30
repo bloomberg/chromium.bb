@@ -15,10 +15,12 @@
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/decision_details.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
-#include "chrome/browser/resource_coordinator/lifecycle_state.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "content/public/browser/visibility.h"
 
 namespace resource_coordinator {
+
+using ::mojom::LifecycleUnitState;
 
 class DecisionDetails;
 class LifecycleUnitObserver;
@@ -107,7 +109,7 @@ class LifecycleUnit {
   virtual SortKey GetSortKey() const = 0;
 
   // Returns the current state of this LifecycleUnit.
-  virtual LifecycleState GetState() const = 0;
+  virtual LifecycleUnitState GetState() const = 0;
 
   // Request that the LifecycleUnit be frozen, return true if the request is
   // successfully sent.

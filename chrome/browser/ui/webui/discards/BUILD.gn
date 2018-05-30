@@ -9,5 +9,9 @@ if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources = [
       "discards.mojom",
     ]
+
+    public_deps = [
+      "//chrome/browser/resource_coordinator:mojo_bindings",
+    ]
   }
 }

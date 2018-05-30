@@ -54,7 +54,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   MockLifecycleUnitObserver() = default;
 
   MOCK_METHOD2(OnLifecycleUnitStateChanged,
-               void(LifecycleUnit*, LifecycleState));
+               void(LifecycleUnit*, LifecycleUnitState));
   MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
   MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
                void(LifecycleUnit*, content::Visibility));

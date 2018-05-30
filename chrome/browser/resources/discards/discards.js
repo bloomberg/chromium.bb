@@ -64,17 +64,17 @@ cr.define('discards', function() {
     }
 
     // Compares boolean fields.
-    if (['isMedia', 'isFrozen', 'isDiscarded', 'isAutoDiscardable'].includes(
-            sortKey)) {
+    if (['isMedia', 'isAutoDiscardable'].includes(sortKey)) {
       if (val1 == val2)
         return 0;
       return val1 ? 1 : -1;
     }
 
     // Compares numeric fields.
-    // Note: Visibility is represented as a numeric value.
+    // Note: Visibility and state are represented as a numeric value.
     if ([
           'visibility',
+          'state',
           'discardCount',
           'utilityRank',
           'reactivationScore',
@@ -203,6 +203,24 @@ cr.define('discards', function() {
     assertNotReached('Unsupported visibility: ' + visibility);
   }
 
+  function lifecycleStateToString(state) {
+    switch (state) {
+      case mojom.LifecycleUnitState.ACTIVE:
+        return 'active';
+      case mojom.LifecycleUnitState.THROTTLED:
+        return 'throttled';
+      case mojom.LifecycleUnitState.PENDING_FREEZE:
+        return 'pending frozen';
+      case mojom.LifecycleUnitState.FROZEN:
+        return 'frozen';
+      case mojom.LifecycleUnitState.PENDING_DISCARD:
+        return 'pending discard';
+      case mojom.LifecycleUnitState.DISCARDED:
+        return 'discarded';
+    }
+    assertNotReached('Unsupported lifecycle state: ' + state);
+  }
+
   /**
    * Returns the index of the row in the table that houses the given |element|.
    * @param {HTMLElement} element Any element in the DOM.
@@ -287,10 +305,8 @@ cr.define('discards', function() {
         visibilityToString(info.visibility);
     row.querySelector('.is-media-cell').textContent =
         boolToString(info.isMedia);
-    row.querySelector('.is-frozen-cell').textContent =
-        boolToString(info.isFrozen);
-    row.querySelector('.is-discarded-cell').textContent =
-        boolToString(info.isDiscarded);
+    row.querySelector('.state-cell').textContent =
+        lifecycleStateToString(info.state);
     row.querySelector('.discard-count-cell').textContent =
         info.discardCount.toString();
     row.querySelector('.is-auto-discardable-div').textContent =
@@ -302,19 +318,27 @@ cr.define('discards', function() {
     row.querySelector('.is-auto-discardable-link').removeAttribute('disabled');
     let discardLink = row.querySelector('.discard-link');
     let discardUrgentLink = row.querySelector('.discard-urgent-link');
-    if (info.isDiscarded) {
-      discardLink.setAttribute('disabled', '');
-      discardUrgentLink.setAttribute('disabled', '');
-    } else {
-      discardLink.removeAttribute('disabled');
-      discardUrgentLink.removeAttribute('disabled');
-    }
-
     let freezeLink = row.querySelector('.freeze-link');
-    if (info.isFrozen)
-      freezeLink.setAttribute('disabled', '');
-    else
-      freezeLink.removeAttribute('disabled', '');
+    switch (info.state) {
+      case mojom.LifecycleUnitState.ACTIVE:
+        discardLink.removeAttribute('disabled');
+        discardUrgentLink.removeAttribute('disabled');
+        freezeLink.removeAttribute('disabled');
+        break;
+      case mojom.LifecycleUnitState.THROTTLED:
+      case mojom.LifecycleUnitState.PENDING_FREEZE:
+      case mojom.LifecycleUnitState.FROZEN:
+        discardLink.removeAttribute('disabled');
+        discardUrgentLink.removeAttribute('disabled');
+        freezeLink.setAttribute('disabled', '');
+        break;
+      case mojom.LifecycleUnitState.PENDING_DISCARD:
+      case mojom.LifecycleUnitState.DISCARDED:
+        discardLink.setAttribute('disabled', '');
+        discardUrgentLink.setAttribute('disabled', '');
+        freezeLink.setAttribute('disabled', '');
+        break;
+    }
   }
 
   /**
