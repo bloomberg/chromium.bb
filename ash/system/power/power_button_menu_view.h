@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/power/power_button_controller.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
@@ -27,6 +28,11 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
 
   // Distance of the menu animation transform.
   static constexpr int kMenuViewTransformDistanceDp = 16;
+
+  // The feedback item is controlled by a feature solely so it can be turned on
+  // only for some users on the beta, dev and stable channels.
+  static constexpr base::Feature kEnableFeedbackItem{
+      "PowerButtonMenuFeedbackItem", base::FEATURE_DISABLED_BY_DEFAULT};
 
   // Direction of the animation transform. X means to translate from
   // x-coordinate. Y means to translate from y-coordinate.
@@ -50,6 +56,9 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   }
   PowerButtonMenuItemView* lock_screen_item_for_test() const {
     return lock_screen_item_;
+  }
+  PowerButtonMenuItemView* feedback_item_for_test() const {
+    return feedback_item_;
   }
 
   // Requests focus for |power_off_item_|.
@@ -80,6 +89,7 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   PowerButtonMenuItemView* power_off_item_ = nullptr;
   PowerButtonMenuItemView* sign_out_item_ = nullptr;
   PowerButtonMenuItemView* lock_screen_item_ = nullptr;
+  PowerButtonMenuItemView* feedback_item_ = nullptr;
 
   // The physical display side of power button in landscape primary.
   PowerButtonController::PowerButtonPosition power_button_position_;

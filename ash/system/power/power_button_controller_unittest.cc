@@ -26,6 +26,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -85,6 +86,8 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
     // Run the event loop so that PowerButtonDisplayController can receive the
     // initial backlights-forced-off state.
     base::RunLoop().RunUntilIdle();
+    scoped_feature_list_.InitAndEnableFeature(
+        PowerButtonMenuView::kEnableFeedbackItem);
   }
 
  protected:
@@ -150,6 +153,9 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
   void ReleaseLockButton() {
     power_button_controller_->OnLockButtonEvent(false, base::TimeTicks::Now());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerTest);
 };
@@ -782,31 +788,34 @@ TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
 
 // Tests the menu items according to the login and screen locked status.
 TEST_F(PowerButtonControllerTest, MenuItemsToLoginAndLockedStatus) {
-  // No sign out and lock screen item if user is not logged in.
+  // No sign out, lock screen and feedback items if user is not logged in.
   ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   OpenPowerButtonMenu();
   EXPECT_FALSE(power_button_test_api_->MenuHasSignOutItem());
   EXPECT_FALSE(power_button_test_api_->MenuHasLockScreenItem());
+  EXPECT_FALSE(power_button_test_api_->MenuHasFeedbackItem());
   TapToDismissPowerButtonMenu();
 
-  // Should have sign out and lock screen item if user is logged in and screen
-  // is unlocked.
+  // Should have sign out, lock screen and feedback items if user is logged in
+  // and screen is unlocked.
   CreateUserSessions(1);
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   OpenPowerButtonMenu();
   EXPECT_FALSE(GetLockedState());
   EXPECT_TRUE(power_button_test_api_->MenuHasSignOutItem());
   EXPECT_TRUE(power_button_test_api_->MenuHasLockScreenItem());
+  EXPECT_TRUE(power_button_test_api_->MenuHasFeedbackItem());
   TapToDismissPowerButtonMenu();
 
-  // Should have sign out but not lock screen item if user is logged in but
-  // screen is locked.
+  // Should have sign out but not lock screen and feedback items if user is
+  // logged in but screen is locked.
   LockScreen();
   EXPECT_TRUE(GetLockedState());
   OpenPowerButtonMenu();
   EXPECT_TRUE(power_button_test_api_->MenuHasSignOutItem());
   EXPECT_FALSE(power_button_test_api_->MenuHasLockScreenItem());
+  EXPECT_FALSE(power_button_test_api_->MenuHasFeedbackItem());
 }
 
 // Tests long-pressing the power button when the menu is open.
@@ -977,6 +986,7 @@ TEST_F(PowerButtonControllerTest, MenuNavigation) {
   OpenPowerButtonMenu();
   ASSERT_TRUE(power_button_test_api_->MenuHasSignOutItem());
   ASSERT_TRUE(power_button_test_api_->MenuHasLockScreenItem());
+  ASSERT_TRUE(power_button_test_api_->MenuHasFeedbackItem());
   PressKey(ui::VKEY_TAB);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
                   ->power_off_item_for_test()
@@ -994,7 +1004,17 @@ TEST_F(PowerButtonControllerTest, MenuNavigation) {
 
   PressKey(ui::VKEY_TAB);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->feedback_item_for_test()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_TAB);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
                   ->power_off_item_for_test()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->feedback_item_for_test()
                   ->HasFocus());
 
   PressKey(ui::VKEY_UP);
@@ -1193,7 +1213,7 @@ TEST_P(PowerButtonControllerWithPositionTest,
 // display has different scale factors.
 TEST_P(PowerButtonControllerWithPositionTest, MenuShownAtPercentageOfPosition) {
   const int scale_factor = 2;
-  std::string display = "4000x2400*" + std::to_string(scale_factor);
+  std::string display = "8000x2400*" + std::to_string(scale_factor);
   UpdateDisplay(display);
   int64_t primary_id = GetPrimaryDisplay().id();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),

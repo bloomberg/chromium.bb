@@ -64,6 +64,9 @@ class PowerButtonControllerTestApi {
   // True if |controller_|'s menu has a lock screen item.
   bool MenuHasLockScreenItem() const;
 
+  // True if |controller_|'s menu has a feedback item.
+  bool MenuHasFeedbackItem() const;
+
   PowerButtonScreenshotController* GetScreenshotController();
 
   void SetPowerButtonType(PowerButtonController::ButtonType button_type);
