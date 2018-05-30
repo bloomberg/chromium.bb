@@ -136,6 +136,9 @@ const char kCryptohomeRemoveFirmwareManagementParameters[] =
 const char kCryptohomeMigrateToDircrypto[] = "MigrateToDircrypto";
 const char kCryptohomeNeedsDircryptoMigration[] = "NeedsDircryptoMigration";
 const char kCryptohomeGetSupportedKeyPolicies[] = "GetSupportedKeyPolicies";
+const char kCryptohomeIsQuotaSupported[] = "IsQuotaSupported";
+const char kCryptohomeGetCurrentSpaceForUid[] = "GetCurrentSpaceForUid";
+const char kCryptohomeGetCurrentSpaceForGid[] = "GetCurrentSpaceForGid";
 
 // Signals of the |kCryptohomeInterface| interface:
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
