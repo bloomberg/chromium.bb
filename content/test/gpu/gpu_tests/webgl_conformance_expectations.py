@@ -557,8 +557,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # shell.
     self.Skip('conformance/extensions/oes-texture-float-with-video.html',
         ['android', 'qualcomm', 'no_passthrough'], bug=499555)
-    self.Skip('conformance/rendering/line-rendering-quality.html',
-        ['android', 'qualcomm', 'no_passthrough'], bug=847222)
 
     # Nexus 5
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
@@ -684,6 +682,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/rendering/gl-viewport-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/rendering/line-rendering-quality.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=847222)
     self.Fail('conformance/textures/misc/' +
         'copy-tex-image-and-sub-image-2d.html',
         ['android', ('qualcomm', 'Adreno (TM) 420'), 'no_passthrough'],
