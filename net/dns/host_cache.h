@@ -25,6 +25,7 @@
 
 namespace base {
 class ListValue;
+class TickClock;
 }
 
 namespace net {
@@ -194,6 +195,10 @@ class NET_EXPORT HostCache {
 
   void set_persistence_delegate(PersistenceDelegate* delegate);
 
+  void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
+
   // Empties the cache.
   void clear();
 
@@ -264,6 +269,8 @@ class NET_EXPORT HostCache {
   size_t restore_size_;
 
   PersistenceDelegate* delegate_;
+  // Shared tick clock, overridden for testing.
+  const base::TickClock* tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -85,7 +85,7 @@ bool StaleEntryIsUsable(const StaleHostResolver::StaleOptions& options,
 // network data, or stale cached data.
 class StaleHostResolver::RequestImpl {
  public:
-  RequestImpl();
+  explicit RequestImpl(const base::TickClock* tick_clock);
   ~RequestImpl();
 
   // A callback for the caller to decide whether a stale entry is usable or not.
@@ -170,6 +170,8 @@ class StaleHostResolver::RequestImpl {
   // A timer that fires when the |Request| should return stale results, if the
   // underlying network request has not finished yet.
   base::OneShotTimer stale_timer_;
+  // Shared instance of tick clock, overridden for testing.
+  const base::TickClock* tick_clock_;
 
   // The address list the underlying network request will fill in. (Can't be the
   // one passed to |Start()|, or else the network request would overwrite stale
@@ -190,10 +192,12 @@ class StaleHostResolver::RequestImpl {
   Handle* handle_;
 };
 
-StaleHostResolver::RequestImpl::RequestImpl()
+StaleHostResolver::RequestImpl::RequestImpl(const base::TickClock* tick_clock)
     : result_addresses_(nullptr),
       returning_result_(false),
       stale_error_(net::ERR_DNS_CACHE_MISS),
+      stale_timer_(tick_clock),
+      tick_clock_(tick_clock),
       restore_size_(0),
       current_size_(0),
       handle_(nullptr) {}
@@ -341,7 +345,7 @@ void StaleHostResolver::RequestImpl::RecordNetworkRequest(
     int error,
     bool returned_stale_data) {
   if (have_stale_data())
-    RecordTimeDelta(base::TimeTicks::Now(), stale_timer_.desired_run_time());
+    RecordTimeDelta(tick_clock_->NowTicks(), stale_timer_.desired_run_time());
 
   if (returned_stale_data && stale_error_ == net::OK && error == net::OK) {
     RecordAddressListDelta(
@@ -384,10 +388,10 @@ int StaleHostResolver::Resolve(const RequestInfo& info,
                                const net::CompletionCallback& callback,
                                std::unique_ptr<Request>* out_req,
                                const net::NetLogWithSource& net_log) {
+  DCHECK(tick_clock_);
   StaleHostResolver::RequestImpl::StaleEntryUsableCallback usable_callback =
       base::Bind(&StaleEntryIsUsable, options_);
-
-  RequestImpl* request = new RequestImpl();
+  RequestImpl* request = new RequestImpl(tick_clock_);
   int rv =
       request->Start(inner_resolver_.get(), info, priority, addresses, callback,
                      out_req, net_log, usable_callback, options_.delay);
@@ -429,6 +433,12 @@ net::HostCache* StaleHostResolver::GetHostCache() {
 
 std::unique_ptr<base::Value> StaleHostResolver::GetDnsConfigAsValue() const {
   return inner_resolver_->GetDnsConfigAsValue();
+}
+
+void StaleHostResolver::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
+  inner_resolver_->SetTickClockForTesting(tick_clock);
 }
 
 }  // namespace net
