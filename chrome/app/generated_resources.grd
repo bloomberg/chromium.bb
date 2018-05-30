@@ -6896,17 +6896,11 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_DICE_SIGNIN_FIRST_ACCOUNT_BUTTON_NO_NAME" desc="Button to sign in and turn on Sync for a web account when the name is empty.">
         Sync to your account
       </message>
-      <message name="IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync with another web account.">
-        Sync to another account
-      </message>
       <message name="IDS_PROFILES_DICE_SYNC_DISABLED_TITLE" desc="Title of the profile user menu when sync is disabled.">
         Sync disabled
       </message>
        <message name="IDS_PROFILES_DICE_SYNC_PAUSED_TITLE" desc="Title of the profile user menu when sync is paused.">
         Sync is paused
-      </message>
-      <message name="IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON" desc="Button to use another account to sign in and turn on Sync.">
-        Use another account
       </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON" desc="Text of the ok button on the account removal view in the avatar menu bubble.">
         Remove account
@@ -6930,6 +6924,12 @@ I don't think this site should be blocked!
         Sign in to get your bookmarks, history, passwords, and other settings on all your devices.
       </message>
       <if expr="not use_titlecase">
+        <message name="IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync with another web account.">
+          Sync to another account
+        </message>
+        <message name="IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON" desc="Button to use another account to sign in and turn on Sync.">
+          Use another account
+        </message>
         <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
           Add account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
         </message>
@@ -6956,6 +6956,12 @@ I don't think this site should be blocked!
         </message>
       </if>
       <if expr="use_titlecase">
+        <message name="IDS_PROFILES_DICE_SIGNIN_WITH_ANOTHER_ACCOUNT_BUTTON" desc="Button to sign in and turn on Sync with another web account.">
+          Sync to Another Account
+        </message>
+        <message name="IDS_PROFILES_DICE_USE_ANOTHER_ACCOUNT_BUTTON" desc="Button to use another account to sign in and turn on Sync.">
+          Use Another Account
+        </message>
         <message name="IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON" desc="Button in the avatar menu bubble view used to add an account to a profile.">
           Add Account for <ph name="PROFILE_NAME">$1<ex>John</ex></ph>
         </message>
@@ -6981,7 +6987,7 @@ I don't think this site should be blocked!
           Open Guest Window
         </message>
         <message name="IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON" desc="Button in the avatar menu bubble view to close all windows of the current profile.">
-          Close all your Windows
+          Close All Your Windows
         </message>
       </if>
       <message name="IDS_PROFILES_EDIT_PROFILE_ACCESSIBLE_NAME" desc="Description of the Edit Profile button. This is used for accessibility.">
