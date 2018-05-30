@@ -153,17 +153,7 @@ class MultiThreadedProxyResolver : public ProxyResolver,
 
 class Job : public base::RefCountedThreadSafe<Job> {
  public:
-  // Identifies the subclass of Job (only being used for debugging purposes).
-  enum Type {
-    TYPE_GET_PROXY_FOR_URL,
-    TYPE_CREATE_RESOLVER,
-  };
-
-  Job(Type type, CompletionOnceCallback callback)
-      : type_(type),
-        callback_(std::move(callback)),
-        executor_(NULL),
-        was_cancelled_(false) {}
+  Job() : executor_(NULL), was_cancelled_(false) {}
 
   void set_executor(Executor* executor) {
     executor_ = executor;
@@ -183,16 +173,6 @@ class Job : public base::RefCountedThreadSafe<Job> {
 
   // Returns true if Cancel() has been called.
   bool was_cancelled() const { return was_cancelled_; }
-
-  Type type() const { return type_; }
-
-  // Returns true if this job still has a user callback. Some jobs
-  // do not have a user callback, because they were helper jobs
-  // scheduled internally (for example TYPE_CREATE_RESOLVER).
-  //
-  // Otherwise jobs that correspond with user-initiated work will
-  // have a non-null callback up until the callback is run.
-  bool has_user_callback() const { return !callback_.is_null(); }
 
   // This method is called when the job is inserted into a wait queue
   // because no executors were ready to accept it.
@@ -214,19 +194,11 @@ class Job : public base::RefCountedThreadSafe<Job> {
       executor_->OnJobCompleted(this);
   }
 
-  void RunUserCallback(int result) {
-    DCHECK(has_user_callback());
-    // Reset the callback so has_user_callback() will now return false.
-    std::move(callback_).Run(result);
-  }
-
   friend class base::RefCountedThreadSafe<Job>;
 
   virtual ~Job() = default;
 
  private:
-  const Type type_;
-  CompletionOnceCallback callback_;
   Executor* executor_;
   bool was_cancelled_;
 };
@@ -252,9 +224,7 @@ class CreateResolverJob : public Job {
  public:
   CreateResolverJob(const scoped_refptr<PacFileData>& script_data,
                     ProxyResolverFactory* factory)
-      : Job(TYPE_CREATE_RESOLVER, CompletionOnceCallback()),
-        script_data_(script_data),
-        factory_(factory) {}
+      : script_data_(script_data), factory_(factory) {}
 
   // Runs on the worker thread.
   void Run(scoped_refptr<base::SingleThreadTaskRunner> origin_runner) override {
@@ -296,11 +266,13 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
                     ProxyInfo* results,
                     CompletionOnceCallback callback,
                     const NetLogWithSource& net_log)
-      : Job(TYPE_GET_PROXY_FOR_URL, std::move(callback)),
+      : callback_(std::move(callback)),
         results_(results),
         net_log_(net_log),
         url_(url),
-        was_waiting_for_thread_(false) {}
+        was_waiting_for_thread_(false) {
+    DCHECK(callback_);
+  }
 
   NetLogWithSource* net_log() { return &net_log_; }
 
@@ -344,10 +316,12 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
       if (result_code >= OK) {  // Note: unit-tests use values > 0.
         results_->Use(results_buf_);
       }
-      RunUserCallback(result_code);
+      std::move(callback_).Run(result_code);
     }
     OnJobCompleted();
   }
+
+  CompletionOnceCallback callback_;
 
   // Must only be used on the "origin" thread.
   ProxyInfo* results_;
