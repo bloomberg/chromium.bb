@@ -339,10 +339,12 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
 }
 
 void BrowserCompositorMac::SynchronizeVisualProperties(
+    float new_device_scale_factor,
     const gfx::Size& new_size_in_pixels,
     const viz::LocalSurfaceId& child_allocated_local_surface_id) {
   if (dfh_local_surface_id_allocator_.UpdateFromChild(
           child_allocated_local_surface_id)) {
+    dfh_display_.set_device_scale_factor(new_device_scale_factor);
     dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
                                           new_size_in_pixels);
     dfh_size_pixels_ = new_size_in_pixels;
