@@ -38,6 +38,7 @@ class RenderWidgetHostViewNSViewBridgeLocal
 
   void InitAsPopup(const gfx::Rect& content_rect,
                    blink::WebPopupType popup_type) override;
+  void DisableDisplay() override;
   void MakeFirstResponder() override;
   void SetBounds(const gfx::Rect& rect) override;
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
@@ -73,6 +74,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
 
   // The NSView used for input and display.
   base::scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view_;
+
+  // Once set, all calls to set the background color or CALayer content will
+  // be ignored.
+  bool display_disabled_ = false;
 
   // The window used for popup widgets, and its helper.
   std::unique_ptr<PopupWindowMac> popup_window_;
@@ -134,6 +139,14 @@ void RenderWidgetHostViewNSViewBridgeLocal::MakeFirstResponder() {
   [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
 }
 
+void RenderWidgetHostViewNSViewBridgeLocal::DisableDisplay() {
+  if (display_disabled_)
+    return;
+  SetBackgroundColor(SK_ColorTRANSPARENT);
+  display_ca_layer_tree_.reset();
+  display_disabled_ = true;
+}
+
 void RenderWidgetHostViewNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
   // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
   // TODO(thakis): fix, http://crbug.com/73362
@@ -177,10 +190,14 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewNSViewBridgeLocal::SetCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
+  if (display_disabled_)
+    return;
   display_ca_layer_tree_->UpdateCALayerTree(ca_layer_params);
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
+  if (display_disabled_)
+    return;
   ScopedCAActionDisabler disabler;
   base::ScopedCFTypeRef<CGColorRef> cg_color(
       skia::CGColorCreateFromSkColor(color));
