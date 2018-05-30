@@ -378,7 +378,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
-       ShouldReturnWhenNoRefreshTokenAvailable) {
+       ShouldNotReturnEarlyWhenRefreshTokensLoaded) {
   TestTokenCallback callback;
 
   SignIn("account");
@@ -390,16 +390,32 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // Getting a refresh token for some other account should have no effect.
+  // TODO(blundell): Move this into its own test case; while a useful check,
+  // it's orthogonal to the main purpose of this test case.
   token_service()->UpdateCredentials("different account", "refresh token");
 
-  // When all refresh tokens have been loaded by the token service, but the one
-  // for our account wasn't among them, we should get called back with an empty
-  // access token.
-  EXPECT_CALL(callback, Run(testing::_, std::string()));
+  // The notification that all refresh tokens have been loaded by the token
+  // service should have no effect either.
   token_service()->LoadCredentials("account doesn't matter");
 
-  // Wait for the task posted by OAuth2TokenService to run.
+  // Wait for the above task posted by OAuth2TokenService to run before
+  // proceeding.
   base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
+  // Getting a refresh token should result in a request for an access token.
+  token_service()->UpdateCredentials("account", "refresh token");
+  run_loop.Run();
+
+  // Once the access token request is fulfilled, we should get called back with
+  // the access token.
+  EXPECT_CALL(callback,
+              Run(GoogleServiceAuthError::AuthErrorNone(), "access token"));
+  token_service()->IssueAllTokensForAccount(
+      "account", "access token",
+      base::Time::Now() + base::TimeDelta::FromHours(1));
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
