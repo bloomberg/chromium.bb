@@ -42,13 +42,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
  public:
   static const char kViewClassName[];
 
-  // Notify this notification view is in the sidebar. This is necessary until
-  // removing the experimental flag for Sidebar, since the flag exists in Ash,
-  // so we don't refer the flag directly. Some layout and behavior may change by
-  // this flag.
-  // TODO(yoshiki, tetsui): Remove this after removing the flag for Sidebar.
-  static void SetSidebarEnabled();
-
   explicit MessageView(const Notification& notification);
   ~MessageView() override;
 
@@ -69,6 +62,11 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   virtual bool IsAutoExpandingAllowed() const;
   virtual bool IsManuallyExpandedOrCollapsed() const;
   virtual void SetManuallyExpandedOrCollapsed(bool value);
+
+  // Update corner radii of the notification. Subclasses will override this to
+  // implement rounded corners if they don't use MessageView's default
+  // background.
+  virtual void UpdateCornerRadius(int top_radius, int bottom_radius);
 
   // Invoked when the container view of MessageView (e.g. MessageCenterView in
   // ash) is starting the animation that possibly hides some part of
