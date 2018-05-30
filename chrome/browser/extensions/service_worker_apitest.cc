@@ -24,6 +24,7 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -98,6 +99,16 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsLoadStopObserver);
 };
+
+bool IsMacViewsMode() {
+// Some tests are flaky on Mac: <https://crbug.com/845979>. This helper function
+// is used to skip them.
+#if defined(OS_MACOSX)
+  return !views_mode_controller::IsViewsBrowserCocoa();
+#else
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -689,6 +700,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, WebAccessibleResourcesFetch) {
 #define MAYBE_TabsCreate TabsCreate
 #endif
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, MAYBE_TabsCreate) {
+  if (IsMacViewsMode())
+    return;
   // Extensions APIs from SW are only enabled on trunk.
   ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
   const Extension* extension = LoadExtensionWithFlags(
@@ -712,6 +725,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, MAYBE_TabsCreate) {
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, Events) {
+  if (IsMacViewsMode())
+    return;
   // Extensions APIs from SW are only enabled on trunk.
   ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
   const Extension* extension = LoadExtensionWithFlags(
@@ -1021,6 +1036,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerBackgroundSyncTest, Sync) {
+  if (IsMacViewsMode())
+    return;
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("service_worker/sync"), kFlagNone);
   ASSERT_TRUE(extension);
