@@ -30,13 +30,11 @@ class EnterpriseStartupDialogViewBrowserTest : public DialogBrowserTest {
           base::ASCIIToUTF16(kMessage));
     } else if (name == "Error") {
       dialog->DisplayErrorMessage(base::ASCIIToUTF16(kMessage),
-                                  base::ASCIIToUTF16(kButton),
                                   base::ASCIIToUTF16(kButton));
     } else if (name == "Switch") {
       dialog->DisplayLaunchingInformationWithThrobber(
           base::ASCIIToUTF16(kMessage));
       dialog->DisplayErrorMessage(base::ASCIIToUTF16(kMessage),
-                                  base::ASCIIToUTF16(kButton),
                                   base::ASCIIToUTF16(kButton));
     }
   }

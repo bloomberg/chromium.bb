@@ -36,17 +36,16 @@ class EnterpriseStartupDialog {
   static std::unique_ptr<EnterpriseStartupDialog> CreateAndShowDialog(
       DialogResultCallback callback);
 
-  // Display |information| with a throbber. It changes the content of dialog
+  // Display |information| with a throbber. Changes the content of dialog
   // without re-opening it.
   virtual void DisplayLaunchingInformationWithThrobber(
       const base::string16& information) = 0;
   // Display |error_message| with an error icon. Show confirm button with
-  // value |accept_button| if provided. Same for the |cancel_button|. It changes
-  // the content of dialog without re-opening it.
+  // value |accept_button| if provided. Changes the content of dialog without
+  // re-opening it.
   virtual void DisplayErrorMessage(
       const base::string16& error_message,
-      const base::Optional<base::string16>& accept_button,
-      const base::Optional<base::string16>& cancel_button) = 0;
+      const base::Optional<base::string16>& accept_button) = 0;
   // Return true if dialog is being displayed.
   virtual bool IsShowing() = 0;
 
