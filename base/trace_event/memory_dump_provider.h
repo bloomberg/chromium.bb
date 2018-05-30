@@ -20,19 +20,12 @@ class BASE_EXPORT MemoryDumpProvider {
  public:
   // Optional arguments for MemoryDumpManager::RegisterDumpProvider().
   struct Options {
-    Options()
-        : dumps_on_single_thread_task_runner(false),
-          is_fast_polling_supported(false) {}
+    Options() : dumps_on_single_thread_task_runner(false) {}
 
     // |dumps_on_single_thread_task_runner| is true if the dump provider runs on
     // a SingleThreadTaskRunner, which is usually the case. It is faster to run
     // all providers that run on the same thread together without thread hops.
     bool dumps_on_single_thread_task_runner;
-
-    // Set to true if the dump provider implementation supports high frequency
-    // polling. Only providers running without task runner affinity are
-    // supported.
-    bool is_fast_polling_supported;
   };
 
   virtual ~MemoryDumpProvider() = default;
@@ -46,18 +39,6 @@ class BASE_EXPORT MemoryDumpProvider {
   // MemoryDumpProvider for the entire trace session if it fails consistently).
   virtual bool OnMemoryDump(const MemoryDumpArgs& args,
                             ProcessMemoryDump* pmd) = 0;
-
-  // Quickly record the total memory usage in |memory_total|. This method will
-  // be called only when the dump provider registration has
-  // |is_fast_polling_supported| set to true. This method is used for polling at
-  // high frequency for detecting peaks. See comment on
-  // |is_fast_polling_supported| option if you need to override this method.
-  virtual void PollFastMemoryTotal(uint64_t* memory_total) {}
-
-  // Indicates that fast memory polling is not going to be used in the near
-  // future and the MDP can tear down any resource kept around for fast memory
-  // polling.
-  virtual void SuspendFastMemoryPolling() {}
 
  protected:
   MemoryDumpProvider() = default;

@@ -30,7 +30,6 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_scheduler.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
-#include "base/trace_event/memory_peak_detector.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -52,9 +51,9 @@ namespace {
 
 MemoryDumpManager* g_memory_dump_manager_for_testing = nullptr;
 
-// Temporary (until peak detector and scheduler are moved outside of here)
+// Temporary (until scheduler is moved outside of here)
 // trampoline function to match the |request_dump_function| passed to Initialize
-// to the callback expected by MemoryPeakDetector and MemoryDumpScheduler.
+// to the callback expected by MemoryDumpScheduler.
 // TODO(primiano): remove this.
 void DoGlobalDumpWithoutCallback(
     MemoryDumpManager::RequestGlobalDumpFunction global_dump_fn,
@@ -194,11 +193,6 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
       new MemoryDumpProviderInfo(mdp, name, std::move(task_runner), options,
                                  whitelisted_for_background_mode);
 
-  if (options.is_fast_polling_supported) {
-    DCHECK(!mdpinfo->task_runner) << "MemoryDumpProviders capable of fast "
-                                     "polling must NOT be thread bound.";
-  }
-
   {
     AutoLock lock(lock_);
     bool already_registered = !dump_providers_.insert(mdpinfo).second;
@@ -206,9 +200,6 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
     // path for RenderThreadImpl::Init().
     if (already_registered)
       return;
-
-    if (options.is_fast_polling_supported)
-      MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
   }
 }
 
@@ -244,7 +235,6 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
     // - At the end of this function, if no dump is in progress.
     // - In ContinueAsyncProcessDump() when MDPInfo is removed from
     //   |pending_dump_providers|.
-    // - When the provider is removed from other clients (MemoryPeakDetector).
     DCHECK(!(*mdp_iter)->owned_dump_provider);
     (*mdp_iter)->owned_dump_provider = std::move(owned_mdp);
   } else {
@@ -263,11 +253,6 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
         << "unregister itself in a racy way. Please file a crbug.";
   }
 
-  if ((*mdp_iter)->options.is_fast_polling_supported) {
-    DCHECK(take_mdp_ownership_and_delete_async);
-    MemoryPeakDetector::GetInstance()->NotifyMemoryDumpProvidersChanged();
-  }
-
   // The MDPInfo instance can still be referenced by the
   // |ProcessMemoryDumpAsyncState.pending_dump_providers|. For this reason
   // the MDPInfo is flagged as disabled. It will cause InvokeOnMemoryDump()
@@ -275,16 +260,6 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
   // destroyed by the caller soon after this method returns.
   (*mdp_iter)->disabled = true;
   dump_providers_.erase(mdp_iter);
-}
-
-void MemoryDumpManager::GetDumpProvidersForPolling(
-    std::vector<scoped_refptr<MemoryDumpProviderInfo>>* providers) {
-  DCHECK(providers->empty());
-  AutoLock lock(lock_);
-  for (const scoped_refptr<MemoryDumpProviderInfo>& mdp : dump_providers_) {
-    if (mdp->options.is_fast_polling_supported)
-      providers->push_back(mdp);
-  }
 }
 
 bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
@@ -337,9 +312,6 @@ void MemoryDumpManager::CreateProcessDump(
 
     pmd_async_state.reset(new ProcessMemoryDumpAsyncState(
         args, dump_providers_, callback, GetOrCreateBgTaskRunnerLocked()));
-
-    // If enabled, holds back the peak detector resetting its estimation window.
-    MemoryPeakDetector::GetInstance()->Throttle();
   }
 
   // Start the process dump. This involves task runner hops as specified by the
@@ -523,7 +495,6 @@ void MemoryDumpManager::SetupForTracing(
   DCHECK(can_request_global_dumps());
 
   MemoryDumpScheduler::Config periodic_config;
-  bool peak_detector_configured = false;
   for (const auto& trigger : memory_dump_config.triggers) {
     if (trigger.trigger_type == MemoryDumpType::PERIODIC_INTERVAL) {
       if (periodic_config.triggers.empty()) {
@@ -533,34 +504,6 @@ void MemoryDumpManager::SetupForTracing(
       }
       periodic_config.triggers.push_back(
           {trigger.level_of_detail, trigger.min_time_between_dumps_ms});
-    } else if (trigger.trigger_type == MemoryDumpType::PEAK_MEMORY_USAGE) {
-      // At most one peak trigger is allowed.
-      CHECK(!peak_detector_configured);
-      peak_detector_configured = true;
-      MemoryPeakDetector::GetInstance()->Setup(
-          BindRepeating(&MemoryDumpManager::GetDumpProvidersForPolling,
-                        Unretained(this)),
-          GetOrCreateBgTaskRunnerLocked(),
-          BindRepeating(&DoGlobalDumpWithoutCallback, request_dump_function_,
-                        MemoryDumpType::PEAK_MEMORY_USAGE,
-                        trigger.level_of_detail));
-
-      MemoryPeakDetector::Config peak_config;
-      peak_config.polling_interval_ms = 10;
-      peak_config.min_time_between_peaks_ms = trigger.min_time_between_dumps_ms;
-      peak_config.enable_verbose_poll_tracing =
-          trigger.level_of_detail == MemoryDumpLevelOfDetail::DETAILED;
-      MemoryPeakDetector::GetInstance()->Start(peak_config);
-
-      // When peak detection is enabled, trigger a dump straight away as it
-      // gives a good reference point for analyzing the trace.
-      if (is_coordinator_) {
-        GetOrCreateBgTaskRunnerLocked()->PostTask(
-            FROM_HERE,
-            BindOnce(&DoGlobalDumpWithoutCallback, request_dump_function_,
-                     MemoryDumpType::PEAK_MEMORY_USAGE,
-                     trigger.level_of_detail));
-      }
     }
   }
 
@@ -578,7 +521,6 @@ void MemoryDumpManager::TeardownForTracing() {
   AutoLock lock(lock_);
 
   MemoryDumpScheduler::GetInstance()->Stop();
-  MemoryPeakDetector::GetInstance()->TearDown();
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(

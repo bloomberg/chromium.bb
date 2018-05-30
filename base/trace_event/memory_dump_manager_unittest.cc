@@ -108,8 +108,6 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
   MOCK_METHOD0(Destructor, void());
   MOCK_METHOD2(OnMemoryDump,
                bool(const MemoryDumpArgs& args, ProcessMemoryDump* pmd));
-  MOCK_METHOD1(PollFastMemoryTotal, void(uint64_t* memory_total));
-  MOCK_METHOD0(SuspendFastMemoryPolling, void());
 
   MockMemoryDumpProvider() : enable_mock_destructor(false) {
     ON_CALL(*this, OnMemoryDump(_, _))
@@ -117,10 +115,6 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
             Invoke([](const MemoryDumpArgs&, ProcessMemoryDump* pmd) -> bool {
               return true;
             }));
-
-    ON_CALL(*this, PollFastMemoryTotal(_))
-        .WillByDefault(
-            Invoke([](uint64_t* memory_total) -> void { NOTREACHED(); }));
   }
   ~MockMemoryDumpProvider() override {
     if (enable_mock_destructor)

@@ -62,8 +62,7 @@ class BASE_EXPORT MemoryDumpManager {
   //  request_dump_function: Function to invoke a global dump. Global dump
   //      involves embedder-specific behaviors like multiprocess handshaking.
   //      TODO(primiano): this is only required to trigger global dumps from
-  //      the scheduler and the peak detector. Should be removed once they are
-  //      both moved out of base.
+  //      the scheduler. Should be removed once they are both moved out of base.
   void Initialize(RequestGlobalDumpFunction request_dump_function,
                   bool is_coordinator);
 
@@ -99,14 +98,13 @@ class BASE_EXPORT MemoryDumpManager {
   // This method takes ownership of the dump provider and guarantees that:
   //  - The |mdp| will be deleted at some point in the near future.
   //  - Its deletion will not happen concurrently with the OnMemoryDump() call.
-  // Note that OnMemoryDump() and PollFastMemoryTotal() calls can still happen
-  // after this method returns.
+  // Note that OnMemoryDump() calls can still happen after this method returns.
   void UnregisterAndDeleteDumpProviderSoon(
       std::unique_ptr<MemoryDumpProvider> mdp);
 
   // Prepare MemoryDumpManager for CreateProcessDump() calls for tracing-related
   // modes (i.e. |level_of_detail| != SUMMARY_ONLY).
-  // Also initializes the peak detector and scheduler with the given config.
+  // Also initializes the scheduler with the given config.
   void SetupForTracing(const TraceConfig::MemoryDumpConfig&);
 
   // Tear-down tracing related state.
@@ -230,11 +228,6 @@ class BASE_EXPORT MemoryDumpManager {
   // Helper for the public UnregisterDumpProvider* functions.
   void UnregisterDumpProviderInternal(MemoryDumpProvider* mdp,
                                       bool take_mdp_ownership_and_delete_async);
-
-  // Fills the passed vector with the subset of dump providers which were
-  // registered with is_fast_polling_supported == true.
-  void GetDumpProvidersForPolling(
-      std::vector<scoped_refptr<MemoryDumpProviderInfo>>*);
 
   bool can_request_global_dumps() const {
     return !request_dump_function_.is_null();

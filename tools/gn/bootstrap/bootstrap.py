@@ -646,7 +646,6 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/trace_event/memory_dump_request_args.cc',
       'base/trace_event/memory_dump_scheduler.cc',
       'base/trace_event/memory_infra_background_whitelist.cc',
-      'base/trace_event/memory_peak_detector.cc',
       'base/trace_event/memory_usage_estimator.cc',
       'base/trace_event/process_memory_dump.cc',
       'base/trace_event/trace_buffer.cc',
