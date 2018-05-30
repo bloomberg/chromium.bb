@@ -30,8 +30,6 @@ class AppWindowController : public WindowController {
   int GetWindowId() const override;
   std::string GetWindowTypeText() const override;
   bool CanClose(Reason* reason) const override;
-  void SetFullscreenMode(bool is_fullscreen,
-                         const GURL& extension_url) const override;
   Browser* GetBrowser() const override;
   bool IsVisibleToTabsAPIForExtension(
       const Extension* extension,

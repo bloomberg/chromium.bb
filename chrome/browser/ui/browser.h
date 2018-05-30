@@ -84,10 +84,10 @@ class SessionStorageNamespace;
 }
 
 namespace extensions {
+class BrowserExtensionWindowController;
 class HostedAppBrowserController;
 class Extension;
 class ExtensionRegistry;
-class WindowController;
 }
 
 namespace gfx {
@@ -515,7 +515,8 @@ class Browser : public TabStripModelObserver,
     return exclusive_access_manager_.get();
   }
 
-  extensions::WindowController* extension_window_controller() const {
+  extensions::BrowserExtensionWindowController* extension_window_controller()
+      const {
     return extension_window_controller_.get();
   }
 
@@ -992,7 +993,8 @@ class Browser : public TabStripModelObserver,
 
   std::unique_ptr<ExclusiveAccessManager> exclusive_access_manager_;
 
-  std::unique_ptr<extensions::WindowController> extension_window_controller_;
+  std::unique_ptr<extensions::BrowserExtensionWindowController>
+      extension_window_controller_;
 
   std::unique_ptr<chrome::BrowserCommandController> command_controller_;
 
