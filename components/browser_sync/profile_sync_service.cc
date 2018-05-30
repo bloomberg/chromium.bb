@@ -646,15 +646,20 @@ void ProfileSyncService::Shutdown() {
 
   ShutdownImpl(syncer::BROWSER_SHUTDOWN);
   NotifyShutdown();
-  // TODO(treib): DCHECK that all observers are gone now. All KeyedServices
-  // should have unregistered their observers already before, in their own
-  // Shutdown(), and all others should have done it now when they got the
-  // shutdown notification.
+
   if (sync_error_controller_) {
     // Destroy the SyncErrorController when the service shuts down for good.
     RemoveObserver(sync_error_controller_.get());
     sync_error_controller_.reset();
   }
+
+  // All observers must be gone now: All KeyedServices should have unregistered
+  // their observers already before, in their own Shutdown(), and all others
+  // should have done it now when they got the shutdown notification.
+  // Note: "might_have_observers" sounds like it might be inaccurate, but it can
+  // only return false positives while an iteration over the ObserverList is
+  // ongoing.
+  DCHECK(!observers_.might_have_observers());
 
   auth_manager_.reset();
 

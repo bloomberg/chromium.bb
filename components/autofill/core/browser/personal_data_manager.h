@@ -97,6 +97,7 @@ class PersonalDataManager : public KeyedService,
 
   // SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);

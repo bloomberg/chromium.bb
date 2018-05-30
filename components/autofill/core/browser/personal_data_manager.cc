@@ -527,11 +527,21 @@ void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
 }
 
 void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
+  // TODO(mastiz,jkrcal): Once AUTOFILL_WALLET is migrated to USS, it shouldn't
+  // be necessary anymore to implement SyncServiceObserver; instead the
+  // notification should flow through the payments sync bridge.
+  DCHECK_EQ(sync_service_, sync_service);
   if (syncer::GetUploadToGoogleState(sync_service_,
                                      syncer::ModelType::AUTOFILL_WALLET_DATA) !=
       syncer::UploadState::ACTIVE) {
     ResetFullServerCards();
   }
+}
+
+void PersonalDataManager::OnSyncShutdown(syncer::SyncService* sync_service) {
+  DCHECK_EQ(sync_service_, sync_service);
+  sync_service_->RemoveObserver(this);
+  sync_service_ = nullptr;
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {

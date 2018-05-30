@@ -52,7 +52,8 @@ AppSyncUIState::AppSyncUIState(Profile* profile)
 }
 
 AppSyncUIState::~AppSyncUIState() {
-  StopObserving();
+  // StopObserving() must have been called before (from Shutdown()).
+  DCHECK(!sync_service_);
 }
 
 void AppSyncUIState::AddObserver(AppSyncUIStateObserver* observer) {
@@ -61,6 +62,10 @@ void AppSyncUIState::AddObserver(AppSyncUIStateObserver* observer) {
 
 void AppSyncUIState::RemoveObserver(AppSyncUIStateObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AppSyncUIState::Shutdown() {
+  StopObserving();
 }
 
 void AppSyncUIState::StartObserving() {

@@ -56,6 +56,9 @@ class AppSyncUIState : public KeyedService,
 
   Status status() const { return status_; }
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
  private:
   void StartObserving();
   void StopObserving();
