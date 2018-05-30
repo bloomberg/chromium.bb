@@ -1162,7 +1162,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
 
 // Confirm that on 101 response, the headers are parsed but the data that
 // follows remains in the buffer.
-TEST(HttpStreamParser, Websocket101Response) {
+TEST(HttpStreamParser, WebSocket101Response) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, 1,
              "HTTP/1.1 101 Switching Protocols\r\n"

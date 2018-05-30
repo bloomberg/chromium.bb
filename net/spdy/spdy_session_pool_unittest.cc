@@ -971,7 +971,7 @@ TEST_P(SpdySessionMemoryDumpTest, DumpMemoryStats) {
   spdy_session_pool_->CloseCurrentSessions(ERR_ABORTED);
 }
 
-TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
+TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebSocket) {
   // Define two hosts with identical IP address.
   const int kTestPort = 443;
   struct TestHosts {
