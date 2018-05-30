@@ -17,6 +17,7 @@
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_test_input.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
@@ -39,7 +40,7 @@ struct Model;
 struct OmniboxSuggestions;
 struct ReticleModel;
 
-struct UiInitialState {
+struct VR_EXPORT UiInitialState {
   UiInitialState();
   UiInitialState(const UiInitialState& other);
   bool in_cct = false;
@@ -57,7 +58,7 @@ struct UiInitialState {
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class Ui : public BrowserUiInterface, public KeyboardUiInterface {
+class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
  public:
   Ui(UiBrowserInterface* browser,
      PlatformInputHandler* content_input_forwarder,

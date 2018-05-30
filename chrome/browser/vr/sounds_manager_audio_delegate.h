@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/audio_delegate.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-class SoundsManagerAudioDelegate : public AudioDelegate {
+class VR_EXPORT SoundsManagerAudioDelegate : public AudioDelegate {
  public:
   SoundsManagerAudioDelegate();
   ~SoundsManagerAudioDelegate() override;

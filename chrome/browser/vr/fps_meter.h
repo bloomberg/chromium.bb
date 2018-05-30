@@ -8,11 +8,12 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/sample_queue.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
 // Computes fps based on submitted frame times.
-class FPSMeter {
+class VR_EXPORT FPSMeter {
  public:
   FPSMeter();
   explicit FPSMeter(size_t window_size);

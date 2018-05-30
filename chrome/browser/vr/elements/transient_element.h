@@ -7,12 +7,13 @@
 
 #include "base/callback.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
 // Base class for a transient element that automatically hides itself after some
 // point in time. The exacly transience behavior depends on the subclass.
-class TransientElement : public UiElement {
+class VR_EXPORT TransientElement : public UiElement {
  public:
   ~TransientElement() override;
 
@@ -39,7 +40,7 @@ class TransientElement : public UiElement {
 };
 
 // An element that hides itself after after a set timeout.
-class SimpleTransientElement : public TransientElement {
+class VR_EXPORT SimpleTransientElement : public TransientElement {
  public:
   explicit SimpleTransientElement(const base::TimeDelta& timeout);
   ~SimpleTransientElement() override;
@@ -63,7 +64,7 @@ enum class TransientElementHideReason : int {
 // made visible. The element will stay visible for at least the set
 // minimum duration regardless of when ::Signal is called. The set callback
 // is triggered when the element hides itself.
-class ShowUntilSignalTransientElement : public TransientElement {
+class VR_EXPORT ShowUntilSignalTransientElement : public TransientElement {
  public:
   typedef typename base::RepeatingCallback<void()> OnMinDurationCallback;
   typedef typename base::RepeatingCallback<void(TransientElementHideReason)>

@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_
 #define CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_
 
+#include "chrome/browser/vr/vr_export.h"
+
 namespace vr {
 
-struct CapturingStateModel {
+struct VR_EXPORT CapturingStateModel {
   CapturingStateModel();
   CapturingStateModel(const CapturingStateModel& other);
   ~CapturingStateModel();

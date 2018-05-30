@@ -10,10 +10,11 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/sample_queue.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-class SlidingAverage {
+class VR_EXPORT SlidingAverage {
  public:
   explicit SlidingAverage(size_t window_size);
   ~SlidingAverage();
@@ -28,7 +29,7 @@ class SlidingAverage {
   DISALLOW_COPY_AND_ASSIGN(SlidingAverage);
 };
 
-class SlidingTimeDeltaAverage {
+class VR_EXPORT SlidingTimeDeltaAverage {
  public:
   explicit SlidingTimeDeltaAverage(size_t window_size);
   virtual ~SlidingTimeDeltaAverage();

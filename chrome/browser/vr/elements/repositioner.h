@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
@@ -20,7 +21,7 @@ namespace vr {
 // adjusting the up vector of the content so that it aligns with the head's up
 // vector. As the window is being repositioned, we rotate it so that it remains
 // pointing upward.
-class Repositioner : public UiElement {
+class VR_EXPORT Repositioner : public UiElement {
  public:
   Repositioner();
   ~Repositioner() override;

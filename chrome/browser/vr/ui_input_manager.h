@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -31,7 +32,7 @@ using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
 // Based on controller input finds the hit UI element and determines the
 // interaction with UI elements and the web contents.
-class UiInputManager {
+class VR_EXPORT UiInputManager {
  public:
   enum ButtonState {
     UP,       // The button is released.

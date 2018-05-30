@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
@@ -17,7 +18,7 @@ namespace vr {
 // permits dimensions in the subtree to be expressed in DM directly. Its main
 // contribution is a tailored local transform that accounts for adjustments made
 // by other ScaledDepthAdjuster elements on its ancestor chain.
-class ScaledDepthAdjuster : public UiElement {
+class VR_EXPORT ScaledDepthAdjuster : public UiElement {
  public:
   explicit ScaledDepthAdjuster(float delta_z);
   ~ScaledDepthAdjuster() override;

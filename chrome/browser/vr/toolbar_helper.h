@@ -7,6 +7,7 @@
 
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
+#include "chrome/browser/vr/vr_export.h"
 
 class ToolbarModel;
 class ToolbarModelDelegate;
@@ -17,7 +18,7 @@ class BrowserUiInterface;
 
 // This class houses an instance of ToolbarModel, and queries it when requested,
 // passing a snapshot of the toolbar state to the UI when necessary.
-class ToolbarHelper {
+class VR_EXPORT ToolbarHelper {
  public:
   ToolbarHelper(BrowserUiInterface* ui, ToolbarModelDelegate* delegate);
   virtual ~ToolbarHelper();
