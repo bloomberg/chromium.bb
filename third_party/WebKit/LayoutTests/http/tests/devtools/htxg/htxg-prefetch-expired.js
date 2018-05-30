@@ -7,7 +7,7 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
   await TestRunner.addScriptTag('/loading/htxg/resources/htxg-util.js');
-  // The timestamp of the test HTXG file is "Apr 1 2018 00:00 UTC" and valid
+  // The timestamp of the test SXG file is "Apr 1 2018 00:00 UTC" and valid
   // until "Apr 8 2018 00:00 UTC". So in Apr 10, the prefetch should fail.
   await TestRunner.evaluateInPageAsync(
     'setSignedExchangeVerificationTime(new Date("Apr 10 2018 00:01 UTC"))');
@@ -17,7 +17,7 @@
     TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFailed', loadingFailed, true);
     function loadingFailed(requestId, time, localizedDescription, canceled) {
       var request = BrowserSDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-      if (/htxg-location\.htxg/.exec(request.url()))
+      if (/htxg-location\.sxg/.exec(request.url()))
         resolve();
     }
   });
@@ -26,7 +26,7 @@
     (function () {
       const link = document.createElement('link');
       link.rel = 'prefetch';
-      link.href = '/loading/htxg/resources/htxg-location.htxg';
+      link.href = '/loading/htxg/resources/htxg-location.sxg';
       document.body.appendChild(link);
     })()
   `);

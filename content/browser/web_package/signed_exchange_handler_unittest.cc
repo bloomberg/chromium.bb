@@ -107,7 +107,7 @@ class SignedExchangeHandlerTest
             url::Origin::Create(GURL("https://htxg.example.com/test.htxg"))) {}
 
   virtual std::string ContentType() {
-    return "application/signed-exchange;v=b0";
+    return "application/signed-exchange;v=b1";
   }
 
   void SetUp() override {
@@ -219,12 +219,6 @@ class SignedExchangeHandlerTest
   std::unique_ptr<net::SourceStream> payload_stream_;
 };
 
-class SignedExchangeHandlerB1Test : public SignedExchangeHandlerTest {
-  std::string ContentType() override {
-    return "application/signed-exchange;v=b1";
-  }
-};
-
 TEST_P(SignedExchangeHandlerTest, Empty) {
   source_->AddReadResult(nullptr, 0, net::OK, GetParam());
 
@@ -237,7 +231,7 @@ TEST_P(SignedExchangeHandlerTest, Empty) {
 TEST_P(SignedExchangeHandlerTest, Simple) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.msg"));
+      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
 
   // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
   // "*.example.org".
@@ -246,6 +240,8 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
   mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
                                               dummy_result, net::OK);
@@ -280,10 +276,20 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
 TEST_P(SignedExchangeHandlerTest, MimeType) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.msg"));
+      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
 
+  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
+  // "*.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("wildcard.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->set_default_result(net::OK);
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+                                              dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
   std::string contents = GetTestFileContents("test.example.org_hello.txt.htxg");
@@ -335,7 +341,7 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
   // certification verification must fail.
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("127.0.0.1.public.pem.msg"));
+      GetTestFileContents("127.0.0.1.public.pem.cbor"));
 
   // Set the default result of MockCertVerifier to OK, to check that the
   // verification of SignedExchange must fail even if the certificate is valid.
@@ -358,7 +364,7 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
 TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.msg"));
+      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
 
   // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
   // "*.example.org".
@@ -388,52 +394,7 @@ TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
   ReadStream(source_, nullptr);
 }
 
-TEST_P(SignedExchangeHandlerB1Test, Simple) {
-  mock_cert_fetcher_factory_->ExpectFetch(
-      GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
-
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
-  scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
-  net::CertVerifyResult dummy_result;
-  dummy_result.verified_cert = original_cert;
-  dummy_result.cert_status = net::OK;
-  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
-                                              dummy_result, net::OK);
-  SetCertVerifier(std::move(mock_cert_verifier));
-
-  std::string contents = GetTestFileContents("test.example.org_test.htxg");
-  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
-  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
-
-  WaitForHeader();
-
-  ASSERT_TRUE(read_header());
-  EXPECT_EQ(net::OK, error());
-  EXPECT_EQ(200, resource_response().headers->response_code());
-  EXPECT_EQ("text/html", resource_response().mime_type);
-  EXPECT_EQ("utf-8", resource_response().charset);
-  EXPECT_FALSE(resource_response().load_timing.request_start_time.is_null());
-  EXPECT_FALSE(resource_response().load_timing.request_start.is_null());
-  EXPECT_FALSE(resource_response().load_timing.send_start.is_null());
-  EXPECT_FALSE(resource_response().load_timing.send_end.is_null());
-  EXPECT_FALSE(resource_response().load_timing.receive_headers_end.is_null());
-
-  std::string payload;
-  int rv = ReadPayloadStream(&payload);
-
-  std::string expected_payload = GetTestFileContents("test.html");
-
-  EXPECT_EQ(payload, expected_payload);
-  EXPECT_EQ(rv, static_cast<int>(expected_payload.size()));
-}
-
-TEST_P(SignedExchangeHandlerB1Test, OCSPNotChecked) {
+TEST_P(SignedExchangeHandlerTest, OCSPNotChecked) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents("wildcard_example.org.public.pem.cbor"));
@@ -463,7 +424,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPNotChecked) {
   ReadStream(source_, nullptr);
 }
 
-TEST_P(SignedExchangeHandlerB1Test, OCSPNotProvided) {
+TEST_P(SignedExchangeHandlerTest, OCSPNotProvided) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents("wildcard_example.org.public.pem.cbor"));
@@ -493,7 +454,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPNotProvided) {
   ReadStream(source_, nullptr);
 }
 
-TEST_P(SignedExchangeHandlerB1Test, OCSPInvalid) {
+TEST_P(SignedExchangeHandlerTest, OCSPInvalid) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents("wildcard_example.org.public.pem.cbor"));
@@ -524,7 +485,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPInvalid) {
   ReadStream(source_, nullptr);
 }
 
-TEST_P(SignedExchangeHandlerB1Test, OCSPRevoked) {
+TEST_P(SignedExchangeHandlerTest, OCSPRevoked) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents("wildcard_example.org.public.pem.cbor"));
@@ -558,7 +519,7 @@ TEST_P(SignedExchangeHandlerB1Test, OCSPRevoked) {
 
 // Test that fetching a signed exchange properly extracts and
 // attempts to verify both the certificate and the OCSP response.
-TEST_P(SignedExchangeHandlerB1Test, CertVerifierParams) {
+TEST_P(SignedExchangeHandlerTest, CertVerifierParams) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents("wildcard_example.org.public.pem.cbor"));
@@ -614,11 +575,6 @@ TEST_P(SignedExchangeHandlerB1Test, CertVerifierParams) {
 
 INSTANTIATE_TEST_CASE_P(SignedExchangeHandlerTests,
                         SignedExchangeHandlerTest,
-                        ::testing::Values(net::MockSourceStream::SYNC,
-                                          net::MockSourceStream::ASYNC));
-
-INSTANTIATE_TEST_CASE_P(SignedExchangeHandlerB1Tests,
-                        SignedExchangeHandlerB1Test,
                         ::testing::Values(net::MockSourceStream::SYNC,
                                           net::MockSourceStream::ASYNC));
 
