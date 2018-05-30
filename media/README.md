@@ -181,3 +181,8 @@ MediaLog will send logs to `about://media-internals`, which is easily accessible
 by developers (including web developes), testers and even users to get detailed
 information about a playback instance. For guidance on how to use MediaLog, see
 `media/base/media_log.h`.
+
+MediaLog messages should be concise and free of implementation details. Error
+messages should provide clues as to how to fix them, usually by precisely
+describing the circumstances that led to the error. Use properties, rather
+than messages, to record metadata and state changes.
