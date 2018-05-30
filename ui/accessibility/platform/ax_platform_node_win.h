@@ -7,9 +7,12 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <objbase.h>
 #include <oleacc.h>
-#include <vector>
+#include <uiautomation.h>
 #include <wrl/client.h>
+
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
@@ -232,10 +235,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IDispatchImpl<IAccessible2_2,
                                              &IID_IAccessible2,
                                              &LIBID_IAccessible2Lib>,
+                        public IAccessibleEx,
                         public IAccessibleText,
                         public IAccessibleTable,
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
+                        public IRawElementProviderSimple,
                         public IServiceProvider,
                         public AXPlatformNodeBase {
  public:
@@ -245,10 +250,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessible)
     COM_INTERFACE_ENTRY(IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2_2)
+    COM_INTERFACE_ENTRY(IAccessibleEx)
     COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IAccessibleTable)
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
+    COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
@@ -399,6 +406,23 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   STDMETHODIMP get_locale(IA2Locale* locale) override;
   STDMETHODIMP get_accessibleWithCaret(IUnknown** accessible,
                                        LONG* caret_offset) override;
+
+  //
+  // IAccessibleEx methods.
+  //
+
+  STDMETHODIMP GetObjectForChild(LONG child_id,
+                                 IAccessibleEx** result) override;
+
+  STDMETHODIMP GetIAccessiblePair(IAccessible** accessible,
+                                  LONG* child_id) override;
+
+  // IAccessibleEx methods not implemented.
+  STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
+
+  STDMETHODIMP
+  ConvertReturnedElement(IRawElementProviderSimple* element,
+                         IAccessibleEx** acc) override;
 
   //
   // IAccessibleText methods.
@@ -612,6 +636,24 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                       enum IA2CoordinateType coordinate_type,
                                       LONG x,
                                       LONG y) override;
+
+  //
+  // IRawElementProviderSimple methods.
+  //
+
+  STDMETHODIMP GetPatternProvider(PATTERNID pattern_id,
+                                  IUnknown** result) override;
+
+  STDMETHODIMP GetPropertyValue(PROPERTYID property_id,
+                                VARIANT* result) override;
+
+  // IRawElementProviderSimple methods not implemented.
+
+  STDMETHODIMP
+  get_ProviderOptions(enum ProviderOptions* ret) override;
+
+  STDMETHODIMP
+  get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
 
   //
   // IServiceProvider methods.

@@ -4,9 +4,6 @@
 
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
 
-#include <UIAutomationClient.h>
-#include <UIAutomationCoreApi.h>
-
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -1550,95 +1547,8 @@ STDMETHODIMP BrowserAccessibilityComWin::QueryService(REFGUID guid_service,
     return QueryInterface(riid, object);
   }
 
-  // We only support the IAccessibleEx interface on Windows 8 and above. This
-  // is needed for the on-screen Keyboard to show up in metro mode, when the
-  // user taps an editable portion on the page.
-  // All methods in the IAccessibleEx interface are unimplemented.
-  if (riid == IID_IAccessibleEx &&
-      base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    return QueryInterface(riid, object);
-  }
-
   *object = NULL;
   return E_FAIL;
-}
-
-STDMETHODIMP
-BrowserAccessibilityComWin::GetObjectForChild(long child_id,
-                                              IAccessibleEx** ret) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OBJECT_FOR_CHILD);
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP
-BrowserAccessibilityComWin::GetIAccessiblePair(IAccessible** acc,
-                                               long* child_id) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_IACCESSIBLE_PAIR);
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::GetRuntimeId(SAFEARRAY** runtime_id) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP
-BrowserAccessibilityComWin::ConvertReturnedElement(
-    IRawElementProviderSimple* element,
-    IAccessibleEx** acc) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_CONVERT_RETURNED_ELEMENT);
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::GetPatternProvider(
-    PATTERNID id,
-    IUnknown** provider) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
-  DVLOG(1) << "In Function: " << __func__ << " for pattern id: " << id;
-  if (!owner())
-    return E_FAIL;
-
-  if (id == UIA_ValuePatternId || id == UIA_TextPatternId) {
-    if (owner()->HasState(ax::mojom::State::kEditable)) {
-      DVLOG(1) << "Returning UIA text provider";
-      base::win::UIATextProvider::CreateTextProvider(GetRangeValueText(), true,
-                                                     provider);
-      return S_OK;
-    }
-  }
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::GetPropertyValue(PROPERTYID id,
-                                                          VARIANT* ret) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
-  DVLOG(1) << "In Function: " << __func__ << " for property id: " << id;
-  if (!owner())
-    return E_FAIL;
-
-  V_VT(ret) = VT_EMPTY;
-  if (id == UIA_ControlTypePropertyId) {
-    if (owner()->HasState(ax::mojom::State::kEditable)) {
-      V_VT(ret) = VT_I4;
-      ret->lVal = UIA_EditControlTypeId;
-      DVLOG(1) << "Returning Edit control type";
-    } else {
-      DVLOG(1) << "Returning empty control type";
-    }
-  }
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::get_ProviderOptions(
-    ProviderOptions* ret) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROVIDER_OPTIONS);
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::get_HostRawElementProvider(
-    IRawElementProviderSimple** provider) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER);
-  return E_NOTIMPL;
 }
 
 //

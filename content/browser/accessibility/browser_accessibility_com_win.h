@@ -12,8 +12,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include <UIAutomationCore.h>
-
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -69,19 +67,15 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                                  public IAccessibleValue,
                                  public ISimpleDOMDocument,
                                  public ISimpleDOMNode,
-                                 public ISimpleDOMText,
-                                 public IAccessibleEx,
-                                 public IRawElementProviderSimple {
+                                 public ISimpleDOMText {
  public:
   BEGIN_COM_MAP(BrowserAccessibilityComWin)
   COM_INTERFACE_ENTRY(IAccessibleAction)
   COM_INTERFACE_ENTRY(IAccessibleApplication)
-  COM_INTERFACE_ENTRY(IAccessibleEx)
   COM_INTERFACE_ENTRY(IAccessibleHyperlink)
   COM_INTERFACE_ENTRY(IAccessibleHypertext)
   COM_INTERFACE_ENTRY(IAccessibleImage)
   COM_INTERFACE_ENTRY(IAccessibleValue)
-  COM_INTERFACE_ENTRY(IRawElementProviderSimple)
   COM_INTERFACE_ENTRY(ISimpleDOMDocument)
   COM_INTERFACE_ENTRY(ISimpleDOMNode)
   COM_INTERFACE_ENTRY(ISimpleDOMText)
@@ -377,37 +371,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   CONTENT_EXPORT STDMETHODIMP QueryService(REFGUID guidService,
                                            REFIID riid,
                                            void** object) override;
-
-  // IAccessibleEx methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP GetObjectForChild(long child_id,
-                                                IAccessibleEx** ret) override;
-
-  CONTENT_EXPORT STDMETHODIMP GetIAccessiblePair(IAccessible** acc,
-                                                 long* child_id) override;
-
-  CONTENT_EXPORT STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  ConvertReturnedElement(IRawElementProviderSimple* element,
-                         IAccessibleEx** acc) override;
-
-  //
-  // IRawElementProviderSimple methods.
-  //
-  // The GetPatternProvider/GetPropertyValue methods need to be implemented for
-  // the on-screen keyboard to show up in Windows 8 metro.
-  CONTENT_EXPORT STDMETHODIMP GetPatternProvider(PATTERNID id,
-                                                 IUnknown** provider) override;
-  CONTENT_EXPORT STDMETHODIMP GetPropertyValue(PROPERTYID id,
-                                               VARIANT* ret) override;
-
-  //
-  // IRawElementProviderSimple methods not implemented
-  //
-  CONTENT_EXPORT STDMETHODIMP
-  get_ProviderOptions(enum ProviderOptions* ret) override;
-  CONTENT_EXPORT STDMETHODIMP
-  get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
 
   //
   // CComObjectRootEx methods.
