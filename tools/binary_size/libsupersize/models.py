@@ -411,9 +411,16 @@ class DeltaSymbol(BaseSymbol):
       return DIFF_STATUS_ADDED
     if self.after_symbol is None:
       return DIFF_STATUS_REMOVED
-    if self.size == 0:
-      return DIFF_STATUS_UNCHANGED
-    return DIFF_STATUS_CHANGED
+    # Use delta size and delta PSS as indicators of change. Delta size = 0 with
+    # delta PSS != 0 can be caused by:
+    # (1) Alias addition / removal without actual binary change.
+    # (2) Alias merging / splitting along with binary changes, where matched
+    #     symbols all happen the same size (hence delta size = 0).
+    # The purpose of checking PSS is to account for (2). However, this means (1)
+    # would produce much more diffs than before!
+    if self.size != 0 or self.pss != 0:
+      return DIFF_STATUS_CHANGED
+    return DIFF_STATUS_UNCHANGED
 
   @property
   def address(self):
