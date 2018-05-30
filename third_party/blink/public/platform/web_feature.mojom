@@ -1932,6 +1932,7 @@ enum WebFeature {
   kShapeOutsidePaddingBoxDifferentFromMarginBox = 2462,
   kCSSContainLayoutPositionedDescendants = 2463,
   kHTMLFrameSetElementAnonymousNamedGetter = 2464,
+  kCanvasConvertToBlob = 2465,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

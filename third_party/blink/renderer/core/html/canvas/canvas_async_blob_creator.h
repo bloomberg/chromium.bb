@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/image_encode_options.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -24,22 +25,16 @@ namespace blink {
 
 class ExecutionContext;
 
+constexpr const char* kSRGBImageColorSpaceName = "srgb";
+constexpr const char* kRec2020ImageColorSpaceName = "rec2020";
+constexpr const char* kDisplayP3ImageColorSpaceName = "display-p3";
+
+constexpr const char* kRGBA8ImagePixelFormatName = "8-8-8-8";
+constexpr const char* kRGBA16ImagePixelFormatName = "uint16";
+
 class CORE_EXPORT CanvasAsyncBlobCreator
     : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
  public:
-  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
-                                        const String& mime_type,
-                                        V8BlobCallback*,
-                                        double start_time,
-                                        ExecutionContext*);
-  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
-                                        const String& mime_type,
-                                        double start_time,
-                                        ExecutionContext*,
-                                        ScriptPromiseResolver*);
-
-  void ScheduleAsyncBlobCreation(const double& quality);
-  virtual ~CanvasAsyncBlobCreator();
 
   // This enum is used to back an UMA histogram, and should therefore be treated
   // as append-only.
@@ -53,12 +48,28 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                             // types
     kIdleTaskCount,         // Should not be seen in production
   };
-
   enum ToBlobFunctionType {
     kHTMLCanvasToBlobCallback,
-    kOffscreenCanvasToBlobPromise,
+    kHTMLCanvasConvertToBlobPromise,
+    kOffscreenCanvasConvertToBlobPromise,
     kNumberOfToBlobFunctionTypes
   };
+
+  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
+                                        const String& mime_type,
+                                        V8BlobCallback*,
+                                        ToBlobFunctionType function_type,
+                                        double start_time,
+                                        ExecutionContext*);
+  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
+                                        const ImageEncodeOptions& options,
+                                        ToBlobFunctionType function_type,
+                                        double start_time,
+                                        ExecutionContext*,
+                                        ScriptPromiseResolver*);
+
+  void ScheduleAsyncBlobCreation(const double& quality);
+  virtual ~CanvasAsyncBlobCreator();
 
   // Methods are virtual for mocking in unit tests
   virtual void SignalTaskSwitchInStartTimeoutEventForTesting() {}
@@ -66,13 +77,24 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   virtual void Trace(blink::Visitor*);
 
+  static sk_sp<SkColorSpace> BlobColorSpaceToSkColorSpace(
+      String blob_color_space);
+
+  bool EncodeImageForConvertToBlobTest();
+  Vector<unsigned char> GetEncodedImageForConvertToBlobTest() {
+    return encoded_image_;
+  }
+
  protected:
   CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
-                         ImageEncoder::MimeType,
+                         const ImageEncodeOptions&,
+                         ToBlobFunctionType,
                          V8BlobCallback*,
                          double,
                          ExecutionContext*,
                          ScriptPromiseResolver*);
+  static ImageEncodeOptions GetImageEncodeOptionsForMimeType(
+      ImageEncoder::MimeType);
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
   virtual void IdleEncodeRows(double deadline_seconds);
@@ -101,14 +123,15 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   Member<ExecutionContext> context_;
 
   SkPixmap src_data_;
-  const ImageEncoder::MimeType mime_type_;
+  ImageEncoder::MimeType mime_type_;
+  const ImageEncodeOptions encode_options_;
+  ToBlobFunctionType function_type_;
+  sk_sp<SkData> png_16bit_data_helper_;
 
   // Chrome metrics use
   double start_time_;
   double schedule_idle_task_start_time_;
   bool static_bitmap_image_loaded_;
-
-  ToBlobFunctionType function_type_;
 
   // Used when CanvasAsyncBlobCreator runs on main thread only
   scoped_refptr<base::SingleThreadTaskRunner> parent_frame_task_runner_;

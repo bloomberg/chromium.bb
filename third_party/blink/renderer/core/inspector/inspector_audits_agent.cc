@@ -56,7 +56,8 @@ bool EncodeAsImage(char* body,
 
   String mime_type = "image/";
   mime_type.append(encoding);
-  return image_to_encode->EncodeImage(mime_type, quality, output);
+  return image_to_encode->EncodeImage(mime_type, quality, output,
+                                      SkTransferFunctionBehavior::kIgnore);
 }
 
 }  // namespace

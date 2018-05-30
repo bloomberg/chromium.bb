@@ -325,53 +325,6 @@ void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 
-ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
-                                             const ImageEncodeOptions& options,
-                                             ExceptionState& exception_state) {
-  if (this->IsNeutered()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "OffscreenCanvas object is detached.");
-    return exception_state.Reject(script_state);
-  }
-
-  if (!this->OriginClean()) {
-    exception_state.ThrowSecurityError(
-        "Tainted OffscreenCanvas may not be exported.");
-    return exception_state.Reject(script_state);
-  }
-
-  if (!this->IsPaintable() || size_.IsEmpty()) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, "The size of the OffscreenCanvas is zero.");
-    return exception_state.Reject(script_state);
-  }
-
-  if (!this->context_) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError, "OffscreenCanvas object has no rendering contexts");
-    return exception_state.Reject(script_state);
-  }
-
-  double start_time = WTF::CurrentTimeTicksInSeconds();
-  scoped_refptr<StaticBitmapImage> snapshot =
-      context_->GetImage(kPreferNoAcceleration);
-  if (snapshot) {
-    ScriptPromiseResolver* resolver =
-        ScriptPromiseResolver::Create(script_state);
-    String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
-        options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
-    CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
-        snapshot, encoding_mime_type, start_time,
-        ExecutionContext::From(script_state), resolver);
-    async_creator->ScheduleAsyncBlobCreation(options.quality());
-    return resolver->Promise();
-  } else {
-    exception_state.ThrowDOMException(
-        kNotReadableError, "Readback of the source image has failed.");
-    return exception_state.Reject(script_state);
-  }
-}
-
 void OffscreenCanvas::RegisterContextToDispatch(
     CanvasRenderingContext* context) {
   if (!HasPlaceholderCanvas())

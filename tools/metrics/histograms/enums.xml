@@ -18853,6 +18853,7 @@ Called by update_net_error_codes.py.-->
   <int value="2462" label="ShapeOutsidePaddingBoxDifferentFromMarginBox"/>
   <int value="2463" label="CSSContainLayoutPositionedDescendants"/>
   <int value="2464" label="HTMLFrameSetElementAnonymousNamedGetter"/>
+  <int value="2465" label="CanvasConvertToBlob"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -191,4 +191,103 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
   return conversion_result;
 }
 
+bool ColorCorrectionTestUtils::MatchColorSpace(
+    SkColorSpace* src_color_space,
+    SkColorSpace* dst_color_space,
+    float xyz_d50_component_tolerance) {
+  if ((!src_color_space && dst_color_space) ||
+      (src_color_space && !dst_color_space))
+    return false;
+  if (src_color_space) {
+    const SkMatrix44* src_matrix = src_color_space->toXYZD50();
+    const SkMatrix44* dst_matrix = dst_color_space->toXYZD50();
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (fabs(src_matrix->get(i, j) - dst_matrix->get(i, j)) >
+            xyz_d50_component_tolerance) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+bool ColorCorrectionTestUtils::MatchSkImages(sk_sp<SkImage> src_image,
+                                             sk_sp<SkImage> dst_image,
+                                             unsigned uint8_tolerance,
+                                             float f16_tolerance,
+                                             float xyz_d50_component_tolerance,
+                                             bool compare_alpha) {
+  if ((!src_image && dst_image) || (src_image && !dst_image))
+    return false;
+  if (!src_image)
+    return true;
+  if ((src_image->width() != dst_image->width()) ||
+      (src_image->height() != dst_image->height())) {
+    return false;
+  }
+
+  if (compare_alpha && src_image->alphaType() != dst_image->alphaType())
+    return false;
+  if (src_image->makeRasterImage()->colorType() !=
+      dst_image->makeRasterImage()->colorType()) {
+    return false;
+  }
+  if (!MatchColorSpace(src_image->colorSpace(), dst_image->colorSpace(),
+                       xyz_d50_component_tolerance)) {
+    return false;
+  }
+
+  bool test_passed = true;
+  int num_pixels = src_image->width() * src_image->height();
+  int num_components = compare_alpha ? 4 : 3;
+
+  SkImageInfo src_info = SkImageInfo::Make(
+      src_image->width(), src_image->height(), kN32_SkColorType,
+      src_image->alphaType(), src_image->refColorSpace());
+
+  SkImageInfo dst_info = SkImageInfo::Make(
+      dst_image->width(), dst_image->height(), kN32_SkColorType,
+      src_image->alphaType(), dst_image->refColorSpace());
+
+  if (src_image->colorType() != kRGBA_F16_SkColorType) {
+    std::unique_ptr<uint8_t[]> src_pixels(new uint8_t[num_pixels * 4]());
+    std::unique_ptr<uint8_t[]> dst_pixels(new uint8_t[num_pixels * 4]());
+
+    src_image->readPixels(src_info, src_pixels.get(), src_info.minRowBytes(), 0,
+                          0);
+    dst_image->readPixels(dst_info, dst_pixels.get(), dst_info.minRowBytes(), 0,
+                          0);
+
+    for (int i = 0; test_passed && i < num_pixels; i++) {
+      for (int j = 0; j < num_components; j++) {
+        test_passed &= IsNearlyTheSame(src_pixels[i * 4 + j],
+                                       dst_pixels[i * 4 + j], uint8_tolerance);
+      }
+    }
+    return test_passed;
+  }
+
+  std::unique_ptr<uint16_t[]> src_pixels(new uint16_t[num_pixels * 4]());
+  std::unique_ptr<uint16_t[]> dst_pixels(new uint16_t[num_pixels * 4]());
+
+  src_info = src_info.makeColorType(kRGBA_F16_SkColorType);
+  dst_info = dst_info.makeColorType(kRGBA_F16_SkColorType);
+
+  src_image->readPixels(src_info, src_pixels.get(), src_info.minRowBytes(), 0,
+                        0);
+  dst_image->readPixels(dst_info, dst_pixels.get(), dst_info.minRowBytes(), 0,
+                        0);
+
+  for (int i = 0; test_passed && i < num_pixels; i++) {
+    for (int j = 0; j < num_components; j++) {
+      test_passed &=
+          IsNearlyTheSame(Float16ToFloat(src_pixels[i * 4 + j]),
+                          Float16ToFloat(dst_pixels[i * 4 + j]), f16_tolerance);
+    }
+  }
+  return test_passed;
+}
+
 }  // namespace blink

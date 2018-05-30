@@ -117,30 +117,28 @@ const unsigned char* ImageDataBuffer::Pixels() const {
   return static_cast<const unsigned char*>(pixmap_.addr());
 }
 
-bool ImageDataBuffer::EncodeImage(const String& mime_type,
-                                  const double& quality,
-                                  Vector<unsigned char>* encoded_image) const {
-  return EncodeImageInternal(mime_type, quality, encoded_image, pixmap_);
+bool ImageDataBuffer::EncodeImage(
+    const String& mime_type,
+    const double& quality,
+    Vector<unsigned char>* encoded_image,
+    SkTransferFunctionBehavior transfer_fn_behavior) const {
+  return EncodeImageInternal(mime_type, quality, encoded_image, pixmap_,
+                             transfer_fn_behavior);
 }
 
-bool ImageDataBuffer::EncodeImageInternal(const String& mime_type,
-                                          const double& quality,
-                                          Vector<unsigned char>* encoded_image,
-                                          const SkPixmap& pixmap) const {
+bool ImageDataBuffer::EncodeImageInternal(
+    const String& mime_type,
+    const double& quality,
+    Vector<unsigned char>* encoded_image,
+    const SkPixmap& pixmap,
+    SkTransferFunctionBehavior transfer_fn_behavior) const {
   DCHECK(is_valid_);
 
   if (mime_type == "image/jpeg") {
     SkJpegEncoder::Options options;
     options.fQuality = ImageEncoder::ComputeJpegQuality(quality);
     options.fAlphaOption = SkJpegEncoder::AlphaOption::kBlendOnBlack;
-    // When the gamma is linear (which is always the case with currently
-    // supported color spaces in F16 format), it does not matter whether we use
-    // kRespect or kIgnore, but the JPEG encoder does not support kIgnore with
-    // F16 for some reason, so we switch to kRespect in that case, with no
-    // consequence on the encoded output.
-    options.fBlendBehavior = pixmap.colorType() == kRGBA_F16_SkColorType
-                                 ? SkTransferFunctionBehavior::kRespect
-                                 : SkTransferFunctionBehavior::kIgnore;
+    options.fBlendBehavior = transfer_fn_behavior;
     if (options.fQuality == 100) {
       options.fDownsample = SkJpegEncoder::Downsample::k444;
     }
@@ -148,8 +146,8 @@ bool ImageDataBuffer::EncodeImageInternal(const String& mime_type,
   }
 
   if (mime_type == "image/webp") {
-    SkWebpEncoder::Options options = ImageEncoder::ComputeWebpOptions(
-        quality, SkTransferFunctionBehavior::kIgnore);
+    SkWebpEncoder::Options options =
+        ImageEncoder::ComputeWebpOptions(quality, transfer_fn_behavior);
     return ImageEncoder::Encode(encoded_image, pixmap, options);
   }
 
@@ -157,7 +155,7 @@ bool ImageDataBuffer::EncodeImageInternal(const String& mime_type,
   SkPngEncoder::Options options;
   options.fFilterFlags = SkPngEncoder::FilterFlag::kSub;
   options.fZLibLevel = 3;
-  options.fUnpremulBehavior = SkTransferFunctionBehavior::kIgnore;
+  options.fUnpremulBehavior = transfer_fn_behavior;
   return ImageEncoder::Encode(encoded_image, pixmap, options);
 }
 
@@ -181,7 +179,8 @@ String ImageDataBuffer::ToDataURL(const String& mime_type,
   }
 
   Vector<unsigned char> result;
-  if (!EncodeImageInternal(mime_type, quality, &result, pixmap))
+  if (!EncodeImageInternal(mime_type, quality, &result, pixmap,
+                           SkTransferFunctionBehavior::kIgnore))
     return "data:,";
 
   return "data:" + mime_type + ";base64," + Base64Encode(result);

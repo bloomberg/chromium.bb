@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -81,6 +82,63 @@ CanvasColorParams CanvasRenderingContextHost::ColorParams() const {
   if (RenderingContext())
     return RenderingContext()->ColorParams();
   return CanvasColorParams();
+}
+
+ScriptPromise CanvasRenderingContextHost::convertToBlob(
+    ScriptState* script_state,
+    const ImageEncodeOptions& options,
+    ExceptionState& exception_state) const {
+  WTF::String object_name = "Canvas";
+  if (this->IsOffscreenCanvas())
+    object_name = "OffscreenCanvas";
+  std::stringstream error_msg;
+
+  if (this->IsOffscreenCanvas() && this->IsNeutered()) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "OffscreenCanvas object is detached.");
+    return exception_state.Reject(script_state);
+  }
+
+  if (!this->OriginClean()) {
+    error_msg << "Tainted " << object_name << " may not be exported.";
+    exception_state.ThrowSecurityError(error_msg.str().c_str());
+    return exception_state.Reject(script_state);
+  }
+
+  if (!this->IsPaintable() || Size().IsEmpty()) {
+    error_msg << "The size of " << object_name << " iz zero.";
+    exception_state.ThrowDOMException(kIndexSizeError, error_msg.str().c_str());
+    return exception_state.Reject(script_state);
+  }
+
+  if (!RenderingContext()) {
+    error_msg << object_name << " has no rendering context.";
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      error_msg.str().c_str());
+    return exception_state.Reject(script_state);
+  }
+
+  double start_time = WTF::CurrentTimeTicksInSeconds();
+  scoped_refptr<StaticBitmapImage> image_bitmap =
+      RenderingContext()->GetImage(kPreferNoAcceleration);
+  if (image_bitmap) {
+    ScriptPromiseResolver* resolver =
+        ScriptPromiseResolver::Create(script_state);
+    CanvasAsyncBlobCreator::ToBlobFunctionType function_type =
+        CanvasAsyncBlobCreator::kHTMLCanvasConvertToBlobPromise;
+    if (this->IsOffscreenCanvas()) {
+      function_type =
+          CanvasAsyncBlobCreator::kOffscreenCanvasConvertToBlobPromise;
+    }
+    CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
+        image_bitmap, options, function_type, start_time,
+        ExecutionContext::From(script_state), resolver);
+    async_creator->ScheduleAsyncBlobCreation(options.quality());
+    return resolver->Promise();
+  }
+  exception_state.ThrowDOMException(kNotReadableError,
+                                    "Readback of the source image has failed.");
+  return exception_state.Reject(script_state);
 }
 
 }  // namespace blink

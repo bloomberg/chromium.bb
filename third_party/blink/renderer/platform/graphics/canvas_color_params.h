@@ -41,6 +41,8 @@ class PLATFORM_EXPORT CanvasColorParams {
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
   CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
+  explicit CanvasColorParams(const sk_sp<SkColorSpace> color_space,
+                             SkColorType color_type);
   explicit CanvasColorParams(const SkImageInfo&);
   CanvasColorSpace ColorSpace() const { return color_space_; }
   CanvasPixelFormat PixelFormat() const { return pixel_format_; }
