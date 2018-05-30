@@ -577,18 +577,18 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
   if (pasteboardString) {
     PopupMenuToolsItem* pasteAndGo = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo, nil,
-        kToolsMenuPasteAndGo);
+        IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo,
+        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
     [items addObject:pasteAndGo];
   }
 
   PopupMenuToolsItem* QRCodeSearch = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_QR_SCANNER, PopupMenuActionQRCodeSearch, nil,
-      kToolsMenuQRCodeSearch);
+      IDS_IOS_TOOLS_MENU_QR_SCANNER, PopupMenuActionQRCodeSearch,
+      @"popup_menu_qr_scanner", kToolsMenuQRCodeSearch);
   [items addObject:QRCodeSearch];
   PopupMenuToolsItem* voiceSearch = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_VOICE_SEARCH, PopupMenuActionVoiceSearch, nil,
-      kToolsMenuVoiceSearch);
+      IDS_IOS_TOOLS_MENU_VOICE_SEARCH, PopupMenuActionVoiceSearch,
+      @"popup_menu_voice_search", kToolsMenuVoiceSearch);
   [items addObject:voiceSearch];
 
   self.items = @[ items ];
