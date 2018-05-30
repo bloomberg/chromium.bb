@@ -29,11 +29,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LAYOUT_TREE_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -128,6 +130,61 @@ class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
   LayoutObject* CreateInlineWrapperForDisplayContentsIfNeeded();
 
   scoped_refptr<ComputedStyle> style_;
+};
+
+// Replaces LayoutNG objects to legacy layout objects when corresponding element
+// returns true for |ShouldForceLegacyLayout()|.
+//
+// This replacement is done by three phases:
+//  1. Collects layout objects establish block formatting context(BFC) and
+//     contain at least one layout object should be legacy layout.
+//  2. Marks descendant LayoutNG objects of collected layout objects to
+//     |NeedsReattachLayoutTree|.
+//  3. Invokes |RebuildLayoutTree()| to replaces to legacy layout objects.
+//
+// See https://goo.gl/8s5h96 for more details.
+class CORE_EXPORT ReattachLegacyLayoutObjectList final {
+  // Note: Make GC-plugin happy, this object doesn't have |STACK_ALLOCATED()|.
+  DISALLOW_NEW();
+
+ public:
+  ReattachLegacyLayoutObjectList(Document&);
+  ~ReattachLegacyLayoutObjectList();
+
+  void AddForceLegacyAtBFCAncestor(const LayoutObject&);
+  bool IsCollecting() const;
+  bool IsForcingLegacyLayout() const {
+    return state_ == State::kForcingLegacyLayout;
+  }
+  void ForceLegacyLayoutIfNeeded();
+
+  void DidRecalcStyle();
+  void WillRecalcStyle();
+
+  void Trace(blink::Visitor*);
+
+ private:
+  Member<Document> document_;
+
+  // A list of block formatting context or layout object associated to
+  // document element.
+  Vector<const LayoutObject*> blocks_;
+
+  enum class State {
+    kInvalid,
+    // Building legacy layout tree
+    kBuildingLegacyLayoutTree,
+    // Usage of this list is finished.
+    kClosed,
+    // Collecting block formatting context should be legacy layout.
+    kCollecting,
+    // Replaces LayoutNG objects to legacy layout objects.
+    kForcingLegacyLayout,
+    // Doing style re-calculation.
+    kRecalcStyle,
+  } state_ = State::kInvalid;
+
+  DISALLOW_COPY_AND_ASSIGN(ReattachLegacyLayoutObjectList);
 };
 
 }  // namespace blink

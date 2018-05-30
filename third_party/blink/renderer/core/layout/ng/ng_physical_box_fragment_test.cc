@@ -22,7 +22,7 @@ class NGPhysicalBoxFragmentTest : public NGLayoutTest {
 // instead of using |contenteditable|.
 
 // Tests that a normal old layout root box fragment has correct box type.
-TEST_F(NGPhysicalBoxFragmentTest, NormalOldLayoutRoot) {
+TEST_F(NGPhysicalBoxFragmentTest, DISABLED_NormalOldLayoutRoot) {
   SetBodyInnerHTML("<div contenteditable>X</div>");
   const NGPhysicalFragment* fragment =
       GetBodyFragment().Children().front().get();
@@ -33,8 +33,10 @@ TEST_F(NGPhysicalBoxFragmentTest, NormalOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBlockLayoutRoot());
 }
 
+// TODO(editing-dev): Once LayoutNG supports editing, we should change this
+// test to use LayoutNG tree.
 // Tests that a float old layout root box fragment has correct box type.
-TEST_F(NGPhysicalBoxFragmentTest, FloatOldLayoutRoot) {
+TEST_F(NGPhysicalBoxFragmentTest, DISABLED_FloatOldLayoutRoot) {
   SetBodyInnerHTML("<span contenteditable style='float:left'>X</span>foo");
   const NGPhysicalFragment* fragment =
       GetBodyFragment().Children().front().get();
@@ -45,8 +47,10 @@ TEST_F(NGPhysicalBoxFragmentTest, FloatOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBlockLayoutRoot());
 }
 
+// TODO(editing-dev): Once LayoutNG supports editing, we should change this
+// test to use LayoutNG tree.
 // Tests that an inline block old layout root box fragment has correct box type.
-TEST_F(NGPhysicalBoxFragmentTest, InlineBlockOldLayoutRoot) {
+TEST_F(NGPhysicalBoxFragmentTest, DISABLED_InlineBlockOldLayoutRoot) {
   SetBodyInnerHTML(
       "<span contenteditable style='display:inline-block'>X</span>foo");
   const NGPhysicalContainerFragment* line_box =
@@ -59,9 +63,11 @@ TEST_F(NGPhysicalBoxFragmentTest, InlineBlockOldLayoutRoot) {
   EXPECT_TRUE(fragment->IsBlockLayoutRoot());
 }
 
+// TODO(editing-dev): Once LayoutNG supports editing, we should change this
+// test to use LayoutNG tree.
 // Tests that an out-of-flow positioned old layout root box fragment has correct
 // box type.
-TEST_F(NGPhysicalBoxFragmentTest, OutOfFlowPositionedOldLayoutRoot) {
+TEST_F(NGPhysicalBoxFragmentTest, DISABLED_OutOfFlowPositionedOldLayoutRoot) {
   SetBodyInnerHTML(
       "<style>body {position: absolute}</style>"
       "<div contenteditable style='position: absolute'>X</div>");

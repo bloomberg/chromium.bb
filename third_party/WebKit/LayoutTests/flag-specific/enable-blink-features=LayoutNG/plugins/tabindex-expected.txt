@@ -22,4 +22,4 @@ PASS "noPluginObjectElemWithContenteditable"; pluginElement.tabIndex is -1
 PASS successfullyParsed is true
 
 TEST COMPLETE
-  Fallback contents.    Fallback contents. Fallback contents.  
+   Fallback contents.     Fallback contents. Fallback contents.   

@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
-    LayoutBlockFlow {BODY} at (8,8) size 784x584
+    LayoutBlockFlow {BODY} at (8,8) size 784x579
       LayoutNGBlockFlow (anonymous) at (0,0) size 769x60
         LayoutText {#text} at (0,0) size 759x59
           text run at (0,0) width 759: "This tests to see that a caret is placed inside an editable document that is entirely editable even when no caret is requested"

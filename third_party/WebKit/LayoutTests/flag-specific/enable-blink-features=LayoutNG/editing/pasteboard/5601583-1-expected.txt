@@ -1,11 +1,12 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow {P} at (0,0) size 784x40
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 719x39
-          text run at (0,0) width 719: "This tests for a bug where a copied link wouldn't paste as a link. Both editable regions below should contain a link"
+          text run at (0,0) width 407: "This tests for a bug where a copied link wouldn't paste as a link. "
+          text run at (407,0) width 312: "Both editable regions below should contain a link"
           text run at (0,20) width 104: "\"Hello\\nWorld\"."
       LayoutBlockFlow {DIV} at (0,56) size 784x40
         LayoutInline {A} at (0,0) size 39x39 [color=#0000EE]

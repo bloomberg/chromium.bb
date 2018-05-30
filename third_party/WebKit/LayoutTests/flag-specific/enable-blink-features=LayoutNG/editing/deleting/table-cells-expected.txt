@@ -4,11 +4,12 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow {P} at (0,0) size 784x20
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
         LayoutText {#text} at (0,0) size 717x19
-          text run at (0,0) width 717: "This tests deletion of a selection that spans multiple cells. Just table content should be removed, not table structure."
+          text run at (0,0) width 361: "This tests deletion of a selection that spans multiple cells. "
+          text run at (361,0) width 356: "Just table content should be removed, not table structure."
       LayoutBlockFlow {DIV} at (0,36) size 784x30
         LayoutTable {TABLE} at (0,0) size 343x30 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 341x28
