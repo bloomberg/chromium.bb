@@ -223,12 +223,6 @@ class CrossThreadPersistentRegion final {
   // because we don't want to virtualize performance-sensitive methods
   // such as PersistentRegion::allocate/freePersistentNode.
   std::unique_ptr<PersistentRegion> persistent_region_;
-
-  // Recursive as prepareForThreadStateTermination() clears a PersistentNode's
-  // associated Persistent<> -- it in turn freeing the PersistentNode. And both
-  // CrossThreadPersistentRegion operations need a lock on the region before
-  // mutating.
-  RecursiveMutex mutex_;
 };
 
 }  // namespace blink
