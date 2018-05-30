@@ -970,40 +970,44 @@ bool MouseEventManager::TryStartDrag(
                                                 mouse_down_pos_))
     return false;
 
+  if (DispatchDragSrcEvent(EventTypeNames::dragstart, mouse_down_) !=
+      WebInputEventResult::kNotHandled)
+    return false;
+
+  // Dispatching the event could cause |frame_| to be detached.
+  if (!frame_->GetPage())
+    return false;
+
   // If dispatching dragstart brings about another mouse down -- one way
   // this will happen is if a DevTools user breaks within a dragstart
   // handler and then clicks on the suspended page -- the drag state is
   // reset. Hence, need to check if this particular drag operation can
   // continue even if dispatchEvent() indicates no (direct) cancellation.
   // Do that by checking if m_dragSrc is still set.
-  mouse_down_may_start_drag_ = false;
-  if (DispatchDragSrcEvent(EventTypeNames::dragstart, mouse_down_) ==
-          WebInputEventResult::kNotHandled &&
-      GetDragState().drag_src_) {
-    // TODO(editing-dev): The use of
-    // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
-    // http://crbug.com/590369 for more details.
-    frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-    mouse_down_may_start_drag_ = !IsInPasswordField(
-        frame_->Selection().ComputeVisibleSelectionInDOMTree().Start());
-  }
+  if (!GetDragState().drag_src_)
+    return false;
 
-  // Invalidate clipboard here against anymore pasteboard writing for security.
-  // The drag image can still be changed as we drag, but not the pasteboard
-  // data.
+  // Do not start dragging in password field.
+  // TODO(editing-dev): The use of
+  // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
+  // http://crbug.com/590369 for more details.
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (IsInPasswordField(
+          frame_->Selection().ComputeVisibleSelectionInDOMTree().Start()))
+    return false;
+
+  // Invalidate clipboard here against anymore pasteboard writing for
+  // security. The drag image can still be changed as we drag, but not
+  // the pasteboard data.
   GetDragState().drag_data_transfer_->SetAccessPolicy(
       DataTransferAccessPolicy::kImageWritable);
 
-  if (mouse_down_may_start_drag_) {
-    // Dispatching the event could cause Page to go away. Make sure it's still
-    // valid before trying to use DragController.
-    if (frame_->GetPage() &&
-        drag_controller.StartDrag(frame_, GetDragState(), event.Event(),
-                                  mouse_down_pos_))
-      return true;
-    // Drag was canned at the last minute - we owe m_dragSrc a DRAGEND event
-    DispatchDragSrcEvent(EventTypeNames::dragend, event.Event());
-  }
+  if (drag_controller.StartDrag(frame_, GetDragState(), event.Event(),
+                                mouse_down_pos_))
+    return true;
+
+  // Drag was canned at the last minute - we owe m_dragSrc a DRAGEND event
+  DispatchDragSrcEvent(EventTypeNames::dragend, event.Event());
 
   return false;
 }
