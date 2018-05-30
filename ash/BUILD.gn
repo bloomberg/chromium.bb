@@ -1885,6 +1885,7 @@ test("ash_unittests") {
     "wm/video_detector_unittest.cc",
     "wm/window_animations_unittest.cc",
     "wm/window_cycle_controller_unittest.cc",
+    "wm/window_dimmer_unittest.cc",
     "wm/window_manager_unittest.cc",
     "wm/window_modality_controller_unittest.cc",
     "wm/window_positioner_unittest.cc",
