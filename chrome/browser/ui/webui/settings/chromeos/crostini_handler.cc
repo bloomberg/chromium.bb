@@ -31,12 +31,14 @@ void CrostiniHandler::RegisterMessages() {
 void CrostiniHandler::HandleRequestCrostiniInstallerView(
     const base::ListValue* args) {
   AllowJavascript();
-  ShowCrostiniInstallerView(Profile::FromWebUI(web_ui()));
+  ShowCrostiniInstallerView(Profile::FromWebUI(web_ui()),
+                            CrostiniUISurface::kSettings);
 }
 
 void CrostiniHandler::HandleRequestRemoveCrostini(const base::ListValue* args) {
   AllowJavascript();
-  ShowCrostiniUninstallerView(Profile::FromWebUI(web_ui()));
+  ShowCrostiniUninstallerView(Profile::FromWebUI(web_ui()),
+                              CrostiniUISurface::kSettings);
 }
 
 }  // namespace settings

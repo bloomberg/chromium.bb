@@ -94,7 +94,7 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
 
     if (!crostini_manager->IsCrosTerminaInstalled() ||
         !IsCrostiniEnabled(profile)) {
-      ShowCrostiniInstallerView(profile);
+      ShowCrostiniInstallerView(profile, CrostiniUISurface::kAppList);
     } else {
       crostini_manager->RestartCrostini(
           profile, kCrostiniDefaultVmName, kCrostiniDefaultContainerName,

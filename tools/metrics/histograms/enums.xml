@@ -8296,6 +8296,11 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Error Starting Container"/>
 </enum>
 
+<enum name="CrostiniUISurface">
+  <int value="0" label="Settings"/>
+  <int value="1" label="App List"/>
+</enum>
+
 <enum name="CrostiniUninstallResult">
   <int value="0" label="User Cancelled"/>
   <int value="1" label="Error"/>

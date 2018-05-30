@@ -42,8 +42,13 @@ std::string AppNameFromCrostiniAppId(const std::string& id);
 base::Optional<std::string> CrostiniAppIdFromAppName(
     const std::string& app_name);
 
-void ShowCrostiniInstallerView(Profile* profile);
-void ShowCrostiniUninstallerView(Profile* profile);
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CrostiniUISurface { kSettings = 0, kAppList = 1, kCount };
+
+void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
+void ShowCrostiniUninstallerView(Profile* profile,
+                                 CrostiniUISurface ui_surface);
 
 constexpr char kCrostiniTerminalAppName[] = "Terminal";
 // We can use any arbitrary well-formed extension id for the Terminal app, this
