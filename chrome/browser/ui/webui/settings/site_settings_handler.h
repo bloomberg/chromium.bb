@@ -84,6 +84,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSites);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
@@ -107,6 +108,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Gets and sets the default value for a particular content settings type.
   void HandleSetDefaultValueForContentType(const base::ListValue* args);
   void HandleGetDefaultValueForContentType(const base::ListValue* args);
+
+  // Returns a list of sites, grouped by their effective top level domain plus
+  // 1, affected by any of the content settings specified in |args|.
+  void HandleGetAllSites(const base::ListValue* args);
 
   // Returns the list of site exceptions for a given content settings type.
   void HandleGetExceptionList(const base::ListValue* args);
