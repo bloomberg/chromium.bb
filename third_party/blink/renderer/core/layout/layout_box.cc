@@ -5105,7 +5105,12 @@ LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
     AddOutlineRects(outline_rects, LayoutPoint(),
                     OutlineRectsShouldIncludeBlockVisualOverflow());
     LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-    SetOutlineMayBeAffectedByDescendants(rect.Size() != Size());
+    bool outline_affected = rect.Size() != Size();
+    // LayoutNG will set this flag for inline descendants
+    // which are not visible to Legacy code.
+    if (IsLayoutNGMixin())
+      outline_affected |= OutlineMayBeAffectedByDescendants();
+    SetOutlineMayBeAffectedByDescendants(outline_affected);
     rect.Inflate(style.OutlineOutsetExtent());
     outsets.Unite(rect.ToOutsets(Size()));
   }
