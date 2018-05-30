@@ -14,6 +14,10 @@ CAPTURE_EXPORT cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
     const cros::mojom::CameraMetadataPtr& camera_metadata,
     cros::mojom::CameraMetadataTag tag);
 
+CAPTURE_EXPORT void AddOrUpdateMetadataEntry(
+    cros::mojom::CameraMetadataPtr* to,
+    cros::mojom::CameraMetadataEntryPtr entry);
+
 // Sort the camera metadata entries using the metadata tags.
 CAPTURE_EXPORT void SortCameraMetadata(
     cros::mojom::CameraMetadataPtr* camera_metadata);

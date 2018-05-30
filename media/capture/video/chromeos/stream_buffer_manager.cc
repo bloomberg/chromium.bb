@@ -198,6 +198,18 @@ void StreamBufferManager::TakePhoto(
   DCHECK(stream_context_[StreamType::kStillCapture]);
 
   pending_still_capture_callbacks_.push(std::move(callback));
+
+  std::vector<uint8_t> frame_orientation(sizeof(int32_t));
+  *reinterpret_cast<int32_t*>(frame_orientation.data()) =
+      base::checked_cast<int32_t>(device_context_->GetCameraFrameOrientation());
+  cros::mojom::CameraMetadataEntryPtr e =
+      cros::mojom::CameraMetadataEntry::New();
+  e->tag = cros::mojom::CameraMetadataTag::ANDROID_JPEG_ORIENTATION;
+  e->type = cros::mojom::EntryType::TYPE_INT32;
+  e->count = 1;
+  e->data = std::move(frame_orientation);
+  AddOrUpdateMetadataEntry(&settings, std::move(e));
+
   oneshot_request_settings_.push(std::move(settings));
   RegisterBuffer(StreamType::kStillCapture);
 }
