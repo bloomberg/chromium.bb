@@ -168,6 +168,10 @@ bool ChromeCleanerDialogControllerImpl::LogsEnabled() {
   return cleaner_controller_->logs_enabled();
 }
 
+bool ChromeCleanerDialogControllerImpl::LogsManaged() {
+  return cleaner_controller_->IsReportingManagedByPolicy();
+}
+
 void ChromeCleanerDialogControllerImpl::OnIdle(
     ChromeCleanerController::IdleReason idle_reason) {
   if (!dialog_shown_)

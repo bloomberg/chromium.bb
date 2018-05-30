@@ -194,14 +194,9 @@ void ChromeCleanupHandler::OnRebootRequired() {
 }
 
 void ChromeCleanupHandler::OnLogsEnabledChanged(bool logs_enabled) {
-  // Logs are considered managed if the logs themselves are managed or if the
-  // entire cleanup feature is disabled by policy.
-  PrefService* local_state = g_browser_process->local_state();
-  bool is_managed = !controller_->IsAllowedByPolicy() ||
-                    (local_state && local_state->IsManagedPreference(
-                                        prefs::kSwReporterReportingEnabled));
   FireWebUIListener("chrome-cleanup-upload-permission-change",
-                    base::Value(is_managed), base::Value(logs_enabled));
+                    base::Value(controller_->IsReportingManagedByPolicy()),
+                    base::Value(logs_enabled));
 }
 
 void ChromeCleanupHandler::OnLogsEnabledPrefChanged() {

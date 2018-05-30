@@ -77,6 +77,8 @@ ChromeCleanerDialog::ChromeCleanerDialog(
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_LOGS_PERMISSION));
   logs_permission_checkbox_->SetChecked(dialog_controller_->LogsEnabled());
   logs_permission_checkbox_->set_listener(this);
+  if (dialog_controller_->LogsManaged())
+    logs_permission_checkbox_->SetState(views::Checkbox::STATE_DISABLED);
 
   AddChildView(label);
   AddChildView(logs_permission_checkbox_);

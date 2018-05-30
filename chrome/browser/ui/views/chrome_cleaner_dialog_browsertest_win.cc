@@ -33,6 +33,7 @@ class MockChromeCleanerDialogController
   MOCK_METHOD1(DetailsButtonClicked, void(bool));
   MOCK_METHOD1(SetLogsEnabled, void(bool));
   MOCK_METHOD0(LogsEnabled, bool());
+  MOCK_METHOD0(LogsManaged, bool());
 };
 
 class ChromeCleanerDialogTest : public DialogBrowserTest {

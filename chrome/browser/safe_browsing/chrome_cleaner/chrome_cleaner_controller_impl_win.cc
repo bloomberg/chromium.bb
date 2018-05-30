@@ -38,6 +38,8 @@
 #include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
@@ -531,6 +533,15 @@ bool ChromeCleanerControllerImpl::IsAllowedByPolicy() {
 
 bool ChromeCleanerControllerImpl::IsReportingAllowedByPolicy() {
   return safe_browsing::SwReporterReportingIsAllowedByPolicy();
+}
+
+bool ChromeCleanerControllerImpl::IsReportingManagedByPolicy() {
+  // Logs are considered managed if the logs themselves are managed or if the
+  // entire cleanup feature is disabled by policy.
+  PrefService* local_state = g_browser_process->local_state();
+  return !IsAllowedByPolicy() ||
+         (local_state &&
+          local_state->IsManagedPreference(prefs::kSwReporterReportingEnabled));
 }
 
 ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()

@@ -69,6 +69,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   void Reboot() override;
   bool IsAllowedByPolicy() override;
   bool IsReportingAllowedByPolicy() override;
+  bool IsReportingManagedByPolicy() override;
 
   static void ResetInstanceForTesting();
   // Passing in a nullptr as |delegate| resets the delegate to a default
