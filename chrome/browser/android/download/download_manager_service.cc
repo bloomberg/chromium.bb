@@ -15,12 +15,14 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
@@ -137,6 +139,8 @@ static jlong JNI_DownloadManagerService_Init(
 DownloadManagerService::DownloadManagerService()
     : is_history_query_complete_(false),
       pending_get_downloads_actions_(NONE) {
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                 content::NotificationService::AllSources());
 }
 
 DownloadManagerService::~DownloadManagerService() {}
@@ -145,6 +149,32 @@ void DownloadManagerService::Init(
     JNIEnv* env,
     jobject obj) {
   java_ref_.Reset(env, obj);
+}
+
+void DownloadManagerService::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      content::DownloadManager* manager =
+          content::BrowserContext::GetDownloadManager(profile);
+      if (!manager)
+        break;
+
+      auto& notifier = profile->IsOffTheRecord() ? off_the_record_notifier_
+                                                 : original_notifier_;
+
+      // Update notifiers to monitor any newly created DownloadManagers.
+      if (!notifier || notifier->GetManager() != manager) {
+        notifier =
+            std::make_unique<download::AllDownloadItemNotifier>(manager, this);
+      }
+    } break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void DownloadManagerService::OpenDownload(
