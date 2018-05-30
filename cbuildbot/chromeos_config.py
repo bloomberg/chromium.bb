@@ -2173,6 +2173,20 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
+      'chromeos-infra-go-pre-cq',
+      site_config.templates.pre_cq,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_unittest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      builder_class_name='infra_builders.InfraGoPreCqBuilder',
+      use_sdk=True,
+      build_timeout=60 * 60,
+      description='Test building Chromium OS infra Go binaries',
+      doc='https://goto.google.com/cros-infra-go-packaging',
+  )
+
+  site_config.AddWithoutTemplate(
       'chromeos-infra-unittests-pre-cq',
       site_config.templates.pre_cq,
       site_config.templates.internal,
