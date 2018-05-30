@@ -4,11 +4,11 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "build/build_config.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
 #include "services/video_capture/test/mock_receiver.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::InvokeWithoutArgs;
 
 namespace video_capture {
@@ -88,15 +88,8 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, AccessIsRevokedOnSecondAccess) {
   ASSERT_FALSE(device_access_2_revoked);
 }
 
-// Flaky. crbug.com/845661
-#if defined(OS_LINUX)
-#define MAYBE_CanUseSecondRequestedProxy DISABLED_CanUseSecondRequestedProxy
-#else
-#define MAYBE_CanUseSecondRequestedProxy CanUseSecondRequestedProxy
-#endif
-
 // Tests that a second proxy requested for a device can be used successfully.
-TEST_F(FakeVideoCaptureDeviceDescriptorTest, MAYBE_CanUseSecondRequestedProxy) {
+TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   mojom::DevicePtr device_proxy_1;
   factory_->CreateDevice(fake_device_info_.descriptor.device_id,
                          mojo::MakeRequest(&device_proxy_1), base::DoNothing());
@@ -123,7 +116,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, MAYBE_CanUseSecondRequestedProxy) {
   base::RunLoop wait_loop_2;
   mojom::ReceiverPtr receiver_proxy;
   MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
-  EXPECT_CALL(receiver, DoOnNewBuffer(_, _));
+  EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
