@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 
@@ -44,7 +45,7 @@ class NewPasswordFormManager;
 // receiving password form data from the renderer and managing the password
 // database through the PasswordStore. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
-class PasswordManager : public LoginModel {
+class PasswordManager : public LoginModel, public FormSubmissionObserver {
  public:
   // Expresses which navigation entry to use to check whether password manager
   // is enabled.
@@ -117,9 +118,8 @@ class PasswordManager : public LoginModel {
       bool did_stop_loading);
 
   // Handles a password form being submitted.
-  virtual void OnPasswordFormSubmitted(
-      password_manager::PasswordManagerDriver* driver,
-      const autofill::PasswordForm& password_form);
+  void OnPasswordFormSubmitted(password_manager::PasswordManagerDriver* driver,
+                               const autofill::PasswordForm& password_form);
 
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission.
@@ -184,6 +184,9 @@ class PasswordManager : public LoginModel {
   FRIEND_TEST_ALL_PREFIXES(
       PasswordManagerTest,
       ShouldBlockPasswordForSameOriginButDifferentSchemeTest);
+
+  // FormSubmissionObserver:
+  void OnStartNavigation(PasswordManagerDriver* driver) override;
 
   // Clones |matched_manager| and keeps it as |provisional_save_manager_|.
   // |form| is saved provisionally to |provisional_save_manager_|.

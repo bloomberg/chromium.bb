@@ -59,6 +59,7 @@ static_library("browser") {
     "form_saver.h",
     "form_saver_impl.cc",
     "form_saver_impl.h",
+    "form_submission_observer.h",
     "http_password_store_migrator.cc",
     "http_password_store_migrator.h",
     "import/csv_reader.cc",

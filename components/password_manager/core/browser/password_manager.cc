@@ -707,6 +707,11 @@ void PasswordManager::ProcessSubmittedForm(
   }
 }
 
+void PasswordManager::OnStartNavigation(PasswordManagerDriver* driver) {
+  // TODO(crbug/842643): use this signal instead of DidStartProvisionalLoad in
+  // the renderer.
+}
+
 void PasswordManager::ProvisionallySaveManager(
     const PasswordForm& form,
     PasswordFormManager* matched_manager,
