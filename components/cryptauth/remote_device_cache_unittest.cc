@@ -80,6 +80,4 @@ TEST_F(RemoteDeviceCacheTest,
   EXPECT_EQ(remote_device.name, remote_device_ref.name());
 }
 
-// GetRemoteDevice
-
 }  // namespace cryptauth

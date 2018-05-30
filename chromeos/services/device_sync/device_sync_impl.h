@@ -8,13 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_gcm_manager.h"
 #include "components/cryptauth/remote_device_provider.h"
 #include "components/signin/core/browser/account_info.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 
@@ -58,13 +57,13 @@ namespace device_sync {
 // (3) Instantiate classes which communicate with the CryptAuth back-end.
 // (4) Check enrollment state; if not yet enrolled, enroll the device.
 // (5) When enrollment is valid, listen for device sync updates.
-class DeviceSyncImpl : public mojom::DeviceSync,
+class DeviceSyncImpl : public DeviceSyncBase,
                        public cryptauth::CryptAuthEnrollmentManager::Observer,
                        public cryptauth::RemoteDeviceProvider::Observer {
  public:
   class Factory {
    public:
-    static std::unique_ptr<DeviceSyncImpl> NewInstance(
+    static std::unique_ptr<DeviceSyncBase> NewInstance(
         identity::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
@@ -73,7 +72,7 @@ class DeviceSyncImpl : public mojom::DeviceSync,
     static void SetInstanceForTesting(Factory* test_factory);
 
     virtual ~Factory();
-    virtual std::unique_ptr<DeviceSyncImpl> BuildInstance(
+    virtual std::unique_ptr<DeviceSyncBase> BuildInstance(
         identity::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
@@ -86,14 +85,8 @@ class DeviceSyncImpl : public mojom::DeviceSync,
 
   ~DeviceSyncImpl() override;
 
-  // Binds a request to this implementation. Should be called each time that the
-  // service receives a request.
-  void BindRequest(mojom::DeviceSyncRequest request);
-
  protected:
   // mojom::DeviceSync:
-  void AddObserver(mojom::DeviceSyncObserverPtr observer,
-                   AddObserverCallback callback) override;
   void ForceEnrollmentNow(ForceEnrollmentNowCallback callback) override;
   void ForceSyncNow(ForceSyncNowCallback callback) override;
   void GetLocalDeviceMetadata(GetLocalDeviceMetadataCallback callback) override;
@@ -197,9 +190,6 @@ class DeviceSyncImpl : public mojom::DeviceSync,
   std::unique_ptr<cryptauth::CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<cryptauth::RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<cryptauth::SoftwareFeatureManager> software_feature_manager_;
-
-  mojo::InterfacePtrSet<mojom::DeviceSyncObserver> observers_;
-  mojo::BindingSet<mojom::DeviceSync> bindings_;
 
   base::WeakPtrFactory<DeviceSyncImpl> weak_ptr_factory_;
 

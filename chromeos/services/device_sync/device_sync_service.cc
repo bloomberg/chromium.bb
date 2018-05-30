@@ -5,6 +5,7 @@
 #include "chromeos/services/device_sync/device_sync_service.h"
 
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -30,12 +31,12 @@ void DeviceSyncService::OnStart() {
 
   // context() cannot be invoked until after the constructor is run, so
   // |device_sync_impl_| cannot be initialized until OnStart().
-  device_sync_impl_ = DeviceSyncImpl::Factory::NewInstance(
+  device_sync_ = DeviceSyncImpl::Factory::NewInstance(
       identity_manager_, gcm_driver_, context()->connector(),
       gcm_device_info_provider_, url_request_context_);
 
-  registry_.AddInterface(base::Bind(&DeviceSyncImpl::BindRequest,
-                                    base::Unretained(device_sync_impl_.get())));
+  registry_.AddInterface(base::Bind(&DeviceSyncBase::BindRequest,
+                                    base::Unretained(device_sync_.get())));
 }
 
 void DeviceSyncService::OnBindInterface(
