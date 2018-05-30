@@ -276,10 +276,6 @@ SkColor DelegatedFrameHost::GetGutterColor() const {
   return client_->DelegatedFrameHostGetGutterColor();
 }
 
-gfx::Size DelegatedFrameHost::GetRequestedRendererSize() const {
-  return pending_surface_dip_size_;
-}
-
 void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();
@@ -527,10 +523,9 @@ void DelegatedFrameHost::WindowTitleChanged(const std::string& title) {
 }
 
 void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
-  if (!other->HasFallbackSurface())
+  if (!other->HasFallbackSurface() || HasFallbackSurface())
     return;
-  if (HasFallbackSurface())
-    return;
+
   if (!HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         *other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId(),
@@ -539,6 +534,7 @@ void DelegatedFrameHost::TakeFallbackContentFrom(DelegatedFrameHost* other) {
         cc::DeadlinePolicy::UseDefaultDeadline(),
         false /* stretch_content_to_fill_bounds */);
   }
+
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
       *other->client_->DelegatedFrameHostGetLayer()->GetFallbackSurfaceId());
 }

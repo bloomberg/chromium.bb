@@ -127,7 +127,6 @@ class CONTENT_EXPORT DelegatedFrameHost
                     const gfx::Size& dip_size,
                     cc::DeadlinePolicy deadline_policy);
   bool HasSavedFrame() const;
-  gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
   void ResetCompositor();
   // Note: |src_subrect| is specified in DIP dimensions while |output_size|
