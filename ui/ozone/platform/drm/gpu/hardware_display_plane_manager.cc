@@ -194,14 +194,8 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     std::unique_ptr<HardwareDisplayPlane> plane(
         CreatePlane(plane_resources->planes[i]));
 
-    if (plane->Initialize(drm)) {
-      // CRTC controllers always assume they have a cursor plane and the
-      // cursor plane is updated via cursor specific DRM API. Hence, we don't
-      // keep track of cursor plane here to avoid re-using it for any other
-      // purpose.
-      if (plane->type() != HardwareDisplayPlane::kCursor)
-        planes_.push_back(std::move(plane));
-    }
+    if (plane->Initialize(drm))
+      planes_.push_back(std::move(plane));
   }
 
   // crbug.com/464085: if driver reports no primary planes for a crtc, create a
@@ -259,7 +253,8 @@ int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) const {
 bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
                                                const OverlayPlane& overlay,
                                                uint32_t crtc_index) const {
-  if (!plane->CanUseForCrtc(crtc_index))
+  if (plane->type() == HardwareDisplayPlane::kCursor ||
+      !plane->CanUseForCrtc(crtc_index))
     return false;
 
   const uint32_t format = overlay.enable_blend ?

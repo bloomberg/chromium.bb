@@ -185,7 +185,8 @@ bool HardwareDisplayPlaneManagerLegacy::IsCompatible(
     HardwareDisplayPlane* plane,
     const OverlayPlane& overlay,
     uint32_t crtc_index) const {
-  if (!plane->CanUseForCrtc(crtc_index))
+  if (plane->type() == HardwareDisplayPlane::kCursor ||
+      !plane->CanUseForCrtc(crtc_index))
     return false;
 
   // When using legacy kms we always scanout only one plane (the primary),
