@@ -52,15 +52,14 @@ void MaybeLaunchTerminal(Profile* profile,
 
 void MaybeLaunchContainerApplication(
     Profile* profile,
-    std::unique_ptr<crostini::CrostiniRegistryService::Registration>
-        registration,
+    crostini::CrostiniRegistryService::Registration registration,
     crostini::ConciergeClientResult result) {
   if (result == crostini::ConciergeClientResult::SUCCESS) {
     // TODO(timloh): Do something if launching failed, as otherwise the app
     // launcher remains open and there's no feedback.
     crostini::CrostiniManager::GetInstance()->LaunchContainerApplication(
-        profile, registration->vm_name, registration->container_name,
-        registration->desktop_file_id, base::DoNothing());
+        profile, registration.VmName(), registration.ContainerName(),
+        registration.DesktopFileId(), base::DoNothing());
   }
 }
 
@@ -105,8 +104,8 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
     return;
   }
 
-  std::unique_ptr<crostini::CrostiniRegistryService::Registration>
-      registration = registry_service->GetRegistration(app_id);
+  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+      registry_service->GetRegistration(app_id);
   if (!registration) {
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kUnknownApp);
     LOG(ERROR) << "LaunchCrostiniApp called with an unknown app_id: " << app_id;
@@ -115,9 +114,9 @@ void LaunchCrostiniApp(Profile* profile, const std::string& app_id) {
 
   RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kRegisteredApp);
   crostini_manager->RestartCrostini(
-      profile, registration->vm_name, registration->container_name,
+      profile, registration->VmName(), registration->ContainerName(),
       base::BindOnce(&MaybeLaunchContainerApplication, profile,
-                     std::move(registration)));
+                     std::move(*registration)));
   registry_service->AppLaunched(app_id);
 }
 

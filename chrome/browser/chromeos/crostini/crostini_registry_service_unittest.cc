@@ -93,15 +93,12 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   std::string vm_name = "awesomevm";
   std::string container_name = "awesomecontainer";
   std::map<std::string, std::string> name = {{"", "Vim"}};
-  std::map<std::string, std::string> comment = {
-      {"", "Edit text files"},
-      {"en_GB", "Modify files containing textual content"},
-  };
+  std::map<std::string, std::string> comment = {{"", "Edit text files"}};
   std::vector<std::string> mime_types = {"text/plain", "text/x-python"};
   bool no_display = true;
 
   std::string app_id = GenerateAppId(desktop_file_id, vm_name, container_name);
-  EXPECT_EQ(nullptr, service()->GetRegistration(app_id));
+  EXPECT_FALSE(service()->GetRegistration(app_id).has_value());
 
   ApplicationList app_list;
   app_list.set_vm_name(vm_name);
@@ -127,15 +124,16 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
     app->add_mime_types(mime_type);
 
   service()->UpdateApplicationList(app_list);
-  auto result = service()->GetRegistration(app_id);
-  ASSERT_NE(nullptr, result);
-  EXPECT_EQ(result->desktop_file_id, desktop_file_id);
-  EXPECT_EQ(result->vm_name, vm_name);
-  EXPECT_EQ(result->container_name, container_name);
-  EXPECT_EQ(result->name, name);
-  EXPECT_EQ(result->comment, comment);
-  EXPECT_EQ(result->mime_types, mime_types);
-  EXPECT_EQ(result->no_display, no_display);
+  base::Optional<CrostiniRegistryService::Registration> result =
+      service()->GetRegistration(app_id);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result->DesktopFileId(), desktop_file_id);
+  EXPECT_EQ(result->VmName(), vm_name);
+  EXPECT_EQ(result->ContainerName(), container_name);
+  EXPECT_EQ(result->Name(), name[""]);
+  EXPECT_EQ(result->Comment(), comment[""]);
+  EXPECT_EQ(result->MimeTypes(), mime_types);
+  EXPECT_EQ(result->NoDisplay(), no_display);
 }
 
 TEST_F(CrostiniRegistryServiceTest, Observer) {
@@ -179,10 +177,11 @@ TEST_F(CrostiniRegistryServiceTest, InstallAndLaunchTime) {
                                           testing::ElementsAre(app_id)));
   service()->UpdateApplicationList(app_list);
 
-  auto result = service()->GetRegistration(app_id);
+  base::Optional<CrostiniRegistryService::Registration> result =
+      service()->GetRegistration(app_id);
   base::Time install_time = test_clock_.Now();
-  EXPECT_EQ(result->install_time, install_time);
-  EXPECT_EQ(result->last_launch_time, base::Time());
+  EXPECT_EQ(result->InstallTime(), install_time);
+  EXPECT_EQ(result->LastLaunchTime(), base::Time());
 
   // UpdateApplicationList with nothing changed. Times shouldn't be updated and
   // the observer shouldn't fire.
@@ -190,15 +189,15 @@ TEST_F(CrostiniRegistryServiceTest, InstallAndLaunchTime) {
   EXPECT_CALL(observer, OnRegistryUpdated(_, _, _, _)).Times(0);
   service()->UpdateApplicationList(app_list);
   result = service()->GetRegistration(app_id);
-  EXPECT_EQ(result->install_time, install_time);
-  EXPECT_EQ(result->last_launch_time, base::Time());
+  EXPECT_EQ(result->InstallTime(), install_time);
+  EXPECT_EQ(result->LastLaunchTime(), base::Time());
 
   // Launch the app
   test_clock_.Advance(base::TimeDelta::FromHours(1));
   service()->AppLaunched(app_id);
   result = service()->GetRegistration(app_id);
-  EXPECT_EQ(result->install_time, install_time);
-  EXPECT_EQ(result->last_launch_time,
+  EXPECT_EQ(result->InstallTime(), install_time);
+  EXPECT_EQ(result->LastLaunchTime(),
             base::Time() + base::TimeDelta::FromHours(3));
 
   // The install time shouldn't change if fields change.
@@ -209,8 +208,8 @@ TEST_F(CrostiniRegistryServiceTest, InstallAndLaunchTime) {
                                 testing::IsEmpty(), testing::IsEmpty()));
   service()->UpdateApplicationList(app_list);
   result = service()->GetRegistration(app_id);
-  EXPECT_EQ(result->install_time, install_time);
-  EXPECT_EQ(result->last_launch_time,
+  EXPECT_EQ(result->InstallTime(), install_time);
+  EXPECT_EQ(result->LastLaunchTime(),
             base::Time() + base::TimeDelta::FromHours(3));
 }
 

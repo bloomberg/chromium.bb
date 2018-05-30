@@ -49,16 +49,13 @@ void CrostiniAppModelBuilder::InsertCrostiniAppItem(
     // becomes enabled.
     return;
   }
-  std::unique_ptr<crostini::CrostiniRegistryService::Registration>
-      registration = registry_service->GetRegistration(app_id);
-  DCHECK(registration);
-  if (registration->no_display)
+  crostini::CrostiniRegistryService::Registration registration =
+      *registry_service->GetRegistration(app_id);
+  if (registration.NoDisplay())
     return;
-  const std::string& localized_name =
-      crostini::CrostiniRegistryService::Registration::Localize(
-          registration->name);
-  InsertApp(std::make_unique<CrostiniAppItem>(
-      profile(), model_updater(), GetSyncItem(app_id), app_id, localized_name));
+  InsertApp(std::make_unique<CrostiniAppItem>(profile(), model_updater(),
+                                              GetSyncItem(app_id), app_id,
+                                              registration.Name()));
 }
 
 void CrostiniAppModelBuilder::OnRegistryUpdated(
