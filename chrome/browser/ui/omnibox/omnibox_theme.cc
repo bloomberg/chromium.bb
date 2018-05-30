@@ -185,6 +185,16 @@ SkColor GetLegacyColor(OmniboxPart part,
 }
 
 SkColor GetSecurityChipColor(OmniboxTint tint, OmniboxPartState state) {
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    if (tint == OmniboxTint::DARK)
+      return gfx::kGoogleGrey200;
+
+    if (state == OmniboxPartState::CHIP_DANGEROUS)
+      return gfx::kGoogleRed600;
+
+    return gfx::kChromeIconGrey;
+  }
+
   if (tint == OmniboxTint::DARK)
     return gfx::kGoogleGrey100;
 
