@@ -115,6 +115,9 @@ media/stable [ WontFix ]
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
 
+# Android doesn't support plugins
+virtual/android/fullscreen/rendering/backdrop-object.html [ WontFix ]
+
 # We only run it through the virtual gpu test suite.
 fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 

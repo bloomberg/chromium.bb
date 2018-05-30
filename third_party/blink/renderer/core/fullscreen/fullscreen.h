@@ -42,9 +42,7 @@
 
 namespace blink {
 
-class ComputedStyle;
 class FullscreenOptions;
-class LayoutFullScreen;
 class ScriptPromiseResolver;
 
 // The Fullscreen class implements most of the Fullscreen API Standard,
@@ -62,10 +60,8 @@ class CORE_EXPORT Fullscreen final
 
   virtual ~Fullscreen();
   static Fullscreen& From(Document&);
-  static Fullscreen* FromIfExists(Document&);
   static Element* FullscreenElementFrom(Document&);
   static Element* FullscreenElementForBindingFrom(TreeScope&);
-  static size_t FullscreenElementStackSizeFrom(Document&);
   static bool IsFullscreenElement(const Element&);
   static bool IsInFullscreenElementStack(const Element&);
 
@@ -86,28 +82,21 @@ class CORE_EXPORT Fullscreen final
                                          RequestType,
                                          ScriptState* state = nullptr);
 
-  static void FullyExitFullscreen(Document&);
-  static ScriptPromise ExitFullscreen(Document&, ScriptState* state = nullptr);
+  static void FullyExitFullscreen(Document&, bool ua_originated = false);
+  static ScriptPromise ExitFullscreen(Document&,
+                                      ScriptState* state = nullptr,
+                                      bool ua_originated = false);
 
   static bool FullscreenEnabled(Document&);
-  Element* FullscreenElement() const {
-    return !fullscreen_element_stack_.IsEmpty()
-               ? fullscreen_element_stack_.back().first.Get()
-               : nullptr;
-  }
 
   // Called by FullscreenController to notify that we've entered or exited
   // fullscreen. All frames are notified, so there may be no pending request.
-  void DidEnterFullscreen();
-  void DidExitFullscreen();
+  static void DidEnterFullscreen(Document&);
+  static void DidExitFullscreen(Document&);
 
-  void SetFullScreenLayoutObject(LayoutFullScreen*);
-  LayoutFullScreen* FullScreenLayoutObject() const {
-    return full_screen_layout_object_;
-  }
-  void FullScreenLayoutObjectDestroyed();
+  static void DidUpdateSize(Element&);
 
-  void ElementRemoved(Element&);
+  static void ElementRemoved(Element&);
 
   // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
@@ -115,7 +104,7 @@ class CORE_EXPORT Fullscreen final
   void Trace(blink::Visitor*) override;
 
  private:
-  static Fullscreen* FromIfExistsSlow(Document&);
+  static Fullscreen* FromIfExists(Document&);
 
   explicit Fullscreen(Document&);
 
@@ -131,20 +120,9 @@ class CORE_EXPORT Fullscreen final
                                      ScriptPromiseResolver* resolver,
                                      bool resize);
 
-  void ClearFullscreenElementStack();
-  void PopFullscreenElementStack();
-  void PushFullscreenElementStack(Element&, RequestType);
   void FullscreenElementChanged(Element* old_element,
                                 Element* new_element,
                                 RequestType new_request_type);
-
-  using ElementStackEntry = std::pair<Member<Element>, RequestType>;
-  using ElementStack = HeapVector<ElementStackEntry>;
-  ElementStack fullscreen_element_stack_;
-
-  LayoutFullScreen* full_screen_layout_object_;
-  LayoutRect saved_placeholder_frame_rect_;
-  scoped_refptr<ComputedStyle> saved_placeholder_computed_style_;
 
   // Stores the pending request, promise and the type for executing
   // the asynchronous portion of the request.
@@ -175,16 +153,8 @@ class CORE_EXPORT Fullscreen final
   PendingExits pending_exits_;
 };
 
-inline Fullscreen* Fullscreen::FromIfExists(Document& document) {
-  if (!document.HasFullscreenSupplement())
-    return nullptr;
-  return FromIfExistsSlow(document);
-}
-
 inline bool Fullscreen::IsFullscreenElement(const Element& element) {
-  if (Fullscreen* found = FromIfExists(element.GetDocument()))
-    return found->FullscreenElement() == &element;
-  return false;
+  return FullscreenElementFrom(element.GetDocument()) == &element;
 }
 
 }  // namespace blink

@@ -27,9 +27,6 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/paint/video_painter.h"
 
 namespace blink {
@@ -185,44 +182,6 @@ LayoutRect LayoutVideo::ReplacedContentRect() const {
 
 bool LayoutVideo::SupportsAcceleratedRendering() const {
   return !!MediaElement()->CcLayer();
-}
-
-static const LayoutBlock* LayoutObjectPlaceholder(
-    const LayoutObject* layout_object) {
-  LayoutObject* parent = layout_object->Parent();
-  if (!parent)
-    return nullptr;
-
-  LayoutFullScreen* full_screen =
-      parent->IsLayoutFullScreen() ? ToLayoutFullScreen(parent) : nullptr;
-  if (!full_screen)
-    return nullptr;
-
-  return full_screen->Placeholder();
-}
-
-LayoutUnit LayoutVideo::OffsetLeft(const Element* parent) const {
-  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
-    return block->OffsetLeft(parent);
-  return LayoutMedia::OffsetLeft(parent);
-}
-
-LayoutUnit LayoutVideo::OffsetTop(const Element* parent) const {
-  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
-    return block->OffsetTop(parent);
-  return LayoutMedia::OffsetTop(parent);
-}
-
-LayoutUnit LayoutVideo::OffsetWidth() const {
-  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
-    return block->OffsetWidth();
-  return LayoutMedia::OffsetWidth();
-}
-
-LayoutUnit LayoutVideo::OffsetHeight() const {
-  if (const LayoutBlock* block = LayoutObjectPlaceholder(this))
-    return block->OffsetHeight();
-  return LayoutMedia::OffsetHeight();
 }
 
 CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {

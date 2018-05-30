@@ -36,9 +36,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -166,15 +164,6 @@ void LayoutTreeBuilderForElement::CreateLayoutObject() {
   node_->SetLayoutObject(new_layout_object);
   new_layout_object->SetStyle(
       &style);  // SetStyle() can depend on LayoutObject() already being set.
-
-  Document& document = node_->GetDocument();
-  if (Fullscreen::IsFullscreenElement(*node_) &&
-      node_.Get() != document.documentElement()) {
-    new_layout_object = LayoutFullScreen::WrapLayoutObject(
-        new_layout_object, parent_layout_object, &document);
-    if (!new_layout_object)
-      return;
-  }
 
   // Note: Adding new_layout_object instead of LayoutObject(). LayoutObject()
   // may be a child of new_layout_object.

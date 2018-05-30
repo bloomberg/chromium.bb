@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
-#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -61,11 +60,11 @@ class HTMLVideoElementPersistentTest : public PageTestBase {
   FullscreenMockChromeClient& GetMockChromeClient() { return *chrome_client_; }
 
   void SimulateDidEnterFullscreen() {
-    Fullscreen::FromIfExists(GetDocument())->DidEnterFullscreen();
+    Fullscreen::DidEnterFullscreen(GetDocument());
   }
 
   void SimulateDidExitFullscreen() {
-    Fullscreen::FromIfExists(GetDocument())->DidExitFullscreen();
+    Fullscreen::DidExitFullscreen(GetDocument());
   }
 
   void SimulateBecamePersistentVideo(bool value) {

@@ -2637,8 +2637,6 @@ crbug.com/459056 [ Win7 ] fast/text/font-fallback-win.html [ Failure ]
 
 crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Failure Pass ]
 
-crbug.com/240576 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout Failure Pass ]
-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
@@ -3342,7 +3340,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/logical-physical-mapping-001.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
-crbug.com/626703 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout Pass ]
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-global-scope.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout ]

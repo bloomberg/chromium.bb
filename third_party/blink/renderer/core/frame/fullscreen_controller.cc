@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
@@ -87,10 +86,8 @@ void FullscreenController::DidEnterFullscreen() {
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
-    if (Document* document = ToLocalFrame(frame)->GetDocument()) {
-      if (Fullscreen* fullscreen = Fullscreen::FromIfExists(*document))
-        fullscreen->DidEnterFullscreen();
-    }
+    if (Document* document = ToLocalFrame(frame)->GetDocument())
+      Fullscreen::DidEnterFullscreen(*document);
   }
 
   // TODO(foolip): If the top level browsing context (main frame) ends up with
@@ -123,10 +120,8 @@ void FullscreenController::DidExitFullscreen() {
     }
 
     DCHECK(frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot());
-    if (Document* document = ToLocalFrame(frame)->GetDocument()) {
-      if (Fullscreen* fullscreen = Fullscreen::FromIfExists(*document))
-        fullscreen->DidExitFullscreen();
-    }
+    if (Document* document = ToLocalFrame(frame)->GetDocument())
+      Fullscreen::DidExitFullscreen(*document);
 
     // Skip over all descendant frames.
     while (next_frame && next_frame->Tree().IsDescendantOf(frame))
@@ -247,20 +242,6 @@ void FullscreenController::UpdateSize() {
     return;
 
   UpdatePageScaleConstraints(false);
-
-  // Traverse all local frames and notify the LayoutFullScreen object, if any.
-  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
-      continue;
-    if (Document* document = ToLocalFrame(frame)->GetDocument()) {
-      if (Fullscreen* fullscreen = Fullscreen::FromIfExists(*document)) {
-        if (LayoutFullScreen* layout_object =
-                fullscreen->FullScreenLayoutObject())
-          layout_object->UpdateStyle();
-      }
-    }
-  }
 }
 
 void FullscreenController::DidUpdateLayout() {

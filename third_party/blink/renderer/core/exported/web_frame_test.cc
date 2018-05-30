@@ -124,7 +124,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
@@ -8510,8 +8509,8 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the element is sized to the viewport.
-  LayoutFullScreen* fullscreen_layout_object =
-      Fullscreen::From(*document).FullScreenLayoutObject();
+  LayoutBox* fullscreen_layout_object =
+      ToLayoutBox(div_fullscreen->GetLayoutObject());
   EXPECT_EQ(viewport_width, fullscreen_layout_object->LogicalWidth().ToInt());
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalHeight().ToInt());
 
@@ -8665,8 +8664,8 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   web_view_impl->UpdateAllLifecyclePhases();
 
   // Verify that the element is sized to the viewport.
-  LayoutFullScreen* fullscreen_layout_object =
-      Fullscreen::From(*document).FullScreenLayoutObject();
+  LayoutBox* fullscreen_layout_object =
+      ToLayoutBox(div_fullscreen->GetLayoutObject());
   EXPECT_EQ(viewport_width, fullscreen_layout_object->LogicalWidth().ToInt());
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalHeight().ToInt());
 

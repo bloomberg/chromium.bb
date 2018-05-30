@@ -1744,6 +1744,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // For early return in Fullscreen::fromIfExists()
   bool has_fullscreen_supplement_;
 
+  // The last element in |m_topLayerElements| is topmost in the top layer
+  // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
   int load_event_delay_count_;
