@@ -22,31 +22,37 @@
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
 #include "third_party/blink/renderer/core/svg/svg_rect.h"
-#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_list.h"
+#include "third_party/blink/renderer/core/svg/svg_view_element.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 
 namespace blink {
 
-SVGViewSpec::SVGViewSpec()
-    : view_box_(SVGRect::CreateInvalid()),
-      preserve_aspect_ratio_(SVGPreserveAspectRatio::Create()),
-      transform_(SVGTransformList::Create()),
-      zoom_and_pan_(kSVGZoomAndPanUnknown) {}
+SVGViewSpec::SVGViewSpec() : zoom_and_pan_(kSVGZoomAndPanUnknown) {}
 
-void SVGViewSpec::Trace(blink::Visitor* visitor) {
+void SVGViewSpec::Trace(Visitor* visitor) {
   visitor->Trace(view_box_);
   visitor->Trace(preserve_aspect_ratio_);
   visitor->Trace(transform_);
 }
 
-SVGViewSpec* SVGViewSpec::CreateForElement(SVGSVGElement& root_element) {
-  SVGViewSpec* view_spec = root_element.ViewSpec();
-  if (!view_spec)
-    view_spec = new SVGViewSpec();
-  else
-    view_spec->Reset();
-  view_spec->InheritViewAttributesFromElement(root_element);
+SVGViewSpec* SVGViewSpec::CreateFromFragment(const String& fragment) {
+  SVGViewSpec* view_spec = new SVGViewSpec();
+  if (!view_spec->ParseViewSpec(fragment))
+    return nullptr;
+  return view_spec;
+}
+
+SVGViewSpec* SVGViewSpec::CreateForViewElement(const SVGViewElement& view) {
+  SVGViewSpec* view_spec = new SVGViewSpec();
+  if (view.HasValidViewBox())
+    view_spec->view_box_ = view.viewBox()->CurrentValue()->Clone();
+  if (view.preserveAspectRatio()->IsSpecified()) {
+    view_spec->preserve_aspect_ratio_ =
+        view.preserveAspectRatio()->CurrentValue()->Clone();
+  }
+  if (view.hasAttribute(SVGNames::zoomAndPanAttr))
+    view_spec->zoom_and_pan_ = view.zoomAndPan();
   return view_spec;
 }
 
@@ -61,22 +67,6 @@ bool SVGViewSpec::ParseViewSpec(const String& spec) {
   const UChar* ptr = spec.Characters16();
   const UChar* end = ptr + spec.length();
   return ParseViewSpecInternal(ptr, end);
-}
-
-void SVGViewSpec::SetViewBox(const FloatRect& rect) {
-  ViewBox()->SetValue(rect);
-}
-
-void SVGViewSpec::SetPreserveAspectRatio(const SVGPreserveAspectRatio& other) {
-  PreserveAspectRatio()->SetAlign(other.Align());
-  PreserveAspectRatio()->SetMeetOrSlice(other.MeetOrSlice());
-}
-
-void SVGViewSpec::Reset() {
-  zoom_and_pan_ = kSVGZoomAndPanUnknown;
-  transform_->Clear();
-  SetViewBox(FloatRect());
-  PreserveAspectRatio()->SetDefault();
 }
 
 namespace {
@@ -146,7 +136,7 @@ bool SVGViewSpec::ParseViewSpecInternal(const CharType* ptr,
               ParseNumber(ptr, end, width) &&
               ParseNumber(ptr, end, height, kDisallowWhitespace)))
           return false;
-        SetViewBox(FloatRect(x, y, width, height));
+        view_box_ = SVGRect::Create(FloatRect(x, y, width, height));
         break;
       }
       case kViewTarget: {
@@ -160,10 +150,12 @@ bool SVGViewSpec::ParseViewSpecInternal(const CharType* ptr,
           return false;
         break;
       case kPreserveAspectRatio:
-        if (!PreserveAspectRatio()->Parse(ptr, end, false))
+        preserve_aspect_ratio_ = SVGPreserveAspectRatio::Create();
+        if (!preserve_aspect_ratio_->Parse(ptr, end, false))
           return false;
         break;
       case kTransform:
+        transform_ = SVGTransformList::Create();
         transform_->Parse(ptr, end);
         break;
       default:

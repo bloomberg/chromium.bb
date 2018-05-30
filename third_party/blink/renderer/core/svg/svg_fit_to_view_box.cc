@@ -71,7 +71,7 @@ void SVGFitToViewBox::Trace(blink::Visitor* visitor) {
 
 AffineTransform SVGFitToViewBox::ViewBoxToViewTransform(
     const FloatRect& view_box_rect,
-    SVGPreserveAspectRatio* preserve_aspect_ratio,
+    const SVGPreserveAspectRatio* preserve_aspect_ratio,
     float view_width,
     float view_height) {
   if (!view_box_rect.Width() || !view_box_rect.Height() || !view_width ||

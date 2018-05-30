@@ -25,58 +25,37 @@
 
 namespace blink {
 
-class FloatRect;
 class SVGPreserveAspectRatio;
 class SVGRect;
-class SVGSVGElement;
 class SVGTransformList;
+class SVGViewElement;
 
 class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec> {
  public:
-  static SVGViewSpec* CreateForElement(SVGSVGElement&);
+  static SVGViewSpec* CreateFromFragment(const String&);
+  static SVGViewSpec* CreateForViewElement(const SVGViewElement&);
 
-  bool ParseViewSpec(const String&);
-  void Reset();
-  template <typename T>
-  void InheritViewAttributesFromElement(T&);
-
-  SVGRect* ViewBox() { return view_box_; }
-  SVGPreserveAspectRatio* PreserveAspectRatio() {
+  const SVGRect* ViewBox() const { return view_box_; }
+  const SVGPreserveAspectRatio* PreserveAspectRatio() const {
     return preserve_aspect_ratio_;
   }
-  SVGTransformList* Transform() { return transform_; }
+  const SVGTransformList* Transform() const { return transform_; }
   SVGZoomAndPanType ZoomAndPan() const { return zoom_and_pan_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   SVGViewSpec();
 
+  bool ParseViewSpec(const String&);
   template <typename CharType>
   bool ParseViewSpecInternal(const CharType* ptr, const CharType* end);
-
-  void SetViewBox(const FloatRect&);
-  void SetPreserveAspectRatio(const SVGPreserveAspectRatio&);
 
   Member<SVGRect> view_box_;
   Member<SVGPreserveAspectRatio> preserve_aspect_ratio_;
   Member<SVGTransformList> transform_;
   SVGZoomAndPanType zoom_and_pan_;
 };
-
-template <typename T>
-void SVGViewSpec::InheritViewAttributesFromElement(T& inherit_from_element) {
-  if (inherit_from_element.HasValidViewBox())
-    SetViewBox(inherit_from_element.viewBox()->CurrentValue()->Value());
-
-  if (inherit_from_element.preserveAspectRatio()->IsSpecified()) {
-    SetPreserveAspectRatio(
-        *inherit_from_element.preserveAspectRatio()->CurrentValue());
-  }
-
-  if (inherit_from_element.hasAttribute(SVGNames::zoomAndPanAttr))
-    zoom_and_pan_ = inherit_from_element.zoomAndPan();
-}
 
 }  // namespace blink
 
