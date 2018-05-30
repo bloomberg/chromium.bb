@@ -158,6 +158,7 @@ class CancelingTestRequest : public TestRequest {
 class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest() : field_trial_list_(nullptr) {
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     InitializeScheduler();
     context_.set_http_server_properties(&http_server_properties_);
     context_.set_network_quality_estimator(&network_quality_estimator_);
