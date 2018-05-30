@@ -2431,6 +2431,23 @@ crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
 crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
 
+crbug.com/595206 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Skip ]
+crbug.com/595206 http/tests/inspector-protocol/terminate-execution-with-fetch-callbacks.js [ Skip ]
+crbug.com/595206 inspector-protocol/console/console-let-const-with-api.js [ Skip ]
+crbug.com/595206 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
+crbug.com/595206 inspector-protocol/debugger/setScriptSource.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-await-promise.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-callFunctionOn-async.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-clear-of-command-line-api.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-console-line-and-column.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-console-log-doesnt-run-microtasks.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-evaluate-async.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-evaluate-in-default-context.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-get-properties-on-proxy.js [ Skip ]
+crbug.com/595206 inspector-protocol/runtime/runtime-property-on-console-proto.js [ Skip ]
+crbug.com/595206 inspector-protocol/sessions/runtime-evaluate.js [ Skip ]
+crbug.com/595206 inspector-protocol/target/target-send-message.js [ Skip ]
+
 # Not implemented yet
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]

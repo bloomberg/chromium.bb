@@ -8,5 +8,5 @@ JSON without method property..
 JSON without id property..
 {"error":{"code":-32600,"message":"Message must have integer 'id' property"}}
 Valid JSON..
-{"id":1,"result":{"result":{"type":"number","value":42,"description":"42"}}}
+{"id":1,"result":{"result":{"type":"number","value":42}}}
 
