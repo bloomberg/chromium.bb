@@ -62,6 +62,11 @@ class FakeDriveService : public DriveServiceInterface {
   // Adds a Team Drive to the Team Drive resource list.
   void AddTeamDrive(const std::string& id, const std::string& name);
 
+  // Adds a Team Drive to the Team Drive resource list with a start page token.
+  void AddTeamDrive(const std::string& id,
+                    const std::string& name,
+                    const std::string& start_page_token);
+
   // Removes an app by product id.
   void RemoveAppByProductId(const std::string& product_id);
 
@@ -430,6 +435,8 @@ class FakeDriveService : public DriveServiceInterface {
   std::unique_ptr<base::DictionaryValue> app_info_value_;
   std::vector<std::unique_ptr<google_apis::TeamDriveResource>>
       team_drive_value_;
+  std::map<std::string, std::unique_ptr<google_apis::StartPageToken>>
+      team_drive_start_page_tokens_;
 
   std::map<GURL, UploadSession> upload_sessions_;
   int64_t date_seq_;

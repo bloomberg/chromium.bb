@@ -307,11 +307,20 @@ void FakeDriveService::AddApp(const std::string& app_id,
 
 void FakeDriveService::AddTeamDrive(const std::string& id,
                                     const std::string& name) {
+  AddTeamDrive(id, name, "");
+}
+
+void FakeDriveService::AddTeamDrive(const std::string& id,
+                                    const std::string& name,
+                                    const std::string& start_page_token) {
   std::unique_ptr<TeamDriveResource> team_drive;
   team_drive.reset(new TeamDriveResource);
   team_drive->set_id(id);
   team_drive->set_name(name);
   team_drive_value_.push_back(std::move(team_drive));
+
+  team_drive_start_page_tokens_[id] = std::make_unique<StartPageToken>();
+  team_drive_start_page_tokens_[id]->set_start_page_token(start_page_token);
 }
 
 void FakeDriveService::RemoveAppByProductId(const std::string& product_id) {
@@ -722,10 +731,15 @@ CancelCallback FakeDriveService::GetStartPageToken(
     return CancelCallback();
   }
 
+  std::unique_ptr<StartPageToken> start_page_token;
+  if (team_drive_id.empty()) {
+    start_page_token = std::make_unique<StartPageToken>(*start_page_token_);
+  } else {
+    auto it = team_drive_start_page_tokens_.find(team_drive_id);
+    DCHECK(it != team_drive_start_page_tokens_.end());
+    start_page_token = std::make_unique<StartPageToken>(*(it->second));
+  }
   ++start_page_token_load_count_;
-  // TODO(slangley): Needs to support team_drive_id.
-  std::unique_ptr<StartPageToken> start_page_token =
-      std::make_unique<StartPageToken>(*start_page_token_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(callback, HTTP_SUCCESS, std::move(start_page_token)));
