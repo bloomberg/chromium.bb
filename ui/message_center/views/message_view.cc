@@ -37,9 +37,6 @@ const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 const int kShadowCornerRadius = 0;
 const int kShadowElevation = 2;
 
-// The global flag of Sidebar enability.
-bool sidebar_enabled = false;
-
 // Creates a text for spoken feedback from the data contained in the
 // notification.
 base::string16 CreateAccessibleName(const Notification& notification) {
@@ -62,15 +59,42 @@ bool ShouldRoundMessageViewCorners() {
   return base::FeatureList::IsEnabled(message_center::kNewStyleNotifications);
 }
 
+class BackgroundPainter : public views::Painter {
+ public:
+  BackgroundPainter(int top_radius, int bottom_radius)
+      : top_radius_(SkIntToScalar(top_radius)),
+        bottom_radius_(SkIntToScalar(bottom_radius)) {}
+
+  ~BackgroundPainter() override = default;
+
+  // views::Painter
+  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
+
+  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
+    SkPath path;
+    SkScalar radii[8] = {top_radius_,    top_radius_,    top_radius_,
+                         top_radius_,    bottom_radius_, bottom_radius_,
+                         bottom_radius_, bottom_radius_};
+    path.addRoundRect(gfx::RectToSkRect(gfx::Rect(size)), radii);
+
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(kNotificationBackgroundColor);
+    canvas->DrawPath(path, flags);
+  }
+
+ private:
+  const SkScalar top_radius_;
+  const SkScalar bottom_radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
+};
+
 }  // namespace
 
 // static
 const char MessageView::kViewClassName[] = "MessageView";
-
-// static
-void MessageView::SetSidebarEnabled() {
-  sidebar_enabled = true;
-}
 
 MessageView::MessageView(const Notification& notification)
     : notification_id_(notification.id()), slide_out_controller_(this, this) {
@@ -82,8 +106,7 @@ MessageView::MessageView(const Notification& notification)
 
   // Create the opaque background that's above the view's shadow.
   background_view_ = new views::View();
-  background_view_->SetBackground(
-      views::CreateSolidBackground(kNotificationBackgroundColor));
+  UpdateCornerRadius(0, 0);
   AddChildView(background_view_);
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
@@ -107,26 +130,19 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
 void MessageView::SetIsNested() {
   is_nested_ = true;
 
-  if (sidebar_enabled) {
-    DCHECK(ShouldRoundMessageViewCorners());
-    SetBorder(views::CreateRoundedRectBorder(0, kNotificationCornerRadius,
-                                             kBorderColor));
+  if (ShouldRoundMessageViewCorners()) {
+    SetBorder(views::CreateRoundedRectBorder(
+        kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
   } else {
-    if (ShouldRoundMessageViewCorners()) {
-      SetBorder(views::CreateRoundedRectBorder(kNotificationBorderThickness,
-                                               kNotificationCornerRadius,
-                                               kBorderColor));
-    } else {
-      const auto& shadow =
-          gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
-      gfx::Insets ninebox_insets =
-          gfx::ShadowValue::GetBlurRegion(shadow.values) +
-          gfx::Insets(kShadowCornerRadius);
-      SetBorder(views::CreateBorderPainter(
-          std::unique_ptr<views::Painter>(views::Painter::CreateImagePainter(
-              shadow.ninebox_image, ninebox_insets)),
-          -gfx::ShadowValue::GetMargin(shadow.values)));
-    }
+    const auto& shadow =
+        gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
+    gfx::Insets ninebox_insets =
+        gfx::ShadowValue::GetBlurRegion(shadow.values) +
+        gfx::Insets(kShadowCornerRadius);
+    SetBorder(views::CreateBorderPainter(
+        views::Painter::CreateImagePainter(shadow.ninebox_image,
+                                           ninebox_insets),
+        -gfx::ShadowValue::GetMargin(shadow.values)));
   }
 }
 
@@ -166,6 +182,11 @@ bool MessageView::IsManuallyExpandedOrCollapsed() const {
 
 void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
   // Not implemented by default.
+}
+
+void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
+  background_view_->SetBackground(views::CreateBackgroundFromPainter(
+      std::make_unique<BackgroundPainter>(top_radius, bottom_radius)));
 }
 
 void MessageView::OnContainerAnimationStarted() {

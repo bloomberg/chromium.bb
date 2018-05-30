@@ -244,9 +244,6 @@ MessageCenterView::MessageCenterView(
   AddChildView(scroller_shadow_);
   AddChildView(settings_view_);
   AddChildView(button_bar_);
-
-  if (switches::IsSidebarEnabled())
-    MessageView::SetSidebarEnabled();
 }
 
 MessageCenterView::~MessageCenterView() {

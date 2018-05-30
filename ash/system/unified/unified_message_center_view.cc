@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_message_center_view.h"
 
+#include "ash/system/tray/tray_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/views/message_view.h"
@@ -49,8 +50,6 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   message_list_view_->set_use_fixed_height(false);
   message_list_view_->set_scroller(scroller_);
   scroller_->SetContents(message_list_view_);
-
-  MessageView::SetSidebarEnabled();
 
   SetNotifications(message_center_->GetVisibleNotifications());
 }
@@ -130,6 +129,20 @@ void UnifiedMessageCenterView::OnViewPreferredSizeChanged(
 
 void UnifiedMessageCenterView::Update() {
   SetVisible(message_list_view_->GetNotificationCount() > 0);
+
+  size_t notification_count = message_list_view_->GetNotificationCount();
+  // TODO(tetsui): This is O(n^2).
+  for (size_t i = 0; i < notification_count; ++i) {
+    auto* view = message_list_view_->GetNotificationAt(i);
+    const int top_radius =
+        i == notification_count - 1 ? kUnifiedTrayCornerRadius : 0;
+    const int bottom_radius = i == 0 ? kUnifiedTrayCornerRadius : 0;
+    view->UpdateCornerRadius(top_radius, bottom_radius);
+    bool has_bottom_separator = i > 0 && notification_count > 1;
+    view->SetBorder(views::CreateSolidSidedBorder(
+        0, 0, has_bottom_separator ? kUnifiedNotificationSeparatorThickness : 0,
+        0, kUnifiedNotificationSeparatorColor));
+  }
 
   scroller_->Layout();
   PreferredSizeChanged();
