@@ -747,8 +747,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
 - (BOOL)shouldOpenExternalURLForNavigationAction:(WKNavigationAction*)action;
-// Returns the header height.
-- (CGFloat)headerHeight;
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
@@ -2218,7 +2216,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (CGFloat)nativeContentHeaderHeightForContainerView:
     (CRWWebControllerContainerView*)containerView {
-  return [self headerHeight];
+  return [_nativeProvider nativeContentHeaderHeightForWebState:self.webState];
 }
 
 #pragma mark -
@@ -3614,14 +3612,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 #pragma mark -
 #pragma mark Fullscreen
 
-- (CGRect)visibleFrame {
-  CGRect frame = [_containerView bounds];
-  CGFloat headerHeight = [self headerHeight];
-  frame.origin.y = headerHeight;
-  frame.size.height -= headerHeight;
-  return frame;
-}
-
 - (void)optOutScrollsToTopForSubviews {
   NSMutableArray* stack =
       [NSMutableArray arrayWithArray:[self.webScrollView subviews]];
@@ -3686,10 +3676,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return [_delegate respondsToSelector:@selector(webController:
                                            shouldOpenExternalURL:)] &&
          [_delegate webController:self shouldOpenExternalURL:requestURL];
-}
-
-- (CGFloat)headerHeight {
-  return [_nativeProvider nativeContentHeaderHeightForWebState:self.webState];
 }
 
 - (void)updateSSLStatusForCurrentNavigationItem {
