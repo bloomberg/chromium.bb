@@ -165,6 +165,9 @@ class NameStyleConverterTest(unittest.TestCase):
         self.assertEqual(converter.to_function_name(prefix='IS', suffix='baz'), 'IsFooBarBaz')
         self.assertEqual(converter.to_function_name(prefix='prefixPrefix', suffix=['a', 'b']), 'PrefixprefixFooBarAB')
 
+    def test_to_enum_value(self):
+        self.assertEqual(NameStyleConverter('fooBar').to_enum_value(), 'kFooBar')
+
     def test_lower_camel_case(self):
         converter = NameStyleConverter('someSuperThing')
         self.assertEqual(converter.to_lower_camel_case(), 'someSuperThing')

@@ -3,11 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from blinkbuild.name_style_converter import NameStyleConverter
 import json5_generator
 import template_expander
 import make_style_builder
 import keyword_utils
-from name_utilities import enum_for_css_keyword, enum_value_name
+from name_utilities import enum_for_css_keyword
 
 
 def _find_continuous_segment(numbers):
@@ -89,11 +90,12 @@ def _find_enum_longest_continuous_segment(property_, name_to_position_dictionary
     enum_segment, enum_pair_list = _find_continuous_segment(enum_pair_list)
     longest_segment = _find_largest_segment(enum_segment)
 
-    enum_pair_list = [
-        (enum_value_name(property_['keywords'][x[1]]), x[1],
-         enum_for_css_keyword(property_['keywords'][x[1]]), x[0]) for x in enum_pair_list
-    ]
-    return enum_pair_list, enum_segment, longest_segment
+    enum_tuple_list = []
+    for x in enum_pair_list:
+        keyword = NameStyleConverter(property_['keywords'][x[1]])
+        enum_tuple_list.append((keyword.to_enum_value(), x[1],
+                                enum_for_css_keyword(keyword), x[0]))
+    return enum_tuple_list, enum_segment, longest_segment
 
 
 class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
@@ -129,7 +131,8 @@ class CSSValueIDMappingsWriter(make_style_builder.StyleBuilderWriter):
             if property_['field_template'] == 'multi_keyword':
                 mappings[property_['type_name']] = {
                     'default_value': property_['default_value'],
-                    'mapping': [(enum_value_name(k), enum_for_css_keyword(k)) for k in property_['keywords']],
+                    'mapping': [(k.to_enum_value(), enum_for_css_keyword(k))
+                                for k in map(NameStyleConverter, property_['keywords'])],
                 }
             elif property_['field_template'] == 'keyword':
                 enum_pair_list, enum_segment, p_segment = _find_enum_longest_continuous_segment(

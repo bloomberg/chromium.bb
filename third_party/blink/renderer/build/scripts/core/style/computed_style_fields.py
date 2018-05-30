@@ -5,7 +5,6 @@
 from itertools import chain
 
 from blinkbuild.name_style_converter import NameStyleConverter
-from name_utilities import enum_value_name
 
 
 def _flatten_list(x):
@@ -78,7 +77,8 @@ class Enum(object):
     """Represents a generated enum in ComputedStyleBaseConstants."""
     def __init__(self, type_name, keywords, is_set):
         self.type_name = type_name
-        self.values = [enum_value_name(keyword) for keyword in keywords]
+        self.values = [NameStyleConverter(keyword).to_enum_value()
+                       for keyword in keywords]
         self.is_set = is_set
 
 

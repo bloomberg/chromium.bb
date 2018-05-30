@@ -109,8 +109,3 @@ def snake_case(words):
 @naming_style
 def enum_type_name(words):
     return _upper_camel_case(words)
-
-
-@naming_style
-def enum_value_name(words):
-    return 'k' + _upper_camel_case(words)
