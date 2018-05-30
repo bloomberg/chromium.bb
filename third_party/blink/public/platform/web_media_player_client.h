@@ -76,7 +76,6 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void Repaint() = 0;
   virtual void DurationChanged() = 0;
   virtual void SizeChanged() = 0;
-  virtual void PlaybackStateChanged() = 0;
   virtual void SetCcLayer(cc::Layer*) = 0;
   virtual WebMediaPlayer::TrackId AddAudioTrack(const WebString& id,
                                                 AudioTrackKind,
@@ -167,6 +166,12 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Returns whether the playback is in auto-pip mode which does not have th
   // behavior as regular Picture-in-Picture.
   virtual bool IsInAutoPIP() const = 0;
+
+  // Requests the player to start playback.
+  virtual void RequestPlay() = 0;
+
+  // Request the player to pause playback.
+  virtual void RequestPause() = 0;
 
  protected:
   ~WebMediaPlayerClient() = default;

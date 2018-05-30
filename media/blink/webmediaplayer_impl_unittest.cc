@@ -131,7 +131,6 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(Repaint, void());
   MOCK_METHOD0(DurationChanged, void());
   MOCK_METHOD0(SizeChanged, void());
-  MOCK_METHOD0(PlaybackStateChanged, void());
   MOCK_METHOD1(SetCcLayer, void(cc::Layer*));
   MOCK_METHOD5(AddAudioTrack,
                blink::WebMediaPlayer::TrackId(
@@ -175,6 +174,8 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(PictureInPictureStarted, void());
   MOCK_METHOD0(PictureInPictureStopped, void());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
+  MOCK_METHOD0(RequestPlay, void());
+  MOCK_METHOD0(RequestPause, void());
 
   void set_is_autoplaying_muted(bool value) { is_autoplaying_muted_ = value; }
 

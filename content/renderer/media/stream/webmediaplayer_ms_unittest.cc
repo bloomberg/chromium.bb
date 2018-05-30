@@ -514,7 +514,6 @@ class WebMediaPlayerMSTest
   void Repaint() override {}
   void DurationChanged() override {}
   void SizeChanged() override;
-  void PlaybackStateChanged() override {}
   void SetCcLayer(cc::Layer* layer) override;
   blink::WebMediaPlayer::TrackId AddAudioTrack(const blink::WebString& id,
                                                AudioTrackKind,
@@ -562,6 +561,8 @@ class WebMediaPlayerMSTest
   void MediaRemotingStopped(
       blink::WebLocalizedString::Name error_msg) override {}
   void PictureInPictureStopped() override {}
+  void RequestPlay() override {}
+  void RequestPause() override {}
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;
