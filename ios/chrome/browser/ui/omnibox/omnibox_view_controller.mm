@@ -7,6 +7,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -59,8 +60,12 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  [self.view setLeadingImageHidden:!IsIPadIdiom()];
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self updateLeadingImageVisibility];
 }
 
 #pragma mark - public methods
@@ -73,6 +78,12 @@
 
 - (void)updateAutocompleteIcon:(UIImage*)icon {
   [self.view setLeadingImage:icon];
+}
+
+#pragma mark - private
+
+- (void)updateLeadingImageVisibility {
+  [self.view setLeadingImageHidden:!IsRegularXRegularSizeClass(self)];
 }
 
 @end
