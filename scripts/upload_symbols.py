@@ -63,6 +63,7 @@ from chromite.scripts import cros_generate_breakpad_symbols
 # try to import & connect to a dbus server.  That's a waste of time.
 sys.modules['keyring'] = None
 # And our sys.path muckery confuses pylint.
+import isolate_storage  # pylint: disable=import-error
 import isolateserver  # pylint: disable=import-error
 
 
@@ -347,8 +348,8 @@ def OpenDeduplicateConnection(dedupe_namespace):
   """
   try:
     with timeout_util.Timeout(DEDUPE_TIMEOUT):
-      return isolateserver.get_storage_api(constants.ISOLATESERVER,
-                                           dedupe_namespace)
+      return isolate_storage.get_storage_api(constants.ISOLATESERVER,
+                                             dedupe_namespace)
   except Exception:
     logging.warning('initializing isolate server connection failed',
                     exc_info=True)

@@ -53,7 +53,7 @@ from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
 
 # And our sys.path muckery confuses pylint.
-import isolateserver  # pylint: disable=import-error
+import isolate_storage  # pylint: disable=import-error
 
 
 class SymbolsTestBase(cros_test_lib.MockTempDirTestCase):
@@ -71,7 +71,7 @@ STACK CFI 1234
 
   def setUp(self):
     # Make certain we don't use the network.
-    self.isolate_mock = self.PatchObject(isolateserver, 'get_storage_api')
+    self.isolate_mock = self.PatchObject(isolate_storage, 'get_storage_api')
     self.urlopen_mock = self.PatchObject(urllib2, 'urlopen')
 
     # Make 'uploads' go fast.
@@ -176,7 +176,7 @@ PUBLIC 1471 0 main"""
     self.PatchObject(upload_symbols, 'MAX_RETRIES', 0)
 
     # Just to be certain we don't really contact it.
-    self.PatchObject(isolateserver, 'get_storage_api')
+    self.PatchObject(isolate_storage, 'get_storage_api')
 
   def tearDown(self):
     # Only kill the server if we forked one.
