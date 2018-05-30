@@ -667,7 +667,13 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   TestSimplePlayback("bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly);
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_MDAT) {
+// Flaky: crbug.com/847881
+#if defined(MAC_OSX)
+#define MAYBE_Playback_VideoOnly_MP4_MDAT DISABLED_Playback_VideoOnly_MP4_MDAT
+#else
+#define MAYBE_Playback_VideoOnly_MP4_MDAT Playback_VideoOnly_MP4_MDAT
+#endif
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VideoOnly_MP4_MDAT) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
