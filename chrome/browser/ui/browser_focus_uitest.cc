@@ -789,15 +789,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NoFocusForBackgroundNTP) {
 
 // Tests that the location bar is focusable when showing, which is the case in
 // popup windows.
-// Flaky. See http://crbug.com/846848.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_PopupLocationBar) {
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
-  Browser* popup_browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
-  AddBlankTabAndShow(popup_browser);
-  browser_added_observer.WaitForSingleNewBrowser();
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, PopupLocationBar) {
+  Browser* popup_browser = CreateBrowserForPopup(browser()->profile());
 
-  ui_test_utils::ClickOnView(popup_browser, VIEW_ID_TAB_CONTAINER);
+  // Make sure the popup is in the front. Otherwise the test is flaky.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(popup_browser));
+
+  ui_test_utils::FocusView(popup_browser, VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(
       ui_test_utils::IsViewFocused(popup_browser, VIEW_ID_TAB_CONTAINER));
 
@@ -821,21 +819,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_PopupLocationBar) {
 
 // Tests that the location bar is not focusable when hidden, which is the case
 // in app windows.
-// Tests that the location bar is focusable when showing, which is the case in
-// popup windows.
-// The location bar is currently broken in MacViews Browser.
-// TODO(crbug.com/831483): Enable test once mac is fixed.
-#if defined(OS_MACOSX)
-#define MAYBE_AppLocationBar DISABLED_AppLocationBar
-#else
-#define MAYBE_AppLocationBar AppLocationBar
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_AppLocationBar) {
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, AppLocationBar) {
   Browser* app_browser = CreateBrowserForApp("foo", browser()->profile());
-  browser_added_observer.WaitForSingleNewBrowser();
 
-  ui_test_utils::ClickOnView(app_browser, VIEW_ID_TAB_CONTAINER);
+  // Make sure the app window is in the front. Otherwise the test is flaky.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(app_browser));
+
+  ui_test_utils::FocusView(app_browser, VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(app_browser, VIEW_ID_TAB_CONTAINER));
 
   ASSERT_TRUE(PressTabAndWait(app_browser,
