@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
@@ -13,17 +14,37 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_webui_impl.h"
 #include "chrome/common/chrome_features.h"
+#include "ui/base/ui_base_features.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::MediaRouterDialogControllerViews);
 
 namespace media_router {
 
+namespace {
+
+// Returns true if the Views implementation of the Cast dialog should be used.
+// Returns false if the WebUI implementation should be used.
+bool ShouldUseViewsDialog() {
+#if defined(OS_MACOSX)
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  return base::FeatureList::IsEnabled(features::kViewsCastDialog) &&
+         !features::IsViewsBrowserCocoa();
+#else  // !BUILDFLAG(MAC_VIEWS_BROWSER)
+  return false;
+#endif
+#else  // !defined(OS_MACOSX)
+  return base::FeatureList::IsEnabled(features::kViewsCastDialog);
+#endif
+}
+
+}  // namespace
+
 // static
 MediaRouterDialogControllerImplBase*
 MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
-  if (base::FeatureList::IsEnabled(features::kViewsCastDialog)) {
+  if (ShouldUseViewsDialog()) {
     return MediaRouterDialogControllerViews::GetOrCreateForWebContents(
         web_contents);
   } else {
