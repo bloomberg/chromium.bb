@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/vr/gvr_util.h"
+#include "chrome/browser/vr/gesture_detector.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -93,24 +94,6 @@ class VrController : public PlatformController {
   bool GetRecentered() const override;
 
  private:
-  enum GestureDetectorState {
-    WAITING,     // waiting for user to touch down
-    TOUCHING,    // touching the touch pad but not scrolling
-    SCROLLING,   // scrolling on the touch pad
-    POST_SCROLL  // scroll has finished and we are hallucinating events
-  };
-
-  struct TouchPoint {
-    gfx::Vector2dF position;
-    int64_t timestamp;
-  };
-
-  struct TouchInfo {
-    TouchPoint touch_point;
-    bool touch_up;
-    bool touch_down;
-    bool is_touching;
-  };
 
   struct ButtonInfo {
     gvr::ControllerButton button;
@@ -120,39 +103,15 @@ class VrController : public PlatformController {
     int64_t timestamp;
   };
 
-  void UpdateGestureFromTouchInfo(blink::WebGestureEvent* gesture);
-  void UpdateGestureWithScrollDelta(blink::WebGestureEvent* gesture);
-
   bool GetButtonLongPressFromButtonInfo();
-
-  void HandleWaitingState(blink::WebGestureEvent* gesture);
-  void HandleDetectingState(blink::WebGestureEvent* gesture);
-  void HandleScrollingState(blink::WebGestureEvent* gesture);
-  void HandlePostScrollingState(blink::WebGestureEvent* gesture);
 
   void UpdateTouchInfo();
 
-  // Returns true if the touch position is within the slop of the initial touch
-  // point, false otherwise.
-  bool InSlop(const gfx::Vector2dF touch_position);
-
-  // Returns true if the gesture is in horizontal direction.
-  bool IsHorizontalGesture();
-
-  void Reset();
-
-  void UpdateGestureParameters();
-
-  // If the user is touching the touch pad and the touch point is different from
-  // before, update the touch point and return true. Otherwise, return false.
-  bool UpdateCurrentTouchpoint();
+  void UpdateCurrentTouchInfo();
 
   void UpdateOverallVelocity();
 
   void UpdateAlpha();
-
-  // State of gesture detector.
-  GestureDetectorState state_;
 
   std::unique_ptr<gvr::ControllerApi> controller_api_;
 
@@ -161,10 +120,10 @@ class VrController : public PlatformController {
 
   std::unique_ptr<gvr::GvrApi> gvr_api_;
 
+  std::unique_ptr<GestureDetector> gesture_detector_;
+
   float last_qx_;
   bool pinch_started_;
-  bool zoom_in_progress_ = false;
-  bool touch_position_changed_ = false;
   // TODO(https://crbug.com/824194): Remove this and associated logic once the
   // GVR-side bug is fixed and we don't need to keep track of click states
   // ourselves.
@@ -173,35 +132,13 @@ class VrController : public PlatformController {
   // Handedness from user prefs.
   gvr::ControllerHandedness handedness_;
 
-  // Current touch info after the extrapolation.
-  std::unique_ptr<TouchInfo> touch_info_;
-
-  // A pointer storing the touch point from previous frame.
-  std::unique_ptr<TouchPoint> prev_touch_point_;
-
-  // A pointer storing the touch point from current frame.
-  std::unique_ptr<TouchPoint> cur_touch_point_;
-
-  // Initial touch point.
-  std::unique_ptr<TouchPoint> init_touch_point_;
-
-  // Overall velocity
-  gfx::Vector2dF overall_velocity_;
-
-  // Last velocity that is used for direction detection
-  gfx::Vector2dF last_velocity_;
-
-  // Displacement of the touch point from the previews to the current touch
-  gfx::Vector2dF displacement_;
+  // Current touch info from GVR.
+  TouchInfo touch_info_;
 
   // Head offset. Keeps the controller at the user's side with 6DoF headsets.
   gfx::Point3F head_offset_;
 
-  int64_t last_touch_timestamp_ = 0;
   int64_t last_timestamp_nanos_ = 0;
-
-  // Number of consecutively extrapolated touch points
-  int extrapolated_touch_ = 0;
 
   float alpha_value_ = 1.0f;
 
