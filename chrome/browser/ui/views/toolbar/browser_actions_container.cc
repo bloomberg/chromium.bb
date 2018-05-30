@@ -543,7 +543,6 @@ void BrowserActionsContainer::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void BrowserActionsContainer::WriteDragDataForView(View* sender,
                                                    const gfx::Point& press_pt,
                                                    OSExchangeData* data) {
-  toolbar_actions_bar_->OnDragStarted();
   DCHECK(data);
 
   auto it =
@@ -552,6 +551,10 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
                      return ptr.get() == sender;
                    });
   DCHECK(it != toolbar_action_views_.cend());
+
+  size_t index = it - toolbar_action_views_.cbegin();
+  toolbar_actions_bar_->OnDragStarted(index);
+
   ToolbarActionViewController* view_controller = (*it)->view_controller();
   data->provider().SetDragImage(
       view_controller
@@ -561,8 +564,7 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
           .AsImageSkia(),
       press_pt.OffsetFromOrigin());
   // Fill in the remaining info.
-  BrowserActionDragData drag_data(view_controller->GetId(),
-                                  it - toolbar_action_views_.cbegin());
+  BrowserActionDragData drag_data(view_controller->GetId(), index);
   drag_data.Write(browser_->profile(), data);
 }
 

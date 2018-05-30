@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
@@ -158,9 +159,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // the new width is |width|.
   void OnResizeComplete(int width);
 
-  // Notifies the ToolbarActionsBar that the user has started a drag-and-drop
-  // sequence.
-  void OnDragStarted();
+  // Notifies the ToolbarActionsBar that the user has started dragging the
+  // action at index |index_of_dragged_item|.
+  void OnDragStarted(size_t index_of_dragged_item);
 
   // Notifies the ToolbarActionsBar that a drag-and-drop sequence ended. This
   // may not coincide with OnDragDrop(), since the view may be dropped somewhere
@@ -175,6 +176,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   void OnDragDrop(int dragged_index,
                   int dropped_index,
                   DragType drag_type);
+
+  // The index of the action currently being dragged, or |base::nullopt| if
+  // no drag is in progress. Should only be called on the main bar.
+  const base::Optional<size_t> IndexOfDraggedItem() const;
 
   // Notifies the ToolbarActionsBar that the delegate finished animating.
   void OnAnimationEnded();
@@ -243,6 +248,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   }
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
   bool is_showing_bubble() const { return is_showing_bubble_; }
+
+  bool is_drag_in_progress() const {
+    return index_of_dragged_item_ != base::nullopt;
+  }
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 
@@ -337,9 +346,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   // bubble. This is only ever true for the main bar.
   bool should_check_extension_bubble_;
 
-  // Whether or not the user is in the middle of a drag-and-drop operation.
-  bool is_drag_in_progress_;
-
   // The action, if any, which is currently "popped out" of the overflow in
   // order to show a popup.
   ToolbarActionViewController* popped_out_action_;
@@ -358,6 +364,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
 
   // True if a bubble is currently being shown.
   bool is_showing_bubble_;
+
+  // The index of the action currently being dragged, or |base::nullopt| if
+  // no drag is in progress.
+  base::Optional<size_t> index_of_dragged_item_;
 
   ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_;
 
