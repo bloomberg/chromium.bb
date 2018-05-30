@@ -155,6 +155,8 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences(),
       gpu_init_->gpu_info_for_hardware_gpu(),
       gpu_init_->gpu_feature_info_for_hardware_gpu(), std::move(exit_callback));
+  if (dependencies_.create_display_compositor)
+    gpu_service_->set_oopd_enabled();
 }
 
 VizMainImpl::~VizMainImpl() {

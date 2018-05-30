@@ -27,6 +27,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -634,6 +635,10 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          uint64_t client_tracing_id,
                                          bool is_gpu_host,
                                          EstablishGpuChannelCallback callback) {
+  if (oopd_enabled_ && client_id == gpu::InProcessCommandBuffer::kGpuClientId) {
+    std::move(callback).Run(mojo::ScopedMessagePipeHandle());
+    return;
+  }
   if (io_runner_->BelongsToCurrentThread()) {
     EstablishGpuChannelCallback wrap_callback = base::BindOnce(
         [](scoped_refptr<base::SingleThreadTaskRunner> runner,

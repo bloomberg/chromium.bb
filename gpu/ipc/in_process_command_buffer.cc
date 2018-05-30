@@ -152,7 +152,8 @@ scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
 
 }  // anonyous namespace
 
-const int InProcessCommandBuffer::kGpuMemoryBufferClientId = 1;
+const int InProcessCommandBuffer::kGpuClientId =
+    std::numeric_limits<int>::max();
 
 InProcessCommandBuffer::Service::Service(
     const GpuPreferences& gpu_preferences,
@@ -951,7 +952,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
       scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
-              handle, size, format, internalformat, kGpuMemoryBufferClientId,
+              handle, size, format, internalformat, kGpuClientId,
               kNullSurfaceHandle);
       if (!image.get()) {
         LOG(ERROR) << "Failed to create image for buffer.";
@@ -993,7 +994,8 @@ void InProcessCommandBuffer::OnConsoleMessage(int32_t id,
 
 void InProcessCommandBuffer::CacheShader(const std::string& key,
                                          const std::string& shader) {
-  // TODO(piman): implement this.
+  if (gpu_channel_manager_delegate_)
+    gpu_channel_manager_delegate_->StoreShaderToDisk(kGpuClientId, key, shader);
 }
 
 void InProcessCommandBuffer::OnFenceSyncRelease(uint64_t release) {

@@ -127,6 +127,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   gl::GLContext* context_for_skia() { return context_for_skia_.get(); }
   GrContext* gr_context() { return gr_context_.get(); }
 
+  void set_oopd_enabled() { oopd_enabled_ = true; }
+
  private:
   void RecordLogMessage(int severity,
                         size_t message_start,
@@ -277,6 +279,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #if defined(OS_CHROMEOS)
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif  // defined(OS_CHROMEOS)
+
+  bool oopd_enabled_ = false;
 
   base::WeakPtr<GpuServiceImpl> weak_ptr_;
   base::WeakPtrFactory<GpuServiceImpl> weak_ptr_factory_;
