@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_view_tester.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_view_tester.h"
 
 namespace autofill {
 
 class PasswordGenerationPopupViewViews;
 
-class PasswordGenerationPopupViewTesterViews :
-      public PasswordGenerationPopupViewTester {
+class PasswordGenerationPopupViewTesterViews
+    : public PasswordGenerationPopupViewTester {
  public:
   explicit PasswordGenerationPopupViewTesterViews(
       PasswordGenerationPopupViewViews* view);
@@ -30,4 +30,4 @@ class PasswordGenerationPopupViewTesterViews :
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_TESTER_VIEWS_H_

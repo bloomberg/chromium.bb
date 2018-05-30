@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/password_generation_popup_view_views.h"
+#include "chrome/browser/ui/views/passwords/password_generation_popup_view_views.h"
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -115,7 +115,6 @@ class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(PasswordBox);
 };
 

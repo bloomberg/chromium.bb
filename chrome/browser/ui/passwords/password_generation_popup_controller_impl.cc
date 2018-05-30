@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -12,11 +12,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_observer.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_view.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_observer.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -95,8 +96,8 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
   link_range_ = gfx::Range(offset, offset + link.length());
 }
 
-PasswordGenerationPopupControllerImpl::~PasswordGenerationPopupControllerImpl()
-  {}
+PasswordGenerationPopupControllerImpl::
+    ~PasswordGenerationPopupControllerImpl() {}
 
 base::WeakPtr<PasswordGenerationPopupControllerImpl>
 PasswordGenerationPopupControllerImpl::GetWeakPtr() {
@@ -188,7 +189,7 @@ void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
   }
 
   static_cast<ContentAutofillDriver*>(driver_->GetAutofillDriver())
-      ->RegisterKeyPressHandler(base::Bind(
+      ->RegisterKeyPressHandler(base::BindRepeating(
           &PasswordGenerationPopupControllerImpl::HandleKeyPressEvent,
           base::Unretained(this)));
 
