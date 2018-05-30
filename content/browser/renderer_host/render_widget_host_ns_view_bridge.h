@@ -54,6 +54,10 @@ class RenderWidgetHostNSViewBridge {
   virtual void InitAsPopup(const gfx::Rect& content_rect,
                            blink::WebPopupType popup_type) = 0;
 
+  // Disable displaying any content (including the background color). This is
+  // to be called on views that are to be displayed via a parent ui::Compositor.
+  virtual void DisableDisplay() = 0;
+
   // Make the NSView be the first responder of its NSWindow.
   virtual void MakeFirstResponder() = 0;
 

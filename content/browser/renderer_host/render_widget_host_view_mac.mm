@@ -110,11 +110,6 @@ NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
 }
 
 void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
-  // This may be called when we do not have a parent ui::Layer (e.g, when tab
-  // capturing a background layer). Do not update the NSView in this case.
-  if (display_only_using_parent_ui_layer_)
-    return;
-
   // Set the background color for the root layer from the frame that just
   // swapped. See RenderWidgetHostViewAura for more details. Note that this is
   // done only after the swap has completed, so that the background is not set
@@ -146,11 +141,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
       weak_factory_(this) {
-  display_only_using_parent_ui_layer_ = !features::IsViewsBrowserCocoa();
-  // TODO(ccameron): This path breaks content_shell because content_shell does
-  // not display using ui::Views, even when !features::IsViewsBrowserCocoa.
-  display_only_using_parent_ui_layer_ = false;
-
   // The NSView is on the other side of |ns_view_bridge_|.
   ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(this);
 
@@ -209,8 +199,16 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
-  if (!display_only_using_parent_ui_layer_)
-    return;
+  if (!display_only_using_parent_ui_layer_) {
+    // The first time that we display using a parent ui::Layer, permanently
+    // switch from drawing using Cocoa to only drawing using ui::Views. Erase
+    // the existing content being drawn by Cocoa (which may have been set due
+    // to races, e.g, in https://crbug.com/845807). Note that this transition
+    // must be done lazily because not all code has been updated to use
+    // ui::Views (e.g, content_shell).
+    display_only_using_parent_ui_layer_ = true;
+    ns_view_bridge_->DisableDisplay();
+  }
   if (browser_compositor_)
     browser_compositor_->SetParentUiLayer(parent_ui_layer);
 }
@@ -1245,11 +1243,6 @@ base::Optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() const {
 }
 
 void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
-  // If displaying via a ui::Layer, leave the background color of the NSView
-  // as transparent (it is to be used for input handling only).
-  if (display_only_using_parent_ui_layer_)
-    return;
-
   if (color == background_layer_color_)
     return;
   background_layer_color_ = color;
