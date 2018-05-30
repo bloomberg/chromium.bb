@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "chrome/browser/vr/vr_export.h"
+
 namespace vr {
 
 // These identifiers serve as stable, semantic identifiers for UI elements.
@@ -151,7 +153,7 @@ enum UiElementName {
   kNumUiElementNames,
 };
 
-std::string UiElementNameToString(UiElementName name);
+VR_EXPORT std::string UiElementNameToString(UiElementName name);
 
 }  // namespace vr
 

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
@@ -17,7 +18,7 @@ namespace vr {
 
 class UiTexture;
 
-class TexturedElement : public UiElement {
+class VR_EXPORT TexturedElement : public UiElement {
  public:
   TexturedElement();
 

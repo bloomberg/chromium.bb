@@ -7,12 +7,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
 struct TextInputInfo;
 
-class TextInputDelegate {
+class VR_EXPORT TextInputDelegate {
  public:
   TextInputDelegate();
   virtual ~TextInputDelegate();

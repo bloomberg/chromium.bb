@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_MODEL_COLOR_SCHEME_H_
 
 #include "base/version.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
@@ -32,7 +33,7 @@ struct TextSelectionColors {
   SkColor foreground = SK_ColorBLACK;
 };
 
-struct ColorScheme {
+struct VR_EXPORT ColorScheme {
   enum Mode : int {
     kModeNormal = 0,
     kModeFullscreen,

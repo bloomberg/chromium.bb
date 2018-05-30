@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_MODEL_TOOLBAR_STATE_H_
 #define CHROME_BROWSER_VR_MODEL_TOOLBAR_STATE_H_
 
+#include "chrome/browser/vr/vr_export.h"
 #include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
@@ -15,7 +16,7 @@ struct VectorIcon;
 namespace vr {
 
 // Passes information obtained from ToolbarModel to the VR UI framework.
-struct ToolbarState {
+struct VR_EXPORT ToolbarState {
  public:
   ToolbarState();
   ToolbarState(const GURL& url,

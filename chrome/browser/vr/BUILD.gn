@@ -20,7 +20,7 @@ buildflag_header("vr_build_features") {
   flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
 }
 
-static_library("vr_common") {
+component("vr_common") {
   sources = [
     "animation.cc",
     "animation.h",
@@ -233,6 +233,7 @@ static_library("vr_common") {
     "ui_test_input.cc",
     "ui_test_input.h",
     "ui_unsupported_mode.h",
+    "vr_export.h",
     "vr_features.h",
     "vr_gl_util.cc",
     "vr_gl_util.h",
@@ -269,6 +270,8 @@ static_library("vr_common") {
     "//ui/display",
     "//ui/gl/init",
   ]
+
+  defines = [ "VR_IMPLEMENTATION" ]
 }
 
 test("vr_common_unittests") {
@@ -324,6 +327,7 @@ test("vr_common_unittests") {
 
   deps = [
     ":vr_test_support",
+    "//components/url_formatter",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//ui/gfx/geometry",

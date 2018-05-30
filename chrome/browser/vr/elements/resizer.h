@@ -9,13 +9,14 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
 
 // When enabled, a resizer scales its descendant elements in response to
 // trackpad use.
-class Resizer : public UiElement {
+class VR_EXPORT Resizer : public UiElement {
  public:
   Resizer();
   ~Resizer() override;

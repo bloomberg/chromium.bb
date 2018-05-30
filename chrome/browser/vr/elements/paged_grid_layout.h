@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
@@ -20,7 +21,7 @@ namespace vr {
 // follows the alphabetical ordering pictured above.
 //
 // NOTE: it is assumed that each child view has the same dimensions.
-class PagedGridLayout : public UiElement {
+class VR_EXPORT PagedGridLayout : public UiElement {
  public:
   enum PageState { kNone, kActive, kInactive, kHidden };
 

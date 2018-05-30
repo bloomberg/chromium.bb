@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/sequence.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -28,7 +29,7 @@ namespace vr {
 
 class UiElement;
 
-class UiScene {
+class VR_EXPORT UiScene {
  public:
   typedef base::RepeatingCallback<void()> PerFrameCallback;
 

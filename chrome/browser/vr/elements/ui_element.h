@@ -26,6 +26,7 @@
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/sounds.h"
 #include "chrome/browser/vr/target_property.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -57,7 +58,7 @@ enum LayoutAlignment {
   BOTTOM,
 };
 
-struct EventHandlers {
+struct VR_EXPORT EventHandlers {
   EventHandlers();
   EventHandlers(const EventHandlers& other);
   ~EventHandlers();
@@ -97,7 +98,7 @@ struct HitTestResult {
   float distance_to_plane;
 };
 
-class UiElement : public cc::AnimationTarget {
+class VR_EXPORT UiElement : public cc::AnimationTarget {
  public:
   UiElement();
   ~UiElement() override;

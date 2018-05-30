@@ -8,10 +8,11 @@
 #include <set>
 
 #include "base/time/time.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-struct Transition {
+struct VR_EXPORT Transition {
   Transition();
   ~Transition();
 

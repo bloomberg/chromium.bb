@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -31,7 +32,7 @@ class BrowserXrDevice;
 
 // Singleton used to provide the platform's VR devices to VRServiceImpl
 // instances.
-class VRDeviceManager {
+class VR_EXPORT VRDeviceManager {
  public:
   virtual ~VRDeviceManager();
 

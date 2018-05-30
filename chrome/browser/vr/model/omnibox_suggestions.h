@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_VR_MODEL_OMNIBOX_SUGGESTIONS_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "url/gurl.h"
 
 namespace vr {
 
-struct Autocompletion {
+struct VR_EXPORT Autocompletion {
   Autocompletion();
   Autocompletion(const base::string16& new_input,
                  const base::string16& new_suffix);
@@ -27,7 +28,7 @@ struct Autocompletion {
   base::string16 suffix;
 };
 
-struct OmniboxSuggestion {
+struct VR_EXPORT OmniboxSuggestion {
   OmniboxSuggestion();
 
   OmniboxSuggestion(const base::string16& new_contents,
@@ -52,7 +53,7 @@ struct OmniboxSuggestion {
   Autocompletion autocompletion;
 };
 
-struct OmniboxSuggestions {
+struct VR_EXPORT OmniboxSuggestions {
   OmniboxSuggestions();
   ~OmniboxSuggestions();
 
@@ -61,7 +62,7 @@ struct OmniboxSuggestions {
 
 // This struct contains the minimal set of information required to construct an
 // AutocompleteInput on VR's behalf.
-struct AutocompleteRequest {
+struct VR_EXPORT AutocompleteRequest {
   base::string16 text;
   size_t cursor_position = 0;
   bool prevent_inline_autocomplete = false;

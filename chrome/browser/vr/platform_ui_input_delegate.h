@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/macros.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_edit_action.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -32,7 +33,7 @@ class PlatformInputHandler;
 
 // This class is responsible for processing all events and gestures for
 // PlatformUiElement.
-class PlatformUiInputDelegate {
+class VR_EXPORT PlatformUiInputDelegate {
  public:
   PlatformUiInputDelegate();
   explicit PlatformUiInputDelegate(PlatformInputHandler* input_handler);

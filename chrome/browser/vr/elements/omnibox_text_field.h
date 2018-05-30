@@ -10,10 +10,11 @@
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-class OmniboxTextField : public TextInput {
+class VR_EXPORT OmniboxTextField : public TextInput {
  public:
   OmniboxTextField(float font_height_meters,
                    OnInputEditedCallback input_edit_callback,

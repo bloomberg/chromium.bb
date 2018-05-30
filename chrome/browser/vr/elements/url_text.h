@@ -12,13 +12,14 @@
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "ui/gfx/render_text.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace vr {
 
-class UrlText : public Text {
+class VR_EXPORT UrlText : public Text {
  public:
   UrlText(float font_height_dmm,
           const base::RepeatingCallback<void()>& unhandled_codepoint_callback);

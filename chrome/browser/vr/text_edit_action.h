@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
@@ -19,7 +20,7 @@ enum TextEditActionType {
   DELETE_TEXT,
 };
 
-class TextEditAction {
+class VR_EXPORT TextEditAction {
  public:
   explicit TextEditAction(TextEditActionType type);
   TextEditAction(TextEditActionType type,

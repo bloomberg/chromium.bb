@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 
+#include "chrome/browser/vr/vr_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -25,8 +26,8 @@ class BrowserXrDevice;
 // It instantiates a VRDisplayImpl for each newly connected VRDisplay and sends
 // the display's info to the render process through its connected
 // mojom::VRServiceClient.
-class VRServiceImpl : public device::mojom::VRService,
-                      content::WebContentsObserver {
+class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
+                                content::WebContentsObserver {
  public:
   explicit VRServiceImpl(content::RenderFrameHost* render_frame_host);
   ~VRServiceImpl() override;

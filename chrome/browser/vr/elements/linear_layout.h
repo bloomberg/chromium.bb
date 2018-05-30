@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_VR_ELEMENTS_LINEAR_LAYOUT_H_
 
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/vr_export.h"
 
 namespace vr {
 
-class LinearLayout : public UiElement {
+class VR_EXPORT LinearLayout : public UiElement {
  public:
   enum Direction { kUp, kDown, kLeft, kRight };
 
