@@ -32,7 +32,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
-#include "third_party/blink/renderer/core/css/css_timing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
@@ -451,24 +450,6 @@ PerformanceTiming::ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
       timing->ParserBlockedOnScriptExecutionFromDocumentWriteDuration());
 }
 
-unsigned long long PerformanceTiming::AuthorStyleSheetParseDurationBeforeFCP()
-    const {
-  const CSSTiming* timing = CssTiming();
-  if (!timing)
-    return 0;
-
-  return ToIntegerMilliseconds(
-      timing->AuthorStyleSheetParseDurationBeforeFCP());
-}
-
-unsigned long long PerformanceTiming::UpdateStyleDurationBeforeFCP() const {
-  const CSSTiming* timing = CssTiming();
-  if (!timing)
-    return 0;
-
-  return ToIntegerMilliseconds(timing->UpdateDurationBeforeFCP());
-}
-
 DocumentLoader* PerformanceTiming::GetDocumentLoader() const {
   if (!GetFrame())
     return nullptr;
@@ -496,17 +477,6 @@ const PaintTiming* PerformanceTiming::GetPaintTiming() const {
     return nullptr;
 
   return &PaintTiming::From(*document);
-}
-
-const CSSTiming* PerformanceTiming::CssTiming() const {
-  if (!GetFrame())
-    return nullptr;
-
-  Document* document = GetFrame()->GetDocument();
-  if (!document)
-    return nullptr;
-
-  return &CSSTiming::From(*document);
 }
 
 const DocumentParserTiming* PerformanceTiming::GetDocumentParserTiming() const {

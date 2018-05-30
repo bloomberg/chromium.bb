@@ -22,7 +22,6 @@
 
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/css_timing.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
@@ -376,10 +375,6 @@ void StyleSheetContents::ParseAuthorStyleSheet(
                       ("Style.AuthorStyleSheet.ParseTime", 0, 10000000, 50));
   double parse_duration_seconds = (CurrentTimeTicksInSeconds() - start_time);
   parse_histogram.Count(parse_duration_seconds * 1000 * 1000);
-  if (Document* document = SingleOwnerDocument()) {
-    CSSTiming::From(*document).RecordAuthorStyleSheetParseTime(
-        parse_duration_seconds);
-  }
 }
 
 void StyleSheetContents::ParseString(const String& sheet_text) {

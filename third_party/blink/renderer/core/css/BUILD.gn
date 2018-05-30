@@ -160,8 +160,6 @@ blink_core_sources("css") {
     "css_supports_rule.h",
     "css_syntax_descriptor.cc",
     "css_syntax_descriptor.h",
-    "css_timing.cc",
-    "css_timing.h",
     "css_timing_function_value.cc",
     "css_timing_function_value.h",
     "css_to_length_conversion_data.cc",

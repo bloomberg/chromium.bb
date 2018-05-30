@@ -18,7 +18,6 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming();
 bool IsEmpty(const mojom::DocumentTiming& timing);
 bool IsEmpty(const mojom::PaintTiming& timing);
 bool IsEmpty(const mojom::ParseTiming& timing);
-bool IsEmpty(const mojom::StyleSheetTiming& timing);
 bool IsEmpty(const mojom::PageLoadTiming& timing);
 
 void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing);

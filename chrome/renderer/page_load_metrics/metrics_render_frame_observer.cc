@@ -199,15 +199,6 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
             perf.ParseBlockedOnScriptExecutionFromDocumentWriteDuration());
   }
 
-  if (perf.AuthorStyleSheetParseDurationBeforeFCP() > 0.0) {
-    timing->style_sheet_timing->author_style_sheet_parse_duration_before_fcp =
-        base::TimeDelta::FromSecondsD(
-            perf.AuthorStyleSheetParseDurationBeforeFCP());
-  }
-  if (perf.UpdateStyleDurationBeforeFCP() > 0.0) {
-    timing->style_sheet_timing->update_style_duration_before_fcp =
-        base::TimeDelta::FromSecondsD(perf.UpdateStyleDurationBeforeFCP());
-  }
   return timing;
 }
 

@@ -10,8 +10,7 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming() {
   return mojom::PageLoadTiming::New(
       base::Time(), base::Optional<base::TimeDelta>(),
       mojom::DocumentTiming::New(), mojom::InteractiveTiming::New(),
-      mojom::PaintTiming::New(), mojom::ParseTiming::New(),
-      mojom::StyleSheetTiming::New());
+      mojom::PaintTiming::New(), mojom::ParseTiming::New());
 }
 
 bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
@@ -38,11 +37,6 @@ bool IsEmpty(const page_load_metrics::mojom::ParseTiming& timing) {
          !timing.parse_blocked_on_script_execution_from_document_write_duration;
 }
 
-bool IsEmpty(const page_load_metrics::mojom::StyleSheetTiming& timing) {
-  return !timing.author_style_sheet_parse_duration_before_fcp &&
-         !timing.update_style_duration_before_fcp;
-}
-
 bool IsEmpty(const page_load_metrics::mojom::PageLoadTiming& timing) {
   return timing.navigation_start.is_null() && !timing.response_start &&
          (!timing.document_timing ||
@@ -52,9 +46,7 @@ bool IsEmpty(const page_load_metrics::mojom::PageLoadTiming& timing) {
          (!timing.paint_timing ||
           page_load_metrics::IsEmpty(*timing.paint_timing)) &&
          (!timing.parse_timing ||
-          page_load_metrics::IsEmpty(*timing.parse_timing)) &&
-         (!timing.style_sheet_timing ||
-          page_load_metrics::IsEmpty(*timing.style_sheet_timing));
+          page_load_metrics::IsEmpty(*timing.parse_timing));
 }
 
 void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing) {
@@ -62,7 +54,6 @@ void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing) {
   timing->interactive_timing = mojom::InteractiveTiming::New();
   timing->paint_timing = mojom::PaintTiming::New();
   timing->parse_timing = mojom::ParseTiming::New();
-  timing->style_sheet_timing = mojom::StyleSheetTiming::New();
 }
 
 }  // namespace page_load_metrics

@@ -123,8 +123,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   unsigned long long ParseBlockedOnScriptExecutionDuration() const;
   unsigned long long ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
       const;
-  unsigned long long AuthorStyleSheetParseDurationBeforeFCP() const;
-  unsigned long long UpdateStyleDurationBeforeFCP() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
