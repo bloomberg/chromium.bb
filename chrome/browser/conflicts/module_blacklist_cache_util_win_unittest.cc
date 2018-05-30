@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,6 +96,22 @@ class ModuleBlacklistCacheUtilTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ModuleBlacklistCacheUtilTest);
 };
+
+TEST_F(ModuleBlacklistCacheUtilTest, CalculateTimeDateStamp) {
+  base::Time::Exploded chrome_birthday = {};
+  chrome_birthday.year = 2008;
+  chrome_birthday.month = 9;        // September.
+  chrome_birthday.day_of_week = 2;  // Tuesday.
+  chrome_birthday.day_of_month = 2;
+
+  base::Time time;
+  ASSERT_TRUE(chrome_birthday.HasValidValues());
+  ASSERT_TRUE(base::Time::FromUTCExploded(chrome_birthday, &time));
+
+  // Ensure that CalculateTimeDateStamp() will always return the number of
+  // hours between |time| and the Windows epoch.
+  EXPECT_EQ(3573552u, CalculateTimeDateStamp(time));
+}
 
 TEST_F(ModuleBlacklistCacheUtilTest, WriteEmptyCache) {
   third_party_dlls::PackedListMetadata metadata = {

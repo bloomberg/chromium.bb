@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 
@@ -68,6 +69,11 @@ base::MD5Digest CalculateModuleBlacklistCacheMD5(
 }
 
 }  // namespace
+
+uint32_t CalculateTimeDateStamp(base::Time time) {
+  const auto delta = time.ToDeltaSinceWindowsEpoch();
+  return delta < base::TimeDelta() ? 0 : static_cast<uint32_t>(delta.InHours());
+}
 
 bool ReadModuleBlacklistCache(
     const base::FilePath& module_blacklist_cache_path,
