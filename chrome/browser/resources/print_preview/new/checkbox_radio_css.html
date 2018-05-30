@@ -43,14 +43,12 @@
         top: 3px;
       }
 
-    <if expr="not is_ios">
       input:enabled:hover:-webkit-any([type='checkbox'],
                                       [type='radio']) {
         background-image:
             linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
         @apply --print-preview-hover;
       }
-    </if>
 
       input:enabled:active:-webkit-any([type='checkbox'],
                                        [type='radio']) {
