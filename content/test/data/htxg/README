@@ -9,10 +9,10 @@ Checkpoints" of the signed-exchange spec [3].
  [2] https://github.com/nyaxt/webpackage
  [3] https://jyasskin.github.io/webpackage/implementation-draft/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 
-# Install gen-certurl command
-go get github.com/nyaxt/webpackage/go/signedexchange/cmd/gen-certurl
+# Install gen-certurl command from [1]
+go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
 
-# Install gen-signedexchange command
+# Install gen-signedexchange command from [2]
 go get github.com/nyaxt/webpackage/go/signedexchange/cmd/gen-signedexchange
 
 
@@ -26,17 +26,21 @@ sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
   ../../../../net/data/ssl/certificates/wildcard.pem \
   > /tmp/wildcard_example.org.public.pem
 
-# Generate the certificate message file of "*.example.org".
-gen-certurl  \
-  /tmp/wildcard_example.org.public.pem > wildcard_example.org.public.pem.msg
+# Make dummy OCSP and SCT data for cbor certificate chains.
+echo -n OCSP >/tmp/ocsp; echo -n SCT >/tmp/sct
+
+# Generate the certificate chain of "*.example.org".
+gen-certurl -pem /tmp/wildcard_example.org.public.pem \
+  -ocsp /tmp/ocsp -sct /tmp/sct > wildcard_example.org.public.pem.cbor
 
 # Get the public key of "127.0.0.1".
 sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
   ../../../../net/data/ssl/certificates/ok_cert.pem \
   > /tmp/127.0.0.1.public.pem
 
-# Generate the certificate message file of"127.0.0.1".
-gen-certurl /tmp/127.0.0.1.public.pem > 127.0.0.1.public.pem.msg
+# Generate the certificate chain of "127.0.0.1".
+gen-certurl -pem /tmp/127.0.0.1.public.pem \
+  -ocsp /tmp/ocsp -sct /tmp/sct > 127.0.0.1.public.pem.cbor
 
 # Generate the signed exchange file.
 gen-signedexchange \
@@ -111,14 +115,3 @@ openssl x509 -req -days 360 -in secp384r1-sha256.csr \
   -certificate ./secp384r1-sha256.crt \
   -privateKey ./secp384r1.key \
   -date 2018-02-06T04:45:41Z
-
-# Install gen-certurl command from the original WICG repository [1].
-# (Note: this overwrites gen-certurl fetched from [2] in the above.)
-go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
-
-# Currently OCSP and SCT are just dummy data.
-echo -n OCSP >/tmp/ocsp; echo -n SCT >/tmp/sct
-
-# Generate the certificate chain CBOR for "*.example.org".
-gen-certurl -pem /tmp/wildcard_example.org.public.pem \
- -ocsp /tmp/ocsp -sct /tmp/sct > wildcard_example.org.public.pem.cbor

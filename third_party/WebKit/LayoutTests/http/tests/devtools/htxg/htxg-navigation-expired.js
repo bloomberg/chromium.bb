@@ -7,12 +7,12 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
   await TestRunner.addScriptTag('/loading/htxg/resources/htxg-util.js');
-  // The timestamp of the test HTXG file is "Apr 1 2018 00:00 UTC" and valid
+  // The timestamp of the test SXG file is "Apr 1 2018 00:00 UTC" and valid
   // until "Apr 8 2018 00:00 UTC". So in Apr 10, the page load should fail.
   await TestRunner.evaluateInPageAsync(
     'setSignedExchangeVerificationTime(new Date("Apr 10 2018 00:01 UTC"))');
   BrowserSDK.networkLog.reset();
-  await TestRunner.addIframe('/loading/htxg/resources/htxg-location.htxg');
+  await TestRunner.addIframe('/loading/htxg/resources/htxg-location.sxg');
   ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
   TestRunner.completeTest();

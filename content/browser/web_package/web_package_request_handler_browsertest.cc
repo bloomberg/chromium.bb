@@ -160,7 +160,7 @@ class WebPackageRequestHandlerBrowserTest
 IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/wildcard_example.org.public.pem.msg");
+      "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
 
   // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
   // "*.example.org".
@@ -169,6 +169,8 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
   mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
                                                dummy_result, net::OK);
 
@@ -195,7 +197,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
                   SSLStatus::DISPLAYED_INSECURE_CONTENT));
   ASSERT_TRUE(entry->GetSSL().certificate);
 
-  // "wildcard_example.org.public.pem.msg" is generated from "wildcard.pem". So
+  // "wildcard_example.org.public.pem.cbor" is generated from "wildcard.pem". So
   // the SHA256 of the certificates must match.
   const net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateFingerprint256(
@@ -210,7 +212,7 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/wildcard_example.org.public.pem.msg");
+      "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
 
   // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
   // "*.example.org".
@@ -219,6 +221,8 @@ IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest,
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
   mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
                                                dummy_result, net::OK);
 

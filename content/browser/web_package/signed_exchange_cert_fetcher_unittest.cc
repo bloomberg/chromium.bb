@@ -8,6 +8,8 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/cbor/cbor_values.h"
+#include "components/cbor/cbor_writer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -154,30 +156,24 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   }
 
   static std::string CreateCertMessage(const base::StringPiece& cert_data) {
-    std::string message;
-    uint32_t cert_size = cert_data.length();
-    uint32_t cert_list_size = cert_size + 3 /* size of "cert data size" */ +
-                              2 /* size of "extensions size" */;
-    uint32_t message_size = cert_list_size +
-                            1 /* size of "request context size" */ +
-                            3 /* size of "certificate list size" */;
-    // request context size
-    message += static_cast<char>(0x00);
-    // certificate list size
-    message += static_cast<char>(cert_list_size >> 16);
-    message += static_cast<char>((cert_list_size & 0xFF00) >> 8);
-    message += static_cast<char>(cert_list_size & 0xFF);
-    // certificate list size
-    message += static_cast<char>(cert_size >> 16);
-    message += static_cast<char>((cert_size & 0xFF00) >> 8);
-    message += static_cast<char>(cert_size & 0xFF);
-    // cert data
-    message += std::string(cert_data);
-    // extensions size
-    message += static_cast<char>(0x00);
-    message += static_cast<char>(0x00);
-    CHECK_EQ(message_size, message.size());
-    return message;
+    cbor::CBORValue::MapValue cbor_map;
+    cbor_map[cbor::CBORValue("sct")] =
+        cbor::CBORValue("SCT", cbor::CBORValue::Type::BYTE_STRING);
+    cbor_map[cbor::CBORValue("cert")] =
+        cbor::CBORValue(cert_data, cbor::CBORValue::Type::BYTE_STRING);
+    cbor_map[cbor::CBORValue("ocsp")] =
+        cbor::CBORValue("OCSP", cbor::CBORValue::Type::BYTE_STRING);
+
+    cbor::CBORValue::ArrayValue cbor_array;
+    cbor_array.push_back(cbor::CBORValue(u8"\U0001F4DC\u26D3"));
+    cbor_array.push_back(cbor::CBORValue(std::move(cbor_map)));
+
+    base::Optional<std::vector<uint8_t>> serialized =
+        cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_array)));
+    if (!serialized)
+      return std::string();
+    return std::string(reinterpret_cast<char*>(serialized->data()),
+                       serialized->size());
   }
 
   static base::StringPiece CreateCertMessageFromCert(
@@ -211,7 +207,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
         std::move(throttles_), url_, request_initiator_, force_fetch,
-        SignedExchangeVersion::kB0, std::move(callback),
+        SignedExchangeVersion::kB1, std::move(callback),
         nullptr /* devtools_proxy */);
   }
 
