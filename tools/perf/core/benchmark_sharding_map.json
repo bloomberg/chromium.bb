@@ -2014,7 +2014,7 @@
     }
   },
   "Win 7 Nvidia GPU Perf": {
-    "build92-m1": {
+    "build202-m7": {
       "benchmarks": [
         "blink_perf.dom",
         "blink_perf.paint",
@@ -2032,7 +2032,7 @@
         "v8.runtime_stats.top_25"
       ]
     },
-    "build93-m1": {
+    "build203-m7": {
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
@@ -2057,7 +2057,7 @@
         "v8.browsing_mobile"
       ]
     },
-    "build94-m1": {
+    "build204-m7": {
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
@@ -2082,7 +2082,7 @@
         "wasm"
       ]
     },
-    "build95-m1": {
+    "build205-m7": {
       "benchmarks": [
         "blink_perf.parser",
         "blink_perf.svg",
@@ -2100,7 +2100,7 @@
         "webrtc"
       ]
     },
-    "build96-m1": {
+    "build206-m7": {
       "benchmarks": [
         "battor.steady_state",
         "blink_perf.css",
