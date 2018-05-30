@@ -29,7 +29,7 @@
 import os.path
 import re
 
-from blinkbuild.name_style_converter import tokenize_name
+from blinkbuild.name_style_converter import NameStyleConverter, tokenize_name
 
 
 def upper_first_letter(name):
@@ -58,15 +58,17 @@ def cpp_name(entry):
 
 
 def enum_for_css_keyword(keyword):
-    return 'CSSValue' + _upper_camel_case(keyword)
+    converter = NameStyleConverter(keyword) if type(keyword) is str else keyword
+    return 'CSSValue' + converter.to_upper_camel_case()
 
 
 def enum_for_css_property(property_name):
-    return 'CSSProperty' + _upper_camel_case(property_name)
+    converter = NameStyleConverter(property_name) if type(property_name) is str else property_name
+    return 'CSSProperty' + converter.to_upper_camel_case()
 
 
 def enum_for_css_property_alias(property_name):
-    return 'CSSPropertyAlias' + _upper_camel_case(property_name)
+    return 'CSSPropertyAlias' + property_name.to_upper_camel_case()
 
 # FIXME: Merge these with the above methods.
 # and update all the generators to use these ones.
