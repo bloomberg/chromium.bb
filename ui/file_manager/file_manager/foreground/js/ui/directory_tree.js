@@ -827,6 +827,7 @@ DriveVolumeItem.prototype.shouldShowTeamDrives_ = function(callback) {
     // grand root (e.g. you can't create a new team drive from the root yet).
     var reader = teamDriveEntry.createReader();
     reader.readEntries(function(results) {
+      metrics.recordSmallCount('TeamDrivesCount', results.length);
       callback(results.length > 0);
     });
   }
