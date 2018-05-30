@@ -2054,6 +2054,12 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
+    protected void onAccessibilityStatusChanged(boolean enabled) {
+        super.onAccessibilityStatusChanged(enabled);
+        mNewTabButton.onAccessibilityStatusChanged();
+    }
+
+    @Override
     public boolean shouldIgnoreSwipeGesture() {
         return super.shouldIgnoreSwipeGesture() || mUrlExpansionPercent > 0f
                 || mNtpSearchBoxTranslation.y < 0f;

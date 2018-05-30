@@ -124,12 +124,7 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mModernDrawable = VectorDrawableCompat.create(
                 getContext().getResources(), R.drawable.new_tab_icon, getContext().getTheme());
         mModernDrawable.setState(getDrawableState());
-        final boolean shouldUseLightMode =
-                (DeviceClassManager.enableAccessibilityLayout()
-                        || ChromeFeatureList.isEnabled(
-                                   ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
-                && mIsIncognito;
-        mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
+        updateDrawableTint();
         mModernDrawable.setBounds(
                 0, 0, mModernDrawable.getIntrinsicWidth(), mModernDrawable.getIntrinsicHeight());
         mModernDrawable.setCallback(this);
@@ -147,12 +142,7 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mIsIncognito = incognito;
 
         if (mModernDrawable != null) {
-            final boolean shouldUseLightMode =
-                    (DeviceClassManager.enableAccessibilityLayout()
-                            || ChromeFeatureList.isEnabled(
-                                       ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
-                    && mIsIncognito;
-            mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
+            updateDrawableTint();
             invalidateDrawable(mModernDrawable);
             return;
         }
@@ -188,6 +178,11 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mTransitionAnimation.start();
     }
 
+    /** Called when accessibility status is changed. */
+    public void onAccessibilityStatusChanged() {
+        if (mModernDrawable != null) updateDrawableTint();
+    }
+
     @Override
     protected void drawableStateChanged() {
         super.drawableStateChanged();
@@ -198,5 +193,15 @@ public class NewTabButton extends Button implements Drawable.Callback {
             mNormalDrawable.setState(getDrawableState());
             mIncognitoDrawable.setState(getDrawableState());
         }
+    }
+
+    /** Update the tint for the icon drawable for Chrome Modern. */
+    private void updateDrawableTint() {
+        final boolean shouldUseLightMode =
+                (DeviceClassManager.enableAccessibilityLayout()
+                        || ChromeFeatureList.isEnabled(
+                                   ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
+                && mIsIncognito;
+        mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
     }
 }
