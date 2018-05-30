@@ -9,6 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/config/gpu_preferences.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
