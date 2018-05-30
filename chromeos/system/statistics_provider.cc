@@ -327,8 +327,8 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
 
   base::TimeDelta dtime = base::Time::Now() - start_time;
   if (statistics_loaded_.IsSignaled()) {
-    LOG(WARNING) << "Statistics loaded after waiting "
-                 << dtime.InMilliseconds() << "ms.";
+    VLOG(1) << "Statistics loaded after waiting " << dtime.InMilliseconds()
+            << "ms.";
     return true;
   }
 
@@ -524,6 +524,9 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
                                             kCrosSystemCommentDelim)) {
       LOG(ERROR) << "Errors parsing output from: " << kCrosSystemTool;
     }
+    // Drop useless "(error)" values so they don't displace valid values
+    // supplied later by other tools: https://crbug.com/844258
+    parser.DeletePairsWithValue(kCrosSystemValueError);
   }
 
   base::FilePath machine_info_path;
@@ -569,11 +572,8 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   // Ensure that the hardware class key is present with the expected
   // key name, and if it couldn't be retrieved, that the value is "unknown".
   std::string hardware_class = machine_info_[kHardwareClassCrosSystemKey];
-  if (hardware_class.empty() || hardware_class == kCrosSystemValueError) {
-    machine_info_[kHardwareClassKey] = kHardwareClassValueUnknown;
-  } else {
-    machine_info_[kHardwareClassKey] = hardware_class;
-  }
+  machine_info_[kHardwareClassKey] =
+      !hardware_class.empty() ? hardware_class : kHardwareClassValueUnknown;
 
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // By default, assume that this is *not* a VM. If crossystem is not present,

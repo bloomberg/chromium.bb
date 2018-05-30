@@ -73,6 +73,17 @@ bool NameValuePairsParser::ParseNameValuePairsFromTool(
                                          comment_delim);
 }
 
+void NameValuePairsParser::DeletePairsWithValue(const std::string& value) {
+  auto it = map_->begin();
+  while (it != map_->end()) {
+    if (it->second == value) {
+      it = map_->erase(it);
+    } else {
+      it++;
+    }
+  }
+}
+
 void NameValuePairsParser::AddNameValuePair(const std::string& key,
                                             const std::string& value) {
   const auto it = map_->find(key);

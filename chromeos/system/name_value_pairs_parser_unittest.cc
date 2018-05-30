@@ -104,5 +104,16 @@ TEST(NameValuePairsParser, TestParseNameValuePairsFromTool) {
             map["vdat_timers"]);
 }
 
+TEST(NameValuePairsParser, DeletePairsWithValue) {
+  NameValuePairsParser::NameValueMap map = {
+      {"foo", "good"}, {"bar", "bad"}, {"baz", "good"}, {"end", "bad"},
+  };
+  NameValuePairsParser parser(&map);
+  parser.DeletePairsWithValue("bad");
+  ASSERT_EQ(2u, map.size());
+  EXPECT_EQ("good", map["foo"]);
+  EXPECT_EQ("good", map["baz"]);
+}
+
 }  // namespace system
 }  // namespace chromeos
