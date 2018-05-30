@@ -264,8 +264,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
       StartContainerCallback callback,
       base::Optional<vm_tools::concierge::StartContainerResponse> response);
 
-  // Callback for CrostiniManager::LaunchContainerApplication. We don't use
-  // the result of this currently so it doesn't take a callback.
+  // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
       LaunchContainerApplicationCallback callback,
       base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
