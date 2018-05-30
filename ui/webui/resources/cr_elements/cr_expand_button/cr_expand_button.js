@@ -29,11 +29,62 @@ Polymer({
       type: Number,
       value: 0,
     },
+
+  },
+
+  listeners: {
+    'blur': 'onBlur_',
+    'click': 'toggleExpand_',
+    'focus': 'onFocus_',
+    'keypress': 'onKeyPress_',
+    'pointerdown': 'onPointerDown_',
+  },
+
+  /**
+   * Used to differentiate pointer and keyboard click events.
+   * @private {boolean}
+   */
+  fromPointer_: false,
+
+  /**
+   * @param {boolean} expanded
+   * @private
+   */
+  getAriaPressed_: function(expanded) {
+    return expanded ? 'true' : 'false';
+  },
+
+
+  /**
+   * @param {boolean} expanded
+   * @private
+   */
+  iconName_: function(expanded) {
+    return expanded ? 'icon-expand-less' : 'icon-expand-more';
   },
 
   /** @private */
-  iconName_: function(expanded) {
-    return expanded ? 'icon-expand-less' : 'icon-expand-more';
+  onBlur_: function() {
+    this.updateRippleHoldDown_(false);
+  },
+
+  /** @private */
+  onFocus_: function() {
+    this.updateRippleHoldDown_(true);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onKeyPress_: function(event) {
+    if (event.key == ' ' || event.key == 'Enter')
+      this.updateRippleHoldDown_(true);
+  },
+
+  /** @private */
+  onPointerDown_: function() {
+    this.fromPointer_ = true;
   },
 
   /**
@@ -41,12 +92,25 @@ Polymer({
    * @private
    */
   toggleExpand_: function(event) {
-    this.expanded = !this.expanded;
+    // Prevent |click| event from bubbling. It can cause parents of this
+    // elements to erroneously re-toggle this control.
     event.stopPropagation();
+    event.preventDefault();
+
+    this.expanded = !this.expanded;
+
+    // If this event originated from a pointer, then |ripple.holdDown| should
+    // preemptively be set to false to allow ripple to animate.
+    if (this.fromPointer_)
+      this.updateRippleHoldDown_(false);
+    this.fromPointer_ = false;
   },
 
-  /** @private */
-  getAriaPressed_: function(expanded) {
-    return expanded ? 'true' : 'false';
+  /**
+   * @param {boolean} holdDown
+   * @private
+   */
+  updateRippleHoldDown_: function(holdDown) {
+    this.$$('paper-ripple').holdDown = holdDown;
   },
 });
