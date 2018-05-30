@@ -43,6 +43,9 @@ class CHROMEOS_EXPORT NameValuePairsParser {
                                    const std::string& delim,
                                    const std::string& comment_delim);
 
+  // Delete all pairs with |value|.
+  void DeletePairsWithValue(const std::string& value);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NameValuePairsParser, TestParseNameValuePairs);
   FRIEND_TEST_ALL_PREFIXES(NameValuePairsParser,
