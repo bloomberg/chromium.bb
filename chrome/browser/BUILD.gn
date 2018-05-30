@@ -3330,15 +3330,8 @@ jumbo_split_static_library("browser") {
       "download/drag_download_item_views.cc",
       "lifetime/application_lifetime_aura.cc",
       "platform_util_aura.cc",
-      "ui/views/frame/browser_frame_mus.cc",
-      "ui/views/frame/browser_frame_mus.h",
-      "ui/views/frame/browser_non_client_frame_view_mus.cc",
-      "ui/views/frame/browser_non_client_frame_view_mus.h",
     ]
     deps += [
-      "//content/public/common",
-      "//services/ui/public/cpp",
-      "//services/ui/public/cpp/input_devices",
       "//ui/aura",
       "//ui/compositor",
       "//ui/snapshot",

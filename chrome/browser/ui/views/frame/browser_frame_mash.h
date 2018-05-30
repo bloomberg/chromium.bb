@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_MUS_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_MUS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_MASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_MASH_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
@@ -13,13 +13,11 @@ class BrowserFrame;
 class BrowserView;
 
 // Used with mash on Chrome OS.
-// TODO(jamescook): Rename to BrowserFrameMash. Linux Ozone used to use this
-// frame but doesn't any more.
-class BrowserFrameMus : public views::DesktopNativeWidgetAura,
-                        public NativeBrowserFrame {
+class BrowserFrameMash : public views::DesktopNativeWidgetAura,
+                         public NativeBrowserFrame {
  public:
-  BrowserFrameMus(BrowserFrame* browser_frame, BrowserView* browser_view);
-  ~BrowserFrameMus() override;
+  BrowserFrameMash(BrowserFrame* browser_frame, BrowserView* browser_view);
+  ~BrowserFrameMash() override;
 
  private:
   // Overridden from NativeBrowserFrame:
@@ -38,7 +36,7 @@ class BrowserFrameMus : public views::DesktopNativeWidgetAura,
   BrowserFrame* browser_frame_;
   BrowserView* browser_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserFrameMus);
+  DISALLOW_COPY_AND_ASSIGN(BrowserFrameMash);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_MUS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_MASH_H_

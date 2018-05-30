@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MUS_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MUS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MASH_H_
 
 #include <memory>
 
@@ -12,21 +12,17 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
-#endif
-
 class TabIconView;
 
 // TODO: Make sure caption buttons ink drop effects work with immersive
 // fullscreen mode browsers. https://crbug.com/840242.
-class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
-                                     public TabIconViewModel {
+class BrowserNonClientFrameViewMash : public BrowserNonClientFrameView,
+                                      public TabIconViewModel {
  public:
   static const char kViewClassName[];
 
-  BrowserNonClientFrameViewMus(BrowserFrame* frame, BrowserView* browser_view);
-  ~BrowserNonClientFrameViewMus() override;
+  BrowserNonClientFrameViewMash(BrowserFrame* frame, BrowserView* browser_view);
+  ~BrowserNonClientFrameViewMash() override;
 
   void Init();
 
@@ -78,9 +74,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // scheme than browser windows.
   bool UsePackagedAppHeaderStyle() const;
 
-  // Layout the profile switcher (if there is one).
-  void LayoutProfileSwitcher();
-
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.
   bool ShouldPaint() const;
@@ -99,7 +92,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
 
   TabStrip* tab_strip_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMus);
+  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMash);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MUS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_MASH_H_
