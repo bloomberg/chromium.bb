@@ -18,16 +18,16 @@ class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
  public:
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
-  void Visit(void* object, TraceWrapperDescriptor descriptor) final {
+  void VisitWithWrappers(void* object, TraceDescriptor descriptor) final {
     HeapObjectHeader* header =
         HeapObjectHeader::FromPayload(descriptor.base_object_payload);
     const char* name = GCInfoTable::Get()
                            .GCInfoFromIndex(header->GcInfoIndex())
                            ->name_(descriptor.base_object_payload);
     // If this FATAL is hit, it means that a white (not discovered by
-    // TraceWrappers) object was assigned as a member to a black object (already
-    // processed by TraceWrappers). The black object will not be processed
-    // anymore so white object will remain undetected and therefore its wrapper
+    // Trace) object was assigned as a member to a black object (already
+    // processed by Trace). The black object will not be processed anymore
+    // so white object will remain undetected and therefore its wrapper
     // and all wrappers reachable from it would be collected.
     //
     // This means there is a write barrier missing somewhere. Check the

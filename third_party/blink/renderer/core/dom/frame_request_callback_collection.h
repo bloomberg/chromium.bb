@@ -15,8 +15,8 @@ namespace blink {
 
 class ExecutionContext;
 
-class CORE_EXPORT FrameRequestCallbackCollection final
-    : public TraceWrapperBase {
+class GC_PLUGIN_IGNORE("crbug.com/841830")
+    CORE_EXPORT FrameRequestCallbackCollection final : public TraceWrapperBase {
   DISALLOW_NEW();
 
  public:

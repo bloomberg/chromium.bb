@@ -44,11 +44,6 @@ void ScriptWrappable::Trace(Visitor* visitor) {
   DOMWrapperWorld::Trace(this, visitor);
 }
 
-void ScriptWrappable::TraceWrappers(ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(main_world_wrapper_);
-  DOMWrapperWorld::TraceWrappers(this, visitor);
-}
-
 const char* ScriptWrappable::NameInHeapSnapshot() const {
   return GetWrapperTypeInfo()->interface_name;
 }

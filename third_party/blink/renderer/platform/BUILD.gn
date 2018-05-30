@@ -443,7 +443,6 @@ jumbo_component("platform") {
     "bindings/script_wrappable.h",
     "bindings/script_wrappable_marking_visitor.cc",
     "bindings/script_wrappable_marking_visitor.h",
-    "bindings/script_wrappable_visitor.cc",
     "bindings/script_wrappable_visitor.h",
     "bindings/script_wrappable_visitor_verifier.h",
     "bindings/shared_persistent.h",

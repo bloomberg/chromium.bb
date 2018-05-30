@@ -97,7 +97,6 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
   // Traces wrappers corresponding to the ScriptWrappable in DOM data stores.
   static void Trace(const ScriptWrappable*, Visitor*);
-  static void TraceWrappers(const ScriptWrappable*, ScriptWrappableVisitor*);
 
   static DOMWrapperWorld& World(v8::Local<v8::Context> context) {
     return ScriptState::From(context)->World();

@@ -22,11 +22,6 @@ void CallbackFunctionBase::Trace(Visitor* visitor) {
   visitor->Trace(callback_function_);
 }
 
-void CallbackFunctionBase::TraceWrappers(
-    ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_function_);
-}
-
 V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(
     CallbackFunctionBase* callback_function)
     : callback_function_(callback_function) {

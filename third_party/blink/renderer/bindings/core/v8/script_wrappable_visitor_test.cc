@@ -18,7 +18,7 @@ class VerifyingScriptWrappableVisitor : public ScriptWrappableVisitor {
   void Visit(DOMWrapperMap<ScriptWrappable>*,
              const ScriptWrappable* key) override {}
 
-  void Visit(void*, TraceWrapperDescriptor desc) override {
+  void VisitWithWrappers(void*, TraceDescriptor desc) override {
     visited_objects_.push_back(desc.base_object_payload);
   }
 
@@ -66,8 +66,9 @@ TEST(ScriptWrappableVisitorTest, TraceWrapperMember) {
   parent->SetWrappedDependency(child);
   {
     ExpectObjectsVisited expected(&verifying_visitor, {child});
-    TraceTrait<DeathAwareScriptWrappable>::TraceWrappers(&verifying_visitor,
-                                                         parent);
+    TraceDescriptor desc =
+        TraceTrait<DeathAwareScriptWrappable>::GetTraceDescriptor(parent);
+    desc.callback(&verifying_visitor, parent);
   }
 }
 
@@ -78,8 +79,9 @@ TEST(ScriptWrappableVisitorTest, HeapVectorOfTraceWrapperMember) {
   parent->AddWrappedVectorDependency(child);
   {
     ExpectObjectsVisited expected(&verifying_visitor, {child});
-    TraceTrait<DeathAwareScriptWrappable>::TraceWrappers(&verifying_visitor,
-                                                         parent);
+    TraceDescriptor desc =
+        TraceTrait<DeathAwareScriptWrappable>::GetTraceDescriptor(parent);
+    desc.callback(&verifying_visitor, parent);
   }
 }
 
@@ -91,8 +93,9 @@ TEST(ScriptWrappableVisitorTest, HeapHashMapOfTraceWrapperMember) {
   parent->AddWrappedHashMapDependency(key, value);
   {
     ExpectObjectsVisited expected(&verifying_visitor, {key, value});
-    TraceTrait<DeathAwareScriptWrappable>::TraceWrappers(&verifying_visitor,
-                                                         parent);
+    TraceDescriptor desc =
+        TraceTrait<DeathAwareScriptWrappable>::GetTraceDescriptor(parent);
+    desc.callback(&verifying_visitor, parent);
   }
 }
 
@@ -103,8 +106,9 @@ TEST(ScriptWrappableVisitorTest, InObjectUsingTraceWrapperMember) {
   parent->AddInObjectDependency(child);
   {
     ExpectObjectsVisited expected(&verifying_visitor, {child});
-    TraceTrait<DeathAwareScriptWrappable>::TraceWrappers(&verifying_visitor,
-                                                         parent);
+    TraceDescriptor desc =
+        TraceTrait<DeathAwareScriptWrappable>::GetTraceDescriptor(parent);
+    desc.callback(&verifying_visitor, parent);
   }
 }
 

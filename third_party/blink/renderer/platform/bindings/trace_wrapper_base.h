@@ -5,22 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_BASE_H_
 
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
-class ScriptWrappableVisitor;
-
-class PLATFORM_EXPORT TraceWrapperBase {
+class GC_PLUGIN_IGNORE("crbug.com/841830") PLATFORM_EXPORT TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(TraceWrapperBase);
 
  public:
   TraceWrapperBase() = default;
   ~TraceWrapperBase() = default;
-  virtual bool IsScriptWrappable() const { return false; }
-
-  virtual void TraceWrappers(ScriptWrappableVisitor*) const {}
 
   // Human-readable name of this object. The DevTools heap snapshot uses
   // this method to show the object.

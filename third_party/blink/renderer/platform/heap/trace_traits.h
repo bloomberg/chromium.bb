@@ -54,10 +54,6 @@ class AdjustPointerTrait<T, false> {
     return {self, TraceTrait<T>::Trace, TraceEagerlyTrait<T>::value};
   }
 
-  static TraceWrapperDescriptor GetTraceWrapperDescriptor(void* self) {
-    return {self, TraceTrait<T>::TraceWrappers};
-  }
-
   static HeapObjectHeader* GetHeapObjectHeader(void* self) {
 #if DCHECK_IS_ON()
     HeapObjectHeader::CheckFromPayload(self);
@@ -74,11 +70,6 @@ class AdjustPointerTrait<T, true> {
   static TraceDescriptor GetTraceDescriptor(const T* self) {
     DCHECK(self);
     return self->GetTraceDescriptor();
-  }
-
-  static TraceWrapperDescriptor GetTraceWrapperDescriptor(const T* self) {
-    DCHECK(self);
-    return self->GetTraceWrapperDescriptor();
   }
 
   static HeapObjectHeader* GetHeapObjectHeader(const T* self) {
@@ -191,17 +182,11 @@ class TraceTrait {
     return AdjustPointerTrait<T>::GetTraceDescriptor(static_cast<T*>(self));
   }
 
-  static TraceWrapperDescriptor GetTraceWrapperDescriptor(void* self) {
-    return AdjustPointerTrait<T>::GetTraceWrapperDescriptor(
-        static_cast<T*>(self));
-  }
-
   static HeapObjectHeader* GetHeapObjectHeader(void* self) {
     return AdjustPointerTrait<T>::GetHeapObjectHeader(static_cast<T*>(self));
   }
 
   static void Trace(Visitor*, void* self);
-  static void TraceWrappers(ScriptWrappableVisitor*, void*);
 };
 
 template <typename T>
@@ -210,14 +195,6 @@ class TraceTrait<const T> : public TraceTrait<T> {};
 template <typename T>
 void TraceTrait<T>::Trace(Visitor* visitor, void* self) {
   static_assert(WTF::IsTraceable<T>::value, "T should not be traced");
-  static_cast<T*>(self)->Trace(visitor);
-}
-
-template <typename T>
-void TraceTrait<T>::TraceWrappers(ScriptWrappableVisitor* visitor, void* self) {
-  static_assert(sizeof(T), "type needs to be defined");
-  static_assert(IsGarbageCollectedType<T>::value,
-                "only objects deriving from GarbageCollected can be used");
   static_cast<T*>(self)->Trace(visitor);
 }
 
