@@ -255,6 +255,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   friend class ShapeResultBloberizer;
 };
 
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_H_
