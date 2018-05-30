@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_REGISTRY_SERVICE_H_
 
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/resource/scale_factor.h"
@@ -66,36 +66,33 @@ namespace crostini {
 // so some care is required.
 class CrostiniRegistryService : public KeyedService {
  public:
-  struct Registration {
-    // Maps from locale to localized string, where the default string is always
-    // present with an empty string key. Locales strings are formatted with
-    // underscores and not hyphens (e.g. 'fr', 'en_US').
-    using LocaleString = std::map<std::string, std::string>;
-
-    Registration(const std::string& desktop_file_id,
-                 const std::string& vm_name,
-                 const std::string& container_name,
-                 const LocaleString& name,
-                 const LocaleString& comment,
-                 const std::vector<std::string>& mime_types,
-                 bool no_display,
-                 base::Time install_time,
-                 base::Time last_launch_time);
+  class Registration {
+   public:
+    Registration(const base::Value* pref, bool is_terminal_app);
+    Registration(Registration&& registration) = default;
+    Registration& operator=(Registration&& registration) = default;
     ~Registration();
 
-    static const std::string& Localize(const LocaleString& locale_string);
+    std::string DesktopFileId() const;
+    std::string VmName() const;
+    std::string ContainerName() const;
 
-    std::string desktop_file_id;
-    std::string vm_name;
-    std::string container_name;
+    std::string Name() const;
+    std::string Comment() const;
+    std::vector<std::string> MimeTypes() const;
+    bool NoDisplay() const;
 
-    LocaleString name;
-    LocaleString comment;
-    std::vector<std::string> mime_types;
-    bool no_display;
+    base::Time InstallTime() const;
+    base::Time LastLaunchTime() const;
 
-    base::Time install_time;
-    base::Time last_launch_time;
+   private:
+    std::string LocalizedString(base::StringPiece key) const;
+
+    // The pref can only be null when the registration is for the Terminal app.
+    // If we do have a pref for the Terminal app, it contains only the last
+    // launch time.
+    base::Value pref_;
+    bool is_terminal_app_;
 
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };
@@ -141,7 +138,7 @@ class CrostiniRegistryService : public KeyedService {
   std::vector<std::string> GetRegisteredAppIds() const;
 
   // Return null if |app_id| is not found in the registry.
-  std::unique_ptr<CrostiniRegistryService::Registration> GetRegistration(
+  base::Optional<CrostiniRegistryService::Registration> GetRegistration(
       const std::string& app_id) const;
 
   // Constructs path to app icon for specific scale factor.
@@ -167,8 +164,7 @@ class CrostiniRegistryService : public KeyedService {
 
   // Serializes the current time and stores it in |dictionary|.
   void SetCurrentTime(base::Value* dictionary, const char* key) const;
-  // Deserializes a time from |dictionary|.
-  base::Time GetTime(const base::Value& dictionary, const char* key) const;
+
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);

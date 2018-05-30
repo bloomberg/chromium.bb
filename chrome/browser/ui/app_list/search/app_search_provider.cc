@@ -387,18 +387,15 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
     crostini::CrostiniRegistryService* registry_service =
         crostini::CrostiniRegistryServiceFactory::GetForProfile(profile());
     for (const std::string& app_id : registry_service->GetRegisteredAppIds()) {
-      std::unique_ptr<crostini::CrostiniRegistryService::Registration>
-          registration = registry_service->GetRegistration(app_id);
-      if (registration->no_display)
+      crostini::CrostiniRegistryService::Registration registration =
+          *registry_service->GetRegistration(app_id);
+      if (registration.NoDisplay())
         continue;
-      const std::string& name =
-          crostini::CrostiniRegistryService::Registration::Localize(
-              registration->name);
       // Eventually it would be nice to use additional data points, for example
       // the 'Keywords' desktop entry field and the executable file name.
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
-          this, app_id, name, registration->last_launch_time,
-          registration->install_time));
+          this, app_id, registration.Name(), registration.LastLaunchTime(),
+          registration.InstallTime()));
 
       // Until it's been installed, the Terminal is hidden unless you search
       // for 'Terminal' exactly (case insensitive).

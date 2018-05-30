@@ -128,11 +128,11 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
   if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
-    std::unique_ptr<crostini::CrostiniRegistryService::Registration>
+    base::Optional<crostini::CrostiniRegistryService::Registration>
         registration = registry_service->GetRegistration(app_id);
     if (!registration)
       return base::string16();
-    return base::UTF8ToUTF16(registration->Localize(registration->name));
+    return base::UTF8ToUTF16(registration->Name());
   }
 
   const extensions::Extension* extension = GetExtensionByID(profile, app_id);
@@ -173,7 +173,7 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
   if (registry_service && registry_service->IsCrostiniShelfAppId(id))
-    return registry_service->GetRegistration(id) != nullptr;
+    return registry_service->GetRegistration(id).has_value();
 
   if (app_list::IsInternalApp(id))
     return true;

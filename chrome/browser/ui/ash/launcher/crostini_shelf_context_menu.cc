@@ -33,8 +33,8 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   const crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           controller()->profile());
-  std::unique_ptr<crostini::CrostiniRegistryService::Registration>
-      registration = registry_service->GetRegistration(item().id.app_id);
+  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+      registry_service->GetRegistration(item().id.app_id);
   if (registration)
     AddPinMenu(menu_model);
 
