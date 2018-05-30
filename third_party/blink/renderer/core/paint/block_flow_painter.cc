@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/floating_objects.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -55,19 +56,24 @@ void BlockFlowPainter::PaintFloats(const PaintInfo& paint_info,
     if (floating_layout_object->HasSelfPaintingLayer())
       continue;
 
-    // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make
-    // this much cleaner.
-    LayoutPoint child_point =
-        layout_block_flow_.FlipFloatForWritingModeForChild(
-            *floating_object,
-            LayoutPoint(paint_offset.X() +
-                            layout_block_flow_.XPositionForFloatIncludingMargin(
-                                *floating_object) -
-                            floating_layout_object->Location().X(),
-                        paint_offset.Y() +
-                            layout_block_flow_.YPositionForFloatIncludingMargin(
-                                *floating_object) -
-                            floating_layout_object->Location().Y()));
+    LayoutPoint child_point = paint_offset;
+    // Only flip for writing mode when not painting with NG. NG fragments are
+    // already positioned correctly physically, while legacy objects have their
+    // block axis reversed in case of vertical-rl.
+    if (AdjustPaintOffsetScope::WillUseLegacyLocation(floating_layout_object)) {
+      // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would
+      // make this much cleaner.
+      child_point = layout_block_flow_.FlipFloatForWritingModeForChild(
+          *floating_object,
+          LayoutPoint(paint_offset.X() +
+                          layout_block_flow_.XPositionForFloatIncludingMargin(
+                              *floating_object) -
+                          floating_layout_object->Location().X(),
+                      paint_offset.Y() +
+                          layout_block_flow_.YPositionForFloatIncludingMargin(
+                              *floating_object) -
+                          floating_layout_object->Location().Y()));
+    }
     ObjectPainter(*floating_layout_object)
         .PaintAllPhasesAtomically(float_paint_info, child_point);
   }

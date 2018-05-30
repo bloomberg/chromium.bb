@@ -521,16 +521,23 @@ void NGBlockNode::CopyChildFragmentPosition(
   LayoutBlock* containing_block = layout_box->ContainingBlock();
 
   // LegacyLayout flips vertical-rl horizontal coordinates before paint.
-  // NGLayout flips X location for LegacyLayout compatibility.
-  if (containing_block->StyleRef().IsFlippedBlocksWritingMode()) {
+  // NGLayout flips X location for LegacyLayout compatibility. horizontal_offset
+  // will be the offset from the left edge of the container to the left edge of
+  // the layout object, except when in vertical-rl: Then it will be the offset
+  // from the right edge of the container to the right edge of the layout
+  // object.
+  LayoutUnit horizontal_offset =
+      fragment.Offset().left + additional_offset.left;
+  bool has_flipped_x_axis =
+      containing_block->StyleRef().IsFlippedBlocksWritingMode();
+  if (has_flipped_x_axis) {
     NGBoxStrut scrollbars = GetScrollbarSizes();
     LayoutUnit container_width =
         containing_block->Size().Width() - scrollbars.block_start;
-    layout_box->SetX(container_width - fragment.Offset().left -
-                     additional_offset.left - fragment.Size().width);
-  } else {
-    layout_box->SetX(fragment.Offset().left + additional_offset.left);
+    horizontal_offset =
+        container_width - horizontal_offset - fragment.Size().width;
   }
+  layout_box->SetX(horizontal_offset);
   layout_box->SetY(fragment.Offset().top + additional_offset.top);
 
   // Floats need an associated FloatingObject for painting.
@@ -538,8 +545,12 @@ void NGBlockNode::CopyChildFragmentPosition(
     FloatingObject* floating_object =
         ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*layout_box);
     floating_object->SetIsInPlacedTree(false);
-    floating_object->SetX(fragment.Offset().left + additional_offset.left -
-                          layout_box->MarginLeft());
+    LayoutUnit horizontal_margin_edge_offset = horizontal_offset;
+    if (has_flipped_x_axis)
+      horizontal_margin_edge_offset -= layout_box->MarginRight();
+    else
+      horizontal_margin_edge_offset -= layout_box->MarginLeft();
+    floating_object->SetX(horizontal_margin_edge_offset);
     floating_object->SetY(fragment.Offset().top + additional_offset.top -
                           layout_box->MarginTop());
     floating_object->SetIsPlaced(true);
