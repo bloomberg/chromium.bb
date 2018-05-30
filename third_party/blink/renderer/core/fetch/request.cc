@@ -162,18 +162,15 @@ Request* Request::CreateRequestWithRequestOrString(
     // - "Set |fallbackCredentials| to "omit"."
   }
 
-  // "If any of |init|'s members are present, run these substeps:"
+  // "If any of |init|'s members are present, then:"
   if (init.AreAnyMembersSet()) {
-    // "If |request|'s |mode| is "navigate", throw a TypeError."
-    if (request->Mode() == network::mojom::FetchRequestMode::kNavigate) {
-      exception_state.ThrowTypeError(
-          "Cannot construct a Request with a Request whose mode is 'navigate' "
-          "and a non-empty RequestInit.");
-      return nullptr;
-    }
+    // "If |request|'s |mode| is "navigate", then set it to "same-origin".
+    if (request->Mode() == network::mojom::FetchRequestMode::kNavigate)
+      request->SetMode(network::mojom::FetchRequestMode::kSameOrigin);
 
     // TODO(yhirano): Implement the following substep:
-    //   "Unset |request|'s omit-Origin-header flag."
+    // "Unset |request|'s reload-navigation flag."
+    // "Unset |request|'s history-navigation flag."
 
     // The substep "Set |request|'s referrer to "client"." is performed by
     // the code below as follows:

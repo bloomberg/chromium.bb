@@ -28,10 +28,6 @@ promise_test(t => {
           assert_equals(result.method, 'GET', 'request.method');
           assert_equals(result.referrer, location.href, 'request.referrer');
           assert_equals(result.mode, 'navigate', 'request.mode');
-          assert_equals(result.request_construct_error, 'TypeError',
-                        'Constructing a Request with a Request whose mode ' +
-                        'is navigate and non-empty RequestInit must throw a ' +
-                        'TypeError.')
           assert_equals(result.credentials, 'include', 'request.credentials');
           assert_equals(result.redirect, 'manual', 'request.redirect');
           // TODO(falken): Chromium should fail this assertion but currently
