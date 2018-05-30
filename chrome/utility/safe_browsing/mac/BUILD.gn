@@ -15,7 +15,8 @@ source_set("mac") {
   deps = [
     ":dmg_common",
     "//base",
-    "//chrome/common",
+    "//chrome/common/safe_browsing:archive_analyzer_results",
+    "//chrome/common/safe_browsing:safe_browsing",
     "//components/safe_browsing:csd_proto",
   ]
 }

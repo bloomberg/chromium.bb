@@ -26,11 +26,6 @@ source_set("cpp") {
       ]
     }
 
-    #TODO(crbug/750327): This dependency is here temporarily.
-    deps = [
-      "//third_party/unrar:unrar",
-    ]
-
     public_deps += [ "//chrome/common/safe_browsing" ]
   }
 }

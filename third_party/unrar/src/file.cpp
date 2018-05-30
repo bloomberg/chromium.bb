@@ -51,6 +51,11 @@ bool File::Open(const wchar *Name,uint Mode)
   bool UpdateMode=(Mode & FMF_UPDATE)!=0;
   bool WriteMode=(Mode & FMF_WRITE)!=0;
 #ifdef _WIN_ALL
+#if defined(CHROMIUM_UNRAR)
+  // Do not open a file handle since the sandbox doesn't allow it. Use the
+  // handle provided by the caller.
+  hNewFile = hOpenFile;
+#else
   uint Access=WriteMode ? GENERIC_WRITE:GENERIC_READ;
   if (UpdateMode)
     Access|=GENERIC_WRITE;
@@ -89,6 +94,14 @@ bool File::Open(const wchar *Name,uint Mode)
   if (hNewFile==FILE_BAD_HANDLE && LastError==ERROR_FILE_NOT_FOUND)
     ErrorType=FILE_NOTFOUND;
 
+#endif  // defined(CHROMIUM_UNRAR)
+
+#else
+
+#if defined(CHROMIUM_UNRAR)
+  // Do not open a file handle since the sandbox doesn't allow it. Use the
+  // handle provided by the caller.
+  int handle = hOpenFile;
 #else
   int flags=UpdateMode ? O_RDWR:(WriteMode ? O_WRONLY:O_RDONLY);
 #ifdef O_BINARY
@@ -99,8 +112,9 @@ bool File::Open(const wchar *Name,uint Mode)
 #endif
   char NameA[NM];
   WideToChar(Name,NameA,ASIZE(NameA));
-
   int handle=open(NameA,flags);
+#endif  // defined(CHROMIUM_UNRAR)
+
 #ifdef LOCK_EX
 
 #ifdef _OSF_SOURCE
@@ -230,6 +244,8 @@ bool File::Close()
   {
     if (!SkipClose)
     {
+#if !defined(CHROMIUM_UNRAR)
+// unrar should not close the file handle since it wasn't opened by unrar.
 #ifdef _WIN_ALL
       // We use the standard system handle for stdout in Windows
       // and it must not  be closed here.
@@ -242,6 +258,7 @@ bool File::Close()
       Success=fclose(hFile)!=EOF;
 #endif
 #endif
+#endif  // defined(CHROMIUM_UNRAR)
     }
     hFile=FILE_BAD_HANDLE;
   }
@@ -735,3 +752,9 @@ int64 File::Copy(File &Dest,int64 Length)
   return CopySize;
 }
 #endif
+
+#if defined(CHROMIUM_UNRAR)
+void File::SetFileHandle(FileHandle hF) {
+  hOpenFile = hF;
+}
+#endif  // defined(CHROMIUM_UNRAR)

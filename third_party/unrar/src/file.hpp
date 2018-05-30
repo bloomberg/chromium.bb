@@ -68,6 +68,10 @@ class File
     wchar FileName[NM];
 
     FILE_ERRORTYPE ErrorType;
+
+#if defined(CHROMIUM_UNRAR)
+    FileHandle hOpenFile;
+#endif  // defined(CHROMIUM_UNRAR)
   public:
     File();
     virtual ~File();
@@ -111,6 +115,14 @@ class File
 #ifdef _WIN_ALL
     void RemoveSequentialFlag() {NoSequentialRead=true;}
 #endif
+
+#if defined(CHROMIUM_UNRAR)
+    // Since unrar runs in a sandbox, it doesn't have the permission to open
+    // files on the filesystem. Instead, the caller opens the file and passes
+    // the file handle to unrar. This handle is then used to read the file.
+    void SetFileHandle(FileHandle file);
+#endif  // defined(CHROMIUM_UNRAR)
+
 #ifdef _UNIX
     int GetFD()
     {

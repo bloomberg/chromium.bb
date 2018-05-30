@@ -24,4 +24,6 @@ Notable changes from upstream:
 - Explicit use of parentheses to fix linter errors.
 - Replace exceptions with terminating the current process. Guarded with the
   macro UNRAR_NO_EXCEPTIONS.
-
+- Pass a file handle to the rar file, instead of trying to open the rar file
+  inside the unrar library code. This is done because the unrar library code
+  operates inside a sandbox, so it doesn't have the permissions to open files.

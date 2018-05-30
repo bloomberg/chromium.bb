@@ -1,7 +1,7 @@
 #ifndef _RAR_ISNT_
 #define _RAR_ISNT_
 
-#ifdef _WIN_ALL
+#include "windows.h"
 
 enum WINNT_VERSION {
   WNT_NONE=0,WNT_NT351=0x0333,WNT_NT4=0x0400,WNT_W2000=0x0500,
@@ -10,7 +10,5 @@ enum WINNT_VERSION {
 };
 
 DWORD WinNT();
-
-#endif
 
 #endif

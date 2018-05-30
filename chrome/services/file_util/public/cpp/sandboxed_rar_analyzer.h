@@ -28,7 +28,7 @@ class SandboxedRarAnalyzer
   using ResultCallback = base::RepeatingCallback<void(
       const safe_browsing::ArchiveAnalyzerResults&)>;
 
-  SandboxedRarAnalyzer(const base::FilePath& rar_file,
+  SandboxedRarAnalyzer(const base::FilePath& rar_file_path,
                        const ResultCallback& callback,
                        service_manager::Connector* connector);
 
@@ -50,7 +50,7 @@ class SandboxedRarAnalyzer
   void ReportFileFailure();
 
   // Starts the utility process and sends it a file analyze request.
-  void AnalyzeFile();
+  void AnalyzeFile(base::File file);
 
   // The response containing the file analyze results.
   void AnalyzeFileDone(const safe_browsing::ArchiveAnalyzerResults& results);

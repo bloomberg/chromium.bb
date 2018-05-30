@@ -27,7 +27,6 @@ if (safe_browsing_mode == 1) {
       "src/global.cpp",
       "src/hash.cpp",
       "src/headers.cpp",
-      "src/isnt.cpp",
       "src/list.cpp",
       "src/match.cpp",
       "src/options.cpp",
@@ -56,6 +55,9 @@ if (safe_browsing_mode == 1) {
       "src/unpack.cpp",
       "src/volume.cpp",
     ]
+    if (is_win) {
+      sources += [ "src/isnt.cpp" ]
+    }
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -64,6 +66,7 @@ if (safe_browsing_mode == 1) {
       "_FILE_OFFSET_BITS=64",
       "LARGEFILE_SOURCE",
       "RAR_SMP",
+      "SILENT",
 
       # The following is set to disable certain macro definitions in the unrar
       # source code.

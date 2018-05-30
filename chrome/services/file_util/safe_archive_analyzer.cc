@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/common/safe_browsing/rar_analyzer.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -44,15 +45,14 @@ void SafeArchiveAnalyzer::AnalyzeDmgFile(base::File dmg_file,
 #endif
 }
 
-void SafeArchiveAnalyzer::AnalyzeRarFile(const base::FilePath& rar_file_path,
+void SafeArchiveAnalyzer::AnalyzeRarFile(base::File rar_file,
+                                         const base::FilePath& rar_file_path,
                                          AnalyzeRarFileCallback callback) {
+  DCHECK(rar_file.IsValid());
   DCHECK(!rar_file_path.value().empty());
 
   safe_browsing::ArchiveAnalyzerResults results;
-  base::File file(rar_file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid()) {
-    results.success = false;
-  }
-  // TODO(crbug/750327): Inspect |file|.
+  safe_browsing::rar_analyzer::AnalyzeRarFile(std::move(rar_file),
+                                              rar_file_path, &results);
   std::move(callback).Run(results);
 }
