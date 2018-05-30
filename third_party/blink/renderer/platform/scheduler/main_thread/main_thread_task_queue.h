@@ -88,8 +88,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
           can_be_throttled(false),
           can_be_paused(false),
           can_be_frozen(false),
-          freeze_when_keep_active(false),
-          used_for_important_tasks(false) {}
+          freeze_when_keep_active(false) {}
 
     QueueCreationParams SetFixedPriority(
         base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
@@ -120,11 +119,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     QueueCreationParams SetFreezeWhenKeepActive(bool value) {
       freeze_when_keep_active = value;
-      return *this;
-    }
-
-    QueueCreationParams SetUsedForImportantTasks(bool value) {
-      used_for_important_tasks = value;
       return *this;
     }
 
@@ -160,7 +154,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     bool can_be_paused;
     bool can_be_frozen;
     bool freeze_when_keep_active;
-    bool used_for_important_tasks;
   };
 
   ~MainThreadTaskQueue() override;
@@ -183,8 +176,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   bool CanBeFrozen() const { return can_be_frozen_; }
 
   bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }
-
-  bool UsedForImportantTasks() const { return used_for_important_tasks_; }
 
   void OnTaskStarted(const base::sequence_manager::TaskQueue::Task& task,
                      base::TimeTicks start);
@@ -228,7 +219,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   const bool can_be_paused_;
   const bool can_be_frozen_;
   const bool freeze_when_keep_active_;
-  const bool used_for_important_tasks_;
 
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

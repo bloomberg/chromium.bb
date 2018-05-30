@@ -62,8 +62,6 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
           params.spec, params, main_thread_scheduler_);
   if (params.fixed_priority)
     task_queue->SetQueuePriority(params.fixed_priority.value());
-  if (params.used_for_important_tasks)
-    task_queue->SetQueuePriority(TaskQueue::QueuePriority::kHighestPriority);
   return task_queue;
 }
 

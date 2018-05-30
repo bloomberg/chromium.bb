@@ -315,7 +315,8 @@ bool PageSchedulerImpl::HasActiveConnection() const {
 }
 
 void PageSchedulerImpl::RequestBeginMainFrameNotExpected(bool new_state) {
-  delegate_->RequestBeginMainFrameNotExpected(new_state);
+  if (delegate_)
+    delegate_->RequestBeginMainFrameNotExpected(new_state);
 }
 
 bool PageSchedulerImpl::IsAudioPlaying() const {

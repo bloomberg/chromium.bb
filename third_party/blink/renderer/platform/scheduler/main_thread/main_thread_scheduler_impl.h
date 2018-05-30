@@ -274,6 +274,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                                 bool is_reload,
                                 bool is_main_frame);
 
+  // Note that the main's thread policy should be upto date to compute
+  // the correct priority.
+  base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
+      MainThreadTaskQueue* task_queue) const;
+
   // Test helpers.
   MainThreadSchedulerHelper* GetSchedulerHelperForTesting();
   TaskCostEstimator* GetLoadingTaskCostEstimatorForTesting();
@@ -373,20 +378,15 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
           is_paused(false),
           is_throttled(false),
           is_blocked(false),
-          use_virtual_time(false),
-          priority(base::sequence_manager::TaskQueue::kNormalPriority) {}
+          use_virtual_time(false) {}
 
     bool is_enabled;
     bool is_paused;
     bool is_throttled;
     bool is_blocked;
     bool use_virtual_time;
-    base::sequence_manager::TaskQueue::QueuePriority priority;
 
     bool IsQueueEnabled(MainThreadTaskQueue* task_queue) const;
-
-    base::sequence_manager::TaskQueue::QueuePriority GetPriority(
-        MainThreadTaskQueue* task_queue) const;
 
     TimeDomainType GetTimeDomainType(MainThreadTaskQueue* task_queue) const;
 
@@ -394,8 +394,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       return is_enabled == other.is_enabled && is_paused == other.is_paused &&
              is_throttled == other.is_throttled &&
              is_blocked == other.is_blocked &&
-             use_virtual_time == other.use_virtual_time &&
-             priority == other.priority;
+             use_virtual_time == other.use_virtual_time;
     }
 
     void AsValueInto(base::trace_event::TracedValue* state) const;
@@ -406,7 +405,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     Policy()
         : rail_mode_(v8::PERFORMANCE_ANIMATION),
           should_disable_throttling_(false),
-          frozen_when_backgrounded_(false) {}
+          frozen_when_backgrounded_(false),
+          compositor_priority_(base::sequence_manager::TaskQueue::
+                                   QueuePriority::kNormalPriority),
+          use_case_(UseCase::kNone) {}
+
     ~Policy() = default;
 
     TaskQueuePolicy& compositor_queue_policy() {
@@ -461,10 +464,23 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     bool& frozen_when_backgrounded() { return frozen_when_backgrounded_; }
     bool frozen_when_backgrounded() const { return frozen_when_backgrounded_; }
 
+    base::sequence_manager::TaskQueue::QueuePriority& compositor_priority() {
+      return compositor_priority_;
+    }
+    base::sequence_manager::TaskQueue::QueuePriority compositor_priority()
+        const {
+      return compositor_priority_;
+    }
+
+    UseCase& use_case() { return use_case_; }
+    UseCase use_case() const { return use_case_; }
+
     bool operator==(const Policy& other) const {
       return policies_ == other.policies_ && rail_mode_ == other.rail_mode_ &&
              should_disable_throttling_ == other.should_disable_throttling_ &&
-             frozen_when_backgrounded_ == other.frozen_when_backgrounded_;
+             frozen_when_backgrounded_ == other.frozen_when_backgrounded_ &&
+             compositor_priority_ == other.compositor_priority_ &&
+             use_case_ == other.use_case_;
     }
 
     void AsValueInto(base::trace_event::TracedValue* state) const;
@@ -473,6 +489,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     v8::RAILMode rail_mode_;
     bool should_disable_throttling_;
     bool frozen_when_backgrounded_;
+
+    // Priority of task queues belonging to the compositor class (Check
+    // MainThread::QueueClass).
+    base::sequence_manager::TaskQueue::QueuePriority compositor_priority_;
+
+    UseCase use_case_;
 
     std::array<TaskQueuePolicy,
                static_cast<size_t>(MainThreadTaskQueue::QueueClass::kCount)>
@@ -636,6 +658,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // Returns true with probability of kSamplingRateForTaskUkm.
   bool ShouldRecordTaskUkm(bool has_thread_time);
+
+  // Returns true if there is a change in the main thread's policy that should
+  // trigger a priority update.
+  bool ShouldUpdateTaskQueuePriorities(Policy new_policy) const;
 
   static void RunIdleTask(WebThread::IdleTask, base::TimeTicks deadline);
 

@@ -62,6 +62,17 @@ const char* KeepActiveStateToString(bool keep_active) {
   }
 }
 
+// Used to update the priority of task_queue. Note that this function is
+// used for queues associated with a frame.
+void UpdatePriority(MainThreadTaskQueue* task_queue) {
+  if (!task_queue)
+    return;
+
+  FrameSchedulerImpl* frame_scheduler = task_queue->GetFrameScheduler();
+  DCHECK(frame_scheduler);
+  task_queue->SetQueuePriority(frame_scheduler->ComputePriority(task_queue));
+}
+
 }  // namespace
 
 FrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
@@ -465,6 +476,15 @@ void FrameSchedulerImpl::DidCloseActiveConnection() {
     parent_page_scheduler_->OnConnectionUpdated();
 }
 
+void FrameSchedulerImpl::UpdateQueuePriorities() {
+  UpdatePriority(loading_task_queue_.get());
+  UpdatePriority(loading_control_task_queue_.get());
+  UpdatePriority(throttleable_task_queue_.get());
+  UpdatePriority(deferrable_task_queue_.get());
+  UpdatePriority(pausable_task_queue_.get());
+  UpdatePriority(unpausable_task_queue_.get());
+}
+
 void FrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
@@ -631,6 +651,29 @@ void FrameSchedulerImpl::UpdateThrottling() {
 
 bool FrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
   return has_active_connection();
+}
+
+TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
+    MainThreadTaskQueue* task_queue) const {
+  DCHECK(task_queue);
+
+  FrameScheduler* frame_scheduler = task_queue->GetFrameScheduler();
+
+  // Checks the task queue is associated with this frame scheduler.
+  DCHECK_EQ(frame_scheduler, this);
+
+  base::Optional<TaskQueue::QueuePriority> fixed_priority =
+      task_queue->FixedPriority();
+
+  if (fixed_priority)
+    return fixed_priority.value();
+
+  // TODO(farahcharab) Add further logic depending on frame origin/type,
+  // |use_case|, and which finch experiment is enabled.
+  return task_queue->queue_type() ==
+                 MainThreadTaskQueue::QueueType::kFrameLoadingControl
+             ? TaskQueue::QueuePriority::kHighestPriority
+             : TaskQueue::QueuePriority::kNormalPriority;
 }
 
 }  // namespace scheduler
