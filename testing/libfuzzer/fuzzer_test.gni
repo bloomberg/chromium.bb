@@ -138,11 +138,16 @@ template("fuzzer_test") {
       if (defined(invoker.sources) && invoker.sources != []) {
         args += [ "--sources" ] + rebase_path(invoker.sources, root_build_dir)
       } else if (defined(invoker.deps) && invoker.deps != []) {
+        _full_deps = []
+        foreach(_dep, invoker.deps) {
+          _full_deps += [ get_label_info(_dep, "dir") + ":" +
+                          get_label_info(_dep, "name") ]
+        }
         args += [
                   "--build-dir",
                   rebase_path("$root_build_dir/", root_build_dir),
                   "--deps",
-                ] + invoker.deps
+                ] + _full_deps
       }
 
       outputs = [
