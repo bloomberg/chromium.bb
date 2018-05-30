@@ -48,8 +48,7 @@ void SimTest::SetUp() {
 void SimTest::LoadURL(const String& url) {
   WebURLRequest request{KURL(url)};
   WebView().MainFrameImpl()->CommitNavigation(
-      request, WebFrameLoadType::kStandard, WebHistoryItem(),
-      kWebHistoryDifferentDocumentLoad, false,
+      request, WebFrameLoadType::kStandard, WebHistoryItem(), false,
       base::UnguessableToken::Create());
 }
 

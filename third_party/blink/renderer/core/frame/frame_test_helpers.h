@@ -101,7 +101,6 @@ void LoadHTMLString(WebLocalFrame*,
 // Same as above, but for WebLocalFrame::RequestFromHistoryItem/Load.
 void LoadHistoryItem(WebLocalFrame*,
                      const WebHistoryItem&,
-                     WebHistoryLoadType,
                      mojom::FetchCacheMode);
 // Same as above, but for WebLocalFrame::Reload().
 void ReloadFrame(WebLocalFrame*);

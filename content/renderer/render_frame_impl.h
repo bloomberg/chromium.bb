@@ -1151,7 +1151,6 @@ class CONTENT_EXPORT RenderFrameImpl
                    blink::WebLocalFrame* frame,
                    blink::WebFrameLoadType load_type,
                    blink::WebHistoryItem item_for_history_navigation,
-                   blink::WebHistoryLoadType history_load_type,
                    bool is_client_redirect);
 
   // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for

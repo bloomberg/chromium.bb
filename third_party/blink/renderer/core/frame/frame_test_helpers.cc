@@ -106,8 +106,7 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
   } else {
     frame->CommitNavigation(
         WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
-        blink::WebHistoryItem(), blink::kWebHistoryDifferentDocumentLoad, false,
-        base::UnguessableToken::Create());
+        blink::WebHistoryItem(), false, base::UnguessableToken::Create());
   }
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -121,12 +120,11 @@ void LoadHTMLString(WebLocalFrame* frame,
 
 void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
-                     WebHistoryLoadType load_type,
                      mojom::FetchCacheMode cache_mode) {
   HistoryItem* history_item = item;
   frame->CommitNavigation(
       WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
-      WebFrameLoadType::kBackForward, item, kWebHistoryDifferentDocumentLoad,
+      WebFrameLoadType::kBackForward, item,
       /*is_client_redirect=*/false, base::UnguessableToken::Create());
   PumpPendingRequestsForFrameToLoad(frame);
 }

@@ -97,8 +97,7 @@ class CORE_EXPORT FrameLoader final {
   // TODO(dgozman): remove history parameters.
   void StartNavigation(const FrameLoadRequest&,
                        FrameLoadType = kFrameLoadTypeStandard,
-                       HistoryItem* = nullptr,
-                       HistoryLoadType = kHistoryDifferentDocumentLoad);
+                       HistoryItem* = nullptr);
 
   // Called when the browser process has asked this renderer process to commit
   // a navigation in this frame. This method skips most of the checks assuming
@@ -107,8 +106,7 @@ class CORE_EXPORT FrameLoader final {
   // an appropriate FrameLoadType should be given.
   void CommitNavigation(const FrameLoadRequest&,
                         FrameLoadType = kFrameLoadTypeStandard,
-                        HistoryItem* = nullptr,
-                        HistoryLoadType = kHistoryDifferentDocumentLoad);
+                        HistoryItem* = nullptr);
 
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
@@ -271,7 +269,6 @@ class CORE_EXPORT FrameLoader final {
   void LoadInternal(const FrameLoadRequest&,
                     FrameLoadType,
                     HistoryItem*,
-                    HistoryLoadType,
                     bool check_with_client);
   void StartLoad(FrameLoadRequest&,
                  FrameLoadType,
@@ -288,7 +285,7 @@ class CORE_EXPORT FrameLoader final {
                           ClientRedirectPolicy,
                           Document*);
   void RestoreScrollPositionAndViewState(FrameLoadType,
-                                         HistoryLoadType,
+                                         bool is_same_document,
                                          HistoryItem::ViewState*,
                                          HistoryScrollRestorationType);
 
