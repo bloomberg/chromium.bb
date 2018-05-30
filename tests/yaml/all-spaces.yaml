@@ -1,0 +1,24 @@
+table: [tables/cs-g1.ctb,tables/spaces.ctb]
+table: [tables/en-us-comp8.ctb,tables/spaces.ctb]
+
+tests:
+  - [\x000a, ' '] # LINE FEED (LF)
+  - [\x000b, ' '] # LINE TABULATION
+  - [\x000c, ' '] # FORM FEED (FF)
+  - [\x000d, ' '] # CARRIAGE RETURN (CR)
+  - [\x00a0, ' '] # NO-BREAK SPACE
+  - [\x2000, ' '] # EN QUAD
+  - [\x2001, ' '] # EM QUAD
+  - [\x2002, ' '] # EN SPACE
+  - [\x2003, ' '] # EM SPACE
+  - [\x2004, ' '] # THREE-PER-EM SPACE
+  - [\x2005, ' '] # FOUR-PER-EM SPACE
+  - [\x2006, ' '] # SIX-PER-EM SPACE
+  - [\x2007, ' '] # FIGURE SPACE
+  - [\x2008, ' '] # PUNCTUATION SPACE
+  - [\x2009, ' '] # THIN SPACE
+  - [\x200a, ' '] # HAIR SPACE
+  - [\x2028, ' '] # LINE SEPARATOR
+  - [\x2029, ' '] # PARAGRAPH SEPARATOR
+  - [\x202f, ' '] # NARROW NO-BREAK SPACE
+  - [\x205f, ' '] # MEDIUM MATHEMATICAL SPACE
