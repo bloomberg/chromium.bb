@@ -6,37 +6,33 @@
 
 #include <utility>
 
-#include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
-#include "net/http/http_util.h"
-#include "net/spdy/spdy_http_utils.h"
+#include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_file_utils.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using base::FilePath;
-using base::IntToString;
+using spdy::kV3LowestPriority;
+using spdy::SpdyHeaderBlock;
 
 namespace quic {
 
-QuicMemoryCacheBackend::ResourceFile::ResourceFile(
-    const base::FilePath& file_name)
-    : file_name_(file_name), file_name_string_(file_name.AsUTF8Unsafe()) {}
+QuicMemoryCacheBackend::ResourceFile::ResourceFile(const QuicString& file_name)
+    : file_name_(file_name) {}
 
 QuicMemoryCacheBackend::ResourceFile::~ResourceFile() = default;
 
 void QuicMemoryCacheBackend::ResourceFile::Read() {
-  base::ReadFileToString(FilePath(file_name_), &file_contents_);
+  ReadFileContents(file_name_, &file_contents_);
 
   // First read the headers.
   size_t start = 0;
   while (start < file_contents_.length()) {
     size_t pos = file_contents_.find("\n", start);
     if (pos == QuicString::npos) {
-      QUIC_LOG(DFATAL) << "Headers invalid or empty, ignoring: "
-                       << file_name_.value();
+      QUIC_LOG(DFATAL) << "Headers invalid or empty, ignoring: " << file_name_;
       return;
     }
     size_t len = pos - start;
@@ -55,7 +51,7 @@ void QuicMemoryCacheBackend::ResourceFile::Read() {
       pos = line.find(" ");
       if (pos == QuicString::npos) {
         QUIC_LOG(DFATAL) << "Headers invalid or empty, ignoring: "
-                         << file_name_.value();
+                         << file_name_;
         return;
       }
       spdy_headers_[":status"] = line.substr(pos + 1, 3);
@@ -64,8 +60,7 @@ void QuicMemoryCacheBackend::ResourceFile::Read() {
     // Headers are "key: value".
     pos = line.find(": ");
     if (pos == QuicString::npos) {
-      QUIC_LOG(DFATAL) << "Headers invalid or empty, ignoring: "
-                       << file_name_.value();
+      QUIC_LOG(DFATAL) << "Headers invalid or empty, ignoring: " << file_name_;
       return;
     }
     spdy_headers_.AppendValueOrAddHeader(
@@ -159,7 +154,7 @@ void QuicMemoryCacheBackend::AddSimpleResponse(QuicStringPiece host,
                                                QuicStringPiece path,
                                                int response_code,
                                                QuicStringPiece body) {
-  spdy::SpdyHeaderBlock response_headers;
+  SpdyHeaderBlock response_headers;
   response_headers[":status"] = QuicTextUtils::Uint64ToString(response_code);
   response_headers["content-length"] =
       QuicTextUtils::Uint64ToString(body.length());
@@ -183,19 +178,18 @@ void QuicMemoryCacheBackend::AddDefaultResponse(QuicBackendResponse* response) {
 
 void QuicMemoryCacheBackend::AddResponse(QuicStringPiece host,
                                          QuicStringPiece path,
-                                         spdy::SpdyHeaderBlock response_headers,
+                                         SpdyHeaderBlock response_headers,
                                          QuicStringPiece response_body) {
   AddResponseImpl(host, path, QuicBackendResponse::REGULAR_RESPONSE,
                   std::move(response_headers), response_body,
-                  spdy::SpdyHeaderBlock());
+                  SpdyHeaderBlock());
 }
 
-void QuicMemoryCacheBackend::AddResponse(
-    QuicStringPiece host,
-    QuicStringPiece path,
-    spdy::SpdyHeaderBlock response_headers,
-    QuicStringPiece response_body,
-    spdy::SpdyHeaderBlock response_trailers) {
+void QuicMemoryCacheBackend::AddResponse(QuicStringPiece host,
+                                         QuicStringPiece path,
+                                         SpdyHeaderBlock response_headers,
+                                         QuicStringPiece response_body,
+                                         SpdyHeaderBlock response_trailers) {
   AddResponseImpl(host, path, QuicBackendResponse::REGULAR_RESPONSE,
                   std::move(response_headers), response_body,
                   std::move(response_trailers));
@@ -205,8 +199,8 @@ void QuicMemoryCacheBackend::AddSpecialResponse(
     QuicStringPiece host,
     QuicStringPiece path,
     SpecialResponseType response_type) {
-  AddResponseImpl(host, path, response_type, spdy::SpdyHeaderBlock(), "",
-                  spdy::SpdyHeaderBlock());
+  AddResponseImpl(host, path, response_type, SpdyHeaderBlock(), "",
+                  SpdyHeaderBlock());
 }
 
 QuicMemoryCacheBackend::QuicMemoryCacheBackend() : cache_initialized_(false) {}
@@ -220,18 +214,10 @@ bool QuicMemoryCacheBackend::InitializeBackend(
   QUIC_LOG(INFO)
       << "Attempting to initialize QuicMemoryCacheBackend from directory: "
       << cache_directory;
-  FilePath directory(FilePath::FromUTF8Unsafe(cache_directory));
-  base::FileEnumerator file_list(directory, true, base::FileEnumerator::FILES);
+  std::vector<QuicString> files = ReadFileContents(cache_directory);
   std::list<std::unique_ptr<ResourceFile>> resource_files;
-  for (FilePath file_iter = file_list.Next(); !file_iter.empty();
-       file_iter = file_list.Next()) {
-    // Need to skip files in .svn directories
-    if (file_iter.value().find(FILE_PATH_LITERAL("/.svn/")) !=
-        QuicString::npos) {
-      continue;
-    }
-
-    std::unique_ptr<ResourceFile> resource_file(new ResourceFile(file_iter));
+  for (const auto& filename : files) {
+    std::unique_ptr<ResourceFile> resource_file(new ResourceFile(filename));
 
     // Tease apart filename into host and path.
     QuicStringPiece base(resource_file->file_name());
@@ -259,7 +245,7 @@ bool QuicMemoryCacheBackend::InitializeBackend(
         return false;
       }
       push_resources.push_back(ServerPushInfo(url, response->headers().Clone(),
-                                              spdy::kV3LowestPriority,
+                                              kV3LowestPriority,
                                               (QuicString(response->body()))));
     }
     MaybeAddServerPushResources(resource_file->host(), resource_file->path(),
@@ -274,7 +260,7 @@ bool QuicMemoryCacheBackend::IsBackendInitialized() const {
 }
 
 void QuicMemoryCacheBackend::FetchResponseFromBackend(
-    const spdy::SpdyHeaderBlock& request_headers,
+    const SpdyHeaderBlock& request_headers,
     const QuicString& request_body,
     QuicSimpleServerBackend::RequestHandler* quic_stream) {
   const QuicBackendResponse* quic_response = nullptr;
@@ -323,9 +309,9 @@ void QuicMemoryCacheBackend::AddResponseImpl(
     QuicStringPiece host,
     QuicStringPiece path,
     SpecialResponseType response_type,
-    spdy::SpdyHeaderBlock response_headers,
+    SpdyHeaderBlock response_headers,
     QuicStringPiece response_body,
-    spdy::SpdyHeaderBlock response_trailers) {
+    SpdyHeaderBlock response_trailers) {
   QuicWriterMutexLock lock(&response_mutex_);
 
   DCHECK(!host.empty()) << "Host must be populated, e.g. \"www.google.com\"";

@@ -10,8 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/files/file_path.h"
-#include "base/macros.h"
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_mutex.h"
@@ -34,7 +32,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
   // server push associations.
   class ResourceFile {
    public:
-    explicit ResourceFile(const base::FilePath& file_name);
+    explicit ResourceFile(const QuicString& file_name);
     virtual ~ResourceFile();
 
     void Read();
@@ -42,7 +40,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
     // |base| is |file_name_| with |cache_directory| prefix stripped.
     void SetHostPathFromBase(QuicStringPiece base);
 
-    const QuicString& file_name() { return file_name_string_; }
+    const QuicString& file_name() { return file_name_; }
 
     QuicStringPiece host() { return host_; }
 
@@ -59,9 +57,7 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
     void HandlePushUrls(const std::vector<QuicStringPiece>& push_urls);
     QuicStringPiece RemoveScheme(QuicStringPiece url);
 
-    const QuicString cache_directory_;
-    const base::FilePath file_name_;
-    const QuicString file_name_string_;
+    QuicString file_name_;
     QuicString file_contents_;
     QuicStringPiece body_;
     spdy::SpdyHeaderBlock spdy_headers_;
