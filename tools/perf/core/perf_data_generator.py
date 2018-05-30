@@ -177,7 +177,7 @@ def get_waterfall_config():
       {
        'os': 'Android',
        'pool': 'chrome.tests.perf',
-       'device_os': 'KOT49H0',
+       'device_os': 'KOT49H',
        'device_type': 'hammerhead',
        'device_os_flavor': 'google',
        'device_ids': [
