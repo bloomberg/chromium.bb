@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/video_resource_updater.h"
+#include "media/video/half_float_maker.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -446,18 +447,25 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   ResourceFormat yuv_highbit_resource_format =
       video_resource_updater->YuvResourceFormat(bits_per_channel);
 
-  float multiplier = 1.0;
+  float offset = 0.0f;
+  float multiplier = 1.0f;
 
-  if (yuv_highbit_resource_format == R16_EXT)
+  if (yuv_highbit_resource_format == R16_EXT) {
     multiplier = 65535.0f / ((1 << bits_per_channel) - 1);
-  else
+  } else if (yuv_highbit_resource_format == LUMINANCE_F16) {
+    std::unique_ptr<media::HalfFloatMaker> half_float_maker =
+        media::HalfFloatMaker::NewHalfFloatMaker(bits_per_channel);
+    offset = half_float_maker->Offset();
+    multiplier = half_float_maker->Multiplier();
+  } else {
     bits_per_channel = 8;
+  }
 
   yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
                    ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
                    uv_tex_size, mapped_resource_y, mapped_resource_u,
                    mapped_resource_v, mapped_resource_a, video_color_space,
-                   0.0f, multiplier, bits_per_channel);
+                   offset, multiplier, bits_per_channel);
 }
 
 void CreateTestY16TextureDrawQuad_FromVideoFrame(
