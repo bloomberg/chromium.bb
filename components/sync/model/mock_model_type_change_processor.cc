@@ -44,10 +44,6 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->UntrackEntity(entity_data);
   }
 
-  void UntrackEntityForStorageKey(const std::string& storage_key) override {
-    other_->UntrackEntityForStorageKey(storage_key);
-  }
-
   void OnModelStarting(ModelTypeSyncBridge* bridge) override {
     other_->OnModelStarting(bridge);
   }
@@ -102,9 +98,6 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
   ON_CALL(*this, UntrackEntity(_))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::UntrackEntity));
-  ON_CALL(*this, UntrackEntityForStorageKey(_))
-      .WillByDefault(Invoke(
-          delegate, &ModelTypeChangeProcessor::UntrackEntityForStorageKey));
   ON_CALL(*this, OnModelStarting(_))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::OnModelStarting));
