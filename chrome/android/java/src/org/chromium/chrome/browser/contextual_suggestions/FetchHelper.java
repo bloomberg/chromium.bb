@@ -299,19 +299,28 @@ class FetchHelper {
 
         if (shouldFetchCanonicalUrl(tab)) {
             mFetchRequestedForCurrentTab = true;
+            String url = tab.getUrl();
             tab.getWebContents().getMainFrame().getCanonicalUrlForSharing(new Callback<String>() {
                 @Override
                 public void onResult(String result) {
+                    if (tab != mCurrentTab) {
+                        return;
+                    }
+
                     // Reset mFetchRequestedForCurrentTab so that it remains false if
                     // maybeStartFetchWithCanonicalURLResolved doesn't end up requesting
                     // suggestions. If it does end up requesting suggestions,
-                    // mFetchRequestedForCurrentTab will be set back to true in the same synchronous
-                    // flow of execution, so there shouldn't be a race condition.
+                    // mFetchRequestedForCurrentTab will be set back to true in the same
+                    // synchronous flow of execution, so there shouldn't be a race condition.
                     mFetchRequestedForCurrentTab = false;
+
                     TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(tab);
-                    tabFetchReadinessState.setCanonicalUrl(result);
-                    maybeStartFetchWithCanonicalURLResolved(
-                            tab, getUrlToFetchFor(tab.getUrl(), result));
+                    if (tabFetchReadinessState != null && tabFetchReadinessState.isTrackingPage()
+                            && tabFetchReadinessState.isContextTheSame(url)) {
+                        tabFetchReadinessState.setCanonicalUrl(result);
+                        maybeStartFetchWithCanonicalURLResolved(
+                                tab, getUrlToFetchFor(tab.getUrl(), result));
+                    }
                 }
             });
             return;
