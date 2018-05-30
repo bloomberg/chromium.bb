@@ -91,10 +91,12 @@ class NetworkQualityObserverImpl::UiThreadObserver
     // Notify all the existing renderers of the change in the network quality.
     for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
          !it.IsAtEnd(); it.Advance()) {
-      it.GetCurrentValue()->GetRendererInterface()->OnNetworkQualityChanged(
-          last_notified_type_, last_notified_network_quality_.http_rtt(),
-          last_notified_network_quality_.transport_rtt(),
-          last_notified_network_quality_.downstream_throughput_kbps());
+      if (it.GetCurrentValue()->HasConnection()) {
+        it.GetCurrentValue()->GetRendererInterface()->OnNetworkQualityChanged(
+            last_notified_type_, last_notified_network_quality_.http_rtt(),
+            last_notified_network_quality_.transport_rtt(),
+            last_notified_network_quality_.downstream_throughput_kbps());
+      }
     }
   }
 
@@ -107,10 +109,12 @@ class NetworkQualityObserverImpl::UiThreadObserver
     // Notify all the existing renderers of the change in the network quality.
     for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
          !it.IsAtEnd(); it.Advance()) {
-      it.GetCurrentValue()->GetRendererInterface()->OnNetworkQualityChanged(
-          last_notified_type_, last_notified_network_quality_.http_rtt(),
-          last_notified_network_quality_.transport_rtt(),
-          last_notified_network_quality_.downstream_throughput_kbps());
+      if (it.GetCurrentValue()->HasConnection()) {
+        it.GetCurrentValue()->GetRendererInterface()->OnNetworkQualityChanged(
+            last_notified_type_, last_notified_network_quality_.http_rtt(),
+            last_notified_network_quality_.transport_rtt(),
+            last_notified_network_quality_.downstream_throughput_kbps());
+      }
     }
   }
 
