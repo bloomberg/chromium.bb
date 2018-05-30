@@ -136,6 +136,13 @@ void InputRouterImpl::SendGestureEvent(
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
+  if (gesture_event_queue_.FlingControllerFilterEvent(gesture_event)) {
+    disposition_handler_->OnGestureEventAck(gesture_event,
+                                            InputEventAckSource::BROWSER,
+                                            INPUT_EVENT_ACK_STATE_CONSUMED);
+    return;
+  }
+
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event) ==
       FilterGestureEventResult::kFilterGestureEventFiltered) {
     disposition_handler_->OnGestureEventAck(gesture_event,
@@ -164,7 +171,7 @@ void InputRouterImpl::SendGestureEvent(
     touch_event_queue_.OnGestureScrollEvent(gesture_event);
   }
 
-  if (!gesture_event_queue_.QueueEvent(gesture_event)) {
+  if (!gesture_event_queue_.DebounceOrQueueEvent(gesture_event)) {
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
