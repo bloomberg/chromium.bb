@@ -4,7 +4,5 @@ FAIL setLocalDescription with type offer and null sdp should use lastOffer gener
 PASS setLocalDescription() with offer not created by own createOffer() should reject with InvalidModificationError
 FAIL Set created offer other than last offer should reject with InvalidModificationError assert_unreached: Should have rejected: undefined Reached unreachable code
 FAIL Creating and setting offer multiple times should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
-PASS Test onsignalingstatechange event for setLocalDescription with valid offer should succeed
-PASS Test onsignalingstatechange event for Creating and setting offer multiple times should succeed
 Harness: the test ran to completion.
 
