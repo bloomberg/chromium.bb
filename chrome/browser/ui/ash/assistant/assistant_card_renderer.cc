@@ -100,8 +100,9 @@ class AssistantCard : public content::WebContentsDelegate,
     web_contents_->GetController().LoadURLWithParams(load_params);
 
     // Enable auto-resizing, respecting the specified size parameters.
+    // Dimensions should be non-zero to pass DCHECK.
     web_contents_->GetRenderWidgetHostView()->EnableAutoResize(
-        gfx::Size(params->min_width_dip, 0),
+        gfx::Size(params->min_width_dip, 1),
         gfx::Size(params->max_width_dip, INT_MAX));
   }
 
