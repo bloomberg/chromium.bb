@@ -20,6 +20,8 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
 
@@ -194,9 +196,17 @@ void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered() {
       RulesRegistryKey(declarative_webrequest_constants::kOnRequest,
                        kDefaultRulesRegistryID)));
 
-  // Persist the cache since it pertains to regular pages (i.e. not webviews).
-  RegisterWebRequestRulesRegistry(kDefaultRulesRegistryID,
-                                  RulesCacheDelegate::Type::kPersistent);
+  // Only register the default web request rules registry if the
+  // declarativeWebRequest API is enabled. See crbug.com/693243.
+  const bool is_api_enabled =
+      FeatureProvider::GetAPIFeature("declarativeWebRequest")
+          ->IsAvailableToEnvironment()
+          .is_available();
+  if (is_api_enabled) {
+    // Persist the cache since it pertains to regular pages (i.e. not webviews).
+    RegisterWebRequestRulesRegistry(kDefaultRulesRegistryID,
+                                    RulesCacheDelegate::Type::kPersistent);
+  }
 
   // Create the ContentRulesRegistry.
   DCHECK(!content_rules_registry_);
