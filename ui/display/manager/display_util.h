@@ -40,6 +40,11 @@ bool IsPhysicalDisplayType(DisplayConnectionType type);
 std::vector<float> DISPLAY_MANAGER_EXPORT
 GetDisplayZoomFactors(const ManagedDisplayMode& mode);
 
+// Returns a list of display zooms based on the provided |dsf| of the display.
+// This is useful for displays that have a non unity device scale factors
+// applied to them.
+std::vector<float> DISPLAY_MANAGER_EXPORT GetDisplayZoomFactorForDsf(float dsf);
+
 // This function adds |dsf| to the vector of |zoom_values| by replacing
 // the element it is closest to in the list. It also ensures that it never
 // replaces the default zoom value of 1.0 from the list and that the size of the

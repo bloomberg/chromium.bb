@@ -396,15 +396,15 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListZoomFactor) {
   const std::vector<double>& zoom_factors =
       info_0.available_display_zoom_factors;
   EXPECT_EQ(9u, zoom_factors.size());
-  EXPECT_FLOAT_EQ(0.6, zoom_factors[0]);
-  EXPECT_FLOAT_EQ(0.7, zoom_factors[1]);
-  EXPECT_FLOAT_EQ(0.8, zoom_factors[2]);
-  EXPECT_FLOAT_EQ(0.9, zoom_factors[3]);
-  EXPECT_FLOAT_EQ(1.0, zoom_factors[4]);
-  EXPECT_FLOAT_EQ(1.1, zoom_factors[5]);
-  EXPECT_FLOAT_EQ(1.2, zoom_factors[6]);
-  EXPECT_FLOAT_EQ(1.3, zoom_factors[7]);
-  EXPECT_FLOAT_EQ(1.4, zoom_factors[8]);
+  EXPECT_FLOAT_EQ(0.90f, zoom_factors[0]);
+  EXPECT_FLOAT_EQ(0.95f, zoom_factors[1]);
+  EXPECT_FLOAT_EQ(1.f, zoom_factors[2]);
+  EXPECT_FLOAT_EQ(1.05f, zoom_factors[3]);
+  EXPECT_FLOAT_EQ(1.10f, zoom_factors[4]);
+  EXPECT_FLOAT_EQ(1.15f, zoom_factors[5]);
+  EXPECT_FLOAT_EQ(1.20f, zoom_factors[6]);
+  EXPECT_FLOAT_EQ(1.25f, zoom_factors[7]);
+  EXPECT_FLOAT_EQ(1.30f, zoom_factors[8]);
 }
 
 TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesPrimary) {
