@@ -375,9 +375,10 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
   }
 
   host()->SendUnsolicitedReplyWithHandles(
-      pp_resource(), PpapiPluginMsg_VideoEncoder_BitstreamBuffers(
-                         static_cast<uint32_t>(output_buffer_size)),
-      handles);
+      pp_resource(),
+      PpapiPluginMsg_VideoEncoder_BitstreamBuffers(
+          static_cast<uint32_t>(output_buffer_size)),
+      &handles);
 
   if (!initialized_) {
     // Tell the plugin that initialization has been successful if we

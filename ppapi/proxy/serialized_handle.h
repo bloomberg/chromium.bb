@@ -53,6 +53,9 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   };
 
   SerializedHandle();
+  // Move operations are allowed.
+  SerializedHandle(SerializedHandle&&);
+  SerializedHandle& operator=(SerializedHandle&&);
   // Create an invalid handle of the given type.
   explicit SerializedHandle(Type type);
 
@@ -108,6 +111,13 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     open_flags_ = open_flags;
     file_io_ = file_io;
   }
+  void set_null() {
+    type_ = INVALID;
+
+    shm_handle_ = base::SharedMemoryHandle();
+    size_ = 0;
+    descriptor_ = IPC::InvalidPlatformFileForTransit();
+  }
   void set_null_shmem() { set_shmem(base::SharedMemoryHandle(), 0); }
   void set_null_socket() {
     set_socket(IPC::InvalidPlatformFileForTransit());
@@ -149,6 +159,8 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
   int32_t open_flags_;
   // This is non-zero if file writes require quota checking.
   PP_Resource file_io_;
+
+  DISALLOW_COPY_AND_ASSIGN(SerializedHandle);
 };
 
 }  // namespace proxy

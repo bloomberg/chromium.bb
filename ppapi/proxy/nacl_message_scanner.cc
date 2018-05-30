@@ -86,10 +86,10 @@ void WriteHandle(int handle_index,
 // handling. See ScanTuple for how these get used.
 
 // Overload to match SerializedHandle.
-void ScanParam(const SerializedHandle& handle, ScanningResults* results) {
-  results->handles.push_back(handle);
+void ScanParam(SerializedHandle&& handle, ScanningResults* results) {
   if (results->new_msg)
     WriteHandle(results->handle_index++, handle, results->new_msg.get());
+  results->handles.push_back(std::move(handle));
 }
 
 void HandleWriter(int* handle_index,
@@ -99,14 +99,13 @@ void HandleWriter(int* handle_index,
 }
 
 // Overload to match SerializedVar, which can contain handles.
-void ScanParam(const SerializedVar& var, ScanningResults* results) {
-  std::vector<SerializedHandle*> var_handles = var.GetHandles();
-  // Copy any handles and then rewrite the message.
-  for (size_t i = 0; i < var_handles.size(); ++i)
-    results->handles.push_back(*var_handles[i]);
+void ScanParam(SerializedVar&& var, ScanningResults* results) {
+  // Rewrite the message and then copy any handles.
   if (results->new_msg)
     var.WriteDataToMessage(results->new_msg.get(),
                            base::Bind(&HandleWriter, &results->handle_index));
+  for (SerializedHandle* var_handle : var.GetHandles())
+    results->handles.push_back(std::move(*var_handle));
 }
 
 // For PpapiMsg_ResourceReply and the reply to PpapiHostMsg_ResourceSyncCall,
@@ -114,8 +113,7 @@ void ScanParam(const SerializedVar& var, ScanningResults* results) {
 // NOTE: We only intercept handles from host->NaCl. The only kind of
 //       ResourceMessageParams that travels this direction is
 //       ResourceMessageReplyParams, so that's the only one we need to handle.
-void ScanParam(const ResourceMessageReplyParams& params,
-               ScanningResults* results) {
+void ScanParam(ResourceMessageReplyParams&& params, ScanningResults* results) {
   results->pp_resource = params.pp_resource();
   // If the resource reply params don't contain handles, NULL the new message
   // pointer to cancel further rewriting.
@@ -134,20 +132,17 @@ void ScanParam(const ResourceMessageReplyParams& params,
     // vector.
     results->new_msg->WriteInt(static_cast<int>(params.handles().size()));
   }
-  for (Handles::const_iterator iter = params.handles().begin();
-       iter != params.handles().end();
-       ++iter) {
+  std::vector<SerializedHandle> handles;
+  params.TakeAllHandles(&handles);
+  for (SerializedHandle& handle : handles) {
     // ScanParam will write each handle to the new message, if necessary.
-    ScanParam(*iter, results);
+    ScanParam(std::move(handle), results);
   }
-  // Tell ResourceMessageReplyParams that we have taken the handles, so it
-  // shouldn't close them. The NaCl runtime will take ownership of them.
-  params.ConsumeHandles();
 }
 
 // Overload to match nested messages. If we need to rewrite the message, write
 // the parameter.
-void ScanParam(const IPC::Message& param, ScanningResults* results) {
+void ScanParam(IPC::Message&& param, ScanningResults* results) {
   if (results->pp_resource && !results->nested_msg_callback.is_null()) {
     SerializedHandle* handle = NULL;
     if (results->handles.size() == 1)
@@ -159,18 +154,17 @@ void ScanParam(const IPC::Message& param, ScanningResults* results) {
 }
 
 template <class T>
-void ScanParam(const std::vector<T>& vec, ScanningResults* results) {
+void ScanParam(std::vector<T>&& vec, ScanningResults* results) {
   if (results->new_msg)
     IPC::WriteParam(results->new_msg.get(), static_cast<int>(vec.size()));
-  for (const T& element : vec) {
-    ScanParam(element, results);
-  }
+  for (T& element : vec)
+    ScanParam(std::move(element), results);
 }
 
 // Overload to match all other types. If we need to rewrite the message, write
 // the parameter.
 template <class T>
-void ScanParam(const T& param, ScanningResults* results) {
+void ScanParam(T&& param, ScanningResults* results) {
   if (results->new_msg)
     IPC::WriteParam(results->new_msg.get(), param);
 }
@@ -179,26 +173,26 @@ void ScanParam(const T& param, ScanningResults* results) {
 // The idea is to scan elements in the tuple which require special handling,
 // and write them into the |results| struct.
 template <class A>
-void ScanTuple(const std::tuple<A>& t1, ScanningResults* results) {
-  ScanParam(std::get<0>(t1), results);
+void ScanTuple(std::tuple<A>&& t1, ScanningResults* results) {
+  ScanParam(std::move(std::get<0>(t1)), results);
 }
 template <class A, class B>
-void ScanTuple(const std::tuple<A, B>& t1, ScanningResults* results) {
-  ScanParam(std::get<0>(t1), results);
-  ScanParam(std::get<1>(t1), results);
+void ScanTuple(std::tuple<A, B>&& t1, ScanningResults* results) {
+  ScanParam(std::move(std::get<0>(t1)), results);
+  ScanParam(std::move(std::get<1>(t1)), results);
 }
 template <class A, class B, class C>
-void ScanTuple(const std::tuple<A, B, C>& t1, ScanningResults* results) {
-  ScanParam(std::get<0>(t1), results);
-  ScanParam(std::get<1>(t1), results);
-  ScanParam(std::get<2>(t1), results);
+void ScanTuple(std::tuple<A, B, C>&& t1, ScanningResults* results) {
+  ScanParam(std::move(std::get<0>(t1)), results);
+  ScanParam(std::move(std::get<1>(t1)), results);
+  ScanParam(std::move(std::get<2>(t1)), results);
 }
 template <class A, class B, class C, class D>
-void ScanTuple(const std::tuple<A, B, C, D>& t1, ScanningResults* results) {
-  ScanParam(std::get<0>(t1), results);
-  ScanParam(std::get<1>(t1), results);
-  ScanParam(std::get<2>(t1), results);
-  ScanParam(std::get<3>(t1), results);
+void ScanTuple(std::tuple<A, B, C, D>&& t1, ScanningResults* results) {
+  ScanParam(std::move(std::get<0>(t1)), results);
+  ScanParam(std::move(std::get<1>(t1)), results);
+  ScanParam(std::move(std::get<2>(t1)), results);
+  ScanParam(std::move(std::get<3>(t1)), results);
 }
 
 template <class MessageType>
@@ -212,7 +206,7 @@ class MessageScannerImpl {
     typename MessageType::Param params;
     if (!MessageType::Read(msg_, &params))
       return false;
-    ScanTuple(params, results);
+    ScanTuple(std::move(params), results);
     return true;
   }
 
@@ -226,7 +220,7 @@ class MessageScannerImpl {
       int id = IPC::SyncMessage::GetMessageId(*msg_);
       results->new_msg->WriteInt(id);
     }
-    ScanTuple(params, results);
+    ScanTuple(std::move(params), results);
     return true;
   }
 
@@ -240,7 +234,7 @@ class MessageScannerImpl {
       int id = IPC::SyncMessage::GetMessageId(*msg_);
       results->new_msg->WriteInt(id);
     }
-    ScanTuple(params, results);
+    ScanTuple(std::move(params), results);
     return true;
   }
 

@@ -66,10 +66,11 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
                              IPC::PlatformFileForTransit* handle) const;
   void TakeAllSharedMemoryHandles(
       std::vector<base::SharedMemoryHandle>* handles) const;
+  void TakeAllHandles(std::vector<SerializedHandle>* handles) const;
 
   // Appends the given handle to the list of handles sent with the call or
   // reply.
-  void AppendHandle(const SerializedHandle& handle) const;
+  void AppendHandle(SerializedHandle handle) const;
 
  protected:
   ResourceMessageParams();

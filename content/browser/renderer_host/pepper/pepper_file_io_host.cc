@@ -514,7 +514,7 @@ bool PepperFileIOHost::AddFileToReplyContext(
   // A non-zero resource id signals NaClIPCAdapter to create a NaClQuotaDesc.
   PP_Resource quota_file_io = check_quota_ ? pp_resource() : 0;
   file_handle.set_file_handle(transit_file, open_flags, quota_file_io);
-  reply_context->params.AppendHandle(file_handle);
+  reply_context->params.AppendHandle(std::move(file_handle));
   return true;
 }
 

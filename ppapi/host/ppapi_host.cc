@@ -106,23 +106,21 @@ void PpapiHost::SendReply(const ReplyMessageContext& context,
 
 void PpapiHost::SendUnsolicitedReply(PP_Resource resource,
                                      const IPC::Message& msg) {
-  SendUnsolicitedReplyWithHandles(
-      resource, msg, std::vector<SerializedHandle>());
+  std::vector<SerializedHandle> empty;
+  SendUnsolicitedReplyWithHandles(resource, msg, &empty);
 }
 
 void PpapiHost::SendUnsolicitedReplyWithHandles(
     PP_Resource resource,
     const IPC::Message& msg,
-    const std::vector<SerializedHandle>& handles) {
+    std::vector<SerializedHandle>* handles) {
   TRACE_EVENT2("ppapi proxy", "PpapiHost::SendUnsolicitedReplyWithHandles",
                "Class", IPC_MESSAGE_ID_CLASS(msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(msg.type()));
   DCHECK(resource);  // If this fails, host is probably pending.
   proxy::ResourceMessageReplyParams params(resource, 0);
-  for (std::vector<SerializedHandle>::const_iterator it = handles.begin();
-      it != handles.end(); ++it) {
-    params.AppendHandle(*it);
-  }
+  for (auto& handle : *handles)
+    params.AppendHandle(std::move(handle));
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
 }
 
