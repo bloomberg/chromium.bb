@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -104,7 +105,26 @@ public class OverlayPanelContent {
     private boolean mSubtractBarHeight;
 
     /** The height of the bar at the top of the OverlayPanel in pixels. */
-    private int mBarHeightPx;
+    private final int mBarHeightPx;
+
+    /** Sets the top offset of the overlay panel in pixel. 0 when fully expanded. */
+    private int mPanelTopOffsetPx;
+
+    private class OverlayViewDelegate extends ViewAndroidDelegate {
+        public OverlayViewDelegate(ViewGroup v) {
+            super(v);
+        }
+
+        @Override
+        public void setViewPosition(View view, float x, float y, float width, float height,
+                int leftMargin, int topMargin) {
+            super.setViewPosition(view, x, y, width, height, leftMargin, topMargin);
+
+            // Applies top offset depending on the overlay panel state.
+            MarginLayoutParams lp = (MarginLayoutParams) view.getLayoutParams();
+            lp.topMargin += mPanelTopOffsetPx + mBarHeightPx;
+        }
+    }
 
     // ============================================================================================
     // InterceptNavigationDelegateImpl
@@ -264,6 +284,14 @@ public class OverlayPanelContent {
     }
 
     /**
+     * Sets the top offset of the overlay panel that varies as the panel state changes.
+     * @param offset Top offset in pixel.
+     */
+    public void setPanelTopOffset(int offset) {
+        mPanelTopOffsetPx = offset;
+    }
+
+    /**
      * Create a new ContentViewCore that will be managed by this panel.
      */
     private void createNewContentView() {
@@ -287,23 +315,7 @@ public class OverlayPanelContent {
             cv.setDesiredMeasureSpec(width, height);
         }
 
-        // Dummny ViewAndroidDelegate since the container view for overlay panel is
-        // never added to the view hierarchy.
-        ViewAndroidDelegate delegate =
-                new ViewAndroidDelegate(cv) {
-                    @Override
-                    public View acquireView() {
-                        return null;
-                    }
-
-                    @Override
-                    public void setViewPosition(View anchorView, float x, float y, float width,
-                            float height, int leftMargin, int topMargin) {}
-
-                    @Override
-                    public void removeView(View anchorView) { }
-
-                };
+        OverlayViewDelegate delegate = new OverlayViewDelegate(cv);
         mContentViewCore = ContentViewCore.create(mActivity, ChromeVersionInfo.getProductVersion(),
                 mWebContents, delegate, cv, mActivity.getWindowAndroid());
 
