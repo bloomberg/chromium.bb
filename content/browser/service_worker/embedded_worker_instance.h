@@ -67,7 +67,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     SCRIPT_READ_STARTED = 8,
     SCRIPT_READ_FINISHED = 9,
     SCRIPT_STREAMING = 10,
-    // Add new values here.
+    // Add new values here and update enums.xml.
     STARTING_PHASE_MAX_VALUE,
   };
 
