@@ -17,6 +17,7 @@
 #include "ash/window_manager_service.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
@@ -25,6 +26,18 @@
 #include "services/ui/service.h"
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MashService {
+  kAsh = 0,
+  kAutoclick = 1,
+  kQuickLaunch = 2,
+  kShortcutViewer = 3,
+  kTapVisualizer = 4,
+  kFont = 5,
+  kMaxValue = kFont,
+};
 
 using ServiceFactoryFunction = std::unique_ptr<service_manager::Service>();
 
@@ -65,30 +78,41 @@ void RegisterUiService(
   services->emplace(ui::mojom::kServiceName, service_info);
 }
 
+// Wrapper function so we only have one copy of histogram macro generated code.
+void RecordMashServiceLaunch(MashService service) {
+  UMA_HISTOGRAM_ENUMERATION("Launch.MashService", service);
+}
+
 std::unique_ptr<service_manager::Service> CreateAshService() {
+  RecordMashServiceLaunch(MashService::kAsh);
   const bool show_primary_host_on_connect = true;
   return std::make_unique<ash::WindowManagerService>(
       show_primary_host_on_connect);
 }
 
 std::unique_ptr<service_manager::Service> CreateAutoclickApp() {
+  RecordMashServiceLaunch(MashService::kAutoclick);
   return std::make_unique<autoclick::AutoclickApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunchApp() {
+  RecordMashServiceLaunch(MashService::kQuickLaunch);
   return std::make_unique<quick_launch::QuickLaunchApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateShortcutViewerApp() {
+  RecordMashServiceLaunch(MashService::kShortcutViewer);
   return std::make_unique<
       keyboard_shortcut_viewer::ShortcutViewerApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateTapVisualizerApp() {
+  RecordMashServiceLaunch(MashService::kTapVisualizer);
   return std::make_unique<tap_visualizer::TapVisualizerApp>();
 }
 
 std::unique_ptr<service_manager::Service> CreateFontService() {
+  RecordMashServiceLaunch(MashService::kFont);
   return std::make_unique<font_service::FontServiceApp>();
 }
 

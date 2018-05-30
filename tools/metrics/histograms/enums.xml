@@ -29637,6 +29637,15 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Non-Secure"/>
 </enum>
 
+<enum name="MashService">
+  <int value="0" label="Ash (window manager)"/>
+  <int value="1" label="Autoclick"/>
+  <int value="2" label="Quick launch"/>
+  <int value="3" label="Shortcut viewer"/>
+  <int value="4" label="Tap visualizer"/>
+  <int value="5" label="Font"/>
+</enum>
+
 <enum name="MatchResult">
   <int value="0" label="Valid match"/>
   <int value="1" label="Invalid match"/>
