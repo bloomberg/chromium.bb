@@ -19,46 +19,6 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox ' '",
-          "rect": [8, 8, 768, 39],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox ' '",
-          "rect": [8, 8, 768, 39],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'Only 'hello world''",
-          "rect": [8, 8, 768, 39],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'Only 'hello world''",
-          "rect": [8, 8, 768, 39],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'This tests to see if selection gaps are invalidated properly when content inside the selection is removed. '",
-          "rect": [8, 8, 768, 39],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'This tests to see if selection gaps are invalidated properly when content inside the selection is removed. '",
-          "rect": [8, 8, 768, 39],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'should have a selecton tint behind it.'",
-          "rect": [8, 8, 768, 39],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'should have a selecton tint behind it.'",
-          "rect": [8, 8, 768, 39],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox ' '",
           "rect": [39, 79, 154, 99],
           "reason": "disappeared"
         },
@@ -126,11 +86,6 @@
           "object": "InlineTextBox 'hello '",
           "rect": [39, 79, 35, 19],
           "reason": "disappeared"
-        },
-        {
-          "object": "Scrolling Contents Layer",
-          "rect": [785, 0, 15, 600],
-          "reason": "incremental"
         }
       ],
       "underPaintInvalidations": [
@@ -438,50 +393,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "Scrolling Contents Layer",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutNGBlockFlow HTML",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow P",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'This tests to see if selection gaps are invalidated properly when content inside the selection is removed. '",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'Only 'hello world''",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox ' '",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'should have a selecton tint behind it.'",
-      "reason": "geometry"
-    },
     {
       "object": "LayoutBlockFlow DIV id='test'",
       "reason": "geometry"

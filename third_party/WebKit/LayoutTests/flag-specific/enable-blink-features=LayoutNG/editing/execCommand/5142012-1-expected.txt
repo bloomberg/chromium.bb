@@ -1,11 +1,12 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow {P} at (0,0) size 784x40
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutText {#text} at (0,0) size 766x39
-          text run at (0,0) width 766: "This tests for a bug when removing links from a selection with Unlink. There shouldn't be any links *inside the selection*"
+          text run at (0,0) width 449: "This tests for a bug when removing links from a selection with Unlink. "
+          text run at (449,0) width 317: "There shouldn't be any links *inside the selection*"
           text run at (0,20) width 42: "below."
       LayoutBlockFlow {DIV} at (0,56) size 784x40
         LayoutBlockFlow {DIV} at (0,0) size 784x20

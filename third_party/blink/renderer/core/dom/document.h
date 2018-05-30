@@ -139,6 +139,7 @@ class HitTestRequest;
 class IdleRequestOptions;
 class IntersectionObserverController;
 class LayoutPoint;
+class ReattachLegacyLayoutObjectList;
 class LayoutView;
 class LiveNodeListBase;
 class LocalDOMWindow;
@@ -1410,6 +1411,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const AtomicString& RequiredCSP();
 
+  // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
+  ReattachLegacyLayoutObjectList& GetReattachLegacyLayoutObjectList();
+
   StylePropertyMapReadOnly* ComputedStyleMap(Element*);
   void AddComputedStyleMapItem(Element*, StylePropertyMapReadOnly*);
   StylePropertyMapReadOnly* RemoveComputedStyleMapItem(Element*);
@@ -1840,6 +1844,11 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Policy> policy_;
 
   Member<SlotAssignmentEngine> slot_assignment_engine_;
+
+  friend class ReattachLegacyLayoutObjectList;
+  // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
+  // Used for legacy layout tree fallback
+  ReattachLegacyLayoutObjectList* reattach_legacy_object_list_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

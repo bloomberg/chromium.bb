@@ -98,6 +98,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/live_node_list.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
@@ -2235,7 +2236,10 @@ void Document::UpdateStyle() {
     if (document_element->ShouldCallRecalcStyle(change)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       Element* viewport_defining = ViewportDefiningElement();
+      ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
+      legacy_layout_objects.WillRecalcStyle();
       document_element->RecalcStyle(change);
+      legacy_layout_objects.DidRecalcStyle();
       if (viewport_defining != ViewportDefiningElement())
         ViewportDefiningElementDidChange();
     }
@@ -2244,8 +2248,10 @@ void Document::UpdateStyle() {
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
+      ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
       WhitespaceAttacher whitespace_attacher;
       document_element->RebuildLayoutTree(whitespace_attacher);
+      legacy_layout_objects.ForceLegacyLayoutIfNeeded();
     }
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
@@ -2635,8 +2641,12 @@ void Document::Initialize() {
   layout_view_->Compositor()->SetNeedsCompositingUpdate(
       kCompositingUpdateAfterCompositingInputChange);
 
-  AttachContext context;
-  ContainerNode::AttachLayoutTree(context);
+  {
+    ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
+    AttachContext context;
+    ContainerNode::AttachLayoutTree(context);
+    legacy_layout_objects.ForceLegacyLayoutIfNeeded();
+  }
 
   // The TextAutosizer can't update layout view info while the Document is
   // detached, so update now in case anything changed.

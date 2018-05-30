@@ -686,10 +686,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // should get rid of following code fragment.
       style.SetForceLegacyLayout(true);
 
-      if (style.Display() == EDisplay::kInline &&
-          parent_style.UserModify() == EUserModify::kReadOnly) {
-        style.SetDisplay(EDisplay::kInlineBlock);
-      }
     } else if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
       // Disable NG for the entire subtree if we're establishing a block
       // fragmentation context.

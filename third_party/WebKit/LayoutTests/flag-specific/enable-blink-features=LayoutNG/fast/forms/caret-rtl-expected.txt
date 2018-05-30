@@ -2,13 +2,13 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow (anonymous) at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 566x19
-          text run at (0,0) width 566: "This tests that clicking in a contenteditable div will set the caret in the right edge of the div"
-        LayoutBR {BR} at (566,0) size 0x0
-      LayoutNGBlockFlow {P} at (0,36) size 784x20
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutNGBlockFlow (anonymous) at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 570x19
+          text run at (0,0) width 570: "This tests that clicking in a contenteditable div will set the caret in the right edge of the div "
+        LayoutBR {BR} at (570,15) size 0x0
+      LayoutBlockFlow {P} at (0,36) size 784x20
         LayoutText {#text} at (0,0) size 399x19
           text run at (0,0) width 399: "Click in the div, the caret should be on the right edge of the div."
       LayoutBlockFlow {DIV} at (0,72) size 200x368

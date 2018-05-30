@@ -35,6 +35,10 @@ crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Ski
 # TODO(skobes): rebaseline
 crbug.com/811429 fast/text/font-format-support-cbdt-sbix-cff2-vertical.html [ Failure ]
 
+# Caused by legacy fallback, <details> with position:absolute hits DCHECK in
+# IsEmptyBlock() in NGBlockLayoutAlgorithm::HandleInflow()
+crbug.com/591099 fast/block/child-not-removed-from-parent-lineboxes-crash.html [ Crash ]
+
 # Crashes/asserts/failures due to inline item reuse.
 crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash ]
 
@@ -44,6 +48,7 @@ crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container
 
 # For unknown reasons we render the reference incorrectly
 crbug.com/591099 fast/multicol/vertical-rl/column-rules.html [ Failure ]
+crbug.com/591099 css3/flexbox/position-absolute-child-with-contenteditable.html [ Failure ]
 
 # New passes
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]

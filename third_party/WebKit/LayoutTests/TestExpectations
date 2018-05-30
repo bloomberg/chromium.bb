@@ -519,6 +519,7 @@ crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-mult
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/paged-becomes-multicol-fixed-height.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/regular-block-becomes-multicol.html [ Failure ]
 crbug.com/797591 virtual/layout_ng_experimental/fast/multicol/newmulticol/regular-block-becomes-multicol.html [ Failure ]
+crbug.com/797591 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child-with-contenteditable.html [ Failure ]
 
 ### 1px diff with ref files.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]

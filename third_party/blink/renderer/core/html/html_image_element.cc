@@ -356,7 +356,8 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
 
   switch (layout_disposition_) {
     case LayoutDisposition::kFallbackContent:
-      if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+      if (!RuntimeEnabledFeatures::LayoutNGEnabled() ||
+          style.ForceLegacyLayout())
         return new LayoutBlockFlow(this);
       return new LayoutNGBlockFlow(this);
     case LayoutDisposition::kPrimaryContent: {

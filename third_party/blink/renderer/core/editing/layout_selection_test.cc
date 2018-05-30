@@ -831,31 +831,32 @@ TEST_F(NGLayoutSelectionTest, TwoNGBlockFlows) {
             Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(bar)));
 }
 
+// TODO(editing-dev): Once LayoutNG supports editing, we should change this
+// test to use LayoutNG tree.
 TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAsSibling) {
   SetSelectionAndUpdateLayoutSelection(
       "<div>f^oo</div>"
       "<div contenteditable>ba|r</div>");
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
-  TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  LayoutObject* const foo =
-      GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(1u, 3u, SelectLineBreak::kSelected),
-            Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo)));
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
   EXPECT_EQ(2u, Selection().LayoutSelectionEnd().value());
 }
 
+// TODO(editing-dev): Once LayoutNG supports editing, we should change this
+// test to use LayoutNG tree.
 TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAnscestor) {
   // Both "foo" and "bar" for DIV elements should be legacy LayoutBlock.
   SetSelectionAndUpdateLayoutSelection(
       "<div contenteditable>f^oo"
       "<div contenteditable=false>ba|r</div></div>");
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
   TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
@@ -863,21 +864,20 @@ TEST_F(NGLayoutSelectionTest, MixedBlockFlowsAnscestor) {
   EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
 }
 
+// TODO(editing-dev): Once LayoutNG supports editing, we should change this
+// test to use LayoutNG tree.
 TEST_F(NGLayoutSelectionTest, MixedBlockFlowsDecendant) {
   SetSelectionAndUpdateLayoutSelection(
       "<div contenteditable=false>f^oo"
       "<div contenteditable>ba|r</div></div>");
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
-  TEST_NEXT(IsLayoutNGBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("foo", kStart, ShouldInvalidate);
   TEST_NEXT(IsLegacyBlockFlow, kContain, NotInvalidate);
   TEST_NEXT("bar", kEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
-  LayoutObject* const foo =
-      GetDocument().body()->firstChild()->firstChild()->GetLayoutObject();
-  EXPECT_EQ(LayoutSelectionStatus(1u, 3u, SelectLineBreak::kSelected),
-            Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(foo)));
+  EXPECT_EQ(1u, Selection().LayoutSelectionStart().value());
   EXPECT_EQ(2u, Selection().LayoutSelectionEnd().value());
 }
 

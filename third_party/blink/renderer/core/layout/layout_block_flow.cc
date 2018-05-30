@@ -4416,17 +4416,6 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
     return true;
   }
 
-  // NGBlockNode cannot compute margin collapsing across NG/non-NG boundary.
-  // Create a new formatting context for non-NG node to prevent margin
-  // collapsing.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    if (Node* node = GetNode()) {
-      if (node->IsElementNode() && ToElement(*node).ShouldForceLegacyLayout())
-        return true;
-    }
-    return StyleRef().UserModify() != EUserModify::kReadOnly;
-  }
-
   return false;
 }
 

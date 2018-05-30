@@ -23,16 +23,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPaintFragment",
-          "rect": [8, 8, 699, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPaintFragment",
-          "rect": [8, 8, 699, 19],
-          "reason": "disappeared"
-        },
-        {
           "object": "Caret",
           "rect": [8, 84, 1, 19],
           "reason": "caret"
@@ -46,14 +36,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
-    {
-      "object": "NGPaintFragment",
-      "reason": "subtree"
-    },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "geometry"

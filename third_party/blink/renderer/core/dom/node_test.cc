@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
@@ -37,8 +38,10 @@ class NodeTest : public EditingTestBase {
     GetDocument().documentElement()->RecalcStyle(kNoChange);
     PushSelectorFilterAncestors(
         GetDocument().EnsureStyleResolver().GetSelectorFilter(), node);
+    ReattachLegacyLayoutObjectList legacy_objects(GetDocument());
     Node::AttachContext context;
     node.ReattachLayoutTree(context);
+    legacy_objects.ForceLegacyLayoutIfNeeded();
     return context.previous_in_flow;
   }
 

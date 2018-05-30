@@ -13,13 +13,13 @@ EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow {DIV} at (0,0) size 784x210 [border: (2px solid #0000FF)]
-        LayoutNGBlockFlow {DIV} at (14,14) size 756x83
-          LayoutText {#text} at (0,0) size 59x26
-            text run at (0,0) width 59: "Tests:"
-          LayoutBR {BR} at (59,0) size 0x0
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x210 [border: (2px solid #0000FF)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x83
+          LayoutText {#text} at (0,0) size 65x26
+            text run at (0,0) width 65: "Tests: "
+          LayoutBR {BR} at (0,0) size 0x0
           LayoutText {#text} at (0,27) size 162x27
             text run at (0,27) width 162: "Fix for this bug: "
           LayoutInline {A} at (0,0) size 259x27 [color=#0000EE]
@@ -28,10 +28,10 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (421,27) size 704x55
             text run at (421,27) width 283: " Copying and pasting end-of-"
             text run at (0,55) width 533: "paragraph selection puts insertion point in wrong place"
-        LayoutNGBlockFlow {DIV} at (14,113) size 756x83
-          LayoutText {#text} at (0,0) size 183x26
-            text run at (0,0) width 183: "Expected Results:"
-          LayoutBR {BR} at (183,0) size 0x0
+        LayoutBlockFlow {DIV} at (14,113) size 756x83
+          LayoutText {#text} at (0,0) size 189x26
+            text run at (0,0) width 189: "Expected Results: "
+          LayoutBR {BR} at (189,21) size 0x0
           LayoutText {#text} at (0,27) size 715x55
             text run at (0,27) width 706: "Should see two lines of text below, self-documenting themselves as \"line"
             text run at (0,55) width 715: "one\" and \"line two\". The insertion point must be at the start of \"line two\"."

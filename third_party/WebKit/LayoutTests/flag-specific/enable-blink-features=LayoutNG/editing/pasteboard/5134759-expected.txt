@@ -1,16 +1,17 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
-  LayoutNGBlockFlow {HTML} at (0,0) size 800x600
-    LayoutNGBlockFlow {BODY} at (8,8) size 784x584
-      LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 645x19
-          text run at (0,0) width 645: "This tests for a hang when pasting underlined content at the end of a paragraph. You should see 'Hello "
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 646x19
+          text run at (0,0) width 504: "This tests for a hang when pasting underlined content at the end of a paragraph. "
+          text run at (504,0) width 142: "You should see 'Hello "
         LayoutInline {U} at (0,0) size 44x19
-          LayoutText {#text} at (645,0) size 44x19
-            text run at (645,0) width 44: "World!"
-        LayoutText {#text} at (689,0) size 49x19
-          text run at (689,0) width 49: "' below."
+          LayoutText {#text} at (646,0) size 44x19
+            text run at (646,0) width 44: "World!"
+        LayoutText {#text} at (690,0) size 49x19
+          text run at (690,0) width 49: "' below."
       LayoutBlockFlow {DIV} at (0,36) size 784x20
         LayoutBlockFlow {DIV} at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 39x19
