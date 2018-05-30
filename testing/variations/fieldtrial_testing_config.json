@@ -1896,6 +1896,21 @@
             ]
         }
     ],
+    "MediaFoundationVideoCapture": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaFoundationVideoCapture"
+                    ]
+                }
+            ]
+        }
+    ],
     "ModernMediaControls": [
         {
             "platforms": [
