@@ -10,8 +10,8 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {
 
@@ -306,24 +306,19 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
   size_t num_planes = buffer_handle.planes.size();
   std::vector<StreamCaptureInterface::Plane> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
-    // Wrap the platform handle.
-    MojoHandle wrapped_handle;
     // There is only one fd.
     int dup_fd = dup(buffer_handle.fds[0].fd);
     if (dup_fd == -1) {
       device_context_->SetErrorState(FROM_HERE, "Failed to dup fd");
       return;
     }
-    MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
-        mojo::edk::ScopedInternalPlatformHandle(
-            mojo::edk::InternalPlatformHandle(dup_fd)),
-        &wrapped_handle);
-    if (result != MOJO_RESULT_OK) {
+    planes[i].fd =
+        mojo::WrapPlatformHandle(mojo::PlatformHandle(base::ScopedFD(dup_fd)));
+    if (!planes[i].fd.is_valid()) {
       device_context_->SetErrorState(FROM_HERE,
                                      "Failed to wrap gpu memory handle");
       return;
     }
-    planes[i].fd.reset(mojo::Handle(wrapped_handle));
     planes[i].stride = buffer_handle.planes[i].stride;
     planes[i].offset = buffer_handle.planes[i].offset;
   }
@@ -685,15 +680,14 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number,
   // Wait on release fence before delivering the result buffer to client.
   if (stream_buffer->release_fence.is_valid()) {
     const int kSyncWaitTimeoutMs = 1000;
-    mojo::edk::ScopedInternalPlatformHandle fence;
-    MojoResult result = mojo::edk::PassWrappedInternalPlatformHandle(
-        stream_buffer->release_fence.release().value(), &fence);
-    if (result != MOJO_RESULT_OK) {
+    mojo::PlatformHandle fence =
+        mojo::UnwrapPlatformHandle(std::move(stream_buffer->release_fence));
+    if (!fence.is_valid()) {
       device_context_->SetErrorState(FROM_HERE,
                                      "Failed to unwrap release fence fd");
       return;
     }
-    if (!sync_wait(fence.get().handle, kSyncWaitTimeoutMs)) {
+    if (!sync_wait(fence.GetFD().get(), kSyncWaitTimeoutMs)) {
       device_context_->SetErrorState(FROM_HERE,
                                      "Sync wait on release fence timed out");
       return;

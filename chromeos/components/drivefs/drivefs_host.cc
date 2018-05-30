@@ -9,12 +9,9 @@
 #include "base/strings/strcat.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
-#include "mojo/edk/embedder/connection_params.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/embedder/transport_protocol.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -37,16 +34,14 @@ class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
   }
 
   void AcceptMojoConnection(base::ScopedFD handle) override {
-    invitation_.Send(
-        base::kNullProcessHandle,
-        {mojo::edk::TransportProtocol::kLegacy,
-         mojo::edk::ScopedInternalPlatformHandle(
-             mojo::edk::InternalPlatformHandle(handle.release()))});
+    mojo::OutgoingInvitation::Send(
+        std::move(invitation_), base::kNullProcessHandle,
+        mojo::PlatformChannelEndpoint(mojo::PlatformHandle(std::move(handle))));
   }
 
  private:
   // The underlying mojo connection.
-  mojo::edk::OutgoingBrokerClientInvitation invitation_;
+  mojo::OutgoingInvitation invitation_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoConnectionDelegateImpl);
 };

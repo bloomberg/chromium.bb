@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -15,13 +16,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "mojo/edk/embedder/transport_protocol.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -227,11 +225,13 @@ int MockChromeCleanerProcess::Run() {
       io_thread.task_runner(),
       mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
+  auto channel_endpoint =
+      mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+          *base::CommandLine::ForCurrentProcess());
   auto invitation =
-      mojo::edk::IncomingBrokerClientInvitation::AcceptFromCommandLine(
-          mojo::edk::TransportProtocol::kLegacy);
+      mojo::IncomingInvitation::Accept(std::move(channel_endpoint));
   ChromePromptPtrInfo prompt_ptr_info(
-      invitation->ExtractMessagePipe(chrome_mojo_pipe_token_), 0);
+      invitation.ExtractMessagePipe(chrome_mojo_pipe_token_), 0);
 
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);

@@ -12,10 +12,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 namespace arc {
 namespace {
@@ -78,17 +76,13 @@ void ArcMidisBridge::Connect(mojom::MidisServerRequest request,
     return;
   }
   DVLOG(1) << "Bootstrapping the Midis connection via D-Bus.";
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-  mojo::edk::PlatformChannelPair channel_pair;
+  mojo::OutgoingInvitation invitation;
+  mojo::PlatformChannel channel;
   mojo::ScopedMessagePipeHandle server_pipe =
       invitation.AttachMessagePipe("arc-midis-pipe");
-  invitation.Send(
-      base::kNullProcessHandle,
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  channel_pair.PassServerHandle()));
-  mojo::edk::ScopedInternalPlatformHandle child_handle =
-      channel_pair.PassClientHandle();
-  base::ScopedFD fd(child_handle.release().handle);
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 base::kNullProcessHandle,
+                                 channel.TakeLocalEndpoint());
 
   midis_host_ptr_.Bind(
       mojo::InterfacePtrInfo<mojom::MidisHost>(std::move(server_pipe), 0u));
@@ -99,7 +93,7 @@ void ArcMidisBridge::Connect(mojom::MidisServerRequest request,
   chromeos::DBusThreadManager::Get()
       ->GetArcMidisClient()
       ->BootstrapMojoConnection(
-          std::move(fd),
+          channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
           base::BindOnce(&ArcMidisBridge::OnBootstrapMojoConnection,
                          weak_factory_.GetWeakPtr(), std::move(request),
                          std::move(client_ptr)));

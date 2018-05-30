@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
@@ -39,11 +40,11 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/emf_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -377,10 +378,10 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   pid_receiver->SetPID(base::GetCurrentProcId());
   pid_receiver.reset();
 
-  std::string mojo_bootstrap_token = mojo::edk::GenerateRandomToken();
+  std::string mojo_bootstrap_token = base::NumberToString(base::RandUint64());
   service_manager::mojom::ServicePtr utility_service;
   utility_service.Bind(service_manager::mojom::ServicePtrInfo(
-      broker_client_invitation_.AttachMessagePipe(mojo_bootstrap_token), 0u));
+      mojo_invitation_.AttachMessagePipe(mojo_bootstrap_token), 0u));
   service_manager_->RegisterService(
       service_manager::Identity(content::mojom::kUtilityServiceName,
                                 service_manager::mojom::kRootUserID),
@@ -425,45 +426,37 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));
 
-  mojo::edk::ScopedInternalPlatformHandle parent_handle;
-  bool success = false;
   if (sandbox) {
-    mojo::edk::PlatformChannelPair channel_pair;
-    parent_handle = channel_pair.PassServerHandle();
-    mojo::edk::ScopedInternalPlatformHandle client_handle =
-        channel_pair.PassClientHandle();
+    mojo::PlatformChannel channel;
+    mojo::PlatformChannelEndpoint client_endpoint =
+        channel.TakeRemoteEndpoint();
     base::HandlesToInheritVector handles;
-    handles.push_back(client_handle.get().handle);
-    cmd_line->AppendSwitchASCII(
-        mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
-        base::UintToString(base::win::HandleToUint32(handles[0])));
+    channel.PrepareToPassRemoteEndpoint(&handles, cmd_line);
 
     ServiceSandboxedProcessLauncherDelegate delegate;
     base::Process process;
     sandbox::ResultCode result = content::StartSandboxedProcess(
         &delegate, cmd_line, handles, &process);
-    if (result == sandbox::SBOX_ALL_OK) {
-      process_ = std::move(process);
-      success = true;
-    }
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+
+    process_ = std::move(process);
+    mojo::OutgoingInvitation::Send(std::move(mojo_invitation_),
+                                   process_.Handle(),
+                                   channel.TakeLocalEndpoint());
   } else {
-    mojo::edk::NamedPlatformChannelPair named_pair;
-    parent_handle = named_pair.PassServerHandle();
-    named_pair.PrepareToPassClientHandleToChildProcess(cmd_line);
+    mojo::NamedPlatformChannel::Options options;
+    mojo::NamedPlatformChannel channel(options);
+    channel.PassServerNameOnCommandLine(cmd_line);
 
     cmd_line->AppendSwitch(service_manager::switches::kNoSandbox);
     process_ = base::LaunchProcess(*cmd_line, base::LaunchOptions());
-    success = process_.IsValid();
+    mojo::OutgoingInvitation::Send(std::move(mojo_invitation_),
+                                   process_.Handle(),
+                                   channel.TakeServerEndpoint());
   }
 
-  if (success) {
-    broker_client_invitation_.Send(
-        process_.Handle(),
-        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                    std::move(parent_handle)));
-  }
-
-  return success;
+  return true;
 }
 
 bool ServiceUtilityProcessHost::Send(IPC::Message* msg) {

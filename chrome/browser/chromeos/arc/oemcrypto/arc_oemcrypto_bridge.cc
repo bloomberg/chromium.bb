@@ -16,10 +16,8 @@
 #include "components/arc/common/protected_buffer_manager.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 namespace arc {
 namespace {
@@ -110,17 +108,15 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
     return;
   }
   DVLOG(1) << "Bootstrapping the OemCrypto connection via D-Bus";
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-  mojo::edk::PlatformChannelPair channel_pair;
+  mojo::OutgoingInvitation invitation;
+  mojo::PlatformChannel channel;
   mojo::ScopedMessagePipeHandle server_pipe =
       invitation.AttachMessagePipe("arc-oemcrypto-pipe");
-  invitation.Send(
-      base::kNullProcessHandle,
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  channel_pair.PassServerHandle()));
-  mojo::edk::ScopedInternalPlatformHandle child_handle =
-      channel_pair.PassClientHandle();
-  base::ScopedFD fd(child_handle.release().handle);
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 base::kNullProcessHandle,
+                                 channel.TakeLocalEndpoint());
+  base::ScopedFD fd =
+      channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
 
   // Bind the Mojo pipe to the interface before we send the D-Bus message
   // to avoid any kind of race condition with detecting it's been bound.

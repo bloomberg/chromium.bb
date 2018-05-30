@@ -179,6 +179,28 @@ base::subtle::PlatformSharedMemoryRegion UnwrapPlatformSharedMemoryRegion(
 
 }  // namespace
 
+ScopedHandle WrapPlatformHandle(PlatformHandle handle) {
+  MojoPlatformHandle platform_handle;
+  PlatformHandleToMojoPlatformHandle(std::move(handle), &platform_handle);
+
+  MojoHandle wrapped_handle;
+  MojoResult result =
+      MojoWrapPlatformHandle(&platform_handle, nullptr, &wrapped_handle);
+  if (result != MOJO_RESULT_OK)
+    return ScopedHandle();
+  return ScopedHandle(Handle(wrapped_handle));
+}
+
+PlatformHandle UnwrapPlatformHandle(ScopedHandle handle) {
+  MojoPlatformHandle platform_handle;
+  platform_handle.struct_size = sizeof(platform_handle);
+  MojoResult result = MojoUnwrapPlatformHandle(handle.release().value(),
+                                               nullptr, &platform_handle);
+  if (result != MOJO_RESULT_OK)
+    return PlatformHandle();
+  return MojoPlatformHandleToPlatformHandle(&platform_handle);
+}
+
 void PlatformHandleToMojoPlatformHandle(PlatformHandle handle,
                                         MojoPlatformHandle* out_handle) {
   DCHECK(out_handle);

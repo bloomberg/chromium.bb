@@ -14,15 +14,15 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 namespace media {
 
@@ -210,10 +210,10 @@ void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
   DCHECK(blocking_io_task_runner_->BelongsToCurrentThread());
 
   base::FilePath socket_path(kArcCamera3SocketPath);
-  mojo::edk::ScopedInternalPlatformHandle socket_fd =
-      mojo::edk::CreateServerHandle(
-          mojo::edk::NamedPlatformHandle(socket_path.value()));
-  if (!socket_fd.is_valid()) {
+  mojo::NamedPlatformChannel::Options options;
+  options.server_name = socket_path.value();
+  mojo::NamedPlatformChannel channel(options);
+  if (!channel.server_endpoint().is_valid()) {
     LOG(ERROR) << "Failed to create the socket file: " << kArcCamera3SocketPath;
     started->Signal();
     return;
@@ -252,13 +252,13 @@ void CameraHalDispatcherImpl::CreateSocket(base::WaitableEvent* started) {
   blocking_io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraHalDispatcherImpl::StartServiceLoop,
-                     base::Unretained(this), base::Passed(&socket_fd),
+                     base::Unretained(this),
+                     channel.TakeServerEndpoint().TakePlatformHandle().TakeFD(),
                      base::Unretained(started)));
 }
 
-void CameraHalDispatcherImpl::StartServiceLoop(
-    mojo::edk::ScopedInternalPlatformHandle socket_fd,
-    base::WaitableEvent* started) {
+void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
+                                               base::WaitableEvent* started) {
   DCHECK(blocking_io_task_runner_->BelongsToCurrentThread());
   DCHECK(!proxy_fd_.is_valid());
   DCHECK(!cancel_pipe_.is_valid());
@@ -271,7 +271,7 @@ void CameraHalDispatcherImpl::StartServiceLoop(
     return;
   }
 
-  proxy_fd_ = std::move(socket_fd);
+  proxy_fd_.reset(mojo::edk::InternalPlatformHandle(socket_fd.release()));
   started->Signal();
   VLOG(1) << "CameraHalDispatcherImpl started; waiting for incoming connection";
 
@@ -287,19 +287,19 @@ void CameraHalDispatcherImpl::StartServiceLoop(
       VLOG(1) << "Accepted a connection";
       // Hardcode pid 0 since it is unused in mojo.
       const base::ProcessHandle kUnusedChildProcessHandle = 0;
-      mojo::edk::PlatformChannelPair channel_pair;
-      mojo::edk::OutgoingBrokerClientInvitation invitation;
+      mojo::PlatformChannel channel;
+      mojo::OutgoingInvitation invitation;
 
-      std::string token = mojo::edk::GenerateRandomToken();
+      std::string token = base::NumberToString(base::RandUint64());
       mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
+      mojo::OutgoingInvitation::Send(std::move(invitation),
+                                     kUnusedChildProcessHandle,
+                                     channel.TakeLocalEndpoint());
 
-      invitation.Send(
-          kUnusedChildProcessHandle,
-          mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                      channel_pair.PassServerHandle()));
-
+      auto remote_endpoint = channel.TakeRemoteEndpoint();
       std::vector<mojo::edk::ScopedInternalPlatformHandle> handles;
-      handles.emplace_back(channel_pair.PassClientHandle());
+      handles.emplace_back(mojo::edk::InternalPlatformHandle(
+          remote_endpoint.TakePlatformHandle().TakeFD().release()));
 
       struct iovec iov = {const_cast<char*>(token.c_str()), token.length()};
       ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(

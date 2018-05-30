@@ -49,6 +49,8 @@ static_library("safe_browsing") {
     "//chrome/app:generated_resources",
     "//components/chrome_cleaner/public/interfaces",
     "//components/safe_browsing/common:interfaces",
+    "//mojo/public/cpp/platform",
+    "//mojo/public/cpp/system",
   ]
 
   if (enable_extensions) {
