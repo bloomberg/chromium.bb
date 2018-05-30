@@ -74,6 +74,7 @@ const char kThemeCSSFilename[] = "theme.css";
 const char kMainHtmlFilename[] = "local-ntp.html";
 const char kNtpBackgroundCollectionScriptFilename[] =
     "ntp-background-collections.js";
+const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kDoodleScriptFilename[] = "doodle.js";
 
@@ -94,6 +95,7 @@ const struct Resource{
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kNtpBackgroundCollectionScriptFilename, kLocalResource, "text/javascript"},
+    {kNtpBackgroundImageScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
     {kDoodleScriptFilename, kLocalResource, "text/javascript"},
 };
@@ -220,10 +222,10 @@ std::string GetLocalNtpPath() {
 }
 
 base::Value ConvertCollectionInfoToDict(
-    const std::vector<CollectionInfo> collection_info_data) {
+    const std::vector<CollectionInfo>& collection_info) {
   base::Value collections(base::Value::Type::LIST);
-  collections.GetList().reserve(collection_info_data.size());
-  for (const CollectionInfo& collection : collection_info_data) {
+  collections.GetList().reserve(collection_info.size());
+  for (const CollectionInfo& collection : collection_info) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetKey("collectionId", base::Value(collection.collection_id));
     dict.SetKey("collectionName", base::Value(collection.collection_name));
@@ -232,6 +234,23 @@ base::Value ConvertCollectionInfoToDict(
     collections.GetList().push_back(std::move(dict));
   }
   return collections;
+}
+
+base::Value ConvertCollectionImageToDict(
+    const std::vector<CollectionImage>& collection_image) {
+  base::Value images(base::Value::Type::LIST);
+  images.GetList().reserve(collection_image.size());
+  for (const CollectionImage& image : collection_image) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("imageUrl", base::Value(image.image_url.spec()));
+    base::Value attributions(base::Value::Type::LIST);
+    for (const auto& attribution : image.attribution) {
+      attributions.GetList().push_back(base::Value(attribution));
+    }
+    dict.SetKey("attributions", std::move(attributions));
+    images.GetList().push_back(std::move(dict));
+  }
+  return images;
 }
 
 std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
@@ -568,8 +587,27 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
-    ntp_background_requests_.emplace_back(base::TimeTicks::Now(), callback);
+    ntp_background_collections_requests_.emplace_back(base::TimeTicks::Now(),
+                                                      callback);
     ntp_background_service_->FetchCollectionInfo();
+    return;
+  }
+
+  if (stripped_path == kNtpBackgroundImageScriptFilename) {
+    if (!ntp_background_service_) {
+      callback.Run(nullptr);
+      return;
+    }
+    std::string collection_id_param;
+    GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
+    if (net::GetValueForKeyInQuery(path_url, "collection_id",
+                                   &collection_id_param)) {
+      ntp_background_image_info_requests_.emplace_back(base::TimeTicks::Now(),
+                                                       callback);
+      ntp_background_service_->FetchCollectionImageInfo(collection_id_param);
+    } else {
+      callback.Run(nullptr);
+    }
     return;
   }
 
@@ -695,7 +733,7 @@ std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
 void LocalNtpSource::OnCollectionInfoAvailable() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (ntp_background_requests_.empty())
+  if (ntp_background_collections_requests_.empty())
     return;
 
   scoped_refptr<base::RefCountedString> result;
@@ -707,7 +745,7 @@ void LocalNtpSource::OnCollectionInfoAvailable() {
   result = base::RefCountedString::TakeString(&js);
 
   base::TimeTicks now = base::TimeTicks::Now();
-  for (const auto& request : ntp_background_requests_) {
+  for (const auto& request : ntp_background_collections_requests_) {
     request.callback.Run(result);
     base::TimeDelta delta = now - request.start_time;
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -723,7 +761,39 @@ void LocalNtpSource::OnCollectionInfoAvailable() {
           delta);
     }
   }
-  ntp_background_requests_.clear();
+  ntp_background_collections_requests_.clear();
+}
+
+void LocalNtpSource::OnCollectionImagesAvailable() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (ntp_background_image_info_requests_.empty())
+    return;
+
+  scoped_refptr<base::RefCountedString> result;
+  std::string js;
+  base::JSONWriter::Write(ConvertCollectionImageToDict(
+                              ntp_background_service_->collection_images()),
+                          &js);
+  js = "var coll_img = " + js + ";";
+  result = base::RefCountedString::TakeString(&js);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : ntp_background_image_info_requests_) {
+    request.callback.Run(result);
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.BackgroundService.Images.RequestLatency", delta);
+    // Any response where no images are returned is considered a failure.
+    if (ntp_background_service_->collection_images().empty()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.BackgroundService.Images.RequestLatency.Failure", delta);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "NewTabPage.BackgroundService.Images.RequestLatency.Success", delta);
+    }
+  }
+  ntp_background_image_info_requests_.clear();
 }
 
 void LocalNtpSource::OnOneGoogleBarDataUpdated() {

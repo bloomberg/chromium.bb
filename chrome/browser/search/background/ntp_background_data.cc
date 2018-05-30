@@ -34,3 +34,35 @@ CollectionInfo CollectionInfo::CreateFromProto(
 
   return collection_info;
 }
+
+CollectionImage::CollectionImage() = default;
+CollectionImage::CollectionImage(const CollectionImage&) = default;
+CollectionImage::CollectionImage(CollectionImage&&) = default;
+CollectionImage::~CollectionImage() = default;
+
+CollectionImage& CollectionImage::operator=(const CollectionImage&) = default;
+CollectionImage& CollectionImage::operator=(CollectionImage&&) = default;
+
+bool operator==(const CollectionImage& lhs, const CollectionImage& rhs) {
+  return lhs.collection_id == rhs.collection_id &&
+         lhs.asset_id == rhs.asset_id && lhs.image_url == rhs.image_url &&
+         lhs.attribution == rhs.attribution;
+}
+
+bool operator!=(const CollectionImage& lhs, const CollectionImage& rhs) {
+  return !(lhs == rhs);
+}
+
+CollectionImage CollectionImage::CreateFromProto(
+    std::string collection_id,
+    const ntp::background::Image& image) {
+  CollectionImage collection_image;
+  collection_image.collection_id = collection_id;
+  collection_image.asset_id = image.asset_id();
+  collection_image.image_url = GURL(image.image_url());
+  for (const auto& attribution : image.attribution()) {
+    collection_image.attribution.push_back(attribution.text());
+  }
+
+  return collection_image;
+}

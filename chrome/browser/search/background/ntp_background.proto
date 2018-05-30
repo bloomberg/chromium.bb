@@ -19,7 +19,7 @@ message Attribution {
 }
 
 message Image {
-  // A unique ID for the image. Useful for analytics.
+  // A unique ID for the image.
   optional fixed64 asset_id = 1;
 
   // The image URL.
@@ -61,4 +61,24 @@ message GetCollectionsRequest {
 message GetCollectionsResponse {
   // A list of every available collection for the given language and region.
   repeated Collection collections = 1;
+}
+
+message GetImagesInCollectionRequest {
+  // Deprecated or unused tag numbers
+  reserved 4;
+
+  // The id of the collection being requested.
+  optional string collection_id = 1;
+
+  // The language that should be used for content. e.g. "en-US"
+  optional string language = 2;
+
+  // The approximate permanent location of the user e.g. "us".
+  optional string region = 3;
+}
+
+message GetImagesInCollectionResponse {
+  // A list of all the images in the requested collection, filtered by language
+  // and region.
+  repeated Image images = 1;
 }
