@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #import "base/mac/mac_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -83,11 +84,6 @@ const int kMinURLWidth = 120;
 // Color of the vector graphic icons when the location bar is dark.
 // SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
 const SkColor kMaterialDarkVectorIconColor = SK_ColorWHITE;
-
-void NotReached(const gfx::Image& image) {
-  // Mac Cocoa version should not receive asynchronously delivered favicons.
-  NOTREACHED();
-}
 
 }  // namespace
 
@@ -464,8 +460,10 @@ void LocationBarViewMac::UpdateLocationIcon() {
     image_skia = gfx::CreateVectorIcon(toolbar::kHttpsValidIcon,
                                        kDefaultIconSize, vector_icon_color);
   } else {
+    // The view may return an icon asynchronously when certain flags are on,
+    // but the Cocoa implementation should just ignore them.
     image_skia = omnibox_view_->GetIcon(kDefaultIconSize, vector_icon_color,
-                                        base::BindOnce(&NotReached));
+                                        base::DoNothing());
   }
 
   NSImage* image = NSImageFromImageSkiaWithColorSpace(
