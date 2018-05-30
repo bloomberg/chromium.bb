@@ -17,11 +17,8 @@ class UnifiedBrightnessSliderController : public UnifiedSliderListener {
   explicit UnifiedBrightnessSliderController(UnifiedSystemTrayModel* model);
   ~UnifiedBrightnessSliderController() override;
 
-  // Instantiates UnifiedSliderView. The view will be onwed by views hierarchy.
-  // The view should be always deleted after the controller is destructed.
-  views::View* CreateView();
-
   // UnifiedSliderListener:
+  views::View* CreateView() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   void SliderValueChanged(views::Slider* sender,
                           float value,

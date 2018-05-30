@@ -16,6 +16,10 @@ namespace ash {
 class UnifiedSliderListener : public views::ButtonListener,
                               public views::SliderListener {
  public:
+  // Instantiates UnifiedSliderView. The view will be onwed by views hierarchy.
+  // The view should be always deleted after the controller is destructed.
+  virtual views::View* CreateView() = 0;
+
   ~UnifiedSliderListener() override = default;
 };
 
