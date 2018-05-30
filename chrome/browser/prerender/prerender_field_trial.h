@@ -7,26 +7,15 @@
 
 #include "base/feature_list.h"
 
-class Profile;
-
 namespace prerender {
 
 // These Finch feature and parameter strings exposed for for testing.
 extern const base::Feature kNoStatePrefetchFeature;
-extern const char kNoStatePrefetchFeatureModeParameterName[];
-extern const char kNoStatePrefetchFeatureOmniboxModeParameterName[];
-extern const char kNoStatePrefetchFeatureModeParameterPrefetch[];
-extern const char kNoStatePrefetchFeatureModeParameterPrerender[];
-extern const char kNoStatePrefetchFeatureModeParameterSimpleLoad[];
-extern const char kNoStatePrefetchFeatureModeParameterDisabled[];
 
-// Configures prerender using kNoStatePrefetchFeature and field trial
-// parameters.
-void ConfigurePrerender();
+// Configures global state using kNoStatePrefetchFeature.
+void ConfigureNoStatePrefetch();
 
-// Returns true if the user has opted in or has been opted in to the
-// prerendering from Omnibox experiment.
-bool IsOmniboxEnabled(Profile* profile);
+bool IsNoStatePrefetchEnabled();
 
 }  // namespace prerender
 

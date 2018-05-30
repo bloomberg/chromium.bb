@@ -673,7 +673,7 @@ class MediaEngagementPrerenderBrowserTest : public MediaEngagementBrowserTest {
   void SetUpOnMainThread() override {
     MediaEngagementBrowserTest::SetUpOnMainThread();
 
-    prerender::PrerenderManager::SetOmniboxMode(
+    prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   }
 };

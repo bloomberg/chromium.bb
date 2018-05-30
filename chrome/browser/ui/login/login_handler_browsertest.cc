@@ -135,13 +135,12 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   class SetPrefetchForTest {
    public:
     explicit SetPrefetchForTest(bool prefetch)
-        : old_prerender_mode_(
-              prerender::PrerenderManager::GetMode(prerender::ORIGIN_NONE)) {
+        : old_prerender_mode_(prerender::PrerenderManager::GetMode()) {
       std::string exp_group = prefetch ? "ExperimentYes" : "ExperimentNo";
       base::FieldTrialList::CreateFieldTrial("Prefetch", exp_group);
       // Disable prerender so this is just a prefetch of the top-level page.
       prerender::PrerenderManager::SetMode(
-          prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
+          prerender::PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
     }
 
     ~SetPrefetchForTest() {

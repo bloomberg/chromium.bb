@@ -361,7 +361,7 @@ gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
 
 void ChromeOmniboxClient::OnCurrentMatchChanged(
     const AutocompleteMatch& match) {
-  if (!prerender::IsOmniboxEnabled(profile_))
+  if (!prerender::IsNoStatePrefetchEnabled())
     DoPreconnect(match);
 }
 

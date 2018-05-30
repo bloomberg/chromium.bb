@@ -79,12 +79,7 @@ class PrerenderManager : public content::NotificationObserver,
                          public MediaCaptureDevicesDispatcher::Observer {
  public:
   enum PrerenderManagerMode {
-    // WARNING: Legacy code, not for use. Disables prerendering and avoids
-    // creating an instance of PrerenderManager. This mode overrides forced
-    // prerenders which breaks the assumptions of the CustomTabActivityTest.
-    PRERENDER_MODE_DISABLED,
-
-    // Enables all types of prerendering for any origin.
+    // Deprecated: Enables all types of prerendering for any origin.
     PRERENDER_MODE_ENABLED,
 
     // For each request to prerender performs a NoStatePrefetch for the same URL
@@ -218,12 +213,8 @@ class PrerenderManager : public content::NotificationObserver,
                                            bool was_hidden,
                                            base::TimeTicks ticks);
 
-  static PrerenderManagerMode GetMode(Origin origin);
-  static void SetMode(PrerenderManagerMode mode);
-  static void SetOmniboxMode(PrerenderManagerMode mode);
-  static bool IsAnyPrerenderingPossible();
-  static bool IsNoStatePrefetch(Origin origin);
-  static bool IsSimpleLoadExperiment(Origin origin);
+  static PrerenderManagerMode GetMode() { return mode_; }
+  static void SetMode(PrerenderManagerMode mode) { mode_ = mode; }
 
   // Query the list of current prerender pages to see if the given web contents
   // is prerendering a page. The optional parameter |origin| is an output
@@ -344,6 +335,13 @@ class PrerenderManager : public content::NotificationObserver,
       PrerenderContents::Factory* prerender_contents_factory);
 
   base::WeakPtr<PrerenderManager> AsWeakPtr();
+
+  // Clears the list of recently prefetched URLs. Allows, for example, to reuse
+  // the same URL in tests, without running into FINAL_STATUS_DUPLICATE.
+  void ClearPrefetchInformationForTesting();
+
+  // Returns true iff the |url| is found in the list of recent prefetches.
+  bool HasRecentlyPrefetchedUrlForTesting(const GURL& url);
 
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -506,6 +504,10 @@ class PrerenderManager : public content::NotificationObserver,
                               base::TimeDelta* prefetch_age,
                               Origin* origin);
 
+  // Called when PrerenderContents gets destroyed. Attaches the |final_status|
+  // to the most recent prefetch matching the |url|.
+  void SetPrefetchFinalStatusForUrl(const GURL& url, FinalStatus final_status);
+
   // Called when a prefetch has been used. Prefetches avoid cache revalidation
   // only once.
   void OnPrefetchUsed(const GURL& url);
@@ -567,7 +569,6 @@ class PrerenderManager : public content::NotificationObserver,
   std::unique_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 
   static PrerenderManagerMode mode_;
-  static PrerenderManagerMode omnibox_mode_;
 
   // RepeatingTimer to perform periodic cleanups of pending prerendered
   // pages.

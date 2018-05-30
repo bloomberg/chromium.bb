@@ -41,7 +41,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    prerender::PrerenderManager::SetOmniboxMode(
+    prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   }
 

@@ -624,6 +624,8 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 
   prerendering_has_been_cancelled_ = true;
   prerender_manager_->AddToHistory(this);
+  prerender_manager_->SetPrefetchFinalStatusForUrl(prerender_url_,
+                                                   final_status);
   prerender_manager_->MoveEntryToPendingDelete(this, final_status);
 
   if (prerendering_has_started())

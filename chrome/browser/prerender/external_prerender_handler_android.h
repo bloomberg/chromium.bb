@@ -51,12 +51,13 @@ class ExternalPrerenderHandlerAndroid {
                                 GURL url,
                                 content::WebContents* web_contents);
 
-  // Whether the PrerenderManager associated with the given profile has any
-  // prerenders for the url, and the prerender has finished loading.
-  static bool HasPrerenderedAndFinishedLoadingUrl(
-      Profile* profile,
-      GURL url,
-      content::WebContents* web_contents);
+  // Whether the PrerenderManager identified by |profile| has recently
+  // prefetched the |url|.
+  static bool HasRecentlyPrefetchedUrlForTesting(Profile* profile, GURL url);
+
+  // Clears the information about recent prefetches in the PrerenderManager
+  // identified by |profile|.
+  static bool ClearPrefetchInformationForTesting(Profile* profile);
 
  private:
   virtual ~ExternalPrerenderHandlerAndroid();

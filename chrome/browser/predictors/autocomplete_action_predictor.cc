@@ -190,15 +190,11 @@ AutocompleteActionPredictor::Action
     }
   }
 
-  // Downgrade prerender to preconnect if this is a search match or if omnibox
-  // prerendering is disabled. There are cases when Instant will not handle a
-  // search suggestion and in those cases it would be good to prerender the
-  // search results, however search engines have not been set up to correctly
-  // handle being prerendered and until they are we should avoid it.
-  // http://crbug.com/117495
+  // Downgrade prerender to preconnect if this is a search match or if
+  // nostate-prefetch is disabled.
   if (action == ACTION_PRERENDER &&
       (AutocompleteMatch::IsSearchType(match.type) ||
-       !prerender::IsOmniboxEnabled(profile_))) {
+       !prerender::IsNoStatePrefetchEnabled())) {
     action = ACTION_PRECONNECT;
   }
 
@@ -243,9 +239,8 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
     // next StartPrerendering call.
   }
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "Prerender.OmniboxNavigationsCouldPrerender",
-      prerender::IsOmniboxEnabled(profile_));
+  UMA_HISTOGRAM_BOOLEAN("Prerender.OmniboxNavigationsCouldPrerender",
+                        prerender::IsNoStatePrefetchEnabled());
 
   const AutocompleteMatch& match = log.result.match_at(log.selected_index);
   const GURL& opened_url = match.destination_url;
