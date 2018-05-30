@@ -135,23 +135,36 @@ static jboolean JNI_ExternalPrerenderHandler_HasPrerenderedUrl(
   return prerender_manager->HasPrerenderedUrl(url, web_contents);
 }
 
-static jboolean
-JNI_ExternalPrerenderHandler_HasPrerenderedAndFinishedLoadingUrl(
+static jboolean JNI_ExternalPrerenderHandler_HasRecentlyPrefetchedUrlForTesting(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,
-    const JavaParamRef<jstring>& jurl,
-    const JavaParamRef<jobject>& jweb_contents) {
-  GURL url;
-  PrerenderManager* prerender_manager;
-  content::WebContents* web_contents;
-  if (!JNI_ExternalPrerenderHandler_CheckAndConvertParams(
-          env, jprofile, jurl, jweb_contents, &url, &prerender_manager,
-          &web_contents))
+    const JavaParamRef<jstring>& jurl) {
+  if (!jurl)
     return false;
 
-  return prerender_manager->HasPrerenderedAndFinishedLoadingUrl(url,
-                                                                web_contents);
+  GURL url(ConvertJavaStringToUTF16(env, jurl));
+  if (!url.is_valid())
+    return false;
+
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(profile);
+  if (!prerender_manager)
+    return false;
+  return prerender_manager->HasRecentlyPrefetchedUrlForTesting(url);
+}
+
+static void JNI_ExternalPrerenderHandler_ClearPrefetchInformationForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  PrerenderManager* prerender_manager =
+      PrerenderManagerFactory::GetForBrowserContext(profile);
+  if (!prerender_manager)
+    return;
+  prerender_manager->ClearPrefetchInformationForTesting();
 }
 
 ExternalPrerenderHandlerAndroid::ExternalPrerenderHandlerAndroid() {}

@@ -22,7 +22,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -116,21 +115,6 @@ public class PrerenderTest {
 
         observer.waitForTitleUpdate(5);
         Assert.assertEquals(newTitle, tab.getTitle());
-    }
-
-    /**
-     * Tests that we do get the page load finished notification even when a page has been fully
-     * prerendered.
-     */
-    @Test
-    @LargeTest
-    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @Feature({"TabContents"})
-    @RetryOnFailure
-    public void testPageLoadFinishNotification() throws InterruptedException {
-        String url = mTestServer.getURL("/chrome/test/data/android/prerender/google.html");
-        PrerenderTestHelper.prerenderUrl(url, mActivityTestRule.getActivity().getActivityTab());
-        mActivityTestRule.loadUrl(url);
     }
 
     /**

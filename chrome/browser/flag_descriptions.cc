@@ -1044,13 +1044,9 @@ const char kNewblueName[] = "Newblue";
 const char kNewblueDescription[] =
     "Enables the use of newblue Bluetooth daemon.";
 
-const char kNostatePrefetchName[] = "No-State Prefetch";
+const char kNostatePrefetchName[] = "NoState Prefetch";
 const char kNostatePrefetchDescription[] =
-    R"*("No-State Prefetch" pre-downloads resources to improve load )*"
-    R"*(times. "Prerender" does a full pre-rendering of the page, to )*"
-    R"*(improve load times even more. "Simple Load" does nothing and is )*"
-    R"*(similar to disabling the feature, but collects more metrics for )*"
-    R"*(comparison purposes.)*";
+    R"*(If enabled, pre-downloads resources to improve page load speed.)*";
 
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =

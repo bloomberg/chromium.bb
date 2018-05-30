@@ -802,26 +802,6 @@ static_assert(net::EFFECTIVE_CONNECTION_TYPE_4G + 1 ==
                   net::EFFECTIVE_CONNECTION_TYPE_LAST,
               "ECT enum value is not handled.");
 
-const FeatureEntry::FeatureParam kNoStatePrefetchEnabled[] = {
-    {prerender::kNoStatePrefetchFeatureModeParameterName,
-     prerender::kNoStatePrefetchFeatureModeParameterPrefetch}};
-
-const FeatureEntry::FeatureParam kNoStatePrefetchPrerender[] = {
-    {prerender::kNoStatePrefetchFeatureModeParameterName,
-     prerender::kNoStatePrefetchFeatureModeParameterPrerender}};
-
-const FeatureEntry::FeatureParam kNoStatePrefetchSimpleLoad[] = {
-    {prerender::kNoStatePrefetchFeatureModeParameterName,
-     prerender::kNoStatePrefetchFeatureModeParameterSimpleLoad}};
-
-const FeatureEntry::FeatureVariation kNoStatePrefetchFeatureVariations[] = {
-    {"No-state prefetch", kNoStatePrefetchEnabled,
-     arraysize(kNoStatePrefetchEnabled), nullptr},
-    {"Prerender", kNoStatePrefetchPrerender,
-     arraysize(kNoStatePrefetchPrerender), nullptr},
-    {"Simple load", kNoStatePrefetchSimpleLoad,
-     arraysize(kNoStatePrefetchSimpleLoad), nullptr}};
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kAutofillKeyboardAccessoryFeatureVariationAnimationDuration[] = {
@@ -2813,9 +2793,7 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
     {"enable-nostate-prefetch", flag_descriptions::kNostatePrefetchName,
      flag_descriptions::kNostatePrefetchDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
-                                    kNoStatePrefetchFeatureVariations,
-                                    "NoStatePrefetchValidation")},
+     FEATURE_VALUE_TYPE(prerender::kNoStatePrefetchFeature)},
 
 #if defined(OS_CHROMEOS)
     {switches::kEnableUiDevTools, flag_descriptions::kUiDevToolsName,

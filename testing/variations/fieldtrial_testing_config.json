@@ -2177,30 +2177,6 @@
             ]
         }
     ],
-    "NoStatePrefetchRollout": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "NoStatePrefetchEnabled",
-                    "params": {
-                        "instant_mode": "simple_load",
-                        "mode": "no_state_prefetch",
-                        "omnibox_mode": "no_state_prefetch"
-                    },
-                    "enable_features": [
-                        "NoStatePrefetch"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfferUploadCreditCards": [
         {
             "platforms": [

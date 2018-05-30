@@ -205,7 +205,7 @@ void SetupStabilityDebugging() {
 }  // namespace
 
 void SetupDesktopFieldTrials() {
-  prerender::ConfigurePrerender();
+  prerender::ConfigureNoStatePrefetch();
   SetupStunProbeTrial();
 #if defined(OS_WIN)
   SetupStabilityDebugging();

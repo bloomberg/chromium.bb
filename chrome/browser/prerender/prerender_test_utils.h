@@ -416,18 +416,14 @@ class PrerenderInProcessBrowserTest : virtual public InProcessBrowserTest {
 // RAII class to save and restore the prerender mode.
 class RestorePrerenderMode {
  public:
-  RestorePrerenderMode()
-      : prev_mode_(PrerenderManager::GetMode(ORIGIN_NONE)),
-        prev_omnibox_mode_(PrerenderManager::GetMode(ORIGIN_OMNIBOX)) {}
+  RestorePrerenderMode() : prev_mode_(PrerenderManager::GetMode()) {}
 
   ~RestorePrerenderMode() {
     PrerenderManager::SetMode(prev_mode_);
-    PrerenderManager::SetOmniboxMode(prev_omnibox_mode_);
   }
 
  private:
   PrerenderManager::PrerenderManagerMode prev_mode_;
-  PrerenderManager::PrerenderManagerMode prev_omnibox_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(RestorePrerenderMode);
 };
