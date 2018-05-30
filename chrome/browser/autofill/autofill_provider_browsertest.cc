@@ -131,8 +131,8 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
     testing::Mock::VerifyAndClearExpectations(autofill_provider_.get());
   }
 
-  content::RenderViewHost* RenderViewHost() {
-    return WebContents()->GetRenderViewHost();
+  content::RenderFrameHost* GetMainFrame() {
+    return WebContents()->GetMainFrame();
   }
 
   content::WebContents* WebContents() {
@@ -175,7 +175,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
                                                 "/autofill/label_change.html"));
 
     std::string focus("document.getElementById('address').focus();");
-    ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), focus));
+    ASSERT_TRUE(content::ExecuteScript(GetMainFrame(), focus));
 
     SimulateUserTypingInFocuedField();
     while (!autofill_provider_->is_queried()) {
@@ -191,7 +191,7 @@ class AutofillProviderBrowserTest : public InProcessBrowserTest {
         "document.getElementById('submit_button').click();";
 
     ASSERT_TRUE(
-        content::ExecuteScript(RenderViewHost(), change_label_and_submit));
+        content::ExecuteScript(GetMainFrame(), change_label_and_submit));
     // Need to pay attention for a message that XHR has finished since there
     // is no navigation to wait for.
     content::DOMMessageQueue message_queue;
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
       "var iframe = document.getElementById('address_iframe');"
       "var frame_doc = iframe.contentDocument;"
       "frame_doc.getElementById('address_field').focus();");
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), focus));
+  ASSERT_TRUE(content::ExecuteScript(GetMainFrame(), focus));
 
   SimulateUserTypingInFocuedField();
   std::string fill_and_submit =
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
       "var frame_doc = iframe.contentDocument;"
       "frame_doc.getElementById('submit_button').click();";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(GetMainFrame(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"SUBMISSION_FINISHED\"")
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
       "var iframe = document.getElementById('address_iframe');"
       "var frame_doc = iframe.contentDocument;"
       "frame_doc.getElementById('address_field').focus();");
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), focus));
+  ASSERT_TRUE(content::ExecuteScript(GetMainFrame(), focus));
 
   SimulateUserTypingInFocuedField();
   std::string fill_and_submit =
@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTest,
       "var frame_doc = iframe.contentDocument;"
       "frame_doc.getElementById('submit_button').click();";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(GetMainFrame(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"SUBMISSION_FINISHED\"")
