@@ -25,9 +25,9 @@ class FileSystemUtilTest : public testing::Test {
 
 TEST_F(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
   const std::string kUnescapedFileName(
-      "tmp:`~!@#$%^&*()-_=+[{|]}\\\\;\',<.>/?");
+      R"(tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?)");
   const std::string kEscapedFileName(
-      "tmp:`~!@#$%25^&*()-_=+[{|]}\\\\;\',<%2E>%2F?");
+      R"(tmp:`~!@#$%25^&*()-_=+[{|]}\\;',<%2E>%2F?)");
   EXPECT_EQ(kEscapedFileName, EscapeCacheFileName(kUnescapedFileName));
   EXPECT_EQ(kUnescapedFileName, UnescapeCacheFileName(kEscapedFileName));
 }
