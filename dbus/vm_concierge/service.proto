@@ -246,6 +246,9 @@ message ListVmDisksResponse {
 
   // The failure reason if the disks could not be listed.
   string failure_reason = 3;
+
+  // The total size in bytes on disk of the disk images in the response.
+  uint64 total_size = 4;
 }
 
 // Message used in the signal for when a container has started up or failed to
