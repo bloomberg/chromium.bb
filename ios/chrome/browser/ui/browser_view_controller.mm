@@ -791,6 +791,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (BOOL)isTabScrolledToTop:(Tab*)tab;
 // Returns the footer view if one exists (e.g. the voice search bar).
 - (UIView*)footerView;
+// Returns web contents frame without including primary toolbar.
+- (CGRect)visibleFrameForTab:(Tab*)tab;
 // Returns the header height needed for |tab|.
 - (CGFloat)headerHeightForTab:(Tab*)tab;
 // Sets the frame for the headers.
@@ -2578,6 +2580,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (CGRect)visibleFrameForTab:(Tab*)tab {
+  UIEdgeInsets headerInset = UIEdgeInsetsMake(
+      [self nativeContentHeaderHeightForWebState:tab.webState], 0, 0, 0);
+  return UIEdgeInsetsInsetRect(tab.view.bounds, headerInset);
+}
+
 - (CGFloat)headerHeightForTab:(Tab*)tab {
   id nativeController = [self nativeControllerForTab:tab];
   if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
@@ -2935,13 +2943,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
                       selectText:(BOOL)selectText
                      shouldFocus:(BOOL)shouldFocus {
   DCHECK(_findBarController);
-  Tab* tab = [_model currentTab];
-  DCHECK(tab);
-  CRWWebController* webController = tab.webController;
-
   CGRect referenceFrame = CGRectZero;
   if ([self canShowTabStrip]) {
-    referenceFrame = webController.visibleFrame;
+    DCHECK(_model.currentTab);
+    referenceFrame = [self visibleFrameForTab:_model.currentTab];
     referenceFrame.origin.y -= kIPadFindBarOverlap;
   } else {
     referenceFrame = self.contentArea.frame;
@@ -3487,10 +3492,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return CGRectGetMaxY(self.view.frame);
   } else if (IsIPadIdiom()) {
     // The infobars on iPad are display at the top of a tab.
-    return CGRectGetMinY([[_model currentTab].webController visibleFrame]);
+    return CGRectGetMinY([self visibleFrameForTab:_model.currentTab]);
   } else {
     // The infobars on iPhone are displayed at the bottom of a tab.
-    CGRect visibleFrame = [[_model currentTab].webController visibleFrame];
+    CGRect visibleFrame = [self visibleFrameForTab:_model.currentTab];
     return CGRectGetMaxY(visibleFrame) -
            CGRectGetHeight(_infoBarContainer->view().frame);
   }
@@ -3498,7 +3503,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 // Returns a vertical download manager offset relative to the tab content.
 - (CGFloat)downloadManagerOverlayYOffsetForTab:(Tab*)tab {
-  return CGRectGetMaxY([tab.webController visibleFrame]) -
+  return CGRectGetMaxY([self visibleFrameForTab:tab]) -
          CGRectGetHeight(_downloadManagerCoordinator.viewController.view.frame);
 }
 
@@ -3521,7 +3526,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return CGRectGetMaxY(self.view.frame);
   } else {
     // The voice search bar on iPhone is displayed at the bottom of a tab.
-    CGRect visibleFrame = [[_model currentTab].webController visibleFrame];
+    CGRect visibleFrame = [self visibleFrameForTab:_model.currentTab];
     return CGRectGetMaxY(visibleFrame) - kVoiceSearchBarHeight;
   }
 }

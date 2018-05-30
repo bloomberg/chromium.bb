@@ -204,10 +204,6 @@ class WebStateImpl;
 // Removes |toolbar| from the web view.
 - (void)removeToolbarViewFromWebView:(UIView*)toolbarView;
 
-// Returns the always-visible frame, not including the part that could be
-// covered by the toolbar.
-- (CGRect)visibleFrame;
-
 - (CRWJSInjectionReceiver*)jsInjectionReceiver;
 
 // Returns the native controller (if any) current mananging the content.
