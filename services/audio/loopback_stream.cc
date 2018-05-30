@@ -355,13 +355,15 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
       (now - first_generate_time_).InMicroseconds() *
       output_params_.sample_rate() / base::Time::kMicrosecondsPerSecond;
   if (frames_elapsed_ < required_frames_elapsed) {
-    // Audio generation has fallen behind. Skip ahead to the next interval.
     TRACE_EVENT_INSTANT1("audio", "GenerateMoreAudio Is Behind",
                          TRACE_EVENT_SCOPE_THREAD, "frames_behind",
                          (required_frames_elapsed - frames_elapsed_));
-    frames_elapsed_ = ((required_frames_elapsed + frames_per_buffer - 1) /
-                       frames_per_buffer) *
-                      frames_per_buffer;
+    // Audio generation has fallen behind. Skip-ahead the frame counter so that
+    // audio generation will resume for the next buffer after the one that
+    // should be generating right now. http://crbug.com/847487
+    const int64_t required_buffers_elapsed =
+        ((required_frames_elapsed + frames_per_buffer - 1) / frames_per_buffer);
+    frames_elapsed_ = (required_buffers_elapsed + 1) * frames_per_buffer;
   }
   next_generate_time_ =
       first_generate_time_ +
