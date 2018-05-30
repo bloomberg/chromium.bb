@@ -14,7 +14,7 @@
 namespace {
 
 // Length of the trailing button side.
-const CGFloat kButtonSize = 20;
+const CGFloat kButtonSize = 28;
 
 const CGFloat kButtonTrailingSpacing = 10;
 
