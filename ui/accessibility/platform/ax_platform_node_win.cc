@@ -3244,6 +3244,12 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       // maps this to more general IA2_ROLE_LANDMARK.
       ia2_role = IA2_ROLE_LANDMARK;
       break;
+    case ax::mojom::Role::kContentDeletion:
+      ia2_role = IA2_ROLE_CONTENT_DELETION;
+      break;
+    case ax::mojom::Role::kContentInsertion:
+      ia2_role = IA2_ROLE_CONTENT_INSERTION;
+      break;
     case ax::mojom::Role::kContentInfo:
       ia2_role = IA2_ROLE_LANDMARK;
       break;
