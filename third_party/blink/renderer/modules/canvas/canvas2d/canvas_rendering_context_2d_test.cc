@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -300,8 +301,8 @@ class MockImageBufferSurfaceForOverwriteTesting : public Canvas2DLayerBridge {
       std::make_unique<MockImageBufferSurfaceForOverwriteTesting>(             \
           size, CanvasColorParams());                                          \
   MockImageBufferSurfaceForOverwriteTesting* surface_ptr = mock_surface.get(); \
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(mock_surface), \
-                                                      size);                   \
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(std::move(mock_surface),    \
+                                                   size);                      \
   EXPECT_CALL(*surface_ptr, WillOverwriteCanvas()).Times(EXPECTED_OVERDRAWS);  \
   Context2d()->save();
 
@@ -554,7 +555,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
                                                 kPreferAcceleration);
   FakeCanvas2DLayerBridge* fake_accelerate_surface_ptr =
       fake_accelerate_surface.get();
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
   // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per
   // pixel per buffer, and 2 is an estimate of num of gpu buffers required
@@ -584,7 +585,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   IntSize size2(10, 5);
   auto fake_accelerate_surface2 = std::make_unique<FakeCanvas2DLayerBridge>(
       size2, CanvasColorParams(), kPreferAcceleration);
-  anotherCanvas->CreateCanvas2DLayerBridgeForTesting(
+  anotherCanvas->SetCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface2), size2);
   EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
   EXPECT_EQ(1200, GetGlobalGPUMemoryUsage());
@@ -636,7 +637,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(size, Canvas2DLayerBridge::kForceAccelerationForTesting);
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge), size);
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
@@ -697,8 +698,7 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
     IntSize size(dst_size, dst_size);
     std::unique_ptr<Canvas2DLayerBridge> bridge =
         MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
-    CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge),
-                                                        size);
+    CanvasElement().SetCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
     EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
@@ -740,11 +740,11 @@ TEST_F(CanvasRenderingContext2DTest,
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferAcceleration);
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
 
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge());
-  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->GetResourceProvider());
+  EXPECT_FALSE(CanvasElement().ResourceProvider());
 }
 
 TEST_F(CanvasRenderingContext2DTest, DisableAcceleration_UpdateGPUMemoryUsage) {
@@ -753,7 +753,7 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration_UpdateGPUMemoryUsage) {
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferAcceleration);
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
   CanvasRenderingContext2D* context = Context2d();
 
@@ -786,11 +786,14 @@ TEST_F(CanvasRenderingContext2DTest,
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferAcceleration);
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(
       std::move(fake_accelerate_surface), size);
 
+  FakeCanvasResourceHost host;
   auto fake_deaccelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
       size, CanvasColorParams(), kPreferNoAcceleration);
+  fake_deaccelerate_surface->SetCanvasResourceHost(&host);
+
   PaintCanvas* paint_canvas_ptr = fake_deaccelerate_surface->Canvas();
   FakeCanvas2DLayerBridge* surface_ptr = fake_deaccelerate_surface.get();
 
@@ -1139,7 +1142,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
       MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge), size);
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   // Take a snapshot to trigger lazy resource provider creation
@@ -1177,7 +1180,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
       MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
-  CanvasElement().CreateCanvas2DLayerBridgeForTesting(std::move(bridge), size);
+  CanvasElement().SetCanvas2DLayerBridgeForTesting(std::move(bridge), size);
 
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 

@@ -390,9 +390,7 @@ void HTMLCanvasElement::FinalizeFrame() {
 
   // FinalizeFrame indicates the end of a script task that may have rendered
   // into the canvas, now is a good time to unlock cache entries.
-  auto* resource_provider = canvas2d_bridge_
-                                ? canvas2d_bridge_->GetResourceProvider()
-                                : ResourceProvider();
+  auto* resource_provider = ResourceProvider();
   if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
@@ -459,7 +457,6 @@ void HTMLCanvasElement::DisableAcceleration(
 
   if (bridge && canvas2d_bridge_) {
     ReplaceExisting2dLayerBridge(std::move(bridge));
-    UpdateMemoryUsage();
   }
 
   // We must force a paint invalidation on the canvas even if it's
@@ -1033,7 +1030,7 @@ HTMLCanvasElement::CreateUnaccelerated2dBuffer() {
   return nullptr;
 }
 
-void HTMLCanvasElement::CreateCanvas2DLayerBridgeInternal(
+void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     std::unique_ptr<Canvas2DLayerBridge> external_canvas2d_bridge) {
   DCHECK(Is2d() && !canvas2d_bridge_);
 
@@ -1098,7 +1095,7 @@ void HTMLCanvasElement::DisableDeferral(DisableDeferralReason reason) {
 Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   DCHECK(Is2d());
   if (!canvas2d_bridge_ && !did_fail_to_create_resource_provider_) {
-    CreateCanvas2DLayerBridgeInternal(nullptr);
+    SetCanvas2DLayerBridgeInternal(nullptr);
     if (did_fail_to_create_resource_provider_ && !Size().IsEmpty()) {
       context_->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
     }
@@ -1106,13 +1103,13 @@ Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   return canvas2d_bridge_.get();
 }
 
-void HTMLCanvasElement::CreateCanvas2DLayerBridgeForTesting(
+void HTMLCanvasElement::SetCanvas2DLayerBridgeForTesting(
     std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
   DiscardResourceProvider();
   SetIntegralAttribute(widthAttr, size.Width());
   SetIntegralAttribute(heightAttr, size.Height());
-  CreateCanvas2DLayerBridgeInternal(std::move(bridge));
+  SetCanvas2DLayerBridgeInternal(std::move(bridge));
 }
 
 scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
@@ -1212,7 +1209,6 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
         CreateAccelerated2dBuffer(&msaa_sample_count);
     if (surface) {
       ReplaceExisting2dLayerBridge(std::move(surface));
-      UpdateMemoryUsage();
       SetNeedsCompositingUpdate();
     }
   }
@@ -1509,23 +1505,25 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 }
 
 void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
-    std::unique_ptr<Canvas2DLayerBridge> new_buffer) {
+    std::unique_ptr<Canvas2DLayerBridge> new_layer_bridge) {
+  scoped_refptr<StaticBitmapImage> image;
   if (canvas2d_bridge_) {
-    scoped_refptr<StaticBitmapImage> image =
-        canvas2d_bridge_->NewImageSnapshot(kPreferNoAcceleration);
-
-    // image can be null if alloaction failed in which case we should just
+    image = canvas2d_bridge_->NewImageSnapshot(kPreferNoAcceleration);
+    // image can be null if allocation failed in which case we should just
     // abort the surface switch to reatain the old surface which is still
     // functional.
     if (!image)
       return;
-    new_buffer->DrawFullImage(image->PaintImageForCurrentFrame());
   }
+  new_layer_bridge->SetCanvasResourceHost(this);
+  ReplaceResourceProvider(nullptr);
+  canvas2d_bridge_ = std::move(new_layer_bridge);
+  if (image)
+    canvas2d_bridge_->DrawFullImage(image->PaintImageForCurrentFrame());
 
-  RestoreCanvasMatrixClipStack(new_buffer->Canvas());
-  new_buffer->DidRestoreCanvasMatrixClipStack(new_buffer->Canvas());
-  canvas2d_bridge_ = std::move(new_buffer);
-  canvas2d_bridge_->SetCanvasResourceHost(this);
+  RestoreCanvasMatrixClipStack(canvas2d_bridge_->Canvas());
+  canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(canvas2d_bridge_->Canvas());
+  UpdateMemoryUsage();
 }
 
 bool HTMLCanvasElement::HasImageBitmapContext() const {
