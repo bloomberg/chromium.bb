@@ -20,6 +20,13 @@ void OnPresentedFrame(const gfx::PresentationFeedback& feedback) {
   // Do nothing for now.
 }
 
+bool ClearGlErrors() {
+  bool errors = false;
+  while (glGetError() != GL_NO_ERROR)
+    errors = true;
+  return errors;
+}
+
 }  // namespace
 
 GlRenderer::GlRenderer(const scoped_refptr<gl::GLSurface>& surface,
@@ -50,10 +57,18 @@ bool GlRenderer::Initialize() {
 void GlRenderer::RenderFrame() {
   context_->MakeCurrent(surface_.get());
 
+  // Checking and clearing GL errors can be expensive, but we can afford to do
+  // this in the testapp as a sanity check.  Clear errors before drawing UI,
+  // then assert no new errors after drawing.  See https://crbug.com/768905.
+  ClearGlErrors();
+
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
   vr_->DrawFrame();
+
+  DCHECK(!ClearGlErrors());
+
   PostRenderFrameTask(
       surface_->SwapBuffers(base::BindRepeating(&OnPresentedFrame)));
 }
