@@ -63,7 +63,12 @@ bool IsNotificationIndicatorEnabled() {
 
 // Enables GPU rasterization for all UI drawing (where not blacklisted).
 const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_MACOSX)
+                                           base::FEATURE_ENABLED_BY_DEFAULT
+#else
+                                           base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 bool IsUiGpuRasterizationEnabled() {
   return base::FeatureList::IsEnabled(kUiGpuRasterization);

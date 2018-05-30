@@ -456,14 +456,15 @@ void FeatureInfo::InitializeFeatures() {
   // so the extension string is always exposed.
   AddExtensionString("GL_OES_vertex_array_object");
 
+  if (!disallowed_features_.gpu_memory_manager) {
 // Texture storage image is only usable with native gpu memory buffer support.
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(USE_OZONE))
-  feature_flags_.chromium_texture_storage_image = true;
-  AddExtensionString("GL_CHROMIUM_texture_storage_image");
+    feature_flags_.chromium_texture_storage_image = true;
+    AddExtensionString("GL_CHROMIUM_texture_storage_image");
 #endif
 
-  if (!disallowed_features_.gpu_memory_manager)
     AddExtensionString("GL_CHROMIUM_gpu_memory_manager");
+  }
 
   if (gl::HasExtension(extensions, "GL_ANGLE_translated_shader_source")) {
     feature_flags_.angle_translated_shader_source = true;
