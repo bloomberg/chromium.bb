@@ -24,11 +24,11 @@
         flex: 1;
       }
     </style>
-    <div id="outer" on-tap="toggleExpand_">
-      <div id="label" on-tap="toggleExpand_"><slot></slot></div>
+    <div id="outer">
+      <div id="label"><slot></slot></div>
       <paper-icon-button-light class$="[[iconName_(expanded)]]">
-        <button toggles active="{{expanded}}" disabled="[[disabled]]"
-            aria-label$="[[alt]]" aria-pressed$="[[getAriaPressed_(expanded)]]"
+        <button disabled="[[disabled]]" aria-label$="[[alt]]"
+            aria-pressed$="[[getAriaPressed_(expanded)]]"
             tabindex$="[[tabIndex]]">
         </button>
       </paper-icon-button-light>
