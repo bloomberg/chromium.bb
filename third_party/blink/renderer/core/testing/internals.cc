@@ -1049,7 +1049,7 @@ void Internals::addTextMatchMarker(const Range* range,
 
   // This simulates what the production code does after
   // DocumentMarkerController::addTextMatchMarker().
-  range->OwnerDocument().View()->InvalidatePaintForTickmarks();
+  range->OwnerDocument().GetLayoutView()->InvalidatePaintForTickmarks();
 }
 
 static bool ParseColor(const String& value,

@@ -242,6 +242,18 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   IntSize ScrolledContentOffset() const override;
 
+  // Returns the coordinates of find-in-page scrollbar tickmarks.  These come
+  // from DocumentMarkerController, unless overridden by SetTickmarks.
+  Vector<IntRect> GetTickmarks() const;
+
+  // Sets the coordinates of find-in-page scrollbar tickmarks, bypassing
+  // DocumentMarkerController.  This is used by the PDF plugin.
+  void OverrideTickmarks(const Vector<IntRect>&);
+
+  // Issues a paint invalidation on the layout viewport's vertical scrollbar
+  // (which is responsible for painting the tickmarks).
+  void InvalidatePaintForTickmarks();
+
  private:
   void MapLocalToAncestor(
       const LayoutBoxModelObject* ancestor,
@@ -302,6 +314,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   unsigned hit_test_count_;
   unsigned hit_test_cache_hits_;
   Persistent<HitTestCache> hit_test_cache_;
+
+  Vector<IntRect> tickmarks_override_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, IsLayoutView());

@@ -202,6 +202,10 @@ class CORE_EXPORT TextFinder final
   // Determines whether to invalidate the content area and scrollbar.
   void InvalidateIfNecessary();
 
+  // Issues a paint invalidation on the layout viewport's vertical scrollbar,
+  // which is responsible for painting the tickmarks.
+  void InvalidatePaintForTickmarks();
+
   LocalFrame* GetFrame() const;
 
   WebLocalFrameImpl& OwnerFrame() const {

@@ -37,6 +37,7 @@
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
 
@@ -230,11 +231,11 @@ void WebLocalFrameImpl::SetTickmarks(const WebVector<WebRect>& tickmarks) {
 }
 
 void FindInPage::SetTickmarks(const WebVector<WebRect>& tickmarks) {
-  if (frame_->GetFrameView()) {
+  if (LayoutView* layout_view = frame_->GetFrame()->ContentLayoutObject()) {
     Vector<IntRect> tickmarks_converted(tickmarks.size());
     for (size_t i = 0; i < tickmarks.size(); ++i)
       tickmarks_converted[i] = tickmarks[i];
-    frame_->GetFrameView()->SetTickmarks(tickmarks_converted);
+    layout_view->OverrideTickmarks(tickmarks_converted);
   }
 }
 
