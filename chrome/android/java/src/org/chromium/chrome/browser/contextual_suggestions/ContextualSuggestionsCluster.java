@@ -63,12 +63,12 @@ class ContextualSuggestionsCluster extends InnerNode {
     void buildChildren() {
         if (mShouldShowTitle) {
             mHeader = new SectionHeader(mTitle);
-            addChild(mHeader);
+            addChildren(mHeader);
         }
 
         mSuggestionsList = new SuggestionsList();
         mSuggestionsList.addAll(mSuggestions);
-        addChild(mSuggestionsList);
+        addChildren(mSuggestionsList);
 
         // Only add observer after suggestions have been added to the cluster node to avoid
         // OfflineModelObserver requesting a null list.
@@ -77,9 +77,8 @@ class ContextualSuggestionsCluster extends InnerNode {
         mOfflineModelObserver.updateAllSuggestionsOfflineAvailability(false);
     }
 
-    @Override
-    public void detach() {
-        super.detach();
+    public void destroy() {
+        // TODO(bauerb): This should be part of a mediator instead of the cluster itself.
         if (mOfflineModelObserver != null) mOfflineModelObserver.onDestroy();
     }
 

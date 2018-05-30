@@ -25,7 +25,8 @@ public abstract class ListObservable {
          * @param index The starting position of the range of added items.
          * @param count The number of added items.
          */
-        void onItemRangeInserted(ListObservable source, int index, int count);
+        default void
+            onItemRangeInserted(ListObservable source, int index, int count) {}
 
         /**
          * Notifies that {@code count} items starting at position {@code index} under the
@@ -35,7 +36,8 @@ public abstract class ListObservable {
          * @param index The starting position of the range of removed items.
          * @param count The number of removed items.
          */
-        void onItemRangeRemoved(ListObservable source, int index, int count);
+        default void
+            onItemRangeRemoved(ListObservable source, int index, int count) {}
 
         /**
          * Notifies that {@code count} items starting at position {@code index} under the
@@ -46,8 +48,9 @@ public abstract class ListObservable {
          * @param count The number of changed items.
          * @param payload Optional parameter, use {@code null} to identify a "full" update.
          */
-        void onItemRangeChanged(
-                ListObservable source, int index, int count, @Nullable Object payload);
+        default void
+            onItemRangeChanged(
+                    ListObservable source, int index, int count, @Nullable Object payload) {}
     }
 
     private final ObserverList<ListObserver> mObservers = new ObserverList<>();
@@ -59,12 +62,14 @@ public abstract class ListObservable {
      * @param observer An observer to be notified of changes to the model.
      */
     public void addObserver(ListObserver observer) {
-        mObservers.addObserver(observer);
+        boolean success = mObservers.addObserver(observer);
+        assert success;
     }
 
     /** @param observer The observer to remove. */
     public void removeObserver(ListObserver observer) {
-        mObservers.removeObserver(observer);
+        boolean success = mObservers.removeObserver(observer);
+        assert success;
     }
 
     /**

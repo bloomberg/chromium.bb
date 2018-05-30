@@ -40,6 +40,7 @@ public class SectionList
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
     private final Map<Integer, SuggestionsSection> mSections = new LinkedHashMap<>();
+
     /** List of categories that are hidden because they have no content to show. */
     private final Set<Integer> mBlacklistedCategories = new HashSet<>();
     private final SuggestionsUiDelegate mUiDelegate;
@@ -127,7 +128,7 @@ public class SectionList
                     this, mUiDelegate, suggestionsRanker, mOfflinePageBridge, info);
             mSections.put(category, section);
             suggestionsRanker.registerCategory(category);
-            addChild(section);
+            addChildren(section);
         } else {
             section.clearData();
         }
@@ -338,10 +339,14 @@ public class SectionList
 
     private void removeSection(SuggestionsSection section) {
         mSections.remove(section.getCategory());
+        section.destroy();
         removeChild(section);
     }
 
     private void removeAllSections() {
+        for (SuggestionsSection section : mSections.values()) {
+            section.destroy();
+        }
         mSections.clear();
         removeChildren();
     }

@@ -276,8 +276,8 @@ public class NewTabPage
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
         mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
-                navigationDelegate, profile, nativePageHost, activity.getReferencePool(),
-                activity.getSnackbarManager());
+                navigationDelegate, profile, nativePageHost,
+                activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(activity, profile, navigationDelegate);
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);

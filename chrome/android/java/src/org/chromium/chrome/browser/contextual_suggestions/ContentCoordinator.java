@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.ClusterListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -33,7 +32,7 @@ class ContentCoordinator {
     private ContextualSuggestionsModel mModel;
     private WindowAndroid mWindowAndroid;
     private ContextMenuManager mContextMenuManager;
-    private RecyclerViewModelChangeProcessor<ClusterListObservable, NewTabPageViewHolder>
+    private RecyclerViewModelChangeProcessor<ClusterList, NewTabPageViewHolder>
             mModelChangeProcessor;
 
     /**
@@ -77,12 +76,13 @@ class ContentCoordinator {
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback);
         mWindowAndroid.addContextMenuCloseListener(mContextMenuManager);
 
-        ContextualSuggestionsAdapter adapter = new ContextualSuggestionsAdapter(context, profile,
-                new UiConfig(mRecyclerView), uiDelegate, mModel, mContextMenuManager);
+        ContextualSuggestionsAdapter adapter =
+                new ContextualSuggestionsAdapter(profile, new UiConfig(mRecyclerView), uiDelegate,
+                        mModel.getClusterList(), mContextMenuManager);
         mRecyclerView.setAdapter(adapter);
 
         mModelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
-        mModel.mClusterListObservable.addObserver(mModelChangeProcessor);
+        mModel.getClusterList().addObserver(mModelChangeProcessor);
 
         // TODO(twellington): Should this be a proper model property, set by the mediator and bound
         // to the RecyclerView?
@@ -108,7 +108,7 @@ class ContentCoordinator {
         // The model outlives the content sub-component. Remove the observer so that this object
         // can be garbage collected.
         if (mModelChangeProcessor != null) {
-            mModel.mClusterListObservable.removeObserver(mModelChangeProcessor);
+            mModel.getClusterList().removeObserver(mModelChangeProcessor);
         }
         if (mWindowAndroid != null) {
             mWindowAndroid.removeContextMenuCloseListener(mContextMenuManager);

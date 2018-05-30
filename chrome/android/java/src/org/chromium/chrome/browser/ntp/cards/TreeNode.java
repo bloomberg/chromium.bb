@@ -13,19 +13,6 @@ import java.util.Set;
  */
 public interface TreeNode {
     /**
-     * Sets the parent of this node. This method should be called at most once. Before the parent
-     * has been set, the node will not send any notifications about changes to its subtree.
-     * @param parent the parent of this node.
-     */
-    void setParent(NodeParent parent);
-
-    /**
-     * Detaches the node from the parent so that changes in the node are no longer notified to the
-     * parent. This is needed when the parent removes this node from its children.
-     */
-    void detach();
-
-    /**
      * Returns the number of items under this subtree. This method may be called
      * before initialization.
      *

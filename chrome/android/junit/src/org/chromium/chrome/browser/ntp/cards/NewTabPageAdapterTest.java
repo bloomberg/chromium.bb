@@ -804,7 +804,7 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, categories[3], 0);
         reloadNtp();
 
-        List<TreeNode> children = mAdapter.getSectionListForTesting().getChildren();
+        List<ChildNode> children = mAdapter.getSectionListForTesting().getChildren();
         assertEquals(4, children.size());
         assertEquals(SuggestionsSection.class, children.get(0).getClass());
         assertEquals(categories[0], getCategory(children.get(0)));
