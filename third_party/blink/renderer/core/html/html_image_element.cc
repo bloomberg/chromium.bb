@@ -752,7 +752,7 @@ void HTMLImageElement::EnsureFallbackForGeneratedContent() {
   // appropriate for |m_layoutDisposition|. Force recreate it.
   // TODO(engedy): Remove this hack. See: https://crbug.com/671953.
   SetLayoutDisposition(LayoutDisposition::kFallbackContent,
-                       true /* forceReattach */);
+                       true /* force_reattach */);
 }
 
 void HTMLImageElement::EnsureCollapsedOrFallbackContent() {
@@ -781,19 +781,15 @@ void HTMLImageElement::SetLayoutDisposition(
   if (layout_disposition_ == layout_disposition && !force_reattach)
     return;
 
+  DCHECK(!GetDocument().InStyleRecalc());
+
   layout_disposition_ = layout_disposition;
 
-  if (GetDocument().InStyleRecalc()) {
-    // This can happen inside of AttachLayoutTree() in the middle of a
-    // RebuildLayoutTree, so we need to reattach synchronously here.
-    ReattachLayoutTree(SyncReattachContext::CurrentAttachContext());
-  } else {
-    if (layout_disposition_ == LayoutDisposition::kFallbackContent) {
-      EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
-      EnsureUserAgentShadowRoot();
-    }
-    LazyReattachIfAttached();
+  if (layout_disposition_ == LayoutDisposition::kFallbackContent) {
+    EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
+    EnsureUserAgentShadowRoot();
   }
+  LazyReattachIfAttached();
 }
 
 scoped_refptr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {
