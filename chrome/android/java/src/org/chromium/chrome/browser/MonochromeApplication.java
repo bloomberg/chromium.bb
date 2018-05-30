@@ -23,7 +23,7 @@ public class MonochromeApplication extends ChromeApplication {
     public void onCreate() {
         super.onCreate();
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
-        LibraryLoader.setNativeLibraryPreloader(new MonochromeLibraryPreloader());
+        LibraryLoader.getInstance().setNativeLibraryPreloader(new MonochromeLibraryPreloader());
         // ChildProcessCreationParams is only needed for browser process, though it is
         // created and set in all processes.
         boolean bindToCaller = false;

@@ -729,7 +729,7 @@ public class VrShellDelegate
     }
 
     private static VrShellDelegate getInstance(ChromeActivity activity) {
-        if (!LibraryLoader.isInitialized()) return null;
+        if (!LibraryLoader.getInstance().isInitialized()) return null;
         if (activity == null || !activitySupportsPresentation(activity)) return null;
         if (sInstance != null) return sInstance;
         VrClassesWrapper wrapper = getVrClassesWrapper();
@@ -1510,7 +1510,7 @@ public class VrShellDelegate
     }
 
     /* package */ boolean canEnterVr() {
-        if (!LibraryLoader.isInitialized()) return false;
+        if (!LibraryLoader.getInstance().isInitialized()) return false;
         if (mVrSupportLevel == VrSupportLevel.VR_NOT_AVAILABLE || mNativeVrShellDelegate == 0)
             return false;
 

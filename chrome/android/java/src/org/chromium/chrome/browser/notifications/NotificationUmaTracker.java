@@ -124,7 +124,7 @@ public class NotificationUmaTracker {
     }
 
     private static void recordHistogram(String name, @SystemNotificationType int type) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         RecordHistogram.recordEnumeratedHistogram(name, type, SYSTEM_NOTIFICATION_TYPE_BOUNDARY);
     }
 }

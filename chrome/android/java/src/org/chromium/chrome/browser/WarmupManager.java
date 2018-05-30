@@ -280,7 +280,7 @@ public final class WarmupManager {
      */
     public void createSpareRenderProcessHost(Profile profile) {
         ThreadUtils.assertOnUiThread();
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SPARE_RENDERER)) {
             // Spare WebContents should not be used with spare RenderProcessHosts, but if one
             // has been created, destroy it in order not to consume too many processes.
@@ -298,7 +298,7 @@ public final class WarmupManager {
      */
     public void createSpareWebContents() {
         ThreadUtils.assertOnUiThread();
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         if (mSpareWebContents != null || SysUtils.isLowEndDevice()) return;
         mSpareWebContents = WebContentsFactory.createWebContentsWithWarmRenderer(
                 false /* incognito */, true /* initiallyHidden */);

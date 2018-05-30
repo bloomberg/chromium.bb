@@ -91,7 +91,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                     new GestureDetector.SimpleOnGestureListener() {
                         @Override
                         public boolean onSingleTapConfirmed(MotionEvent e) {
-                            if (LibraryLoader.isInitialized()) {
+                            if (LibraryLoader.getInstance().isInitialized()) {
                                 RecordUserAction.record("CustomTabs.TapUrlBar");
                             }
                             return super.onSingleTapConfirmed(e);

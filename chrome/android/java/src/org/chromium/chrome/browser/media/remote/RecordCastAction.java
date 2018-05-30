@@ -36,7 +36,8 @@ public class RecordCastAction {
     public static void remotePlaybackDeviceSelected(int playerType) {
         assert playerType >= 0
                 && playerType < RecordCastAction.DEVICE_TYPE_COUNT;
-        if (LibraryLoader.isInitialized()) nativeRecordRemotePlaybackDeviceSelected(playerType);
+        if (LibraryLoader.getInstance().isInitialized())
+            nativeRecordRemotePlaybackDeviceSelected(playerType);
     }
 
     /**
@@ -45,7 +46,7 @@ public class RecordCastAction {
      * selecting the device initially.
      */
     public static void castPlayRequested() {
-        if (LibraryLoader.isInitialized()) nativeRecordCastPlayRequested();
+        if (LibraryLoader.getInstance().isInitialized()) nativeRecordCastPlayRequested();
     }
 
     /**
@@ -54,7 +55,8 @@ public class RecordCastAction {
      * @param castSucceeded true if the playback succeeded, false if there was an error
      */
     public static void castDefaultPlayerResult(boolean castSucceeded) {
-        if (LibraryLoader.isInitialized()) nativeRecordCastDefaultPlayerResult(castSucceeded);
+        if (LibraryLoader.getInstance().isInitialized())
+            nativeRecordCastDefaultPlayerResult(castSucceeded);
     }
 
     /**
@@ -63,7 +65,8 @@ public class RecordCastAction {
      * @param castSucceeded true if the playback succeeded, false if there was an error
      */
     public static void castYouTubePlayerResult(boolean castSucceeded) {
-        if (LibraryLoader.isInitialized()) nativeRecordCastYouTubePlayerResult(castSucceeded);
+        if (LibraryLoader.getInstance().isInitialized())
+            nativeRecordCastYouTubePlayerResult(castSucceeded);
     }
 
     /**
@@ -73,7 +76,7 @@ public class RecordCastAction {
      * @param timeRemainingMs the remaining time in the video in milliseconds
      */
     public static void castEndedTimeRemaining(long videoLengthMs, long timeRemainingMs) {
-        if (LibraryLoader.isInitialized()) {
+        if (LibraryLoader.getInstance().isInitialized()) {
             nativeRecordCastEndedTimeRemaining((int) videoLengthMs, (int) timeRemainingMs);
         }
     }
@@ -85,7 +88,7 @@ public class RecordCastAction {
      *            possible media types.
      */
     public static void castMediaType(int mediaType) {
-        if (LibraryLoader.isInitialized()) nativeRecordCastMediaType(mediaType);
+        if (LibraryLoader.getInstance().isInitialized()) nativeRecordCastMediaType(mediaType);
     }
 
     /**
@@ -95,7 +98,7 @@ public class RecordCastAction {
      * @param isMediaElementAlive if the media element is alive.
      */
     public static void recordFullscreenControlsShown(boolean isMediaElementAlive) {
-        if (LibraryLoader.isInitialized()) {
+        if (LibraryLoader.getInstance().isInitialized()) {
             RecordHistogram.recordBooleanHistogram(
                     "Cast.Sender.MediaElementPresentWhenShowFullscreenControls",
                     isMediaElementAlive);
@@ -110,7 +113,7 @@ public class RecordCastAction {
      * @param isMediaElementAlive if the media element is alive.
      */
     public static void recordFullscreenControlsAction(int action, boolean isMediaElementAlive) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
 
         if (isMediaElementAlive) {
             RecordHistogram.recordEnumeratedHistogram(
@@ -130,7 +133,7 @@ public class RecordCastAction {
      * @param url The frame URL to record the domain and registry of.
      */
     public static void castDomainAndRegistry(String url) {
-        if (LibraryLoader.isInitialized()) {
+        if (LibraryLoader.getInstance().isInitialized()) {
             RapporServiceBridge.sampleDomainAndRegistryFromURL("Cast.Sender.MediaFrameUrl", url);
         }
     }
@@ -143,7 +146,7 @@ public class RecordCastAction {
      * @param percentage The ratio in percents.
      */
     public static void recordRemoteSessionTimeWithoutMediaElementPercentage(int percentage) {
-        if (LibraryLoader.isInitialized()) {
+        if (LibraryLoader.getInstance().isInitialized()) {
             RecordHistogram.recordPercentageHistogram(
                     "Cast.Sender.SessionTimeWithoutMediaElementPercentage", percentage);
         }

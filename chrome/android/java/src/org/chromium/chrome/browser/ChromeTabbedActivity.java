@@ -1319,7 +1319,7 @@ public class ChromeTabbedActivity
         // and triggers initialization of the native library. At the moment it seems safe to assume
         // that uninitialized native library is an indication of an application start that is
         // followed by navigation immediately without user input.
-        if (!LibraryLoader.isInitialized()) {
+        if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
         }
 

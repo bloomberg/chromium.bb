@@ -21,7 +21,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
      * @param tab The tab to use.
      */
     public void onNativeLibraryReady(Tab tab) {
-        assert LibraryLoader.isInitialized();
+        assert LibraryLoader.getInstance().isInitialized();
         mTab = tab;
     }
 

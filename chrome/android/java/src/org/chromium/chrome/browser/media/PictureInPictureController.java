@@ -99,7 +99,7 @@ public class PictureInPictureController {
         if (webContents == null) return false;
 
         // Non-null WebContents implies the native library has been loaded.
-        assert LibraryLoader.isInitialized();
+        assert LibraryLoader.getInstance().isInitialized();
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VIDEO_PERSISTENCE)) return false;
 
         // Only auto-PiP if there is a playing fullscreen video that allows PiP.

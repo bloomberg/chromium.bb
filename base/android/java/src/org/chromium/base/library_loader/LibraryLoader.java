@@ -55,28 +55,14 @@ public class LibraryLoader {
     // Set to true to enable debug logs.
     private static final boolean DEBUG = false;
 
-    // Guards all access to the libraries
-    private static final Object sLock = new Object();
-
     // SharedPreferences key for "don't prefetch libraries" flag
     private static final String DONT_PREFETCH_LIBRARIES_KEY = "dont_prefetch_libraries";
-
-    // The singleton instance of NativeLibraryPreloader.
-    private static NativeLibraryPreloader sLibraryPreloader;
-    private static boolean sLibraryPreloaderCalled;
-
-    // The singleton instance of LibraryLoader.
-    private static LibraryLoader sInstance = new LibraryLoader();
 
     private static final EnumeratedHistogramSample sRelinkerCountHistogram =
             new EnumeratedHistogramSample("ChromiumAndroidLinker.RelinkerFallbackCount", 2);
 
-    // One-way switch becomes true when the libraries are loaded.
-    private boolean mLoaded;
-
-    // One-way switch becomes true when the Java command line is switched to
-    // native.
-    private boolean mCommandLineSwitched;
+    // The singleton instance of LibraryLoader. Never null (not final for tests).
+    private static LibraryLoader sInstance = new LibraryLoader();
 
     // One-way switch becomes true when the libraries are initialized (
     // by calling nativeLibraryLoaded, which forwards to LibraryLoaded(...) in
@@ -84,6 +70,23 @@ public class LibraryLoader {
     // Note that this member should remain a one-way switch, since it accessed from multiple
     // threads without a lock.
     private volatile boolean mInitialized;
+
+    // One-way switch that becomes true once
+    // {@link asyncPrefetchLibrariesToMemory} has been called.
+    private final AtomicBoolean mPrefetchLibraryHasBeenCalled = new AtomicBoolean();
+
+    // Guards all fields below.
+    private final Object mLock = new Object();
+
+    private NativeLibraryPreloader mLibraryPreloader;
+    private boolean mLibraryPreloaderCalled;
+
+    // One-way switch becomes true when the libraries are loaded.
+    private boolean mLoaded;
+
+    // One-way switch becomes true when the Java command line is switched to
+    // native.
+    private boolean mCommandLineSwitched;
 
     // One-way switches recording attempts to use Relro sharing in the browser.
     // The flags are used to report UMA stats later.
@@ -96,10 +99,6 @@ public class LibraryLoader {
 
     // The type of process the shared library is loaded in.
     private @LibraryProcessType int mLibraryProcessType;
-
-    // One-way switch that becomes true once
-    // {@link asyncPrefetchLibrariesToMemory} has been called.
-    private final AtomicBoolean mPrefetchLibraryHasBeenCalled = new AtomicBoolean();
 
     // The number of milliseconds it took to load all the native libraries, which
     // will be reported via UMA. Set once when the libraries are done loading.
@@ -117,10 +116,10 @@ public class LibraryLoader {
      * @param loader the NativeLibraryPreloader, it shall only be set once and before the
      *               native library loaded.
      */
-    public static void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
-        synchronized (sLock) {
-            assert sLibraryPreloader == null && !sInstance.mLoaded;
-            sLibraryPreloader = loader;
+    public void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
+        synchronized (mLock) {
+            assert mLibraryPreloader == null && !mLoaded;
+            mLibraryPreloader = loader;
         }
     }
 
@@ -136,7 +135,7 @@ public class LibraryLoader {
      * @param processType the process the shared library is loaded in.
      */
     public void ensureInitialized(@LibraryProcessType int processType) throws ProcessInitException {
-        synchronized (sLock) {
+        synchronized (mLock) {
             if (mInitialized) {
                 // Already initialized, nothing to do.
                 return;
@@ -160,7 +159,7 @@ public class LibraryLoader {
      * Similar to {@link #preloadNow}, but allows specifying app context to use.
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
-        synchronized (sLock) {
+        synchronized (mLock) {
             if (!Linker.isUsed()) {
                 preloadAlreadyLocked(appContext);
             }
@@ -171,9 +170,9 @@ public class LibraryLoader {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
             assert !Linker.isUsed();
-            if (sLibraryPreloader != null && !sLibraryPreloaderCalled) {
-                mLibraryPreloaderStatus = sLibraryPreloader.loadLibrary(appContext);
-                sLibraryPreloaderCalled = true;
+            if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
+                mLibraryPreloaderStatus = mLibraryPreloader.loadLibrary(appContext);
+                mLibraryPreloaderCalled = true;
             }
         }
     }
@@ -181,8 +180,8 @@ public class LibraryLoader {
     /**
      * Checks if library is fully loaded and initialized.
      */
-    public static boolean isInitialized() {
-        return sInstance != null && sInstance.mInitialized;
+    public boolean isInitialized() {
+        return mInitialized;
     }
 
     /**
@@ -207,7 +206,7 @@ public class LibraryLoader {
      * @throws ProcessInitException if the native library failed to load with this context.
      */
     public void loadNowOverrideApplicationContext(Context appContext) throws ProcessInitException {
-        synchronized (sLock) {
+        synchronized (mLock) {
             if (mLoaded && appContext != ContextUtils.getApplicationContext()) {
                 throw new IllegalStateException("Attempt to load again from alternate context.");
             }
@@ -223,7 +222,7 @@ public class LibraryLoader {
      * @param processType the process the shared library is loaded in.
      */
     public void initialize(@LibraryProcessType int processType) throws ProcessInitException {
-        synchronized (sLock) {
+        synchronized (mLock) {
             initializeAlreadyLocked(processType);
         }
     }
@@ -316,8 +315,9 @@ public class LibraryLoader {
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
     // Sets UMA flags depending on the results of loading.
-    private void loadLibraryWithCustomLinker(
+    private void loadLibraryWithCustomLinkerAlreadyLocked(
             Linker linker, @Nullable String zipFilePath, String libFilePath) {
+        assert Thread.holdsLock(mLock);
         if (linker.isUsingBrowserSharedRelros()) {
             // If the browser is set to attempt shared RELROs then we try first with shared
             // RELROs enabled, and if that fails then retry without.
@@ -399,13 +399,14 @@ public class LibraryLoader {
 
                         try {
                             // Load the library using this Linker. May throw UnsatisfiedLinkError.
-                            loadLibraryWithCustomLinker(linker, zipFilePath, libFilePath);
+                            loadLibraryWithCustomLinkerAlreadyLocked(
+                                    linker, zipFilePath, libFilePath);
                             incrementRelinkerCountNotHitHistogram();
                         } catch (UnsatisfiedLinkError e) {
                             if (!Linker.isInZipFile()
                                     && ResourceExtractor
                                                .PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                                loadLibraryWithCustomLinker(
+                                loadLibraryWithCustomLinkerAlreadyLocked(
                                         linker, null, getExtractedLibraryPath(appContext, library));
                                 incrementRelinkerCountHitHistogram();
                             } else {
@@ -509,7 +510,7 @@ public class LibraryLoader {
     // initialization is done. This is okay in the WebView's case since the
     // JNI is already loaded by this point.
     public void switchCommandLineForWebView() {
-        synchronized (sLock) {
+        synchronized (mLock) {
             ensureCommandLineSwitchedAlreadyLocked();
         }
     }
@@ -566,35 +567,25 @@ public class LibraryLoader {
 
     // Called after all native initializations are complete.
     public void onNativeInitializationComplete() {
-        recordBrowserProcessHistogram();
+        synchronized (mLock) {
+            recordBrowserProcessHistogramAlreadyLocked();
+        }
     }
 
     // Record Chromium linker histogram state for the main browser process. Called from
     // onNativeInitializationComplete().
-    private void recordBrowserProcessHistogram() {
+    private void recordBrowserProcessHistogramAlreadyLocked() {
+        assert Thread.holdsLock(mLock);
         if (Linker.isUsed()) {
-            nativeRecordChromiumAndroidLinkerBrowserHistogram(
-                    mIsUsingBrowserSharedRelros,
+            nativeRecordChromiumAndroidLinkerBrowserHistogram(mIsUsingBrowserSharedRelros,
                     mLoadAtFixedAddressFailed,
-                    getLibraryLoadFromApkStatus(),
+                    mLibraryWasLoadedFromApk ? LibraryLoadFromApkStatusCodes.SUCCESSFUL
+                                             : LibraryLoadFromApkStatusCodes.UNKNOWN,
                     mLibraryLoadTimeMs);
         }
-        if (sLibraryPreloader != null) {
+        if (mLibraryPreloader != null) {
             nativeRecordLibraryPreloaderBrowserHistogram(mLibraryPreloaderStatus);
         }
-    }
-
-    // Returns the device's status for loading a library directly from the APK file.
-    // This method can only be called when the Chromium linker is used.
-    private int getLibraryLoadFromApkStatus() {
-        assert Linker.isUsed();
-
-        if (mLibraryWasLoadedFromApk) {
-            return LibraryLoadFromApkStatusCodes.SUCCESSFUL;
-        }
-
-        // There were no libraries to be loaded directly from the APK file.
-        return LibraryLoadFromApkStatusCodes.UNKNOWN;
     }
 
     // Register pending Chromium linker histogram state for renderer processes. This cannot be
@@ -603,13 +594,14 @@ public class LibraryLoader {
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram(boolean requestedSharedRelro,
                                                  boolean loadAtFixedAddressFailed) {
-        if (Linker.isUsed()) {
-            nativeRegisterChromiumAndroidLinkerRendererHistogram(requestedSharedRelro,
-                                                                 loadAtFixedAddressFailed,
-                                                                 mLibraryLoadTimeMs);
-        }
-        if (sLibraryPreloader != null) {
-            nativeRegisterLibraryPreloaderRendererHistogram(mLibraryPreloaderStatus);
+        synchronized (mLock) {
+            if (Linker.isUsed()) {
+                nativeRegisterChromiumAndroidLinkerRendererHistogram(
+                        requestedSharedRelro, loadAtFixedAddressFailed, mLibraryLoadTimeMs);
+            }
+            if (mLibraryPreloader != null) {
+                nativeRegisterLibraryPreloaderRendererHistogram(mLibraryPreloaderStatus);
+            }
         }
     }
 

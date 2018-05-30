@@ -132,7 +132,7 @@ public class WebApkActivity extends WebappActivity {
     public void preInflationStartup() {
         // Decide whether to record startup UMA histograms. This is a similar check to the one done
         // in ChromeTabbedActivity.preInflationStartup refer to the comment there for why.
-        if (!LibraryLoader.isInitialized()) {
+        if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
         }
         super.preInflationStartup();

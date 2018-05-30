@@ -198,7 +198,7 @@ public class IncognitoNotificationServiceTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Assert.assertFalse(LibraryLoader.isInitialized());
+                Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
             }
         });
     }

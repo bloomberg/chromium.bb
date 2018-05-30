@@ -234,7 +234,7 @@ public class LocaleManager {
      */
     public void showSearchEnginePromoIfNeeded(
             final Activity activity, final @Nullable Callback<Boolean> onSearchEngineFinalized) {
-        assert LibraryLoader.isInitialized();
+        assert LibraryLoader.getInstance().isInitialized();
         TemplateUrlService.getInstance().runWhenLoaded(new Runnable() {
             @Override
             public void run() {

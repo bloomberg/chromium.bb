@@ -189,7 +189,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
      * @param elapsedMs the elapsed time in milliseconds.
      */
     protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
         RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
     }
 

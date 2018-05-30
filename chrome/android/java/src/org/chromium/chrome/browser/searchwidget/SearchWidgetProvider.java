@@ -151,7 +151,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
      */
     public static void initialize() {
         ThreadUtils.assertOnUiThread();
-        assert LibraryLoader.isInitialized();
+        assert LibraryLoader.getInstance().isInitialized();
 
         // Set up an observer to monitor for changes.
         synchronized (OBSERVER_LOCK) {
@@ -310,7 +310,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     /** Attempts to update the cached search engine name. */
     public static void updateCachedEngineName() {
         ThreadUtils.assertOnUiThread();
-        if (!LibraryLoader.isInitialized()) return;
+        if (!LibraryLoader.getInstance().isInitialized()) return;
 
         // Getting an instance of the TemplateUrlService requires that the native library be
         // loaded, but the TemplateUrlService also itself needs to be initialized.
