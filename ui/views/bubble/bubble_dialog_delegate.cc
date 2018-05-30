@@ -323,13 +323,17 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
     if (anchor_widget()) {
+      if (GetWidget() && GetWidget()->IsVisible())
+        UpdateAnchorWidgetRenderState(false);
       anchor_widget_->RemoveObserver(this);
       anchor_widget_ = NULL;
     }
     if (anchor_view) {
       anchor_widget_ = anchor_view->GetWidget();
-      if (anchor_widget_)
+      if (anchor_widget_) {
         anchor_widget_->AddObserver(this);
+        UpdateAnchorWidgetRenderState(GetWidget() && GetWidget()->IsVisible());
+      }
     }
   }
 
@@ -389,10 +393,8 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
 
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
                                                        bool visible) {
-  if (widget == GetWidget() && anchor_widget() &&
-      anchor_widget()->GetTopLevelWidget()) {
-    anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
-  }
+  if (widget == GetWidget())
+    UpdateAnchorWidgetRenderState(visible);
 
   // Fire ax::mojom::Event::kAlert for bubbles marked as
   // ax::mojom::Role::kAlertDialog; this instructs accessibility tools to read
@@ -410,6 +412,13 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
 void BubbleDialogDelegateView::OnDeactivate() {
   if (close_on_deactivate() && GetWidget())
     GetWidget()->Close();
+}
+
+void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
+  if (!anchor_widget() || !anchor_widget()->GetTopLevelWidget())
+    return;
+
+  anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
 }
 
 }  // namespace views
