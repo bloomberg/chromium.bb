@@ -85,7 +85,7 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
   def do_POST(self):
     logging.info('POST %s', self.path)
     body = self.read_body()
-    if self.path.startswith('/api/isolateservice/v1/preupload'):
+    if self.path.startswith('/_ah/api/isolateservice/v1/preupload'):
       response = {'items': []}
       def append_entry(entry, index, li):
         """Converts a {'h', 's', 'i'} to ["<upload url>", "<finalize url>"] or
@@ -113,11 +113,11 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
         }, index, response['items'])
       logging.info('Returning %s' % response)
       self.send_json(response)
-    elif self.path.startswith('/api/isolateservice/v1/store_inline'):
+    elif self.path.startswith('/_ah/api/isolateservice/v1/store_inline'):
       self._storage_helper(body)
-    elif self.path.startswith('/api/isolateservice/v1/finalize_gs_upload'):
+    elif self.path.startswith('/_ah/api/isolateservice/v1/finalize_gs_upload'):
       self._storage_helper(body, True)
-    elif self.path.startswith('/api/isolateservice/v1/retrieve'):
+    elif self.path.startswith('/_ah/api/isolateservice/v1/retrieve'):
       request = json.loads(body)
       namespace = request['namespace']['namespace']
       data = self.server.contents[namespace].get(request['digest'])
@@ -125,7 +125,7 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
         logging.error(
             'Failed to retrieve %s / %s', namespace, request['digest'])
       self.send_json({'content': data})
-    elif self.path.startswith('/api/isolateservice/v1/server_details'):
+    elif self.path.startswith('/_ah/api/isolateservice/v1/server_details'):
       self.send_json({'server_version': 'such a good version'})
     else:
       raise NotImplementedError(self.path)

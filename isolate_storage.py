@@ -184,9 +184,9 @@ class _IsolateServerPushState(object):
     gs_upload_url = preupload_status.get('gs_upload_url') or None
     if gs_upload_url:
       self.upload_url = gs_upload_url
-      self.finalize_url = 'api/isolateservice/v1/finalize_gs_upload'
+      self.finalize_url = '_ah/api/isolateservice/v1/finalize_gs_upload'
     else:
-      self.upload_url = 'api/isolateservice/v1/store_inline'
+      self.upload_url = '_ah/api/isolateservice/v1/store_inline'
       self.finalize_url = None
     self.uploaded = False
     self.finalized = False
@@ -282,7 +282,7 @@ class IsolateServer(StorageApi):
     with self._lock:
       if self._server_caps is None:
         self._server_caps = net.url_read_json(
-            url='%s/api/isolateservice/v1/server_details' % self._base_url,
+            url='%s/_ah/api/isolateservice/v1/server_details' % self._base_url,
             data={})
       return self._server_caps
 
@@ -296,7 +296,7 @@ class IsolateServer(StorageApi):
 
   def fetch(self, digest, _size, offset):
     assert offset >= 0
-    source_url = '%s/api/isolateservice/v1/retrieve' % (
+    source_url = '%s/_ah/api/isolateservice/v1/retrieve' % (
         self._base_url)
     logging.debug('download_file(%s, %d)', source_url, offset)
     response = self._do_fetch(source_url, digest, offset)
@@ -417,7 +417,7 @@ class IsolateServer(StorageApi):
         'namespace': self._namespace_dict,
     }
 
-    query_url = '%s/api/isolateservice/v1/preupload' % self._base_url
+    query_url = '%s/_ah/api/isolateservice/v1/preupload' % self._base_url
 
     # Response body is a list of push_urls (or null if file is already present).
     response = None
