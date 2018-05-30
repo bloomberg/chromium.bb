@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser.selection;
+package org.chromium.ui.resources;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -20,7 +20,7 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  * Helper class for retrieving resources related to selection handles.
  */
-@JNINamespace("content")
+@JNINamespace("ui")
 public class HandleViewResources {
     // Android handle drawables have a transparent horizontal padding,
     // which is one-fourth of the image. This variable is to take the
@@ -28,15 +28,15 @@ public class HandleViewResources {
     private static final float HANDLE_HORIZONTAL_PADDING_RATIO = 0.25f;
 
     private static final int[] LEFT_HANDLE_ATTRS = {
-        android.R.attr.textSelectHandleLeft,
+            android.R.attr.textSelectHandleLeft,
     };
 
     private static final int[] CENTER_HANDLE_ATTRS = {
-        android.R.attr.textSelectHandle,
+            android.R.attr.textSelectHandle,
     };
 
     private static final int[] RIGHT_HANDLE_ATTRS = {
-        android.R.attr.textSelectHandleRight,
+            android.R.attr.textSelectHandleRight,
     };
 
     public static Drawable getLeftHandleDrawable(Context context) {

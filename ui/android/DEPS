@@ -20,6 +20,7 @@ include_rules = [
   "+ui/display",
   "+ui/events",
   "+ui/gfx",
+  "+ui/touch_selection/touch_handle.h",
 ]
 
 specific_include_rules = {
