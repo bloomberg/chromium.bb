@@ -348,25 +348,11 @@ var formActivity_ = function(evt) {
   sendMessageOnNextLoop_(msg);
 };
 
-/**
- * Focus events performed on the 'capture' phase otherwise they are often
- * not received.
- */
-document.addEventListener('focus', formActivity_, true);
-document.addEventListener('blur', formActivity_, true);
-document.addEventListener('change', formActivity_, true);
-
-/**
- * Text input is watched at the bubbling phase as this seems adequate in
- * practice and it is less obtrusive to page scripts than capture phase.
- */
-document.addEventListener('input', formActivity_, false);
-document.addEventListener('keyup', formActivity_, false);
 
 /**
  * Capture form submit actions.
  */
-document.addEventListener('submit', function(evt) {
+var submitHandler_ = function(evt) {
   var action;
   if (evt['defaultPrevented']) return;
   action = evt.target.getAttribute('action');
@@ -379,7 +365,8 @@ document.addEventListener('submit', function(evt) {
     'formName': __gCrWeb.form.getFormIdentifier(evt.srcElement),
     'href': getFullyQualifiedUrl_(action)
   });
-}, false);
+};
+
 
 /** @private
  * @param {string} originalURL
@@ -407,6 +394,31 @@ var sendFormMutationMessageAfterDelay_ = function(msg, delay) {
     __gCrWeb.form.formMutationMessageToSend = null;
   }, delay);
 };
+
+var attachListeners_ = function() {
+  /**
+   * Focus events performed on the 'capture' phase otherwise they are often
+   * not received.
+   */
+  document.addEventListener('focus', formActivity_, true);
+  document.addEventListener('blur', formActivity_, true);
+  document.addEventListener('change', formActivity_, true);
+
+ /**
+  * Text input is watched at the bubbling phase as this seems adequate in
+  * practice and it is less obtrusive to page scripts than capture phase.
+  */
+  document.addEventListener('input', formActivity_, false);
+  document.addEventListener('keyup', formActivity_, false);
+  document.addEventListener('submit',submitHandler_, false);
+};
+
+// Attach the listeners immediatly to try to catch early actions of the user.
+attachListeners_();
+
+// Initial page loading can remove the listeners. Schedule a reattach after page
+// build.
+setTimeout(attachListeners_, 1000);
 
 /**
  * Installs a MutationObserver to track form related changes. Waits |delay|
