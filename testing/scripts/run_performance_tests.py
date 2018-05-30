@@ -218,6 +218,13 @@ def main():
         raise Exception('Shard indicators must be present for perf tests')
 
       sharding_map_path = get_sharding_map_path(args)
+
+      # Copy sharding map file to isolated_out_dir so that the collect script
+      # can collect it later.
+      shutil.copyfile(
+          sharding_map_path,
+          os.path.join(isolated_out_dir, 'benchmarks_shard_map.json'))
+
       with open(sharding_map_path) as f:
         sharding_map = json.load(f)
       sharding = sharding_map[shard_index]['benchmarks']

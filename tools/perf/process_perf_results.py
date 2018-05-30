@@ -179,6 +179,16 @@ def _handle_perf_logs(benchmark_directory_map, extra_links):
   extra_links['Benchmarks logs'] = logdog_stream
 
 
+def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
+  with open(benchmarks_shard_map_file) as f:
+    benchmarks_shard_data = json.load(f)
+    logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Shard_Map')
+    logdog_stream = logdog_helper.text(
+        logdog_file_name, json.dumps(benchmarks_shard_data, sort_keys=True,
+                                     indent=4, separators=(',', ': ')),
+        content_type=JSON_CONTENT_TYPE)
+    extra_links['Benchmarks shard map'] = logdog_stream
+
 
 def _get_benchmark_name(directory):
   return basename(directory).replace(" benchmark", "")
@@ -206,11 +216,14 @@ def _process_perf_results(output_json, configuration_name,
       if not isfile(join(task_output_dir, f))
   ]
   benchmark_directory_list = []
+  benchmarks_shard_map_file = None
   for directory in directory_list:
-    benchmark_directory_list += [
-      join(task_output_dir, directory, f)
-      for f in listdir(join(task_output_dir, directory))
-    ]
+    for f in listdir(join(task_output_dir, directory)):
+      path = join(task_output_dir, directory, f)
+      if path.endswith('benchmarks_shard_map.json'):
+        benchmarks_shard_map_file = path
+      else:
+        benchmark_directory_list.append(path)
 
   # Now create a map of benchmark name to the list of directories
   # the lists were written to.
@@ -231,7 +244,12 @@ def _process_perf_results(output_json, configuration_name,
 
   extra_links = {}
 
-  # First, upload all the benchmark logs to logdog and add a page entry for
+  # First, upload benchmarks shard map to logdog and add a page
+  # entry for it in extra_links.
+  if benchmarks_shard_map_file:
+    _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links)
+
+  # Second, upload all the benchmark logs to logdog and add a page entry for
   # those links in extra_links.
   _handle_perf_logs(benchmark_directory_map, extra_links)
 
