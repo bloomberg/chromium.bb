@@ -35,6 +35,7 @@
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
+#include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/android/browser_media_player_manager_register.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -187,6 +188,14 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // as is the case by default in aw_tracing_controller.cc
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::BindRepeating(&IsTraceEventArgsWhitelisted));
+
+  // The TLS slot used by the memlog allocator shim needs to be initialized
+  // early to ensure that it gets assigned a low slot number. If it gets
+  // initialized too late, the glibc TLS system will require a malloc call in
+  // order to allocate storage for a higher slot number. Since malloc is hooked,
+  // this causes re-entrancy into the allocator shim, while the TLS object is
+  // partially-initialized, which the TLS object is supposed to protect again.
+  heap_profiling::InitTLSSlot();
 
   return false;
 }

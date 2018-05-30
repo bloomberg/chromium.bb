@@ -38,6 +38,7 @@ void AllocatorShimLogAlloc(AllocatorType type,
                            size_t sz,
                            const char* context);
 
+// Logs a free. This must not rely on the base implementation of TLS.
 void AllocatorShimLogFree(void* address);
 
 // Ensures all send buffers are flushed. The given barrier ID is sent to the
