@@ -14,6 +14,8 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "chromeos/chromeos_switches.h"
@@ -25,13 +27,12 @@
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 namespace arc {
 
@@ -110,11 +111,11 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
                              ConnectMojoCallback callback) override;
 
  private:
-  // Synchronously accepts a connection on |socket_fd| and then processes the
-  // connected socket's file descriptor. This is designed to run on a
+  // Synchronously accepts a connection on |server_endpoint| and then processes
+  // the connected socket's file descriptor. This is designed to run on a
   // blocking thread.
   static mojo::ScopedMessagePipeHandle ConnectMojoInternal(
-      mojo::edk::ScopedInternalPlatformHandle socket_fd,
+      base::ScopedFD socket_fd,
       base::ScopedFD cancel_fd);
 
   // Called when Mojo connection is established or canceled.
@@ -150,14 +151,10 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
   // For production, |socket_fd| passed from session_manager is either a valid
   // socket or a valid file descriptor (/dev/null). For testing, |socket_fd|
   // might be invalid.
-  mojo::edk::InternalPlatformHandle raw_handle(socket_fd.release());
-  raw_handle.needs_connection = true;
-
-  mojo::edk::ScopedInternalPlatformHandle mojo_socket_fd(raw_handle);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ArcSessionDelegateImpl::ConnectMojoInternal,
-                     std::move(mojo_socket_fd), std::move(cancel_fd)),
+                     std::move(socket_fd), std::move(cancel_fd)),
       base::BindOnce(&ArcSessionDelegateImpl::OnMojoConnected,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
   return return_fd;
@@ -165,35 +162,33 @@ base::ScopedFD ArcSessionDelegateImpl::ConnectMojo(
 
 // static
 mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
-    mojo::edk::ScopedInternalPlatformHandle socket_fd,
+    base::ScopedFD socket_fd,
     base::ScopedFD cancel_fd) {
-  if (!WaitForSocketReadable(socket_fd.get().handle, cancel_fd.get())) {
+  if (!WaitForSocketReadable(socket_fd.get(), cancel_fd.get())) {
     VLOG(1) << "Mojo connection was cancelled.";
     return mojo::ScopedMessagePipeHandle();
   }
 
+  mojo::edk::ScopedInternalPlatformHandle server_handle(
+      mojo::edk::InternalPlatformHandle(socket_fd.release()));
   mojo::edk::ScopedInternalPlatformHandle scoped_fd;
-  if (!mojo::edk::ServerAcceptConnection(socket_fd, &scoped_fd,
+  if (!mojo::edk::ServerAcceptConnection(server_handle, &scoped_fd,
                                          /* check_peer_user = */ false) ||
       !scoped_fd.is_valid()) {
     return mojo::ScopedMessagePipeHandle();
   }
 
-  // Hardcode pid 0 since it is unused in mojo.
-  const base::ProcessHandle kUnusedChildProcessHandle = 0;
-  mojo::edk::PlatformChannelPair channel_pair;
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-
-  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::PlatformChannel channel;
+  mojo::OutgoingInvitation invitation;
+  std::string token = base::NumberToString(base::RandUint64());
   mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
-
-  invitation.Send(
-      kUnusedChildProcessHandle,
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  channel_pair.PassServerHandle()));
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 base::kNullProcessHandle,
+                                 channel.TakeLocalEndpoint());
 
   std::vector<mojo::edk::ScopedInternalPlatformHandle> handles;
-  handles.emplace_back(channel_pair.PassClientHandle());
+  handles.emplace_back(mojo::edk::InternalPlatformHandle(
+      channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD().release()));
 
   // We need to send the length of the message as a single byte, so make sure it
   // fits.

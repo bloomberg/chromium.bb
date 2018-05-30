@@ -16,6 +16,7 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
 namespace base {
 
@@ -78,8 +79,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   // Waits for incoming connections (from HAL process or from client processes).
   // Runs on |blocking_io_thread_|.
-  void StartServiceLoop(mojo::edk::ScopedInternalPlatformHandle socket_fd,
-                        base::WaitableEvent* started);
+  void StartServiceLoop(base::ScopedFD socket_fd, base::WaitableEvent* started);
 
   void AddClientObserverOnProxyThread(
       std::unique_ptr<CameraClientObserver> observer);

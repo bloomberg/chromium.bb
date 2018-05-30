@@ -20,6 +20,7 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -27,9 +28,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/win/launch_process_with_token.h"
@@ -285,21 +285,20 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     return;
   }
 
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-  std::string mojo_message_pipe_token = mojo::edk::GenerateRandomToken();
+  mojo::OutgoingInvitation invitation;
+  std::string message_pipe_token = base::NumberToString(base::RandUint64());
   std::unique_ptr<IPC::ChannelProxy> server = IPC::ChannelProxy::Create(
-      invitation.AttachMessagePipe(mojo_message_pipe_token).release(),
+      invitation.AttachMessagePipe(message_pipe_token).release(),
       IPC::Channel::MODE_SERVER, this, io_task_runner_,
       base::ThreadTaskRunnerHandle::Get());
   base::CommandLine command_line(target_command_->argv());
-  command_line.AppendSwitchASCII(kMojoPipeToken, mojo_message_pipe_token);
+  command_line.AppendSwitchASCII(kMojoPipeToken, message_pipe_token);
 
   base::HandlesToInheritVector handles_to_inherit = {
       handles.desktop(), handles.window_station(),
   };
-  mojo::edk::PlatformChannelPair mojo_channel;
-  mojo_channel.PrepareToPassClientHandleToChildProcess(&command_line,
-                                                       &handles_to_inherit);
+  mojo::PlatformChannel channel;
+  channel.PrepareToPassRemoteEndpoint(&handles_to_inherit, &command_line);
 
   // Try to launch the worker process. The launched process inherits
   // the window station, desktop and pipe handles, created above.
@@ -313,10 +312,9 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     ReportFatalError();
     return;
   }
-  invitation.Send(
-      worker_process.Get(),
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  mojo_channel.PassServerHandle()));
+
+  mojo::OutgoingInvitation::Send(std::move(invitation), worker_process.Get(),
+                                 channel.TakeLocalEndpoint());
 
   channel_ = std::move(server);
 

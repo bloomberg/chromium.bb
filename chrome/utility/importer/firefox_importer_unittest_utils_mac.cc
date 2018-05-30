@@ -15,20 +15,21 @@
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/utility/importer/firefox_importer_unittest_utils_mac.mojom.h"
 #include "content/public/common/content_descriptors.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/incoming_broker_client_invitation.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "services/service_manager/embedder/descriptors.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -38,11 +39,11 @@ constexpr char kMojoChannelToken[] = "mojo-channel-token";
 
 // Launch the child process:
 // |nss_path| - path to the NSS directory holding the decryption libraries.
-// |mojo_handle| - platform handle for Mojo transport.
+// |mojo_channel_fd| - FD of the Mojo invitation transport to inherit.
 // |mojo_channel_token| - token for creating the Mojo pipe.
 base::Process LaunchNSSDecrypterChildProcess(
     const base::FilePath& nss_path,
-    mojo::edk::ScopedInternalPlatformHandle mojo_handle,
+    base::ScopedFD mojo_channel_fd,
     const std::string& mojo_channel_token) {
   base::CommandLine cl(*base::CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
@@ -54,8 +55,8 @@ base::Process LaunchNSSDecrypterChildProcess(
   base::LaunchOptions options;
   options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
   options.fds_to_remap.push_back(std::pair<int, int>(
-      mojo_handle.get().handle, service_manager::kMojoIPCChannel +
-                                    base::GlobalDescriptors::kBaseDescriptor));
+      mojo_channel_fd.get(), service_manager::kMojoIPCChannel +
+                                 base::GlobalDescriptors::kBaseDescriptor));
 
   return base::LaunchProcess(cl.argv(), options);
 }
@@ -184,8 +185,8 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   // Create a new message loop and spawn the child process.
   message_loop_ = std::make_unique<base::MessageLoopForIO>();
 
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::OutgoingInvitation invitation;
+  std::string token = base::NumberToString(base::RandUint64());
   mojo::ScopedMessagePipeHandle parent_pipe =
       invitation.AttachMessagePipe(token);
   firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorPtr decryptor(
@@ -195,14 +196,15 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
       std::make_unique<FFDecryptorServerChannelListener>(std::move(decryptor));
 
   // Spawn child and set up mojo connection.
-  mojo::edk::PlatformChannelPair channel_pair;
+  mojo::PlatformChannel channel;
   child_process_ = LaunchNSSDecrypterChildProcess(
-      nss_path, channel_pair.PassClientHandle(), token);
+      nss_path, channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
+      token);
   if (child_process_.IsValid()) {
-    invitation.Send(
-        child_process_.Handle(),
-        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                    channel_pair.PassServerHandle()));
+    channel.RemoteProcessLaunched();
+    mojo::OutgoingInvitation::Send(std::move(invitation),
+                                   child_process_.Handle(),
+                                   channel.TakeLocalEndpoint());
   }
   return child_process_.IsValid();
 }
@@ -244,19 +246,16 @@ std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
 MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
 
-  auto invitation = mojo::edk::IncomingBrokerClientInvitation::Accept(
-      mojo::edk::ConnectionParams(
-          mojo::edk::TransportProtocol::kLegacy,
-          mojo::edk::ScopedInternalPlatformHandle(
-              mojo::edk::InternalPlatformHandle(
-                  service_manager::kMojoIPCChannel +
-                  base::GlobalDescriptors::kBaseDescriptor))));
-  mojo::ScopedMessagePipeHandle mojo_handle = invitation->ExtractMessagePipe(
+  auto invitation = mojo::IncomingInvitation::Accept(
+      mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+          base::ScopedFD(service_manager::kMojoIPCChannel +
+                         base::GlobalDescriptors::kBaseDescriptor))));
+  mojo::ScopedMessagePipeHandle request_pipe = invitation.ExtractMessagePipe(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kMojoChannelToken));
 
   firefox_importer_unittest_utils_mac::mojom::FirefoxDecryptorRequest request(
-      std::move(mojo_handle));
+      std::move(request_pipe));
   FFDecryptorClientListener listener(std::move(request));
   base::RunLoop run_loop;
   listener.SetQuitClosure(run_loop.QuitClosure());

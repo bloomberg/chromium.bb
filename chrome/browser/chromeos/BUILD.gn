@@ -163,6 +163,8 @@ source_set("chromeos") {
     "//mash/public/mojom",
     "//media",
     "//media/mojo/interfaces",
+    "//mojo/public/cpp/platform",
+    "//mojo/public/cpp/system",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
     "//services/data_decoder/public/cpp",

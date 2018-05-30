@@ -2,37 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/arc/timer/arc_timer_struct_traits.h"
+
 #include <utility>
 
-#include "components/arc/timer/arc_timer_struct_traits.h"
+#include "base/posix/unix_domain_socket.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-namespace {
-
-// Unwraps a mojo handle to a file descriptor on the system.
-base::ScopedFD UnwrapPlatformHandle(mojo::ScopedHandle handle) {
-  base::PlatformFile platform_file;
-  if (mojo::UnwrapPlatformFile(std::move(handle), &platform_file) !=
-      MOJO_RESULT_OK) {
-    LOG(ERROR) << "Failed to unwrap mojo handle";
-    return base::ScopedFD();
-  }
-  return base::ScopedFD(platform_file);
-}
-
-// Converts a system file descriptor to a mojo handle that can be sent to the
-// host.
-mojo::ScopedHandle WrapPlatformFd(base::ScopedFD scoped_fd) {
-  mojo::ScopedHandle handle = mojo::WrapPlatformFile(scoped_fd.release());
-  if (!handle.is_valid()) {
-    LOG(ERROR) << "Failed to wrap platform handle";
-    return mojo::ScopedHandle();
-  }
-  return handle;
-}
-
-}  // namespace
 
 namespace mojo {
 
@@ -77,7 +54,8 @@ StructTraits<arc::mojom::CreateTimerRequestDataView, arc::CreateTimerRequest>::
 mojo::ScopedHandle
 StructTraits<arc::mojom::CreateTimerRequestDataView, arc::CreateTimerRequest>::
     expiration_fd(arc::CreateTimerRequest& arc_timer_request) {
-  return WrapPlatformFd(std::move(arc_timer_request.expiration_fd));
+  return WrapPlatformHandle(
+      PlatformHandle(std::move(arc_timer_request.expiration_fd)));
 }
 
 // static
@@ -89,7 +67,8 @@ bool StructTraits<
                                                            &output->clock_id)) {
     return false;
   }
-  output->expiration_fd = UnwrapPlatformHandle(input.TakeExpirationFd());
+  output->expiration_fd =
+      UnwrapPlatformHandle(input.TakeExpirationFd()).TakeFD();
   return true;
 }
 
