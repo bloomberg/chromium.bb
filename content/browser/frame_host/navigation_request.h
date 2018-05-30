@@ -108,7 +108,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       int current_history_list_offset,
       int current_history_list_length,
       bool override_user_agent,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      mojom::NavigationClientAssociatedPtrInfo navigation_client);
 
   ~NavigationRequest() override;
 
@@ -208,6 +209,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader);
 
+  // Returns the NavigationClient held by this navigation request that is ready
+  // to commit, or nullptr if there isn't any.
+  // Only used with PerNavigationMojoInterface enabled.
+  mojom::NavigationClient* GetCommitNavigationClient();
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
@@ -217,7 +223,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     bool from_begin_navigation,
                     const FrameNavigationEntry* frame_navigation_entry,
                     const NavigationEntryImpl* navitation_entry,
-                    std::unique_ptr<NavigationUIData> navigation_ui_data);
+                    std::unique_ptr<NavigationUIData> navigation_ui_data,
+                    mojom::NavigationClientAssociatedPtrInfo navigation_client);
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
@@ -323,6 +330,17 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // renderer process.
   void UpdateRequestNavigationParamsHistory();
 
+  // Called when an ongoing renderer-initiated navigation is aborted.
+  // Only used with PerNavigationMojoInterface enabled.
+  void OnRendererAbortedNavigation();
+
+  // When called, this NavigationRequest will no longer interpret the pipe
+  // disconnection on the renderer side as an AbortNavigation.
+  // TODO(ahemery): remove this function when NavigationRequest properly handles
+  // pipe disconnection in all cases. Only used with PerNavigationMojoInterface
+  // enabled.
+  void IgnorePipeDisconnection();
+
   FrameTreeNode* frame_tree_node_;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
@@ -408,6 +426,19 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
       subresource_overrides_;
+
+  // The NavigationClient interface for that requested this navigation in the
+  // case of a renderer initiated navigation. It is expected to be bound until
+  // this navigation commits or is canceled.
+  // Only valid when PerNavigationMojoInterface is enabled.
+  mojom::NavigationClientAssociatedPtr request_navigation_client_;
+  base::Optional<int32_t> associated_site_instance_id_;
+
+  // The NavigationClient interface used to commit the navigation. For now, this
+  // is only used for same-site renderer-initiated navigation.
+  // TODO(clamy, ahemery): Extend to all types of navigation.
+  // Only valid when PerNavigationMojoInterface is enabled.
+  mojom::NavigationClientAssociatedPtr commit_navigation_client_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

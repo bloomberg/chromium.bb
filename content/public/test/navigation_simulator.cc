@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_utils.h"
+#include "content/test/mock_navigation_client_impl.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
@@ -859,8 +860,22 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
           ? FrameMsg_Navigate_Type::RELOAD
           : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.has_user_gesture = has_user_gesture_;
-  render_frame_host_->frame_host_binding_for_testing().impl()->BeginNavigation(
-      common_params, std::move(begin_params), nullptr);
+
+  if (IsPerNavigationMojoInterfaceEnabled()) {
+    mojom::NavigationClientAssociatedPtr navigation_client_ptr;
+    StoreNavigationClientRequest(
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr));
+    render_frame_host_->frame_host_binding_for_testing()
+        .impl()
+        ->BeginNavigation(common_params, std::move(begin_params), nullptr,
+                          navigation_client_ptr.PassInterface());
+  } else {
+    render_frame_host_->frame_host_binding_for_testing()
+        .impl()
+        ->BeginNavigation(common_params, std::move(begin_params), nullptr,
+                          nullptr);
+  }
+
   NavigationRequest* request =
       render_frame_host_->frame_tree_node()->navigation_request();
 
@@ -971,6 +986,12 @@ void NavigationSimulator::SetSessionHistoryOffset(int session_history_offset) {
   session_history_offset_ = session_history_offset;
   transition_ =
       ui::PageTransitionFromInt(transition_ | ui::PAGE_TRANSITION_FORWARD_BACK);
+}
+
+void NavigationSimulator::StoreNavigationClientRequest(
+    mojom::NavigationClientAssociatedRequest navigation_client_request) {
+  navigation_client_impl_.reset(
+      new MockNavigationClientImpl(std::move(navigation_client_request)));
 }
 
 }  // namespace content

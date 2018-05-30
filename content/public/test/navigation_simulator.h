@@ -15,6 +15,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/page_transition_types.h"
@@ -24,11 +25,16 @@ class GURL;
 namespace content {
 
 class FrameTreeNode;
+class MockNavigationClientImpl;
 class NavigationHandle;
 class NavigationHandleImpl;
 class RenderFrameHost;
 class TestRenderFrameHost;
 struct Referrer;
+
+namespace mojom {
+class NavigationClient;
+}
 
 // An interface for simulating a navigation in unit tests. Currently this only
 // supports renderer-initiated navigations.
@@ -332,6 +338,11 @@ class NavigationSimulator : public WebContentsObserver {
   // offset. Typically -1 for back navigations or 1 for forward navigations.
   void SetSessionHistoryOffset(int offset);
 
+  // Only used when PerNavigationMojoInterface is enabled.
+  void StoreNavigationClientRequest(
+      mojo::AssociatedInterfaceRequest<mojom::NavigationClient>
+          navigation_client_request);
+
   enum State {
     INITIALIZATION,
     STARTED,
@@ -397,6 +408,12 @@ class NavigationSimulator : public WebContentsObserver {
   // Closure that is called in OnThrottleChecksComplete if we are waiting on the
   // result. Calling this will quit the nested run loop.
   base::OnceClosure wait_closure_;
+
+  // A mock NavigationClient implementation that is used because we do not
+  // actually have a renderer. The navigations would be instantly aborted if
+  // this was not kept alive.
+  // Only used when PerNavigationMojoInterface is enabled.
+  std::unique_ptr<MockNavigationClientImpl> navigation_client_impl_;
 
   base::WeakPtrFactory<NavigationSimulator> weak_factory_;
 };

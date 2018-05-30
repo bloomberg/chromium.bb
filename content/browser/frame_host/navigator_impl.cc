@@ -39,6 +39,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_utils.h"
@@ -619,7 +620,8 @@ void NavigatorImpl::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
     mojom::BeginNavigationParamsPtr begin_params,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
@@ -644,10 +646,12 @@ void NavigatorImpl::OnBeginNavigation(
   if (ongoing_navigation_request &&
       ongoing_navigation_request->browser_initiated() &&
       !common_params.has_user_gesture) {
-    RenderFrameHost* current_frame_host =
-        frame_tree_node->render_manager()->current_frame_host();
-    current_frame_host->Send(
-        new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
+    if (!IsPerNavigationMojoInterfaceEnabled()) {
+      RenderFrameHost* current_frame_host =
+          frame_tree_node->render_manager()->current_frame_host();
+      current_frame_host->Send(
+          new FrameMsg_DroppedNavigation(current_frame_host->GetRoutingID()));
+    }
     return;
   }
 
@@ -680,7 +684,7 @@ void NavigatorImpl::OnBeginNavigation(
           frame_tree_node, pending_entry, common_params,
           std::move(begin_params), controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount(), override_user_agent,
-          std::move(blob_url_loader_factory)));
+          std::move(blob_url_loader_factory), std::move(navigation_client)));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
 
   // For main frames, NavigationHandle will be created after the call to
@@ -709,6 +713,7 @@ void NavigatorImpl::RestartNavigationAsCrossDocument(
 }
 
 void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
+  DCHECK(!IsPerNavigationMojoInterfaceEnabled());
   NavigationRequest* ongoing_navigation_request =
       frame_tree_node->navigation_request();
   if (!ongoing_navigation_request ||

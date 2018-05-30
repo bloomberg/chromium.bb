@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
@@ -52,6 +53,8 @@ struct RequestNavigationParams;
 
 // Implemented by the frame provider and currently must be associated with the
 // legacy IPC channel.
+// KEEP THE COMMIT FUNCTIONS IN SYNC in content/common/navigation_client.mojom.
+// These will eventually be removed from FrameNavigationControl.
 interface FrameNavigationControl {
   // Tells the renderer that a navigation is ready to commit.
   //
@@ -60,8 +63,7 @@ interface FrameNavigationControl {
   // be the result of the committed navigation.
   //
   // Note: |url_loader_client_endpoints| will be empty iff the navigation URL
-  // wasn't handled by the network stack (i.e. JavaScript URLs, renderer debug
-  // URLs, same document navigations, about:blank, ...)
+  // wasn't handled by the network stack (i.e. about:blank, ...)
   //
   // When the Network Service is enabled, |subresource_loader_factories| may
   // also be provided by the browser as a a means for the renderer to load
@@ -274,10 +276,16 @@ interface FrameHost {
   // cloneable, and thus can't contain mojo interfaces.
   // If an invalid BlobURLToken is passed in, or if the token doesn't match the
   // url in |common_params|, the navigation will result in a network error.
+  // |navigation_client| is passed to the renderer to allow for further control
+  // of the navigation. Allows for Commit and Cancels/Aborts. It is only valid
+  // when PerNavigationMojoInterface is enabled.
+  // TODO(ahemery): |navigation_client| should not be optional. Make it
+  // mandatory when removing PerNavigationMojoInterface feature flag.
   BeginNavigation(
       CommonNavigationParams common_params,
       BeginNavigationParams begin_params,
-      blink.mojom.BlobURLToken? blob_url_token);
+      blink.mojom.BlobURLToken? blob_url_token,
+      associated NavigationClient? navigation_client);
 
   // Sent when a subresource response has started.
   // |cert_status| is the bitmask of status info of the SSL certificate. (see

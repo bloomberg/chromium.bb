@@ -143,6 +143,7 @@ struct CommonNavigationParams;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
+struct PendingNavigation;
 struct RequestNavigationParams;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
@@ -837,6 +838,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnDidBlockFramebust(const GURL& url);
+  // Only used with PerNavigationMojoInterface disabled.
   void OnAbortNavigation();
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
@@ -913,9 +915,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidCommitSameDocumentNavigation(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
-  void BeginNavigation(const CommonNavigationParams& common_params,
-                       mojom::BeginNavigationParamsPtr begin_params,
-                       blink::mojom::BlobURLTokenPtr blob_url_token) override;
+  void BeginNavigation(
+      const CommonNavigationParams& common_params,
+      mojom::BeginNavigationParamsPtr begin_params,
+      blink::mojom::BlobURLTokenPtr blob_url_token,
+      mojom::NavigationClientAssociatedPtrInfo navigation_client) override;
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(
@@ -1390,16 +1394,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true then this frame's document has a focused element which is editable.
   bool has_focused_editable_element_;
 
-  struct PendingNavigation {
-    PendingNavigation(
-        const CommonNavigationParams& common_params,
-        mojom::BeginNavigationParamsPtr begin_params,
-        scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
-    ~PendingNavigation();
-    CommonNavigationParams common_params;
-    mojom::BeginNavigationParamsPtr begin_params;
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  };
   std::unique_ptr<PendingNavigation> pending_navigate_;
 
   // A collection of non-network URLLoaderFactory implementations which are used

@@ -481,8 +481,18 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
   // Receiving the invalid IPC message should lead to renderer process
   // termination.
   RenderProcessHostKillWaiter process_kill_waiter(rfh->GetProcess());
-  rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-      common_params, std::move(begin_params), nullptr);
+
+  mojom::NavigationClientAssociatedPtr navigation_client;
+  if (IsPerNavigationMojoInterfaceEnabled()) {
+    auto navigation_client_request =
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client);
+    rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
+        common_params, std::move(begin_params), nullptr,
+        navigation_client.PassInterface());
+  } else {
+    rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
+        common_params, std::move(begin_params), nullptr, nullptr);
+  }
   EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
             process_kill_waiter.Wait());
 

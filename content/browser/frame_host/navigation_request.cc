@@ -335,7 +335,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */),
       request_params, browser_initiated, false /* from_begin_navigation */,
-      &frame_entry, &entry, std::move(navigation_ui_data)));
+      &frame_entry, &entry, std::move(navigation_ui_data), nullptr));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
   return navigation_request;
@@ -350,7 +350,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     int current_history_list_offset,
     int current_history_list_length,
     bool override_user_agent,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    mojom::NavigationClientAssociatedPtrInfo navigation_client) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated fragment-navigations never take place in the browser,
   //   even with PlzNavigate.
@@ -384,7 +385,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,  // browser_initiated
       true,   // from_begin_navigation
       nullptr, entry,
-      nullptr));  // navigation_ui_data
+      nullptr,  // navigation_ui_data
+      std::move(navigation_client)));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
   return navigation_request;
@@ -399,7 +401,8 @@ NavigationRequest::NavigationRequest(
     bool from_begin_navigation,
     const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry,
-    std::unique_ptr<NavigationUIData> navigation_ui_data)
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
+    mojom::NavigationClientAssociatedPtrInfo navigation_client)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
       begin_params_(std::move(begin_params)),
@@ -416,6 +419,8 @@ NavigationRequest::NavigationRequest(
       has_stale_copy_in_cache_(false),
       net_error_(net::OK),
       devtools_navigation_token_(base::UnguessableToken::Create()),
+      request_navigation_client_(nullptr),
+      commit_navigation_client_(nullptr),
       weak_factory_(this) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   DCHECK(!IsRendererDebugURL(common_params_.url));
@@ -433,7 +438,19 @@ NavigationRequest::NavigationRequest(
     // initiating renderer.
     source_site_instance_ =
         frame_tree_node->current_frame_host()->GetSiteInstance();
+
+    if (IsPerNavigationMojoInterfaceEnabled()) {
+      DCHECK(navigation_client.is_valid());
+      request_navigation_client_ = mojom::NavigationClientAssociatedPtr();
+      request_navigation_client_.Bind(std::move(navigation_client));
+      // Binds the OnAbort callback
+      request_navigation_client_.set_connection_error_handler(
+          base::BindOnce(&NavigationRequest::OnRendererAbortedNavigation,
+                         base::Unretained(this)));
+      associated_site_instance_id_ = source_site_instance_->GetId();
+    }
   } else {
+    DCHECK(!navigation_client.is_valid());
     FrameNavigationEntry* frame_navigation_entry =
         entry->GetFrameEntry(frame_tree_node);
     if (frame_navigation_entry) {
@@ -716,6 +733,12 @@ void NavigationRequest::RegisterSubresourceOverride(
     subresource_overrides_.emplace();
 
   subresource_overrides_->push_back(std::move(transferrable_loader));
+}
+
+mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
+  if (commit_navigation_client_ && commit_navigation_client_.is_bound())
+    return commit_navigation_client_.get();
+  return nullptr;
 }
 
 void NavigationRequest::OnRequestRedirected(
@@ -1507,6 +1530,24 @@ void NavigationRequest::CommitErrorPage(
     const base::Optional<std::string>& error_page_content) {
   UpdateRequestNavigationParamsHistory();
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
+  if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
+      request_navigation_client_.is_bound()) {
+    // Two cases are possible here:
+    // Either we have a same-site navigation in which case the navigation
+    // request needs to be canceled in the RFH, so we need to rebind the handler
+    // to a post-ReadyToCommit handler.
+    // TODO(ahemery): Implement this second abort handler.
+    // Or this navigation is cross-site: the original document should no longer
+    // be able to cancel it.
+    IgnorePipeDisconnection();
+    if (associated_site_instance_id_ ==
+        render_frame_host->GetSiteInstance()->GetId()) {
+      // Reuse the request NavigationClient for commit.
+      commit_navigation_client_ = std::move(request_navigation_client_);
+    }
+    associated_site_instance_id_.reset();
+  }
+
   navigation_handle_->ReadyToCommitNavigation(render_frame_host, true);
   render_frame_host->FailedNavigation(common_params_, request_params_,
                                       has_stale_copy_in_cache_, net_error_,
@@ -1528,6 +1569,23 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->speculative_frame_host());
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
+  if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
+      request_navigation_client_.is_bound()) {
+    // Two cases are possible here:
+    // Either we have a same-site navigation in which case the navigation
+    // request needs to be canceled in the RFH, so we need to rebind the handler
+    // to a post-ReadyToCommit handler.
+    // TODO(ahemery): Implement this second abort handler.
+    // Or this navigation is cross-site: the original document should no longer
+    // be able to cancel it.
+    IgnorePipeDisconnection();
+    if (associated_site_instance_id_ ==
+        render_frame_host->GetSiteInstance()->GetId()) {
+      // Reuse the request NavigationClient for commit.
+      commit_navigation_client_ = std::move(request_navigation_client_);
+    }
+    associated_site_instance_id_.reset();
+  }
   render_frame_host->CommitNavigation(
       response_.get(), std::move(url_loader_client_endpoints_), common_params_,
       request_params_, is_view_source_, std::move(subresource_loader_params_),
@@ -1711,6 +1769,17 @@ void NavigationRequest::UpdateRequestNavigationParamsHistory() {
       navigation_controller->GetCurrentEntryIndex();
   request_params_.current_history_list_length =
       navigation_controller->GetEntryCount();
+}
+
+void NavigationRequest::OnRendererAbortedNavigation() {
+  frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_, false);
+
+  // Do not add code after this, NavigationRequest has been destroyed.
+}
+
+void NavigationRequest::IgnorePipeDisconnection() {
+  return request_navigation_client_.set_connection_error_handler(
+      base::DoNothing());
 }
 
 }  // namespace content

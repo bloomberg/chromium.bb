@@ -67,6 +67,7 @@
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -126,6 +127,7 @@
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
+#include "content/renderer/navigation_client.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
@@ -1331,6 +1333,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       frame_bindings_control_binding_(this),
       frame_navigation_control_binding_(this),
       fullscreen_binding_(this),
+      navigation_client_impl_(nullptr),
       has_accessed_initial_document_(false),
       media_factory_(this,
                      base::Bind(&RenderFrameImpl::RequestOverlayRoutingToken,
@@ -1832,6 +1835,12 @@ void RenderFrameImpl::BindFrameNavigationControl(
     mojom::FrameNavigationControlAssociatedRequest request) {
   frame_navigation_control_binding_.Bind(
       std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
+}
+
+void RenderFrameImpl::BindNavigationClient(
+    mojom::NavigationClientAssociatedRequest request) {
+  navigation_client_impl_ = std::make_unique<NavigationClient>(this);
+  navigation_client_impl_->Bind(std::move(request));
 }
 
 blink::mojom::ManifestManager& RenderFrameImpl::GetManifestManager() {
@@ -4411,7 +4420,8 @@ base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
 
 void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
-  Send(new FrameHostMsg_AbortNavigation(routing_id_));
+  if (!IsPerNavigationMojoInterfaceEnabled())
+    Send(new FrameHostMsg_AbortNavigation(routing_id_));
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
@@ -6641,9 +6651,21 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
                     : base::nullopt);
 
+  mojom::NavigationClientAssociatedPtrInfo navigation_client_info;
+  if (IsPerNavigationMojoInterfaceEnabled()) {
+    WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
+    DocumentState* document_state =
+        DocumentState::FromDocumentLoader(document_loader);
+    NavigationStateImpl* navigation_state =
+        static_cast<NavigationStateImpl*>(document_state->navigation_state());
+
+    BindNavigationClient(mojo::MakeRequest(&navigation_client_info));
+    navigation_state->set_navigation_client(std::move(navigation_client_impl_));
+  }
   GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
                                   std::move(begin_navigation_params),
-                                  std::move(blob_url_token));
+                                  std::move(blob_url_token),
+                                  std::move(navigation_client_info));
 }
 
 void RenderFrameImpl::LoadDataURL(
@@ -6885,6 +6907,11 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&RenderFrameImpl::BindFrameNavigationControl,
                  weak_factory_.GetWeakPtr()));
+
+  if (IsPerNavigationMojoInterfaceEnabled()) {
+    GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+        &RenderFrameImpl::BindNavigationClient, weak_factory_.GetWeakPtr()));
+  }
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindFullscreen, weak_factory_.GetWeakPtr()));
