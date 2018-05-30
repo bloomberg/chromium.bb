@@ -44,12 +44,14 @@
 @synthesize thumbnailGenerator = thumbnailGenerator_;
 @synthesize isOriginalTitle = isOriginalTitle_;
 @synthesize isPagePrintable = isPagePrintable_;
+@synthesize userAgent = userAgent_;
 
 - (id)initWithShareURL:(const GURL&)shareURL
             visibleURL:(const GURL&)visibleURL
                  title:(NSString*)title
        isOriginalTitle:(BOOL)isOriginalTitle
        isPagePrintable:(BOOL)isPagePrintable
+             userAgent:(web::UserAgentType)userAgent
     thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator {
   DCHECK(shareURL.is_valid());
   DCHECK(visibleURL.is_valid());
@@ -61,6 +63,7 @@
     title_ = [title copy];
     isOriginalTitle_ = isOriginalTitle;
     isPagePrintable_ = isPagePrintable;
+    userAgent_ = userAgent;
     thumbnailGenerator_ = thumbnailGenerator;
   }
   return self;

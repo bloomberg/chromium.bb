@@ -12,8 +12,10 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
@@ -256,14 +258,27 @@ NSString* const kActivityServicesSnackbarCategory =
                                       dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];
 
-    if (IsUIRefreshPhase1Enabled() && bookmarkModel) {
-      BOOL bookmarked = bookmarkModel->loaded() &&
-                        bookmarkModel->IsBookmarked(data.visibleURL);
-      BookmarkActivity* bookmarkActivity =
-          [[BookmarkActivity alloc] initWithURL:data.visibleURL
-                                     bookmarked:bookmarked
-                                     dispatcher:dispatcher];
-      [applicationActivities addObject:bookmarkActivity];
+    if (IsUIRefreshPhase1Enabled()) {
+      if (bookmarkModel) {
+        BOOL bookmarked = bookmarkModel->loaded() &&
+                          bookmarkModel->IsBookmarked(data.visibleURL);
+        BookmarkActivity* bookmarkActivity =
+            [[BookmarkActivity alloc] initWithURL:data.visibleURL
+                                       bookmarked:bookmarked
+                                       dispatcher:dispatcher];
+        [applicationActivities addObject:bookmarkActivity];
+      }
+      FindInPageActivity* findInPageActivity =
+          [[FindInPageActivity alloc] initWithDispatcher:dispatcher];
+      [applicationActivities addObject:findInPageActivity];
+
+      if (data.userAgent != web::UserAgentType::NONE) {
+        RequestDesktopOrMobileSiteActivity* requestActivity =
+            [[RequestDesktopOrMobileSiteActivity alloc]
+                initWithDispatcher:dispatcher
+                         userAgent:data.userAgent];
+        [applicationActivities addObject:requestActivity];
+      }
     }
   }
   if (data.isPagePrintable) {

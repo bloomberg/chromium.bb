@@ -54,11 +54,20 @@ ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
   const GURL& finalURLToShare =
       !shareURL.is_empty() ? shareURL : tab.webState->GetVisibleURL();
 
+  web::UserAgentType userAgent = web::UserAgentType::NONE;
+  if (tab.webState) {
+    web::NavigationItem* visibleItem =
+        tab.webState->GetNavigationManager()->GetVisibleItem();
+    if (visibleItem)
+      userAgent = visibleItem->GetUserAgentType();
+  }
+
   return [[ShareToData alloc] initWithShareURL:finalURLToShare
                                     visibleURL:tab.webState->GetVisibleURL()
                                          title:tab.title
                                isOriginalTitle:is_original_title
                                isPagePrintable:is_page_printable
+                                     userAgent:userAgent
                             thumbnailGenerator:thumbnail_generator];
 }
 

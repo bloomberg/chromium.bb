@@ -1276,11 +1276,20 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SHARE_GPLUS_COMPLETE" desc="Message shown when Google+ share has been posted. [Length: Unknown. Keep it short.] [iOS only]">
         Google+ post completed.
       </message>
+      <message name="IDS_IOS_SHARE_MENU_FIND_IN_PAGE" desc="Text label to the Find in Page action in the extension menu that open the 'Find in Page' menu. [iOS only]">
+        Find in Page
+      </message>
       <message name="IDS_IOS_SHARE_MENU_PRINT_ACTION" desc="The text label of the Print action in the extension menu that starts the printing process. [Length: 13em] [iOS only]">
         Print
       </message>
       <message name="IDS_IOS_SHARE_MENU_READING_LIST_ACTION" desc="The text label of the Add To Reading List action in the extension menu that adds the current page to the reading list. [Length: 25em] [iOS only]">
         Read Later
+      </message>
+      <message name="IDS_IOS_SHARE_MENU_REQUEST_DESKTOP_SITE" desc="Text label to the Request Desktop Site action in the extension menu that request the desktop version of the current page. [iOS only]">
+        Request Desktop Site
+      </message>
+      <message name="IDS_IOS_SHARE_MENU_REQUEST_MOBILE_SITE" desc="Text label to the Request Desktop Site action in the extension menu that request the desktop version of the current page. [iOS only]">
+        Request Mobile Site
       </message>
       <message name="IDS_IOS_SHARE_MESSAGES_COMPLETE" desc="Message shown when message share has been sent. [Length: Unknown. Keep it short.] [iOS only]">
         Message sent.
