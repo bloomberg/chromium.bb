@@ -84,6 +84,9 @@ class CORE_EXPORT TouchEventManager
   // accumulating all move events or by discrete events pointerdown/up/cancel.
   WebInputEventResult DispatchTouchEventFromAccumulatdTouchPoints();
 
+  // Used only if |should_enforce_vertical_scroll_| is set.
+  WebInputEventResult EnsureVerticalScrollIsPossible(WebInputEventResult);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |TouchEventManager::clear()|.
 
@@ -110,6 +113,26 @@ class CORE_EXPORT TouchEventManager
   // The current touch action, computed on each touch start and is
   // a union of all touches. Reset when all touches are released.
   TouchAction current_touch_action_;
+
+  // TODO(ekaramad): Send the update after 'touchmove' to make sure we are only
+  // enforcing vertical scroll.
+  // When true, the current touch sequence should be handled such that vertical
+  // scrolling is always possible. To this end, the output of event handlers for
+  // 'touchstart' and 'touchmove' is overwritten to not handled so that
+  // scrolling cannot be blocked. However, to ensure only vertical scrolling is
+  // possible, the update for effective 'touch-action' is postponed to after
+  // handling 'touchstart' handlers and potentially overwritten to 'pan-y' so
+  // that only horizontal scrolling is blocked.
+  bool should_enforce_vertical_scroll_ = false;
+  // When set to a value, the effective touch-action is sent to the browser
+  // after all 'touchstart' handlers have been invoked. This is used by feature
+  // policy to enforce specific directions of scroll in spite of scroll-blocking
+  // events being prevent defaulted. When multiple pointer down events occur
+  // during the same touch sequence, the value of effective touch action which
+  // is sent to the browser after handling each dispatched 'touchstart' is the
+  // intersection of all the previously calculated effective touch action values
+  // during the sequence.
+  base::Optional<TouchAction> delayed_effective_touch_action_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventManager);
 };
