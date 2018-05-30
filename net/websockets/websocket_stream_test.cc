@@ -696,7 +696,7 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, SubProtocolIsUsed) {
         "chatv11.chromium.org, chatv20.chromium.org"}},
       {{"Sec-WebSocket-Protocol", "chatv20.chromium.org"}});
   WaitUntilConnectDone();
-  EXPECT_TRUE(stream_);
+  ASSERT_TRUE(stream_);
   EXPECT_FALSE(has_failed());
   EXPECT_EQ("chatv20.chromium.org", stream_->GetSubProtocol());
 }
