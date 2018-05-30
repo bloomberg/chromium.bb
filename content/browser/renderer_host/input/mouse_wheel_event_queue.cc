@@ -59,6 +59,10 @@ void MouseWheelEventQueue::QueueEvent(
   if (event_sent_for_gesture_ack_ && !wheel_queue_.empty()) {
     QueuedWebMouseWheelEvent* last_event = wheel_queue_.back().get();
     if (last_event->CanCoalesceWith(event)) {
+      // Terminate the LatencyInfo of the event before it gets coalesced away.
+      event.latency.AddLatencyNumber(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0);
+
       last_event->CoalesceWith(event);
       TRACE_EVENT_INSTANT2("input", "MouseWheelEventQueue::CoalescedWheelEvent",
                            TRACE_EVENT_SCOPE_THREAD, "total_dx",
