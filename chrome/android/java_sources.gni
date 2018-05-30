@@ -5,6 +5,7 @@
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//chrome/android/feed/feed_java_sources.gni")
 
 chrome_java_sources = [
   "java/src/com/google/android/apps/chrome/appwidget/bookmarks/BookmarkThumbnailWidgetProvider.java",
@@ -2163,6 +2164,7 @@ if (enable_offline_pages_harness) {
 if (enable_feed_in_chrome) {
   chrome_junit_test_java_sources +=
       [ "junit/src/org/chromium/chrome/browser/feed/FeedImageLoaderTest.java" ]
+  chrome_test_java_sources += feed_conformance_test_sources
 }
 
 # This is enable_arcore, not package_arcore because the apk merger, for
