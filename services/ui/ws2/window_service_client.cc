@@ -769,6 +769,20 @@ bool WindowServiceClient::SetFocusImpl(const ClientWindowId& window_id) {
   return focus_handler_.SetFocus(GetWindowByClientId(window_id));
 }
 
+bool WindowServiceClient::StackAtTopImpl(const ClientWindowId& window_id) {
+  DVLOG(3) << "StackAtTop window_id= " << window_id;
+
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window || !IsTopLevel(window)) {
+    DVLOG(1) << "StackAtTop failed (invalid id, or invalid window)";
+    return false;
+  }
+
+  if (window->parent())
+    window->parent()->StackChildAtTop(window);
+  return true;
+}
+
 void WindowServiceClient::GetWindowTreeRecursive(
     aura::Window* window,
     std::vector<aura::Window*>* windows) {
@@ -1171,7 +1185,8 @@ void WindowServiceClient::StackAbove(uint32_t change_id,
 }
 
 void WindowServiceClient::StackAtTop(uint32_t change_id, Id window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  const bool result = StackAtTopImpl(MakeClientWindowId(window_id));
+  window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
 void WindowServiceClient::PerformWmAction(Id window_id,

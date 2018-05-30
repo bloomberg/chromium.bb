@@ -118,6 +118,11 @@ void WindowServiceClientTestHelper::SetEventTargetingPolicy(
                                                   policy);
 }
 
+bool WindowServiceClientTestHelper::StackAtTop(aura::Window* window) {
+  return window_service_client_->StackAtTopImpl(
+      window_service_client_->MakeClientWindowId(TransportIdForWindow(window)));
+}
+
 Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
   return window ? window_service_client_->TransportIdForWindow(window)
                 : kInvalidTransportId;

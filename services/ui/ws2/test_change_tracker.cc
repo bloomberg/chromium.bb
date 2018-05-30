@@ -134,7 +134,7 @@ std::string ChangeToDescription(const Change& change,
                                 WindowIdToString(change.window_id).c_str(),
                                 static_cast<int>(change.cursor_type));
     case CHANGE_TYPE_ON_CHANGE_COMPLETED:
-      return base::StringPrintf("ChangeCompleted id=%d sucess=%s",
+      return base::StringPrintf("ChangeCompleted id=%d success=%s",
                                 change.change_id,
                                 change.bool_value ? "true" : "false");
 
