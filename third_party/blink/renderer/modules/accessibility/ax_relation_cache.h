@@ -109,7 +109,7 @@ class AXRelationCache {
   //   quickly determine if it affects an aria-owns relationship.
   // - When text changes, we can recompute any label or description based on it
   //   and fire the appropriate change events.
-  HashMap<String, std::unique_ptr<HashSet<AXID>>> id_attr_to_related_mapping_;
+  HashMap<String, HashSet<AXID>> id_attr_to_related_mapping_;
 
   // Helpers that call back into object cache
   AXObject* ObjectFromAXID(AXID) const;

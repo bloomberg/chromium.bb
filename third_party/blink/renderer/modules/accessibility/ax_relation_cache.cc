@@ -55,13 +55,9 @@ void AXRelationCache::UpdateReverseRelations(const AXObject* relation_source,
 
   // Add entries to reverse map.
   for (const String& target_id : target_ids) {
-    HashSet<AXID>* source_axids = id_attr_to_related_mapping_.at(target_id);
-    if (!source_axids) {
-      source_axids = new HashSet<AXID>();
-      id_attr_to_related_mapping_.Set(target_id,
-                                      base::WrapUnique(source_axids));
-    }
-    source_axids->insert(relation_source_axid);
+    auto result =
+        id_attr_to_related_mapping_.insert(target_id, HashSet<AXID>());
+    result.stored_value->value.insert(relation_source_axid);
   }
 }
 
@@ -207,12 +203,11 @@ void AXRelationCache::GetReverseRelated(
   if (!element->HasID())
     return;
 
-  String id = element->GetIdAttribute();
-  HashSet<AXID>* source_axids = id_attr_to_related_mapping_.at(id);
-  if (!source_axids)
+  auto it = id_attr_to_related_mapping_.find(element->GetIdAttribute());
+  if (it == id_attr_to_related_mapping_.end())
     return;
 
-  for (const auto& source_axid : *source_axids) {
+  for (const auto& source_axid : it->value) {
     AXObject* source_object = ObjectFromAXID(source_axid);
     if (source_object)
       source_objects.push_back(source_object);
