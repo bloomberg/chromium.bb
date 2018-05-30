@@ -772,7 +772,7 @@ TEST_F(FakeDriveServiceTest, GetStartPageToken) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<StartPageToken> start_page_token;
   fake_service_.GetStartPageToken(
-      "team_drive_id",
+      util::kTeamDriveIdDefaultCorpus,
       test_util::CreateCopyResultCallback(&error, &start_page_token));
   base::RunLoop().RunUntilIdle();
 

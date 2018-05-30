@@ -2180,6 +2180,7 @@ source_set("unit_tests") {
     "//components/drive/sync/entry_update_performer_unittest.cc",
     "//components/drive/sync/remove_performer_unittest.cc",
     "//components/drive/sync_client_unittest.cc",
+    "//components/drive/team_drive_change_list_loader_unittest.cc",
     "//components/drive/team_drive_list_loader_unittest.cc",
   ]
 

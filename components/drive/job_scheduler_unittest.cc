@@ -21,6 +21,7 @@
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"
@@ -216,8 +217,9 @@ TEST_F(JobSchedulerTest, GetStartPageToken) {
   google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
   std::unique_ptr<google_apis::StartPageToken> start_page_token;
   scheduler_->GetStartPageToken(
-      "team_drive_id", google_apis::test_util::CreateCopyResultCallback(
-                           &error, &start_page_token));
+      util::kTeamDriveIdDefaultCorpus,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &start_page_token));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(start_page_token);

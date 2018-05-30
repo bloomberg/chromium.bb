@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/change_list_processor.h"
+#include "components/drive/chromeos/drive_file_util.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/chromeos/root_folder_id_loader.h"
@@ -277,8 +278,8 @@ void ChangeListLoader::Load(const FileOperationCallback& callback) {
   std::string* start_page_token = new std::string();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&ResourceMetadata::GetStartPageToken,
-                 base::Unretained(resource_metadata_), start_page_token),
+      base::Bind(&GetStartPageToken, base::Unretained(resource_metadata_),
+                 team_drive_id_, start_page_token),
       base::Bind(&ChangeListLoader::LoadAfterGetLocalStartPageToken,
                  weak_ptr_factory_.GetWeakPtr(), is_initial_load,
                  base::Owned(start_page_token)));
