@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -32,6 +33,8 @@ class ASH_EXPORT KeyAccessibilityEnabler : public ui::EventHandler {
   std::unique_ptr<SpokenFeedbackEnabler> spoken_feedback_enabler_;
   bool vol_down_pressed_ = false;
   bool vol_up_pressed_ = false;
+  bool other_key_pressed_ = false;
+  base::TimeTicks first_time_both_volume_keys_pressed_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyAccessibilityEnabler);
 };
