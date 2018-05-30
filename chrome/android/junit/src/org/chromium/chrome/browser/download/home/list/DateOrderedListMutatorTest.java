@@ -22,6 +22,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
+import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
@@ -38,14 +40,14 @@ public class DateOrderedListMutatorTest {
     @Mock
     ListObserver mObserver;
 
-    DateOrderedListModel mModel;
+    ListItemModel mModel;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Before
     public void setUp() {
-        mModel = new DateOrderedListModel();
+        mModel = new ListItemModel();
     }
 
     @After
@@ -575,20 +577,20 @@ public class DateOrderedListMutatorTest {
     }
 
     private static void assertListItemEquals(
-            DateOrderedListModel.ListItem item, Calendar calendar, OfflineItem offlineItem) {
+            ListItem item, Calendar calendar, OfflineItem offlineItem) {
+        Assert.assertTrue(item instanceof DateListItem);
+
         if (offlineItem == null) {
-            Assert.assertEquals(
-                    DateOrderedListModel.ListItem.generateStableIdForDayOfYear(calendar),
-                    item.stableId);
+            Assert.assertFalse(item instanceof OfflineItemListItem);
+            Assert.assertEquals(DateListItem.generateStableIdForDayOfYear(calendar), item.stableId);
         } else {
-            Assert.assertEquals(
-                    DateOrderedListModel.ListItem.generateStableId(offlineItem), item.stableId);
+            Assert.assertTrue(item instanceof OfflineItemListItem);
+            Assert.assertEquals(OfflineItemListItem.generateStableId(offlineItem), item.stableId);
+            Assert.assertEquals(offlineItem, ((OfflineItemListItem) item).item);
         }
 
-        Assert.assertEquals(offlineItem, item.item);
         Calendar calendar2 = CalendarFactory.get();
-        calendar2.setTime(item.date);
+        calendar2.setTime(((DateListItem) item).date);
         Assert.assertEquals(calendar.getTimeInMillis(), calendar2.getTimeInMillis());
-        Assert.assertEquals(calendar.getTimeInMillis(), item.date.getTime());
     }
 }

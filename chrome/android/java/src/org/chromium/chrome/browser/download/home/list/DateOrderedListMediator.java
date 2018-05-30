@@ -18,7 +18,7 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
  */
 class DateOrderedListMediator {
     private final OfflineContentProvider mProvider;
-    private final DateOrderedListModel mModel;
+    private final ListItemModel mModel;
 
     private final OfflineItemSource mSource;
     private final DateOrderedListMutator mListMutator;
@@ -31,9 +31,9 @@ class DateOrderedListMediator {
      * Creates an instance of a DateOrderedListMediator that will push {@code provider} into
      * {@code model}.
      * @param provider The {@link OfflineContentProvider} to visually represent.
-     * @param model    The {@link DateOrderedListModel} to push {@code provider} into.
+     * @param model    The {@link ListItemModel} to push {@code provider} into.
      */
-    public DateOrderedListMediator(OfflineContentProvider provider, DateOrderedListModel model) {
+    public DateOrderedListMediator(OfflineContentProvider provider, ListItemModel model) {
         // Build a chain from the data source to the model.  The chain will look like:
         // [OfflineContentProvider] ->
         //     [OfflineItemSource] ->
@@ -41,7 +41,7 @@ class DateOrderedListMediator {
         //             [TypeOfflineItemFilter] ->
         //                 [SearchOfflineItemFitler] ->
         //                     [DateOrderedListMutator] ->
-        //                         [DateOrderedListModel]
+        //                         [ListItemModel]
 
         mProvider = provider;
         mModel = model;

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.home.list;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
@@ -17,17 +16,17 @@ import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
  * glue to display it on the screen.
  */
 class DateOrderedListView {
-    private final DateOrderedListModel mModel;
+    private final DecoratedListItemModel mModel;
     private final RecyclerView mView;
 
     /** Creates an instance of a {@link DateOrderedListView} representing {@code model}. */
-    public DateOrderedListView(Context context, DateOrderedListModel model) {
+    public DateOrderedListView(Context context, DecoratedListItemModel model) {
         mModel = model;
 
         DateOrderedListViewBinder viewBinder = new DateOrderedListViewBinder();
         DateOrderedListViewAdapter adapter = new DateOrderedListViewAdapter(mModel, viewBinder);
-        RecyclerViewModelChangeProcessor<DateOrderedListModel, ViewHolder> modelChangeProcessor =
-                new RecyclerViewModelChangeProcessor<>(adapter);
+        RecyclerViewModelChangeProcessor<DecoratedListItemModel, ListItemViewHolder>
+                modelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
 
         mModel.addObserver(modelChangeProcessor);
 
