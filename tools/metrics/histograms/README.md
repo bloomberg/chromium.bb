@@ -340,6 +340,9 @@ unused histograms as obsolete, annotating them with the associated date or
 milestone in the obsolete tag entry.  If your histogram is being replaced by a
 new version, we suggest noting that in the previous histogram's description.
 
+A changelist that marks a histogram as obsolete should be reviewed by all
+current owners.
+
 Deleting histogram entries would be bad if someone to accidentally reused your
 old histogram name and thereby corrupts new data with whatever old data is still
 coming in.  It's also useful to keep obsolete histogram descriptions in
@@ -357,6 +360,9 @@ element is used only to construct a partial name, to be completed by further
 suffixes, annotate the element with the attribute `base="true"`. This instructs
 tools not to treat the partial base name as a distinct histogram. Note that
 suffixes can be applied recursively.
+
+You can also declare ownership of `<histogram_suffixes>`. If there's no owner
+specified, the generated histograms will inherit owners from the parents.
 
 ### Enum labels
 
