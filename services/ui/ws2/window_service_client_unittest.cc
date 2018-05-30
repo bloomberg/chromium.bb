@@ -67,7 +67,7 @@ TEST(WindowServiceClientTest, NewWindow) {
   EXPECT_TRUE(setup.changes()->empty());
   aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
-  EXPECT_EQ("ChangeCompleted id=1 sucess=true",
+  EXPECT_EQ("ChangeCompleted id=1 success=true",
             SingleChangeToDescription(*setup.changes()));
 }
 
@@ -79,7 +79,7 @@ TEST(WindowServiceClientTest, NewWindowWithProperties) {
   aura::Window* window = setup.client_test_helper()->NewWindow(
       1, {{ui::mojom::WindowManager::kAlwaysOnTop_Property, transport}});
   ASSERT_TRUE(window);
-  EXPECT_EQ("ChangeCompleted id=1 sucess=true",
+  EXPECT_EQ("ChangeCompleted id=1 success=true",
             SingleChangeToDescription(*setup.changes()));
   EXPECT_TRUE(window->GetProperty(aura::client::kAlwaysOnTopKey));
 }
@@ -125,7 +125,7 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   }
   // See comments in WindowServiceClient::SetBoundsImpl() for why this returns
   // false.
-  EXPECT_EQ("ChangeCompleted id=2 sucess=false",
+  EXPECT_EQ("ChangeCompleted id=2 success=false",
             SingleChangeToDescription(*setup.changes()));
   setup.changes()->clear();
 
@@ -153,7 +153,7 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   EXPECT_EQ(restricted_bounds, (*setup.changes())[0].bounds2);
 
   // And because the layout manager changed the bounds the result is false.
-  EXPECT_EQ("ChangeCompleted id=3 sucess=false",
+  EXPECT_EQ("ChangeCompleted id=3 success=false",
             ChangeToDescription((*setup.changes())[1]));
 }
 
@@ -185,7 +185,7 @@ TEST(WindowServiceClientTest, SetTopLevelWindowProperty) {
   setup.client_test_helper()->SetWindowProperty(
       top_level, ui::mojom::WindowManager::kAlwaysOnTop_Property,
       client_transport_value, 2);
-  EXPECT_EQ("ChangeCompleted id=2 sucess=true",
+  EXPECT_EQ("ChangeCompleted id=2 success=true",
             SingleChangeToDescription(*setup.changes()));
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
   setup.changes()->clear();
@@ -682,7 +682,7 @@ TEST(WindowServiceClientTest, DeleteWindow) {
   setup.changes()->clear();
   setup.client_test_helper()->DeleteWindow(window);
   EXPECT_TRUE(tracker.windows().empty());
-  EXPECT_EQ("ChangeCompleted id=1 sucess=true",
+  EXPECT_EQ("ChangeCompleted id=1 success=true",
             SingleChangeToDescription(*setup.changes()));
 }
 
@@ -715,6 +715,33 @@ TEST(WindowServiceClientTest, Embed) {
   EXPECT_EQ(kInvalidTransportId, test_change.windows[0].parent_id);
   EXPECT_EQ(embed_window->TargetVisibility(), test_change.windows[0].visible);
   EXPECT_NE(kInvalidTransportId, test_change.windows[0].window_id);
+}
+
+TEST(WindowServiceClientTest, StackAtTop) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level1 = setup.client_test_helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level1);
+  setup.changes()->clear();
+  setup.client_test_helper()->window_tree()->StackAtTop(
+      10, setup.client_test_helper()->TransportIdForWindow(top_level1));
+  // This succeeds because |top_level1| is already at top. |10| is the value
+  // supplied to StackAtTop().
+  EXPECT_EQ("ChangeCompleted id=10 success=true",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Create another top-level. |top_level2| should initially be above 1.
+  aura::Window* top_level2 = setup.client_test_helper()->NewTopLevelWindow(2);
+  ASSERT_TRUE(top_level2);
+  ASSERT_EQ(2u, top_level1->parent()->children().size());
+  EXPECT_EQ(top_level2, top_level1->parent()->children()[1]);
+
+  // Stack 1 at the top.
+  EXPECT_TRUE(setup.client_test_helper()->StackAtTop(top_level1));
+  EXPECT_EQ(top_level1, top_level1->parent()->children()[1]);
+
+  // Stacking a non-toplevel window at top should fail.
+  aura::Window* non_top_level_window = setup.client_test_helper()->NewWindow(5);
+  EXPECT_FALSE(setup.client_test_helper()->StackAtTop(non_top_level_window));
 }
 
 }  // namespace

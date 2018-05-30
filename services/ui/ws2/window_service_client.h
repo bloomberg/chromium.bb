@@ -225,6 +225,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   std::vector<aura::Window*> GetWindowTreeImpl(const ClientWindowId& window_id);
   bool SetFocusImpl(const ClientWindowId& window_id);
+  bool StackAtTopImpl(const ClientWindowId& window_id);
 
   void GetWindowTreeRecursive(aura::Window* window,
                               std::vector<aura::Window*>* windows);
