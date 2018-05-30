@@ -24,6 +24,7 @@ namespace media_router {
 
 namespace {
 
+constexpr char kPseudoSinkId[] = "pseudo:sink";
 constexpr char kRouteId[] = "route1";
 constexpr char kSinkId[] = "sink1";
 constexpr char kSinkName[] = "sink name";
@@ -136,6 +137,26 @@ TEST_F(MediaRouterViewsUITest, StartCasting) {
 TEST_F(MediaRouterViewsUITest, StopCasting) {
   EXPECT_CALL(mock_router_, TerminateRoute(kRouteId));
   ui_->StopCasting(kRouteId);
+}
+
+TEST_F(MediaRouterViewsUITest, RemovePseudoSink) {
+  MockControllerObserver observer;
+  ui_->AddObserver(&observer);
+
+  MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST_AUDIO);
+  MediaSinkWithCastModes sink_with_cast_modes(sink);
+  sink_with_cast_modes.cast_modes = {MediaCastMode::TAB_MIRROR};
+  MediaSink pseudo_sink(kPseudoSinkId, kSinkName, SinkIconType::MEETING);
+  MediaSinkWithCastModes pseudo_sink_with_cast_modes(pseudo_sink);
+  pseudo_sink_with_cast_modes.cast_modes = {MediaCastMode::TAB_MIRROR};
+
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(Invoke([&sink](const CastDialogModel& model) {
+        EXPECT_EQ(1u, model.media_sinks.size());
+        EXPECT_EQ(sink.id(), model.media_sinks[0].id);
+      })));
+  ui_->OnResultsUpdated({sink_with_cast_modes, pseudo_sink_with_cast_modes});
+  ui_->RemoveObserver(&observer);
 }
 
 }  // namespace media_router
