@@ -158,7 +158,7 @@ void WindowServiceClient::DeleteClientRoot(ClientRoot* client_root,
   if (client_window->capture_owner() == this) {
     // This client will no longer know about |window|, so it should not receive
     // any events sent to the client.
-    client_window->set_capture_owner(nullptr);
+    client_window->SetCaptureOwner(nullptr);
   }
 
   // Delete the ClientRoot first, so that we don't attempt to spam the
@@ -491,14 +491,14 @@ bool WindowServiceClient::SetCaptureImpl(const ClientWindowId& window_id) {
       // Notify the current owner that it lost capture.
       if (client_window->capture_owner())
         client_window->capture_owner()->OnCaptureLost(window);
-      client_window->set_capture_owner(this);
+      client_window->SetCaptureOwner(this);
     }
     return true;
   }
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kCapture);
-  client_window->set_capture_owner(this);
+  client_window->SetCaptureOwner(this);
   capture_controller->SetCapture(window);
   return capture_controller->GetCaptureWindow() == window;
 }
@@ -534,7 +534,7 @@ bool WindowServiceClient::ReleaseCaptureImpl(const ClientWindowId& window_id) {
     DVLOG(1) << "ReleaseCapture failed (client did not request capture)";
     return false;
   }
-  client_window->set_capture_owner(nullptr);
+  client_window->SetCaptureOwner(nullptr);
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kCapture);
@@ -846,7 +846,7 @@ void WindowServiceClient::OnCaptureChanged(aura::Window* lost_capture,
       // One of the windows known to this client had capture. Notify the client
       // of the change. If the client does not know about the window that gained
       // capture, an invalid window id is used.
-      client_window->set_capture_owner(nullptr);
+      client_window->SetCaptureOwner(nullptr);
       const Id gained_capture_id = gained_capture &&
                                            IsWindowKnown(gained_capture) &&
                                            !IsClientRootWindow(gained_capture)
@@ -855,9 +855,6 @@ void WindowServiceClient::OnCaptureChanged(aura::Window* lost_capture,
       window_tree_client_->OnCaptureChanged(gained_capture_id,
                                             TransportIdForWindow(lost_capture));
     }
-  } else {
-    DCHECK(!gained_capture || !IsClientCreatedWindow(gained_capture) ||
-           IsTopLevel(gained_capture));
   }
 }
 
