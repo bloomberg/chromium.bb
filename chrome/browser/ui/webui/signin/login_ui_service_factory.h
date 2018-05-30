@@ -25,11 +25,6 @@ class LoginUIServiceFactory : public BrowserContextKeyedServiceFactory {
   // Returns an instance of the LoginUIServiceFactory singleton.
   static LoginUIServiceFactory* GetInstance();
 
-  // Helper method that returns a closure displaying the login popup for
-  // |profile|.
-  // This closure must not be called after the LoginUIService is destroyed.
-  static base::Closure GetShowLoginPopupCallbackForProfile(Profile* profile);
-
  private:
   friend struct base::DefaultSingletonTraits<LoginUIServiceFactory>;
 
