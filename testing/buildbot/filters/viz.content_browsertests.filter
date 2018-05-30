@@ -8,9 +8,7 @@
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.*
 
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
--SitePerProcessBrowserTest.CompositorViewportPixelSizeTest
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
--SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
 -SitePerProcessBrowserTest.PhysicalBackingSizeTest
 -SitePerProcessBrowserTest.ScrollBubblingFromNestedOOPIFTest

@@ -72,6 +72,7 @@ namespace content {
 
 class BrowserContext;
 struct FrameVisualProperties;
+class FrameTreeNode;
 class InterstitialPage;
 class MessageLoopRunner;
 class NavigationHandle;
@@ -712,6 +713,7 @@ class RenderFrameSubmissionObserver
  public:
   explicit RenderFrameSubmissionObserver(
       RenderFrameMetadataProvider* render_frame_metadata_provider);
+  explicit RenderFrameSubmissionObserver(FrameTreeNode* node);
   explicit RenderFrameSubmissionObserver(WebContents* web_contents);
   ~RenderFrameSubmissionObserver() override;
 
