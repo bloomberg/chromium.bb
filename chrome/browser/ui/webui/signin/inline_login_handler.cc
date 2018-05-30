@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 
 #include <limits.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
@@ -206,8 +207,10 @@ void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
   if (browser)
     browser->signin_view_controller()->CloseModalSignin();
 
+#if !defined(OS_CHROMEOS)
   // Does nothing if user manager is not showing.
   UserManagerProfileDialog::HideDialog();
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void InlineLoginHandler::CloseDialogFromJavascript() {

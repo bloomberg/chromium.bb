@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -24,6 +23,12 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
+#else
+#include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -54,14 +59,21 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   return source;
 }
 
-} // empty namespace
+}  // namespace
 
 InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
     : WebDialogUI(web_ui),
       auth_extension_(Profile::FromWebUI(web_ui)) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateWebUIDataSource());
+
+#if defined(OS_CHROMEOS)
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::InlineLoginHandlerChromeOS>());
+#else
   web_ui->AddMessageHandler(std::make_unique<InlineLoginHandlerImpl>());
+#endif  // defined(OS_CHROMEOS)
+
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   content::WebContents* contents = web_ui->GetWebContents();

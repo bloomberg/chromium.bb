@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 
@@ -42,6 +44,7 @@ class SigninViewController {
                   Browser* browser,
                   signin_metrics::AccessPoint access_point);
 
+#if !defined(OS_CHROMEOS)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
   // tab attached to |browser|.
   void ShowDiceSigninTab(profiles::BubbleViewMode mode,
@@ -49,6 +52,7 @@ class SigninViewController {
                          signin_metrics::AccessPoint access_point,
                          signin_metrics::PromoAction promo_action,
                          const std::string& email);
+#endif  // !defined(OS_CHROMEOS)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser|'s window.

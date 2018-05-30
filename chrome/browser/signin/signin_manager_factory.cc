@@ -124,8 +124,8 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
       GaiaCookieManagerServiceFactory::GetForProfile(profile),
       SigninErrorControllerFactory::GetForProfile(profile),
       AccountConsistencyModeManager::GetMethodForProfile(profile));
-  AccountFetcherServiceFactory::GetForProfile(profile);
 #endif
+  AccountFetcherServiceFactory::GetForProfile(profile);
   service->Initialize(g_browser_process->local_state());
   for (Observer& observer : observer_list_)
     observer.SigninManagerCreated(service);

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -723,9 +724,7 @@ bool IsURLAllowedInIncognito(const GURL& url,
        url.host_piece() == chrome::kChromeUIHistoryHost ||
        url.host_piece() == chrome::kChromeUIExtensionsHost ||
        url.host_piece() == chrome::kChromeUIBookmarksHost ||
-#if !defined(OS_CHROMEOS)
        url.host_piece() == chrome::kChromeUIChromeSigninHost ||
-#endif
        url.host_piece() == chrome::kChromeUIUberHost ||
        url.host_piece() == chrome::kChromeUIThumbnailHost ||
        url.host_piece() == chrome::kChromeUIThumbnailHost2 ||

@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -49,10 +50,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/signin_view_controller.h"
-#endif
 
 #if !defined(OS_ANDROID)
 #include "components/zoom/zoom_observer.h"
@@ -287,11 +284,9 @@ class Browser : public TabStripModelObserver,
     return hosted_app_controller_.get();
   }
 
-#if !defined(OS_CHROMEOS)
   SigninViewController* signin_view_controller() {
     return &signin_view_controller_;
   }
-#endif
 
   // Will lazy create the bubble manager.
   ChromeBubbleManager* GetBubbleManager();
@@ -1011,9 +1006,7 @@ class Browser : public TabStripModelObserver,
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
 
-#if !defined(OS_CHROMEOS)
   SigninViewController signin_view_controller_;
-#endif
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
