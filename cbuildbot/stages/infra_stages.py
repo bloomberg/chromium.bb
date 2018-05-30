@@ -26,6 +26,7 @@ _CIPD_PACKAGE_PREFIX = 'chromiumos/infra/'
 # categories) but are also used to produce CIPD package names.
 _GO_PACKAGES = [
     'lucifer',
+    'skylab-inventory',
     'tast-cmd',
     'tast-remote-tests-cros',
 ]
