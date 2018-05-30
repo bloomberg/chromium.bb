@@ -265,12 +265,17 @@ class ContextualSuggestionsMediator
                 }, remainingDelay);
             }
 
-            if (clusters.size() > 0 && clusters.get(0).getSuggestions().size() > 0) {
-                prepareModel(generateClusterList(clusters), suggestionsResult.getPeekText());
-                // If the controls are already off-screen, show the suggestions immediately so they
-                // are available on reverse scroll.
-                maybeShowContentInSheet();
+            if (clusters.isEmpty() || clusters.get(0).getSuggestions().isEmpty()) return;
+
+            for (ContextualSuggestionsCluster cluster : clusters) {
+                cluster.buildChildren();
             }
+
+            prepareModel(clusters, suggestionsResult.getPeekText());
+
+            // If the controls are already off-screen, show the suggestions immediately so they
+            // are available on reverse scroll.
+            maybeShowContentInSheet();
         });
     }
 
@@ -332,7 +337,7 @@ class ContextualSuggestionsMediator
         mUpdateRemainingCountOnNextPeek = false;
         mTargetScrollPercentage = INVALID_PERCENTAGE;
         mRemainingPeekCount = 0f;
-        mModel.setClusterList(new ClusterList(Collections.emptyList()));
+        mModel.setClusterList(Collections.emptyList());
         mModel.setCloseButtonOnClickListener(null);
         mModel.setMenuButtonVisibility(false);
         if (!mModel.isSlimPeekEnabled()) {
@@ -356,7 +361,7 @@ class ContextualSuggestionsMediator
         }
     }
 
-    private void prepareModel(ClusterList clusters, String title) {
+    private void prepareModel(List<ContextualSuggestionsCluster> clusters, String title) {
         if (mSuggestionsSource == null) return;
 
         mModel.setClusterList(clusters);
@@ -515,14 +520,6 @@ class ContextualSuggestionsMediator
         }
 
         mSuggestionsSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), event);
-    }
-
-    private ClusterList generateClusterList(List<ContextualSuggestionsCluster> clusters) {
-        for (ContextualSuggestionsCluster cluster : clusters) {
-            cluster.buildChildren();
-        }
-
-        return new ClusterList(clusters);
     }
 
     private void updateSlimPeekTranslation(float bottomSheetOffsetPx) {

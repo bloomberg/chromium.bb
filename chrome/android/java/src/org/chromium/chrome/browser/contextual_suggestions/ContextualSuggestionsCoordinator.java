@@ -34,11 +34,11 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 public class ContextualSuggestionsCoordinator {
     private static final String FEEDBACK_CONTEXT = "contextual_suggestions";
 
+    private final Profile mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+    private final ContextualSuggestionsModel mModel = new ContextualSuggestionsModel();
     private final ChromeActivity mActivity;
     private final BottomSheetController mBottomSheetController;
     private final TabModelSelector mTabModelSelector;
-    private final Profile mProfile;
-    private final ContextualSuggestionsModel mModel;
     private final ContextualSuggestionsMediator mMediator;
 
     private @Nullable ToolbarCoordinator mToolbarCoordinator;
@@ -56,9 +56,7 @@ public class ContextualSuggestionsCoordinator {
         mActivity = activity;
         mBottomSheetController = bottomSheetController;
         mTabModelSelector = tabModelSelector;
-        mProfile = Profile.getLastUsedProfile().getOriginalProfile();
 
-        mModel = new ContextualSuggestionsModel();
         mMediator = new ContextualSuggestionsMediator(mProfile, tabModelSelector,
                 activity.getFullscreenManager(), this, mModel,
                 mBottomSheetController.getBottomSheet());
@@ -66,6 +64,7 @@ public class ContextualSuggestionsCoordinator {
 
     /** Called when the containing activity is destroyed. */
     public void destroy() {
+        mModel.getClusterList().destroy();
         mMediator.destroy();
 
         if (mToolbarCoordinator != null) mToolbarCoordinator.destroy();

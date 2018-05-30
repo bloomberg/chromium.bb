@@ -475,19 +475,11 @@ public class ContextualSuggestionsTest {
             mModel2 = mCoordinator2.getModelForTesting();
             mBottomSheet2 = activity2.getBottomSheet();
 
-            mModel2.mClusterListObservable.addObserver(new ListObserver() {
+            mModel2.getClusterList().addObserver(new ListObserver() {
                 @Override
                 public void onItemRangeInserted(ListObservable source, int index, int count) {
                     itemRangeInsertedCallback.notifyCalled();
                 }
-
-                @Override
-                public void onItemRangeRemoved(ListObservable source, int index, int count) {}
-
-                @Override
-                public void onItemRangeChanged(
-                        ListObservable source, int index, int count, Object payload) {}
-
             });
 
             mMediator2.onEnabledStateChanged(true);

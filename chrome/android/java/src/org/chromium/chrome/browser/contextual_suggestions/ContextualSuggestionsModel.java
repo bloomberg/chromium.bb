@@ -4,17 +4,12 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import android.support.annotation.Nullable;
 import android.view.View.OnClickListener;
 
-import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-import org.chromium.chrome.browser.ntp.cards.NodeParent;
-import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 
-import java.util.Collections;
+import java.util.List;
 
 /** A model for the contextual suggestions UI component. */
 class ContextualSuggestionsModel
@@ -35,54 +30,8 @@ class ContextualSuggestionsModel
         private PropertyKey() {}
     }
 
-    /** A {@link ListObservable} containing the current cluster list. */
-    class ClusterListObservable extends ListObservable implements NodeParent {
-        ClusterList mClusterList = new ClusterList(Collections.emptyList());
+    private final ClusterList mClusterList = new ClusterList();
 
-        /** Constructor to initialize parent of cluster list. */
-        ClusterListObservable() {
-            mClusterList.setParent(this);
-        }
-
-        private void setClusterList(ClusterList clusterList) {
-            assert clusterList != null;
-
-            // Destroy the old cluster list.
-            mClusterList.destroy();
-
-            mClusterList = clusterList;
-            mClusterList.setParent(this);
-
-            if (getItemCount() != 0) notifyItemRangeInserted(0, getItemCount());
-        }
-
-        @Override
-        public int getItemCount() {
-            return mClusterList.getItemCount();
-        }
-
-        // NodeParent implementations.
-        @Override
-        public void onItemRangeChanged(TreeNode child, int index, int count,
-                @Nullable NewTabPageViewHolder.PartialBindCallback callback) {
-            assert child == mClusterList;
-            notifyItemRangeChanged(index, count, callback);
-        }
-
-        @Override
-        public void onItemRangeInserted(TreeNode child, int index, int count) {
-            assert child == mClusterList;
-            notifyItemRangeInserted(index, count);
-        }
-
-        @Override
-        public void onItemRangeRemoved(TreeNode child, int index, int count) {
-            assert child == mClusterList;
-            notifyItemRangeRemoved(index, count);
-        }
-    }
-
-    ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
     private boolean mMenuButtonVisibility;
     private float mMenuButtonAlpha = 1.f;
@@ -94,14 +43,14 @@ class ContextualSuggestionsModel
     private float mToolbarTranslationPercent;
     private int mToolbarArrowTintResourceId;
 
-    /** @param clusterList The current list of clusters. */
-    void setClusterList(ClusterList clusterList) {
-        mClusterListObservable.setClusterList(clusterList);
+    /** @param clusters The current list of clusters. */
+    void setClusterList(List<ContextualSuggestionsCluster> clusters) {
+        mClusterList.setClusters(clusters);
     }
 
     /** @return The current list of clusters. */
     ClusterList getClusterList() {
-        return mClusterListObservable.mClusterList;
+        return mClusterList;
     }
 
     /** @param listener The {@link OnClickListener} for the close button. */
@@ -215,7 +164,7 @@ class ContextualSuggestionsModel
     }
 
     /**
-     * @param return The toolbar translation percent where 1.f means the main toolbar content is
+     * @return The toolbar translation percent where 1.f means the main toolbar content is
      *               fully translated and 0.f means it is not translated at all. This is used by
      *               the slim peek UI to animate from fully translated when the sheet is closed
      *               to not at all translated when the sheet is opened.

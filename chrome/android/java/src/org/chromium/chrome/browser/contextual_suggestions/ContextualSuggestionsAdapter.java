@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.ClusterListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
@@ -25,10 +23,9 @@ import java.util.List;
 /**
  * An adapter that contains the view binder for the content component.
  */
-class ContextualSuggestionsAdapter
-        extends RecyclerViewAdapter<ClusterListObservable, NewTabPageViewHolder> {
+class ContextualSuggestionsAdapter extends RecyclerViewAdapter<ClusterList, NewTabPageViewHolder> {
     private class ContextualSuggestionsViewBinder
-            implements ViewBinder<ClusterListObservable, NewTabPageViewHolder> {
+            implements ViewBinder<ClusterList, NewTabPageViewHolder> {
         @Override
         public NewTabPageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             switch (viewType) {
@@ -47,48 +44,46 @@ class ContextualSuggestionsAdapter
         }
 
         @Override
-        public void onBindViewHolder(
-                ClusterListObservable model, NewTabPageViewHolder holder, int position) {
-            model.mClusterList.onBindViewHolder(holder, position);
+        public void onBindViewHolder(ClusterList model, NewTabPageViewHolder holder, int position) {
+            model.onBindViewHolder(holder, position);
         }
     }
 
     private final Profile mProfile;
     private final UiConfig mUiConfig;
     private final SuggestionsUiDelegate mUiDelegate;
-    private final ContextualSuggestionsModel mModel;
+    private final ClusterList mClusterList;
     private final ContextMenuManager mContextMenuManager;
 
     private SuggestionsRecyclerView mRecyclerView;
 
     /**
      * Construct a new {@link ContextualSuggestionsAdapter}.
-     * @param context The {@link Context} used to retrieve resources.
      * @param profile The regular {@link Profile}.
      * @param uiConfig The {@link UiConfig} used to adjust view display.
      * @param uiDelegate The {@link SuggestionsUiDelegate} used to help construct items in the
      *                   content view.
-     * @param model The {@link ContextualSuggestionsModel} for the component.
+     * @param clusterList The {@link ClusterList} for the component.
      * @param contextMenuManager The {@link ContextMenuManager} used to display a context menu.
      */
-    ContextualSuggestionsAdapter(Context context, Profile profile, UiConfig uiConfig,
-            SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model,
+    ContextualSuggestionsAdapter(Profile profile, UiConfig uiConfig,
+            SuggestionsUiDelegate uiDelegate, ClusterList clusterList,
             ContextMenuManager contextMenuManager) {
-        super(model.mClusterListObservable, null);
+        super(clusterList, null);
 
         setViewBinder(new ContextualSuggestionsViewBinder());
 
         mProfile = profile;
         mUiConfig = uiConfig;
         mUiDelegate = uiDelegate;
-        mModel = model;
+        mClusterList = clusterList;
         mContextMenuManager = contextMenuManager;
     }
 
     @Override
     @ItemViewType
     public int getItemViewType(int position) {
-        return mModel.getClusterList().getItemViewType(position);
+        return mClusterList.getItemViewType(position);
     }
 
     @Override

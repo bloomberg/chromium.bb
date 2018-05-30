@@ -40,10 +40,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
-import org.chromium.chrome.browser.ntp.cards.NodeParent;
-import org.chromium.chrome.browser.ntp.cards.TreeNode;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -469,18 +468,14 @@ public class TileGridLayoutTest {
         SiteSection siteSection =
                 new SiteSection(uiDelegate, null, delegate, offlinePageBridge, uiConfig);
 
-        siteSection.setParent(new NodeParent() {
+        siteSection.addObserver(new ListObservable.ListObserver() {
             @Override
-            public void onItemRangeChanged(TreeNode child, int index, int count,
-                    @Nullable NewTabPageViewHolder.PartialBindCallback callback) {
-                if (callback != null) callback.onResult(viewHolder);
+            public void onItemRangeChanged(
+                    ListObservable child, int index, int count, @Nullable Object payload) {
+                if (payload != null) {
+                    ((NewTabPageViewHolder.PartialBindCallback) payload).onResult(viewHolder);
+                }
             }
-
-            @Override
-            public void onItemRangeInserted(TreeNode child, int index, int count) {}
-
-            @Override
-            public void onItemRangeRemoved(TreeNode child, int index, int count) {}
         });
 
         return siteSection;
