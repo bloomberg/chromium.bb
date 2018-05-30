@@ -99,6 +99,8 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   void CreateTaskQueueThrottler();
 
+  void SetCPUTimeBudgetPoolForTesting(CPUTimeBudgetPool* cpu_time_budget_pool);
+
  private:
   void MaybeStartLongIdlePeriod();
 

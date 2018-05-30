@@ -20,11 +20,8 @@ WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
       thread_scheduler_(worker_thread_scheduler),
       weak_factory_(this) {
   thread_scheduler_->RegisterWorkerScheduler(this);
-  if (WakeUpBudgetPool* wake_up_budget_pool =
-          thread_scheduler_->wake_up_budget_pool()) {
-    wake_up_budget_pool->AddQueue(thread_scheduler_->GetTickClock()->NowTicks(),
-                                  throttleable_task_queue_.get());
-  }
+
+  SetUpThrottling();
 
   // |proxy| can be nullptr in unit tests.
   if (proxy)
@@ -39,6 +36,27 @@ WorkerScheduler::~WorkerScheduler() {
 #if DCHECK_IS_ON()
   DCHECK(is_disposed_);
 #endif
+}
+
+void WorkerScheduler::SetUpThrottling() {
+  if (!thread_scheduler_->task_queue_throttler())
+    return;
+  base::TimeTicks now = thread_scheduler_->GetTickClock()->NowTicks();
+
+  WakeUpBudgetPool* wake_up_budget_pool =
+      thread_scheduler_->wake_up_budget_pool();
+  CPUTimeBudgetPool* cpu_time_budget_pool =
+      thread_scheduler_->cpu_time_budget_pool();
+
+  DCHECK(wake_up_budget_pool || cpu_time_budget_pool)
+      << "At least one budget pool should be present";
+
+  if (wake_up_budget_pool) {
+    wake_up_budget_pool->AddQueue(now, throttleable_task_queue_.get());
+  }
+  if (cpu_time_budget_pool) {
+    cpu_time_budget_pool->AddQueue(now, throttleable_task_queue_.get());
+  }
 }
 
 std::unique_ptr<FrameOrWorkerScheduler::ActiveConnectionHandle>

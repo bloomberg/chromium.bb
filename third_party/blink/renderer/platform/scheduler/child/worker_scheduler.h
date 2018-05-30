@@ -53,6 +53,8 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
 
  private:
+  void SetUpThrottling();
+
   base::WeakPtr<WorkerScheduler> GetWeakPtr();
 
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;

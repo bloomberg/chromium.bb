@@ -30,9 +30,12 @@ void AppendToVectorTestTask(std::vector<std::string>* vector,
 
 void RunChainedTask(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                     int count,
-                    const base::TickClock* clock,
+                    base::TimeDelta duration,
+                    scoped_refptr<base::TestMockTimeTaskRunner> environment,
                     std::vector<base::TimeTicks>* tasks) {
-  tasks->push_back(clock->NowTicks());
+  tasks->push_back(environment->GetMockTickClock()->NowTicks());
+
+  environment->AdvanceMockTickClock(duration);
 
   if (count == 1)
     return;
@@ -41,8 +44,8 @@ void RunChainedTask(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
   // us.
   task_runner->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&RunChainedTask, task_runner, count - 1,
-                     base::Unretained(clock), base::Unretained(tasks)),
+      base::BindOnce(&RunChainedTask, task_runner, count - 1, duration,
+                     environment, base::Unretained(tasks)),
       base::TimeDelta::FromMilliseconds(50));
 }
 
@@ -59,6 +62,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
   }
 
   using WorkerThreadScheduler::CreateTaskQueueThrottler;
+  using WorkerThreadScheduler::SetCPUTimeBudgetPoolForTesting;
 };
 
 class WorkerSchedulerForTest : public WorkerScheduler {
@@ -209,6 +213,7 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_CreateThrottled) {
 
 TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_RunThrottledTasks) {
   scheduler_->CreateTaskQueueThrottler();
+  scheduler_->SetCPUTimeBudgetPoolForTesting(nullptr);
 
   // Create a new |worker_scheduler| to ensure that it's properly initialised.
   worker_scheduler_->Dispose();
@@ -221,10 +226,10 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_RunThrottledTasks) {
   std::vector<base::TimeTicks> tasks;
 
   worker_scheduler_->ThrottleableTaskQueue()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&RunChainedTask,
-                     worker_scheduler_->ThrottleableTaskQueue(), 5,
-                     base::Unretained(GetClock()), base::Unretained(&tasks)));
+      FROM_HERE, base::BindOnce(&RunChainedTask,
+                                worker_scheduler_->ThrottleableTaskQueue(), 5,
+                                base::TimeDelta(), mock_task_runner_,
+                                base::Unretained(&tasks)));
 
   RunUntilIdle();
 
@@ -234,6 +239,39 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_RunThrottledTasks) {
                           base::TimeTicks() + base::TimeDelta::FromSeconds(3),
                           base::TimeTicks() + base::TimeDelta::FromSeconds(4),
                           base::TimeTicks() + base::TimeDelta::FromSeconds(5)));
+}
+
+TEST_F(WorkerSchedulerTest,
+       ThrottleWorkerScheduler_RunThrottledTasks_CPUBudget) {
+  scheduler_->CreateTaskQueueThrottler();
+
+  scheduler_->cpu_time_budget_pool()->SetTimeBudgetRecoveryRate(
+      GetClock()->NowTicks(), 0.01);
+
+  // Create a new |worker_scheduler| to ensure that it's properly initialised.
+  worker_scheduler_->Dispose();
+  worker_scheduler_ =
+      std::make_unique<WorkerSchedulerForTest>(scheduler_.get());
+
+  scheduler_->OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState::kThrottled);
+
+  std::vector<base::TimeTicks> tasks;
+
+  worker_scheduler_->ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&RunChainedTask,
+                                worker_scheduler_->ThrottleableTaskQueue(), 5,
+                                base::TimeDelta::FromMilliseconds(100),
+                                mock_task_runner_, base::Unretained(&tasks)));
+
+  RunUntilIdle();
+
+  EXPECT_THAT(
+      tasks, ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(1),
+                         base::TimeTicks() + base::TimeDelta::FromSeconds(11),
+                         base::TimeTicks() + base::TimeDelta::FromSeconds(21),
+                         base::TimeTicks() + base::TimeDelta::FromSeconds(31),
+                         base::TimeTicks() + base::TimeDelta::FromSeconds(41)));
 }
 
 }  // namespace worker_scheduler_unittest
