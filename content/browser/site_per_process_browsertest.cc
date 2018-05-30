@@ -12415,4 +12415,50 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(width, 700);
 }
 
+class SitePerProcessAndProcessPerSiteBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessAndProcessPerSiteBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kProcessPerSite);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessAndProcessPerSiteBrowserTest);
+};
+
+// Verify that when --site-per-process is combined with --process-per-site, a
+// cross-site, browser-initiated navigation with a generated page transition
+// does not stay in the old SiteInstance.  See https://crbug.com/825411.
+IN_PROC_BROWSER_TEST_F(SitePerProcessAndProcessPerSiteBrowserTest,
+                       GeneratedTransitionsSwapProcesses) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
+  scoped_refptr<SiteInstance> foo_site_instance(
+      web_contents()->GetSiteInstance());
+
+  // Navigate cross-site via a generated transition.  This would normally
+  // happen for search queries.
+  TestNavigationObserver observer(web_contents());
+  NavigationController::LoadURLParams params(
+      embedded_test_server()->GetURL("bar.com", "/title2.html"));
+  params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+  web_contents()->GetController().LoadURLWithParams(params);
+  observer.Wait();
+
+  // Ensure the original SiteInstance wasn't reused.
+  EXPECT_NE(foo_site_instance, web_contents()->GetSiteInstance());
+
+  // Ensure the new page can access cookies without getting killed.
+  EXPECT_TRUE(ExecuteScript(web_contents(), "document.cookie = 'foo=bar';"));
+  std::string cookie;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents(), "window.domAutomationController.send(document.cookie);",
+      &cookie));
+  EXPECT_EQ("foo=bar", cookie);
+}
+
 }  // namespace content
