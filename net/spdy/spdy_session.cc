@@ -895,8 +895,7 @@ int SpdySession::GetPushedStream(const GURL& url,
     auto updates = priority_dependency_state_.OnStreamUpdate(
         (*stream)->stream_id(), ConvertRequestPriorityToSpdyPriority(priority));
     for (auto u : updates) {
-      ActiveStreamMap::iterator it = active_streams_.find(u.id);
-      DCHECK(it != active_streams_.end());
+      DCHECK(IsStreamActive(u.id));
       EnqueuePriorityFrame(u.id, u.parent_stream_id, u.weight, u.exclusive);
     }
   }
@@ -910,7 +909,7 @@ void SpdySession::CancelPush(const GURL& url) {
   if (stream_id == kNoPushedStreamFound)
     return;
 
-  DCHECK(active_streams_.find(stream_id) != active_streams_.end());
+  DCHECK(IsStreamActive(stream_id));
   ResetStream(stream_id, ERR_ABORTED, "Cancelled push stream.");
 }
 
@@ -2517,17 +2516,19 @@ void SpdySession::EnqueueWrite(
 
 void SpdySession::InsertCreatedStream(std::unique_ptr<SpdyStream> stream) {
   CHECK_EQ(stream->stream_id(), 0u);
-  CHECK(created_streams_.find(stream.get()) == created_streams_.end());
-  created_streams_.insert(stream.release());
+  auto it = created_streams_.lower_bound(stream.get());
+  CHECK(it == created_streams_.end() || *it != stream.get());
+  created_streams_.insert(it, stream.release());
 }
 
 std::unique_ptr<SpdyStream> SpdySession::ActivateCreatedStream(
     SpdyStream* stream) {
   CHECK_EQ(stream->stream_id(), 0u);
-  CHECK(created_streams_.find(stream) != created_streams_.end());
+  auto it = created_streams_.find(stream);
+  CHECK(it != created_streams_.end());
   stream->set_stream_id(GetNewStreamId());
   std::unique_ptr<SpdyStream> owned_stream(stream);
-  created_streams_.erase(stream);
+  created_streams_.erase(it);
   return owned_stream;
 }
 
