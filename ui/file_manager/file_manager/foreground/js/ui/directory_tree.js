@@ -811,9 +811,10 @@ DriveVolumeItem.prototype.handleClick = function(e) {
 
 /**
  * Checks whether the Team Drives grand root should be shown.
- * @param {function(boolean)} callback to receive the result. The paramter is
- *     true if the Files app. should show the Team Drives grand root and its
- *     subtree.
+ * We show the Team Drives grand root if the user has at least one Team Drive.
+ *
+ * @param {function(boolean)} callback Called with True if the grand root and
+ *     its subtree should be shown, false if not.
  * @private
  */
 DriveVolumeItem.prototype.shouldShowTeamDrives_ = function(callback) {
@@ -821,6 +822,9 @@ DriveVolumeItem.prototype.shouldShowTeamDrives_ = function(callback) {
   if (!teamDriveEntry) {
     callback(false);
   } else {
+    // Don't show the Team Drives root unless the user has at least one team
+    // drive, since we don't currently support any functionality with just the
+    // grand root (e.g. you can't create a new team drive from the root yet).
     var reader = teamDriveEntry.createReader();
     reader.readEntries(function(results) {
       callback(results.length > 0);
