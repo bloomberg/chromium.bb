@@ -1186,7 +1186,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   SkBitmap bitmap;
   const sk_sp<SkColorSpace> adobe_rgb = SkColorSpace::MakeRGB(
       SkColorSpace::kSRGB_RenderTargetGamma, SkColorSpace::kAdobeRGB_Gamut);
-  bitmap.allocN32Pixels(7, 8, adobe_rgb);
+  bitmap.allocN32Pixels(7, 8, adobe_rgb != nullptr);
   bitmap.eraseARGB(123, 213, 77, 33);
   std::unique_ptr<CopyOutputResult> input =
       std::make_unique<CopyOutputSkBitmapResult>(result_rect, bitmap);
@@ -1207,7 +1207,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   // Check that the pixels are the same as the input and the color spaces are
   // equivalent.
   SkBitmap expected_bitmap;
-  expected_bitmap.allocN32Pixels(7, 8, adobe_rgb);
+  expected_bitmap.allocN32Pixels(7, 8, adobe_rgb != nullptr);
   expected_bitmap.eraseARGB(123, 213, 77, 33);
   EXPECT_EQ(expected_bitmap.computeByteSize(), out_bitmap.computeByteSize());
   EXPECT_EQ(0, std::memcmp(expected_bitmap.getPixels(), out_bitmap.getPixels(),

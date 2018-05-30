@@ -563,7 +563,7 @@ bool GpuImageDecodeCache::ImageData::IsGpuOrTransferCache() const {
 bool GpuImageDecodeCache::ImageData::HasUploadedData() const {
   switch (mode) {
     case DecodedDataMode::kGpu:
-      return upload.image();
+      return !!upload.image();
     case DecodedDataMode::kTransferCache:
       return !!upload.transfer_cache_id();
     case DecodedDataMode::kCpu:

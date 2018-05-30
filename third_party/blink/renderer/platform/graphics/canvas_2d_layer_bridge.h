@@ -126,7 +126,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   }
 
   void Hibernate();
-  bool IsHibernating() const { return hibernation_image_; }
+  bool IsHibernating() const { return hibernation_image_ != nullptr; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
