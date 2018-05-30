@@ -144,10 +144,7 @@ class ClientWindowEventHandler : public ui::EventHandler {
       return;
     }
 
-    if (HandleInterceptedKeyEvent(event))
-      return;
-
-    if (ShouldIgnoreEvent(*event))
+    if (HandleInterceptedEvent(event) || ShouldIgnoreEvent(*event))
       return;
 
     auto* owning = client_window_->owning_window_service_client();
@@ -184,10 +181,14 @@ class ClientWindowEventHandler : public ui::EventHandler {
       // window() is the the target.
       return true;
     }
+    return ShouldIgnoreEventType(event.type());
+  }
+
+  bool ShouldIgnoreEventType(EventType type) const {
     // WindowTreeClient takes care of sending ET_MOUSE_CAPTURE_CHANGED at the
     // right point. The enter events are effectively synthetic, and indirectly
     // generated in the client as the result of a move event.
-    switch (event.type()) {
+    switch (type) {
       case ET_MOUSE_CAPTURE_CHANGED:
       case ET_MOUSE_ENTERED:
       case ET_POINTER_CAPTURE_CHANGED:
@@ -199,16 +200,16 @@ class ClientWindowEventHandler : public ui::EventHandler {
     return false;
   }
 
- private:
-  // If |event| is a KeyEvent that needs to be handled because a client
-  // intercepts events, then true is returned and the event is handled.
-  // Otherwise returns false.
-  bool HandleInterceptedKeyEvent(Event* event) {
-    if (!event->IsKeyEvent())
+  // If |window| identifies an embedding and the owning client intercepts
+  // events, this forwards to the owner and returns true. Otherwise returns
+  // false.
+  bool HandleInterceptedEvent(Event* event) {
+    if (ShouldIgnoreEventType(event->type()))
       return false;
 
-    // KeyEvents do not go through through ClientWindowTargeter. As a result
-    // ClientWindowEventHandler has to check for a client intercepting events.
+    // KeyEvents, and events when there is capture, do not go through through
+    // ClientWindowTargeter. As a result ClientWindowEventHandler has to check
+    // for a client intercepting events.
     if (client_window_->DoesOwnerInterceptEvents()) {
       client_window_->owning_window_service_client()->SendEventToClient(
           window(), *event);
@@ -218,6 +219,7 @@ class ClientWindowEventHandler : public ui::EventHandler {
     return false;
   }
 
+ private:
   ClientWindow* const client_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientWindowEventHandler);
@@ -303,6 +305,9 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
       // continue. Early out to avoid sending the event to the client again.
       return;
     }
+
+    if (HandleInterceptedEvent(event))
+      return;
 
     if (!event->IsLocatedEvent()) {
       ClientWindowEventHandler::OnEvent(event);
