@@ -6,6 +6,8 @@
 #define COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
 
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "base/android/application_status_listener.h"
 #include "base/files/file_path.h"
@@ -69,7 +71,6 @@ class CrashDumpManager {
     content::ProcessType process_type = content::PROCESS_TYPE_UNKNOWN;
     bool was_oom_protected_status = false;
     base::android::ApplicationState app_state;
-    int64_t file_size = 0;
     CrashDumpStatus status = CrashDumpStatus::kNoDump;
   };
 
@@ -80,6 +81,16 @@ class CrashDumpManager {
   class Observer {
    public:
     virtual void OnCrashDumpProcessed(const CrashDumpDetails& details) {}
+  };
+
+  // Class which aids in uploading a crash dump.
+  class Uploader {
+   public:
+    virtual ~Uploader() = default;
+
+    // Attempts to upload the specified child process minidump.
+    virtual void TryToUploadCrashDump(
+        const base::FilePath& crash_dump_path) = 0;
   };
 
   static CrashDumpManager* GetInstance();
@@ -97,6 +108,13 @@ class CrashDumpManager {
 
   base::ScopedFD CreateMinidumpFileForChild(int process_host_id);
 
+  // Careful, |uploader_| is accessed on one of the task scheduler threads.
+  // Tests should set this before any other threads are spawned.
+  void set_uploader_for_testing(std::unique_ptr<Uploader> uploader) {
+    DCHECK(uploader);
+    uploader_ = std::move(uploader);
+  }
+
  private:
   friend struct base::LazyInstanceTraitsBase<CrashDumpManager>;
 
@@ -113,6 +131,9 @@ class CrashDumpManager {
 
   scoped_refptr<base::ObserverListThreadSafe<CrashDumpManager::Observer>>
       async_observers_;
+
+  // Should never be nullptr.
+  std::unique_ptr<Uploader> uploader_;
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER and UI threads.

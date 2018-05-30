@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -23,7 +24,10 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -75,6 +79,44 @@ class CrashDumpWaiter : public breakpad::CrashDumpManager::Observer {
 };
 #endif  // defined(OS_ANDROID)
 
+// This class ensures we always have an empty minidump file associated with the
+// process a navigation finishes in.
+class DumpCreator : public content::WebContentsObserver {
+ public:
+  explicit DumpCreator(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {
+    CreateDump(contents->GetRenderViewHost()->GetProcess()->GetID());
+  }
+  ~DumpCreator() override = default;
+
+ private:
+  void CreateDump(int render_process_id) {
+    if (!render_process_ids_.insert(render_process_id).second)
+      return;
+#if defined(OS_ANDROID)
+    // Simulate a call to ChildStart and create an empty crash dump.
+    base::RunLoop run_loop;
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::BindOnce(
+            base::IgnoreResult(
+                &breakpad::CrashDumpManager::CreateMinidumpFileForChild),
+            base::Unretained(breakpad::CrashDumpManager::GetInstance()),
+            render_process_id),
+        run_loop.QuitClosure());
+    run_loop.Run();
+#endif
+  }
+
+  // content::WebContentsObserver:
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    CreateDump(
+        handle->GetWebContents()->GetRenderViewHost()->GetProcess()->GetID());
+  }
+
+  std::set<int> render_process_ids_;
+};
+
 class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
                                 public OutOfMemoryReporter::Observer {
  public:
@@ -91,15 +133,10 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
         std::make_unique<breakpad::ChildProcessCrashObserver>(
             base::FilePath(), kAndroidMinidumpDescriptor));
-
-    // Simulate a call to ChildStart and create an empty crash dump.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(base::IgnoreResult(
-                       &breakpad::CrashDumpManager::CreateMinidumpFileForChild),
-                   base::Unretained(breakpad::CrashDumpManager::GetInstance()),
-                   process()->GetID()));
 #endif
+
+    dump_creator_ = std::make_unique<DumpCreator>(web_contents());
+
     OutOfMemoryReporter::CreateForWebContents(web_contents());
     OutOfMemoryReporter* reporter =
         OutOfMemoryReporter::FromWebContents(web_contents());
@@ -144,7 +181,7 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
         crash_waiter.Wait();
     EXPECT_EQ(expect_oom, breakpad::CrashDumpManager::IsForegroundOom(details))
         << "process_type: " << details.process_type
-        << " file_size: " << details.file_size
+        << " status: " << static_cast<int>(details.status)
         << " app_state: " << details.app_state
         << " was_oom_protected_status: " << details.was_oom_protected_status;
 
@@ -182,6 +219,7 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
 
   base::Optional<GURL> last_oom_url_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
+  std::unique_ptr<DumpCreator> dump_creator_;
 
  private:
   base::SimpleTestTickClock* test_tick_clock_;
