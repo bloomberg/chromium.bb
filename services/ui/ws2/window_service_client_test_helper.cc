@@ -29,6 +29,8 @@ mojom::WindowDataPtr WindowServiceClientTestHelper::WindowToWindowData(
 aura::Window* WindowServiceClientTestHelper::NewWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
+  if (transport_window_id == 0)
+    transport_window_id = next_window_id_++;
   const uint32_t change_id = 1u;
   window_service_client_->NewWindow(change_id, transport_window_id, properties);
   return window_service_client_->GetWindowByClientId(
@@ -43,6 +45,8 @@ void WindowServiceClientTestHelper::DeleteWindow(aura::Window* window) {
 aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
+  if (transport_window_id == 0)
+    transport_window_id = next_window_id_++;
   const uint32_t change_id = 1u;
   window_service_client_->NewTopLevelWindow(change_id, transport_window_id,
                                             properties);

@@ -65,7 +65,7 @@ class TestLayoutManager : public aura::LayoutManager {
 TEST(WindowServiceClientTest, NewWindow) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
             SingleChangeToDescription(*setup.changes()));
@@ -87,7 +87,7 @@ TEST(WindowServiceClientTest, NewWindowWithProperties) {
 TEST(WindowServiceClientTest, NewTopLevelWindow) {
   WindowServiceTestSetup setup;
   EXPECT_TRUE(setup.changes()->empty());
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   EXPECT_EQ("TopLevelCreated id=1 window_id=0,1 drawn=false",
             SingleChangeToDescription(*setup.changes()));
@@ -108,7 +108,7 @@ TEST(WindowServiceClientTest, NewTopLevelWindowWithProperties) {
 
 TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   setup.changes()->clear();
 
   const gfx::Rect bounds_from_client = gfx::Rect(1, 2, 300, 400);
@@ -159,7 +159,7 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
 
 TEST(WindowServiceClientTest, SetTopLevelWindowBoundsFailsForSameSize) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   setup.changes()->clear();
   const gfx::Rect bounds = gfx::Rect(1, 2, 300, 400);
   top_level->SetBounds(bounds);
@@ -175,7 +175,7 @@ TEST(WindowServiceClientTest, SetTopLevelWindowBoundsFailsForSameSize) {
 // Tests the ability of the client to change properties on the server.
 TEST(WindowServiceClientTest, SetTopLevelWindowProperty) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   setup.changes()->clear();
 
   EXPECT_FALSE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
@@ -199,7 +199,7 @@ TEST(WindowServiceClientTest, SetTopLevelWindowProperty) {
 
 TEST(WindowServiceClientTest, WindowToWindowData) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   setup.changes()->clear();
 
   window->SetBounds(gfx::Rect(1, 2, 300, 400));
@@ -220,7 +220,7 @@ TEST(WindowServiceClientTest, WindowToWindowData) {
 TEST(WindowServiceClientTest, MovePressDragRelease) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
 
   top_level->Show();
@@ -251,7 +251,7 @@ TEST(WindowServiceClientTest, MovePressDragRelease) {
 // Used to verify destruction with a touch pointer down doesn't crash.
 TEST(WindowServiceClientTest, ShutdownWithTouchDown) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
@@ -264,7 +264,7 @@ TEST(WindowServiceClientTest, ShutdownWithTouchDown) {
 TEST(WindowServiceClientTest, TouchPressDragRelease) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 11, 100, 100));
@@ -323,7 +323,7 @@ TEST(WindowServiceClientTest, MoveFromClientToNonClient) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
 
   top_level->Show();
@@ -400,7 +400,7 @@ TEST(WindowServiceClientTest, MouseDownInNonClientWithChildWindow) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
   top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
@@ -408,7 +408,7 @@ TEST(WindowServiceClientTest, MouseDownInNonClientWithChildWindow) {
                                             gfx::Insets(10, 0, 0, 0));
 
   // Add a child Window that is sized to fill the top-level.
-  aura::Window* window = setup.client_test_helper()->NewWindow(2);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
   window->Show();
   window->SetBounds(gfx::Rect(top_level->bounds().size()));
@@ -434,7 +434,7 @@ TEST(WindowServiceClientTest, MouseDownInNonClientWithChildWindow) {
 TEST(WindowServiceClientTest, PointerWatcher) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   setup.client_test_helper()->SetEventTargetingPolicy(
       top_level, mojom::EventTargetingPolicy::NONE);
@@ -479,12 +479,12 @@ TEST(WindowServiceClientTest, PointerWatcher) {
 
 TEST(WindowServiceClientTest, Capture) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
 
   // Setting capture on |window| should fail as it's not visible.
   EXPECT_FALSE(setup.client_test_helper()->SetCapture(window));
 
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   EXPECT_FALSE(setup.client_test_helper()->SetCapture(top_level));
   top_level->Show();
@@ -501,8 +501,8 @@ TEST(WindowServiceClientTest, Capture) {
 
 TEST(WindowServiceClientTest, CaptureNotification) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   top_level->AddChild(window);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -518,8 +518,8 @@ TEST(WindowServiceClientTest, CaptureNotification) {
 
 TEST(WindowServiceClientTest, CaptureNotificationForEmbedRoot) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   top_level->AddChild(window);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -590,8 +590,8 @@ TEST(WindowServiceClientTest, CaptureNotificationForTopLevel) {
 
 TEST(WindowServiceClientTest, EventsGoToCaptureWindow) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   top_level->AddChild(window);
   ASSERT_TRUE(top_level);
   top_level->Show();
@@ -619,9 +619,9 @@ TEST(WindowServiceClientTest, EventsGoToCaptureWindow) {
 
 TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->AddChild(window);
   setup.client_test_helper()->SetClientArea(top_level,
@@ -650,7 +650,7 @@ TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
 
 TEST(WindowServiceClientTest, PointerDownResetOnHide) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(2);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   setup.client_test_helper()->SetClientArea(top_level,
                                             gfx::Insets(10, 0, 0, 0));
@@ -675,7 +675,7 @@ TEST(WindowServiceClientTest, PointerDownResetOnHide) {
 
 TEST(WindowServiceClientTest, DeleteWindow) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
   aura::WindowTracker tracker;
   tracker.Add(window);
@@ -688,7 +688,7 @@ TEST(WindowServiceClientTest, DeleteWindow) {
 
 TEST(WindowServiceClientTest, ExternalDeleteWindow) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(1);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
   setup.changes()->clear();
   delete window;
@@ -698,8 +698,8 @@ TEST(WindowServiceClientTest, ExternalDeleteWindow) {
 
 TEST(WindowServiceClientTest, Embed) {
   WindowServiceTestSetup setup;
-  aura::Window* window = setup.client_test_helper()->NewWindow(2);
-  aura::Window* embed_window = setup.client_test_helper()->NewWindow(3);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
+  aura::Window* embed_window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
   ASSERT_TRUE(embed_window);
   window->AddChild(embed_window);

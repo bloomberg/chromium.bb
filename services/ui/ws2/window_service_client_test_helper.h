@@ -49,11 +49,11 @@ class WindowServiceClientTestHelper {
   mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
 
   aura::Window* NewWindow(
-      Id transport_window_id,
+      Id transport_window_id = 0,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
   void DeleteWindow(aura::Window* window);
   aura::Window* NewTopLevelWindow(
-      Id transport_window_id,
+      Id transport_window_id = 0,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
   bool SetCapture(aura::Window* window);
   bool ReleaseCapture(aura::Window* window);
@@ -92,6 +92,9 @@ class WindowServiceClientTestHelper {
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);
 
   WindowServiceClient* window_service_client_;
+
+  // Next id to use for creating a window (including top-level windows).
+  Id next_window_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClientTestHelper);
 };

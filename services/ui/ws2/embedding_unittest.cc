@@ -23,13 +23,13 @@ namespace {
 
 TEST(EmbeddingTest, DestroyingRootDestroysEmbedding) {
   WindowServiceTestSetup setup;
-  aura::Window* embed_window = setup.client_test_helper()->NewWindow(3);
+  aura::Window* embed_window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(embed_window);
   std::unique_ptr<EmbeddingHelper> embedding_helper =
       setup.CreateEmbedding(embed_window);
   ASSERT_TRUE(embedding_helper);
   aura::Window* embed_child_window =
-      embedding_helper->client_test_helper->NewWindow(4);
+      embedding_helper->client_test_helper->NewWindow();
   ASSERT_TRUE(embed_child_window);
   aura::WindowTracker tracker;
   tracker.Add(embed_child_window);

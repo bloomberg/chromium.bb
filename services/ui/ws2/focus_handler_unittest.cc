@@ -28,7 +28,7 @@ namespace {
 
 TEST(FocusHandlerTest, FocusTopLevel) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
 
   // SetFocus() should fail as |top_level| isn't visible.
@@ -41,7 +41,7 @@ TEST(FocusHandlerTest, FocusTopLevel) {
 
 TEST(FocusHandlerTest, FocusNull) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
   EXPECT_TRUE(setup.client_test_helper()->SetFocus(top_level));
@@ -52,10 +52,10 @@ TEST(FocusHandlerTest, FocusNull) {
 
 TEST(FocusHandlerTest, FocusChild) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* window = setup.client_test_helper()->NewWindow(3);
+  aura::Window* window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window);
 
   // SetFocus() should fail as |window| isn't parented yet.
@@ -76,10 +76,10 @@ TEST(FocusHandlerTest, FocusChild) {
 
 TEST(FocusHandlerTest, NotifyOnFocusChange) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* window1 = setup.client_test_helper()->NewWindow(3);
+  aura::Window* window1 = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(window1);
   top_level->AddChild(window1);
   window1->Show();
@@ -103,10 +103,10 @@ TEST(FocusHandlerTest, NotifyOnFocusChange) {
 
 TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* embed_window = setup.client_test_helper()->NewWindow(3);
+  aura::Window* embed_window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   embed_window->Show();
@@ -150,10 +150,10 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
 
 TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow(1);
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* embed_window = setup.client_test_helper()->NewWindow(3);
+  aura::Window* embed_window = setup.client_test_helper()->NewWindow();
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   embed_window->Show();
@@ -162,7 +162,7 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
       embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
   ASSERT_TRUE(embedding_helper);
   aura::Window* embed_child_window =
-      embedding_helper->client_test_helper->NewWindow(4);
+      embedding_helper->client_test_helper->NewWindow();
   ASSERT_TRUE(embed_child_window);
   embed_child_window->Show();
   embed_window->AddChild(embed_child_window);
