@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/associated_interface_provider_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -459,24 +460,30 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   // initialized. Do it if it hasn't happened yet.
   InitializeRenderFrameIfNeeded();
 
-  if (IsBrowserSideNavigationEnabled()) {
-    // TODO(mkwst): The initiator origin here is incorrect.
-    mojom::BeginNavigationParamsPtr begin_params =
-        mojom::BeginNavigationParams::New(
-            std::string() /* headers */, net::LOAD_NORMAL,
-            false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
-            blink::WebMixedContentContextType::kBlockable,
-            false /* is_form_submission */, GURL() /* searchable_form_url */,
-            std::string() /* searchable_form_encoding */, url::Origin(),
-            GURL() /* client_side_redirect_url */,
-            base::nullopt /* devtools_initiator_info */);
-    CommonNavigationParams common_params;
-    common_params.url = url;
-    common_params.referrer = Referrer(GURL(), blink::kWebReferrerPolicyDefault);
-    common_params.transition = ui::PAGE_TRANSITION_LINK;
-    common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-    common_params.has_user_gesture = has_user_gesture;
-    BeginNavigation(common_params, std::move(begin_params), nullptr);
+  // TODO(mkwst): The initiator origin here is incorrect.
+  mojom::BeginNavigationParamsPtr begin_params =
+      mojom::BeginNavigationParams::New(
+          std::string() /* headers */, net::LOAD_NORMAL,
+          false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
+          blink::WebMixedContentContextType::kBlockable,
+          false /* is_form_submission */, GURL() /* searchable_form_url */,
+          std::string() /* searchable_form_encoding */, url::Origin(),
+          GURL() /* client_side_redirect_url */,
+          base::nullopt /* devtools_initiator_info */);
+  CommonNavigationParams common_params;
+  common_params.url = url;
+  common_params.referrer = Referrer(GURL(), blink::kWebReferrerPolicyDefault);
+  common_params.transition = ui::PAGE_TRANSITION_LINK;
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+  common_params.has_user_gesture = has_user_gesture;
+
+  mojom::NavigationClientAssociatedPtr navigation_client_ptr;
+  if (IsPerNavigationMojoInterfaceEnabled()) {
+    GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
+    BeginNavigation(common_params, std::move(begin_params), nullptr,
+                    navigation_client_ptr.PassInterface());
+  } else {
+    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr);
   }
 }
 

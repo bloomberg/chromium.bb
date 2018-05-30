@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/common/navigation_params.h"
 #include "content/public/renderer/navigation_state.h"
+#include "content/renderer/navigation_client.h"
 
 namespace content {
 
@@ -47,6 +48,12 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
     return time_commit_requested_;
   }
 
+  // Only used when PerNavigationMojoInterface is enabled.
+  void set_navigation_client(
+      std::unique_ptr<NavigationClient> navigation_client_impl) {
+    navigation_client_ = std::move(navigation_client_impl);
+  }
+
  private:
   NavigationStateImpl(const CommonNavigationParams& common_params,
                       const RequestNavigationParams& request_params,
@@ -76,6 +83,11 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   // Time when RenderFrameImpl::CommitNavigation() is called.
   base::TimeTicks time_commit_requested_;
+
+  // The NavigationClient interface gives control over the navigation ongoing in
+  // the browser process.
+  // Only used when PerNavigationMojoInterface is enabled.
+  std::unique_ptr<NavigationClient> navigation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationStateImpl);
 };

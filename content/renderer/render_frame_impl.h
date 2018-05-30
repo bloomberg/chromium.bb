@@ -158,6 +158,7 @@ class ManifestManager;
 class MediaPermissionDispatcher;
 class MediaStreamDeviceObserver;
 class NavigationState;
+class NavigationClient;
 class PepperPluginInstanceImpl;
 class PushMessagingClient;
 class RelatedAppsFetcher;
@@ -781,6 +782,8 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::FrameBindingsControlAssociatedRequest request);
   void BindFrameNavigationControl(
       mojom::FrameNavigationControlAssociatedRequest request);
+  // Only used when PerNavigationMojoInterface is enabled.
+  void BindNavigationClient(mojom::NavigationClientAssociatedRequest request);
 
   blink::mojom::ManifestManager& GetManifestManager();
 
@@ -866,6 +869,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Called to notify a frame that it called |window.focus()| on a different
   // frame.
   void FrameDidCallFocus();
+
+  // Called when an ongoing renderer-initiated navigation was dropped by the
+  // browser.
+  void OnDroppedNavigation();
 
  protected:
   explicit RenderFrameImpl(CreateParams params);
@@ -978,7 +985,6 @@ class CONTENT_EXPORT RenderFrameImpl
                  const FrameReplicationState& replicated_frame_state);
   void OnDeleteFrame();
   void OnStop();
-  void OnDroppedNavigation();
   void OnCollapse(bool collapse);
   void OnShowContextMenu(const gfx::Point& location);
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
@@ -1545,6 +1551,9 @@ class CONTENT_EXPORT RenderFrameImpl
       frame_navigation_control_binding_;
   mojo::AssociatedBinding<mojom::FullscreenVideoElementHandler>
       fullscreen_binding_;
+
+  // Only used when PerNavigationMojoInterface is enabled.
+  std::unique_ptr<NavigationClient> navigation_client_impl_;
 
   // Indicates whether |didAccessInitialDocument| was called.
   bool has_accessed_initial_document_;

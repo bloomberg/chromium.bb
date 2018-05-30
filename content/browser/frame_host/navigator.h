@@ -150,7 +150,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       FrameTreeNode* frame_tree_node,
       const CommonNavigationParams& common_params,
       mojom::BeginNavigationParamsPtr begin_params,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      mojom::NavigationClientAssociatedPtrInfo navigation_client);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.
@@ -158,6 +159,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       std::unique_ptr<NavigationRequest> navigation_request) {}
 
   // Used to abort an ongoing renderer-initiated navigation.
+  // Only used with PerNavigationMojoInterface disabled.
   virtual void OnAbortNavigation(FrameTreeNode* frame_tree_node) {}
 
   // Cancel a NavigationRequest for |frame_tree_node|. If the request is

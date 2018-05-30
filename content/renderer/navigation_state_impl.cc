@@ -45,6 +45,7 @@ NavigationStateImpl::NavigationStateImpl(
       is_content_initiated_(is_content_initiated),
       common_params_(common_params),
       request_params_(request_params),
-      time_commit_requested_(time_commit_requested) {}
+      time_commit_requested_(time_commit_requested),
+      navigation_client_(nullptr) {}
 
 }  // namespace content

@@ -482,6 +482,8 @@ target(link_target_type, "renderer") {
     "mojo/blink_interface_registry_impl.h",
     "mouse_lock_dispatcher.cc",
     "mouse_lock_dispatcher.h",
+    "navigation_client.cc",
+    "navigation_client.h",
     "navigation_state_impl.cc",
     "navigation_state_impl.h",
     "net_info_helper.cc",
