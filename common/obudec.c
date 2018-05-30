@@ -284,7 +284,7 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
     return 0;
   }
 
-  if (obu_header.has_length_field) {
+  if (obu_header.has_size_field) {
     if (obu_header.type == OBU_TEMPORAL_DELIMITER && payload_length != 0) {
       fprintf(
           stderr,

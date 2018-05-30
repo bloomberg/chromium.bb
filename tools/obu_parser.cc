@@ -87,7 +87,7 @@ bool ParseObuHeader(uint8_t obu_header_byte, ObuHeader *obu_header) {
 
   obu_header->has_extension =
       (obu_header_byte >> kObuExtensionFlagBitShift) & kObuExtensionFlagBitMask;
-  obu_header->has_length_field =
+  obu_header->has_size_field =
       (obu_header_byte >> kObuHasPayloadLengthFlagBitShift) &
       kObuHasPayloadLengthFlagBitMask;
   return true;

@@ -16,10 +16,13 @@
 #include "av1/decoder/decoder.h"
 
 typedef struct {
-  size_t size;
+  size_t size;  // Size (1 or 2 bytes) of the OBU header (including the
+                // optional OBU extension header) in the bitstream.
   OBU_TYPE type;
-  int has_length_field;
+  int has_size_field;
   int has_extension;
+  // The following fields come from the OBU extension header and therefore are
+  // only used if has_extension is true.
   int temporal_layer_id;
   int spatial_layer_id;
 } ObuHeader;

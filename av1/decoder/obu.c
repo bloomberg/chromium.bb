@@ -48,10 +48,10 @@ static int valid_obu_type(int obu_type) {
     case OBU_SEQUENCE_HEADER:
     case OBU_TEMPORAL_DELIMITER:
     case OBU_FRAME_HEADER:
-    case OBU_REDUNDANT_FRAME_HEADER:
-    case OBU_FRAME:
     case OBU_TILE_GROUP:
     case OBU_METADATA:
+    case OBU_FRAME:
+    case OBU_REDUNDANT_FRAME_HEADER:
     case OBU_TILE_LIST:
     case OBU_PADDING: valid_type = 1; break;
     default: break;
@@ -79,14 +79,17 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
   if (!valid_obu_type(header->type)) return AOM_CODEC_CORRUPT_FRAME;
 
   header->has_extension = aom_rb_read_bit(rb);
-  header->has_length_field = aom_rb_read_bit(rb);
+  header->has_size_field = aom_rb_read_bit(rb);
 
-  if (!header->has_length_field && !is_annexb) {
-    // section 5 obu streams must have length field set.
+  if (!header->has_size_field && !is_annexb) {
+    // section 5 obu streams must have obu_size field set.
     return AOM_CODEC_UNSUP_BITSTREAM;
   }
 
-  aom_rb_read_bit(rb);  // reserved
+  if (aom_rb_read_bit(rb) != 0) {
+    // obu_reserved_1bit must be set to 0.
+    return AOM_CODEC_CORRUPT_FRAME;
+  }
 
   if (header->has_extension) {
     if (bit_buffer_byte_length == 1) return AOM_CODEC_CORRUPT_FRAME;
@@ -94,7 +97,10 @@ static aom_codec_err_t read_obu_header(struct aom_read_bit_buffer *rb,
     header->size += 1;
     header->temporal_layer_id = aom_rb_read_literal(rb, 3);
     header->spatial_layer_id = aom_rb_read_literal(rb, 2);
-    aom_rb_read_literal(rb, 3);  // reserved
+    if (aom_rb_read_literal(rb, 3) != 0) {
+      // extension_header_reserved_3bits must be set to 0.
+      return AOM_CODEC_CORRUPT_FRAME;
+    }
   }
 
   return AOM_CODEC_OK;
