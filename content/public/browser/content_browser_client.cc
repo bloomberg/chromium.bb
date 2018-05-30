@@ -355,6 +355,12 @@ std::string ContentBrowserClient::GetGeolocationApiKey() {
   return std::string();
 }
 
+#if defined(OS_ANDROID)
+bool ContentBrowserClient::ShouldUseGmsCoreGeolocationProvider() {
+  return false;
+}
+#endif
+
 std::string ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
     const GURL& site) {

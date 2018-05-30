@@ -485,6 +485,7 @@ ServiceManagerContext::ServiceManagerContext(
       service_manager_thread_task_runner_,
       base::BindRepeating(&GetGeolocationRequestContextFromContentClient),
       GetContentClient()->browser()->GetGeolocationApiKey(),
+      GetContentClient()->browser()->ShouldUseGmsCoreGeolocationProvider(),
       base::Bind(&WakeLockContextHost::GetNativeViewForContext),
       base::Bind(&ContentBrowserClient::OverrideSystemLocationProvider,
                  base::Unretained(GetContentClient()->browser())),

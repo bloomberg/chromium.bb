@@ -73,7 +73,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
           CreateDeviceService(
               file_task_runner_, io_task_runner_,
               base::Bind(&TestRequestContextProducer, io_task_runner_),
-              kTestGeolocationApiKey, wake_lock_context_callback_,
+              kTestGeolocationApiKey, false, wake_lock_context_callback_,
               base::Bind(&GetCustomLocationProviderForTest), nullptr),
           std::move(request)));
 #else

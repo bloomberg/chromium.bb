@@ -50,12 +50,13 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
     const GeolocationProvider::RequestContextProducer
         geolocation_request_context_producer,
     const std::string& geolocation_api_key,
+    bool use_gms_core_location_provider,
     const WakeLockContextCallback& wake_lock_context_callback,
     const CustomLocationProviderCallback& custom_location_provider_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate) {
-  GeolocationProviderImpl::SetGeolocationGlobals(
+  GeolocationProviderImpl::SetGeolocationConfiguration(
       geolocation_request_context_producer, geolocation_api_key,
-      custom_location_provider_callback);
+      custom_location_provider_callback, use_gms_core_location_provider);
   return std::make_unique<DeviceService>(
       std::move(file_task_runner), std::move(io_task_runner),
       std::move(geolocation_request_context_producer), geolocation_api_key,
@@ -69,7 +70,7 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
         geolocation_request_context_producer,
     const std::string& geolocation_api_key,
     const CustomLocationProviderCallback& custom_location_provider_callback) {
-  GeolocationProviderImpl::SetGeolocationGlobals(
+  GeolocationProviderImpl::SetGeolocationConfiguration(
       geolocation_request_context_producer, geolocation_api_key,
       custom_location_provider_callback);
   return std::make_unique<DeviceService>(

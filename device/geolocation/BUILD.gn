@@ -112,6 +112,7 @@ if (is_android) {
   generate_jni("geolocation_jni_headers") {
     sources = [
       "android/java/src/org/chromium/device/geolocation/LocationProviderAdapter.java",
+      "android/java/src/org/chromium/device/geolocation/LocationProviderFactory.java",
     ]
     jni_package = "device"
   }
