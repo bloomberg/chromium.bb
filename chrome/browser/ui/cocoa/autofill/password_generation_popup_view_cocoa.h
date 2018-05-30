@@ -8,8 +8,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 @class HyperlinkTextView;

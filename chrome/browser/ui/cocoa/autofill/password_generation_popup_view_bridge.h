@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_view.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 
 @class PasswordGenerationPopupViewCocoa;
 

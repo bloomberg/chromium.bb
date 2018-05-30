@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
-#define CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
+#define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
 
 #include <stddef.h>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
+#include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -22,12 +23,12 @@
 namespace content {
 struct NativeWebKeyboardEvent;
 class WebContents;
-}
+}  // namespace content
 
 namespace password_manager {
 class PasswordManager;
 class PasswordManagerDriver;
-}
+}  // namespace password_manager
 
 namespace autofill {
 
@@ -163,4 +164,4 @@ class PasswordGenerationPopupControllerImpl
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
