@@ -37,6 +37,8 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
  public:
   explicit VideoDecodeAcceleratorTestEnvironment(bool use_gl_renderer);
 
+  virtual ~VideoDecodeAcceleratorTestEnvironment();
+
   void SetUp() override;
   void TearDown() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetRenderingTaskRunner() const;

@@ -50,8 +50,8 @@ static void ReportToUMA(VAJEAEncoderResult result) {
 VaapiJpegEncodeAccelerator::EncodeRequest::EncodeRequest(
     int32_t buffer_id,
     scoped_refptr<media::VideoFrame> video_frame,
-    std::unique_ptr<SharedMemoryRegion> exif_shm,
-    std::unique_ptr<SharedMemoryRegion> output_shm,
+    std::unique_ptr<UnalignedSharedMemory> exif_shm,
+    std::unique_ptr<UnalignedSharedMemory> output_shm,
     int quality)
     : buffer_id(buffer_id),
       video_frame(std::move(video_frame)),
@@ -284,11 +284,12 @@ void VaapiJpegEncodeAccelerator::Encode(
     return;
   }
 
-  std::unique_ptr<SharedMemoryRegion> exif_shm;
+  std::unique_ptr<UnalignedSharedMemory> exif_shm;
   if (exif_buffer) {
     // |exif_shm| will take ownership of the |exif_buffer->handle()|.
-    exif_shm = std::make_unique<SharedMemoryRegion>(*exif_buffer, true);
-    if (!exif_shm->Map()) {
+    exif_shm = std::make_unique<UnalignedSharedMemory>(
+        exif_buffer->handle(), exif_buffer->size(), true);
+    if (!exif_shm->MapAt(exif_buffer->offset(), exif_buffer->size())) {
       VLOGF(1) << "Failed to map exif buffer";
       task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&VaapiJpegEncodeAccelerator::NotifyError,
@@ -305,8 +306,9 @@ void VaapiJpegEncodeAccelerator::Encode(
   }
 
   // |output_shm| will take ownership of the |output_buffer.handle()|.
-  auto output_shm = std::make_unique<SharedMemoryRegion>(output_buffer, false);
-  if (!output_shm->Map()) {
+  auto output_shm = std::make_unique<UnalignedSharedMemory>(
+      output_buffer.handle(), output_buffer.size(), false);
+  if (!output_shm->MapAt(output_buffer.offset(), output_buffer.size())) {
     VLOGF(1) << "Failed to map output buffer";
     task_runner_->PostTask(
         FROM_HERE,

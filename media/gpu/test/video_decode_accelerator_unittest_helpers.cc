@@ -34,6 +34,9 @@ VideoDecodeAcceleratorTestEnvironment::VideoDecodeAcceleratorTestEnvironment(
     : use_gl_renderer_(use_gl_renderer),
       rendering_thread_("GLRenderingVDAClientThread") {}
 
+VideoDecodeAcceleratorTestEnvironment::
+    ~VideoDecodeAcceleratorTestEnvironment() {}
+
 void VideoDecodeAcceleratorTestEnvironment::SetUp() {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_UI;

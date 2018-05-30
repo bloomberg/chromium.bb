@@ -25,9 +25,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/h264_dpb.h"
-#include "media/gpu/shared_memory_region.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vp8_encoder.h"
@@ -124,10 +124,15 @@ struct VaapiVideoEncodeAccelerator::InputFrameRef {
 };
 
 struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, std::unique_ptr<SharedMemoryRegion> shm)
-      : id(id), shm(std::move(shm)) {}
+  BitstreamBufferRef(int32_t id, const BitstreamBuffer& buffer)
+      : id(id),
+        shm(std::make_unique<UnalignedSharedMemory>(buffer.handle(),
+                                                    buffer.size(),
+                                                    false)),
+        offset(buffer.offset()) {}
   const int32_t id;
-  const std::unique_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<UnalignedSharedMemory> shm;
+  const off_t offset;
 };
 
 VideoEncodeAccelerator::SupportedProfiles
@@ -543,8 +548,7 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto buffer_ref = std::make_unique<BitstreamBufferRef>(
-      buffer.id(), std::make_unique<SharedMemoryRegion>(buffer, false));
+  auto buffer_ref = std::make_unique<BitstreamBufferRef>(buffer.id(), buffer);
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -557,7 +561,7 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
-  if (!buffer_ref->shm->Map()) {
+  if (!buffer_ref->shm->MapAt(buffer_ref->offset, buffer_ref->shm->size())) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed mapping shared memory.");
     return;
   }

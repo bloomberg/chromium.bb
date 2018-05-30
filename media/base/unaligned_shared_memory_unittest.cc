@@ -36,50 +36,50 @@ base::SharedMemoryHandle CreateHandle(const uint8_t* data, size_t size) {
 
 TEST(UnalignedSharedMemoryTest, CreateAndDestroy) {
   auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
 }
 
 TEST(UnalignedSharedMemoryTest, CreateAndDestroy_InvalidHandle) {
   base::SharedMemoryHandle handle;
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
 }
 
 TEST(UnalignedSharedMemoryTest, Map) {
   auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
   ASSERT_TRUE(shm.MapAt(0, kDataSize));
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
 TEST(UnalignedSharedMemoryTest, Map_Unaligned) {
   auto handle = CreateHandle(kUnalignedData, kUnalignedDataSize);
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kUnalignedDataSize, true);
   ASSERT_TRUE(shm.MapAt(kUnalignedOffset, kDataSize));
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
 TEST(UnalignedSharedMemoryTest, Map_InvalidHandle) {
   base::SharedMemoryHandle handle;
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
   ASSERT_FALSE(shm.MapAt(1, kDataSize));
   EXPECT_EQ(shm.memory(), nullptr);
 }
 
 TEST(UnalignedSharedMemoryTest, Map_NegativeOffset) {
   auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
   ASSERT_FALSE(shm.MapAt(-1, kDataSize));
 }
 
 TEST(UnalignedSharedMemoryTest, Map_SizeOverflow) {
   auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
   ASSERT_FALSE(shm.MapAt(1, std::numeric_limits<size_t>::max()));
 }
 
 TEST(UnalignedSharedMemoryTest, UnmappedIsNullptr) {
   auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, true);
+  UnalignedSharedMemory shm(handle, kDataSize, true);
   ASSERT_EQ(shm.memory(), nullptr);
 }
 

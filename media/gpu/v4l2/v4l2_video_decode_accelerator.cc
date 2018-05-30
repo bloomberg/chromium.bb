@@ -23,7 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/shared_memory_region.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
@@ -71,12 +71,13 @@ struct V4L2VideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<Client>& client,
       scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-      std::unique_ptr<SharedMemoryRegion> shm,
+      const BitstreamBuffer* buffer,
       int32_t input_id);
   ~BitstreamBufferRef();
   const base::WeakPtr<Client> client;
   const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
-  const std::unique_ptr<SharedMemoryRegion> shm;
+  const std::unique_ptr<UnalignedSharedMemory> shm;
+  off_t offset;
   size_t bytes_used;
   const int32_t input_id;
 };
@@ -91,11 +92,15 @@ struct V4L2VideoDecodeAccelerator::EGLSyncKHRRef {
 V4L2VideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<Client>& client,
     scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner,
-    std::unique_ptr<SharedMemoryRegion> shm,
+    const BitstreamBuffer* buffer,
     int32_t input_id)
     : client(client),
       client_task_runner(client_task_runner),
-      shm(std::move(shm)),
+      shm(buffer ? std::make_unique<UnalignedSharedMemory>(buffer->handle(),
+                                                           buffer->size(),
+                                                           true)
+                 : nullptr),
+      offset(buffer ? buffer->offset() : 0),
       bytes_used(0),
       input_id(input_id) {}
 
@@ -768,17 +773,16 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
   TRACE_EVENT1("media,gpu", "V4L2VDA::DecodeTask", "input_id",
                bitstream_buffer.id());
 
-  std::unique_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
-      decode_client_, decode_task_runner_,
-      std::unique_ptr<SharedMemoryRegion>(
-          new SharedMemoryRegion(bitstream_buffer, true)),
-      bitstream_buffer.id()));
+  std::unique_ptr<BitstreamBufferRef> bitstream_record(
+      new BitstreamBufferRef(decode_client_, decode_task_runner_,
+                             &bitstream_buffer, bitstream_buffer.id()));
 
   // Skip empty buffer.
   if (bitstream_buffer.size() == 0)
     return;
 
-  if (!bitstream_record->shm->Map()) {
+  if (!bitstream_record->shm->MapAt(bitstream_record->offset,
+                                    bitstream_record->shm->size())) {
     VLOGF(1) << "could not map bitstream_buffer";
     NOTIFY_ERROR(UNREADABLE_INPUT);
     return;

@@ -330,8 +330,6 @@ source_set("common") {
     "h264_decoder.h",
     "h264_dpb.cc",
     "h264_dpb.h",
-    "shared_memory_region.cc",
-    "shared_memory_region.h",
   ]
   if (use_v4l2_codec || use_vaapi) {
     sources += [

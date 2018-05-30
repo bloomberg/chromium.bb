@@ -16,8 +16,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/unaligned_shared_memory.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/shared_memory_region.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/jpeg_decode_accelerator.h"
@@ -50,12 +50,12 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   // consumption, provided by the client.
   struct DecodeRequest {
     DecodeRequest(int32_t bitstream_buffer_id,
-                  std::unique_ptr<SharedMemoryRegion> shm,
+                  std::unique_ptr<UnalignedSharedMemory> shm,
                   const scoped_refptr<VideoFrame>& video_frame);
     ~DecodeRequest();
 
     int32_t bitstream_buffer_id;
-    std::unique_ptr<SharedMemoryRegion> shm;
+    std::unique_ptr<UnalignedSharedMemory> shm;
     scoped_refptr<VideoFrame> video_frame;
   };
 

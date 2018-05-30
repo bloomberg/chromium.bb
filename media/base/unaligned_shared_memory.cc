@@ -13,8 +13,9 @@ namespace media {
 
 UnalignedSharedMemory::UnalignedSharedMemory(
     const base::SharedMemoryHandle& handle,
+    size_t size,
     bool read_only)
-    : shm_(handle, read_only), misalignment_(0) {}
+    : shm_(handle, read_only), size_(size), misalignment_(0) {}
 
 UnalignedSharedMemory::~UnalignedSharedMemory() = default;
 
@@ -42,6 +43,9 @@ bool UnalignedSharedMemory::MapAt(off_t offset, size_t size) {
     DLOG(ERROR) << "Invalid size";
     return false;
   }
+  // TODO(b/795291): |size| could also be compared against |size_|. However,
+  // this will shortly all be changed for the shared memory refactor and so this
+  // extra check will be deferred.
 
   off_t adjusted_offset = offset - static_cast<off_t>(misalignment);
   if (!shm_.MapAt(adjusted_offset, size + misalignment)) {
