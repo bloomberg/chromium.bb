@@ -1371,6 +1371,12 @@ TEST_F(UiTest, MenuItems) {
 
   model_->incognito_tabs.emplace_back(TabModel(0, base::string16()));
   OnBeginFrame();
+  EXPECT_EQ(IsVisible(kOverflowMenuNewIncognitoTabItem), true);
+  EXPECT_EQ(IsVisible(kOverflowMenuCloseAllIncognitoTabsItem), true);
+
+  model_->incognito = true;
+  OnBeginFrame();
+  EXPECT_EQ(IsVisible(kOverflowMenuNewIncognitoTabItem), false);
   EXPECT_EQ(IsVisible(kOverflowMenuCloseAllIncognitoTabsItem), true);
 
   model_->standalone_vr_device = true;
