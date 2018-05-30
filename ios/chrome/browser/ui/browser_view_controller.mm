@@ -684,6 +684,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Coordinator for the popup menus.
 @property(nonatomic, strong) PopupMenuCoordinator* popupMenuCoordinator;
 
+// Used to display the bottom toolbar tip in-product help promotion bubble.
+// |nil| if the tip bubble has not yet been presented. Once the bubble is
+// dismissed, it remains allocated so that |userEngaged| remains accessible.
+@property(nonatomic, strong)
+    BubbleViewControllerPresenter* bottomToolbarTipBubblePresenter;
 // Used to display the new tab tip in-product help promotion bubble. |nil| if
 // the new tab tip bubble has not yet been presented. Once the bubble is
 // dismissed, it remains allocated so that |userEngaged| remains accessible.
@@ -958,6 +963,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize tabStripCoordinator = _tabStripCoordinator;
 @synthesize tabStripView = _tabStripView;
 @synthesize popupMenuCoordinator = _popupMenuCoordinator;
+@synthesize bottomToolbarTipBubblePresenter = _bottomToolbarTipBubblePresenter;
 @synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
 @synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize primaryToolbarCoordinator = _primaryToolbarCoordinator;
@@ -1416,6 +1422,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)presentBubblesIfEligible {
   [self presentNewTabTipBubbleOnInitialized];
   [self presentNewIncognitoTabTipBubbleOnInitialized];
+  [self presentBottomToolbarTipBubbleOnInitialized];
 }
 
 - (void)browserStateDestroyed {
@@ -2705,6 +2712,80 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return bubbleViewControllerPresenter;
 }
 
+// Waits to present a bubble associated with the bottom toolbar tip in-product
+// help promotion until the feature engagement tracker database is fully
+// initialized. This method requires that |self.browserState| is not NULL.
+- (void)presentBottomToolbarTipBubbleOnInitialized {
+  DCHECK(self.browserState);
+  // If the tip bubble has already been presented and the user is still
+  // considered engaged, it can't be overwritten or set to |nil| or else it will
+  // reset the |userEngaged| property. Once the user is not engaged, the bubble
+  // can be safely overwritten or set to |nil|.
+  if (!self.bottomToolbarTipBubblePresenter.isUserEngaged) {
+    __weak BrowserViewController* weakSelf = self;
+    void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+      if (!successfullyLoaded)
+        return;
+      [weakSelf presentBottomToolbarTipBubble];
+    };
+
+    // Because the new tab tip occurs on startup, the feature engagement
+    // tracker's database is not guaranteed to be loaded by this time. For the
+    // bubble to appear properly, a callback is used to guarantee the event data
+    // is loaded before the check to see if the promotion should be displayed.
+    feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+        ->AddOnInitializedCallback(base::BindBlockArc(onInitializedBlock));
+  }
+}
+
+// Presents a bubble associated with the bottom toolbar tip in-product help
+// promotion. This method requires that |self.browserState| is not NULL.
+- (void)presentBottomToolbarTipBubble {
+  if (!IsSplitToolbarMode())
+    return;
+
+  DCHECK(self.browserState);
+  // If the BVC is not visible, do not present the bubble.
+  if (!self.viewVisible)
+    return;
+  // Do not present the bubble if there is no current tab.
+  Tab* currentTab = [self.tabModel currentTab];
+  if (!currentTab)
+    return;
+
+  // Do not present the bubble if the tab is not scrolled to the top.
+  if (![self isTabScrolledToTop:currentTab])
+    return;
+
+  BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
+  NSString* text = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_TEXT);
+  UILayoutGuide* guide =
+      [NamedGuide guideWithName:kSearchButtonGuide view:self.view];
+  DCHECK(guide);
+  CGPoint anchorPoint =
+      bubble_util::AnchorPoint(guide.layoutFrame, arrowDirection);
+  CGPoint tipAnchor = [guide.owningView convertPoint:anchorPoint
+                                              toView:guide.owningView.window];
+
+  // If the feature engagement tracker does not consider it valid to display
+  // the new tab tip, then end early to prevent the potential reassignment
+  // of the existing |bottomToolbarTipBubblePresenter| to nil.
+  BubbleViewControllerPresenter* presenter = [self
+      bubblePresenterForFeature:feature_engagement::kIPHBottomToolbarTipFeature
+                      direction:arrowDirection
+                      alignment:BubbleAlignmentCenter
+                           text:text];
+  if (!presenter)
+    return;
+
+  self.bottomToolbarTipBubblePresenter = presenter;
+
+  [self.bottomToolbarTipBubblePresenter presentInViewController:self
+                                                           view:self.view
+                                                    anchorPoint:tipAnchor];
+}
+
 - (void)presentNewTabTipBubbleOnInitialized {
   DCHECK(self.browserState);
   // If the tab tip bubble has already been presented and the user is still
@@ -2714,6 +2795,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!self.tabTipBubblePresenter.isUserEngaged) {
     __weak BrowserViewController* weakSelf = self;
     void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+      if (!successfullyLoaded)
+        return;
       [weakSelf presentNewTabTipBubble];
     };
 
@@ -2788,6 +2871,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!self.incognitoTabTipBubblePresenter.isUserEngaged) {
     __weak BrowserViewController* weakSelf = self;
     void (^onInitializedBlock)(bool) = ^(bool successfullyLoaded) {
+      if (!successfullyLoaded)
+        return;
       [weakSelf presentNewIncognitoTabTipBubble];
     };
 
