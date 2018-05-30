@@ -7,11 +7,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/trace_event/trace_event.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
-#include "jni/HandleViewResources_jni.h"
-#include "ui/gfx/android/java_bitmap.h"
+#include "ui/android/handle_view_resources.h"
 
 using base::android::JavaRef;
 
@@ -19,73 +17,7 @@ namespace content {
 
 namespace {
 
-static SkBitmap CreateSkBitmapFromJavaBitmap(
-    base::android::ScopedJavaLocalRef<jobject> jbitmap) {
-  return jbitmap.is_null()
-             ? SkBitmap()
-             : CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jbitmap));
-}
-
-class HandleResources {
- public:
-  HandleResources() : loaded_(false) {
-  }
-
-  void LoadIfNecessary(const JavaRef<jobject>& context) {
-    if (loaded_)
-      return;
-
-    loaded_ = true;
-
-    TRACE_EVENT0("browser", "HandleResources::Create");
-    JNIEnv* env = base::android::AttachCurrentThread();
-
-    left_bitmap_ = CreateSkBitmapFromJavaBitmap(
-        Java_HandleViewResources_getLeftHandleBitmap(env, context));
-    right_bitmap_ = CreateSkBitmapFromJavaBitmap(
-        Java_HandleViewResources_getRightHandleBitmap(env, context));
-    center_bitmap_ = CreateSkBitmapFromJavaBitmap(
-        Java_HandleViewResources_getCenterHandleBitmap(env, context));
-
-    left_bitmap_.setImmutable();
-    right_bitmap_.setImmutable();
-    center_bitmap_.setImmutable();
-
-    drawable_horizontal_padding_ratio_ =
-        Java_HandleViewResources_getHandleHorizontalPaddingRatio(env);
-  }
-
-  const SkBitmap& GetBitmap(ui::TouchHandleOrientation orientation) {
-    DCHECK(loaded_);
-    switch (orientation) {
-      case ui::TouchHandleOrientation::LEFT:
-        return left_bitmap_;
-      case ui::TouchHandleOrientation::RIGHT:
-        return right_bitmap_;
-      case ui::TouchHandleOrientation::CENTER:
-        return center_bitmap_;
-      case ui::TouchHandleOrientation::UNDEFINED:
-        NOTREACHED() << "Invalid touch handle orientation.";
-    };
-    return center_bitmap_;
-  }
-
-  float GetDrawableHorizontalPaddingRatio() const {
-    DCHECK(loaded_);
-    return drawable_horizontal_padding_ratio_;
-  }
-
- private:
-  SkBitmap left_bitmap_;
-  SkBitmap right_bitmap_;
-  SkBitmap center_bitmap_;
-  float drawable_horizontal_padding_ratio_;
-  bool loaded_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandleResources);
-};
-
-base::LazyInstance<HandleResources>::Leaky g_selection_resources;
+base::LazyInstance<ui::HandleViewResources>::Leaky g_selection_resources;
 
 }  // namespace
 

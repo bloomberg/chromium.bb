@@ -5,12 +5,15 @@
 #ifndef CONTENT_BROWSER_ANDROID_SELECTION_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
 #define CONTENT_BROWSER_ANDROID_SELECTION_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
 
-#include "ui/touch_selection/touch_handle.h"
-
-#include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "cc/layers/ui_resource_layer.h"
+#include "base/memory/scoped_refptr.h"
+#include "ui/touch_selection/touch_handle.h"
+
+namespace cc {
+class Layer;
+class UIResourceLayer;
+}  // namespace cc
 
 namespace content {
 
