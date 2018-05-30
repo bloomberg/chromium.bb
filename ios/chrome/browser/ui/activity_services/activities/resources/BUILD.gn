@@ -22,6 +22,15 @@ imageset("activity_services_edit_bookmark") {
   ]
 }
 
+imageset("activity_services_find_in_page") {
+  sources = [
+    "activity_services_find_in_page.imageset/Contents.json",
+    "activity_services_find_in_page.imageset/activity_services_find_in_page-60@2x.png",
+    "activity_services_find_in_page.imageset/activity_services_find_in_page-60@3x.png",
+    "activity_services_find_in_page.imageset/activity_services_find_in_page-76@2x.png",
+  ]
+}
+
 imageset("activity_services_print") {
   sources = [
     "activity_services_print.imageset/Contents.json",
@@ -38,5 +47,23 @@ imageset("activity_services_read_later") {
     "activity_services_read_later.imageset/activity_services_read_later-60@2x.png",
     "activity_services_read_later.imageset/activity_services_read_later-60@3x.png",
     "activity_services_read_later.imageset/activity_services_read_later-76@2x.png",
+  ]
+}
+
+imageset("activity_services_request_desktop_site") {
+  sources = [
+    "activity_services_request_desktop_site.imageset/Contents.json",
+    "activity_services_request_desktop_site.imageset/activity_services_request_desktop_site-60@2x.png",
+    "activity_services_request_desktop_site.imageset/activity_services_request_desktop_site-60@3x.png",
+    "activity_services_request_desktop_site.imageset/activity_services_request_desktop_site-76@2x.png",
+  ]
+}
+
+imageset("activity_services_request_mobile_site") {
+  sources = [
+    "activity_services_request_mobile_site.imageset/Contents.json",
+    "activity_services_request_mobile_site.imageset/activity_services_request_mobile_site-60@2x.png",
+    "activity_services_request_mobile_site.imageset/activity_services_request_mobile_site-60@3x.png",
+    "activity_services_request_mobile_site.imageset/activity_services_request_mobile_site-76@2x.png",
   ]
 }
