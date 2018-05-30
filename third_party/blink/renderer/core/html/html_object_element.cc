@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/sync_reattach_context.h"
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -420,11 +419,6 @@ bool HTMLObjectElement::WillUseFallbackContentAtLayout() const {
 
 void HTMLObjectElement::AssociateWith(HTMLFormElement* form) {
   AssociateByParser(form);
-}
-
-void HTMLObjectElement::AttachLayoutTree(AttachContext& context) {
-  SyncReattachContext reattach_context(context);
-  HTMLPlugInElement::AttachLayoutTree(context);
 }
 
 const HTMLObjectElement* ToHTMLObjectElementFromListedElement(

@@ -253,8 +253,6 @@ blink_core_sources("dom") {
     "static_node_list.h",
     "static_range.cc",
     "static_range.h",
-    "sync_reattach_context.cc",
-    "sync_reattach_context.h",
     "synchronous_mutation_notifier.cc",
     "synchronous_mutation_notifier.h",
     "synchronous_mutation_observer.cc",
