@@ -5,6 +5,7 @@
 #include "ash/system/audio/tray_audio.h"
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -108,6 +109,9 @@ views::View* TrayAudio::GetItemToRestoreFocusTo() {
 
 void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                           int /* volume */) {
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   float percent = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f;
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());
@@ -118,15 +122,14 @@ void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
     return;
   }
 
-  // Show popup only when UnifiedSystemTray bubble is not shown.
-  if (IsUnifiedBubbleShown())
-    return;
-
   pop_up_volume_view_ = true;
   ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
 }
 
 void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());
 
@@ -134,10 +137,6 @@ void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
     volume_view_->Update();
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
   } else if (!system_adjust) {
-    // Show popup only when UnifiedSystemTray bubble is not shown.
-    if (IsUnifiedBubbleShown())
-      return;
-
     pop_up_volume_view_ = true;
     ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
   }

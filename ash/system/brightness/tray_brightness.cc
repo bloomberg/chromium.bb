@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -244,6 +245,9 @@ void TrayBrightness::ScreenBrightnessChanged(
 
 void TrayBrightness::HandleBrightnessChanged(double percent,
                                              bool user_initiated) {
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   current_percent_ = percent;
   got_current_percent_ = true;
 
@@ -257,10 +261,6 @@ void TrayBrightness::HandleBrightnessChanged(double percent,
   // external display's brightness is changed, it may already display the new
   // level via an on-screen display.
   if (!display::Display::HasInternalDisplay())
-    return;
-
-  // Do not show bubble when UnifiedSystemTray bubble is already shown.
-  if (IsUnifiedBubbleShown())
     return;
 
   if (brightness_view_ && brightness_view_->visible())

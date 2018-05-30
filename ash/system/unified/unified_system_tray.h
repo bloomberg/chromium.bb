@@ -13,6 +13,7 @@ namespace ash {
 
 class NotificationCounterView;
 class QuietModeView;
+class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
 
@@ -71,6 +72,9 @@ class UnifiedSystemTray : public TrayBackgroundView {
 
   // Model class that stores UnifiedSystemTray's UI specific variables.
   const std::unique_ptr<UnifiedSystemTrayModel> model_;
+
+  const std::unique_ptr<UnifiedSliderBubbleController>
+      slider_bubble_controller_;
 
   NotificationCounterView* const notification_counter_item_;
   QuietModeView* const quiet_mode_view_;

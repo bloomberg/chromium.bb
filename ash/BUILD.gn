@@ -916,6 +916,8 @@ component("ash") {
     "system/unified/unified_detailed_view_delegate.h",
     "system/unified/unified_message_center_view.cc",
     "system/unified/unified_message_center_view.h",
+    "system/unified/unified_slider_bubble_controller.cc",
+    "system/unified/unified_slider_bubble_controller.h",
     "system/unified/unified_slider_view.cc",
     "system/unified/unified_slider_view.h",
     "system/unified/unified_system_info_view.cc",

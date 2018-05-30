@@ -17,6 +17,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/notification_counter_view.h"
+#include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "chromeos/network/network_handler.h"
@@ -138,6 +139,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(std::make_unique<UnifiedSystemTrayModel>()),
+      slider_bubble_controller_(
+          std::make_unique<UnifiedSliderBubbleController>(this)),
       notification_counter_item_(new NotificationCounterView()),
       quiet_mode_view_(new QuietModeView()) {
   tray_container()->AddChildView(notification_counter_item_);
@@ -210,6 +213,9 @@ void UnifiedSystemTray::ClickedOutsideBubble() {
 }
 
 void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
+  // Hide volume/brightness slider popup.
+  slider_bubble_controller_->CloseBubble();
+
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
   SetIsActive(true);
 }
