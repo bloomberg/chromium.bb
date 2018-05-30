@@ -331,8 +331,16 @@ void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
   // - they can be requested for many tabs at the same time
   // and therefore auto-dismissal is inappropriate for them.
 
-  return AppModalDialogManager()->RunBeforeUnloadDialog(
-      web_contents, render_frame_host, is_reload, std::move(callback));
+  bool browser_is_app = false;
+#if !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser) {
+    browser_is_app = browser->is_app();
+  }
+#endif
+  return AppModalDialogManager()->RunBeforeUnloadDialogWithOptions(
+      web_contents, render_frame_host, is_reload, browser_is_app,
+      std::move(callback));
 }
 
 bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
