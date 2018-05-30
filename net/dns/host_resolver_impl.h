@@ -22,6 +22,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace net {
 
 class AddressList;
@@ -169,6 +173,8 @@ class NET_EXPORT HostResolverImpl
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
   }
+
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
  protected:
   // Callback from HaveOnlyLoopbackAddresses probe.
@@ -369,6 +375,9 @@ class NET_EXPORT HostResolverImpl
 
   URLRequestContext* url_request_context_;
   std::vector<DnsConfig::DnsOverHttpsServerConfig> dns_over_https_servers_;
+
+  // Shared tick clock, overridden for testing.
+  const base::TickClock* tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
 

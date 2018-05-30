@@ -14,11 +14,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/cronet/url_request_context_config.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
@@ -33,10 +36,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_ANDROID)
-#include "net/android/network_change_notifier_factory_android.h"
-#endif
 
 namespace cronet {
 
@@ -104,7 +103,10 @@ class StaleHostResolverTest : public testing::Test {
         mock_proc_(new MockHostResolverProc()),
         resolver_(nullptr),
         resolve_pending_(false),
-        resolve_complete_(false) {}
+        resolve_complete_(false) {
+    // Make value clock not empty.
+    tick_clock_.Advance(base::TimeDelta::FromMicroseconds(1));
+  }
 
   ~StaleHostResolverTest() override {}
 
@@ -137,6 +139,7 @@ class StaleHostResolverTest : public testing::Test {
 
     stale_resolver_ = std::make_unique<StaleHostResolver>(
         std::move(inner_resolver), options_);
+    stale_resolver_->SetTickClockForTesting(&tick_clock_);
     resolver_ = stale_resolver_.get();
   }
 
@@ -162,14 +165,6 @@ class StaleHostResolverTest : public testing::Test {
     resolver_ = nullptr;
   }
 
-  void CreateNetworkChangeNotifier() {
-#if defined(OS_ANDROID)
-    net::NetworkChangeNotifier::SetFactory(
-        new net::NetworkChangeNotifierFactoryAndroid());
-#endif
-    net::NetworkChangeNotifier::Create();
-  }
-
   // Creates a cache entry for |kHostname| that is |age_sec| seconds old.
   void CreateCacheEntry(int age_sec, int error) {
     DCHECK(resolver_);
@@ -182,7 +177,7 @@ class StaleHostResolverTest : public testing::Test {
         error == net::OK ? MakeAddressList(kCacheAddress) : net::AddressList(),
         net::HostCache::Entry::SOURCE_UNKNOWN, ttl);
     base::TimeDelta age = base::TimeDelta::FromSeconds(age_sec);
-    base::TimeTicks then = base::TimeTicks::Now() - age;
+    base::TimeTicks then = tick_clock_.NowTicks() - age;
     resolver_->GetHostCache()->Set(key, entry, then, ttl);
   }
 
@@ -198,7 +193,7 @@ class StaleHostResolverTest : public testing::Test {
     DCHECK(resolver_->GetHostCache());
 
     net::HostCache::Key key(kHostname, net::ADDRESS_FAMILY_IPV4, 0);
-    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks now = tick_clock_.NowTicks();
     const net::HostCache::Entry* entry;
     net::HostCache::EntryStaleness stale;
     entry = resolver_->GetHostCache()->LookupStale(key, now, &stale);
@@ -274,6 +269,8 @@ class StaleHostResolverTest : public testing::Test {
       base::ResetAndReturn(&resolve_closure_).Run();
   }
 
+  void AdvanceTickClock(base::TimeDelta delta) { tick_clock_.Advance(delta); }
+
   bool resolve_complete() const { return resolve_complete_; }
   int resolve_error() const { return resolve_error_; }
   const net::AddressList& resolve_addresses() const {
@@ -283,6 +280,8 @@ class StaleHostResolverTest : public testing::Test {
  private:
   // Needed for HostResolver to run HostResolverProc callbacks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::SimpleTestTickClock tick_clock_;
+  net::test::MockNetworkChangeNotifier mock_network_change_notifier_;
 
   scoped_refptr<MockHostResolverProc> mock_proc_;
 
@@ -412,12 +411,10 @@ TEST_F(StaleHostResolverTest, CancelWithStaleCache) {
 // CancelWithFreshCache makes no sense; the request would've returned
 // synchronously.
 
-// Limited expired time cases are flaky under iOS and MACOS (crbug.com/792173).
 // Disallow other networks cases fail under Fuchsia (crbug.com/816143).
 // TODO(https://crbug.com/829097): Fix memory leaks and re-enable under ASAN.
 // Flaky on Win buildbots. See crbug.com/836106
-#if defined(OS_IOS) || defined(OS_FUCHSIA) || defined(OS_MACOSX) || \
-    defined(ADDRESS_SANITIZER) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(ADDRESS_SANITIZER) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_StaleUsability DISABLED_StaleUsability
 #else
 #define MAYBE_StaleUsability StaleUsability
@@ -478,7 +475,6 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleUsability) {
   };
 
   SetStaleDelay(kNoStaleDelaySec);
-  CreateNetworkChangeNotifier();
 
   for (size_t i = 0; i < arraysize(kUsabilityTestCases); ++i) {
     const auto& test_case = kUsabilityTestCases[i];
@@ -487,11 +483,16 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleUsability) {
                       test_case.allow_other_network);
     CreateResolver();
     CreateCacheEntry(kCacheEntryTTLSec + test_case.age_sec, test_case.error);
+
+    AdvanceTickClock(base::TimeDelta::FromMilliseconds(1));
     for (int j = 0; j < test_case.network_changes; ++j)
       OnNetworkChange();
+
+    AdvanceTickClock(base::TimeDelta::FromMilliseconds(1));
     for (int j = 0; j < test_case.stale_use - 1; ++j)
       LookupStale();
 
+    AdvanceTickClock(base::TimeDelta::FromMilliseconds(1));
     Resolve();
     WaitForResolve();
     EXPECT_TRUE(resolve_complete()) << i;
@@ -514,6 +515,10 @@ TEST_F(StaleHostResolverTest, MAYBE_StaleUsability) {
             << i;
       }
     }
+    // Make sure that all tasks complete so jobs are freed properly.
+    AdvanceTickClock(base::TimeDelta::FromSeconds(kLongStaleDelaySec));
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
 
     DestroyResolver();
   }
