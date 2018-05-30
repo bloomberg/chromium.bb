@@ -341,10 +341,11 @@ void TaskQueueImpl::ReloadImmediateWorkQueueIfEmpty() {
   main_thread_only().immediate_work_queue->ReloadEmptyImmediateQueue();
 }
 
-TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
+void TaskQueueImpl::ReloadEmptyImmediateQueue(TaskDeque* queue) {
+  DCHECK(queue->empty());
+
   AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
-  TaskQueueImpl::TaskDeque queue;
-  queue.swap(immediate_incoming_queue());
+  queue->swap(immediate_incoming_queue());
 
   // Activate delayed fence if necessary. This is ideologically similar to
   // ActivateDelayedFenceIfNeeded, but due to immediate tasks being posted
@@ -352,7 +353,7 @@ TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
   // so we have to check all immediate tasks and use their enqueue order for
   // a fence.
   if (main_thread_only().delayed_fence) {
-    for (const Task& task : queue) {
+    for (const Task& task : *queue) {
       if (task.delayed_run_time >= main_thread_only().delayed_fence.value()) {
         main_thread_only().delayed_fence = nullopt;
         DCHECK_EQ(main_thread_only().current_fence,
@@ -368,8 +369,6 @@ TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
       }
     }
   }
-
-  return queue;
 }
 
 bool TaskQueueImpl::IsEmpty() const {
