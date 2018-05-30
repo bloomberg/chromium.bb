@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
 
@@ -35,14 +36,14 @@ TEST_F(V8MemoryDumpProviderTest, DumpStatistics) {
   bool did_dump_isolate_stats = false;
   bool did_dump_space_stats = false;
   bool did_dump_objects_stats = false;
-  for (const auto& it : allocator_dumps) {
-    const std::string& dump_name = it.first;
-    if (dump_name.find("v8/isolate") != std::string::npos) {
+  for (const auto& name_dump : allocator_dumps) {
+    const std::string& name = name_dump.first;
+    if (name.find("v8/isolate") != std::string::npos) {
       did_dump_isolate_stats = true;
     }
-    if (dump_name.find("heap_spaces") != std::string::npos) {
+    if (name.find("heap_spaces") != std::string::npos) {
       did_dump_space_stats = true;
-    } else if (dump_name.find("heap_objects") != std::string::npos) {
+    } else if (name.find("heap_objects") != std::string::npos) {
       did_dump_objects_stats = true;
     }
   }
@@ -64,18 +65,60 @@ TEST_F(V8MemoryDumpProviderTest, DumpContextStatistics) {
 
   bool did_dump_detached_contexts = false;
   bool did_dump_native_contexts = false;
-  for (const auto& it : allocator_dumps) {
-    const std::string& dump_name = it.first;
-    if (dump_name.find("contexts/detached_context") != std::string::npos) {
+  for (const auto& name_dump : allocator_dumps) {
+    const std::string& name = name_dump.first;
+    if (name.find("contexts/detached_context") != std::string::npos) {
       did_dump_detached_contexts = true;
     }
-    if (dump_name.find("contexts/native_context") != std::string::npos) {
+    if (name.find("contexts/native_context") != std::string::npos) {
       did_dump_native_contexts = true;
     }
   }
 
   ASSERT_TRUE(did_dump_detached_contexts);
   ASSERT_TRUE(did_dump_native_contexts);
+}
+
+TEST_F(V8MemoryDumpProviderTest, DumpCodeStatistics) {
+  // Code stats are disabled unless this category is enabled.
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(
+      base::trace_event::TraceConfig(
+          TRACE_DISABLED_BY_DEFAULT("memory-infra.v8.code_stats"), ""),
+      base::trace_event::TraceLog::RECORDING_MODE);
+
+  base::trace_event::MemoryDumpArgs dump_args = {
+      base::trace_event::MemoryDumpLevelOfDetail::LIGHT};
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
+      new base::trace_event::ProcessMemoryDump(dump_args));
+  instance_->isolate_memory_dump_provider_for_testing()->OnMemoryDump(
+      dump_args, process_memory_dump.get());
+  const base::trace_event::ProcessMemoryDump::AllocatorDumpsMap&
+      allocator_dumps = process_memory_dump->allocator_dumps();
+
+  bool did_dump_bytecode_size = false;
+  bool did_dump_code_size = false;
+  bool did_dump_external_scripts_size = false;
+
+  for (const auto& name_dump : allocator_dumps) {
+    const std::string& name = name_dump.first;
+    if (name.find("heap_spaces") != std::string::npos) {
+      for (const base::trace_event::MemoryAllocatorDump::Entry& entry :
+           name_dump.second->entries()) {
+        if (entry.name == "bytecode_and_metadata_size") {
+          did_dump_bytecode_size = true;
+        } else if (entry.name == "code_and_metadata_size") {
+          did_dump_code_size = true;
+        } else if (entry.name == "external_script_source_size") {
+          did_dump_external_scripts_size = true;
+        }
+      }
+    }
+  }
+  base::trace_event::TraceLog::GetInstance()->SetDisabled();
+
+  ASSERT_TRUE(did_dump_bytecode_size);
+  ASSERT_TRUE(did_dump_code_size);
+  ASSERT_TRUE(did_dump_external_scripts_size);
 }
 
 }  // namespace gin
