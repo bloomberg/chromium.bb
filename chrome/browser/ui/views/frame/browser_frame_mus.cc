@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -36,6 +37,8 @@ BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
     : views::DesktopNativeWidgetAura(browser_frame),
       browser_frame_(browser_frame),
       browser_view_(browser_view) {
+  DCHECK(browser_frame_);
+  DCHECK(browser_view_);
 #if defined(OS_CHROMEOS)
   // Not used with Mus on Chrome OS.
   DCHECK_EQ(chromeos::GetAshConfig(), ash::Config::MASH);
@@ -48,7 +51,8 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
   views::Widget::InitParams params;
   params.name = "BrowserFrame";
   params.native_widget = this;
-  params.bounds = gfx::Rect(10, 10, 640, 480);
+  chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
+                                           &params.bounds, &params.show_state);
   params.delegate = browser_view_;
   std::map<std::string, std::vector<uint8_t>> properties =
       views::MusClient::ConfigurePropertiesFromParams(params);

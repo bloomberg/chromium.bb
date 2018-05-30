@@ -12,8 +12,11 @@
 class BrowserFrame;
 class BrowserView;
 
-class BrowserFrameMus : public NativeBrowserFrame,
-                        public views::DesktopNativeWidgetAura {
+// Used with mash on Chrome OS.
+// TODO(jamescook): Rename to BrowserFrameMash. Linux Ozone used to use this
+// frame but doesn't any more.
+class BrowserFrameMus : public views::DesktopNativeWidgetAura,
+                        public NativeBrowserFrame {
  public:
   BrowserFrameMus(BrowserFrame* browser_frame, BrowserView* browser_view);
   ~BrowserFrameMus() override;
