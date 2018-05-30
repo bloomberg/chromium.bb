@@ -72,10 +72,8 @@ const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 // Tab dimensions.
 const CGFloat kTabOverlap = 26.0;
 const CGFloat kTabOverlapForCompactLayout = 30.0;
-const CGFloat kTabOverlapForRefresh = 48.0;
 
-const CGFloat kNewTabOverlap = 30.0;
-const CGFloat kNewTabOverlapLegacy = 8.0;
+const CGFloat kNewTabOverlap = 8.0;
 const CGFloat kMaxTabWidth = 265.0;
 const CGFloat kMaxTabWidthForCompactLayout = 225.0;
 
@@ -83,7 +81,6 @@ const CGFloat kMaxTabWidthForCompactLayout = 225.0;
 const CGFloat kTabSwitcherButtonWidth = 46.0;
 const CGFloat kTabSwitcherButtonBackgroundWidth = 62.0;
 
-const CGFloat kNewTabRightPadding = 4.0;
 const CGFloat kMinTabWidth = 200.0;
 const CGFloat kMinTabWidthForCompactLayout = 160.0;
 
@@ -106,11 +103,7 @@ const CGFloat kDimmingViewBottomInsetHighRes = 0.0;
 const CGFloat kDimmingViewBottomInset = 0.0;
 
 // The size of the tab strip view.
-const CGFloat kTabStripHeight = 54.0;
-const CGFloat kTabStripHeightLegacy = 39.0;
-
-// Shift everything down to account for the tab's top shadow.
-const CGFloat kTopShadowOffset = 15;
+const CGFloat kTabStripHeight = 39.0;
 
 // The size of the new tab button.
 const CGFloat kNewTabButtonWidth = 59.9;
@@ -129,14 +122,6 @@ UIColor* BackgroundColor() {
   if (IsUIRefreshPhase1Enabled())
     return [UIColor colorWithRed:0.11 green:0.11 blue:0.11 alpha:1.0];
   return [UIColor colorWithRed:0.149 green:0.149 blue:0.164 alpha:1];
-}
-
-CGFloat NewTabOverlap() {
-  return IsUIRefreshPhase1Enabled() ? kNewTabOverlap : kNewTabOverlapLegacy;
-}
-
-CGFloat TopShadowOffset() {
-  return IsUIRefreshPhase1Enabled() ? kTopShadowOffset : 0;
 }
 
 // Returns the string to use for a numeric item count.
@@ -419,8 +404,7 @@ NSString* StringForItemCount(long count) {
 
     // |self.view| setup.
     CGRect tabStripFrame = [UIApplication sharedApplication].keyWindow.bounds;
-    tabStripFrame.size.height =
-        IsUIRefreshPhase1Enabled() ? kTabStripHeight : kTabStripHeightLegacy;
+    tabStripFrame.size.height = kTabStripHeight;
     _view = [[UIView alloc] initWithFrame:tabStripFrame];
     _view.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
                               UIViewAutoresizingFlexibleBottomMargin);
@@ -440,9 +424,7 @@ NSString* StringForItemCount(long count) {
 
     // |self.buttonNewTab| setup.
     CGRect buttonNewTabFrame = tabStripFrame;
-    buttonNewTabFrame.origin.y = TopShadowOffset();
     buttonNewTabFrame.size.width = kNewTabButtonWidth;
-    buttonNewTabFrame.size.height -= TopShadowOffset();
     _buttonNewTab = [[UIButton alloc] initWithFrame:buttonNewTabFrame];
     _isIncognito = tabModel && tabModel.browserState->IsOffTheRecord();
     // TODO(crbug.com/600829): Rewrite layout code and convert these masks to
@@ -1119,8 +1101,7 @@ NSString* StringForItemCount(long count) {
 - (CGFloat)tabStripVisibleSpace {
   CGFloat availableSpace = CGRectGetWidth([_tabStripView bounds]) -
                            CGRectGetWidth([_buttonNewTab frame]) +
-                           NewTabOverlap() - kNewTabRightPadding -
-                           kTabSwitcherButtonWidth;
+                           kNewTabOverlap;
   return availableSpace;
 }
 
@@ -1143,10 +1124,10 @@ NSString* StringForItemCount(long count) {
   int tabSwitcherButtonIdsAccessibilityLabel =
       IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER;
   NSString* tabSwitcherButtonEnglishUiAutomationName = @"Enter Tab Switcher";
-  const CGFloat tabStripHeight = _view.frame.size.height - TopShadowOffset();
+  const CGFloat tabStripHeight = _view.frame.size.height;
   CGRect buttonFrame =
-      CGRectMake(CGRectGetMaxX(_view.frame) - kTabSwitcherButtonWidth,
-                 TopShadowOffset(), kTabSwitcherButtonWidth, tabStripHeight);
+      CGRectMake(CGRectGetMaxX(_view.frame) - kTabSwitcherButtonWidth, 0,
+                 kTabSwitcherButtonWidth, tabStripHeight);
   if (IsUIRefreshPhase1Enabled()) {
     _tabSwitcherButton =
         [TabStripCenteredButton buttonWithType:UIButtonTypeCustom];
@@ -1231,7 +1212,7 @@ NSString* StringForItemCount(long count) {
   // desired width, with the standard overlap, plus the new tab button.
   CGSize contentSize = CGSizeMake(
       _currentTabWidth * tabCount - ([self tabOverlap] * (tabCount - 1)) +
-          CGRectGetWidth([_buttonNewTab frame]) - NewTabOverlap(),
+          CGRectGetWidth([_buttonNewTab frame]) - kNewTabOverlap,
       tabHeight);
   if (CGSizeEqualToSize([_tabStripView contentSize], contentSize))
     return;
@@ -1281,8 +1262,6 @@ NSString* StringForItemCount(long count) {
 }
 
 - (CGFloat)tabOverlap {
-  if (IsUIRefreshPhase1Enabled())
-    return kTabOverlapForRefresh;
   if (!IsCompactTablet())
     return kTabOverlap;
   return kTabOverlapForCompactLayout;
@@ -1650,8 +1629,7 @@ NSString* StringForItemCount(long count) {
   CGRect newTabFrame = [_buttonNewTab frame];
   BOOL moveNewTab =
       (newTabFrame.origin.x != virtualMaxX) && !_buttonNewTab.hidden;
-  newTabFrame.origin =
-      CGPointMake(virtualMaxX - NewTabOverlap(), TopShadowOffset());
+  newTabFrame.origin = CGPointMake(virtualMaxX - kNewTabOverlap, 0);
   if (!animate && moveNewTab)
     [_buttonNewTab setFrame:newTabFrame];
 
