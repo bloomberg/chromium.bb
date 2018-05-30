@@ -44397,6 +44397,7 @@ would be helpful to identify which type is being sent.
   <int value="37" label="Printers"/>
   <int value="38" label="Reading List"/>
   <int value="39" label="User Events"/>
+  <int value="40" label="Mountain Shares"/>
 </enum>
 
 <enum name="SyncModelTypeStoreInitResult">
