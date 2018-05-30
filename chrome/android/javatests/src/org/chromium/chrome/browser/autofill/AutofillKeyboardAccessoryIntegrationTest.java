@@ -199,6 +199,7 @@ public class AutofillKeyboardAccessoryIntegrationTest {
     @Test
     @MediumTest
     @Feature({"keyboard-accessory"})
+    @DisabledTest(message = "crbug.com/847959")
     public void testSelectSuggestionHidesKeyboardAccessory()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(false);
