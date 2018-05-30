@@ -85,7 +85,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
                   DoubleTapListener* optional_double_tap_listener);
   ~GestureDetector();
 
-  bool OnTouchEvent(const MotionEvent& ev);
+  bool OnTouchEvent(const MotionEvent& ev, bool should_process_double_tap);
 
   // Setting a valid |double_tap_listener| will enable double-tap detection,
   // wherein calls to |OnSimpleTapConfirmed| are delayed by the tap timeout.
@@ -116,7 +116,8 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   void CancelTaps();
   bool IsRepeatedTap(const MotionEvent& first_down,
                      const MotionEvent& first_up,
-                     const MotionEvent& second_down) const;
+                     const MotionEvent& second_down,
+                     bool should_process_double_tap) const;
   bool HandleSwipeIfNeeded(const MotionEvent& up, float vx, float vy);
   bool IsWithinTouchSlop(const MotionEvent& ev);
 

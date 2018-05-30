@@ -21,6 +21,13 @@ class GESTURE_DETECTION_EXPORT GestureProviderClient {
  public:
   virtual ~GestureProviderClient() {}
   virtual void OnGestureEvent(const GestureEventData& gesture) = 0;
+
+  // Supporting double tap events requires adding some extra delay before
+  // sending single-tap events in order to determine whether its a potential
+  // double tap or not. This delay may be undesirable in many UI components and
+  // should be avoided if not needed.
+  // Returns true if the client wants to receive double tap gesture events.
+  virtual bool RequiresDoubleTapGestureEvents() const;
 };
 
 // Given a stream of |MotionEvent|'s, provides gesture detection and gesture

@@ -11,6 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
@@ -48,9 +49,13 @@ class TabletModePageBehaviorTest : public InProcessBrowserTest {
     return web_contents->GetRenderViewHost()->GetWebkitPreferences();
   }
 
-  void ValidateWebPrefs(const content::WebPreferences& web_prefs,
+  void ValidateWebPrefs(const content::WebContents* web_contents,
                         bool tablet_mode_enabled) const {
+    const content::WebPreferences web_prefs =
+        GetWebKitPreferences(web_contents);
     if (tablet_mode_enabled) {
+      EXPECT_TRUE(web_prefs.double_tap_to_zoom_enabled);
+      EXPECT_TRUE(web_prefs.text_autosizing_enabled);
       EXPECT_TRUE(web_prefs.viewport_enabled);
       EXPECT_TRUE(web_prefs.viewport_meta_enabled);
       EXPECT_TRUE(web_prefs.shrinks_viewport_contents_to_fit);
@@ -59,6 +64,8 @@ class TabletModePageBehaviorTest : public InProcessBrowserTest {
       EXPECT_FLOAT_EQ(web_prefs.default_minimum_page_scale_factor, 0.25f);
       EXPECT_FLOAT_EQ(web_prefs.default_maximum_page_scale_factor, 5.0f);
     } else {
+      EXPECT_FALSE(web_prefs.double_tap_to_zoom_enabled);
+      EXPECT_FALSE(web_prefs.text_autosizing_enabled);
       EXPECT_FALSE(web_prefs.viewport_enabled);
       EXPECT_FALSE(web_prefs.viewport_meta_enabled);
       EXPECT_FALSE(web_prefs.shrinks_viewport_contents_to_fit);
@@ -82,30 +89,25 @@ IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest,
 
   // Validate that before tablet mode is enabled, mobile-behavior-related prefs
   // are disabled.
-  ValidateWebPrefs(GetWebKitPreferences(web_contents),
-                   false /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents, false /* tablet_mode_enabled */);
 
   // Now enable tablet mode, and expect that the same page's web prefs get
   // updated.
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
-  ValidateWebPrefs(GetWebKitPreferences(web_contents),
-                   true /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents, true /* tablet_mode_enabled */);
 
   // Any newly added pages should have the correct tablet mode prefs.
   Browser* browser_2 = CreateBrowser(browser()->profile());
   auto* web_contents_2 = GetActiveWebContents(browser_2);
   ASSERT_TRUE(web_contents_2);
-  ValidateWebPrefs(GetWebKitPreferences(web_contents_2),
-                   true /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents_2, true /* tablet_mode_enabled */);
 
   // Disable tablet mode and expect both pages's prefs are updated.
   ToggleTabletMode();
   ASSERT_FALSE(GetTabletModeEnabled());
-  ValidateWebPrefs(GetWebKitPreferences(web_contents),
-                   false /* tablet_mode_enabled */);
-  ValidateWebPrefs(GetWebKitPreferences(web_contents_2),
-                   false /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents, false /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents_2, false /* tablet_mode_enabled */);
 }
 
 IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeInternalPages) {
@@ -122,8 +124,7 @@ IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeInternalPages) {
   // remain unaffected as if tablet mode is off.
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
-  ValidateWebPrefs(GetWebKitPreferences(web_contents),
-                   false /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents, false /* tablet_mode_enabled */);
 }
 
 IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeHostedApps) {
@@ -145,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeHostedApps) {
   // app remain unaffected as if tablet mode is off.
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
-  ValidateWebPrefs(GetWebKitPreferences(web_contents),
-                   false /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents, false /* tablet_mode_enabled */);
 }
 
 IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeNTPs) {
@@ -161,8 +161,7 @@ IN_PROC_BROWSER_TEST_F(TabletModePageBehaviorTest, ExcludeNTPs) {
   // NTPs should not be affected in tablet mode.
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
-  ValidateWebPrefs(GetWebKitPreferences(web_contents),
-                   false /* tablet_mode_enabled */);
+  ValidateWebPrefs(web_contents, false /* tablet_mode_enabled */);
 }
 
 }  // namespace

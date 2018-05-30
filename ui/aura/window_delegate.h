@@ -110,6 +110,10 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // |surface_info| for the first time.
   virtual void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) {}
 
+  // Returns whether the window wants to receive and handle double tap gesture
+  // events. Defaults to false.
+  virtual bool RequiresDoubleTapGestureEvents() const;
+
  protected:
   ~WindowDelegate() override {}
 };

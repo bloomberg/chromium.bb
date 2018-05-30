@@ -103,7 +103,7 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
   if (!gesture_detector_)
     gesture_detector_ = CreateGestureDetector(this);
 
-  gesture_detector_->OnTouchEvent(event);
+  gesture_detector_->OnTouchEvent(event, false /* should_process_double_tap */);
 
   // Always return true, even if |gesture_detector_| technically doesn't
   // consume the event. This prevents forwarding of a partial touch stream.

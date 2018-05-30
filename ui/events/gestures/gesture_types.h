@@ -17,6 +17,14 @@ class TouchEvent;
 class EVENTS_EXPORT GestureConsumer {
  public:
   virtual ~GestureConsumer() {}
+
+  // Supporting double tap events requires adding some extra delay before
+  // sending single-tap events in order to determine whether its a potential
+  // double tap or not. This delay may be undesirable in many UI components and
+  // should be avoided if not needed.
+  // Returns true if the consumer wants to receive double tap gesture events.
+  // Defaults to false.
+  virtual bool RequiresDoubleTapGestureEvents() const;
 };
 
 // GestureEventHelper creates implementation-specific gesture events and

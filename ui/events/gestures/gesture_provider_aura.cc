@@ -16,6 +16,16 @@
 
 namespace ui {
 
+namespace {
+
+#if defined(OS_CHROMEOS)
+constexpr bool kDoubleTapPlatformSupport = true;
+#else
+constexpr bool kDoubleTapPlatformSupport = false;
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
+
 GestureProviderAura::GestureProviderAura(GestureConsumer* consumer,
                                          GestureProviderAuraClient* client)
     : client_(client),
@@ -24,7 +34,8 @@ GestureProviderAura::GestureProviderAura(GestureConsumer* consumer,
           this),
       handling_event_(false),
       gesture_consumer_(consumer) {
-  filtered_gesture_provider_.SetDoubleTapSupportForPlatformEnabled(false);
+  filtered_gesture_provider_.SetDoubleTapSupportForPlatformEnabled(
+      kDoubleTapPlatformSupport);
 }
 
 GestureProviderAura::~GestureProviderAura() {}
@@ -66,6 +77,10 @@ void GestureProviderAura::OnGestureEvent(const GestureEventData& gesture) {
   } else {
     pending_gestures_.push_back(std::move(event));
   }
+}
+
+bool GestureProviderAura::RequiresDoubleTapGestureEvents() const {
+  return gesture_consumer_->RequiresDoubleTapGestureEvents();
 }
 
 std::vector<std::unique_ptr<GestureEvent>>

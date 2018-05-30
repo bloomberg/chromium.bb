@@ -19,6 +19,7 @@ class FilteredGestureProviderTest : public GestureProviderClient,
 
   // GestureProviderClient implementation.
   void OnGestureEvent(const GestureEventData&) override {}
+  bool RequiresDoubleTapGestureEvents() const override { return false; }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

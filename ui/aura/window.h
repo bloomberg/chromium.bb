@@ -422,6 +422,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns whether this window is embedding another client.
   bool IsEmbeddingClient() const;
 
+  // ui::GestureConsumer:
+  bool RequiresDoubleTapGestureEvents() const override;
+
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for
   // use from the destructor.

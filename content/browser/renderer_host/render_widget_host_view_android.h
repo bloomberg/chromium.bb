@@ -207,6 +207,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // ui::GestureProviderClient implementation.
   void OnGestureEvent(const ui::GestureEventData& gesture) override;
+  bool RequiresDoubleTapGestureEvents() const override;
 
   // ui::WindowAndroidObserver implementation.
   void OnCompositingDidCommit() override {}

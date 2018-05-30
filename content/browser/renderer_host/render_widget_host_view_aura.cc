@@ -1604,6 +1604,11 @@ bool RenderWidgetHostViewAura::HasHitTestMask() const {
 void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
+bool RenderWidgetHostViewAura::RequiresDoubleTapGestureEvents() const {
+  RenderViewHost* rvh = RenderViewHost::From(host());
+  return rvh && rvh->GetWebkitPreferences().double_tap_to_zoom_enabled;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::EventHandler implementation:
 

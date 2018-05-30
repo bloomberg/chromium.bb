@@ -1143,6 +1143,10 @@ bool Window::IsEmbeddingClient() const {
   return embeds_external_client_;
 }
 
+bool Window::RequiresDoubleTapGestureEvents() const {
+  return delegate_ && delegate_->RequiresDoubleTapGestureEvents();
+}
+
 void Window::OnPaintLayer(const ui::PaintContext& context) {
   Paint(context);
 }

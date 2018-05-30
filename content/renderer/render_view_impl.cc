@@ -844,15 +844,16 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       static_cast<WebSettings::SavePreviousDocumentResources>(
           prefs.save_previous_document_resources));
 
+  settings->SetTextAutosizingEnabled(prefs.text_autosizing_enabled);
+  settings->SetDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
+
 #if defined(OS_ANDROID)
   settings->SetAllowCustomScrollbarInMainFrame(false);
-  settings->SetTextAutosizingEnabled(prefs.text_autosizing_enabled);
   settings->SetAccessibilityFontScaleFactor(prefs.font_scale_factor);
   settings->SetDeviceScaleAdjustment(prefs.device_scale_adjustment);
   settings->SetFullscreenSupported(prefs.fullscreen_supported);
   web_view->SetIgnoreViewportTagScaleLimits(prefs.force_enable_zoom);
   settings->SetAutoZoomFocusedNodeToLegibleScale(true);
-  settings->SetDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
   settings->SetMediaPlaybackGestureWhitelistScope(
       blink::WebString::FromUTF8(prefs.media_playback_gesture_whitelist_scope));
   settings->SetDefaultVideoPosterURL(
