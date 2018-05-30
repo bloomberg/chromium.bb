@@ -43,6 +43,7 @@ source_set("identity_chooser_ui") {
   deps = [
     "resources:identity_chooser_add_account",
     "//base",
+    "//base:i18n",
     "//components/google/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

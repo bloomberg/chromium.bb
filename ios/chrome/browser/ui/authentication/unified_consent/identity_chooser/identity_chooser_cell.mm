@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
 
+#include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -14,12 +15,10 @@
 
 namespace {
 // Identity view.
-CGFloat kLeadingMargin = 8.;
-CGFloat kIdentityViewVerticalMargin = 7.;
-// Checkmark image.
-CGFloat kAccessoryImageHeigth = 15.;
-CGFloat kAccessoryImageTrailingMargin = 10.;
-CGFloat kAccessoryImageWidth = 19.;
+const CGFloat kLeadingMargin = 8.;
+const CGFloat kIdentityViewVerticalMargin = 7.;
+// Checkmark margin.
+const CGFloat kCheckmarkMagin = 26.;
 }  // namespace
 
 @interface IdentityChooserCell ()
@@ -54,30 +53,23 @@ CGFloat kAccessoryImageWidth = 19.;
                        checked:(BOOL)checked {
   [self.identityView setTitle:title subtitle:subtitle];
   [self.identityView setAvatar:image];
-  if (!checked) {
-    self.accessoryView = nil;
+  self.accessoryType = checked ? UITableViewCellAccessoryCheckmark
+                               : UITableViewCellAccessoryNone;
+  if (@available(iOS 11, *)) {
+    if (checked) {
+      self.directionalLayoutMargins =
+          NSDirectionalEdgeInsetsMake(0, 0, 0, kCheckmarkMagin);
+    } else {
+      self.directionalLayoutMargins = NSDirectionalEdgeInsetsZero;
+    }
   } else {
-    // TODO(crbug.com/827072): Needs the real image.
-    UIImage* checkedImage = ImageWithColor(UIColor.redColor);
-    checkedImage = ResizeImage(
-        checkedImage, CGSizeMake(kAccessoryImageWidth, kAccessoryImageHeigth),
-        ProjectionMode::kFill);
-    UIImageView* checkedImageView =
-        [[UIImageView alloc] initWithImage:checkedImage];
-    checkedImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    UIView* accessoryView = [[UIView alloc]
-        initWithFrame:CGRectMake(
-                          0, 0,
-                          kAccessoryImageWidth + kAccessoryImageTrailingMargin,
-                          kAccessoryImageHeigth)];
-    [accessoryView addSubview:checkedImageView];
-    LayoutSides sideFlags = LayoutSides::kLeading | LayoutSides::kTrailing |
-                            LayoutSides::kBottom | LayoutSides::kTop;
-    ChromeDirectionalEdgeInsets insets =
-        ChromeDirectionalEdgeInsetsMake(0, 0, 0, kAccessoryImageTrailingMargin);
-    AddSameConstraintsToSidesWithInsets(checkedImageView, accessoryView,
-                                        sideFlags, insets);
-    self.accessoryView = accessoryView;
+    if (!checked) {
+      self.layoutMargins = UIEdgeInsetsZero;
+    } else if (base::i18n::IsRTL()) {
+      self.layoutMargins = UIEdgeInsetsMake(0, kCheckmarkMagin, 0, 0);
+    } else {
+      self.layoutMargins = UIEdgeInsetsMake(0, 0, 0, kCheckmarkMagin);
+    }
   }
 }
 
