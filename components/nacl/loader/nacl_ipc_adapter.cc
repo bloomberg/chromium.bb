@@ -658,12 +658,6 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     CHECK(IPC::ReadParam(&orig_msg, &iter, &orig_sh));
     CHECK(orig_sh.IsHandleValid());
 
-    // The file token didn't resolve successfully, so we give the
-    // original FD to the client without making a validated NaClDesc.
-    // However, we must rewrite the message to clear the file tokens.
-    std::unique_ptr<IPC::Message> new_msg =
-        CreateOpenResourceReply(orig_msg, orig_sh);
-
     std::unique_ptr<NaClDescWrapper> desc_wrapper(
         new NaClDescWrapper(NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
@@ -672,6 +666,12 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
             orig_sh.descriptor().fd,
 #endif
             NACL_ABI_O_RDONLY)));
+
+    // The file token didn't resolve successfully, so we give the
+    // original FD to the client without making a validated NaClDesc.
+    // However, we must rewrite the message to clear the file tokens.
+    std::unique_ptr<IPC::Message> new_msg =
+        CreateOpenResourceReply(orig_msg, std::move(orig_sh));
 
     std::unique_ptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
     rewritten_msg->AddDescriptor(std::move(desc_wrapper));
@@ -690,7 +690,8 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
 
   ppapi::proxy::SerializedHandle sh;
   sh.set_file_handle(ipc_fd, PP_FILEOPENFLAG_READ, 0);
-  std::unique_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
+  std::unique_ptr<IPC::Message> new_msg =
+      CreateOpenResourceReply(orig_msg, std::move(sh));
   std::unique_ptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
 
   struct NaClDesc* desc =

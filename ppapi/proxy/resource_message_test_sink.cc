@@ -10,7 +10,6 @@
 
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
-#include "ppapi/proxy/serialized_handle.h"
 
 namespace ppapi {
 namespace proxy {
@@ -120,7 +119,6 @@ ResourceSyncCallHandler::ResourceSyncCallHandler(
     : test_sink_(test_sink),
       incoming_type_(incoming_type),
       result_(result),
-      serialized_handle_(NULL),
       reply_msg_(reply_msg) {}
 
 ResourceSyncCallHandler::~ResourceSyncCallHandler() {
@@ -142,7 +140,7 @@ bool ResourceSyncCallHandler::OnMessageReceived(const IPC::Message& msg) {
                                           call_params.sequence());
   reply_params.set_result(result_);
   if (serialized_handle_)
-    reply_params.AppendHandle(*serialized_handle_);
+    reply_params.AppendHandle(std::move(*serialized_handle_));
   PpapiHostMsg_ResourceSyncCall::WriteReplyParams(
       wrapper_reply_msg, reply_params, reply_msg_);
   test_sink_->SetSyncReplyMessage(wrapper_reply_msg);
@@ -150,6 +148,11 @@ bool ResourceSyncCallHandler::OnMessageReceived(const IPC::Message& msg) {
   // Stash a copy of the message for inspection later.
   last_handled_msg_ = call_msg;
   return true;
+}
+
+void ResourceSyncCallHandler::set_serialized_handle(
+    std::unique_ptr<SerializedHandle> serialized_handle) {
+  serialized_handle_ = std::move(serialized_handle);
 }
 
 }  // namespace proxy

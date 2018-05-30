@@ -25,6 +25,28 @@ SerializedHandle::SerializedHandle()
       file_io_(0) {
 }
 
+SerializedHandle::SerializedHandle(SerializedHandle&& other)
+    : type_(other.type_),
+      shm_handle_(other.shm_handle_),
+      size_(other.size_),
+      descriptor_(other.descriptor_),
+      open_flags_(other.open_flags_),
+      file_io_(other.file_io_) {
+  other.set_null();
+}
+
+SerializedHandle& SerializedHandle::operator=(SerializedHandle&& other) {
+  Close();
+  type_ = other.type_;
+  shm_handle_ = other.shm_handle_;
+  size_ = other.size_;
+  descriptor_ = other.descriptor_;
+  open_flags_ = other.open_flags_;
+  file_io_ = other.file_io_;
+  other.set_null();
+  return *this;
+}
+
 SerializedHandle::SerializedHandle(Type type_param)
     : type_(type_param),
       size_(0),
@@ -82,7 +104,7 @@ void SerializedHandle::Close() {
       // No default so the compiler will warn us if a new type is added.
     }
   }
-  *this = SerializedHandle();
+  set_null();
 }
 
 // static

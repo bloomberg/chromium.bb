@@ -215,7 +215,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgGetShm(
       shm_size);
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-  reply_context.params.AppendHandle(handle);
+  reply_context.params.AppendHandle(std::move(handle));
   host()->SendReply(reply_context,
                     PpapiPluginMsg_VideoDecoder_GetShmReply(shm_size));
 

@@ -84,10 +84,8 @@ SerializedHandle ResourceMessageParams::TakeHandleOfTypeAtIndex(
     SerializedHandle::Type type) const {
   SerializedHandle handle;
   std::vector<SerializedHandle>& data = handles_->data();
-  if (index < data.size() && data[index].type() == type) {
-    handle = data[index];
-    data[index] = SerializedHandle();
-  }
+  if (index < data.size() && data[index].type() == type)
+    handle = std::move(data[index]);
   return handle;
 }
 
@@ -133,8 +131,15 @@ void ResourceMessageParams::TakeAllSharedMemoryHandles(
   }
 }
 
-void ResourceMessageParams::AppendHandle(const SerializedHandle& handle) const {
-  handles_->data().push_back(handle);
+void ResourceMessageParams::TakeAllHandles(
+    std::vector<SerializedHandle>* handles) const {
+  std::vector<SerializedHandle>& data = handles_->data();
+  for (size_t i = 0; i < data.size(); ++i)
+    handles->push_back(std::move(data[i]));
+}
+
+void ResourceMessageParams::AppendHandle(SerializedHandle handle) const {
+  handles_->data().push_back(std::move(handle));
 }
 
 ResourceMessageCallParams::ResourceMessageCallParams()

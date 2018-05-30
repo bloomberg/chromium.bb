@@ -67,13 +67,13 @@ bool PepperMediaStreamTrackHostBase::InitBuffers(int32_t number_of_buffers,
   SerializedHandle handle(host_->ShareSharedMemoryHandleWithRemote(shm_handle),
                           size.ValueOrDie());
   bool readonly = (track_type == kRead);
+  std::vector<SerializedHandle> handles;
+  handles.push_back(std::move(handle));
   host()->SendUnsolicitedReplyWithHandles(
       pp_resource(),
       PpapiPluginMsg_MediaStreamTrack_InitBuffers(
-          number_of_buffers,
-          buffer_size_aligned.ValueOrDie(),
-          readonly),
-      std::vector<SerializedHandle>(1, handle));
+          number_of_buffers, buffer_size_aligned.ValueOrDie(), readonly),
+      &handles);
   return true;
 }
 

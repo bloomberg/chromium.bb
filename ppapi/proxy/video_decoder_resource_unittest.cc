@@ -76,18 +76,6 @@ class VideoDecoderResourceTest : public PluginProxyTest {
                                                       nested_message);
   }
 
-  void SendReplyWithHandle(const ResourceMessageCallParams& params,
-                           int32_t result,
-                           const IPC::Message& nested_message,
-                           const SerializedHandle& handle) {
-    ResourceMessageReplyParams reply_params(params.pp_resource(),
-                                            params.sequence());
-    reply_params.set_result(result);
-    reply_params.AppendHandle(handle);
-    PluginMessageFilter::DispatchResourceReplyForTest(reply_params,
-                                                      nested_message);
-  }
-
   PP_Resource CreateDecoder() {
     PP_Resource result = decoder_iface()->Create(pp_instance());
     if (result) {
@@ -146,13 +134,13 @@ class VideoDecoderResourceTest : public PluginProxyTest {
         &sink(), PpapiHostMsg_VideoDecoder_GetShm::ID, PP_OK, shm_msg_reply);
     sink().AddFilter(&shm_msg_handler);
 
-    std::unique_ptr<SerializedHandle> serialized_handle;
-    base::SharedMemory shm;
     if (expected_shm_msg) {
+      std::unique_ptr<SerializedHandle> serialized_handle;
+      base::SharedMemory shm;
       shm.CreateAnonymous(kShmSize);
       base::SharedMemoryHandle shm_handle = shm.handle().Duplicate();
       serialized_handle.reset(new SerializedHandle(shm_handle, kShmSize));
-      shm_msg_handler.set_serialized_handle(serialized_handle.get());
+      shm_msg_handler.set_serialized_handle(std::move(serialized_handle));
     }
 
     memset(decode_buffer_, 0x55, kDecodeBufferSize);

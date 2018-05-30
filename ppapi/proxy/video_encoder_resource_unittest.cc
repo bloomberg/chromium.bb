@@ -98,11 +98,11 @@ class VideoEncoderResourceTest : public PluginProxyTest,
   void SendReplyWithHandle(const ResourceMessageCallParams& params,
                            int32_t result,
                            const IPC::Message& nested_message,
-                           const SerializedHandle& handle) {
+                           SerializedHandle handle) {
     ResourceMessageReplyParams reply_params(params.pp_resource(),
                                             params.sequence());
     reply_params.set_result(result);
-    reply_params.AppendHandle(handle);
+    reply_params.AppendHandle(std::move(handle));
     PluginMessageFilter::DispatchResourceReplyForTest(reply_params,
                                                       nested_message);
   }
@@ -110,12 +110,12 @@ class VideoEncoderResourceTest : public PluginProxyTest,
   void SendReplyWithHandles(const ResourceMessageCallParams& params,
                             int32_t result,
                             const IPC::Message& nested_message,
-                            const std::vector<SerializedHandle>& handles) {
+                            std::vector<SerializedHandle> handles) {
     ResourceMessageReplyParams reply_params(params.pp_resource(),
                                             params.sequence());
     reply_params.set_result(result);
-    for (SerializedHandle handle : handles)
-      reply_params.AppendHandle(handle);
+    for (auto& handle : handles)
+      reply_params.AppendHandle(std::move(handle));
     PluginMessageFilter::DispatchResourceReplyForTest(reply_params,
                                                       nested_message);
   }
@@ -300,7 +300,8 @@ class VideoEncoderResourceTest : public PluginProxyTest,
     }
     SendReplyWithHandles(
         params, PP_OK,
-        PpapiPluginMsg_VideoEncoder_BitstreamBuffers(buffer_length), handles);
+        PpapiPluginMsg_VideoEncoder_BitstreamBuffers(buffer_length),
+        std::move(handles));
   }
 
   void SendGetVideoFramesReply(const ResourceMessageCallParams& params,

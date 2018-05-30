@@ -146,8 +146,8 @@ void PepperAudioInputHost::OnOpenComplete(
   // inconvenient to clean up. Our IPC code will automatically handle this for
   // us, as long as the remote side always closes the handles it receives, even
   // in the failure case.
-  open_context_.params.AppendHandle(serialized_socket_handle);
-  open_context_.params.AppendHandle(serialized_shared_memory_handle);
+  open_context_.params.AppendHandle(std::move(serialized_socket_handle));
+  open_context_.params.AppendHandle(std::move(serialized_shared_memory_handle));
   SendOpenReply(result);
 }
 

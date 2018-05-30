@@ -291,7 +291,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 
   ppapi::proxy::SerializedHandle serialized_handle;
   serialized_handle.set_shmem(image_handle, byte_count);
-  reply_context_.params.AppendHandle(serialized_handle);
+  reply_context_.params.AppendHandle(std::move(serialized_handle));
 
   host()->SendReply(reply_context_,
                     PpapiPluginMsg_VideoSource_GetFrameReply(
