@@ -290,7 +290,13 @@ public class VrShellImpl
         mNonVrViews = new EmptySniffingVrViewContainer(mActivity, this);
         parent.removeView(content);
         parent.addView(mNonVrViews);
-        mNonVrViews.addView(content);
+        // Some views in Clank are just added next to the content view, like the 2D tab switcher.
+        // We need to create a parent to contain the content view and all of its siblings so that
+        // the VrViewContainer can inject input into the parent and not care about how to do its own
+        // input targeting.
+        FrameLayout childHolder = new FrameLayout(mActivity);
+        mNonVrViews.addView(childHolder);
+        childHolder.addView(content);
     }
 
     private void injectVrHostedUiView() {
@@ -312,12 +318,18 @@ public class VrShellImpl
     }
 
     private void removeVrRootView() {
-        ViewGroup parent = (ViewGroup) mNonVrViews.getParent();
+        ViewGroup contentViewParent = (ViewGroup) mNonVrViews.getParent();
         assert mNonVrViews.getChildCount() == 1;
-        ViewGroup child = (ViewGroup) mNonVrViews.getChildAt(0);
+        ViewGroup childHolder = (ViewGroup) mNonVrViews.getChildAt(0);
         mNonVrViews.removeAllViews();
-        parent.removeView(mNonVrViews);
-        parent.addView(child);
+        contentViewParent.removeView(mNonVrViews);
+        int children = childHolder.getChildCount();
+        assert children >= 1;
+        for (int i = 0; i < children; ++i) {
+            View child = childHolder.getChildAt(0);
+            childHolder.removeView(child);
+            contentViewParent.addView(child);
+        }
         // Ensure the omnibox doesn't get initial focus (as it would when re-attaching the views
         // to a window), and immediately bring up the keyboard.
         if (mActivity.getCompositorViewHolder() != null) {
@@ -1055,6 +1067,7 @@ public class VrShellImpl
     @CalledByNative
     public void closeAllIncognitoTabs() {
         mTabModelSelector.getModel(true).closeAllTabs();
+        if (mTabModelSelector.getTotalTabCount() == 0) openNewTab(false);
     }
 
     @CalledByNative
