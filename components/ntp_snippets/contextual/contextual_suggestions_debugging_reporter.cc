@@ -70,10 +70,12 @@ void ContextualSuggestionsDebuggingReporter::Flush() {
   // Check if we've already sent an event with this url to the cache. If so,
   // remove it before adding another one.
   const std::string current_url = current_event_.url;
-  std::remove_if(events_.begin(), events_.end(),
-                 [current_url](ContextualSuggestionsDebuggingEvent event) {
-                   return current_url == event.url;
-                 });
+  auto itr =
+      std::remove_if(events_.begin(), events_.end(),
+                     [current_url](ContextualSuggestionsDebuggingEvent event) {
+                       return current_url == event.url;
+                     });
+  events_.erase(itr, events_.end());
   events_.push_back(current_event_);
 
   // If the cache is too large, then remove the least recently used.
