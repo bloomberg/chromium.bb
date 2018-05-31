@@ -39,7 +39,7 @@
   var activeCountAbove = first - viewport._firstActiveIndex;
   var activeCountBelow = viewport._lastActiveIndex - last;
   TestRunner.addResult(`activeCountAbove: ${activeCountAbove}, activeCountBelow: ${activeCountBelow}`);
-  TestRunner.addResult(`smallCount: ${smallCount}, visibleCount: ${visibleCount}, maxActiveCount: ${maxActiveCount}`);
+  TestRunner.addResult(`smallCount: ${smallCount}, visibleCount: ${visibleCount}, maxActiveCount: ${maxActiveCount}, minActiveCount: ${minActiveCount}`);
 
   var wasAddedToDOM = new Set();
   var wasRemovedFromDOM = new Set();
@@ -166,7 +166,9 @@
       await logMessages(visiblePlusHalfExtraRows, false);
       viewport.forceScrollItemToBeFirst(0);
       resetShowHideCounts();
-      viewport.element.scrollTop = 1000000;
+      // Set scrollTop above the bottom.
+      const abovePrompt = viewport.element.scrollHeight - viewport.element.clientHeight - consoleView._prompt.belowEditorElement().offsetHeight - 3;
+      viewport.element.scrollTop = abovePrompt;
       viewport.refresh();
       assertSomeAddedRemoved(false, false);
       assertDOMCount('visiblePlusHalfExtraRows', visiblePlusHalfExtraRows);
@@ -178,7 +180,9 @@
       await logMessages(maxActiveCount + 1, false);
       viewport.forceScrollItemToBeFirst(0);
       resetShowHideCounts();
-      viewport.element.scrollTop = 1000000;
+      // Set scrollTop above the bottom.
+      const abovePrompt = viewport.element.scrollHeight - viewport.element.clientHeight - consoleView._prompt.belowEditorElement().offsetHeight - 3;
+      viewport.element.scrollTop = abovePrompt;
       viewport.refresh();
       assertSomeAddedRemoved(true, true);
       next();

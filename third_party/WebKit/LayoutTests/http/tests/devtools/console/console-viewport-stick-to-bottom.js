@@ -106,7 +106,7 @@
 
     function testShouldNotJumpToBottomWhenMultilinePromptIsBelowMessages(next) {
       // Set scrollTop above the bottom.
-      viewport.element.scrollTop = viewport.element.scrollHeight - viewport.element.clientHeight - 10;
+      viewport.element.scrollTop = viewport.element.scrollHeight - viewport.element.clientHeight - consoleView._prompt.belowEditorElement().offsetHeight - 3;
       consoleView._prompt.setText('Foo\n\nbar');
 
       dumpAndContinue(next);
@@ -116,7 +116,7 @@
       consoleView._prompt.setText('Foo' + '\n'.repeat(viewportHeight));
 
       // Set scrollTop above the bottom.
-      viewport.element.scrollTop = viewport.element.scrollHeight - viewport.element.clientHeight - 10;
+      viewport.element.scrollTop = viewport.element.scrollHeight - viewport.element.clientHeight - consoleView._prompt.belowEditorElement().offsetHeight - 3;
 
       // Trigger prompt text change.
       consoleView._prompt.setText('Bar' + '\n'.repeat(viewportHeight));
