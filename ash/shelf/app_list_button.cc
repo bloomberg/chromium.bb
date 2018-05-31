@@ -43,11 +43,15 @@ namespace {
 
 constexpr int kVoiceInteractionAnimationDelayMs = 200;
 constexpr int kVoiceInteractionAnimationHideDelayMs = 500;
-
-}  // namespace
-
 constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
 constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
+
+bool IsAssistantEnabled() {
+  return chromeos::switches::IsVoiceInteractionEnabled() ||
+         chromeos::switches::IsAssistantEnabled();
+}
+
+}  // namespace
 
 AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view,
@@ -75,7 +79,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   // session has already started. This could happen when an external monitor
   // is plugged in.
   if (Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
-      chromeos::switches::IsVoiceInteractionEnabled()) {
+      IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -130,21 +134,19 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       if (UseVoiceInteractionStyle()) {
         base::RecordAction(base::UserMetricsAction(
             "VoiceInteraction.Started.AppListButtonLongPress"));
-        Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
         assistant_overlay_->BurstAnimation();
         event->SetHandled();
-      } else if (chromeos::switches::IsAssistantEnabled()) {
-        // TODO: Handle overlay animation similarly to above. Also needs to
-        // factor in Assistant enabled state.
-        Shell::Get()->assistant_controller()->StartInteraction();
-        event->SetHandled();
+        if (chromeos::switches::IsAssistantEnabled()) {
+          Shell::Get()->assistant_controller()->StartInteraction();
+        } else {
+          Shell::Get()->app_list_controller()->StartVoiceInteractionSession();
+        }
       } else {
         ImageButton::OnGestureEvent(event);
       }
       return;
     case ui::ET_GESTURE_LONG_TAP:
-      if (UseVoiceInteractionStyle() ||
-          chromeos::switches::IsAssistantEnabled()) {
+      if (UseVoiceInteractionStyle()) {
         // Also consume the long tap event. This happens after the user long
         // presses and lifts the finger. We already handled the long press
         // ignore the long tap to avoid bringing up the context menu again.
@@ -355,7 +357,7 @@ void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
   // Initialize voice interaction overlay when primary user session becomes
   // active.
   if (Shell::Get()->session_controller()->IsUserPrimary() &&
-      !assistant_overlay_ && chromeos::switches::IsVoiceInteractionEnabled()) {
+      !assistant_overlay_ && IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -371,7 +373,8 @@ void AppListButton::StartVoiceInteractionAnimation() {
       (alignment == SHELF_ALIGNMENT_BOTTOM ||
        alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) &&
       state == mojom::VoiceInteractionState::STOPPED &&
-      Shell::Get()->voice_interaction_controller()->setup_completed();
+      Shell::Get()->voice_interaction_controller()->setup_completed() &&
+      chromeos::switches::IsVoiceInteractionEnabled();
   assistant_overlay_->StartAnimation(show_icon);
 }
 
