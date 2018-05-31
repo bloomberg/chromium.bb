@@ -23,12 +23,10 @@
 #include <algorithm>
 
 #ifndef VRLog
-	#if defined( WIN32 )
-		#define VRLog(fmt, ...)		fprintf(stderr, fmt, __VA_ARGS__)
-	#else
-		#define VRLog(args...)		fprintf(stderr, args)
-	#endif
+	#undef VRLog
 #endif
+
+#define VRLog(...)
 
 /** Returns the root of the directory the system wants us to store user config data in */
 static std::string GetAppSettingsPath()
