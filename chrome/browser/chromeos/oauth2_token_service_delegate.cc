@@ -230,4 +230,15 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
   }
 }
 
+void ChromeOSOAuth2TokenServiceDelegate::RevokeCredentials(
+    const std::string& account_id) {
+  // Signing out of Chrome is not possible on Chrome OS.
+  NOTREACHED();
+}
+
+void ChromeOSOAuth2TokenServiceDelegate::RevokeAllCredentials() {
+  // Signing out of Chrome is not possible on Chrome OS.
+  NOTREACHED();
+}
+
 }  // namespace chromeos
