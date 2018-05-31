@@ -88,6 +88,7 @@ class PaymentManifestDownloader : public net::URLFetcherDelegate {
     Download();
     ~Download();
 
+    int allowed_number_of_redirects = 0;
     net::URLFetcher::RequestType request_type;
     std::unique_ptr<net::URLFetcher> fetcher;
     PaymentManifestDownloadCallback callback;
@@ -98,8 +99,8 @@ class PaymentManifestDownloader : public net::URLFetcherDelegate {
 
   void InitiateDownload(const GURL& url,
                         net::URLFetcher::RequestType request_type,
+                        int allowed_number_of_redirects,
                         PaymentManifestDownloadCallback callback);
-  bool IsValidManifestUrl(const GURL& url);
 
   scoped_refptr<net::URLRequestContextGetter> context_;
 
