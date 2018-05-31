@@ -119,9 +119,6 @@ cr.define('extensions', function() {
       /** @private */
       showOptionsDialog_: Boolean,
 
-      /** @private */
-      showPackDialog_: Boolean,
-
       // <if expr="chromeos">
       /** @private */
       kioskEnabled_: {
@@ -501,19 +498,6 @@ cr.define('extensions', function() {
     /** @private */
     onOptionsDialogClose_: function() {
       this.showOptionsDialog_ = false;
-    },
-
-    /** @private */
-    onPackTap_: function() {
-      this.showPackDialog_ = true;
-      this.async(() => {
-        this.$$('#pack-dialog').show();
-      });
-    },
-
-    /** @private */
-    onPackDialogClose_: function() {
-      this.showPackDialog_ = false;
     },
 
     /** @private */

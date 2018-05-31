@@ -52,6 +52,9 @@ cr.define('extensions', function() {
       /** @private */
       expanded_: Boolean,
 
+      /** @private */
+      showPackDialog_: Boolean,
+
       /**
        * Text to display in update toast
        * @private
@@ -134,8 +137,14 @@ cr.define('extensions', function() {
 
     /** @private */
     onPackTap_: function() {
-      this.fire('pack-tap');
       chrome.metricsPrivate.recordUserAction('Options_PackExtension');
+      this.showPackDialog_ = true;
+    },
+
+    /** @private */
+    onPackDialogClose_: function() {
+      this.showPackDialog_ = false;
+      this.$.packExtensions.focus();
     },
 
     // <if expr="chromeos">

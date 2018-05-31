@@ -51,7 +51,8 @@ cr.define('extensions', function() {
       lastResponse_: Object,
     },
 
-    show: function() {
+    /** @override */
+    attached: function() {
       this.$.dialog.showModal();
     },
 
