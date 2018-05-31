@@ -349,14 +349,17 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return result;
 
-  // TODO(crbug.com/846227): The layer object doesn't have local border box
-  // properties may mean that 1. the object missed paint property update, or
-  // 2. we are painting before PrePaintClean.
-  CHECK_GE(paint_layer_.GetLayoutObject().GetDocument().Lifecycle().GetState(),
-           DocumentLifecycle::LifecycleState::kPrePaintClean);
-  CHECK(paint_layer_.GetLayoutObject()
-            .FirstFragment()
-            .HasLocalBorderBoxProperties());
+  // A paint layer should always have LocalBorderBoxProperties when it's ready
+  // for paint.
+  if (!paint_layer_.GetLayoutObject()
+           .FirstFragment()
+           .HasLocalBorderBoxProperties()) {
+    // TODO(crbug.com/848056): This can happen e.g. when we paint a filter
+    // referencing a SVG foreign object through feImage, especially when there
+    // is circular references. Should find a better solution.
+    paint_layer_.SetPreviousPaintDirtyRect(LayoutRect());
+    return kMayBeClippedByPaintDirtyRect;
+  }
 
   DCHECK(paint_layer_.IsSelfPaintingLayer() ||
          paint_layer_.HasSelfPaintingLayerDescendant());
