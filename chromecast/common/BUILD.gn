@@ -11,12 +11,7 @@ cast_source_set("common") {
     "cast_content_client.h",
     "cast_resource_delegate.cc",
     "cast_resource_delegate.h",
-    "common_message_generator.cc",
-    "common_message_generator.h",
     "global_descriptors.h",
-    "tts_messages.h",
-    "tts_utterance_request.cc",
-    "tts_utterance_request.h",
   ]
 
   deps = [
