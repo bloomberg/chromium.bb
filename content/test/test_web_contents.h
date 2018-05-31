@@ -16,6 +16,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -140,6 +141,14 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetHistoryOffsetAndLength(int history_offset,
                                  int history_length) override;
 
+  // Records that this was called and returns and empty vector.
+  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  PauseSubresourceLoading() override;
+
+  bool GetPauseSubresourceLoadingCalled() override;
+
+  void ResetPauseSubresourceLoadingCalled() override;
+
   void TestDidFinishLoad(const GURL& url);
 
  protected:
@@ -188,6 +197,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   std::map<GURL, std::list<std::pair<int, ImageDownloadCallback>>>
       pending_image_downloads_;
   GURL last_committed_url_;
+  bool pause_subresource_loading_called_;
 };
 
 }  // namespace content

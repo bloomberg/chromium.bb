@@ -421,7 +421,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE:
-      PageLoadCappingInfoBarDelegate::Create(1 * 1024 * 1024, GetWebContents());
+      PageLoadCappingInfoBarDelegate::Create(
+          1 * 1024 * 1024, GetWebContents(),
+          PageLoadCappingInfoBarDelegate::PauseCallback());
       break;
 
     default:

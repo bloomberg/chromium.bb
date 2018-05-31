@@ -11,6 +11,7 @@
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -36,10 +37,9 @@ base::Optional<int64_t> GetPageLoadCappingBytesThreshold(bool media_page_load) {
 
 }  // namespace
 
-PageCappingPageLoadMetricsObserver::PageCappingPageLoadMetricsObserver() =
-    default;
-PageCappingPageLoadMetricsObserver::~PageCappingPageLoadMetricsObserver() =
-    default;
+PageCappingPageLoadMetricsObserver::PageCappingPageLoadMetricsObserver()
+    : weak_factory_(this) {}
+PageCappingPageLoadMetricsObserver::~PageCappingPageLoadMetricsObserver() {}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PageCappingPageLoadMetricsObserver::OnCommit(
@@ -75,12 +75,25 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
   if (!page_cap_ || network_bytes_ < page_cap_.value())
     return;
 
-  displayed_infobar_ =
-      PageLoadCappingInfoBarDelegate::Create(page_cap_.value(), web_contents_);
+  displayed_infobar_ = PageLoadCappingInfoBarDelegate::Create(
+      page_cap_.value(), web_contents_,
+      base::BindRepeating(
+          &PageCappingPageLoadMetricsObserver::PauseSubresourceLoading,
+          weak_factory_.GetWeakPtr()));
 }
 
 void PageCappingPageLoadMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     bool is_in_main_frame) {
   page_cap_ = GetPageLoadCappingBytesThreshold(true /* media_page_load */);
+}
+
+void PageCappingPageLoadMetricsObserver::PauseSubresourceLoading(bool pause) {
+  DCHECK_NE(pause, paused_);
+  DCHECK(displayed_infobar_);
+  paused_ = pause;
+  if (pause)
+    handles_ = web_contents_->PauseSubresourceLoading();
+  else
+    handles_.clear();
 }

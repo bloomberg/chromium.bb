@@ -176,6 +176,10 @@ class EmptyFrameScheduler final : public FrameScheduler {
     return nullptr;
   }
   bool IsExemptFromBudgetBasedThrottling() const override { return false; }
+  std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
+  GetPauseSubresourceLoadingHandle() override {
+    return nullptr;
+  }
 };
 
 }  // namespace
@@ -1379,6 +1383,18 @@ ComputedAccessibleNode* LocalFrame::GetOrCreateComputedAccessibleNode(
     computed_node_mapping_.insert(ax_id, node);
   }
   return computed_node_mapping_.at(ax_id);
+}
+
+void LocalFrame::PauseSubresourceLoading(
+    blink::mojom::blink::PauseSubresourceLoadingHandleRequest request) {
+  auto handle = GetFrameScheduler()->GetPauseSubresourceLoadingHandle();
+  if (!handle)
+    return;
+  pause_handle_bindings_.AddBinding(std::move(handle), std::move(request));
+}
+
+void LocalFrame::ResumeSubresourceLoading() {
+  pause_handle_bindings_.CloseAllBindings();
 }
 
 }  // namespace blink

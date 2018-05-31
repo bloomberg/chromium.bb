@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -123,6 +124,11 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
 
   FrameScheduler* ToFrameScheduler() override { return this; }
+
+  // Returns a handle that prevents resource loading as long as the handle
+  // exists.
+  virtual std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
+  GetPauseSubresourceLoadingHandle() = 0;
 };
 
 }  // namespace blink

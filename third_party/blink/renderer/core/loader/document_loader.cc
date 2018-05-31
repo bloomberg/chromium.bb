@@ -965,6 +965,9 @@ void DocumentLoader::DidCommitNavigation(
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
       frame_->IsLocalRoot());
+  // When a new navigation commits in the frame, subresource loading should be
+  // resumed.
+  frame_->ResumeSubresourceLoading();
   GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(), commit_type,
                                               global_object_reuse_policy);
 

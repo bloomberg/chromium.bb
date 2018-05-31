@@ -33,6 +33,8 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
@@ -338,6 +340,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
     InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
   }
 
+  // Binds |request| and prevents resource loading until either the frame is
+  // navigated or the request pipe is closed.
+  void PauseSubresourceLoading(
+      blink::mojom::blink::PauseSubresourceLoadingHandleRequest request);
+
+  void ResumeSubresourceLoading();
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -372,6 +381,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
                    float maximum_shrink_ratio);
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
+
+  // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete
+  // them explicitly or the pipe closing to delete them.
+  mojo::StrongBindingSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
+      pause_handle_bindings_;
 
   mutable FrameLoader loader_;
   Member<NavigationScheduler> navigation_scheduler_;

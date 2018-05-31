@@ -15,6 +15,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -300,6 +301,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Opens view-source tab for the document last committed in this
   // RenderFrameHost.
   virtual void ViewSource() = 0;
+
+  // Starts pausing subresource loading on this frame and returns
+  // PauseSubresourceLoadingHandle that controls the pausing behavior.  As long
+  // as this handle is live, pausing will continue until an internal
+  // navigation happens in the frame.
+  virtual blink::mojom::PauseSubresourceLoadingHandlePtr
+  PauseSubresourceLoading() = 0;
 
  private:
   // This interface should only be implemented inside content.

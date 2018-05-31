@@ -542,6 +542,93 @@ TEST_F(FrameSchedulerImplTest, DefaultThrottlingState) {
       FrameScheduler::ThrottlingState::kNotThrottled);
 }
 
+TEST_F(FrameSchedulerImplTest, SubesourceLoadingPaused) {
+  // A loader observer and related counts.
+  std::unique_ptr<MockThrottlingObserver> loader_observer =
+      std::make_unique<MockThrottlingObserver>();
+
+  size_t loader_throttled_count = 0u;
+  size_t loader_not_throttled_count = 0u;
+  size_t loader_hidden_count = 0u;
+  size_t loader_stopped_count = 0u;
+
+  // A worker observer and related counts.
+  std::unique_ptr<MockThrottlingObserver> worker_observer =
+      std::make_unique<MockThrottlingObserver>();
+
+  size_t worker_throttled_count = 0u;
+  size_t worker_not_throttled_count = 0u;
+  size_t worker_hidden_count = 0u;
+  size_t worker_stopped_count = 0u;
+
+  // Both observers should start with no responses.
+  loader_observer->CheckObserverState(
+      FROM_HERE, loader_not_throttled_count, loader_hidden_count,
+      loader_throttled_count, loader_stopped_count);
+
+  worker_observer->CheckObserverState(
+      FROM_HERE, worker_not_throttled_count, worker_hidden_count,
+      worker_throttled_count, worker_stopped_count);
+
+  // Adding the observers should recieve a non-throttled response
+  auto loader_observer_handle = frame_scheduler_->AddThrottlingObserver(
+      FrameScheduler::ObserverType::kLoader, loader_observer.get());
+
+  auto worker_observer_handle = frame_scheduler_->AddThrottlingObserver(
+      FrameScheduler::ObserverType::kWorkerScheduler, worker_observer.get());
+
+  loader_observer->CheckObserverState(
+      FROM_HERE, ++loader_not_throttled_count, loader_hidden_count,
+      loader_throttled_count, loader_stopped_count);
+
+  worker_observer->CheckObserverState(
+      FROM_HERE, ++worker_not_throttled_count, worker_hidden_count,
+      worker_throttled_count, worker_stopped_count);
+
+  {
+    auto pause_handle_a = frame_scheduler_->GetPauseSubresourceLoadingHandle();
+
+    loader_observer->CheckObserverState(
+        FROM_HERE, loader_not_throttled_count, loader_hidden_count,
+        loader_throttled_count, ++loader_stopped_count);
+
+    worker_observer->CheckObserverState(
+        FROM_HERE, ++worker_not_throttled_count, worker_hidden_count,
+        worker_throttled_count, worker_stopped_count);
+
+    std::unique_ptr<MockThrottlingObserver>
+        loader_observer_added_after_stopped =
+            std::make_unique<MockThrottlingObserver>();
+
+    auto loader_observer_handle = frame_scheduler_->AddThrottlingObserver(
+        FrameScheduler::ObserverType::kLoader,
+        loader_observer_added_after_stopped.get());
+    // This observer should see stopped when added.
+    loader_observer_added_after_stopped->CheckObserverState(FROM_HERE, 0, 0, 0,
+                                                            1u);
+
+    // Adding another handle should not create a new state.
+    auto pause_handle_b = frame_scheduler_->GetPauseSubresourceLoadingHandle();
+
+    loader_observer->CheckObserverState(
+        FROM_HERE, loader_not_throttled_count, loader_hidden_count,
+        loader_throttled_count, loader_stopped_count);
+
+    worker_observer->CheckObserverState(
+        FROM_HERE, worker_not_throttled_count, worker_hidden_count,
+        worker_throttled_count, worker_stopped_count);
+  }
+
+  // Removing the handles should return the state to non throttled.
+  loader_observer->CheckObserverState(
+      FROM_HERE, ++loader_not_throttled_count, loader_hidden_count,
+      loader_throttled_count, loader_stopped_count);
+
+  worker_observer->CheckObserverState(
+      FROM_HERE, ++worker_not_throttled_count, worker_hidden_count,
+      worker_throttled_count, worker_stopped_count);
+}
+
 }  // namespace frame_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

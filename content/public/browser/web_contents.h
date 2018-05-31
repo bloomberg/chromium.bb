@@ -30,6 +30,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_modes.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -511,6 +512,13 @@ class WebContents : public PageNavigator,
   // Reloads all the Lo-Fi images in this WebContents. Ignores the cache and
   // reloads from the network.
   virtual void ReloadLoFiImages() = 0;
+
+  // Attains PauseSubresourceLoadingHandles for each frame in the web contents.
+  // As long as these handles are not deleted, subresources will continue to be
+  // deferred until an internal navigation happens in the frame. Holding handles
+  // for deleted or re-navigated frames has no effect.
+  virtual std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  PauseSubresourceLoading() = 0;
 
   // Editing commands ----------------------------------------------------------
 

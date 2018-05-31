@@ -88,6 +88,20 @@ FrameSchedulerImpl::ActiveConnectionHandleImpl::~ActiveConnectionHandleImpl() {
   }
 }
 
+FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
+    PauseSubresourceLoadingHandleImpl(
+        base::WeakPtr<FrameSchedulerImpl> frame_scheduler)
+    : frame_scheduler_(std::move(frame_scheduler)) {
+  DCHECK(frame_scheduler_);
+  frame_scheduler_->AddPauseSubresourceLoadingHandle();
+}
+
+FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
+    ~PauseSubresourceLoadingHandleImpl() {
+  if (frame_scheduler_)
+    frame_scheduler_->RemovePauseSubresourceLoadingHandle();
+}
+
 FrameSchedulerImpl::FrameSchedulerImpl(
     MainThreadSchedulerImpl* main_thread_scheduler,
     PageSchedulerImpl* parent_page_scheduler,
@@ -97,7 +111,6 @@ FrameSchedulerImpl::FrameSchedulerImpl(
       main_thread_scheduler_(main_thread_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
-      throttling_state_(FrameScheduler::ThrottlingState::kNotThrottled),
       frame_visible_(true,
                      "FrameScheduler.FrameVisible",
                      this,
@@ -115,6 +128,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                          this,
                          &tracing_controller_,
                          FrameOriginTypeToString),
+      subresource_loading_paused_(false,
+                                  "FrameScheduler.SubResourceLoadingPaused",
+                                  this,
+                                  &tracing_controller_,
+                                  PausedStateToString),
       url_tracer_("FrameScheduler.URL", this),
       task_queue_throttled_(false,
                             "FrameScheduler.TaskQueueThrottled",
@@ -122,6 +140,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                             &tracing_controller_,
                             YesNoStateToString),
       active_connection_count_(0),
+      subresource_loading_pause_count_(0u),
       has_active_connection_(false,
                              "FrameScheduler.HasActiveConnection",
                              this,
@@ -146,7 +165,8 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           "FrameScheduler.KeepActive",
           this,
           &tracing_controller_,
-          KeepActiveStateToString) {}
+          KeepActiveStateToString),
+      weak_factory_(this) {}
 
 FrameSchedulerImpl::FrameSchedulerImpl()
     : FrameSchedulerImpl(nullptr, nullptr, nullptr, FrameType::kSubframe) {}
@@ -165,6 +185,8 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
 }  // namespace
 
 FrameSchedulerImpl::~FrameSchedulerImpl() {
+  weak_factory_.InvalidateWeakPtrs();
+
   RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
 
   CleanUpQueue(loading_task_queue_.get());
@@ -599,6 +621,8 @@ FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
     DCHECK(!parent_page_scheduler_->IsPageVisible());
     return FrameScheduler::ThrottlingState::kStopped;
   }
+  if (subresource_loading_paused_ && type == ObserverType::kLoader)
+    return FrameScheduler::ThrottlingState::kStopped;
   if (type == ObserverType::kLoader &&
       parent_page_scheduler_->HasActiveConnection()) {
     return FrameScheduler::ThrottlingState::kNotThrottled;
@@ -674,6 +698,34 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
                  MainThreadTaskQueue::QueueType::kFrameLoadingControl
              ? TaskQueue::QueuePriority::kHighestPriority
              : TaskQueue::QueuePriority::kNormalPriority;
+}
+
+std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
+FrameSchedulerImpl::GetPauseSubresourceLoadingHandle() {
+  return std::make_unique<PauseSubresourceLoadingHandleImpl>(
+      weak_factory_.GetWeakPtr());
+}
+
+void FrameSchedulerImpl::AddPauseSubresourceLoadingHandle() {
+  ++subresource_loading_pause_count_;
+  if (subresource_loading_pause_count_ != 1) {
+    DCHECK(subresource_loading_paused_);
+    return;
+  }
+
+  DCHECK(!subresource_loading_paused_);
+  subresource_loading_paused_ = true;
+  UpdatePolicy();
+}
+
+void FrameSchedulerImpl::RemovePauseSubresourceLoadingHandle() {
+  DCHECK_LT(0u, subresource_loading_pause_count_);
+  --subresource_loading_pause_count_;
+  DCHECK(subresource_loading_paused_);
+  if (subresource_loading_pause_count_ == 0) {
+    subresource_loading_paused_ = false;
+    UpdatePolicy();
+  }
 }
 
 }  // namespace scheduler

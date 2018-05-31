@@ -10,6 +10,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -41,12 +42,22 @@ class PageLoadCappingInfoBarDelegateTest
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
+
+  void PauseSubresourceLoading(bool pause) {
+    pause_subresource_loading_count_++;
+  }
+
+ protected:
+  size_t pause_subresource_loading_count_ = 0;
 };
 
 TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
   SetUpTest();
   EXPECT_TRUE(PageLoadCappingInfoBarDelegate::Create(
-      test_capping_threshold_bytes, web_contents()));
+      test_capping_threshold_bytes, web_contents(),
+      base::BindRepeating(
+          &PageLoadCappingInfoBarDelegateTest::PauseSubresourceLoading,
+          base::Unretained(this))));
   EXPECT_EQ(1u, InfoBarCount());
   infobars::InfoBar* infobar = infobar_at(0);
   EXPECT_TRUE(infobar);
@@ -60,6 +71,7 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
   // |delegate| and |infobar| will be deleted by this call.
   EXPECT_FALSE(delegate->Accept());
   EXPECT_EQ(1u, InfoBarCount());
+  EXPECT_EQ(1u, pause_subresource_loading_count_);
 
   infobar = infobar_at(0);
   ConfirmInfoBarDelegate* stopped_delegate = nullptr;
@@ -76,4 +88,5 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
 
   // If this is true, the infobar will be closed by the infobar manager.
   EXPECT_TRUE(stopped_delegate->Accept());
+  EXPECT_EQ(2u, pause_subresource_loading_count_);
 }

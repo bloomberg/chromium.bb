@@ -160,6 +160,8 @@ void BlinkInitializer::RegisterInterfaces(
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
   frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
       &DevToolsFrontendImpl::BindMojoRequest, WrapWeakPersistent(&frame)));
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+      &LocalFrame::PauseSubresourceLoading, WrapWeakPersistent(&frame)));
   ModulesInitializer::InitLocalFrame(frame);
 }
 
