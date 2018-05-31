@@ -169,11 +169,6 @@ crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failu
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
-
-# Not relevant, because SPv175 is launching imminently.
-
-crbug.com/842668 [ Win7 ] paint/invalidation/svg/zoom-foreignObject.svg [ Failure ]
-
 # Sheriff 2018/05/25
 crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
 
