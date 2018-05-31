@@ -39,6 +39,7 @@ class MessagePortChannel;
 }
 
 namespace content {
+class HostChildURLLoaderFactoryBundle;
 class URLLoaderFactoryBundleInfo;
 class WebApplicationCacheHostImpl;
 
@@ -121,6 +122,10 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   // NetworkService: The URLLoaderFactory used for loading the shared worker
   // script.
   network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory_info_;
+
+  // S13nServiceWorker: The factory bundle used for loads from this shared
+  // worker.
+  scoped_refptr<HostChildURLLoaderFactoryBundle> loader_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };

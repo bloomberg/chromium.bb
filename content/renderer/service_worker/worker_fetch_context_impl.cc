@@ -12,6 +12,7 @@
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
@@ -102,9 +103,16 @@ class WorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
     if (!service_worker_loader_factory_)
       return nullptr;
 
-    // If it's not for HTTP or HTTPS no need to intercept the request.
-    if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS())
+    // If the URL is not http(s) or otherwise whitelisted, do not intercept the
+    // request. Schemes like 'blob' and 'file' are not eligible to be
+    // intercepted by service workers.
+    // TODO(falken): Let ServiceWorkerSubresourceLoaderFactory handle the
+    // request and move this check there (i.e., for such URLs, it should use
+    // its fallback factory).
+    if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS() &&
+        !OriginCanAccessServiceWorkers(request.Url())) {
       return nullptr;
+    }
 
     // If GetSkipServiceWorker() returns true, no need to intercept the request.
     if (request.GetSkipServiceWorker())
