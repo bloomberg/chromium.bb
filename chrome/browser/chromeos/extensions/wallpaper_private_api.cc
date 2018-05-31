@@ -66,6 +66,7 @@ namespace get_local_image_paths = wallpaper_private::GetLocalImagePaths;
 namespace get_local_image_data = wallpaper_private::GetLocalImageData;
 namespace get_current_wallpaper_thumbnail =
     wallpaper_private::GetCurrentWallpaperThumbnail;
+namespace get_surprise_me_image = wallpaper_private::GetSurpriseMeImage;
 
 namespace {
 
@@ -835,3 +836,37 @@ void WallpaperPrivateGetCurrentWallpaperThumbnailFunction::
 
 void WallpaperPrivateGetCurrentWallpaperThumbnailFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& wallpaper) {}
+
+WallpaperPrivateGetSurpriseMeImageFunction::
+    WallpaperPrivateGetSurpriseMeImageFunction() = default;
+
+WallpaperPrivateGetSurpriseMeImageFunction::
+    ~WallpaperPrivateGetSurpriseMeImageFunction() = default;
+
+ExtensionFunction::ResponseAction
+WallpaperPrivateGetSurpriseMeImageFunction::Run() {
+  std::unique_ptr<get_surprise_me_image::Params> params(
+      get_surprise_me_image::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  surprise_me_image_fetcher_ =
+      std::make_unique<backdrop_wallpaper_handlers::SurpriseMeImageFetcher>(
+          params->collection_id,
+          params->resume_token ? *params->resume_token : std::string());
+  surprise_me_image_fetcher_->Start(base::BindOnce(
+      &WallpaperPrivateGetSurpriseMeImageFunction::OnSurpriseMeImageFetched,
+      this));
+  return RespondLater();
+}
+
+void WallpaperPrivateGetSurpriseMeImageFunction::OnSurpriseMeImageFetched(
+    bool success,
+    const extensions::api::wallpaper_private::ImageInfo& image_info,
+    const std::string& next_resume_token) {
+  if (!success) {
+    Respond(Error("Image not available."));
+    return;
+  }
+  Respond(TwoArguments(image_info.ToValue(),
+                       std::make_unique<Value>(next_resume_token)));
+}

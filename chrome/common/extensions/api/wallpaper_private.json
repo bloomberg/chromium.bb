@@ -462,7 +462,42 @@
             ]
           }
         ]
-      }
+      },
+      {
+        "name": "getSurpriseMeImage",
+        "type": "function",
+        "description": "Gets the related info (url, description etc.) of a randomly selected wallpaper.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "string",
+            "name": "collectionId",
+            "description": "The id of the collection from which the surprise me wallpaper should be selected from."
+          },
+          {
+            "type": "string",
+            "name": "resumeToken",
+            "optional": true,
+            "description": " An opaque token returned the last time this function was called, to prevent image repetition. Leave empty if not available."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                 "name": "imageInfo",
+                  "$ref": "ImageInfo"
+              },
+              {
+                 "type": "string",
+                "name": "nextResumeToken",
+                "description": "An opaque token that should be passed the next time this function is called, to prevent image repetition."
+              }
+            ]
+          }
+        ]
+       }
     ],
     "events": [
       {
