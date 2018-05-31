@@ -25,6 +25,7 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -296,7 +297,7 @@ std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
 
   return std::make_unique<views::FloodFillInkDropRipple>(
       ink_drop_container_->size(), center_point, GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
+      views::PlatformStyle::kUseRipples ? ink_drop_visible_opacity() : 0);
 }
 
 std::unique_ptr<views::InkDropHighlight>
