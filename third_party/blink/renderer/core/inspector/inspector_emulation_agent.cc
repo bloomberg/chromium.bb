@@ -379,7 +379,8 @@ void InspectorEmulationAgent::WillSendRequest(
   String accept_lang_override;
   state_->getString(EmulationAgentState::kAcceptLanguageOverride,
                     &accept_lang_override);
-  if (!accept_lang_override.IsEmpty()) {
+  if (!accept_lang_override.IsEmpty() &&
+      request.HttpHeaderField("Accept-Language").IsEmpty()) {
     request.SetHTTPHeaderField("Accept-Language",
                                AtomicString(accept_lang_override));
   }
