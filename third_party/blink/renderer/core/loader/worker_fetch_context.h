@@ -124,7 +124,13 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   Member<WorkerOrWorkletGlobalScope> global_scope_;
   std::unique_ptr<WebWorkerFetchContext> web_context_;
+  // Responsible for regular loads from the worker (i.e., Fetch API).
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
+  // Responsible for handling script loads in certian situations (i.e.,
+  // script import from service workers, which invole special processing
+  // to persist the script in storage). May be null, fallback to
+  // url_loader_factory_ in that case.
+  std::unique_ptr<WebURLLoaderFactory> script_loader_factory_;
   Member<SubresourceFilter> subresource_filter_;
   Member<ResourceFetcher> resource_fetcher_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
