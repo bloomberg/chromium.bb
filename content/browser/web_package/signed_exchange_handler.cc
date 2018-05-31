@@ -285,20 +285,28 @@ void SignedExchangeHandler::OnCertReceived(
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertReceived",
-        "Failed to fetch the certificate.");
+        "Failed to fetch the certificate.",
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 
   unverified_cert_chain_ = std::move(cert_chain);
 
-  if (SignedExchangeSignatureVerifier::Verify(
+  const SignedExchangeSignatureVerifier::Result verify_result =
+      SignedExchangeSignatureVerifier::Verify(
           *header_, unverified_cert_chain_->cert(), GetVerificationTime(),
-          devtools_proxy_.get()) !=
-      SignedExchangeSignatureVerifier::Result::kSuccess) {
+          devtools_proxy_.get());
+  if (verify_result != SignedExchangeSignatureVerifier::Result::kSuccess) {
+    base::Optional<SignedExchangeError::Field> error_field =
+        SignedExchangeError::GetFieldFromSignatureVerifierResult(verify_result);
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertReceived",
-        "Failed to verify the signed exchange header.");
+        "Failed to verify the signed exchange header.",
+        error_field ? base::make_optional(
+                          std::make_pair(0 /* signature_index */, *error_field))
+                    : base::nullopt);
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
@@ -361,7 +369,9 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
         devtools_proxy_.get(), "SignedExchangeHandler::OnCertVerifyComplete",
         base::StringPrintf("Certificate verification error: %s",
-                           net::ErrorToShortString(result).c_str()));
+                           net::ErrorToShortString(result).c_str()),
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
@@ -372,7 +382,9 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
         base::StringPrintf(
             "OCSP check failed. response status: %d, revocation status: %d",
             cert_verify_result_.ocsp_result.response_status,
-            cert_verify_result_.ocsp_result.revocation_status));
+            cert_verify_result_.ocsp_result.revocation_status),
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }

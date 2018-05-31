@@ -111,8 +111,9 @@ WebPackageLoader::WebPackageLoader(
   // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
   // without TLS. [spec text]
   if (!IsOriginSecure(outer_request_url)) {
-    devtools_proxy_->ReportErrorMessage(
-        "Signed exchange response from non secure origin is not supported.");
+    devtools_proxy_->ReportError(
+        "Signed exchange response from non secure origin is not supported.",
+        base::nullopt /* error_field */);
     // Calls OnSignedExchangeReceived() to show the outer response in DevTool's
     // Network panel and the error message in the Preview panel.
     devtools_proxy_->OnSignedExchangeReceived(base::nullopt /* header */,
