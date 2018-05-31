@@ -249,7 +249,6 @@ class Writer(object):
         self.gperf_path = gperf_path
 
     def get_file_basename(self, name):
-        # Use NameStyleConverter instead of name_utilities for consistency.
         return NameStyleConverter(name).to_snake_case()
 
     def make_header_guard(self, path):
