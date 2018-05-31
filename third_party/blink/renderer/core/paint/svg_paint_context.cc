@@ -123,22 +123,25 @@ void SVGPaintContext::ApplyPaintPropertyState() {
   if (object_.IsSVGRoot())
     return;
 
-  if (const auto* properties = object_.FirstFragment().PaintProperties()) {
-    // MaskClip() implies Effect(), thus we don't need to check MaskClip().
-    if (properties->Effect() || properties->ClipPathClip()) {
-      auto& paint_controller = GetPaintInfo().context.GetPaintController();
-      PropertyTreeState state = paint_controller.CurrentPaintChunkProperties();
-      if (const auto* effect = properties->Effect())
-        state.SetEffect(effect);
-      if (const auto* mask_clip = properties->MaskClip())
-        state.SetClip(mask_clip);
-      else if (const auto* clip_path_clip = properties->ClipPathClip())
-        state.SetClip(clip_path_clip);
-      scoped_paint_chunk_properties_.emplace(
-          paint_controller, state, object_,
-          DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));
-    }
-  }
+  const auto* fragment = GetPaintInfo().FragmentToPaint(object_);
+  if (!fragment)
+    return;
+  const auto* properties = fragment->PaintProperties();
+  // MaskClip() implies Effect(), thus we don't need to check MaskClip().
+  if (!properties || (!properties->Effect() && !properties->ClipPathClip()))
+    return;
+
+  auto& paint_controller = GetPaintInfo().context.GetPaintController();
+  PropertyTreeState state = paint_controller.CurrentPaintChunkProperties();
+  if (const auto* effect = properties->Effect())
+    state.SetEffect(effect);
+  if (const auto* mask_clip = properties->MaskClip())
+    state.SetClip(mask_clip);
+  else if (const auto* clip_path_clip = properties->ClipPathClip())
+    state.SetClip(clip_path_clip);
+  scoped_paint_chunk_properties_.emplace(
+      paint_controller, state, object_,
+      DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));
 }
 
 void SVGPaintContext::ApplyCompositingIfNecessary() {

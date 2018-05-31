@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
@@ -5462,6 +5464,89 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(1u, NumFragments(fixed));
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      tr { height: 100px; }
+      div { height: 500px; }
+    </style>
+    <div></div>
+    <table style="border-spacing: 0">
+      <thead id="head"><tr><th>Header</th></tr></thead>
+      <tbody>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+        <tr><td></td></tr>
+      </tbody>
+      <tfoot id="foot"><tr><th>Footer</th></tr></tfoot>
+    </table>
+    <div></div>
+  )HTML");
+
+  const auto* head = ToLayoutTableSection(GetLayoutObjectByElementId("head"));
+  const auto* foot = ToLayoutTableSection(GetLayoutObjectByElementId("foot"));
+  EXPECT_FALSE(head->IsRepeatingHeaderGroup());
+  EXPECT_EQ(1u, NumFragments(head));
+  EXPECT_EQ(1u, NumFragments(head->FirstRow()));
+  EXPECT_EQ(1u, NumFragments(head->FirstRow()->FirstCell()));
+  EXPECT_FALSE(foot->IsRepeatingFooterGroup());
+  EXPECT_EQ(1u, NumFragments(foot));
+  EXPECT_EQ(1u, NumFragments(foot->FirstRow()));
+  EXPECT_EQ(1u, NumFragments(foot->FirstRow()->FirstCell()));
+
+  FloatSize page_size(300, 400);
+  GetFrame().StartPrinting(page_size, page_size, 1);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+
+  // "fixed" should create fragments to repeat in each printed page.
+  EXPECT_TRUE(head->IsRepeatingHeaderGroup());
+  EXPECT_TRUE(foot->IsRepeatingFooterGroup());
+  auto check_fragments = [&](const LayoutObject* object) {
+    ASSERT_EQ(3u, NumFragments(object));
+    for (int i = 0; i < 3; i++) {
+      EXPECT_EQ(LayoutUnit((i + 1) * 400),
+                FragmentAt(object, i).LogicalTopInFlowThread());
+    }
+  };
+  check_fragments(head);
+  check_fragments(head->FirstRow());
+  check_fragments(head->FirstRow()->FirstCell());
+  check_fragments(foot);
+  check_fragments(foot->FirstRow());
+  check_fragments(foot->FirstRow());
+
+  // The first header is at its normal flow location (0, 100px) in its page.
+  // The other repeated ones are at the top of the their pages.
+  EXPECT_EQ(LayoutPoint(0, 500), FragmentAt(head, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 800), FragmentAt(head, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 1200), FragmentAt(head, 2).PaintOffset());
+  // The last footer is at its normal flow location (0, 200px) in its page.
+  // The other repeated ones are at the bottom of their pages.
+  EXPECT_EQ(LayoutPoint(0, 700), FragmentAt(foot, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 1100), FragmentAt(foot, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 1400), FragmentAt(foot, 2).PaintOffset());
+
+  const auto& painting_layer_object = head->PaintingLayer()->GetLayoutObject();
+  ASSERT_EQ(5u, NumFragments(&painting_layer_object));
+  for (int i = 0; i < 3; i++) {
+    const auto& fragment = FragmentAt(&painting_layer_object, i);
+    EXPECT_EQ(LayoutUnit(i * 400), fragment.LogicalTopInFlowThread());
+  }
+
+  GetFrame().EndPrinting();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(head->IsRepeatingHeaderGroup());
+  EXPECT_EQ(1u, NumFragments(head));
+  EXPECT_EQ(1u, NumFragments(head->FirstRow()));
+  EXPECT_EQ(1u, NumFragments(head->FirstRow()->FirstCell()));
+  EXPECT_FALSE(foot->IsRepeatingFooterGroup());
+  EXPECT_EQ(1u, NumFragments(foot));
+  EXPECT_EQ(1u, NumFragments(foot->FirstRow()));
+  EXPECT_EQ(1u, NumFragments(foot->FirstRow()->FirstCell()));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilter) {

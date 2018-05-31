@@ -26,10 +26,7 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     ItemToPaint item_to_paint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      // TODO(wangxianzhu): Use the PaintPropertyTreeBuilder path for printing.
-      (!paint_info.IsPrinting() ||
-       layout_table_section_.FirstFragment().NextFragment()))
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
   if (!layout_table_section_.IsRepeatingHeaderGroup())
@@ -97,10 +94,7 @@ void TableSectionPainter::PaintRepeatingFooterGroup(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     ItemToPaint item_to_paint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      // TODO(wangxianzhu): Use the PaintPropertyTreeBuilder path for printing.
-      (!paint_info.IsPrinting() ||
-       layout_table_section_.FirstFragment().NextFragment()))
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
   if (!layout_table_section_.IsRepeatingFooterGroup())
@@ -177,6 +171,9 @@ void TableSectionPainter::PaintRepeatingFooterGroup(
 
 void TableSectionPainter::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
+  if (!paint_info.FragmentToPaint(layout_table_section_))
+    return;
+
   // TODO(crbug.com/805514): Paint mask for table section.
   if (paint_info.phase == PaintPhase::kMask)
     return;
