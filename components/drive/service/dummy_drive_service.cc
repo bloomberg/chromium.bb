@@ -61,7 +61,10 @@ CancelCallback DummyDriveService::GetAllTeamDriveList(
 }
 
 CancelCallback DummyDriveService::GetAllFileList(
-    const FileListCallback& callback) { return CancelCallback(); }
+    const std::string& team_drive_id,
+    const FileListCallback& callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetFileListInDirectory(
     const std::string& directory_resource_id,

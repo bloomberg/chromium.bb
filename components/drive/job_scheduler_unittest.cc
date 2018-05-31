@@ -262,6 +262,7 @@ TEST_F(JobSchedulerTest, GetAllFileList) {
   std::unique_ptr<google_apis::FileList> file_list;
 
   scheduler_->GetAllFileList(
+      util::kTeamDriveIdDefaultCorpus,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 

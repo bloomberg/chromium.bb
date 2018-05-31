@@ -131,6 +131,7 @@ TEST_F(FakeDriveServiceTest, GetAllFileList) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileList> file_list;
   fake_service_.GetAllFileList(
+      util::kTeamDriveIdDefaultCorpus,
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
@@ -148,6 +149,7 @@ TEST_F(FakeDriveServiceTest, GetAllFileList_Offline) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileList> file_list;
   fake_service_.GetAllFileList(
+      util::kTeamDriveIdDefaultCorpus,
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
 
@@ -557,6 +559,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingFileList_GetAllFileList) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   std::unique_ptr<FileList> file_list;
   fake_service_.GetAllFileList(
+      util::kTeamDriveIdDefaultCorpus,
       test_util::CreateCopyResultCallback(&error, &file_list));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);

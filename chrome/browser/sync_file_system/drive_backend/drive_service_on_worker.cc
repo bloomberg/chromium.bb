@@ -305,6 +305,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAllTeamDriveList(
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetAllFileList(
+    const std::string& team_drive_id,
     const google_apis::FileListCallback& callback) {
   NOTREACHED();
   return google_apis::CancelCallback();

@@ -119,6 +119,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   google_apis::CancelCallback GetAllTeamDriveList(
       const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetAllFileList(
+      const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback Search(
       const std::string& search_query,

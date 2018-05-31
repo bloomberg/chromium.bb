@@ -127,6 +127,7 @@ class DriveAPIService : public DriveServiceInterface,
   google_apis::CancelCallback GetAllTeamDriveList(
       const google_apis::TeamDriveListCallback& callback) override;
   google_apis::CancelCallback GetAllFileList(
+      const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetFileListInDirectory(
       const std::string& directory_resource_id,

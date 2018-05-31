@@ -49,8 +49,10 @@ namespace {
 // Fetches all the (currently available) resource entries from the server.
 class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
  public:
-  FullFeedFetcher(JobScheduler* scheduler)
-      : scheduler_(scheduler), weak_ptr_factory_(this) {}
+  FullFeedFetcher(JobScheduler* scheduler, const std::string& team_drive_id)
+      : scheduler_(scheduler),
+        team_drive_id_(team_drive_id),
+        weak_ptr_factory_(this) {}
 
   ~FullFeedFetcher() override = default;
 
@@ -65,8 +67,8 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     // NOTE: Because we already know the largest change ID, here we can use
     // files.list instead of changes.list for speed. crbug.com/287602
     scheduler_->GetAllFileList(
-        base::Bind(&FullFeedFetcher::OnFileListFetched,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        team_drive_id_, base::Bind(&FullFeedFetcher::OnFileListFetched,
+                                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  private:
@@ -104,6 +106,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
   JobScheduler* scheduler_;
+  const std::string team_drive_id_;
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
   base::TimeTicks start_time_;
   THREAD_CHECKER(thread_checker_);
@@ -403,11 +406,10 @@ void ChangeListLoader::LoadChangeListFromServer(
   // Set up feed fetcher.
   bool is_delta_update = !local_start_page_token.empty();
   if (is_delta_update) {
-    change_feed_fetcher_.reset(
-        new DeltaFeedFetcher(scheduler_, drive::util::kTeamDriveIdDefaultCorpus,
-                             local_start_page_token));
+    change_feed_fetcher_.reset(new DeltaFeedFetcher(scheduler_, team_drive_id_,
+                                                    local_start_page_token));
   } else {
-    change_feed_fetcher_.reset(new FullFeedFetcher(scheduler_));
+    change_feed_fetcher_.reset(new FullFeedFetcher(scheduler_, team_drive_id_));
   }
 
   change_feed_fetcher_->Run(

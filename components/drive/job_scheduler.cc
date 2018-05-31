@@ -319,18 +319,17 @@ void JobScheduler::GetAllTeamDriveList(
 }
 
 void JobScheduler::GetAllFileList(
+    const std::string& team_drive_id,
     const google_apis::FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   JobEntry* new_job = CreateNewJob(TYPE_GET_ALL_RESOURCE_LIST);
-  new_job->task = base::Bind(
-      &DriveServiceInterface::GetAllFileList,
-      base::Unretained(drive_service_),
-      base::Bind(&JobScheduler::OnGetFileListJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
+  new_job->task = base::Bind(&DriveServiceInterface::GetAllFileList,
+                             base::Unretained(drive_service_), team_drive_id,
+                             base::Bind(&JobScheduler::OnGetFileListJobDone,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        new_job->job_info.job_id, callback));
   new_job->abort_callback = CreateErrorRunCallback(callback);
   StartJob(new_job);
 }

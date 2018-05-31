@@ -213,8 +213,12 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // remaining results will be included in the returned result. See also
   // GetRemainingFileList.
   //
+  // If |team_drive_id| is empty will retrieve the file list for the users
+  // default corpus, otherwise will fetch the file list for the specified
+  // team drive.
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetAllFileList(
+      const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) = 0;
 
   // Fetches a file list in the directory with |directory_resource_id|.

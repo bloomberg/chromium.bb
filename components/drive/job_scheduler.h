@@ -98,8 +98,12 @@ class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
   void GetAllTeamDriveList(const google_apis::TeamDriveListCallback& callback);
 
   // Adds a GetAllFileList operation to the queue.
+  // If |team_drive_id| is empty then it will return the file list for the
+  // users default corpus, otherwise will return the file list for the
+  // specified team drive.
   // |callback| must not be null.
-  void GetAllFileList(const google_apis::FileListCallback& callback);
+  void GetAllFileList(const std::string& team_drive_id,
+                      const google_apis::FileListCallback& callback);
 
   // Adds a GetFileListInDirectory operation to the queue.
   // |callback| must not be null.

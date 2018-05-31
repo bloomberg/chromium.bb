@@ -342,6 +342,7 @@ CancelCallback DriveAPIService::GetAllTeamDriveList(
 }
 
 CancelCallback DriveAPIService::GetAllFileList(
+    const std::string& team_drive_id,
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
@@ -352,9 +353,10 @@ CancelCallback DriveAPIService::GetAllFileList(
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_q("trashed = false");  // Exclude trashed files.
   request->set_fields(kFileListFields);
-  if (google_apis::GetTeamDrivesIntegrationSwitch() ==
-      google_apis::TEAM_DRIVES_INTEGRATION_ENABLED) {
-    request->set_corpora(google_apis::FilesListCorpora::ALL_TEAM_DRIVES);
+  if (team_drive_id.empty()) {
+    request->set_corpora(google_apis::FilesListCorpora::DEFAULT);
+  } else {
+    request->set_corpora(google_apis::FilesListCorpora::TEAM_DRIVE);
   }
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
