@@ -4822,3 +4822,4 @@ crbug.com/847373 [ Mac Linux ] virtual/pwa-full-code-cache/http/tests/devtools/s
 # Sheriff 2018-05-31
 crbug.com/848258 [ Win7 ] fast/gradients/unprefixed-repeating-linear-gradient.html [ Failure ]
 crbug.com/848281 [ Linux ] http/tests/security/cross-origin-session-storage-allowed.html [ Failure ]
+crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Pass Failure ]
