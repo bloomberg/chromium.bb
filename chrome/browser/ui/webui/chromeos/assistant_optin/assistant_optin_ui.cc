@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -157,11 +159,6 @@ void AssistantOptInUI::OnGetSettingsResponse(const std::string& settings) {
   consent_token_ = activity_control_ui.consent_token();
 
   base::ListValue zippy_data;
-  if (activity_control_ui.setting_zippy().size() == 0) {
-    // No need to consent. Close the dialog for now.
-    CloseDialog(nullptr);
-    return;
-  }
   for (auto& setting_zippy : activity_control_ui.setting_zippy()) {
     base::DictionaryValue data;
     data.SetString("title", setting_zippy.title());
@@ -174,17 +171,24 @@ void AssistantOptInUI::OnGetSettingsResponse(const std::string& settings) {
   assistant_handler_->AddSettingZippy(zippy_data);
 
   base::DictionaryValue dictionary;
-  dictionary.SetString("valuePropIntro",
-                       activity_control_ui.intro_text_paragraph(0));
   dictionary.SetString("valuePropIdentity", activity_control_ui.identity());
-  dictionary.SetString("valuePropFooter",
-                       activity_control_ui.footer_paragraph(0));
+  if (activity_control_ui.intro_text_paragraph_size() > 0) {
+    dictionary.SetString("valuePropIntro",
+                         activity_control_ui.intro_text_paragraph(0));
+  }
+  if (activity_control_ui.footer_paragraph_size() > 0) {
+    dictionary.SetString("valuePropFooter",
+                         activity_control_ui.footer_paragraph(0));
+  }
   dictionary.SetString(
       "valuePropNextButton",
       settings_ui.consent_flow_ui().consent_ui().accept_button_text());
   dictionary.SetString(
       "valuePropSkipButton",
-      settings_ui.consent_flow_ui().consent_ui().reject_button_text());
+      settings_ui.consent_flow_ui().consent_ui().has_reject_button_text()
+          ? settings_ui.consent_flow_ui().consent_ui().reject_button_text()
+          : l10n_util::GetStringUTF8(
+                IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON));
   assistant_handler_->ReloadContent(dictionary);
 }
 
@@ -199,6 +203,10 @@ void AssistantOptInUI::OnUpdateSettingsResponse(const std::string& result) {
     LOG(ERROR) << "Consent udpate error.";
   }
 
+  Next();
+}
+
+void AssistantOptInUI::Next() {
   // More screens to be added. Close the dialog for now.
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   prefs->SetBoolean(arc::prefs::kArcVoiceInteractionValuePropAccepted, true);
