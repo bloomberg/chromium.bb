@@ -74,34 +74,7 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
   // Add overflow from the last layout cycle.
   if (Base::ChildrenInline()) {
     if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
-      // LayoutOverflow is only computed if overflow is not hidden
-      if (physical_fragment->Style().OverflowX() != EOverflow::kHidden ||
-          physical_fragment->Style().OverflowY() != EOverflow::kHidden) {
-        // inline-end LayoutOverflow padding spec is still undecided:
-        // https://github.com/w3c/csswg-drafts/issues/129
-        // For backwards compatibility, if container clips overflow,
-        // padding is added to the inline-end for inline children.
-        base::Optional<NGPhysicalBoxStrut> padding_strut;
-        if (Base::HasOverflowClip()) {
-          padding_strut =
-              NGBoxStrut(LayoutUnit(), Base::PaddingEnd(), LayoutUnit(),
-                         LayoutUnit())
-                  .ConvertToPhysical(Base::StyleRef().GetWritingMode(),
-                                     Base::StyleRef().Direction());
-        }
-        NGPhysicalOffsetRect children_overflow;
-        for (const auto& child : physical_fragment->Children()) {
-          NGPhysicalOffsetRect child_scrollable_overflow =
-              child->ScrollableOverflow();
-          child_scrollable_overflow.offset += child->Offset();
-          if (child->IsLineBox() && padding_strut) {
-            child_scrollable_overflow.Expand(*padding_strut);
-          }
-          children_overflow.Unite(child_scrollable_overflow);
-        }
-        Base::AddLayoutOverflow(children_overflow.ToLayoutFlippedRect(
-            physical_fragment->Style(), physical_fragment->Size()));
-      }
+      AddScrollingOverflowFromChildren();
       Base::AddSelfVisualOverflow(
           physical_fragment->SelfVisualRect().ToLayoutFlippedRect(
               physical_fragment->Style(), physical_fragment->Size()));
@@ -117,6 +90,59 @@ void LayoutNGMixin<Base>::AddOverflowFromChildren() {
     }
   }
   Base::AddOverflowFromChildren();
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
+  const NGPhysicalBoxFragment* physical_fragment = CurrentFragment();
+  DCHECK(physical_fragment);
+  // LayoutOverflow is only computed if overflow is not hidden
+  if (physical_fragment->Style().OverflowX() == EOverflow::kHidden &&
+      physical_fragment->Style().OverflowY() == EOverflow::kHidden)
+    return;
+  // inline-end LayoutOverflow padding spec is still undecided:
+  // https://github.com/w3c/csswg-drafts/issues/129
+  // For backwards compatibility, if container clips overflow,
+  // padding is added to the inline-end for inline children.
+  base::Optional<NGPhysicalBoxStrut> padding_strut;
+  if (Base::HasOverflowClip()) {
+    padding_strut =
+        NGBoxStrut(LayoutUnit(), Base::PaddingEnd(), LayoutUnit(), LayoutUnit())
+            .ConvertToPhysical(Base::StyleRef().GetWritingMode(),
+                               Base::StyleRef().Direction());
+  }
+
+  NGPhysicalOffsetRect children_overflow;
+  for (const auto& child : physical_fragment->Children()) {
+    NGPhysicalOffsetRect child_scrollable_overflow =
+        child->ScrollableOverflow();
+    child_scrollable_overflow.offset += child->Offset();
+    if (child->IsLineBox() && padding_strut) {
+      child_scrollable_overflow.Expand(*padding_strut);
+    }
+    children_overflow.Unite(child_scrollable_overflow);
+  }
+
+  // LayoutOverflow takes flipped blocks coordinates, adjust as needed.
+  LayoutRect children_flipped_overflow = children_overflow.ToLayoutFlippedRect(
+      physical_fragment->Style(), physical_fragment->Size());
+  if (physical_fragment->Style().IsFlippedBlocksWritingMode()) {
+    // Legacy overflow coordinate system for flipped blocks is broken.
+    // It coordinates are "flipped blocks pretending scrollbar does
+    // not exist. This is the scrollbar adjustment.
+    // For details, see comments in LayoutBox::NoOverflowRect
+    LayoutObject* layout_object = physical_fragment->GetLayoutObject();
+    if (layout_object && layout_object->IsBox()) {
+      const LayoutBox* box = ToLayoutBox(layout_object);
+      if (!box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+        LayoutUnit right_scrollbar_width =
+            LayoutUnit(box->VerticalScrollbarWidth());
+        children_flipped_overflow.SetX(children_flipped_overflow.X() -
+                                       right_scrollbar_width);
+      }
+    }
+  }
+  Base::AddLayoutOverflow(children_flipped_overflow);
 }
 
 template <typename Base>

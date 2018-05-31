@@ -76,6 +76,10 @@ class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
 
   void AddOverflowFromChildren() override;
 
+ private:
+  void AddScrollingOverflowFromChildren();
+
+ protected:
   void AddOutlineRects(
       Vector<LayoutRect>&,
       const LayoutPoint& additional_offset,
