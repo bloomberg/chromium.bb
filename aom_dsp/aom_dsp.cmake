@@ -85,10 +85,6 @@ list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/intrapred_avx2.c")
 
-list(APPEND AOM_DSP_COMMON_ASM_NEON
-            "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
-            "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
-
 list(APPEND AOM_DSP_COMMON_INTRIN_NEON "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
             "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
             "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
@@ -312,14 +308,6 @@ function(setup_aom_dsp_targets)
     if(CONFIG_AV1_ENCODER)
       add_intrinsics_object_library("-mavx2" "avx2" "aom_dsp_encoder"
                                     "AOM_DSP_ENCODER_INTRIN_AVX2" "aom")
-    endif()
-  endif()
-
-  if(HAVE_NEON_ASM)
-    if(AOM_ADS2GAS_REQUIRED)
-      add_gas_asm_library("aom_dsp_common_neon" "AOM_DSP_COMMON_ASM_NEON" "aom")
-    else()
-      add_asm_library("aom_dsp_common_neon" "AOM_DSP_COMMON_ASM_NEON" "aom")
     endif()
   endif()
 

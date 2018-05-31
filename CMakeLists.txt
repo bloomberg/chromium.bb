@@ -31,7 +31,6 @@ option(ENABLE_WERROR "Converts warnings to errors at compile time." OFF)
 
 # ARM assembly/intrinsics flags.
 option(ENABLE_NEON "Enables NEON optimizations on ARM targets." ON)
-option(ENABLE_NEON_ASM "Enables NEON ASM optimizations on ARM targets." ON)
 
 # MIPS assembly/intrinsics flags.
 option(ENABLE_DSPR2 "Enables DSPR2 optimizations on MIPS targets." OFF)

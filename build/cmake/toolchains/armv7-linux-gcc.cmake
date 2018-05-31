@@ -39,10 +39,5 @@ set(CMAKE_SYSTEM_PROCESSOR "armv7")
 # No intrinsics flag required for armv7-linux-gcc.
 set(AOM_NEON_INTRIN_FLAG "")
 
-# Assembler sources must be converted for armv7-linux-gcc targets.
-set(AOM_ADS2GAS_REQUIRED 1)
-set(AOM_ADS2GAS "${CMAKE_CURRENT_SOURCE_DIR}/build/make/ads2gas.pl")
-set(AOM_GAS_EXT "S")
-
 # No runtime cpu detect for armv7-linux-gcc.
 set(CONFIG_RUNTIME_CPU_DETECT 0 CACHE NUMBER "")
