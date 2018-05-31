@@ -20,9 +20,9 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
@@ -113,7 +113,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
     if (command_line->HasSwitch(switches::kGpuPreferences)) {
       std::string value =
           command_line->GetSwitchValueASCII(switches::kGpuPreferences);
-      bool success = gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
+      bool success = gpu_preferences.FromSwitchValue(value);
       CHECK(success);
     }
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)

@@ -95,7 +95,6 @@ jumbo_source_set("browser") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:raster_interface",
     "//gpu/ipc:gl_in_process_context",
-    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/host",
     "//gpu/vulkan:buildflags",
     "//jingle:jingle_glue",

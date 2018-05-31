@@ -12,10 +12,10 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
-#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
@@ -47,8 +47,7 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
         if (command_line->HasSwitch(switches::kGpuPreferences)) {
           std::string value =
               command_line->GetSwitchValueASCII(switches::kGpuPreferences);
-          bool success =
-              gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
+          bool success = gpu_preferences.FromSwitchValue(value);
           CHECK(success);
         }
         bool needs_more_info = false;
