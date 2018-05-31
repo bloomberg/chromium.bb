@@ -145,8 +145,9 @@ TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
   scoped_refptr<PlatformNotificationContextImpl> context =
       CreatePlatformNotificationContext();
 
-  context->ReadNotificationData(
+  context->ReadNotificationDataAndRecordInteraction(
       "invalid-notification-id", GURL("https://example.com"),
+      PlatformNotificationContext::Interaction::NONE,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -175,8 +176,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
   ASSERT_TRUE(success());
   EXPECT_FALSE(notification_id().empty());
 
-  context->ReadNotificationData(
-      notification_id(), origin,
+  context->ReadNotificationDataAndRecordInteraction(
+      notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -297,8 +298,8 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
   // The notification existed, so it should have been removed successfully.
   ASSERT_TRUE(success());
 
-  context->ReadNotificationData(
-      notification_id(), origin,
+  context->ReadNotificationDataAndRecordInteraction(
+      notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -366,8 +367,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   ASSERT_EQ(SERVICE_WORKER_OK, unregister_status);
 
   // And verify that the associated notification has indeed been dropped.
-  notification_context->ReadNotificationData(
-      notification_id(), origin,
+  notification_context->ReadNotificationDataAndRecordInteraction(
+      notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -401,8 +402,8 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
   // Verify that reading notification data fails because the data does not
   // exist anymore. Deliberately omit RunUntilIdle(), since this is unlikely to
   // be the case when OnStorageWiped gets called in production.
-  context->ReadNotificationData(
-      notification_id(), origin,
+  context->ReadNotificationDataAndRecordInteraction(
+      notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -424,8 +425,9 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
   OverrideTaskRunnerForTesting(context.get());
 
   // Trigger a read-operation to force creating the database.
-  context->ReadNotificationData(
+  context->ReadNotificationDataAndRecordInteraction(
       "invalid-notification-id", GURL("https://example.com"),
+      PlatformNotificationContext::Interaction::NONE,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 
@@ -558,8 +560,9 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   ASSERT_TRUE(success());
   ASSERT_EQ(0u, notification_database_datas.size());
 
-  context->ReadNotificationData(
+  context->ReadNotificationDataAndRecordInteraction(
       notification_id(), origin,
+      PlatformNotificationContext::Interaction::CLOSED,
       base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
                  base::Unretained(this)));
 

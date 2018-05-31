@@ -274,8 +274,9 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   // PlatformNotificationContext::ReadNotificationData
   bool ReadNotificationData(const std::string& notification_id) {
     base::RunLoop run_loop;
-    notification_context_->ReadNotificationData(
+    notification_context_->ReadNotificationDataAndRecordInteraction(
         notification_id, GURL(kTestOrigin),
+        PlatformNotificationContext::Interaction::NONE,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &BlinkNotificationServiceImplTest::DidReadNotificationData,
             base::Unretained(this), run_loop.QuitClosure())));

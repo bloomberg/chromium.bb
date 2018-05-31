@@ -154,27 +154,30 @@ void PlatformNotificationContextImpl::RemoveService(
       });
 }
 
-void PlatformNotificationContextImpl::ReadNotificationData(
+void PlatformNotificationContextImpl::ReadNotificationDataAndRecordInteraction(
     const std::string& notification_id,
     const GURL& origin,
+    const PlatformNotificationContext::Interaction interaction,
     const ReadResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   LazyInitialize(
       base::Bind(&PlatformNotificationContextImpl::DoReadNotificationData, this,
-                 notification_id, origin, callback),
+                 notification_id, origin, interaction, callback),
       base::Bind(callback, false /* success */, NotificationDatabaseData()));
 }
 
 void PlatformNotificationContextImpl::DoReadNotificationData(
     const std::string& notification_id,
     const GURL& origin,
+    Interaction interaction,
     const ReadResultCallback& callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   NotificationDatabaseData database_data;
   NotificationDatabase::Status status =
-      database_->ReadNotificationData(notification_id, origin, &database_data);
+      database_->ReadNotificationDataAndRecordInteraction(
+          notification_id, origin, interaction, &database_data);
 
   UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResult", status,
                             NotificationDatabase::STATUS_COUNT);

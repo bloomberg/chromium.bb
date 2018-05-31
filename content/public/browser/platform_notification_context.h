@@ -38,12 +38,31 @@ class PlatformNotificationContext
 
   using DeleteResultCallback = base::Callback<void(bool /* success */)>;
 
+  // Reasons for updating a notification, triggering a read.
+  enum class Interaction {
+    // No interaction was taken with the notification.
+    NONE,
+
+    // An action button in the notification was clicked.
+    ACTION_BUTTON_CLICKED,
+
+    // The notification itself was clicked.
+    CLICKED,
+
+    // The notification was closed.
+    CLOSED
+  };
+
   // Reads the data associated with |notification_id| belonging to |origin|
   // from the database. |callback| will be invoked with the success status
   // and a reference to the notification database data when completed.
-  virtual void ReadNotificationData(const std::string& notification_id,
-                                    const GURL& origin,
-                                    const ReadResultCallback& callback) = 0;
+  // |interaction| is passed in for UKM logging purposes and does not
+  // otherwise affect the read.
+  virtual void ReadNotificationDataAndRecordInteraction(
+      const std::string& notification_id,
+      const GURL& origin,
+      Interaction interaction,
+      const ReadResultCallback& callback) = 0;
 
   // Reads all data associated with |service_worker_registration_id| belonging
   // to |origin| from the database. |callback| will be invoked with the success

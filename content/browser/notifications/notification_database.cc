@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/notifications/notification_database_data_conversions.h"
@@ -166,6 +167,39 @@ NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
 
   return DeserializedNotificationData(serialized_data,
                                       notification_database_data);
+}
+
+NotificationDatabase::Status
+NotificationDatabase::ReadNotificationDataAndRecordInteraction(
+    const std::string& notification_id,
+    const GURL& origin,
+    PlatformNotificationContext::Interaction interaction,
+    NotificationDatabaseData* notification_database_data) {
+  Status status =
+      ReadNotificationData(notification_id, origin, notification_database_data);
+  if (status != STATUS_OK)
+    return status;
+
+  // Update the appropriate fields for UKM logging purposes.
+  switch (interaction) {
+    case PlatformNotificationContext::Interaction::CLOSED:
+      return status;
+    case PlatformNotificationContext::Interaction::NONE:
+      return status;
+    case PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED:
+      notification_database_data->num_action_button_clicks += 1;
+      break;
+    case PlatformNotificationContext::Interaction::CLICKED:
+      notification_database_data->num_clicks += 1;
+      break;
+  }
+
+  // Write the changed values to the database.
+  status = WriteNotificationData(origin, *notification_database_data);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.Database.ReadResultRecordInteraction", status,
+      NotificationDatabase::STATUS_COUNT);
+  return status;
 }
 
 NotificationDatabase::Status NotificationDatabase::ReadAllNotificationData(

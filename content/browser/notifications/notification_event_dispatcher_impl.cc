@@ -187,13 +187,14 @@ void FindServiceWorkerRegistration(
 void ReadNotificationDatabaseData(
     const std::string& notification_id,
     const GURL& origin,
+    PlatformNotificationContext::Interaction interaction,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     const scoped_refptr<PlatformNotificationContext>& notification_context,
     const NotificationOperationCallback& notification_read_callback,
     const NotificationDispatchCompleteCallback& dispatch_error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  notification_context->ReadNotificationData(
-      notification_id, origin,
+  notification_context->ReadNotificationDataAndRecordInteraction(
+      notification_id, origin, interaction,
       base::Bind(&FindServiceWorkerRegistration, origin, service_worker_context,
                  notification_context, notification_read_callback,
                  dispatch_error_callback));
@@ -334,6 +335,7 @@ void DispatchNotificationEvent(
     BrowserContext* browser_context,
     const std::string& notification_id,
     const GURL& origin,
+    const PlatformNotificationContext::Interaction interaction,
     const NotificationOperationCallbackWithContext&
         notification_action_callback,
     const NotificationDispatchCompleteCallback& notification_error_callback) {
@@ -353,7 +355,7 @@ void DispatchNotificationEvent(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(
-          &ReadNotificationDatabaseData, notification_id, origin,
+          &ReadNotificationDatabaseData, notification_id, origin, interaction,
           service_worker_context, notification_context,
           base::Bind(notification_action_callback, notification_context),
           notification_error_callback));
@@ -387,8 +389,13 @@ void NotificationEventDispatcherImpl::DispatchNotificationClickEvent(
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(dispatch_complete_callback));
 
+  PlatformNotificationContext::Interaction interaction =
+      action_index.has_value()
+          ? PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED
+          : PlatformNotificationContext::Interaction::CLICKED;
+
   DispatchNotificationEvent(
-      browser_context, notification_id, origin,
+      browser_context, notification_id, origin, interaction,
       base::Bind(&DoDispatchNotificationClickEvent, action_index, reply,
                  repeating_callback),
       repeating_callback /* notification_error_callback */);
@@ -407,6 +414,7 @@ void NotificationEventDispatcherImpl::DispatchNotificationCloseEvent(
 
   DispatchNotificationEvent(
       browser_context, notification_id, origin,
+      PlatformNotificationContext::Interaction::CLOSED,
       base::Bind(&DoDispatchNotificationCloseEvent, notification_id, by_user,
                  repeating_callback),
       repeating_callback /* notification_error_callback */);
