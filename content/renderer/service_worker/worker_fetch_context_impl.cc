@@ -141,7 +141,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
     ThreadSafeSender* thread_safe_sender,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    std::unique_ptr<service_manager::Connector> service_manager_connection)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_container_host_info_(
@@ -152,13 +153,8 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
-      io_task_runner_(std::move(io_task_runner)) {
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName,
-        mojo::MakeRequest(&blob_registry_ptr_info_));
-  }
-}
+      io_task_runner_(std::move(io_task_runner)),
+      service_manager_connection_(std::move(service_manager_connection)) {}
 
 WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
 
@@ -182,7 +178,8 @@ WorkerFetchContextImpl::CloneForNestedWorker() {
       websocket_handshake_throttle_provider_
           ? websocket_handshake_throttle_provider_->Clone()
           : nullptr,
-      thread_safe_sender_.get(), io_task_runner_);
+      thread_safe_sender_.get(), io_task_runner_,
+      service_manager_connection_->Clone());
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->appcache_host_id_ = appcache_host_id_;
   return new_context;
@@ -207,7 +204,8 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread() {
         std::move(service_worker_container_host_info_));
 
     blink::mojom::BlobRegistryPtr blob_registry_ptr;
-    blob_registry_ptr.Bind(std::move(blob_registry_ptr_info_));
+    service_manager_connection_->BindInterface(
+        mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
     blob_registry_ = base::MakeRefCounted<
         base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
         std::move(blob_registry_ptr));
