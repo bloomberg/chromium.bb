@@ -102,11 +102,14 @@ enum ResultCode {
   // An browser process was sandboxed. This should never happen.
   RESULT_CODE_INVALID_SANDBOX_STATE,
 
+  // Cloud policy enrollment is failed or given up by user.
+  RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED,
+
   // Last return code (keep this last).
   RESULT_CODE_CHROME_LAST_CODE
 };
 
-static_assert(RESULT_CODE_CHROME_LAST_CODE == 32,
+static_assert(RESULT_CODE_CHROME_LAST_CODE == 33,
               "Please make sure the enum values are in sync with enums.xml");
 
 }  // namespace chrome

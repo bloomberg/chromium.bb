@@ -24,6 +24,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -42,6 +43,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/widget_test.h"
 
 using content::BrowserThread;
 using testing::DoAll;
@@ -66,10 +68,16 @@ class ChromeBrowserPolicyConnectorObserver
     : public ChromeBrowserPolicyConnector::Observer {
  public:
   void OnMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) override {
+    if (!succeeded) {
+      // Close the error dialog.
+      ASSERT_EQ(1u, views::test::WidgetTest::GetAllWidgets().size());
+      (*views::test::WidgetTest::GetAllWidgets().begin())->Close();
+    }
     EXPECT_EQ(should_succeed_, succeeded);
     is_finished_ = true;
     if (run_loop_)
       run_loop_->Quit();
+    g_browser_process->browser_policy_connector()->RemoveObserver(this);
   }
 
   void SetRunLoop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -352,6 +360,10 @@ class MachineLevelUserCloudPolicyEnrollmentTest
     storage_.SetClientId("client_id");
     storage_.EnableStorage(storage_enabled());
     observer_.SetShouldSucceed(is_enrollment_token_valid());
+    if (!is_enrollment_token_valid()) {
+      set_expected_exit_code(
+          chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED);
+    }
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -367,10 +379,6 @@ class MachineLevelUserCloudPolicyEnrollmentTest
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
     static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
         new ChromeBrowserExtraSetUp(&observer_));
-  }
-
-  void TearDownOnMainThread() override {
-    g_browser_process->browser_policy_connector()->RemoveObserver(&observer_);
   }
 
   void WaitForPolicyRegisterFinished() {
@@ -395,7 +403,13 @@ class MachineLevelUserCloudPolicyEnrollmentTest
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
 };
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
+#if defined(OS_MACOSX)
+// TODO(crbug.com/844487): Fix this test on Mac.
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, MAYBE_Test) {
   WaitForPolicyRegisterFinished();
 
   EXPECT_EQ(is_enrollment_token_valid() ? "fake_device_management_token"

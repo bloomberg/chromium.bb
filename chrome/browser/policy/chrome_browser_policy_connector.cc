@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_helper.h"
 #include "chrome/browser/policy/configuration_policy_handler_list_factory.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_register_watcher.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -135,6 +136,7 @@ void ChromeBrowserPolicyConnector::Shutdown() {
   // shutdown occurs in correct sequence.
   machine_level_user_cloud_policy_registrar_.reset();
   machine_level_user_cloud_policy_fetcher_.reset();
+  machine_level_user_cloud_policy_register_watcher_.reset();
 #endif
 
   BrowserPolicyConnector::Shutdown();
@@ -156,6 +158,17 @@ void ChromeBrowserPolicyConnector::RemoveObserver(Observer* observer) {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+ChromeBrowserPolicyConnector::MachineLevelUserCloudPolicyRegisterResult
+ChromeBrowserPolicyConnector::
+    WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished() {
+  if (machine_level_user_cloud_policy_register_watcher_) {
+    return machine_level_user_cloud_policy_register_watcher_
+        ->WaitUntilCloudPolicyEnrollmentFinished();
+  }
+  return MachineLevelUserCloudPolicyRegisterResult::kNoEnrollmentNeeded;
+}
+
 MachineLevelUserCloudPolicyManager*
 ChromeBrowserPolicyConnector::GetMachineLevelUserCloudPolicyManager() {
   return machine_level_user_cloud_policy_manager_;
@@ -189,6 +202,15 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 
   return providers;
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+void ChromeBrowserPolicyConnector::
+    NotifyMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) {
+  for (auto& observer : observers_) {
+    observer.OnMachineLevelUserCloudPolicyRegisterFinished(succeeded);
+  }
+}
+#endif
 
 std::unique_ptr<ConfigurationPolicyProvider>
 ChromeBrowserPolicyConnector::CreatePlatformProvider() {
@@ -264,6 +286,8 @@ void ChromeBrowserPolicyConnector::InitializeMachineLevelUserCloudPolicies(
       std::make_unique<MachineLevelUserCloudPolicyFetcher>(
           machine_level_user_cloud_policy_manager_, local_state,
           device_management_service(), request_context);
+  machine_level_user_cloud_policy_register_watcher_ =
+      std::make_unique<MachineLevelUserCloudPolicyRegisterWatcher>(this);
 
   std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
   DVLOG(1) << "DM token = " << (dm_token.empty() ? "none" : "from persistence");
@@ -331,13 +355,6 @@ void ChromeBrowserPolicyConnector::RegisterForPolicyWithEnrollmentTokenCallback(
   machine_level_user_cloud_policy_fetcher_->SetupRegistrationAndFetchPolicy(
       dm_token, client_id);
   NotifyMachineLevelUserCloudPolicyRegisterFinished(true);
-}
-
-void ChromeBrowserPolicyConnector::
-    NotifyMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) {
-  for (auto& observer : observers_) {
-    observer.OnMachineLevelUserCloudPolicyRegisterFinished(succeeded);
-  }
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
