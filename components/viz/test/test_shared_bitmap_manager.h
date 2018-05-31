@@ -24,10 +24,8 @@ class TestSharedBitmapManager : public SharedBitmapManager {
 
   // SharedBitmapManager implementation.
   std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
-      const gfx::Size& size,
-      ResourceFormat format,
-      const SharedBitmapId& id) override;
-  base::UnguessableToken GetSharedBitmapTracingGUIDFromId(
+      const gfx::Size&,
+      ResourceFormat,
       const SharedBitmapId& id) override;
   bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                   const SharedBitmapId& id) override;

@@ -149,7 +149,12 @@ bool DisplayResourceProvider::OnMemoryDump(
             resource.gl_id);
         break;
       case ResourceType::kBitmap:
-        shared_memory_guid = resource.shared_bitmap_tracing_guid;
+        // If the resource comes from out of process, it will have this id,
+        // which we prefer. Otherwise, we fall back to the SharedBitmapGUID
+        // which can be generated for in-process bitmaps.
+        shared_memory_guid = resource.shared_bitmap->GetCrossProcessGUID();
+        if (shared_memory_guid.is_empty())
+          guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
         break;
     }
 
@@ -320,6 +325,7 @@ void DisplayResourceProvider::ReceiveFromChild(
       resource = InsertResource(
           local_id, internal::Resource(it->size, ResourceType::kBitmap,
                                        it->format, it->color_space));
+      resource->has_shared_bitmap_id = true;
       resource->shared_bitmap_id = it->mailbox_holder.mailbox;
     } else {
       resource = InsertResource(
@@ -414,8 +420,8 @@ void DisplayResourceProvider::PopulateSkBitmapWithResource(
   DCHECK(IsBitmapFormatSupported(resource->format));
   SkImageInfo info = SkImageInfo::MakeN32Premul(resource->size.width(),
                                                 resource->size.height());
-  bool pixels_installed = sk_bitmap->installPixels(
-      info, resource->shared_bitmap->pixels(), info.minRowBytes());
+  bool pixels_installed =
+      sk_bitmap->installPixels(info, resource->pixels, info.minRowBytes());
   DCHECK(pixels_installed);
 }
 
@@ -428,6 +434,14 @@ void DisplayResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
     gl->DeleteTextures(1, &resource->gl_id);
+    resource->gl_id = 0;
+  }
+
+  if (resource->owned_shared_bitmap) {
+    DCHECK_EQ(ResourceType::kBitmap, resource->type);
+    resource->shared_bitmap = nullptr;
+    resource->pixels = nullptr;
+    resource->owned_shared_bitmap = nullptr;
   }
 
   resources_.erase(it);
@@ -475,16 +489,14 @@ const internal::Resource* DisplayResourceProvider::LockForRead(ResourceId id) {
     resource->SetLocallyUsed();
   }
 
-  if (!resource->shared_bitmap && !resource->is_gpu_resource_type() &&
+  if (!resource->pixels && resource->has_shared_bitmap_id &&
       shared_bitmap_manager_) {
     std::unique_ptr<SharedBitmap> bitmap =
         shared_bitmap_manager_->GetSharedBitmapFromId(
             resource->size, resource->format, resource->shared_bitmap_id);
     if (bitmap) {
-      resource->shared_bitmap = std::move(bitmap);
-      resource->shared_bitmap_tracing_guid =
-          shared_bitmap_manager_->GetSharedBitmapTracingGUIDFromId(
-              resource->shared_bitmap_id);
+      resource->SetSharedBitmap(bitmap.get());
+      resource->owned_shared_bitmap = std::move(bitmap);
     }
   }
 
@@ -858,7 +870,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
         ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
                                            resource->format),
         kPremul_SkAlphaType, nullptr);
-  } else if (resource->shared_bitmap) {
+  } else if (resource->pixels) {
     SkBitmap sk_bitmap;
     resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
     sk_bitmap.setImmutable();
