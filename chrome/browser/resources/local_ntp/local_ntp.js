@@ -86,7 +86,7 @@ var CLASSES = {
   RIPPLE_EFFECT: 'ripple-effect',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
-  HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
+  HIDE_FAKEBOX: 'hide-fakebox',
   HIDE_NOTIFICATION: 'mv-notice-hide',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
@@ -574,7 +574,7 @@ function onInputStart() {
   if (isFakeboxFocused()) {
     setFakeboxFocus(false);
     setFakeboxDragFocus(false);
-    setFakeboxAndLogoVisibility(false);
+    setFakeboxVisibility(false);
   }
 }
 
@@ -584,7 +584,7 @@ function onInputStart() {
  * (re-enables the fakebox and unhides the logo.)
  */
 function onInputCancel() {
-  setFakeboxAndLogoVisibility(true);
+  setFakeboxVisibility(true);
 }
 
 
@@ -624,8 +624,8 @@ function isFakeboxClick(event) {
 /**
  * @param {boolean} show True to show the fakebox and logo.
  */
-function setFakeboxAndLogoVisibility(show) {
-  document.body.classList.toggle(CLASSES.HIDE_FAKEBOX_AND_LOGO, !show);
+function setFakeboxVisibility(show) {
+  document.body.classList.toggle(CLASSES.HIDE_FAKEBOX, !show);
 }
 
 
