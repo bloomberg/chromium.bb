@@ -26,7 +26,8 @@ class RemoteRequestFailure(Exception):
 
 # Contains the results of a single scheduled build.
 ScheduledBuild = collections.namedtuple(
-    'ScheduledBuild', ('buildbucket_id', 'build_config', 'url', 'created_ts'))
+    'ScheduledBuild',
+    ('bucket', 'buildbucket_id', 'build_config', 'url', 'created_ts'))
 
 
 def SlaveBuildSet(master_buildbucket_id):
@@ -47,9 +48,10 @@ class RequestBuild(object):
   """Request a builder via buildbucket."""
   # Buildbucket_put response must contain 'buildbucket_bucket:bucket]',
   # '[config:config_name] and '[buildbucket_id:id]'.
-  BUILDBUCKET_PUT_RESP_FORMAT = ('Successfully sent PUT request to '
-                                 '[buildbucket_bucket:%s] '
-                                 'with [config:%s] [buildbucket_id:%s].')
+  BUILDBUCKET_PUT_RESP_FORMAT = (
+      'Successfully sent PUT request to '
+      '[buildbucket_bucket:%(bucket)s] '
+      'with [config:%(build_config)s] [buildbucket_id:%(buildbucket_id)s].')
 
   def __init__(self,
                build_config,
@@ -172,9 +174,10 @@ class RequestBuild(object):
     url = tree_status.ConstructLegolandBuildURL(buildbucket_id)
     created_ts = buildbucket_lib.GetBuildCreated_ts(content)
 
-    result = ScheduledBuild(buildbucket_id, self.build_config, url, created_ts)
+    result = ScheduledBuild(
+        self.bucket, buildbucket_id, self.build_config, url, created_ts)
 
-    logging.info(self.BUILDBUCKET_PUT_RESP_FORMAT, result)
+    logging.info(self.BUILDBUCKET_PUT_RESP_FORMAT, result._asdict())
 
     return result
 

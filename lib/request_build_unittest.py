@@ -191,6 +191,21 @@ class RequestBuildHelperTestsMock(RequestBuildHelperTestsBase):
     job = self._CreateJobMax()
     job.Submit(testjob=True, dryrun=True)
 
+  def testLogGeneration(self):
+    """Validate an import log message."""
+    sb = request_build.ScheduledBuild(
+        'bucket', 'buildbucket_id', 'build_config', 'url', 'created_ts')
+
+    msg = request_build.RequestBuild.BUILDBUCKET_PUT_RESP_FORMAT % sb._asdict()
+
+    expected = ('Successfully sent PUT request to [buildbucket_bucket:bucket] '
+                'with [config:build_config] [buildbucket_id:buildbucket_id].')
+
+    # This test both validates that we can generate the log message, and that
+    # it's format hasn't changed. Since there are scripts that parse it via
+    # regex, the later is important.
+    self.assertEqual(msg, expected)
+
 
 class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
   """Perform real buildbucket requests against a test instance."""
@@ -251,6 +266,7 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
     self.assertEqual(
         result,
         request_build.ScheduledBuild(
+            bucket='luci.chromeos.general',
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin-tryjob',
             url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
@@ -297,6 +313,7 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
     self.assertEqual(
         result,
         request_build.ScheduledBuild(
+            bucket='test_bucket',
             buildbucket_id=result.buildbucket_id,
             build_config='amd64-generic-paladin',
             url=(u'http://cros-goldeneye/chromeos/healthmonitoring/'
