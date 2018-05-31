@@ -2320,5 +2320,5 @@ fuzzer_test("smb_url_fuzzer") {
 
   dict = "smb_client/fuzzer_data/smb_url_fuzzer.dict"
 
-  # Corpus is stored at gs://clusterfuzz-corpus/libfuzzer/smb_url_corpus_static.
+  seed_corpus = "smb_client/fuzzer_data/smb_url_corpus"
 }
