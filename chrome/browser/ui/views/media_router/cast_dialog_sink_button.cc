@@ -80,6 +80,19 @@ std::unique_ptr<views::View> CreateSecondaryIconForSink(
   return nullptr;
 }
 
+base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
+  if (!sink.status_text.empty())
+    return sink.status_text;
+  switch (sink.state) {
+    case UIMediaSinkState::AVAILABLE:
+      return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_AVAILABLE);
+    case UIMediaSinkState::CONNECTING:
+      return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_CONNECTING);
+    default:
+      return base::string16();
+  }
+}
+
 }  // namespace
 
 CastDialogSinkButton::CastDialogSinkButton(
@@ -88,7 +101,7 @@ CastDialogSinkButton::CastDialogSinkButton(
     : HoverButton(button_listener,
                   CreatePrimaryIconForSink(sink),
                   sink.friendly_name,
-                  sink.status_text,
+                  GetStatusTextForSink(sink),
                   CreateSecondaryIconForSink(sink)),
       sink_(sink) {}
 
