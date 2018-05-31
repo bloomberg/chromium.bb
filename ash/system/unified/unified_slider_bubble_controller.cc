@@ -6,6 +6,7 @@
 
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
+#include "ash/system/keyboard_brightness/unified_keyboard_brightness_slider_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 
@@ -62,8 +63,14 @@ void UnifiedSliderBubbleController::OnOutputMuteChanged(bool mute_on,
   ShowBubble(SLIDER_TYPE_VOLUME);
 }
 
-void UnifiedSliderBubbleController::OnBrightnessChanged() {
-  ShowBubble(SLIDER_TYPE_DISPLAY_BRIGHTNESS);
+void UnifiedSliderBubbleController::OnDisplayBrightnessChanged(bool by_user) {
+  if (by_user)
+    ShowBubble(SLIDER_TYPE_DISPLAY_BRIGHTNESS);
+}
+
+void UnifiedSliderBubbleController::OnKeyboardBrightnessChanged(bool by_user) {
+  if (by_user)
+    ShowBubble(SLIDER_TYPE_KEYBOARD_BRIGHTNESS);
 }
 
 void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
@@ -127,6 +134,11 @@ void UnifiedSliderBubbleController::CreateSliderController() {
     case SLIDER_TYPE_DISPLAY_BRIGHTNESS:
       slider_controller_ =
           std::make_unique<UnifiedBrightnessSliderController>(tray_->model());
+      return;
+    case SLIDER_TYPE_KEYBOARD_BRIGHTNESS:
+      slider_controller_ =
+          std::make_unique<UnifiedKeyboardBrightnessSliderController>(
+              tray_->model());
       return;
   }
 }

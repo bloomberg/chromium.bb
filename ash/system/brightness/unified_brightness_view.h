@@ -22,7 +22,7 @@ class UnifiedBrightnessView : public UnifiedSliderView,
   ~UnifiedBrightnessView() override;
 
   // UnifiedSystemTrayModel::Observer:
-  void OnBrightnessChanged() override;
+  void OnDisplayBrightnessChanged(bool by_user) override;
 
  private:
   UnifiedSystemTrayModel* const model_;

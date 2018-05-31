@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -14,6 +15,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/unified/unified_slider_view.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,26 +37,6 @@
 
 namespace ash {
 namespace tray {
-
-namespace {
-
-// A slider that ignores inputs.
-class ReadOnlySlider : public views::Slider {
- public:
-  ReadOnlySlider() : Slider(nullptr) {}
-
- private:
-  // views::View:
-  bool OnMousePressed(const ui::MouseEvent& event) override { return false; }
-  bool OnMouseDragged(const ui::MouseEvent& event) override { return false; }
-  void OnMouseReleased(const ui::MouseEvent& event) override {}
-  bool OnKeyPressed(const ui::KeyEvent& event) override { return false; }
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override {}
-};
-
-}  // namespace
 
 class KeyboardBrightnessView : public TabletModeObserver, public views::View {
  public:
@@ -156,6 +138,9 @@ void TrayKeyboardBrightness::KeyboardBrightnessChanged(
 
   if (change.cause() !=
       power_manager::BacklightBrightnessChange_Cause_USER_REQUEST)
+    return;
+
+  if (features::IsSystemTrayUnifiedEnabled())
     return;
 
   if (brightness_view_ && brightness_view_->visible())
