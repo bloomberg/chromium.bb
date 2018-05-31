@@ -6,6 +6,7 @@
 #include "base/containers/span.h"
 #include "base/i18n/icu_util.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"  // nogncheck
+#include "content/browser/web_package/signed_exchange_prologue.h"  // nogncheck
 
 namespace content {
 
@@ -18,14 +19,14 @@ struct IcuEnvironment {
 IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (size < SignedExchangeEnvelope::kEncodedLengthInBytes)
+  if (size < SignedExchangePrologue::kEncodedLengthInBytes)
     return 0;
   auto encoded_length =
-      base::make_span(data, SignedExchangeEnvelope::kEncodedLengthInBytes);
+      base::make_span(data, SignedExchangePrologue::kEncodedLengthInBytes);
   size_t header_len =
-      SignedExchangeEnvelope::ParseEncodedLength(encoded_length);
-  data += SignedExchangeEnvelope::kEncodedLengthInBytes;
-  size -= SignedExchangeEnvelope::kEncodedLengthInBytes;
+      SignedExchangePrologue::ParseEncodedLength(encoded_length);
+  data += SignedExchangePrologue::kEncodedLengthInBytes;
+  size -= SignedExchangePrologue::kEncodedLengthInBytes;
 
   // Copy the header into a separate buffer so that out-of-bounds access can be
   // detected.

@@ -1731,6 +1731,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_error.h",
     "web_package/signed_exchange_handler.cc",
     "web_package/signed_exchange_handler.h",
+    "web_package/signed_exchange_prologue.cc",
+    "web_package/signed_exchange_prologue.h",
     "web_package/signed_exchange_signature_header_field.cc",
     "web_package/signed_exchange_signature_header_field.h",
     "web_package/signed_exchange_signature_verifier.cc",

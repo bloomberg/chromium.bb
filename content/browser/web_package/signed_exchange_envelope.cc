@@ -259,16 +259,6 @@ bool ParseResponseMap(const cbor::CBORValue& value,
 
 }  // namespace
 
-constexpr size_t SignedExchangeEnvelope::kEncodedLengthInBytes;
-
-// static
-size_t SignedExchangeEnvelope::ParseEncodedLength(
-    base::span<const uint8_t> input) {
-  DCHECK_EQ(input.size(), SignedExchangeEnvelope::kEncodedLengthInBytes);
-  return static_cast<size_t>(input[0]) << 16 |
-         static_cast<size_t>(input[1]) << 8 | static_cast<size_t>(input[2]);
-}
-
 // static
 base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
     base::span<const uint8_t> input,

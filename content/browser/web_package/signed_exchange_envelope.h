@@ -28,12 +28,6 @@ class SignedExchangeDevToolsProxy;
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 class CONTENT_EXPORT SignedExchangeEnvelope {
  public:
-  static constexpr size_t kEncodedLengthInBytes = 3;
-  // Parse encoded length of the variable-length field in the signed exchange.
-  // Note: |input| must be pointing to a valid memory address that has at least
-  // |kEncodedLengthInBytes|.
-  static size_t ParseEncodedLength(base::span<const uint8_t> input);
-
   using HeaderMap = std::map<std::string, std::string>;
 
   // Parse headers from the application/signed-exchange;v=b0 format.
