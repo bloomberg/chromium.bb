@@ -75,7 +75,7 @@ void ImageLayerBridge::SetUV(const FloatPoint& left_top,
 void ImageLayerBridge::Dispose() {
   if (layer_) {
     GraphicsLayer::UnregisterContentsLayer(layer_.get());
-    layer_->ClearTexture();
+    layer_->ClearClient();
     layer_ = nullptr;
   }
   image_ = nullptr;
