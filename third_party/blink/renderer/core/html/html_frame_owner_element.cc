@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
@@ -95,6 +96,30 @@ bool IsFrameProbablyHidden(const DOMRectReadOnly& bounding_client_rect) {
     return true;
 
   return false;
+}
+
+int GetLazyFrameLoadingViewportDistanceThresholdPx(const Document& document) {
+  const Settings* settings = document.GetSettings();
+  if (!settings)
+    return 0;
+
+  DCHECK(document.GetFrame() && document.GetFrame()->Client());
+  switch (document.GetFrame()->Client()->GetEffectiveConnectionType()) {
+    case WebEffectiveConnectionType::kTypeUnknown:
+      return settings->GetLazyFrameLoadingDistanceThresholdPxUnknown();
+    case WebEffectiveConnectionType::kTypeOffline:
+      return settings->GetLazyFrameLoadingDistanceThresholdPxOffline();
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      return settings->GetLazyFrameLoadingDistanceThresholdPxSlow2G();
+    case WebEffectiveConnectionType::kType2G:
+      return settings->GetLazyFrameLoadingDistanceThresholdPx2G();
+    case WebEffectiveConnectionType::kType3G:
+      return settings->GetLazyFrameLoadingDistanceThresholdPx3G();
+    case WebEffectiveConnectionType::kType4G:
+      return settings->GetLazyFrameLoadingDistanceThresholdPx4G();
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace
@@ -441,7 +466,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
       DCHECK(!lazy_load_intersection_observer_);
 
       lazy_load_intersection_observer_ = IntersectionObserver::Create(
-          {Length(kLazyLoadRootMarginPx, kFixed)},
+          {Length(GetLazyFrameLoadingViewportDistanceThresholdPx(GetDocument()),
+                  kFixed)},
           {std::numeric_limits<float>::min()}, &GetDocument(),
           WTF::BindRepeating(&HTMLFrameOwnerElement::LoadIfHiddenOrNearViewport,
                              WrapWeakPersistent(this), request,

@@ -3003,6 +3003,30 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
+  if (base::FeatureList::IsEnabled(features::kLazyFrameLoading)) {
+    const char* param_name =
+        web_prefs->data_saver_enabled
+            ? "lazy_frame_loading_distance_thresholds_px_by_ect"
+            : "lazy_frame_loading_distance_thresholds_px_by_ect_with_data_"
+              "saver_enabled";
+
+    base::StringPairs pairs;
+    base::SplitStringIntoKeyValuePairs(
+        base::GetFieldTrialParamValueByFeature(features::kLazyFrameLoading,
+                                               param_name),
+        ':', ',', &pairs);
+
+    for (const auto& pair : pairs) {
+      base::Optional<net::EffectiveConnectionType> effective_connection_type =
+          net::GetEffectiveConnectionTypeForName(pair.first);
+      int value = 0;
+      if (effective_connection_type && base::StringToInt(pair.second, &value)) {
+        web_prefs->lazy_frame_loading_distance_thresholds_px
+            [effective_connection_type.value()] = value;
+      }
+    }
+  }
+
 #if !defined(OS_ANDROID)
   // If autoplay is allowed by policy then update the autoplay policy in web
   // preferences.

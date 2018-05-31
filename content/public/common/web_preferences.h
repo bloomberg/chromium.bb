@@ -306,6 +306,13 @@ struct CONTENT_EXPORT WebPreferences {
   // Whether Picture-in-Picture is enabled.
   bool picture_in_picture_enabled;
 
+  // Specifies how close a lazily loaded iframe should be from the viewport
+  // before it should start being loaded in, depending on the effective
+  // connection type of the current network. Blink will use the default distance
+  // threshold for effective connection types that aren't specified here.
+  std::map<net::EffectiveConnectionType, int>
+      lazy_frame_loading_distance_thresholds_px;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

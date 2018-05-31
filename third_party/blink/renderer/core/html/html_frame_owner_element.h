@@ -120,10 +120,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void CancelPendingLazyLoad();
 
-  // TODO(sclittle): Make the root margins configurable via field trial
-  // params instead of just hardcoding the value here.
-  static constexpr int kLazyLoadRootMarginPx = 800;
-
   void Trace(blink::Visitor*) override;
 
  protected:

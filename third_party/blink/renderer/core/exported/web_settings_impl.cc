@@ -724,4 +724,34 @@ void WebSettingsImpl::SetLowPriorityIframesThreshold(
   settings_->SetLowPriorityIframesThreshold(effective_connection_type);
 }
 
+void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPxUnknown(
+    int distance_px) {
+  settings_->SetLazyFrameLoadingDistanceThresholdPxUnknown(distance_px);
+}
+
+void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPxOffline(
+    int distance_px) {
+  settings_->SetLazyFrameLoadingDistanceThresholdPxOffline(distance_px);
+}
+
+void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPxSlow2G(
+    int distance_px) {
+  settings_->SetLazyFrameLoadingDistanceThresholdPxSlow2G(distance_px);
+}
+
+void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPx2G(
+    int distance_px) {
+  settings_->SetLazyFrameLoadingDistanceThresholdPx2G(distance_px);
+}
+
+void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPx3G(
+    int distance_px) {
+  settings_->SetLazyFrameLoadingDistanceThresholdPx3G(distance_px);
+}
+
+void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPx4G(
+    int distance_px) {
+  settings_->SetLazyFrameLoadingDistanceThresholdPx4G(distance_px);
+}
+
 }  // namespace blink
