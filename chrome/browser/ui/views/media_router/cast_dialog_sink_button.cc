@@ -10,6 +10,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/vector_icons.h"
 
@@ -112,6 +113,15 @@ void CastDialogSinkButton::OnBlur() {
   Button::OnBlur();
   if (is_selected_)
     SnapInkDropToActivated();
+}
+
+std::unique_ptr<views::InkDrop> CastDialogSinkButton::CreateInkDrop() {
+  auto ink_drop = HoverButton::CreateInkDrop();
+  // Without overriding this value, the ink drop would fade in (as opposed to
+  // snapping), which results in flickers when updating sinks.
+  static_cast<views::InkDropImpl*>(ink_drop.get())
+      ->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
+  return ink_drop;
 }
 
 base::string16 CastDialogSinkButton::GetActionText() const {
