@@ -228,7 +228,6 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   ScreenOrientationControllerTestApi(
       Shell::Get()->screen_orientation_controller())
       .UpdateNaturalOrientation();
-  ash_test_helper_->NotifyClientAboutAcceleratedWidgets();
 }
 
 aura::Window* AshTestBase::CurrentContext() {

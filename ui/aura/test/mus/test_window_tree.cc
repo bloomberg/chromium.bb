@@ -8,7 +8,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/manager/display_manager.h"
 
 namespace aura {
 
@@ -39,22 +38,6 @@ base::Optional<std::vector<uint8_t>> TestWindowTree::GetLastPropertyValue() {
 base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
 TestWindowTree::GetLastNewWindowProperties() {
   return std::move(last_new_window_properties_);
-}
-
-void TestWindowTree::NotifyClientAboutAcceleratedWidgets(
-    display::DisplayManager* display_manager) {
-  int synth_accelerated_widget = 1;
-  for (const auto& display : display_manager->active_display_list()) {
-#if defined(OS_WIN)
-    gfx::AcceleratedWidget widget =
-        reinterpret_cast<gfx::AcceleratedWidget>(synth_accelerated_widget);
-#else
-    gfx::AcceleratedWidget widget =
-        static_cast<gfx::AcceleratedWidget>(synth_accelerated_widget);
-#endif
-    window_manager_->WmOnAcceleratedWidgetForDisplay(display.id(), widget);
-    ++synth_accelerated_widget;
-  }
 }
 
 void TestWindowTree::AddScheduledEmbedToken(

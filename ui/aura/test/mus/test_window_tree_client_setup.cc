@@ -43,11 +43,6 @@ void TestWindowTreeClientSetup::InitWithoutEmbed(
       .SetTree(window_tree_.get());
 }
 
-void TestWindowTreeClientSetup::NotifyClientAboutAcceleratedWidgets(
-    display::DisplayManager* display_manager) {
-  window_tree_->NotifyClientAboutAcceleratedWidgets(display_manager);
-}
-
 std::unique_ptr<WindowTreeClient>
 TestWindowTreeClientSetup::OwnWindowTreeClient() {
   DCHECK(window_tree_client_);

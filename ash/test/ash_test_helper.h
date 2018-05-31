@@ -84,8 +84,6 @@ class AshTestHelper {
 
   void RunAllPendingInMessageLoop();
 
-  void NotifyClientAboutAcceleratedWidgets();
-
   PrefService* GetLocalStatePrefService();
 
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }

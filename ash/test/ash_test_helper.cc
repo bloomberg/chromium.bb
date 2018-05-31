@@ -253,17 +253,6 @@ void AshTestHelper::RunAllPendingInMessageLoop() {
   run_loop.RunUntilIdle();
 }
 
-void AshTestHelper::NotifyClientAboutAcceleratedWidgets() {
-  if (config_ == Config::CLASSIC)
-    return;
-  if (base::FeatureList::IsEnabled(features::kMash))
-    return;
-  // TODO(crbug.com/841941): Remove this. Config::MUS is deprecated.
-  Shell* shell = Shell::Get();
-  window_tree_client_setup_.NotifyClientAboutAcceleratedWidgets(
-      shell->display_manager());
-}
-
 PrefService* AshTestHelper::GetLocalStatePrefService() {
   return Shell::Get()->local_state_.get();
 }
@@ -309,7 +298,6 @@ void AshTestHelper::CreateMashWindowManager() {
   window_tree_client_private_ =
       std::make_unique<aura::WindowTreeClientPrivate>(window_tree_client);
   window_tree_client_private_->CallOnConnect();
-  NotifyClientAboutAcceleratedWidgets();
 }
 
 void AshTestHelper::CreateShell() {
