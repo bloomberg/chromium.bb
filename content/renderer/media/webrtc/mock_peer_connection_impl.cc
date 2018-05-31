@@ -162,7 +162,7 @@ std::vector<std::string> FakeRtpSender::stream_ids() const {
   return {};
 }
 
-webrtc::RtpParameters FakeRtpSender::GetParameters() const {
+webrtc::RtpParameters FakeRtpSender::GetParameters() {
   NOTIMPLEMENTED();
   return webrtc::RtpParameters();
 }
