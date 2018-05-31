@@ -718,6 +718,10 @@ void CrostiniManager::LaunchContainerTerminal(
       kCrostiniCroshBuiltinAppId);
   std::string vm_name_param = net::EscapeQueryParamValue(
       base::StringPrintf("--vm_name=%s", vm_name.c_str()), false);
+  std::string owner_id_param = net::EscapeQueryParamValue(
+      base::StringPrintf("--owner_id=%s",
+                         CryptohomeIdForProfile(profile).c_str()),
+      false);
   std::string lxd_dir =
       net::EscapeQueryParamValue("LXD_DIR=/mnt/stateful/lxd", false);
   std::string lxd_conf =
@@ -726,17 +730,10 @@ void CrostiniManager::LaunchContainerTerminal(
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
           kCrostiniCroshBuiltinAppId);
 
-  std::vector<base::StringPiece> pieces = {vsh_crosh,
-                                           vm_name_param,
-                                           "--",
-                                           lxd_dir,
-                                           lxd_conf,
-                                           "run_container.sh",
-                                           "--container_name",
-                                           container_name,
-                                           "--user",
-                                           container_username,
-                                           "--shell"};
+  std::vector<base::StringPiece> pieces = {
+      vsh_crosh,      vm_name_param, owner_id_param,     "--",
+      lxd_dir,        lxd_conf,      "run_container.sh", "--container_name",
+      container_name, "--user",      container_username, "--shell"};
 
   GURL vsh_in_crosh_url(base::JoinString(pieces, "&args[]="));
 
