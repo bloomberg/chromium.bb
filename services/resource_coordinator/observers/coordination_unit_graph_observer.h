@@ -11,7 +11,7 @@
 namespace resource_coordinator {
 
 class CoordinationUnitBase;
-class CoordinationUnitManager;
+class CoordinationUnitGraph;
 class FrameCoordinationUnitImpl;
 class PageCoordinationUnitImpl;
 class ProcessCoordinationUnitImpl;
@@ -29,7 +29,7 @@ class SystemCoordinationUnitImpl;
 //
 // To create and install a new observer:
 //   (1) Derive from this class.
-//   (2) Register by calling on |coordination_unit_manager().ResgiterObserver|
+//   (2) Register by calling on |coordination_unit_graph().RegisterObserver|
 //       inside of the ResourceCoordinatorService::Create.
 class CoordinationUnitGraphObserver {
  public:
@@ -91,17 +91,17 @@ class CoordinationUnitGraphObserver {
       const SystemCoordinationUnitImpl* system_cu,
       const mojom::Event event) {}
 
-  void set_coordination_unit_manager(
-      CoordinationUnitManager* coordination_unit_manager) {
-    coordination_unit_manager_ = coordination_unit_manager;
+  void set_coordination_unit_graph(
+      CoordinationUnitGraph* coordination_unit_graph) {
+    coordination_unit_graph_ = coordination_unit_graph;
   }
 
-  const CoordinationUnitManager& coordination_unit_manager() const {
-    return *coordination_unit_manager_;
+  const CoordinationUnitGraph& coordination_unit_graph() const {
+    return *coordination_unit_graph_;
   }
 
  private:
-  CoordinationUnitManager* coordination_unit_manager_ = nullptr;
+  CoordinationUnitGraph* coordination_unit_graph_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraphObserver);
 };

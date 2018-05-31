@@ -9,6 +9,7 @@
 
 namespace resource_coordinator {
 
+class CoordinationUnitGraph;
 class FrameCoordinationUnitImpl;
 class PageCoordinationUnitImpl;
 class ProcessCoordinationUnitImpl;
@@ -26,7 +27,8 @@ class SystemCoordinationUnitImpl;
 // Pr: process(pid:1)
 // Pg: page
 struct MockSinglePageInSingleProcessCoordinationUnitGraph {
-  MockSinglePageInSingleProcessCoordinationUnitGraph();
+  MockSinglePageInSingleProcessCoordinationUnitGraph(
+      CoordinationUnitGraph* graph);
   ~MockSinglePageInSingleProcessCoordinationUnitGraph();
   TestCoordinationUnitWrapper<SystemCoordinationUnitImpl> system;
   TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> frame;
@@ -49,7 +51,8 @@ struct MockSinglePageInSingleProcessCoordinationUnitGraph {
 // Pr: process(pid:1)
 struct MockMultiplePagesInSingleProcessCoordinationUnitGraph
     : public MockSinglePageInSingleProcessCoordinationUnitGraph {
-  MockMultiplePagesInSingleProcessCoordinationUnitGraph();
+  MockMultiplePagesInSingleProcessCoordinationUnitGraph(
+      CoordinationUnitGraph* graph);
   ~MockMultiplePagesInSingleProcessCoordinationUnitGraph();
   TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> other_frame;
   TestCoordinationUnitWrapper<PageCoordinationUnitImpl> other_page;
@@ -73,7 +76,8 @@ struct MockMultiplePagesInSingleProcessCoordinationUnitGraph
 // OPr: other_process(pid:2)
 struct MockSinglePageWithMultipleProcessesCoordinationUnitGraph
     : public MockSinglePageInSingleProcessCoordinationUnitGraph {
-  MockSinglePageWithMultipleProcessesCoordinationUnitGraph();
+  MockSinglePageWithMultipleProcessesCoordinationUnitGraph(
+      CoordinationUnitGraph* graph);
   ~MockSinglePageWithMultipleProcessesCoordinationUnitGraph();
   TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> child_frame;
   TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> other_process;
@@ -99,7 +103,8 @@ struct MockSinglePageWithMultipleProcessesCoordinationUnitGraph
 // OPr: other_process(pid:2)
 struct MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph
     : public MockMultiplePagesInSingleProcessCoordinationUnitGraph {
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph();
+  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph(
+      CoordinationUnitGraph* graph);
   ~MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph();
   TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> child_frame;
   TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl> other_process;

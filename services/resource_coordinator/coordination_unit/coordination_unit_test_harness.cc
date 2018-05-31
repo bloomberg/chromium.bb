@@ -22,7 +22,7 @@ CoordinationUnitTestHarness::CoordinationUnitTestHarness()
     : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
                 base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
       service_ref_factory_(base::Bind(&OnLastServiceRefDestroyed)),
-      provider_(&service_ref_factory_, &coordination_unit_manager_) {}
+      provider_(&service_ref_factory_, &coordination_unit_graph_) {}
 
 CoordinationUnitTestHarness::~CoordinationUnitTestHarness() = default;
 

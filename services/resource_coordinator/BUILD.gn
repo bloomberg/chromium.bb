@@ -14,10 +14,10 @@ source_set("lib") {
   sources = [
     "coordination_unit/coordination_unit_base.cc",
     "coordination_unit/coordination_unit_base.h",
+    "coordination_unit/coordination_unit_graph.cc",
+    "coordination_unit/coordination_unit_graph.h",
     "coordination_unit/coordination_unit_introspector_impl.cc",
     "coordination_unit/coordination_unit_introspector_impl.h",
-    "coordination_unit/coordination_unit_manager.cc",
-    "coordination_unit/coordination_unit_manager.h",
     "coordination_unit/coordination_unit_provider_impl.cc",
     "coordination_unit/coordination_unit_provider_impl.h",
     "coordination_unit/frame_coordination_unit_impl.cc",

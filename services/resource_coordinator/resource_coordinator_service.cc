@@ -43,18 +43,17 @@ void ResourceCoordinatorService::OnStart() {
   registry_.AddInterface(
       base::Bind(&PageSignalGeneratorImpl::BindToInterface,
                  base::Unretained(page_signal_generator_impl.get())));
-  coordination_unit_manager_.RegisterObserver(
+  coordination_unit_graph_.RegisterObserver(
       std::move(page_signal_generator_impl));
 
-  coordination_unit_manager_.RegisterObserver(
+  coordination_unit_graph_.RegisterObserver(
       std::make_unique<MetricsCollector>());
 
-  coordination_unit_manager_.RegisterObserver(
-      std::make_unique<IPCVolumeReporter>(
-          std::make_unique<base::OneShotTimer>()));
+  coordination_unit_graph_.RegisterObserver(std::make_unique<IPCVolumeReporter>(
+      std::make_unique<base::OneShotTimer>()));
 
-  coordination_unit_manager_.OnStart(&registry_, ref_factory_.get());
-  coordination_unit_manager_.set_ukm_recorder(ukm_recorder_.get());
+  coordination_unit_graph_.OnStart(&registry_, ref_factory_.get());
+  coordination_unit_graph_.set_ukm_recorder(ukm_recorder_.get());
 
   // TODO(chiniforooshan): The abstract class Coordinator in the
   // public/cpp/memory_instrumentation directory should not be needed anymore.

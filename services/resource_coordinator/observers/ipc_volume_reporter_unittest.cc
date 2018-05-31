@@ -30,7 +30,7 @@ class IPCVolumeReporterTest : public CoordinationUnitTestHarness {
 
   void SetUp() override {
     reporter_ = new TestIPCVolumeReporter();
-    coordination_unit_manager().RegisterObserver(base::WrapUnique(reporter_));
+    coordination_unit_graph()->RegisterObserver(base::WrapUnique(reporter_));
   }
 
  protected:
@@ -43,10 +43,11 @@ class IPCVolumeReporterTest : public CoordinationUnitTestHarness {
 
 TEST_F(IPCVolumeReporterTest, Basic) {
   EXPECT_TRUE(reporter_->mock_timer()->IsRunning());
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
-  coordination_unit_manager().OnCoordinationUnitCreated(cu_graph.process.get());
-  coordination_unit_manager().OnCoordinationUnitCreated(cu_graph.page.get());
-  coordination_unit_manager().OnCoordinationUnitCreated(cu_graph.frame.get());
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
+  coordination_unit_graph()->OnCoordinationUnitCreated(cu_graph.process.get());
+  coordination_unit_graph()->OnCoordinationUnitCreated(cu_graph.page.get());
+  coordination_unit_graph()->OnCoordinationUnitCreated(cu_graph.frame.get());
 
   cu_graph.frame->SetAudibility(true);
   cu_graph.frame->SetNetworkAlmostIdle(true);

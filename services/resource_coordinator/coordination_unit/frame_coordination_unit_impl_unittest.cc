@@ -115,7 +115,8 @@ TEST_F(FrameCoordinationUnitImplTest, RemoveChildFrame) {
 }
 
 TEST_F(FrameCoordinationUnitImplTest, LastAudibleTime) {
-  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
   EXPECT_EQ(base::TimeTicks(), cu_graph.frame->last_audible_time());
   cu_graph.frame->SetAudibility(true);
   AdvanceClock(base::TimeDelta::FromSeconds(1));
@@ -140,7 +141,8 @@ int64_t GetLifecycleState(resource_coordinator::CoordinationUnitBase* cu) {
             GetLifecycleState(cu.get()))
 
 TEST_F(FrameCoordinationUnitImplTest, LifecycleStatesTransitions) {
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph;
+  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
   // Verifying the model.
   ASSERT_TRUE(cu_graph.frame->IsMainFrame());
   ASSERT_TRUE(cu_graph.other_frame->IsMainFrame());

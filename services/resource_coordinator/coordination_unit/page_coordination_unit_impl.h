@@ -23,6 +23,7 @@ class PageCoordinationUnitImpl
 
   PageCoordinationUnitImpl(
       const CoordinationUnitID& id,
+      CoordinationUnitGraph* graph,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~PageCoordinationUnitImpl() override;
 
