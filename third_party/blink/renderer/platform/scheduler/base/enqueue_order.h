@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/synchronization/lock.h"
+#include <atomic>
 
 namespace base {
 namespace sequence_manager {
@@ -41,8 +41,7 @@ class EnqueueOrderGenerator {
   }
 
  private:
-  Lock lock_;
-  EnqueueOrder enqueue_order_;
+  std::atomic_uint64_t enqueue_order_;
 };
 
 }  // namespace internal
