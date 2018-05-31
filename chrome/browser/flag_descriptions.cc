@@ -857,7 +857,8 @@ const char kHarfbuzzRendertextDescription[] =
 const char kViewsCastDialogName[] = "Views Cast dialog";
 const char kViewsCastDialogDescription[] =
     "Replace the WebUI Cast dialog with a Views toolkit dialog. This requires "
-    "#views-browser-windows on Mac.";
+    "#views-browser-windows on Mac. This feature is activated if either this "
+    "flag or #uifood is enabled";
 
 const char kHideActiveAppsFromShelfName[] =
     "Hide running apps (that are not pinned) from the shelf";
