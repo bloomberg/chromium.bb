@@ -22,12 +22,9 @@ ExtensionCookieNotifier::ExtensionCookieNotifier(Profile* profile)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
 
-  network::mojom::CookieManagerPtr manager_ptr;
-
-  content::BrowserContext::GetDefaultStoragePartition(profile)
-      ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&manager_ptr));
-
+  network::mojom::CookieManager* manager_ptr =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetCookieManagerForBrowserProcess();
   network::mojom::CookieChangeListenerPtr listener_ptr;
   binding_.Bind(mojo::MakeRequest(&listener_ptr));
   manager_ptr->AddGlobalChangeListener(std::move(listener_ptr));
