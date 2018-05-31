@@ -63,8 +63,9 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd,
           : xd->cdef_preset[index];
 }
 
-static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
-                             MB_MODE_INFO *const mbmi, int mi_col, int mi_row) {
+static int read_delta_qindex(AV1_COMMON *cm, const MACROBLOCKD *xd,
+                             aom_reader *r, MB_MODE_INFO *const mbmi,
+                             int mi_col, int mi_row) {
   int sign, abs, reduced_delta_qindex = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
   const int b_col = mi_col & (cm->seq_params.mib_size - 1);
@@ -93,8 +94,9 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   }
   return reduced_delta_qindex;
 }
-static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
-                              int lf_id, MB_MODE_INFO *const mbmi, int mi_col,
+static int read_delta_lflevel(AV1_COMMON *cm, const MACROBLOCKD *xd,
+                              aom_reader *r, int lf_id,
+                              MB_MODE_INFO *const mbmi, int mi_col,
                               int mi_row) {
   int sign, abs, reduced_delta_lflevel = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
@@ -273,7 +275,7 @@ int av1_neg_deinterleave(int diff, int ref, int max) {
   }
 }
 
-static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+static int read_segment_id(AV1_COMMON *const cm, const MACROBLOCKD *const xd,
                            int mi_row, int mi_col, aom_reader *r, int skip) {
   int cdf_num;
   const int pred = av1_get_spatial_seg_pred(cm, xd, mi_row, mi_col, &cdf_num);
@@ -316,9 +318,10 @@ static void set_segment_id(AV1_COMMON *cm, int mi_offset, int x_mis, int y_mis,
       cm->current_frame_seg_map[mi_offset + y * cm->mi_cols + x] = segment_id;
 }
 
-static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
-                                 int mi_row, int mi_col, int bsize,
-                                 aom_reader *r, int skip) {
+static int read_intra_segment_id(AV1_COMMON *const cm,
+                                 const MACROBLOCKD *const xd, int mi_row,
+                                 int mi_col, int bsize, aom_reader *r,
+                                 int skip) {
   struct segmentation *const seg = &cm->seg;
   if (!seg->enabled) return 0;  // Default for disabled segmentation
 
