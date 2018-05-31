@@ -201,7 +201,7 @@ def swarming_trigger(swarming, raw_request):
   logging.info('Triggering: %s', raw_request['name'])
 
   result = net.url_read_json(
-      swarming + '/api/swarming/v1/tasks/new', data=raw_request)
+      swarming + '/_ah/api/swarming/v1/tasks/new', data=raw_request)
   if not result:
     on_error.report('Failed to trigger task %s' % raw_request['name'])
     return None
@@ -509,10 +509,10 @@ def retrieve_results(
     None on failure.
   """
   assert timeout is None or isinstance(timeout, float), timeout
-  result_url = '%s/api/swarming/v1/task/%s/result' % (base_url, task_id)
+  result_url = '%s/_ah/api/swarming/v1/task/%s/result' % (base_url, task_id)
   if include_perf:
     result_url += '?include_performance_stats=true'
-  output_url = '%s/api/swarming/v1/task/%s/stdout' % (base_url, task_id)
+  output_url = '%s/_ah/api/swarming/v1/task/%s/stdout' % (base_url, task_id)
   started = now()
   deadline = started + timeout if timeout > 0 else None
   attempt = 0
@@ -1254,7 +1254,7 @@ def CMDbot_delete(parser, args):
 
   result = 0
   for bot in bots:
-    url = '%s/api/swarming/v1/bot/%s/delete' % (options.swarming, bot)
+    url = '%s/_ah/api/swarming/v1/bot/%s/delete' % (options.swarming, bot)
     if net.url_read_json(url, data={}, method='POST') is None:
       print('Deleting %s failed. Probably already gone' % bot)
       result = 1
@@ -1293,7 +1293,7 @@ def CMDbots(parser, args):
   if options.mp and options.non_mp:
     parser.error('Use only one of --mp or --non-mp')
 
-  url = options.swarming + '/api/swarming/v1/bots/list?'
+  url = options.swarming + '/_ah/api/swarming/v1/bots/list?'
   values = []
   if options.dead_only:
     values.append(('is_dead', 'TRUE'))
@@ -1349,7 +1349,7 @@ def CMDcancel(parser, args):
     parser.error('Please specify the task to cancel')
   data = {'kill_running': options.kill_running}
   for task_id in args:
-    url = '%s/api/swarming/v1/task/%s/cancel' % (options.swarming, task_id)
+    url = '%s/_ah/api/swarming/v1/task/%s/cancel' % (options.swarming, task_id)
     resp = net.url_read_json(url, data=data, method='POST')
     if resp is None:
       print('Deleting %s failed. Probably already gone' % task_id)
@@ -1431,7 +1431,7 @@ def CMDpost(parser, args):
   options, args = parser.parse_args(args)
   if len(args) != 1:
     parser.error('Must specify only API name')
-  url = options.swarming + '/api/swarming/v1/' + args[0]
+  url = options.swarming + '/_ah/api/swarming/v1/' + args[0]
   data = sys.stdin.read()
   try:
     resp = net.url_read(url, data=data, method='POST')
@@ -1480,7 +1480,7 @@ def CMDquery(parser, args):
     parser.error(
         'Must specify only method name and optionally query args properly '
         'escaped.')
-  base_url = options.swarming + '/api/swarming/v1/' + args[0]
+  base_url = options.swarming + '/_ah/api/swarming/v1/' + args[0]
   try:
     data, yielder = get_yielder(base_url, options.limit)
     for items in yielder():
@@ -1641,7 +1641,7 @@ def CMDreproduce(parser, args):
     else:
       extra_args = args[1:]
 
-  url = options.swarming + '/api/swarming/v1/task/%s/request' % args[0]
+  url = options.swarming + '/_ah/api/swarming/v1/task/%s/request' % args[0]
   request = net.url_read_json(url)
   if not request:
     print >> sys.stderr, 'Failed to retrieve request data for the task'
@@ -1751,7 +1751,7 @@ def CMDterminate(parser, args):
   options, args = parser.parse_args(args)
   if len(args) != 1:
     parser.error('Please provide the bot id')
-  url = options.swarming + '/api/swarming/v1/bot/%s/terminate' % args[0]
+  url = options.swarming + '/_ah/api/swarming/v1/bot/%s/terminate' % args[0]
   request = net.url_read_json(url, data={})
   if not request:
     print >> sys.stderr, 'Failed to ask for termination'
