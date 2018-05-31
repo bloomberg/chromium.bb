@@ -94,7 +94,8 @@ mojom::ProcessResourceMeasurementBatchPtr CreateMeasurementBatch(
 }  // namespace
 
 TEST_F(SystemCoordinationUnitImplTest, OnProcessCPUUsageReady) {
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph;
+  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
   SystemAndProcessObserver observer;
   cu_graph.system->AddObserver(&observer);
   EXPECT_EQ(0u, observer.system_event_seen_count());
@@ -103,7 +104,8 @@ TEST_F(SystemCoordinationUnitImplTest, OnProcessCPUUsageReady) {
 }
 
 TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
-  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph;
+  MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
   SystemAndProcessObserver observer;
   cu_graph.system->AddObserver(&observer);
   cu_graph.process->AddObserver(&observer);

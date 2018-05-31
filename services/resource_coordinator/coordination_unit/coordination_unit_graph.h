@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_MANAGER_H_
-#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_MANAGER_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_GRAPH_H_
+#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_GRAPH_H_
 
 #include <stdint.h>
 
@@ -13,29 +13,34 @@
 #include "base/macros.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace service_manager {
 template <typename... BinderArgs>
 class BinderRegistryWithArgs;
 struct BindSourceInfo;
 class ServiceContextRefFactory;
-}  // service_manager
+}  // namespace service_manager
 
 namespace resource_coordinator {
 
 class CoordinationUnitBase;
+struct CoordinationUnitID;
 class CoordinationUnitGraphObserver;
 class CoordinationUnitProviderImpl;
+class FrameCoordinationUnitImpl;
+class PageCoordinationUnitImpl;
+class ProcessCoordinationUnitImpl;
 class SystemCoordinationUnitImpl;
 
-// The CoordinationUnitManager is a singleton that encapsulates all
-// aspects of Coordination Units within the resource_coordinator service.
-// All functionality for dealing with CoordinationUnits should be contained
-// within this class or classes that are owned by it.
-class CoordinationUnitManager {
+// The CoordinationUnitGraph represents a graph of the coordination units
+// representing a single system. It vends out new instances of coordination
+// units and indexes them by ID. It also fires the creation and pre-destruction
+// notifications for all coordination units.
+class CoordinationUnitGraph {
  public:
-  CoordinationUnitManager();
-  ~CoordinationUnitManager();
+  CoordinationUnitGraph();
+  ~CoordinationUnitGraph();
 
   void set_ukm_recorder(ukm::UkmRecorder* ukm_recorder) {
     ukm_recorder_ = ukm_recorder;
@@ -50,6 +55,20 @@ class CoordinationUnitManager {
   void OnCoordinationUnitCreated(CoordinationUnitBase* coordination_unit);
   void OnBeforeCoordinationUnitDestroyed(
       CoordinationUnitBase* coordination_unit);
+
+  FrameCoordinationUnitImpl* CreateFrameCoordinationUnit(
+      const CoordinationUnitID& id,
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  PageCoordinationUnitImpl* CreatePageCoordinationUnit(
+      const CoordinationUnitID& id,
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  ProcessCoordinationUnitImpl* CreateProcessCoordinationUnit(
+      const CoordinationUnitID& id,
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+
+  // TODO(siggi): replace the accessor with this function.
+  // SystemCoordinationUnitImpl* FindOrCreateSystemCoordinationUnit(
+  //    std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 
   // Returns the singleton SystemCU.
   SystemCoordinationUnitImpl* system_cu() const { return system_cu_; }
@@ -70,9 +89,9 @@ class CoordinationUnitManager {
   static void Create(
       service_manager::ServiceContextRefFactory* service_ref_factory);
 
-  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitManager);
+  DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraph);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_MANAGER_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_GRAPH_H_

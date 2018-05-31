@@ -6,7 +6,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
@@ -105,7 +105,7 @@ void MetricsCollector::OnFramePropertyChanged(
           metrics_report_record_map_.find(page_cu->id())->second;
       record.first_audible.OnSignalReceived(
           frame_cu->IsMainFrame(), page_cu->TimeSinceLastVisibilityChange(),
-          coordination_unit_manager().ukm_recorder());
+          coordination_unit_graph().ukm_recorder());
     }
   }
 }
@@ -169,7 +169,7 @@ void MetricsCollector::OnFrameEventReceived(
         metrics_report_record_map_.find(page_cu->id())->second;
     record.first_alert_fired.OnSignalReceived(
         frame_cu->IsMainFrame(), page_cu->TimeSinceLastVisibilityChange(),
-        coordination_unit_manager().ukm_recorder());
+        coordination_unit_graph().ukm_recorder());
   } else if (event == mojom::Event::kNonPersistentNotificationCreated) {
     auto* page_cu = frame_cu->GetPageCoordinationUnit();
     // Only record metrics while it is backgrounded.
@@ -180,7 +180,7 @@ void MetricsCollector::OnFrameEventReceived(
         metrics_report_record_map_.find(page_cu->id())->second;
     record.first_non_persistent_notification_created.OnSignalReceived(
         frame_cu->IsMainFrame(), page_cu->TimeSinceLastVisibilityChange(),
-        coordination_unit_manager().ukm_recorder());
+        coordination_unit_graph().ukm_recorder());
   }
 }
 
@@ -195,7 +195,7 @@ void MetricsCollector::OnPageEventReceived(
         metrics_report_record_map_.find(page_cu->id())->second;
     record.first_title_updated.OnSignalReceived(
         true, page_cu->TimeSinceLastVisibilityChange(),
-        coordination_unit_manager().ukm_recorder());
+        coordination_unit_graph().ukm_recorder());
   } else if (event == mojom::Event::kFaviconUpdated) {
     // Only record metrics while it is backgrounded.
     if (page_cu->IsVisible() || !ShouldReportMetrics(page_cu))
@@ -204,7 +204,7 @@ void MetricsCollector::OnPageEventReceived(
         metrics_report_record_map_.find(page_cu->id())->second;
     record.first_favicon_updated.OnSignalReceived(
         true, page_cu->TimeSinceLastVisibilityChange(),
-        coordination_unit_manager().ukm_recorder());
+        coordination_unit_graph().ukm_recorder());
   }
 }
 
@@ -237,7 +237,7 @@ void MetricsCollector::RecordCPUUsageForUkm(
   ukm::builders::CPUUsageMeasurement(state.ukm_source_id)
       .SetCPUUsage(cpu_usage)
       .SetNumberOfCoresidentTabs(num_coresident_tabs)
-      .Record(coordination_unit_manager().ukm_recorder());
+      .Record(coordination_unit_graph().ukm_recorder());
 }
 
 void MetricsCollector::RecordExpectedQueueingTimeForUkm(
@@ -247,7 +247,7 @@ void MetricsCollector::RecordExpectedQueueingTimeForUkm(
   state.num_unreported_eqt_measurements = 0u;
   ukm::builders::ResponsivenessMeasurement(state.ukm_source_id)
       .SetExpectedTaskQueueingDuration(expected_queueing_time)
-      .Record(coordination_unit_manager().ukm_recorder());
+      .Record(coordination_unit_graph().ukm_recorder());
 }
 
 void MetricsCollector::UpdateUkmSourceIdForPage(

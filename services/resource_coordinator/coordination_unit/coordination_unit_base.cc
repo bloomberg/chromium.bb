@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
@@ -59,8 +60,9 @@ CoordinationUnitBase* CoordinationUnitBase::GetCoordinationUnitByID(
   return cu_iter != g_cu_map().end() ? cu_iter->second.get() : nullptr;
 }
 
-CoordinationUnitBase::CoordinationUnitBase(const CoordinationUnitID& id)
-    : id_(id.type, id.id) {}
+CoordinationUnitBase::CoordinationUnitBase(const CoordinationUnitID& id,
+                                           CoordinationUnitGraph* graph)
+    : graph_(graph), id_(id.type, id.id) {}
 
 CoordinationUnitBase::~CoordinationUnitBase() = default;
 

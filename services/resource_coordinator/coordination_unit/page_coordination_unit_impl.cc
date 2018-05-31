@@ -15,8 +15,9 @@ namespace resource_coordinator {
 
 PageCoordinationUnitImpl::PageCoordinationUnitImpl(
     const CoordinationUnitID& id,
+    CoordinationUnitGraph* graph,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, std::move(service_ref)) {}
+    : CoordinationUnitInterface(id, graph, std::move(service_ref)) {}
 
 PageCoordinationUnitImpl::~PageCoordinationUnitImpl() {
   for (auto* child_frame : frame_coordination_units_)

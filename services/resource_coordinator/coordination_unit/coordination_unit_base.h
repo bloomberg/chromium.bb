@@ -20,6 +20,8 @@
 
 namespace resource_coordinator {
 
+class CoordinationUnitGraph;
+
 // CoordinationUnitBase implements shared functionality among different types of
 // coordination units. A specific type of coordination unit will derive from
 // this class and can override shared funtionality when needed.
@@ -32,7 +34,8 @@ class CoordinationUnitBase {
   static void AssertNoActiveCoordinationUnits();
   static void ClearAllCoordinationUnits();
 
-  CoordinationUnitBase(const CoordinationUnitID& id);
+  CoordinationUnitBase(const CoordinationUnitID& id,
+                       CoordinationUnitGraph* graph);
   virtual ~CoordinationUnitBase();
 
   void Destruct();
@@ -45,6 +48,8 @@ class CoordinationUnitBase {
                                int64_t default_value) const;
 
   const CoordinationUnitID& id() const { return id_; }
+  CoordinationUnitGraph* graph() const { return graph_; }
+
   const base::ObserverList<CoordinationUnitGraphObserver>& observers() const {
     return observers_;
   }
@@ -70,6 +75,7 @@ class CoordinationUnitBase {
   void SendEvent(mojom::Event event);
   void SetProperty(mojom::PropertyType property_type, int64_t value);
 
+  CoordinationUnitGraph* const graph_;
   const CoordinationUnitID id_;
 
  private:
@@ -87,9 +93,11 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
  public:
   static CoordinationUnitClass* Create(
       const CoordinationUnitID& id,
+      CoordinationUnitGraph* graph,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
     std::unique_ptr<CoordinationUnitClass> new_cu =
-        std::make_unique<CoordinationUnitClass>(id, std::move(service_ref));
+        std::make_unique<CoordinationUnitClass>(id, graph,
+                                                std::move(service_ref));
     return static_cast<CoordinationUnitClass*>(
         CoordinationUnitBase::AddNewCoordinationUnit(std::move(new_cu)));
   }
@@ -108,8 +116,10 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
   CoordinationUnitInterface(
       const CoordinationUnitID& id,
+      CoordinationUnitGraph* graph,
+
       std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-      : CoordinationUnitBase(id), binding_(this) {
+      : CoordinationUnitBase(id, graph), binding_(this) {
     service_ref_ = std::move(service_ref);
   }
 

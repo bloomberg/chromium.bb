@@ -10,7 +10,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,10 +22,11 @@ struct CoordinationUnitID;
 template <class CoordinationUnitClass>
 class TestCoordinationUnitWrapper {
  public:
-  static TestCoordinationUnitWrapper<CoordinationUnitClass> Create() {
+  static TestCoordinationUnitWrapper<CoordinationUnitClass> Create(
+      CoordinationUnitGraph* graph) {
     CoordinationUnitID cu_id(CoordinationUnitClass::Type(), std::string());
     return TestCoordinationUnitWrapper<CoordinationUnitClass>(
-        CoordinationUnitClass::Create(cu_id, nullptr));
+        CoordinationUnitClass::Create(cu_id, graph, nullptr));
   }
 
   TestCoordinationUnitWrapper(CoordinationUnitClass* impl) : impl_(impl) {
@@ -55,7 +56,8 @@ class CoordinationUnitTestHarness : public testing::Test {
   TestCoordinationUnitWrapper<CoordinationUnitClass> CreateCoordinationUnit(
       CoordinationUnitID cu_id) {
     return TestCoordinationUnitWrapper<CoordinationUnitClass>(
-        CoordinationUnitClass::Create(cu_id, service_ref_factory_.CreateRef()));
+        CoordinationUnitClass::Create(cu_id, coordination_unit_graph(),
+                                      service_ref_factory_.CreateRef()));
   }
 
   template <class CoordinationUnitClass>
@@ -74,15 +76,15 @@ class CoordinationUnitTestHarness : public testing::Test {
   service_manager::ServiceContextRefFactory* service_context_ref_factory() {
     return &service_ref_factory_;
   }
-  CoordinationUnitManager& coordination_unit_manager() {
-    return coordination_unit_manager_;
+  CoordinationUnitGraph* coordination_unit_graph() {
+    return &coordination_unit_graph_;
   }
   CoordinationUnitProviderImpl* provider() { return &provider_; }
 
  private:
   base::test::ScopedTaskEnvironment task_env_;
   service_manager::ServiceContextRefFactory service_ref_factory_;
-  CoordinationUnitManager coordination_unit_manager_;
+  CoordinationUnitGraph coordination_unit_graph_;
   CoordinationUnitProviderImpl provider_;
 };
 

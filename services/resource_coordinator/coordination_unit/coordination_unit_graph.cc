@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 
 #include <utility>
 
@@ -11,6 +11,9 @@
 #include "base/macros.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
+#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
@@ -23,18 +26,18 @@ class UkmEntryBuilder;
 
 namespace resource_coordinator {
 
-CoordinationUnitManager::CoordinationUnitManager() {
+CoordinationUnitGraph::CoordinationUnitGraph() {
   CoordinationUnitBase::AssertNoActiveCoordinationUnits();
 }
 
-CoordinationUnitManager::~CoordinationUnitManager() {
+CoordinationUnitGraph::~CoordinationUnitGraph() {
   // TODO(oysteine): Keep the map of coordination units as a member of this
   // class, rather than statically inside CoordinationUnitBase, to avoid this
   // manual lifetime management.
   CoordinationUnitBase::ClearAllCoordinationUnits();
 }
 
-void CoordinationUnitManager::OnStart(
+void CoordinationUnitGraph::OnStart(
     service_manager::BinderRegistryWithArgs<
         const service_manager::BindSourceInfo&>* registry,
     service_manager::ServiceContextRefFactory* service_ref_factory) {
@@ -49,16 +52,16 @@ void CoordinationUnitManager::OnStart(
   // service, but rather clients can access it via CoordinationUnitProvider.
   CoordinationUnitID system_cu_id(CoordinationUnitType::kSystem, std::string());
   system_cu_ = SystemCoordinationUnitImpl::Create(
-      system_cu_id, service_ref_factory->CreateRef());
+      system_cu_id, this, service_ref_factory->CreateRef());
 }
 
-void CoordinationUnitManager::RegisterObserver(
+void CoordinationUnitGraph::RegisterObserver(
     std::unique_ptr<CoordinationUnitGraphObserver> observer) {
-  observer->set_coordination_unit_manager(this);
+  observer->set_coordination_unit_graph(this);
   observers_.push_back(std::move(observer));
 }
 
-void CoordinationUnitManager::OnCoordinationUnitCreated(
+void CoordinationUnitGraph::OnCoordinationUnitCreated(
     CoordinationUnitBase* coordination_unit) {
   for (auto& observer : observers_) {
     if (observer->ShouldObserve(coordination_unit)) {
@@ -68,9 +71,28 @@ void CoordinationUnitManager::OnCoordinationUnitCreated(
   }
 }
 
-void CoordinationUnitManager::OnBeforeCoordinationUnitDestroyed(
+void CoordinationUnitGraph::OnBeforeCoordinationUnitDestroyed(
     CoordinationUnitBase* coordination_unit) {
   coordination_unit->BeforeDestroyed();
+}
+
+FrameCoordinationUnitImpl* CoordinationUnitGraph::CreateFrameCoordinationUnit(
+    const CoordinationUnitID& id,
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  return FrameCoordinationUnitImpl::Create(id, this, std::move(service_ref));
+}
+
+PageCoordinationUnitImpl* CoordinationUnitGraph::CreatePageCoordinationUnit(
+    const CoordinationUnitID& id,
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  return PageCoordinationUnitImpl::Create(id, this, std::move(service_ref));
+}
+
+ProcessCoordinationUnitImpl*
+CoordinationUnitGraph::CreateProcessCoordinationUnit(
+    const CoordinationUnitID& id,
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  return ProcessCoordinationUnitImpl::Create(id, this, std::move(service_ref));
 }
 
 }  // namespace resource_coordinator
