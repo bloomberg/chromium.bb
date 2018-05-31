@@ -30,54 +30,21 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/pausable_timer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
-
-class DOMWindowEventQueueTimer final
-    : public GarbageCollectedFinalized<DOMWindowEventQueueTimer>,
-      public PausableTimer {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowEventQueueTimer);
-
- public:
-  DOMWindowEventQueueTimer(DOMWindowEventQueue* event_queue,
-                           ExecutionContext* context)
-      // This queue is unthrottled because throttling IndexedDB events may break
-      // scenarios where several tabs, some of which are backgrounded, access
-      // the same database concurrently.
-      : PausableTimer(context, TaskType::kUnthrottled),
-        event_queue_(event_queue) {}
-
-  // Eager finalization is needed to promptly stop this timer object.
-  // (see DOMTimer comment for more.)
-  EAGERLY_FINALIZE();
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(event_queue_);
-    PausableTimer::Trace(visitor);
-  }
-
- private:
-  void Fired() override { event_queue_->PendingEventTimerFired(); }
-
-  Member<DOMWindowEventQueue> event_queue_;
-  DISALLOW_COPY_AND_ASSIGN(DOMWindowEventQueueTimer);
-};
 
 DOMWindowEventQueue* DOMWindowEventQueue::Create(ExecutionContext* context) {
   return new DOMWindowEventQueue(context);
 }
 
 DOMWindowEventQueue::DOMWindowEventQueue(ExecutionContext* context)
-    : pending_event_timer_(new DOMWindowEventQueueTimer(this, context)),
-      is_closed_(false) {
-  pending_event_timer_->PauseIfNeeded();
-}
+    : context_(context), is_closed_(false) {}
 
 DOMWindowEventQueue::~DOMWindowEventQueue() = default;
 
 void DOMWindowEventQueue::Trace(blink::Visitor* visitor) {
-  visitor->Trace(pending_event_timer_);
+  visitor->Trace(context_);
   visitor->Trace(queued_events_);
   EventQueue::Trace(visitor);
 }
@@ -94,27 +61,30 @@ bool DOMWindowEventQueue::EnqueueEvent(const base::Location& from_here,
   bool was_added = queued_events_.insert(event).is_new_entry;
   DCHECK(was_added);  // It should not have already been in the list.
 
-  if (!pending_event_timer_->IsActive())
-    pending_event_timer_->StartOneShot(TimeDelta(), from_here);
+  // This queue is unthrottled because throttling IndexedDB events may break
+  // scenarios where several tabs, some of which are backgrounded, access
+  // the same database concurrently.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      context_->GetTaskRunner(TaskType::kUnthrottled);
+
+  // Pass the event as a weak persistent so that GC can collect an event-related
+  // object like IDBTransaction as soon as possible.
+  task_runner->PostTask(
+      FROM_HERE, WTF::Bind(&DOMWindowEventQueue::DispatchEvent,
+                           WrapPersistent(this), WrapWeakPersistent(event)));
 
   return true;
 }
 
 bool DOMWindowEventQueue::CancelEvent(Event* event) {
-  auto it = queued_events_.find(event);
-  bool found = it != queued_events_.end();
-  if (found) {
-    probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
-    queued_events_.erase(it);
-  }
-  if (queued_events_.IsEmpty())
-    pending_event_timer_->Stop();
-  return found;
+  if (!RemoveEvent(event))
+    return false;
+  probe::AsyncTaskCanceled(event->target()->GetExecutionContext(), event);
+  return true;
 }
 
 void DOMWindowEventQueue::Close() {
   is_closed_ = true;
-  pending_event_timer_->Stop();
   for (const auto& queued_event : queued_events_) {
     if (queued_event) {
       probe::AsyncTaskCanceled(queued_event->target()->GetExecutionContext(),
@@ -124,26 +94,18 @@ void DOMWindowEventQueue::Close() {
   queued_events_.clear();
 }
 
-void DOMWindowEventQueue::PendingEventTimerFired() {
-  DCHECK(!pending_event_timer_->IsActive());
-  DCHECK(!queued_events_.IsEmpty());
-
-  // Insert a marker for where we should stop.
-  DCHECK(!queued_events_.Contains(nullptr));
-  bool was_added = queued_events_.insert(nullptr).is_new_entry;
-  DCHECK(was_added);  // It should not have already been in the list.
-
-  while (!queued_events_.IsEmpty()) {
-    auto it = queued_events_.begin();
-    Event* event = *it;
-    queued_events_.erase(it);
-    if (!event)
-      break;
-    DispatchEvent(event);
-  }
+bool DOMWindowEventQueue::RemoveEvent(Event* event) {
+  auto found = queued_events_.find(event);
+  if (found == queued_events_.end())
+    return false;
+  queued_events_.erase(found);
+  return true;
 }
 
 void DOMWindowEventQueue::DispatchEvent(Event* event) {
+  if (!event || !RemoveEvent(event))
+    return;
+
   EventTarget* event_target = event->target();
   probe::AsyncTask async_task(event_target->GetExecutionContext(), event);
   if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
