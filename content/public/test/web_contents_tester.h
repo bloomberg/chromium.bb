@@ -10,6 +10,7 @@
 
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -151,6 +152,12 @@ class WebContentsTester {
       const GURL& url,
       int error_code,
       const base::string16& error_description) = 0;
+
+  // Returns whether PauseSubresourceLoading was called on this web contents.
+  virtual bool GetPauseSubresourceLoadingCalled() = 0;
+
+  // Resets the state around PauseSubresourceLoadingCalled.
+  virtual void ResetPauseSubresourceLoadingCalled() = 0;
 };
 
 }  // namespace content

@@ -3222,6 +3222,17 @@ void WebContentsImpl::ReloadLoFiImages() {
   SendToAllFrames(new FrameMsg_ReloadLoFiImages(MSG_ROUTING_NONE));
 }
 
+std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+WebContentsImpl::PauseSubresourceLoading() {
+  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr> handles;
+  for (RenderFrameHost* rfh : GetAllFrames()) {
+    if (!rfh->IsRenderFrameLive())
+      continue;
+    handles.push_back(rfh->PauseSubresourceLoading());
+  }
+  return handles;
+}
+
 void WebContentsImpl::Undo() {
   RenderFrameHostImpl* focused_frame = GetFocusedFrame();
   if (!focused_frame)

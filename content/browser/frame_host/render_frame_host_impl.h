@@ -240,6 +240,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::WebSuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
   void ViewSource() override;
+  blink::mojom::PauseSubresourceLoadingHandlePtr PauseSubresourceLoading()
+      override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

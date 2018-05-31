@@ -22,6 +22,7 @@ mojom("mojom_platform") {
     "file/file_utilities.mojom",
     "frame/find_in_page.mojom",
     "leak_detector/leak_detector.mojom",
+    "loader/pause_subresource_loading_handle.mojom",
     "loader/prefetch_url_loader_service.mojom",
     "manifest/display_mode.mojom",
     "manifest/manifest.mojom",

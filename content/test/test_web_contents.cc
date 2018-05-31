@@ -50,7 +50,8 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
     : WebContentsImpl(browser_context),
       delegate_view_override_(nullptr),
       expect_set_history_offset_and_length_(false),
-      expect_set_history_offset_and_length_history_length_(0) {
+      expect_set_history_offset_and_length_history_length_(0),
+      pause_subresource_loading_called_(false) {
   if (!RenderProcessHostImpl::get_render_process_host_factory_for_testing()) {
     // Most unit tests should prefer to create a generic MockRenderProcessHost
     // (instead of a real RenderProcessHostImpl).  Tests that need to use a
@@ -436,6 +437,20 @@ void TestWebContents::SaveFrameWithHeaders(
     const base::string16& suggested_filename) {
   save_frame_headers_ = headers;
   suggested_filename_ = suggested_filename;
+}
+
+std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+TestWebContents::PauseSubresourceLoading() {
+  pause_subresource_loading_called_ = true;
+  return std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>();
+}
+
+bool TestWebContents::GetPauseSubresourceLoadingCalled() {
+  return pause_subresource_loading_called_;
+}
+
+void TestWebContents::ResetPauseSubresourceLoadingCalled() {
+  pause_subresource_loading_called_ = false;
 }
 
 }  // namespace content

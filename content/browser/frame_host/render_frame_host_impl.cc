@@ -757,6 +757,16 @@ void RenderFrameHostImpl::GetCanonicalUrlForSharing(
   frame_->GetCanonicalUrlForSharing(std::move(callback));
 }
 
+blink::mojom::PauseSubresourceLoadingHandlePtr
+RenderFrameHostImpl::PauseSubresourceLoading() {
+  DCHECK(frame_);
+  blink::mojom::PauseSubresourceLoadingHandlePtr
+      pause_subresource_loading_handle;
+  GetRemoteInterfaces()->GetInterface(&pause_subresource_loading_handle);
+
+  return pause_subresource_loading_handle;
+}
+
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (!view)

@@ -137,6 +137,10 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
   std::unique_ptr<WorkerSchedulerProxy> CreateWorkerSchedulerProxy() {
     return nullptr;
   }
+  std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
+  GetPauseSubresourceLoadingHandle() override {
+    return nullptr;
+  }
 
  private:
   PageScheduler* page_scheduler_;  // NOT OWNED

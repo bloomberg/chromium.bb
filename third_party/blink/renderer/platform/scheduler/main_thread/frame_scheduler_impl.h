@@ -81,6 +81,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
+  std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
+  GetPauseSubresourceLoadingHandle() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner();
 
@@ -122,6 +124,23 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
     DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
   };
 
+  // A class that adds and removes itself from the passed in weak pointer. While
+  // one exists, resource loading is paused.
+  class PauseSubresourceLoadingHandleImpl
+      : public blink::mojom::blink::PauseSubresourceLoadingHandle {
+   public:
+    // This object takes a reference in |frame_scheduler| preventing resource
+    // loading in the frame until the reference is released during destruction.
+    explicit PauseSubresourceLoadingHandleImpl(
+        base::WeakPtr<FrameSchedulerImpl> frame_scheduler);
+    ~PauseSubresourceLoadingHandleImpl() override;
+
+   private:
+    base::WeakPtr<FrameSchedulerImpl> frame_scheduler_;
+
+    DISALLOW_COPY_AND_ASSIGN(PauseSubresourceLoadingHandleImpl);
+  };
+
   void DetachFromPageScheduler();
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
@@ -139,6 +158,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   // Updates the priorities of all the task queues associated with this
   // frame scheduler.
   void UpdateQueuePriorities();
+
+  void AddPauseSubresourceLoadingHandle();
+  void RemovePauseSubresourceLoadingHandle();
 
   scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
   scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
@@ -169,16 +191,17 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
-  FrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
   TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
+  TraceableState<bool, kTracingCategoryNameInfo> subresource_loading_paused_;
   StateTracer<kTracingCategoryNameInfo> url_tracer_;
   // |task_queue_throttled_| is false if |throttleable_task_queue_| is absent.
   TraceableState<bool, kTracingCategoryNameInfo> task_queue_throttled_;
   // TODO(kraynov): https://crbug.com/827113
   // Trace active connection count.
   int active_connection_count_;
+  size_t subresource_loading_pause_count_;
   TraceableState<bool, kTracingCategoryNameInfo> has_active_connection_;
 
   // These are the states of the Page.
@@ -188,6 +211,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
       page_visibility_for_tracing_;
   TraceableState<bool, kTracingCategoryNameInfo> page_keep_active_for_tracing_;
+
+  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };

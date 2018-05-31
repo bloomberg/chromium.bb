@@ -14,6 +14,9 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/infobars/core/infobar.h"
+#include "content/public/test/web_contents_tester.h"
 #include "url/gurl.h"
 
 namespace {
@@ -41,9 +44,12 @@ class PageCappingObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(
-        std::make_unique<PageCappingPageLoadMetricsObserver>());
+    auto observer = std::make_unique<PageCappingPageLoadMetricsObserver>();
+    observer_ = observer.get();
+    tracker->AddObserver(std::move(observer));
   }
+
+  PageCappingPageLoadMetricsObserver* observer_;
 };
 
 TEST_F(PageCappingObserverTest, ExperimentDisabled) {
@@ -308,4 +314,54 @@ TEST_F(PageCappingObserverTest, PageCap) {
   // Adding more data should now trigger the infobar.
   SimulateLoadedResource(resource);
   EXPECT_EQ(1u, InfoBarCount());
+}
+
+TEST_F(PageCappingObserverTest, PageCappingTriggered) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMB", "1"}, {"PageCapMB", "1"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+
+  // A resource slightly over 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) + 10 /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  SimulateLoadedResource(resource);
+  EXPECT_EQ(1u, InfoBarCount());
+
+  // Verify the callback is called twice with appropriate bool values.
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+  EXPECT_TRUE(content::WebContentsTester::For(web_contents())
+                  ->GetPauseSubresourceLoadingCalled());
+  EXPECT_EQ(1u, InfoBarCount());
+  EXPECT_TRUE(observer_->IsPausedForTesting());
+
+  content::WebContentsTester::For(web_contents())
+      ->ResetPauseSubresourceLoadingCalled();
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+  EXPECT_FALSE(observer_->IsPausedForTesting());
 }

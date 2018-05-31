@@ -32,6 +32,8 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
     // Frame spent some time in background and can be fully throttled.
     kThrottled,
     // Frame is stopped, no tasks associated with it can run.
+    // In the case of resource scheduling, main frame resources and synchronous
+    // requests are allowed to load.
     kStopped,
   };
 
