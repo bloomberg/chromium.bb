@@ -1334,7 +1334,10 @@ static INLINE int is_valid_seq_level_idx(uint8_t seq_level_idx) {
 
 static INLINE uint8_t major_minor_to_seq_level_idx(BitstreamLevel bl) {
   assert(bl.major >= LEVEL_MAJOR_MIN && bl.major <= LEVEL_MAJOR_MAX);
-  assert(bl.minor >= LEVEL_MINOR_MIN && bl.minor <= LEVEL_MINOR_MAX);
+  // Since bl.minor is unsigned a comparison will return a warning:
+  // comparison is always true due to limited range of data type
+  assert(LEVEL_MINOR_MIN == 0);
+  assert(bl.minor <= LEVEL_MINOR_MAX);
   return ((bl.major - LEVEL_MAJOR_MIN) << LEVEL_MINOR_BITS) + bl.minor;
 }
 
