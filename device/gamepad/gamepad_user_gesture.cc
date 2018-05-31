@@ -24,6 +24,15 @@ bool GamepadsHaveUserGesture(const Gamepads& gamepads) {
     // If the device is physically connected, then check the buttons and axes
     // to see if there is currently an intentional user action.
     if (pad.connected) {
+      // Only VR Controllers have a display id, and are only reported as
+      // connected during WebVR presentation, so the user is definitely
+      // expecting their controller to be used. Note that this will also
+      // satisfy the gesture requirement for all other connected controllers,
+      // exposing them too. This is unfortunate, but worth the tradeoff and will
+      // go away in the future when WebVR is fully replaced with WebXR.
+      if (pad.display_id != 0)
+        return true;
+
       for (unsigned int button_index = 0; button_index < pad.buttons_length;
            button_index++) {
         if (pad.buttons[button_index].pressed)
