@@ -21,8 +21,8 @@ class AccessibilityFeaturePodControllerTest : public NoSessionAshTestBase {
     NoSessionAshTestBase::SetUp();
 
     tray_model_ = std::make_unique<UnifiedSystemTrayModel>();
-    tray_controller_ = std::make_unique<UnifiedSystemTrayController>(
-        tray_model_.get(), GetPrimarySystemTray());
+    tray_controller_ =
+        std::make_unique<UnifiedSystemTrayController>(tray_model_.get());
   }
 
   void TearDown() override {
