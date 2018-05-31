@@ -28,6 +28,7 @@
 
 gclient_gn_args_file = 'src/build/config/gclient_args.gni'
 gclient_gn_args = [
+  'build_with_chromium',
   'checkout_android',
   'checkout_android_native_support',
   'checkout_libaom',
@@ -37,6 +38,11 @@ gclient_gn_args = [
 
 
 vars = {
+  # Variable that can be used to support multiple build scenarios, like having
+  # Chromium specific targets in a client project's GN file or sync dependencies
+  # conditionally etc.
+  'build_with_chromium': True,
+
   # By default, we should check out everything needed to run on the main
   # chromium waterfalls. This var can be also be set to "small", in order
   # to skip things are not strictly needed to build chromium for development
