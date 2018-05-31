@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_response.h"
 
@@ -57,7 +58,10 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
       bool report_raw_headers);
   ~SignedExchangeDevToolsProxy();
 
-  void ReportErrorMessage(const std::string& message);
+  void ReportError(
+      const std::string& message,
+      base::Optional<SignedExchangeError::FieldIndexPair> error_field);
+
   void CertificateRequestSent(const base::UnguessableToken& request_id,
                               const network::ResourceRequest& request);
   void CertificateResponseReceived(const base::UnguessableToken& request_id,
@@ -78,7 +82,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
   const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
   const base::Optional<const base::UnguessableToken> devtools_navigation_token_;
   const bool devtools_enabled_;
-  std::vector<std::string> error_messages_;
+  std::vector<SignedExchangeError> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeDevToolsProxy);
 };

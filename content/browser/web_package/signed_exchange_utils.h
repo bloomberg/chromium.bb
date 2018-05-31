@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_error.h"
+
 class GURL;
 
 namespace network {
@@ -19,12 +22,15 @@ class SignedExchangeDevToolsProxy;
 
 namespace signed_exchange_utils {
 
-// Utility method to call SignedExchangeDevToolsProxy::ReportErrorMessage() and
+// Utility method to call SignedExchangeDevToolsProxy::ReportError() and
 // TRACE_EVENT_END() to report the error to both DevTools and about:tracing. If
 // |devtools_proxy| is nullptr, it just calls TRACE_EVENT_END().
-void ReportErrorAndEndTraceEvent(SignedExchangeDevToolsProxy* devtools_proxy,
-                                 const char* trace_event_name,
-                                 const std::string& error_message);
+void ReportErrorAndEndTraceEvent(
+    SignedExchangeDevToolsProxy* devtools_proxy,
+    const char* trace_event_name,
+    const std::string& error_message,
+    base::Optional<SignedExchangeError::FieldIndexPair> error_field =
+        base::nullopt);
 
 // Returns true when SignedHTTPExchange feature or SignedHTTPExchangeOriginTrial
 // feature is enabled.

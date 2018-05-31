@@ -1727,6 +1727,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_devtools_proxy.h",
     "web_package/signed_exchange_envelope.cc",
     "web_package/signed_exchange_envelope.h",
+    "web_package/signed_exchange_error.cc",
+    "web_package/signed_exchange_error.h",
     "web_package/signed_exchange_handler.cc",
     "web_package/signed_exchange_handler.h",
     "web_package/signed_exchange_signature_header_field.cc",

@@ -9,8 +9,8 @@ inspected-page.html:1 Failed to fetch the certificate.
   SignedExchangeInfo
     Request URL: https://www.127.0.0.1/not_found_cert.html
     Certificate URL: http://localhost:8000/loading/htxg/resources/not_found_cert.pem.cbor
-    Error: Invalid reponse code: 404
-    Error: Failed to fetch the certificate.
+    Error: {"message":"Invalid reponse code: 404"}
+    Error: {"message":"Failed to fetch the certificate.","signatureIndex":0,"errorField":"signatureCertUrl"}
 * http://localhost:8000/loading/htxg/resources/not_found_cert.pem.cbor
   failed: false
   statusCode: 404

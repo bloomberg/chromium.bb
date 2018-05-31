@@ -55,6 +55,7 @@ class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
 class SignedExchangeEnvelope;
+struct SignedExchangeError;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -105,7 +106,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const base::Optional<SignedExchangeEnvelope>& header,
       const scoped_refptr<net::X509Certificate>& certificate,
       const base::Optional<net::SSLInfo>& ssl_info,
-      const std::vector<std::string>& error_messages);
+      const std::vector<SignedExchangeError>& errors);
   static void OnSignedExchangeCertificateRequestSent(
       FrameTreeNode* frame_tree_node,
       const base::UnguessableToken& request_id,

@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
+#include "content/browser/web_package/signed_exchange_error.h"
 #include "content/browser/web_package/web_package_request_handler.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -16,11 +17,13 @@
 namespace content {
 namespace signed_exchange_utils {
 
-void ReportErrorAndEndTraceEvent(SignedExchangeDevToolsProxy* devtools_proxy,
-                                 const char* trace_event_name,
-                                 const std::string& error_message) {
+void ReportErrorAndEndTraceEvent(
+    SignedExchangeDevToolsProxy* devtools_proxy,
+    const char* trace_event_name,
+    const std::string& error_message,
+    base::Optional<SignedExchangeError::FieldIndexPair> error_field) {
   if (devtools_proxy)
-    devtools_proxy->ReportErrorMessage(error_message);
+    devtools_proxy->ReportError(error_message, std::move(error_field));
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), trace_event_name,
                    "error", error_message);
 }

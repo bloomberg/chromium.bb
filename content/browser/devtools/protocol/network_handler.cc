@@ -32,6 +32,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
+#include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -876,6 +877,46 @@ std::string StripFragment(const GURL& url) {
   return url.ReplaceComponents(replacements).spec();
 }
 
+String SignedExchangeErrorErrorFieldToString(SignedExchangeError::Field field) {
+  switch (field) {
+    case SignedExchangeError::Field::kSignatureSig:
+      return Network::SignedExchangeErrorFieldEnum::SignatureSig;
+    case SignedExchangeError::Field::kSignatureIintegrity:
+      return Network::SignedExchangeErrorFieldEnum::SignatureIntegrity;
+    case SignedExchangeError::Field::kSignatureCertUrl:
+      return Network::SignedExchangeErrorFieldEnum::SignatureCertUrl;
+    case SignedExchangeError::Field::kSignatureCertSha256:
+      return Network::SignedExchangeErrorFieldEnum::SignatureCertSha256;
+    case SignedExchangeError::Field::kSignatureValidityUrl:
+      return Network::SignedExchangeErrorFieldEnum::SignatureValidityUrl;
+    case SignedExchangeError::Field::kSignatureTimestamps:
+      return Network::SignedExchangeErrorFieldEnum::SignatureTimestamps;
+  }
+  NOTREACHED();
+  return "";
+}
+
+std::unique_ptr<Network::SignedExchangeError> BuildSignedExchangeError(
+    const SignedExchangeError& error) {
+  std::unique_ptr<Network::SignedExchangeError> signed_exchange_error =
+      Network::SignedExchangeError::Create().SetMessage(error.message).Build();
+  if (error.field) {
+    signed_exchange_error->SetSignatureIndex(error.field->first);
+    signed_exchange_error->SetErrorField(
+        SignedExchangeErrorErrorFieldToString(error.field->second));
+  }
+  return signed_exchange_error;
+}
+
+std::unique_ptr<Array<Network::SignedExchangeError>> BuildSignedExchangeErrors(
+    const std::vector<SignedExchangeError>& errors) {
+  std::unique_ptr<Array<Network::SignedExchangeError>> signed_exchange_errors =
+      Array<Network::SignedExchangeError>::create();
+  for (const auto& error : errors)
+    signed_exchange_errors->addItem(BuildSignedExchangeError(error));
+  return signed_exchange_errors;
+}
+
 }  // namespace
 
 class BackgroundSyncRestorer {
@@ -1654,7 +1695,7 @@ void NetworkHandler::OnSignedExchangeReceived(
     const base::Optional<SignedExchangeEnvelope>& header,
     const scoped_refptr<net::X509Certificate>& certificate,
     const base::Optional<net::SSLInfo>& ssl_info,
-    const std::vector<std::string>& error_messages) {
+    const std::vector<SignedExchangeError>& errors) {
   if (!enabled_)
     return;
   std::unique_ptr<Network::SignedExchangeInfo> signed_exchange_info =
@@ -1713,12 +1754,8 @@ void NetworkHandler::OnSignedExchangeReceived(
   }
   if (ssl_info)
     signed_exchange_info->SetSecurityDetails(BuildSecurityDetails(*ssl_info));
-  if (error_messages.size()) {
-    std::unique_ptr<Array<String>> errors = Array<String>::create();
-    for (const auto& message : error_messages)
-      errors->addItem(message);
-    signed_exchange_info->SetErrors(std::move(errors));
-  }
+  if (errors.size())
+    signed_exchange_info->SetErrors(BuildSignedExchangeErrors(errors));
 
   frontend_->SignedExchangeReceived(
       devtools_navigation_token ? devtools_navigation_token->ToString() : "",
