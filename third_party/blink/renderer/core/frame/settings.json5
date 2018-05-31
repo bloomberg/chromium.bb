@@ -957,5 +957,39 @@
       name: "shouldThrottlePushState",
       initial: true,
     },
+
+    //
+    // Lazy frame loading distance-from-viewport thresholds for different effective connection types.
+    //
+    {
+      name: "lazyFrameLoadingDistanceThresholdPxUnknown",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyFrameLoadingDistanceThresholdPxOffline",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyFrameLoadingDistanceThresholdPxSlow2G",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyFrameLoadingDistanceThresholdPx2G",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyFrameLoadingDistanceThresholdPx3G",
+      initial: 800,
+      type: "int",
+    },
+    {
+      name: "lazyFrameLoadingDistanceThresholdPx4G",
+      initial: 800,
+      type: "int",
+    },
   ],
 }

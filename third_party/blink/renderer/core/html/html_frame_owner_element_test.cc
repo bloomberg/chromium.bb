@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -79,6 +80,17 @@ class LazyLoadFramesTest : public SimTest,
 
     SimTest::SetUp();
     WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+
+    Settings& settings = WebView().GetPage()->GetSettings();
+
+    // These should match the values that would be returned by
+    // GetLoadingDistanceThreshold().
+    settings.SetLazyFrameLoadingDistanceThresholdPxUnknown(200);
+    settings.SetLazyFrameLoadingDistanceThresholdPxOffline(300);
+    settings.SetLazyFrameLoadingDistanceThresholdPxSlow2G(400);
+    settings.SetLazyFrameLoadingDistanceThresholdPx2G(500);
+    settings.SetLazyFrameLoadingDistanceThresholdPx3G(600);
+    settings.SetLazyFrameLoadingDistanceThresholdPx4G(700);
   }
 
   void ExpectVisibleLoadTimeHistogramSamplesIfApplicable(
@@ -110,6 +122,13 @@ class LazyLoadFramesTest : public SimTest,
 
   HistogramTester* histogram_tester() { return &histogram_tester_; }
 
+  int GetLoadingDistanceThreshold() const {
+    static constexpr int kDistanceThresholdByEffectiveConnectionType[] = {
+        200, 300, 400, 500, 600, 700};
+    return kDistanceThresholdByEffectiveConnectionType[static_cast<int>(
+        std::get<WebEffectiveConnectionType>(GetParam()))];
+  }
+
  private:
   ScopedLazyFrameLoadingForTest scoped_lazy_frame_loading_for_test_;
   ScopedLazyFrameVisibleLoadTimeMetricsForTest
@@ -133,7 +152,7 @@ TEST_P(LazyLoadFramesTest, SameOriginFrameIsNotDeferred) {
              style='width: 200px; height: 200px;'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
-      kViewportHeight + HTMLFrameOwnerElement::kLazyLoadRootMarginPx));
+      kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
   child_frame_resource.Complete("");
 
@@ -165,6 +184,11 @@ TEST_P(LazyLoadFramesTest, AboveTheFoldFrameIsNotDeferred) {
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
+
+  // The child frame is visible, but hasn't finished loading yet, so no visible
+  // load time samples should have been recorded yet.
+  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+
   child_frame_resource.Complete("");
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -194,7 +218,9 @@ TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrameIsNotDeferred) {
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
+
   child_frame_resource.Complete("");
+
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
@@ -266,7 +292,7 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFramesAreNotDeferred) {
              onload='console.log("off screen top element onload");'></iframe>
         </body>
       )HTML",
-      kViewportHeight + HTMLFrameOwnerElement::kLazyLoadRootMarginPx + 100));
+      kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -319,7 +345,7 @@ TEST_P(LazyLoadFramesTest, CrossOriginFrameIsDeferredUntilNearViewport) {
              style='width: 400px; height: 400px;'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
-      kViewportHeight + HTMLFrameOwnerElement::kLazyLoadRootMarginPx + 100));
+      kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -341,16 +367,12 @@ TEST_P(LazyLoadFramesTest, CrossOriginFrameIsDeferredUntilNearViewport) {
   // Scroll down near the child frame. This should cause the child frame to get
   // loaded.
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, HTMLFrameOwnerElement::kLazyLoadRootMarginPx + 150),
-      kProgrammaticScroll);
+      ScrollOffset(0, 150), kProgrammaticScroll);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
 
   EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
-
-  // The child frame is visible, but it hasn't finished loading yet, so no
-  // visible load time samples should have been recorded yet.
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
   if (!nested_child_frame_resource.has_value())
@@ -369,10 +391,6 @@ TEST_P(LazyLoadFramesTest, CrossOriginFrameIsDeferredUntilNearViewport) {
   test::RunPendingTasks();
 
   EXPECT_FALSE(ConsoleMessages().Contains("child frame element onload"));
-
-  // The child frame is visible, but it hasn't finished loading (due to the
-  // nested iframe inside it), so no visible load time samples should have been
-  // recorded yet.
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
   test::RunPendingTasks();
@@ -383,6 +401,19 @@ TEST_P(LazyLoadFramesTest, CrossOriginFrameIsDeferredUntilNearViewport) {
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
+
+  // The child frame isn't visible yet, so no visible load time samples should
+  // have been recorded yet.
+  ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
+
+  // Scroll down so that the child frame is visible.
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, GetLoadingDistanceThreshold() + 150),
+      kProgrammaticScroll);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 1);
 }
 
@@ -409,7 +440,7 @@ TEST_P(LazyLoadFramesTest, AboutBlankNavigationIsNotDeferred) {
              style='width: 200px; height: 200px;'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
-      kViewportHeight + HTMLFrameOwnerElement::kLazyLoadRootMarginPx + 100));
+      kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -443,7 +474,7 @@ TEST_P(LazyLoadFramesTest, JavascriptStringUrlIsNotDeferred) {
              style='width: 200px; height: 200px;'
              onload='console.log("child frame element onload");'></iframe>
         </body>)HTML",
-      kViewportHeight + HTMLFrameOwnerElement::kLazyLoadRootMarginPx + 100));
+      kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("child frame element onload"));
