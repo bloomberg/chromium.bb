@@ -18,6 +18,9 @@ class NetLog;
 }  // namespace net
 
 namespace chromecast {
+#if defined(USE_AURA)
+class AccessibilityManager;
+#endif  // defined(USE_AURA)
 class CastService;
 class CastScreen;
 class ConnectivityChecker;
@@ -43,7 +46,10 @@ class CastBrowserProcess {
   void SetBrowserContext(std::unique_ptr<CastBrowserContext> browser_context);
   void SetCastContentBrowserClient(CastContentBrowserClient* browser_client);
   void SetCastService(std::unique_ptr<CastService> cast_service);
+
 #if defined(USE_AURA)
+  void SetAccessibilityManager(
+      std::unique_ptr<AccessibilityManager> accessibility_manager);
   void SetCastScreen(std::unique_ptr<CastScreen> cast_screen);
 #endif  // defined(USE_AURA)
   void SetMetricsServiceClient(
@@ -63,6 +69,9 @@ class CastBrowserProcess {
   CastService* cast_service() const { return cast_service_.get(); }
 #if defined(USE_AURA)
   CastScreen* cast_screen() const { return cast_screen_.get(); }
+  AccessibilityManager* accessibility_manager() const {
+    return accessibility_manager_.get();
+  }
 #endif  // defined(USE_AURA)
   metrics::CastMetricsServiceClient* metrics_service_client() const {
     return metrics_service_client_.get();
@@ -81,6 +90,7 @@ class CastBrowserProcess {
   // CastBrowserMainParts.
 #if defined(USE_AURA)
   std::unique_ptr<CastScreen> cast_screen_;
+  std::unique_ptr<AccessibilityManager> accessibility_manager_;
 #endif  // defined(USE_AURA)
   std::unique_ptr<PrefService> pref_service_;
   scoped_refptr<ConnectivityChecker> connectivity_checker_;

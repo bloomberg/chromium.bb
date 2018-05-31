@@ -52,11 +52,13 @@ class CastWindowManagerAura : public CastWindowManager,
   friend class CastWindowManager;
 
   // This class should only be instantiated by CastWindowManager::Create.
-  explicit CastWindowManagerAura(bool enable_input);
+  explicit CastWindowManagerAura(bool enable_input,
+                                 AccessibilityManager* accessibility_manager);
 
   void Setup();
 
   const bool enable_input_;
+  AccessibilityManager* accessibility_manager_;
   std::unique_ptr<CastWindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;
