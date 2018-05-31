@@ -34,6 +34,30 @@ After doing this, search for your benchmark's name (in this case, "v8.browsing_d
 
 ![Sheriff-o-matic choose shard #0 failed link from test steps](images/som_test_steps_shard_0.png)
 
+### Accessing the log for the new perf recipe
+
+Currently linux-perf and mac-10_12_laptop_low_end-perf are running the new perf recipe and logs are accessed slightly differently. 
+
+#### Failing Story Logs
+Sheriff-o-matic now links to failing story logs when present.  Click on the logs
+link to download the failing story log.
+![Sheriff-o-matic click on builder](images/som_new_recipe_story_log.png)
+
+
+#### Failing Benchmark Logs
+First navigate to the failing build through the Sheriff-o-matic entry by clicking on the builder this step failed on. 
+
+![Sheriff-o-matic click on builder](images/som_new_recipe_choose_builder.png)
+
+This new screen will list out the most recent builds for this builder.  To identify which build you are interested in you will have to drill into each build starting with the most recent to identify where the specific failing test is. Ctrl-F for “performance_test_suite” or scroll down to the test entry.  The list of failed tests is right on the performance_test_suite step:
+
+![Sheriff-o-matic identify the list of failing tests](images/som_new_recipe_identify_failed_tests.png)
+
+Once you have identified the build that has your failing test, click on the “Benchmark logs” link and Ctrl-F for your failing benchmark.  This link provides a logdog stream with all of the logs for that particular benchmark.
+
+![Sheriff-o-matic find benchmark logs](images/som_new_recipe_benchmark_logs_link.png)
+
+
 ## Navigating log files
 
 ### Identifying why a story failed
