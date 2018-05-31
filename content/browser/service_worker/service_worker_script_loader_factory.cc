@@ -81,9 +81,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
 void ServiceWorkerScriptLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
-  // This method is required to support synchronous requests which are not
-  // performed during installation.
-  NOTREACHED();
+  bindings_.AddBinding(this, std::move(request));
 }
 
 bool ServiceWorkerScriptLoaderFactory::ShouldHandleScriptRequest(

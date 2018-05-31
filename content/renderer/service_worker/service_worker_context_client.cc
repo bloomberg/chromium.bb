@@ -132,6 +132,10 @@ class WebServiceWorkerNetworkProviderImpl
     return nullptr;
   }
 
+  network::mojom::URLLoaderFactory* script_loader_factory() {
+    return provider_->script_loader_factory();
+  }
+
   int ProviderID() const override { return provider_->provider_id(); }
 
  private:
@@ -1219,7 +1223,8 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
 }
 
 std::unique_ptr<blink::WebWorkerFetchContext>
-ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
+ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
+    blink::WebServiceWorkerNetworkProvider* provider) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 
   scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle =
@@ -1227,9 +1232,22 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
           ->blink_platform_impl()
           ->CreateDefaultURLLoaderFactoryBundle();
   DCHECK(url_loader_factory_bundle);
+
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+      script_loader_factory_info;
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    // TODO(crbug.com/796425): Temporarily wrap the raw
+    // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
+    script_loader_factory_info =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            static_cast<WebServiceWorkerNetworkProviderImpl*>(provider)
+                ->script_loader_factory())
+            ->Clone();
+  }
+
   return std::make_unique<ServiceWorkerFetchContextImpl>(
       script_url_, url_loader_factory_bundle->Clone(),
-      provider_context_->provider_id(),
+      std::move(script_loader_factory_info), provider_context_->provider_id(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

@@ -21,12 +21,15 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     const GURL& worker_script_url,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        script_loader_factory_info,
     int service_worker_provider_id,
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider)
     : worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
+      script_loader_factory_info_(std::move(script_loader_factory_info)),
       service_worker_provider_id_(service_worker_provider_id),
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
@@ -47,6 +50,10 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
 
   url_loader_factory_ = network::SharedURLLoaderFactory::Create(
       std::move(url_loader_factory_info_));
+  if (script_loader_factory_info_) {
+    script_loader_factory_ = network::SharedURLLoaderFactory::Create(
+        std::move(script_loader_factory_info_));
+  }
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
@@ -65,6 +72,14 @@ ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
           network::mojom::URLLoaderFactoryPtrInfo(
               std::move(url_loader_factory_handle),
               network::mojom::URLLoaderFactory::Version_)));
+}
+
+std::unique_ptr<blink::WebURLLoaderFactory>
+ServiceWorkerFetchContextImpl::CreateScriptLoaderFactory() {
+  if (!script_loader_factory_)
+    return nullptr;
+  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+      resource_dispatcher_->GetWeakPtr(), std::move(script_loader_factory_));
 }
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(

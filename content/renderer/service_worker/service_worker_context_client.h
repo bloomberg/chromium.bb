@@ -225,8 +225,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       double dispatch_event_time) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
-  std::unique_ptr<blink::WebWorkerFetchContext>
-  CreateServiceWorkerFetchContext() override;
+  std::unique_ptr<blink::WebWorkerFetchContext> CreateServiceWorkerFetchContext(
+      blink::WebServiceWorkerNetworkProvider*) override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
   void PostMessageToClient(const blink::WebString& uuid,

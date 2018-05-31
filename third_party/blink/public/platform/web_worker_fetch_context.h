@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 
 namespace base {
@@ -19,7 +20,6 @@ class WaitableEvent;
 
 namespace blink {
 
-class WebURLLoaderFactory;
 class WebURLRequest;
 class WebDocumentSubresourceFilter;
 
@@ -53,6 +53,13 @@ class WebWorkerFetchContext {
   // network::mojom::URLLoaderFactory.
   virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
       mojo::ScopedMessagePipeHandle url_loader_factory_handle) = 0;
+
+  // Returns a new WebURLLoaderFactory for loading scripts in this worker
+  // context. Unlike CreateURLLoaderFactory(), this may return nullptr even on
+  // the first call.
+  virtual std::unique_ptr<WebURLLoaderFactory> CreateScriptLoaderFactory() {
+    return nullptr;
+  }
 
   // Called when a request is about to be sent out to modify the request to
   // handle the request correctly in the loading stack later. (Example: service
