@@ -83,12 +83,6 @@ class ExtensionThrottleManager
   void SetIgnoreUserGestureLoadFlagForTests(
       bool ignore_user_gesture_load_flag_for_tests);
 
-  // Turns threading model verification on or off.  Any code that correctly
-  // uses the network stack should preferably call this function to enable
-  // verification of correct adherence to the network stack threading model.
-  void set_enable_thread_checks(bool enable);
-  bool enable_thread_checks() const;
-
   // Whether throttling is enabled or not.
   void set_enforce_throttling(bool enforce);
   bool enforce_throttling();
@@ -140,14 +134,6 @@ class ExtensionThrottleManager
 
   // Valid after construction.
   GURL::Replacements url_id_replacements_;
-
-  // Certain tests do not obey the net component's threading policy, so we
-  // keep track of whether we're being used by tests, and turn off certain
-  // checks.
-  //
-  // TODO(joi): See if we can fix the offending unit tests and remove this
-  // workaround.
-  bool enable_thread_checks_;
 
   // Initially false, switches to true once we have logged because of back-off
   // being disabled for localhost.

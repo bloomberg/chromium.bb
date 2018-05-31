@@ -57,12 +57,6 @@ class NET_EXPORT_PRIVATE URLRequestThrottlerManager
   // It is only used by unit tests.
   void EraseEntryForTests(const GURL& url);
 
-  // Turns threading model verification on or off.  Any code that correctly
-  // uses the network stack should preferably call this function to enable
-  // verification of correct adherence to the network stack threading model.
-  void set_enable_thread_checks(bool enable);
-  bool enable_thread_checks() const;
-
   // Whether throttling is enabled or not.
   void set_enforce_throttling(bool enforce);
   bool enforce_throttling();
