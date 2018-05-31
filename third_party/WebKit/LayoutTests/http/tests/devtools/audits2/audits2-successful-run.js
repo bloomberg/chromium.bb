@@ -9,10 +9,10 @@
     // metrics
     'first-contentful-paint',
     'first-meaningful-paint',
-    'first-interactive',
-    'consistently-interactive',
+    'first-cpu-idle',
+    'interactive',
     'estimated-input-latency',
-    'speed-index-metric',
+    'speed-index',
     'metrics',
     'screenshot-thumbnails',
     // misc trace-based audits
@@ -47,7 +47,7 @@
 
   var results = await Audits2TestRunner.waitForResults();
   TestRunner.addResult(`\n=============== Lighthouse Results ===============`);
-  TestRunner.addResult(`URL: ${results.url}`);
+  TestRunner.addResult(`URL: ${results.finalUrl}`);
   TestRunner.addResult(`Version: ${results.lighthouseVersion}`);
   TestRunner.addResult('\n');
 
@@ -56,18 +56,12 @@
 
     if (FLAKY_AUDITS.includes(auditName)) {
       TestRunner.addResult(`${auditName}: flaky`);
-    } else if (audit.notApplicable) {
-      TestRunner.addResult(`${auditName}: not-applicable`);
-    } else if (audit.manual) {
-      TestRunner.addResult(`${auditName}: manual`);
-    } else if (audit.informative) {
-      TestRunner.addResult(`${auditName}: informative`);
-    } else if (audit.error) {
-      TestRunner.addResult(`${auditName}: ERROR ${audit.debugString}`);
-    } else if (audit.scoringMode === 'binary') {
+    } else if (audit.scoreDisplayMode === 'error') {
+      TestRunner.addResult(`${auditName}: ERROR ${audit.errorMessage}`);
+    } else if (audit.scoreDisplayMode === 'binary') {
       TestRunner.addResult(`${auditName}: ${audit.score ? 'pass' : 'fail'}`);
     } else {
-      TestRunner.addResult(`${auditName}: ${audit.scoringMode}`);
+      TestRunner.addResult(`${auditName}: ${audit.scoreDisplayMode}`);
     }
   });
 
