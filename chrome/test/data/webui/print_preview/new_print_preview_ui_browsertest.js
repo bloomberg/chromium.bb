@@ -711,3 +711,44 @@ TEST_F('PrintPreviewHeaderTest', 'HeaderWithNup', function() {
 TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {
   this.runMochaTest(header_test.TestNames.HeaderChangesForState);
 });
+
+PrintPreviewDestinationItemTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/destination_list_item.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'print_preview_test_utils.js',
+      'destination_item_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_item_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationItemTest', 'Online', function() {
+  this.runMochaTest(destination_item_test.TestNames.Online);
+});
+
+TEST_F('PrintPreviewDestinationItemTest', 'Offline', function() {
+  this.runMochaTest(destination_item_test.TestNames.Offline);
+});
+
+TEST_F('PrintPreviewDestinationItemTest', 'BadCertificate', function() {
+  loadTimeData.overrideValues({isEnterpriseManaged: false});
+  this.runMochaTest(destination_item_test.TestNames.BadCertificate);
+});
+
+TEST_F('PrintPreviewDestinationItemTest', 'QueryName', function() {
+  this.runMochaTest(destination_item_test.TestNames.QueryName);
+});
+
+TEST_F('PrintPreviewDestinationItemTest', 'QueryDescription', function() {
+  this.runMochaTest(destination_item_test.TestNames.QueryDescription);
+});
