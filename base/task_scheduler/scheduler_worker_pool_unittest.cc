@@ -274,8 +274,7 @@ TEST_P(TaskSchedulerWorkerPoolTest, SequencedRunsTasksInCurrentSequence) {
   auto sequenced_task_runner =
       worker_pool_->CreateSequencedTaskRunnerWithTraits(TaskTraits());
 
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran;
   task_runner->PostTask(
       FROM_HERE,
       BindOnce(
@@ -290,10 +289,8 @@ TEST_P(TaskSchedulerWorkerPoolTest, SequencedRunsTasksInCurrentSequence) {
 
 // Verify that tasks posted before Start run after Start.
 TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
-  WaitableEvent task_1_running(WaitableEvent::ResetPolicy::MANUAL,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_2_running(WaitableEvent::ResetPolicy::MANUAL,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_1_running;
+  WaitableEvent task_2_running;
 
   scoped_refptr<TaskRunner> task_runner =
       worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});

@@ -198,10 +198,8 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
 // Regression test for https://crbug.com/829786
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
        ContinueOnShutdownDoesNotBlockBlockShutdown) {
-  WaitableEvent task_has_started(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_can_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                  WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_has_started;
+  WaitableEvent task_can_continue;
 
   // Post a CONTINUE_ON_SHUTDOWN task that waits on
   // |task_can_continue| to a shared SingleThreadTaskRunner.
@@ -272,9 +270,7 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   ThreadPriority thread_priority_background;
   task_runner_background->PostTask(
       FROM_HERE, BindOnce(&CaptureThreadPriority, &thread_priority_background));
-  WaitableEvent waitable_event_background(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent waitable_event_background;
   task_runner_background->PostTask(
       FROM_HERE,
       BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_background)));
@@ -282,9 +278,7 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   ThreadPriority thread_priority_normal;
   task_runner_normal->PostTask(
       FROM_HERE, BindOnce(&CaptureThreadPriority, &thread_priority_normal));
-  WaitableEvent waitable_event_normal(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent waitable_event_normal;
   task_runner_normal->PostTask(
       FROM_HERE,
       BindOnce(&WaitableEvent::Signal, Unretained(&waitable_event_normal)));
@@ -412,9 +406,7 @@ class CallJoinFromDifferentThread : public SimpleThread {
   CallJoinFromDifferentThread(
       SchedulerSingleThreadTaskRunnerManager* manager_to_join)
       : SimpleThread("SchedulerSingleThreadTaskRunnerManagerJoinThread"),
-        manager_to_join_(manager_to_join),
-        run_started_event_(WaitableEvent::ResetPolicy::MANUAL,
-                           WaitableEvent::InitialState::NOT_SIGNALED) {}
+        manager_to_join_(manager_to_join) {}
 
   ~CallJoinFromDifferentThread() override = default;
 
@@ -453,10 +445,8 @@ class TaskSchedulerSingleThreadTaskRunnerManagerJoinTest
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest, ConcurrentJoin) {
   // Exercises the codepath where the workers are unavailable for unregistration
   // because of a Join call.
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_blocking(WaitableEvent::ResetPolicy::MANUAL,
-                              WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
+  WaitableEvent task_blocking;
 
   {
     auto task_runner = single_thread_task_runner_manager_
@@ -483,10 +473,8 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerJoinTest,
        ConcurrentJoinExtraSkippedTask) {
   // Tests to make sure that tasks are properly cleaned up at Join, allowing
   // SingleThreadTaskRunners to unregister themselves.
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_blocking(WaitableEvent::ResetPolicy::MANUAL,
-                              WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
+  WaitableEvent task_blocking;
 
   {
     auto task_runner = single_thread_task_runner_manager_
@@ -645,8 +633,7 @@ class TaskSchedulerSingleThreadTaskRunnerManagerStartTest
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
        PostTaskBeforeStart) {
   AtomicFlag manager_started;
-  WaitableEvent task_finished(WaitableEvent::ResetPolicy::MANUAL,
-                              WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_finished;
   single_thread_task_runner_manager_
       ->CreateSingleThreadTaskRunnerWithTraits(
           TaskTraits(), SingleThreadTaskRunnerThreadMode::DEDICATED)
