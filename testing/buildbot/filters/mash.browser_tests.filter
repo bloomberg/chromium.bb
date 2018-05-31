@@ -232,6 +232,11 @@
 # http://crbug.com/755328
 -WebViewTest.*
 
+# Crashes in RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(). Refer
+# crbug.com/848039.
+-DeclarativeNetRequestBrowserTest.PageWhitelistingAPI_Resources/0
+-DeclarativeNetRequestBrowserTest.PageWhitelistingAPI_Resources/1
+
 # Sending invalid FrameSinkIds crbug.com/796999
 -WebviewLoginTest.AllowNewUser
 -EnterpriseEnrollmentTest.TestAuthCodeGetsProperlyReceivedFromGaia

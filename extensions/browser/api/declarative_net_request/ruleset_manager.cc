@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +22,7 @@
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/origin.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -101,6 +103,104 @@ void ClearRendererCacheOnNavigation() {
   }
 }
 
+// Returns true if |request| came from a page from the set of
+// |whitelisted_pages|. This necessitates finding the main frame url
+// corresponding to |request|. The logic behind how this is done is subtle and
+// as follows:
+//   - Requests made by the browser (not including navigation/frame requests) or
+//     service worker: These requests don't correspond to a render frame and
+//     hence they are not considered for whitelisting using the page
+//     whitelisting API.
+//   - Requests that correspond to a page: These include:
+//     - Main frame request: To check if it is whitelisted, check the request
+//       url against the set of whitelised pages.
+//     - Main frame subresource request: We might not be able to
+//       deterministically map a main frame subresource to the main frame url.
+//       This is because when a main frame subresource request reaches the
+//       browser, the main frame navigation would have been committed in the
+//       renderer, but the browser may not have been notified of the commit.
+//       Hence the FrameData for the request may not have the correct value for
+//       the |last_committed_main_frame_url|. To get around this we use
+//       FrameData's |pending_main_frame_url| which is populated in
+//       WebContentsObserver::ReadyToCommitNavigation. This happens before the
+//       renderer is asked to commit the navigation.
+//     - Subframe subresources: When a subframe subresource request reaches the
+//       browser, it is assured that the browser knows about its parent frame
+//       commit. For these requests, use the |last_committed_main_frame_url| and
+//       match it against the set of whitelisted pages.
+bool IsRequestPageWhitelisted(const WebRequestInfo& request,
+                              const URLPatternSet& whitelisted_pages) {
+  if (whitelisted_pages.is_empty())
+    return false;
+
+  // If this is a main frame request, |request.url| will be the main frame url.
+  if (request.type == content::RESOURCE_TYPE_MAIN_FRAME)
+    return whitelisted_pages.MatchesURL(request.url);
+
+  // This should happen for:
+  //  - Requests not corresponding to a render frame e.g. non-navigation
+  //    browser requests or service worker requests.
+  //  - Requests made by a render frame but when we don't have cached FrameData
+  //    for the request. This should occur rarely and is tracked by the
+  //    "Extensions.ExtensionFrameMapCacheHit" histogram
+  if (!request.frame_data)
+    return false;
+
+  const bool evaluate_pending_main_frame_url =
+      request.frame_data->pending_main_frame_url &&
+      *request.frame_data->pending_main_frame_url !=
+          request.frame_data->last_committed_main_frame_url;
+
+  if (!evaluate_pending_main_frame_url) {
+    return whitelisted_pages.MatchesURL(
+        request.frame_data->last_committed_main_frame_url);
+  }
+
+  // |pending_main_frame_url| should only be set for main-frame subresource
+  // loads.
+  DCHECK_EQ(ExtensionApiFrameIdMap::kTopFrameId, request.frame_data->frame_id);
+
+  // At this point, we are evaluating a main-frame subresource. There are two
+  // candidate main frame urls - |pending_main_frame_url| and
+  // |last_committed_main_frame_url|. To predict the correct main frame url,
+  // compare the request initiator (origin of the requesting frame i.e. origin
+  // of the main frame in this case) with the candidate urls' origins. If only
+  // one of the candidate url's origin matches the request initiator, we can be
+  // reasonably sure that it is the correct main frame url.
+  if (request.initiator) {
+    const bool initiator_matches_pending_url =
+        url::Origin::Create(*request.frame_data->pending_main_frame_url) ==
+        *request.initiator;
+    const bool initiator_matches_committed_url =
+        url::Origin::Create(
+            request.frame_data->last_committed_main_frame_url) ==
+        *request.initiator;
+
+    if (initiator_matches_pending_url && !initiator_matches_committed_url) {
+      // We predict that |pending_main_frame_url| is the actual main frame url.
+      return whitelisted_pages.MatchesURL(
+          *request.frame_data->pending_main_frame_url);
+    }
+
+    if (initiator_matches_committed_url && !initiator_matches_pending_url) {
+      // We predict that |last_committed_main_frame_url| is the actual main
+      // frame url.
+      return whitelisted_pages.MatchesURL(
+          request.frame_data->last_committed_main_frame_url);
+    }
+  }
+
+  // If we are not able to correctly predict the main frame url, simply test
+  // against both the possible URLs. This means a small proportion of main frame
+  // subresource requests might be incorrectly whitelisted by the page
+  // whitelisting API.
+  // TODO(karandeepb): Add UMA to see how often this happens.
+  return whitelisted_pages.MatchesURL(
+             request.frame_data->last_committed_main_frame_url) ||
+         whitelisted_pages.MatchesURL(
+             *request.frame_data->pending_main_frame_url);
+}
+
 }  // namespace
 
 RulesetManager::RulesetManager(const InfoMap* info_map) : info_map_(info_map) {
@@ -114,16 +214,16 @@ RulesetManager::~RulesetManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void RulesetManager::AddRuleset(
-    const ExtensionId& extension_id,
-    std::unique_ptr<RulesetMatcher> ruleset_matcher) {
+void RulesetManager::AddRuleset(const ExtensionId& extension_id,
+                                std::unique_ptr<RulesetMatcher> ruleset_matcher,
+                                URLPatternSet whitelisted_pages) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAPIAvailable());
 
   bool inserted;
-  std::tie(std::ignore, inserted) =
-      rulesets_.emplace(extension_id, info_map_->GetInstallTime(extension_id),
-                        std::move(ruleset_matcher));
+  std::tie(std::ignore, inserted) = rulesets_.emplace(
+      extension_id, info_map_->GetInstallTime(extension_id),
+      std::move(ruleset_matcher), std::move(whitelisted_pages));
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
 
@@ -149,6 +249,30 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
 
   // Clear the renderers' cache so that they take the removed rules into
   // account.
+  ClearRendererCacheOnNavigation();
+}
+
+void RulesetManager::UpdateWhitelistedPages(const ExtensionId& extension_id,
+                                            URLPatternSet whitelisted_pages) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsAPIAvailable());
+
+  // This is O(n) but it's ok since the number of extensions will be small and
+  // we have to maintain the rulesets sorted in decreasing order of installation
+  // time.
+  auto iter =
+      std::find_if(rulesets_.begin(), rulesets_.end(),
+                   [&extension_id](const ExtensionRulesetData& ruleset) {
+                     return ruleset.extension_id == extension_id;
+                   });
+
+  // There must be ExtensionRulesetData corresponding to this |extension_id|.
+  DCHECK(iter != rulesets_.end());
+
+  iter->whitelisted_pages = std::move(whitelisted_pages);
+
+  // Clear the renderers' cache so that they take the updated whitelisted pages
+  // into account.
   ClearRendererCacheOnNavigation();
 }
 
@@ -232,10 +356,12 @@ void RulesetManager::SetObserverForTest(TestObserver* observer) {
 RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
     const ExtensionId& extension_id,
     const base::Time& extension_install_time,
-    std::unique_ptr<RulesetMatcher> matcher)
+    std::unique_ptr<RulesetMatcher> matcher,
+    URLPatternSet whitelisted_pages)
     : extension_id(extension_id),
       extension_install_time(extension_install_time),
-      matcher(std::move(matcher)) {}
+      matcher(std::move(matcher)),
+      whitelisted_pages(std::move(whitelisted_pages)) {}
 RulesetManager::ExtensionRulesetData::~ExtensionRulesetData() = default;
 RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
     ExtensionRulesetData&& other) = default;
@@ -283,6 +409,9 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
       !info_map_->IsIncognitoEnabled(ruleset.extension_id)) {
     return false;
   }
+
+  if (IsRequestPageWhitelisted(request, ruleset.whitelisted_pages))
+    return false;
 
   const int tab_id = request.frame_data ? request.frame_data->tab_id
                                         : extension_misc::kUnknownTabId;

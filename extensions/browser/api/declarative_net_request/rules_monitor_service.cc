@@ -38,11 +38,12 @@ static base::LazyInstance<
 
 void LoadRulesetOnIOThread(ExtensionId extension_id,
                            std::unique_ptr<RulesetMatcher> ruleset_matcher,
+                           URLPatternSet whitelisted_pages,
                            InfoMap* info_map) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info_map);
-  info_map->GetRulesetManager()->AddRuleset(extension_id,
-                                            std::move(ruleset_matcher));
+  info_map->GetRulesetManager()->AddRuleset(
+      extension_id, std::move(ruleset_matcher), std::move(whitelisted_pages));
 }
 
 void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
@@ -56,6 +57,7 @@ void UnloadRulesetOnIOThread(ExtensionId extension_id, InfoMap* info_map) {
 void LoadRulesetOnFileTaskRunner(ExtensionId extension_id,
                                  int ruleset_checksum,
                                  base::FilePath indexed_file_path,
+                                 URLPatternSet whitelisted_pages,
                                  scoped_refptr<InfoMap> info_map) {
   base::AssertBlockingAllowed();
 
@@ -69,9 +71,10 @@ void LoadRulesetOnFileTaskRunner(ExtensionId extension_id,
   if (result != RulesetMatcher::kLoadSuccess)
     return;
 
-  base::OnceClosure task = base::BindOnce(
-      &LoadRulesetOnIOThread, std::move(extension_id),
-      std::move(ruleset_matcher), base::RetainedRef(std::move(info_map)));
+  base::OnceClosure task =
+      base::BindOnce(&LoadRulesetOnIOThread, std::move(extension_id),
+                     std::move(ruleset_matcher), std::move(whitelisted_pages),
+                     base::RetainedRef(std::move(info_map)));
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    std::move(task));
 }
@@ -126,12 +129,16 @@ void RulesMonitorService::OnExtensionLoaded(
   if (!prefs->GetDNRRulesetChecksum(extension->id(), &ruleset_checksum))
     return;
 
+  URLPatternSet whitelisted_pages =
+      prefs->GetDNRWhitelistedPages(extension->id());
+
   DCHECK(IsAPIAvailable());
   extensions_with_rulesets_.insert(extension);
 
   base::OnceClosure task = base::BindOnce(
       &LoadRulesetOnFileTaskRunner, extension->id(), ruleset_checksum,
       file_util::GetIndexedRulesetPath(extension->path()),
+      std::move(whitelisted_pages),
       base::WrapRefCounted(ExtensionSystem::Get(browser_context)->info_map()));
   file_task_runner_->PostTask(FROM_HERE, std::move(task));
 }

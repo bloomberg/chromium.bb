@@ -136,6 +136,8 @@
 # http://crbug.com/841002
 -ExtensionWebRequestApiTest.WebRequestURLLoaderInterception
 -ExtensionWebRequestApiTest.WebRequestClientsGoogleComProtection
+-DeclarativeNetRequestBrowserTest.PageWhitelistingAPI_BrowserRequests/0
+-DeclarativeNetRequestBrowserTest.PageWhitelistingAPI_BrowserRequests/1
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
 # http://crbug.com/841827

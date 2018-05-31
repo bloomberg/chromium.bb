@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_util.h"
@@ -16,6 +17,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/synchronization/lock.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -33,11 +35,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
@@ -54,10 +59,16 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "ipc/ipc_message.h"
+#include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -127,6 +138,10 @@ class DeclarativeNetRequestBrowserTest
     test_root_path = test_root_path.AppendASCII("extensions")
                          .AppendASCII("declarative_net_request");
     embedded_test_server()->ServeFilesFromDirectory(test_root_path);
+
+    embedded_test_server()->RegisterRequestMonitor(
+        base::BindRepeating(&DeclarativeNetRequestBrowserTest::MonitorRequest,
+                            base::Unretained(this)));
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -290,7 +305,21 @@ class DeclarativeNetRequestBrowserTest
     EXPECT_EQ(expected_patterns, patterns);
   }
 
+  std::set<GURL> GetAndResetRequestsToServer() {
+    base::AutoLock lock(requests_to_server_lock_);
+    std::set<GURL> results = requests_to_server_;
+    requests_to_server_.clear();
+    return results;
+  }
+
  private:
+  // Handler to monitor the requests which reach the EmbeddedTestServer. This
+  // will be run on the EmbeddedTestServer's IO thread.
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    base::AutoLock lock(requests_to_server_lock_);
+    requests_to_server_.insert(request.GetURL());
+  }
+
   void UpdateWhitelistedPages(const ExtensionId& extension_id,
                               const std::vector<std::string>& patterns,
                               const std::string& function_name) {
@@ -316,6 +345,13 @@ class DeclarativeNetRequestBrowserTest
   base::ScopedTempDir temp_dir_;
   bool has_background_script_ = false;
   std::unique_ptr<ExtensionTestMessageListener> background_page_ready_listener_;
+
+  // Requests observed by the EmbeddedTestServer. This is accessed on both the
+  // UI and the EmbeddedTestServer's IO thread. Access is protected by
+  // |requests_to_server_lock_|.
+  std::set<GURL> requests_to_server_;
+
+  base::Lock requests_to_server_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestBrowserTest);
 };
@@ -1226,9 +1262,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 }
 
-// Tests the pages whitelisting API.
+// Tests the page whitelisting API.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
-                       PRE_PageWhitelistingAPI) {
+                       PRE_PageWhitelistingAPI_PersistedAcrossSessions) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser sessions.
   ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
@@ -1253,7 +1289,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 // Tests that the pages whitelisted using the page whitelisting API are
 // persisted across browser sessions.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
-                       PageWhitelistingAPI) {
+                       PageWhitelistingAPI_PersistedAcrossSessions) {
   // This is not tested for unpacked extensions since the unpacked extension
   // directory won't be persisted across browser sessions.
   ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
@@ -1281,6 +1317,238 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   RemoveWhitelistedPages(dnr_extension->id(), {kGoogleDotCom});
 
   VerifyGetWhitelistedPages(dnr_extension->id(), {});
+}
+
+// Tests that the page whitelisting API performs pattern matching correctly.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       PageWhitelistingAPI_Patterns) {
+  // Load an extension which blocks requests to "script.js".
+  set_has_background_script(true);
+  std::vector<TestRule> rules;
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("script.js");
+  rules.push_back(rule);
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  // We'll be whitelisting these patterns subsequently.
+  const std::vector<std::string> whitelisted_page_patterns = {
+      "http://google.com:*/pages_with_script/page*.html",
+      "http://*/*index.html",
+      "http://example.com:*/pages_with_script/page2.html"};
+
+  struct TestCase {
+    std::string hostname;
+    std::string path;
+    bool expect_script_whitelisted_with_rules;
+  } test_cases[] = {
+      {"yahoo.com", "/pages_with_script/page.html", false},
+      {"yahoo.com", "/pages_with_script/index.html", true},
+      {"example.com", "/pages_with_script/page.html", false},
+      {"example.com", "/pages_with_script/page2.html", true},
+      {"google.com", "/pages_with_script/page.html", true},
+      {"google.com", "/pages_with_script/page2.html", true},
+  };
+
+  const GURL script_url =
+      embedded_test_server()->GetURL("/pages_with_script/script.js");
+  auto verify_script_load = [this, script_url](bool expect_script_load) {
+    // The page should have loaded correctly.
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+    EXPECT_EQ(expect_script_load, WasFrameWithScriptLoaded(GetMainFrame()));
+
+    // The EmbeddedTestServer sees requests after the hostname has been
+    // resolved.
+    bool did_see_script_request =
+        base::ContainsKey(GetAndResetRequestsToServer(), script_url);
+    EXPECT_EQ(expect_script_load, did_see_script_request);
+  };
+
+  // "script.js" should have been blocked for all pages initially.
+  for (const auto& test_case : test_cases) {
+    GURL url =
+        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf(
+        "Testing %s with no page whitelisting rules", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    verify_script_load(false);
+  }
+
+  // Now whitelist |whitelisted_page_patterns| and ensure the test expectations
+  // are met.
+  AddWhitelistedPages(last_loaded_extension_id(), whitelisted_page_patterns);
+  for (const auto& test_case : test_cases) {
+    GURL url =
+        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf("Testing %s with page whitelisting rules",
+                                    url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    verify_script_load(test_case.expect_script_whitelisted_with_rules);
+  }
+
+  // Now remove the |whitelisted_page_patterns| and ensure that all requests to
+  // "script.js" are blocked again.
+  RemoveWhitelistedPages(last_loaded_extension_id(), whitelisted_page_patterns);
+  for (const auto& test_case : test_cases) {
+    GURL url =
+        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf(
+        "Testing %s with all page whitelisting rules removed",
+        url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    verify_script_load(false);
+  }
+}
+
+// Tests the page whitelisting API for subresource requests.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       PageWhitelistingAPI_Resources) {
+  // Load an extension which blocks all requests.
+  set_has_background_script(true);
+  std::vector<TestRule> rules;
+
+  // This blocks all subresource requests. By default the main-frame resource
+  // type is excluded.
+  TestRule rule = CreateGenericRule();
+  rule.id = kMinValidID;
+  rule.condition->url_filter = std::string("*");
+  rules.push_back(rule);
+
+  // Also block main frame requests.
+  rule.id = kMinValidID + 1;
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rules.push_back(rule);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  const GURL url = embedded_test_server()->GetURL("/whitelisting_api.html");
+
+  auto verify_page_load = [this](bool expect_load) {
+    EXPECT_EQ(expect_load, WasFrameWithScriptLoaded(GetMainFrame()));
+    EXPECT_EQ(
+        expect_load ? content::PAGE_TYPE_NORMAL : content::PAGE_TYPE_ERROR,
+        GetPageType());
+
+    // We will be loading "whitelisting_api.html" for the test. The following
+    // lists the set of requests we expect to see if the page is loaded.
+    static const std::vector<std::string> page_resources_path = {
+        // Main frame request.
+        "/whitelisting_api.html",
+
+        // Main frame subrources.
+        "/subresources/style.css", "/subresources/script.js",
+        "/subresources/image.png", "/subresources/ping.mp3",
+        "/child_frame_with_subresources.html",
+
+        // Child frame subresources.
+        "/iframe_subresources/style.css", "/iframe_subresources/script.js",
+        "/iframe_subresources/image.png", "/iframe_subresources/ping.mp3",
+        "/iframe_subresources/subframe.html",
+    };
+
+    const std::set<GURL> requests_seen = GetAndResetRequestsToServer();
+
+    for (const auto& path : page_resources_path) {
+      GURL expected_request_url = embedded_test_server()->GetURL(path);
+
+      // Request to |expected_requested_url| should be seen by the server iff we
+      // expect the page to load.
+      if (expect_load) {
+        EXPECT_TRUE(base::ContainsKey(requests_seen, expected_request_url))
+            << expected_request_url.spec()
+            << " was not requested from the server.";
+      } else {
+        EXPECT_FALSE(base::ContainsKey(requests_seen, expected_request_url))
+            << expected_request_url.spec() << " request seen unexpectedly.";
+      }
+    }
+  };
+
+  // Initially the request for the page should be blocked. No request should
+  // reach the server.
+  ui_test_utils::NavigateToURL(browser(), url);
+  verify_page_load(false /*expect_load*/);
+
+  // Next we whitelist |url|. All requests with |url| as the top level frame
+  // should be whitelisted.
+  AddWhitelistedPages(last_loaded_extension_id(), {url.spec()});
+
+  // Ensure that no requests made by the page load are blocked.
+  ui_test_utils::NavigateToURL(browser(), url);
+  verify_page_load(true /*expect_load*/);
+
+  // Remove |url| from whitelist.
+  RemoveWhitelistedPages(last_loaded_extension_id(), {url.spec()});
+
+  // Ensure that requests are blocked.
+  ui_test_utils::NavigateToURL(browser(), url);
+  verify_page_load(false /*expect_load*/);
+}
+
+// Tests that requests which can't be mapped to a render frame (e.g. non-
+// navigation browser requests) are not affected by the page whitelisting API.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       PageWhitelistingAPI_BrowserRequests) {
+  // Load an extension which blocks all requests.
+  set_has_background_script(true);
+  std::vector<TestRule> rules;
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("*");
+  rules.push_back(rule);
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  // Whitelist requests served from "google.com/*" pages.
+  AddWhitelistedPages(last_loaded_extension_id(), {"http://google.com:*/*"});
+
+  const GURL url = embedded_test_server()->GetURL(
+      "google.com", "/pages_with_script/index.html");
+
+  // A navigation to |url| should not be blocked as google.com/* pages have been
+  // whitelisted. This will cause two network requests to index.html and
+  // script.js.
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+  std::set<GURL> requests_seen = GetAndResetRequestsToServer();
+
+  // The EmbeddedTestServer sees requests after the hostname has been resolved.
+  EXPECT_TRUE(base::ContainsKey(
+      requests_seen,
+      embedded_test_server()->GetURL("/pages_with_script/index.html")));
+  EXPECT_TRUE(base::ContainsKey(
+      requests_seen,
+      embedded_test_server()->GetURL("/pages_with_script/script.js")));
+
+  // But a non-navigation browser initiated resource request should still be
+  // blocked. This is because such a request can't be mapped to a top level
+  // frame and hence won't be considered for whitelisting by the page
+  // whitelisting API.
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = embedded_test_server()->GetURL("google.com",
+                                                "/pages_with_script/script.js");
+  request->resource_type = content::ResourceType::RESOURCE_TYPE_SCRIPT;
+  request->render_frame_id = MSG_ROUTING_NONE;
+
+  auto loader = network::SimpleURLLoader::Create(std::move(request),
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+  content::SimpleURLLoaderTestHelper loader_helper;
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get(),
+      loader_helper.GetCallback());
+  loader_helper.WaitForCallback();
+
+  EXPECT_FALSE(loader_helper.response_body());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, loader->NetError());
+  EXPECT_FALSE(base::ContainsKey(
+      GetAndResetRequestsToServer(),
+      embedded_test_server()->GetURL("/pages_with_script/script.js")));
 }
 
 // Test fixture to verify that host permissions for the request url and the
