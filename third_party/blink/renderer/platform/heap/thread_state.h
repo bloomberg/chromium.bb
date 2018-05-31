@@ -301,7 +301,6 @@ class PLATFORM_EXPORT ThreadState {
   void DisableIncrementalMarkingBarrier();
 
   void CompleteSweep();
-  void PreSweep(BlinkGC::MarkingType, BlinkGC::SweepingType);
   void FinishSnapshot();
   void PostSweep();
 
@@ -588,12 +587,17 @@ class PLATFORM_EXPORT ThreadState {
   ThreadState();
   ~ThreadState();
 
+  // The version is needed to be able to start incremental marking.
   void MarkPhasePrologue(BlinkGC::StackState,
                          BlinkGC::MarkingType,
                          BlinkGC::GCReason);
+  void AtomicPausePrologue(BlinkGC::StackState,
+                           BlinkGC::MarkingType,
+                           BlinkGC::GCReason);
+  void AtomicPauseEpilogue(BlinkGC::MarkingType, BlinkGC::SweepingType);
+  void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
   bool MarkPhaseAdvanceMarking(double deadline_seconds);
-  void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void VerifyMarking(BlinkGC::MarkingType);
 
   void RunAtomicPause(BlinkGC::StackState,
