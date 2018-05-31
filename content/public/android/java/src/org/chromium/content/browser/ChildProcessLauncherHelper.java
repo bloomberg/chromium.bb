@@ -320,10 +320,10 @@ public class ChildProcessLauncherHelper {
     @VisibleForTesting
     static ChildConnectionAllocator getConnectionAllocator(Context context, boolean sandboxed) {
         assert LauncherThread.runningOnLauncherThread();
-        final String packageName = ChildProcessCreationParams.getPackageNameForService();
-        boolean bindToCaller = ChildProcessCreationParams.getBindToCallerCheck();
+        final String packageName = ChildProcessCreationParamsImpl.getPackageNameForService();
+        boolean bindToCaller = ChildProcessCreationParamsImpl.getBindToCallerCheck();
         boolean bindAsExternalService =
-                sandboxed && ChildProcessCreationParams.getIsSandboxedServiceExternal();
+                sandboxed && ChildProcessCreationParamsImpl.getIsSandboxedServiceExternal();
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
@@ -461,7 +461,7 @@ public class ChildProcessLauncherHelper {
         }
 
         ChildProcessConnection connection = mLauncher.getConnection();
-        if (ChildProcessCreationParams.getIgnoreVisibilityForImportance()) {
+        if (ChildProcessCreationParamsImpl.getIgnoreVisibilityForImportance()) {
             foreground = false;
             boostForPendingViews = false;
         }
@@ -580,12 +580,9 @@ public class ChildProcessLauncherHelper {
     }
 
     private static Bundle populateServiceBundle(Bundle bundle) {
-        ChildProcessCreationParams creationParams = ChildProcessCreationParams.get();
-        if (creationParams != null) {
-            creationParams.addIntentExtras(bundle);
-        }
+        ChildProcessCreationParamsImpl.addIntentExtras(bundle);
         bundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER,
-                ChildProcessCreationParams.getBindToCallerCheck());
+                ChildProcessCreationParamsImpl.getBindToCallerCheck());
         ChromiumLinkerParams linkerParams = getLinkerParamsForNewConnection();
         if (linkerParams != null) linkerParams.populateBundle(bundle);
         return bundle;
