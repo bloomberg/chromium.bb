@@ -38,6 +38,7 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   // Owned by views hierarchy.
   views::Button* user_avatar_button_ = nullptr;
   SignOutButton* sign_out_button_ = nullptr;
+  views::View* const container_;
   TopShortcutButton* lock_button_ = nullptr;
   TopShortcutButton* settings_button_ = nullptr;
   TopShortcutButton* power_button_ = nullptr;
