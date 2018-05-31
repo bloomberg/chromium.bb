@@ -260,7 +260,7 @@ bool TtsExtensionEngine::LoadBuiltInTtsExtension(
   }
 
   // Load the component extension into this profile.
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extension_service);
   extension_service->component_loader()
