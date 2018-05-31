@@ -58,7 +58,6 @@
     },
     "build200-b7--device1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "media.desktop",
         "octane",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -108,7 +107,6 @@
     },
     "build200-b7--device6": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.svg",
         "memory.long_running_idle_gmail_background_tbmv2",
         "smoothness.gpu_rasterization.top_25_smooth",
@@ -237,7 +235,6 @@
     },
     "build212-b7--device1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "media.desktop",
         "octane",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -287,7 +284,6 @@
     },
     "build212-b7--device6": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.svg",
         "memory.long_running_idle_gmail_background_tbmv2",
         "smoothness.gpu_rasterization.top_25_smooth",
@@ -396,7 +392,6 @@
     },
     "build188-b7--device5": {
       "benchmarks": [
-        "battor.trivial_pages",
         "v8.browsing_mobile"
       ]
     },
@@ -410,7 +405,6 @@
     },
     "build188-b7--device7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.canvas",
         "blink_perf.paint",
         "power.idle_platform",
@@ -573,7 +567,6 @@
     },
     "build202-b7--device5": {
       "benchmarks": [
-        "battor.trivial_pages",
         "v8.browsing_mobile"
       ]
     },
@@ -587,7 +580,6 @@
     },
     "build202-b7--device7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.canvas",
         "blink_perf.paint",
         "power.idle_platform",
@@ -774,7 +766,6 @@
     },
     "build192-b7--device1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "dromaeo",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
@@ -819,7 +810,6 @@
     },
     "build192-b7--device6": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.layout",
         "blink_perf.shadow_dom",
         "octane",
@@ -952,7 +942,6 @@
     },
     "build248-m4--device1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "media.desktop",
         "octane",
         "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -1002,7 +991,6 @@
     },
     "build248-m4--device6": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.svg",
         "memory.long_running_idle_gmail_background_tbmv2",
         "smoothness.gpu_rasterization.top_25_smooth",
@@ -1122,7 +1110,6 @@
     },
     "build69-a7": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1166,7 +1153,6 @@
     },
     "build71-a7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1239,7 +1225,6 @@
     },
     "build104-b1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1282,7 +1267,6 @@
     },
     "build106-b1": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1355,7 +1339,6 @@
     },
     "build160-m1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1398,7 +1381,6 @@
     },
     "build162-m1": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1470,7 +1452,6 @@
     },
     "build125-b1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1514,7 +1495,6 @@
     },
     "build127-b1": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1588,7 +1568,6 @@
     },
     "build207-b7": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1630,7 +1609,6 @@
     },
     "build209-b7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1660,7 +1638,6 @@
   "Mac Retina Perf": {
     "build30-b4": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1736,7 +1713,6 @@
     },
     "build6-b1": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1827,7 +1803,6 @@
     },
     "build196-b7": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1870,7 +1845,6 @@
     },
     "build198-b7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -1944,7 +1918,6 @@
     },
     "build119-a7": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -1987,7 +1960,6 @@
     },
     "build121-a7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -2059,7 +2031,6 @@
     },
     "build204-m7": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -2102,7 +2073,6 @@
     },
     "build206-m7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -2175,7 +2145,6 @@
     },
     "build199-m7": {
       "benchmarks": [
-        "battor.trivial_pages",
         "blink_perf.layout",
         "dromaeo",
         "memory.long_running_idle_gmail_background_tbmv2",
@@ -2218,7 +2187,6 @@
     },
     "build201-m7": {
       "benchmarks": [
-        "battor.steady_state",
         "blink_perf.css",
         "blink_perf.events",
         "blink_perf.shadow_dom",
@@ -2246,8 +2214,6 @@
     }
   },
   "all_benchmarks": [
-    "battor.steady_state",
-    "battor.trivial_pages",
     "blink_perf.bindings",
     "blink_perf.canvas",
     "blink_perf.css",

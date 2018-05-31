@@ -1,7 +1,6 @@
 {
   "0": {
     "benchmarks": {
-      "battor.steady_state": {},
       "media.desktop": {},
       "smoothness.pathological_mobile_sites": {},
       "tab_switching.typical_25": {}
@@ -9,7 +8,6 @@
   },
   "1": {
     "benchmarks": {
-      "battor.trivial_pages": {},
       "media.mobile": {},
       "smoothness.simple_mobile_sites": {},
       "thread_times.key_hit_test_cases": {}

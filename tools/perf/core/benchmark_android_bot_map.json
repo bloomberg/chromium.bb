@@ -1,14 +1,12 @@
 {
   "0": {
     "benchmarks": {
-      "battor.steady_state": {},
       "smoothness.desktop_tough_pinch_zoom_cases": {},
       "tab_switching.typical_25": {}
     }
   },
   "1": {
     "benchmarks": {
-      "battor.trivial_pages": {},
       "smoothness.gpu_rasterization.polymer": {},
       "thread_times.key_hit_test_cases": {}
     }

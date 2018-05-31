@@ -22,7 +22,6 @@ from telemetry.testing import progress_reporter
 
 from py_utils import discover
 
-from benchmarks import battor
 from benchmarks import jetstream
 from benchmarks import kraken
 from benchmarks import octane
@@ -112,7 +111,6 @@ _BLACK_LIST_TEST_MODULES = {
     jetstream,  # Take 206 seconds.
     kraken,  # Flaky on Android, crbug.com/626174.
     v8_browsing, # Flaky on Android, crbug.com/628368.
-    battor #Flaky on android, crbug.com/618330.
 }
 
 # The list of benchmark names to be excluded from our smoke tests.
