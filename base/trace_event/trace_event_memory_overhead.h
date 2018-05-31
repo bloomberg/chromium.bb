@@ -39,6 +39,7 @@ class BASE_EXPORT TraceEventMemoryOverhead {
     kStdString,
     kBaseValue,
     kTraceEventMemoryOverhead,
+    kFrameMetrics,
     kLast
   };
 

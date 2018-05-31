@@ -47,6 +47,8 @@ const char* ObjectTypeToString(TraceEventMemoryOverhead::ObjectType type) {
       return "base::Value";
     case TraceEventMemoryOverhead::kTraceEventMemoryOverhead:
       return "TraceEventMemoryOverhead";
+    case TraceEventMemoryOverhead::kFrameMetrics:
+      return "FrameMetrics";
     case TraceEventMemoryOverhead::kLast:
       NOTREACHED();
   }
