@@ -510,7 +510,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       fullscreen_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
       fullscreen_widget_had_focus_at_shutdown_(false),
-      is_subframe_(false),
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
       accessibility_mode_(
@@ -697,9 +696,6 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
     BrowserPluginGuest::Create(new_contents.get(), params.guest_delegate);
-    // We are instantiating a WebContents for browser plugin. Set its subframe
-    // bit to true.
-    new_contents->is_subframe_ = true;
   }
 
   new_contents->Init(params);
@@ -1666,8 +1662,15 @@ void WebContentsImpl::DispatchBeforeUnload() {
 void WebContentsImpl::AttachToOuterWebContentsFrame(
     WebContents* outer_web_contents,
     RenderFrameHost* outer_contents_frame) {
-  CHECK(GuestMode::IsCrossProcessFrameGuest(this));
+  DCHECK(!node_.outer_web_contents());
+
   RenderFrameHostManager* render_manager = GetRenderManager();
+
+  // When attaching a WebContents as an inner WebContents, we need to replace
+  // the Webcontents' view with a WebContentsViewChildFrame.
+  view_.reset(new WebContentsViewChildFrame(
+      this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
+      &render_view_host_delegate_view_));
 
   // When the WebContents being initialized has an opener, the  browser side
   // Render{View,Frame}Host must be initialized and the RenderWidgetHostView
@@ -3755,10 +3758,6 @@ int WebContentsImpl::DownloadImage(
   return download_id;
 }
 
-bool WebContentsImpl::IsSubframe() const {
-  return is_subframe_;
-}
-
 void WebContentsImpl::Find(int request_id,
                            const base::string16& search_text,
                            const blink::WebFindOptions& options) {
@@ -5066,7 +5065,7 @@ WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
   if (browser_plugin_guest_)
     return browser_plugin_guest_->embedder_web_contents();
 
-  return nullptr;
+  return node_.outer_web_contents();
 }
 
 WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {

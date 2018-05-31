@@ -397,11 +397,6 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   // is a RenderWidgetHostViewChildFrame. In contrast, when there is no
   // inner/outer WebContents, only subframe's RenderWidgetHostView can be a
   // RenderWidgetHostViewChildFrame which do not get a SetIsLoading() call.
-  if (GuestMode::IsCrossProcessFrameGuest(
-          WebContents::FromRenderViewHost(RenderViewHost::From(host()))))
-    return;
-
-  NOTREACHED();
 }
 
 void RenderWidgetHostViewChildFrame::RenderProcessGone(

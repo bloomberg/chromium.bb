@@ -15,6 +15,7 @@
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -38,8 +39,8 @@ bool LaunchAppWithUrl(const scoped_refptr<const Extension> app,
 
   // Redirect top-level navigations only. This excludes iframes and webviews
   // in particular.
-  if (source->IsSubframe()) {
-    DVLOG(1) << "Cancel redirection: source is a subframe";
+  if (content::GuestMode::IsCrossProcessFrameGuest(source)) {
+    DVLOG(1) << "Cancel redirection: source is a inner WebContents";
     return false;
   }
 
