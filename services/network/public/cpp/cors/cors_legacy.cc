@@ -5,8 +5,6 @@
 #include "services/network/public/cpp/cors/cors_legacy.h"
 
 #include <algorithm>
-#include <string>
-#include <vector>
 
 #include "url/gurl.h"
 #include "url/url_util.h"
