@@ -161,8 +161,6 @@ TypeConverter<::device::PublicKeyCredentialUserEntity,
   return user_entity;
 }
 
-// TODO(hongjunchoi): Handle version number for Cable discovery data.
-// See: https://crbug.com/837088
 // static
 std::vector<::device::FidoCableDiscovery::CableDiscoveryData>
 TypeConverter<std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
@@ -188,7 +186,7 @@ TypeConverter<std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
               session_key.begin());
 
     discovery_data.push_back(::device::FidoCableDiscovery::CableDiscoveryData{
-        client_eid, authenticator_eid, session_key});
+        data->version, client_eid, authenticator_eid, session_key});
   }
 
   return discovery_data;

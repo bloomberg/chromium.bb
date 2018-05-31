@@ -4,6 +4,7 @@
 
 #include "device/fido/fido_cable_discovery.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -68,6 +69,7 @@ bool IsCableDevice(const BluetoothDevice* device) {
 // instead, and on Mac our only option is to advertise an additional service
 // with the EID as its UUID.
 std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
+    uint8_t version_number,
     base::span<const uint8_t, FidoCableDiscovery::kEphemeralIdSize>
         client_eid) {
   auto advertisement_data = std::make_unique<BluetoothAdvertisement::Data>(
@@ -94,9 +96,15 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
   advertisement_data->set_manufacturer_data(std::move(manufacturer_data));
 
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // Service data for ChromeOS and Linux is 1 byte corresponding to Cable
+  // version number, followed by 7 empty(0x00) bytes, followed by 16 bytes
+  // corresponding to client EID.
   auto service_data = std::make_unique<BluetoothAdvertisement::ServiceData>();
-  service_data->emplace(kCableAdvertisementUUID,
-                        fido_parsing_utils::Materialize(client_eid));
+  std::vector<uint8_t> service_data_value(24, 0);
+  service_data_value[0] = version_number;
+  std::copy(client_eid.begin(), client_eid.end(),
+            service_data_value.begin() + 8);
+  service_data->emplace(kCableAdvertisementUUID, std::move(service_data_value));
   advertisement_data->set_service_data(std::move(service_data));
 #endif
 
@@ -108,10 +116,12 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 // FidoCableDiscovery::CableDiscoveryData -------------------------------------
 
 FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
+    uint8_t version,
     const EidArray& client_eid,
     const EidArray& authenticator_eid,
     const SessionKeyArray& session_key)
-    : client_eid(client_eid),
+    : version(version),
+      client_eid(client_eid),
       authenticator_eid(authenticator_eid),
       session_key(session_key) {}
 
@@ -165,24 +175,24 @@ void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
 void FidoCableDiscovery::OnSetPowered() {
   DCHECK(adapter());
 
-  for (const auto& data : discovery_data_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartAdvertisement,
-                                  weak_factory_.GetWeakPtr(), data.client_eid));
-  }
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FidoCableDiscovery::StartAdvertisement,
+                                weak_factory_.GetWeakPtr()));
 }
 
-void FidoCableDiscovery::StartAdvertisement(const EidArray& client_eid) {
+void FidoCableDiscovery::StartAdvertisement() {
   DCHECK(adapter());
 
-  adapter()->RegisterAdvertisement(
-      ConstructAdvertisementData(client_eid),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegistered,
-                         weak_factory_.GetWeakPtr(), client_eid)),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegisterError,
-                         weak_factory_.GetWeakPtr())));
+  for (const auto& data : discovery_data_) {
+    adapter()->RegisterAdvertisement(
+        ConstructAdvertisementData(data.version, data.client_eid),
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegistered,
+                           weak_factory_.GetWeakPtr(), data.client_eid)),
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&FidoCableDiscovery::OnAdvertisementRegisterError,
+                           weak_factory_.GetWeakPtr())));
+  }
 }
 
 void FidoCableDiscovery::OnAdvertisementRegistered(
