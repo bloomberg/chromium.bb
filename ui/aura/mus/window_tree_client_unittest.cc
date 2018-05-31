@@ -2741,9 +2741,10 @@ TEST_F(WindowTreeClientClientTestHighDPI, NewTopLevelWindowBounds) {
   Window* top_level = window_tree_host.window();
   window_tree_host.InitHost();
 
+  gfx::Rect bounds(2, 4, 6, 8);
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(top_level);
-  data->bounds.SetRect(2, 4, 6, 8);
+  data->bounds = bounds;
   const int64_t display_id = 10;
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
@@ -2752,9 +2753,12 @@ TEST_F(WindowTreeClientClientTestHighDPI, NewTopLevelWindowBounds) {
                                           display_id, true, base::nullopt);
 
   // aura::Window should operate in DIP and aura::WindowTreeHost should operate
-  // in pixels.
-  EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
-  EXPECT_EQ(gfx::Rect(2, 4, 6, 8), top_level->GetHost()->GetBoundsInPixels());
+  // in pixels. Only the size is compared for |top_level| as the WindowTreeHost
+  // is the place that maintains the location.
+  EXPECT_EQ(bounds.size(), top_level->bounds().size());
+  const float device_scale_factor = 2.0f;
+  EXPECT_EQ(gfx::ConvertRectToPixel(device_scale_factor, bounds),
+            top_level->GetHost()->GetBoundsInPixels());
 }
 
 TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
@@ -2772,11 +2776,10 @@ TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
 
   // Simulate the server sending an observed event.
-  const gfx::Point location_pixels(10, 12);
-  const gfx::Point root_location_pixels(14, 16);
+  const gfx::Point location(10, 12);
+  const gfx::Point root_location(14, 16);
   std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
-      ui::ET_POINTER_DOWN, location_pixels, root_location_pixels,
-      ui::EF_CONTROL_DOWN, 0,
+      ui::ET_POINTER_DOWN, location, root_location, ui::EF_CONTROL_DOWN, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks()));
   window_tree_client()->OnPointerEventObserved(std::move(pointer_event_down),
@@ -2787,10 +2790,8 @@ TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
   ASSERT_TRUE(last_event);
   // NOTE: the root and location are the same as there was no window supplied to
   // OnPointerEventObserved().
-  EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, root_location_pixels),
-            last_event->location());
-  EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, root_location_pixels),
-            last_event->root_location());
+  EXPECT_EQ(root_location, last_event->location());
+  EXPECT_EQ(root_location, last_event->root_location());
 }
 
 TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
@@ -2829,31 +2830,22 @@ TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
 
   // child1 has a custom targeter set which would always return itself as the
   // target window therefore event should go to child1 and should be in dip.
-  const gfx::Point event_location_in_pixels(50, 60);
+  const gfx::Point event_location(50, 60);
   uint32_t event_id = 1;
   window_delegate1.set_event_id(event_id);
   window_delegate2.set_event_id(event_id);
-  std::unique_ptr<ui::Event> ui_event(new ui::MouseEvent(
-      ui::ET_MOUSE_MOVED, event_location_in_pixels, event_location_in_pixels,
-      ui::EventTimeForNow(), ui::EF_NONE, 0));
+  std::unique_ptr<ui::Event> ui_event(
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location, event_location,
+                         ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child1), window_tree_host.display_id(), ui::Id(),
-      gfx::PointF(event_location_in_pixels), ui::Event::Clone(*ui_event.get()),
-      0);
+      gfx::PointF(event_location), ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());
-  const gfx::Point event_location_in_dip(25, 30);
-  EXPECT_EQ(event_location_in_dip, window_delegate1.last_event_location());
-#if defined(USE_OZONE)
-  // For ozone there should be NativeEvent.
-  EXPECT_TRUE(window_delegate1.last_mouse_event_had_native_event());
-  // And the location of the NativeEvent should be in pixels.
-  EXPECT_EQ(event_location_in_pixels,
-            window_delegate1.last_native_event_location());
-#endif
+  EXPECT_EQ(event_location, window_delegate1.last_event_location());
   window_delegate1.reset();
   window_delegate2.reset();
 
@@ -2863,17 +2855,15 @@ TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
   window_delegate2.set_event_id(event_id);
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child2), window_tree_host.display_id(), ui::Id(),
-      gfx::PointF(event_location_in_pixels), ui::Event::Clone(*ui_event.get()),
-      0);
+      gfx::PointF(event_location), ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());
-  gfx::Point transformed_event_location_in_dip(event_location_in_dip.x() + 20,
-                                               event_location_in_dip.y() + 30);
-  EXPECT_EQ(transformed_event_location_in_dip,
-            window_delegate1.last_event_location());
+  gfx::Point transformed_event_location(event_location.x() + 20,
+                                        event_location.y() + 30);
+  EXPECT_EQ(transformed_event_location, window_delegate1.last_event_location());
 }
 
 using WindowTreeClientDestructionTest = test::AuraTestBaseMus;

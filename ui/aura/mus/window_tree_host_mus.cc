@@ -60,7 +60,13 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // If window-server is hosting viz, then use the FrameSinkId from the server.
   // In other cases, let a valid FrameSinkId be selected by
   // context_factory_private().
-  CreateCompositor(window_mus->GenerateFrameSinkIdFromServerId());
+  const bool force_software_compositor = false;
+  const bool external_begin_frames_enabled = false;
+  const bool are_events_in_pixels =
+      init_params.window_tree_client->is_using_pixels();
+  CreateCompositor(window_mus->GenerateFrameSinkIdFromServerId(),
+                   force_software_compositor, external_begin_frames_enabled,
+                   are_events_in_pixels);
   gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each window and
 // fit in the smallest sizeof(AcceleratedWidget) uint32_t has this property.

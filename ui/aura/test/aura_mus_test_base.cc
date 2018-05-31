@@ -25,7 +25,7 @@ AuraMusClientTestBase::~AuraMusClientTestBase() {}
 void AuraMusClientTestBase::SetUp() {
   // Run AuraTestBase::SetUp() first because it puts an InProcessContextFactory
   // in env.
-  EnableMusWithTestWindowTree();
+  ConfigureBackend(BackendType::MUS2);
   set_window_manager_delegate(nullptr);
   AuraTestBase::SetUp();
 }

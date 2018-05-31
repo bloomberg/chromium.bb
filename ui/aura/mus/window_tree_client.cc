@@ -543,13 +543,21 @@ void WindowTreeClient::ConvertPointerEventLocationToDip(
     int64_t display_id,
     WindowMus* window,
     ui::LocatedEvent* event) const {
-  // TODO(sky): this function should be removed when --mash goes away.
-  // https://crbug.com/842365.
-  if (!is_using_pixels())
-    return;
-
   // PointerEvents shouldn't have the target set.
   DCHECK(!event->target());
+
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
+  if (!is_using_pixels()) {
+    if (!window) {
+      // When there is no window force the root and location to be the same.
+      // They may differ if |window| was valid at the time of the event, but
+      // was since deleted.
+      event->set_location_f(event->root_location_f());
+    }
+    return;
+  }
+
   if (window_manager_delegate_) {
     ConvertPointerEventLocationToDipInWindowManager(display_id, window, event);
     return;
@@ -1652,17 +1660,12 @@ void WindowTreeClient::OnWindowInputEvent(
 
   if (matches_pointer_watcher && has_pointer_watcher_) {
     DCHECK(event->IsPointerEvent());
-    if (is_using_pixels()) {
-      std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
-      ConvertPointerEventLocationToDip(display_id, window,
-                                       event_in_dip->AsLocatedEvent());
-      delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
-                                        display_id,
-                                        window ? window->GetWindow() : nullptr);
-    } else {
-      delegate_->OnPointerEventObserved(*event->AsPointerEvent(), display_id,
-                                        window ? window->GetWindow() : nullptr);
-    }
+    std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
+    ConvertPointerEventLocationToDip(display_id, window,
+                                     event_in_dip->AsLocatedEvent());
+    delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
+                                      display_id,
+                                      window ? window->GetWindow() : nullptr);
   }
 
   // If the window has already been deleted, use |event| to update event states
