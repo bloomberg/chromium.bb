@@ -1565,7 +1565,9 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     // previous configuration left off).
     // TODO(sync): consider detecting configuration recovery and setting
     // the reason here appropriately.
-    reason = syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+    reason = is_first_time_sync_configure_
+                 ? syncer::CONFIGURE_REASON_NEW_CLIENT
+                 : syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
   } else {
     // The user initiated a reconfiguration (either to add or remove types).
     reason = syncer::CONFIGURE_REASON_RECONFIGURATION;
