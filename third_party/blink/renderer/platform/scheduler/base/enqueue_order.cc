@@ -16,8 +16,8 @@ EnqueueOrderGenerator::EnqueueOrderGenerator()
 EnqueueOrderGenerator::~EnqueueOrderGenerator() = default;
 
 EnqueueOrder EnqueueOrderGenerator::GenerateNext() {
-  AutoLock lock(lock_);
-  return enqueue_order_++;
+  return std::atomic_fetch_add_explicit(&enqueue_order_, uint64_t(1),
+                                        std::memory_order_seq_cst);
 }
 
 }  // namespace internal
