@@ -7577,16 +7577,6 @@ static int64_t interpolation_filter_search(
   return 0;
 }
 
-static InterpFilters condition_interp_filters_on_mv(
-    InterpFilters interp_filters, const MACROBLOCKD *xd) {
-  InterpFilter filters[2];
-  (void)xd;
-  for (int i = 0; i < 2; ++i)
-    filters[i] = av1_extract_interp_filter(interp_filters, i);
-
-  return av1_make_interp_filters(filters[0], filters[1]);
-}
-
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
 static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
@@ -7663,8 +7653,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         }
 #endif
         tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
-        mbmi->interp_filters =
-            condition_interp_filters_on_mv(mbmi->interp_filters, xd);
       }
       av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
       av1_build_obmc_inter_prediction(
@@ -7717,8 +7705,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
             }
 #endif
             tmp_rate2 = rate2_nocoeff - rate_mv + tmp_rate_mv;
-            mbmi->interp_filters =
-                condition_interp_filters_on_mv(mbmi->interp_filters, xd);
           } else {
             // Restore the old MV and WM parameters.
             mbmi->mv[0] = mv0;
@@ -7827,8 +7813,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
             compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, mi_row,
                                           mi_col, intrapred, mask, bw,
                                           &tmp_rate_mv, 0);
-            mbmi->interp_filters =
-                condition_interp_filters_on_mv(mbmi->interp_filters, xd);
             mbmi->mv[0].as_int = tmp_mv.as_int;
             av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst,
                                            bsize);
