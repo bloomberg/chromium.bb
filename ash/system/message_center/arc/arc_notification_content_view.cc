@@ -92,8 +92,17 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
     // TODO(sarakato): Use a better tigger (eg. focusing EditText on
     // notification) than clicking (b/78604162).
     if (event->type() == ui::ET_MOUSE_PRESSED ||
-        event->type() == ui::ET_GESTURE_TAP)
+        event->type() == ui::ET_GESTURE_TAP) {
+      // Remove the focus from the currently focused view-control in the message
+      // center before activating the window of ARC notification, so that
+      // unexpected key handling doesn't happen (b/74415372).
+      // Focusing notification surface window doesn't steal the focus from
+      // the focucued view control in the message center, so that input events
+      // handles on both side wrongly without this.
+      owner_->GetFocusManager()->ClearFocus();
+
       owner_->Activate();
+    }
 
     views::Widget* widget = owner_->GetWidget();
     if (!widget)
