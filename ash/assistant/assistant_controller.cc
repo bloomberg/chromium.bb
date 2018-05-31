@@ -185,7 +185,7 @@ void AssistantController::OnInteractionStateChanged(
 
   // When the user-facing interaction is dismissed, we instruct the service to
   // terminate any listening, speaking, or query in flight.
-  DCHECK(assistant_);
+  has_active_interaction_ = false;
   assistant_->StopActiveInteraction();
 
   assistant_interaction_model_.ClearInteraction();
@@ -215,17 +215,20 @@ void AssistantController::OnInputModalityChanged(InputModality input_modality) {
   // actually have the undesired effect of stopping the voice interaction.
   if (assistant_interaction_model_.query().type() ==
       AssistantQueryType::kVoice) {
-    DCHECK(assistant_);
+    has_active_interaction_ = false;
     assistant_->StopActiveInteraction();
   }
 }
 
 void AssistantController::OnInteractionStarted() {
+  has_active_interaction_ = true;
   assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
 }
 
 void AssistantController::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
+  has_active_interaction_ = false;
+
   // When a voice query is interrupted we do not receive any follow up speech
   // recognition events but the mic is closed.
   if (resolution == AssistantInteractionResolution::kInterruption) {
@@ -234,7 +237,7 @@ void AssistantController::OnInteractionFinished(
 }
 
 void AssistantController::OnCardPressed(const GURL& url) {
-  OnOpenUrlResponse(url);
+  OpenUrl(url);
 }
 
 void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
@@ -260,6 +263,7 @@ void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
       assistant_->StartVoiceInteraction();
       break;
     case MicState::kOpen:
+      has_active_interaction_ = false;
       assistant_->StopActiveInteraction();
       break;
   }
@@ -301,6 +305,9 @@ void AssistantController::OnDialogPlateContentsCommitted(
 }
 
 void AssistantController::OnHtmlResponse(const std::string& response) {
+  if (!has_active_interaction_)
+    return;
+
   assistant_interaction_model_.AddUiElement(
       std::make_unique<AssistantCardElement>(response));
 }
@@ -314,7 +321,7 @@ void AssistantController::OnSuggestionChipPressed(int id) {
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
-    OnOpenUrlResponse(suggestion->action_url);
+    OpenUrl(suggestion->action_url);
     return;
   }
 
@@ -331,10 +338,16 @@ void AssistantController::OnSuggestionChipPressed(int id) {
 
 void AssistantController::OnSuggestionsResponse(
     std::vector<AssistantSuggestionPtr> response) {
+  if (!has_active_interaction_)
+    return;
+
   assistant_interaction_model_.AddSuggestions(std::move(response));
 }
 
 void AssistantController::OnTextResponse(const std::string& response) {
+  if (!has_active_interaction_)
+    return;
+
   assistant_interaction_model_.AddUiElement(
       std::make_unique<AssistantTextElement>(response));
 }
@@ -369,6 +382,13 @@ void AssistantController::OnSpeechLevelUpdated(float speech_level) {
 }
 
 void AssistantController::OnOpenUrlResponse(const GURL& url) {
+  if (!has_active_interaction_)
+    return;
+
+  OpenUrl(url);
+}
+
+void AssistantController::OpenUrl(const GURL& url) {
   Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
   StopInteraction();
 }
