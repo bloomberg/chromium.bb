@@ -626,10 +626,6 @@
       status: "stable",
     },
     {
-      name: "KeyboardLock",
-      status: "stable",
-    },
-    {
       name: "KeyboardMap",
       status: "experimental",
     },
