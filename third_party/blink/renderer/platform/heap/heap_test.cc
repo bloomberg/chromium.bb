@@ -367,13 +367,13 @@ class TestGCMarkingScope : public TestGCCollectGarbageScope {
         atomic_pause_scope_(ThreadState::Current()),
         persistent_lock_(ProcessHeap::CrossThreadPersistentMutex()) {
     ThreadState::Current()->Heap().stats_collector()->Start(BlinkGC::kTesting);
-    ThreadState::Current()->MarkPhasePrologue(state, BlinkGC::kAtomicMarking,
-                                              BlinkGC::kPreciseGC);
+    ThreadState::Current()->AtomicPausePrologue(state, BlinkGC::kAtomicMarking,
+                                                BlinkGC::kPreciseGC);
   }
   ~TestGCMarkingScope() {
     ThreadState::Current()->MarkPhaseEpilogue(BlinkGC::kAtomicMarking);
-    ThreadState::Current()->PreSweep(BlinkGC::kAtomicMarking,
-                                     BlinkGC::kEagerSweeping);
+    ThreadState::Current()->AtomicPauseEpilogue(BlinkGC::kAtomicMarking,
+                                                BlinkGC::kEagerSweeping);
   }
 
  private:

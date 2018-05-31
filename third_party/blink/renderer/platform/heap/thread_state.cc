@@ -892,8 +892,8 @@ void ThreadState::FinishSnapshot() {
   Heap().stats_collector()->Stop();
 }
 
-void ThreadState::PreSweep(BlinkGC::MarkingType marking_type,
-                           BlinkGC::SweepingType sweeping_type) {
+void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
+                                      BlinkGC::SweepingType sweeping_type) {
   DCHECK(InAtomicMarkingPause());
   DCHECK(CheckThread());
   Heap().PrepareForSweep();
@@ -1352,31 +1352,15 @@ void ThreadState::IncrementalMarkingStep() {
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
-  {
-    ThreadHeapStatsCollector::Scope stats_scope(
-        Heap().stats_collector(),
-        ThreadHeapStatsCollector::kIncrementalMarkingFinalize);
-    VLOG(2) << "[state:" << this << "] "
-            << "IncrementalMarking: Finalize";
-    SetGCState(kNoGCScheduled);
-    DisableIncrementalMarkingBarrier();
-    AtomicPauseScope atomic_pause_scope(this);
-    DCHECK(IsMarkingInProgress());
-    {
-      ThreadHeapStatsCollector::Scope stats_scope(
-          Heap().stats_collector(),
-          ThreadHeapStatsCollector::kIncrementalMarkingFinalizeMarking);
-      MarkPhaseVisitRoots();
-      bool complete =
-          MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity());
-      CHECK(complete);
-      MarkPhaseEpilogue(current_gc_data_.marking_type);
-    }
-    PreSweep(current_gc_data_.marking_type, BlinkGC::kLazySweeping);
-    DCHECK(IsSweepingInProgress());
-    DCHECK_EQ(GcState(), kNoGCScheduled);
-    ScheduleIdleLazySweep();
-  }
+  ThreadHeapStatsCollector::Scope stats_scope(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kIncrementalMarkingFinalize);
+  VLOG(2) << "[state:" << this << "] "
+          << "IncrementalMarking: Finalize";
+  // Call into the regular bottleneck instead of the internal version to get
+  // UMA accounting and allow follow up GCs if necessary.
+  CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kIncrementalMarking,
+                 BlinkGC::kLazySweeping, current_gc_data_.reason);
 }
 
 void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
@@ -1398,10 +1382,10 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   const bool was_incremental_marking = IsMarkingInProgress();
 
   if (was_incremental_marking) {
-    // Set stack state in case we are starting a Conservative GC while
-    // incremental marking is in progress.
-    current_gc_data_.stack_state = stack_state;
-    IncrementalMarkingFinalize();
+    SetGCState(kNoGCScheduled);
+    DisableIncrementalMarkingBarrier();
+    DCHECK(IsMarkingInProgress());
+    RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
   // We don't want floating garbage for the specific garbage collection types
@@ -1447,12 +1431,12 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
           ThreadHeapStatsCollector::kAtomicPhaseMarking, "lazySweeping",
           sweeping_type == BlinkGC::kLazySweeping ? "yes" : "no", "gcReason",
           GcReasonString(reason));
-      MarkPhasePrologue(stack_state, marking_type, reason);
+      AtomicPausePrologue(stack_state, marking_type, reason);
       MarkPhaseVisitRoots();
       CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
       MarkPhaseEpilogue(marking_type);
     }
-    PreSweep(marking_type, sweeping_type);
+    AtomicPauseEpilogue(marking_type, sweeping_type);
   }
   if (marking_type == BlinkGC::kTakeSnapshot) {
     FinishSnapshot();
@@ -1505,6 +1489,22 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   if (should_compact)
     Heap().Compaction()->Initialize(this);
 
+  if (marking_type != BlinkGC::kTakeSnapshot)
+    Heap().ResetHeapCounters();
+}
+
+void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
+                                      BlinkGC::MarkingType marking_type,
+                                      BlinkGC::GCReason reason) {
+  if (IsMarkingInProgress()) {
+    // Incremental marking is already in progress. Only update the state
+    // that is necessary to update.
+    current_gc_data_.reason = reason;
+    current_gc_data_.stack_state = stack_state;
+  } else {
+    MarkPhasePrologue(stack_state, marking_type, reason);
+  }
+
   if (marking_type == BlinkGC::kTakeSnapshot)
     BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
 
@@ -1514,9 +1514,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   DCHECK(InAtomicMarkingPause());
   Heap().MakeConsistentForGC();
   Heap().ClearArenaAges();
-
-  if (marking_type != BlinkGC::kTakeSnapshot)
-    Heap().ResetHeapCounters();
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
