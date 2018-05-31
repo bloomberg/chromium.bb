@@ -32,7 +32,9 @@ class CustomLayoutChild : public ScriptWrappable {
   // LayoutChild.idl
   PrepopulatedComputedStylePropertyMap* styleMap() const { return style_map_; }
   CustomLayoutFragmentRequest* layoutNextFragment(
-      const CustomLayoutConstraintsOptions&);
+      ScriptState*,
+      const CustomLayoutConstraintsOptions&,
+      ExceptionState&);
 
   LayoutBox* GetLayoutBox() const {
     DCHECK(box_);

@@ -14,6 +14,7 @@ namespace blink {
 class CustomLayoutChild;
 class CustomLayoutFragment;
 class LayoutBox;
+class SerializedScriptValue;
 
 // This represents a request to perform layout on a child. It is an opaque
 // object from the web developers point of view.
@@ -21,14 +22,16 @@ class CustomLayoutFragmentRequest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CustomLayoutFragmentRequest(CustomLayoutChild*,
-                              const CustomLayoutConstraintsOptions&);
+  CustomLayoutFragmentRequest(
+      CustomLayoutChild*,
+      const CustomLayoutConstraintsOptions&,
+      scoped_refptr<SerializedScriptValue> constraint_data);
   ~CustomLayoutFragmentRequest() override = default;
 
   // Produces a CustomLayoutFragment from this CustomLayoutFragmentRequest. This
   // may fail if the underlying LayoutBox represented by the CustomLayoutChild
   // has been removed from the tree.
-  CustomLayoutFragment* PerformLayout();
+  CustomLayoutFragment* PerformLayout(v8::Isolate*);
 
   LayoutBox* GetLayoutBox() const;
   bool IsValid() const;
@@ -38,6 +41,7 @@ class CustomLayoutFragmentRequest : public ScriptWrappable {
  private:
   Member<CustomLayoutChild> child_;
   const CustomLayoutConstraintsOptions options_;
+  scoped_refptr<SerializedScriptValue> constraint_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomLayoutFragmentRequest);
 };

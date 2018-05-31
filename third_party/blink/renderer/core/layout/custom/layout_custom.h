@@ -36,6 +36,17 @@ class LayoutCustom final : public LayoutBlockFlow {
   LayoutCustomState State() const { return state_; }
   LayoutCustomPhase Phase() const { return phase_; }
 
+  // "ConstraintData" is the additional input data object passed from parent to
+  // child layouts. It must be set before a custom layout pass, then
+  // immediately cleared.
+  SerializedScriptValue* GetConstraintData() const;
+  void SetConstraintData(scoped_refptr<SerializedScriptValue> data);
+  void ClearConstraintData();
+
+  // "FragmentResultData" is the additional output data object passed from the
+  // child to parent.
+  SerializedScriptValue* GetFragmentResultData() const;
+
   bool CreatesNewFormattingContext() const override { return true; }
 
   void AddChild(LayoutObject* new_child, LayoutObject* before_child) override;
@@ -56,6 +67,9 @@ class LayoutCustom final : public LayoutBlockFlow {
   LayoutCustomState state_;
   LayoutCustomPhase phase_;
   Persistent<CSSLayoutDefinition::Instance> instance_;
+
+  scoped_refptr<SerializedScriptValue> constraint_data_;
+  scoped_refptr<SerializedScriptValue> fragment_result_data_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCustom, IsLayoutCustom());

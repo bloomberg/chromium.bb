@@ -53,7 +53,8 @@ CSSLayoutDefinition::Instance::Instance(CSSLayoutDefinition* definition,
 
 bool CSSLayoutDefinition::Instance::Layout(
     const LayoutCustom& layout_custom,
-    FragmentResultOptions* fragment_result_options) {
+    FragmentResultOptions* fragment_result_options,
+    scoped_refptr<SerializedScriptValue>* fragment_result_data) {
   ScriptState* script_state = definition_->GetScriptState();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
 
@@ -92,8 +93,8 @@ bool CSSLayoutDefinition::Instance::Layout(
       return false;
   }
 
-  CustomLayoutConstraints* constraints =
-      new CustomLayoutConstraints(layout_custom.LogicalWidth());
+  CustomLayoutConstraints* constraints = new CustomLayoutConstraints(
+      layout_custom.LogicalWidth(), layout_custom.GetConstraintData(), isolate);
 
   // TODO(ikilpatrick): Instead of creating a new style_map each time here,
   // store on LayoutCustom, and update when the style changes.
@@ -142,7 +143,7 @@ bool CSSLayoutDefinition::Instance::Layout(
       CustomLayoutFragmentRequest* fragment_request =
           V8LayoutFragmentRequest::ToImpl(v8::Local<v8::Object>::Cast(value));
 
-      CustomLayoutFragment* fragment = fragment_request->PerformLayout();
+      CustomLayoutFragment* fragment = fragment_request->PerformLayout(isolate);
       if (!fragment) {
         execution_context->AddConsoleMessage(ConsoleMessage::Create(
             kJSMessageSource, kInfoMessageLevel,
@@ -168,7 +169,7 @@ bool CSSLayoutDefinition::Instance::Layout(
       v8::Local<v8::Array> results = v8::Array::New(isolate, requests.size());
       uint32_t index = 0;
       for (const auto& request : requests) {
-        CustomLayoutFragment* fragment = request->PerformLayout();
+        CustomLayoutFragment* fragment = request->PerformLayout(isolate);
 
         if (!fragment) {
           execution_context->AddConsoleMessage(ConsoleMessage::Create(
@@ -220,6 +221,28 @@ bool CSSLayoutDefinition::Instance::Layout(
     execution_context->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
                                "Unable to parse the layout function "
+                               "result, falling back to block layout."));
+    return false;
+  }
+
+  // Serialize any extra data provided by the web-developer to potentially pass
+  // up to the parent custom layout.
+  if (fragment_result_options->hasData()) {
+    // We serialize "kForStorage" so that SharedArrayBuffers can't be shared
+    // between LayoutWorkletGlobalScopes.
+    *fragment_result_data = SerializedScriptValue::Serialize(
+        isolate, fragment_result_options->data().V8Value(),
+        SerializedScriptValue::SerializeOptions(
+            SerializedScriptValue::kForStorage),
+        exception_state);
+  }
+
+  if (exception_state.HadException()) {
+    V8ScriptRunner::ReportException(isolate, exception_state.GetException());
+    exception_state.ClearException();
+    execution_context->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
+                               "Unable to serialize the data provided in the "
                                "result, falling back to block layout."));
     return false;
   }

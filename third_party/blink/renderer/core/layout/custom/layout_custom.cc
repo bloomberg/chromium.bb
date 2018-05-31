@@ -42,6 +42,23 @@ LayoutCustom::LayoutCustom(Element* element)
   DCHECK(element);
 }
 
+SerializedScriptValue* LayoutCustom::GetConstraintData() const {
+  return constraint_data_.get();
+}
+
+void LayoutCustom::SetConstraintData(
+    scoped_refptr<SerializedScriptValue> data) {
+  constraint_data_ = std::move(data);
+}
+
+void LayoutCustom::ClearConstraintData() {
+  constraint_data_ = nullptr;
+}
+
+SerializedScriptValue* LayoutCustom::GetFragmentResultData() const {
+  return fragment_result_data_.get();
+}
+
 void LayoutCustom::AddChild(LayoutObject* new_child,
                             LayoutObject* before_child) {
   // Only use the block-flow AddChild logic when we are unloaded, i.e. we
@@ -110,13 +127,19 @@ void LayoutCustom::UpdateBlockLayout(bool relayout_children) {
   // fall back onto regular block layout.
   bool success = PerformLayout(relayout_children, &layout_scope);
 
-  if (!success)
+  if (!success) {
     LayoutBlockFlow::UpdateBlockLayout(relayout_children);
+    DCHECK_EQ(fragment_result_data_, nullptr);
+  }
 }
 
 bool LayoutCustom::PerformLayout(bool relayout_children,
                                  SubtreeLayoutScope* layout_scope) {
   LayoutCustomPhaseScope phase_scope(*this);
+
+  // We clear the fragment result data, so that if we fallback to block layout,
+  // we don't pass invalid data up the tree to a custom layout parent.
+  fragment_result_data_ = nullptr;
 
   // We need to fallback to block layout if we don't have a registered
   // definition yet.
@@ -148,7 +171,9 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     }
 
     FragmentResultOptions fragment_result_options;
-    if (!instance_->Layout(*this, &fragment_result_options))
+    scoped_refptr<SerializedScriptValue> fragment_result_data;
+    if (!instance_->Layout(*this, &fragment_result_options,
+                           &fragment_result_data))
       return false;
 
     size_t index = 0;
@@ -215,7 +240,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
                                     : LayoutPoint(block_offset, logical_left));
     }
 
-    // Currently we only support
+    // Currently we only support exactly one LayoutFragment per LayoutChild.
     if (index != child_fragments.size()) {
       GetDocument().AddConsoleMessage(
           ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
@@ -224,6 +249,10 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
                                  "falling back to block layout."));
       return false;
     }
+
+    // We aren't able to fallback to block layout now, it's safe to set the
+    // result data.
+    fragment_result_data_ = std::move(fragment_result_data);
 
     SetLogicalHeight(
         LayoutUnit::FromDoubleRound(fragment_result_options.autoBlockSize()));
