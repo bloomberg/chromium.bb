@@ -1421,6 +1421,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
                 embedded_test_server()->GetURL("/click-nocontent-link.html"));
   WebContents* orig_contents = shell()->web_contents();
 
+  // Change the link to be cross-site.
+  GURL target_url = embedded_test_server()->GetURL("foo.com", "/nocontent");
+  ExecuteScript(
+      orig_contents,
+      base::StringPrintf(
+          "document.getElementById('nocontent_targeted_link').href = '%s';",
+          target_url.spec().c_str())
+          .c_str());
+
   // Click a /nocontent link that opens in a new window but never commits.
   ShellAddedObserver new_shell_observer;
   ExecuteScript(orig_contents, "clickNoContentTargetedLink();");
@@ -1429,8 +1438,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
   Shell* new_shell = new_shell_observer.GetShell();
   WebContents* contents = new_shell->web_contents();
 
-  // Make sure the new window has started the provisional load, so the
-  // associated navigation controller will have a visible entry.
+  // Make sure the new window has started the navigation, so the associated
+  // navigation controller will have a visible entry.
   {
     VisibleEntryWaiter waiter(contents);
     waiter.Wait();
@@ -1439,8 +1448,65 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
   // Ensure the destination URL is visible, because it is considered the
   // initial navigation.
   EXPECT_TRUE(contents->GetController().IsInitialNavigation());
-  EXPECT_EQ("/nocontent",
-            contents->GetController().GetVisibleEntry()->GetURL().path());
+  EXPECT_EQ(target_url, contents->GetController().GetVisibleEntry()->GetURL());
+
+  // Now modify the contents of the new window from the opener.  This will also
+  // modify the title of the document to give us something to listen for.
+  base::string16 expected_title = ASCIIToUTF16("Modified Title");
+  TitleWatcher title_watcher(orig_contents, expected_title);
+  ExecuteScript(orig_contents, "modifyNewWindow();");
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // At this point, we should no longer be showing the destination URL.
+  // The visible entry should be null, resulting in about:blank in the address
+  // bar.
+  EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+}
+
+// Same as ShowLoadingURLUntilSpoof, but reloads the new popup before modifying
+// it, to test https://crbug.com/847718.  The reload should not cause the
+// visible entry to stick around after the modification, even though it is
+// triggered in the browser process.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
+                       ShowLoadingURLUntilSpoofAfterReload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load a page that can open a URL that won't commit in a new window.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/click-nocontent-link.html"));
+  WebContents* orig_contents = shell()->web_contents();
+
+  // Change the link to be cross-site.
+  GURL target_url = embedded_test_server()->GetURL("foo.com", "/nocontent");
+  ExecuteScript(
+      orig_contents,
+      base::StringPrintf(
+          "document.getElementById('nocontent_targeted_link').href = '%s';",
+          target_url.spec().c_str())
+          .c_str());
+
+  // Click a /nocontent link that opens in a new window but never commits.
+  ShellAddedObserver new_shell_observer;
+  ExecuteScript(orig_contents, "clickNoContentTargetedLink();");
+
+  // Wait for the window to open.
+  Shell* new_shell = new_shell_observer.GetShell();
+  WebContents* contents = new_shell->web_contents();
+
+  // Make sure the new window has started the navigation, so the associated
+  // navigation controller will have a visible entry.
+  {
+    VisibleEntryWaiter waiter(contents);
+    waiter.Wait();
+  }
+
+  // Ensure the destination URL is visible, because it is considered the
+  // initial navigation.
+  EXPECT_TRUE(contents->GetController().IsInitialNavigation());
+  EXPECT_EQ(target_url, contents->GetController().GetVisibleEntry()->GetURL());
+
+  // Reload the popup before modifying it.  See https://crbug.com/847718.
+  contents->GetController().Reload(ReloadType::NORMAL, false);
 
   // Now modify the contents of the new window from the opener.  This will also
   // modify the title of the document to give us something to listen for.
