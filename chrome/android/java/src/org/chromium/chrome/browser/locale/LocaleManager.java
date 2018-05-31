@@ -85,7 +85,7 @@ public class LocaleManager {
 
     // LocaleManager is a singleton and it should not have strong reference to UI objects.
     // SnackbarManager is owned by ChromeActivity and is not null as long as the activity is alive.
-    private WeakReference<SnackbarManager> mSnackbarManager;
+    private WeakReference<SnackbarManager> mSnackbarManager = new WeakReference<>(null);
     private LocaleTemplateUrlLoader mLocaleTemplateUrlLoader;
 
     private SnackbarController mSnackbarController = new SnackbarController() {
