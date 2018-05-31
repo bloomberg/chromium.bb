@@ -52,8 +52,6 @@ template("fidl_library") {
   _tables_file = "$_output_gen_dir/${_library_name}.fidl-tables.cc"
 
   action("${target_name}_response_file") {
-    visibility = [ ":*" ]
-
     script = "//third_party/fuchsia-sdk/gen_fidl_response_file.py"
 
     forward_variables_from(invoker,
