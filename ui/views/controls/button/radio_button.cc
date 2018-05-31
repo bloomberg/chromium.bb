@@ -163,7 +163,7 @@ const gfx::VectorIcon& RadioButton::GetVectorIcon() const {
 
 SkPath RadioButton::GetFocusRingPath() const {
   SkPath path;
-  path.addOval(gfx::RectToSkRect(image()->bounds()));
+  path.addOval(gfx::RectToSkRect(image()->GetMirroredBounds()));
   return path;
 }
 

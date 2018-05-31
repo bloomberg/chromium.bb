@@ -223,7 +223,7 @@ void Checkbox::Layout() {
 
 SkPath Checkbox::GetFocusRingPath() const {
   SkPath path;
-  gfx::Rect bounds = image()->bounds();
+  gfx::Rect bounds = image()->GetMirroredBounds();
   bounds.Inset(1, 1);
   path.addRect(RectToSkRect(bounds));
   return path;
