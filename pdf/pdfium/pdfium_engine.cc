@@ -32,6 +32,7 @@
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
+#include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/pdf.h"
@@ -419,19 +420,6 @@ void Release(FPDF_SYSFONTINFO* sysfontinfo) {
 PDFiumEngine::CreateDocumentLoaderFunction
     g_create_document_loader_for_testing = nullptr;
 
-PDFiumEngine* g_engine_for_unsupported = nullptr;
-
-void Unsupported_Handler(UNSUPPORT_INFO*, int type) {
-  if (!g_engine_for_unsupported) {
-    NOTREACHED();
-    return;
-  }
-
-  g_engine_for_unsupported->UnsupportedFeature(type);
-}
-
-UNSUPPORT_INFO g_unsupported_info = {1, Unsupported_Handler};
-
 template <class S>
 bool IsAboveOrDirectlyLeftOf(const S& lhs, const S& rhs) {
   return lhs.y() < rhs.y() || (lhs.y() == rhs.y() && lhs.x() < rhs.x());
@@ -669,7 +657,7 @@ bool InitializeSDK() {
   FPDF_SetSystemFontInfo(g_font_info);
 #endif
 
-  FSDK_SetUnSpObjProcessHandler(&g_unsupported_info);
+  InitializeUnsupportedFeaturesHandler();
 
   return true;
 }
@@ -1066,47 +1054,7 @@ void PDFiumEngine::FinishLoadingDocument() {
   }
 }
 
-void PDFiumEngine::UnsupportedFeature(int type) {
-  std::string feature;
-  switch (type) {
-    case FPDF_UNSP_DOC_XFAFORM:
-      feature = "XFA";
-      break;
-    case FPDF_UNSP_DOC_PORTABLECOLLECTION:
-      feature = "Portfolios_Packages";
-      break;
-    case FPDF_UNSP_DOC_ATTACHMENT:
-    case FPDF_UNSP_ANNOT_ATTACHMENT:
-      feature = "Attachment";
-      break;
-    case FPDF_UNSP_DOC_SECURITY:
-      feature = "Rights_Management";
-      break;
-    case FPDF_UNSP_DOC_SHAREDREVIEW:
-      feature = "Shared_Review";
-      break;
-    case FPDF_UNSP_DOC_SHAREDFORM_ACROBAT:
-    case FPDF_UNSP_DOC_SHAREDFORM_FILESYSTEM:
-    case FPDF_UNSP_DOC_SHAREDFORM_EMAIL:
-      feature = "Shared_Form";
-      break;
-    case FPDF_UNSP_ANNOT_3DANNOT:
-      feature = "3D";
-      break;
-    case FPDF_UNSP_ANNOT_MOVIE:
-      feature = "Movie";
-      break;
-    case FPDF_UNSP_ANNOT_SOUND:
-      feature = "Sound";
-      break;
-    case FPDF_UNSP_ANNOT_SCREEN_MEDIA:
-    case FPDF_UNSP_ANNOT_SCREEN_RICHMEDIA:
-      feature = "Screen";
-      break;
-    case FPDF_UNSP_ANNOT_SIG:
-      feature = "Digital_Signature";
-      break;
-  }
+void PDFiumEngine::UnsupportedFeature(const std::string& feature) {
   client_->DocumentHasUnsupportedFeature(feature);
 }
 
@@ -3689,15 +3637,6 @@ void PDFiumEngine::ProgressivePaint::SetBitmapAndImageData(
     pp::ImageData image_data) {
   bitmap_ = std::move(bitmap);
   image_data_ = std::move(image_data);
-}
-
-ScopedUnsupportedFeature::ScopedUnsupportedFeature(PDFiumEngine* engine)
-    : old_engine_(g_engine_for_unsupported) {
-  g_engine_for_unsupported = engine;
-}
-
-ScopedUnsupportedFeature::~ScopedUnsupportedFeature() {
-  g_engine_for_unsupported = old_engine_;
 }
 
 ScopedSubstFont::ScopedSubstFont(PDFiumEngine* engine)

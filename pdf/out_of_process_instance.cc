@@ -1761,6 +1761,7 @@ pp::Instance* OutOfProcessInstance::GetPluginInstance() {
 
 void OutOfProcessInstance::DocumentHasUnsupportedFeature(
     const std::string& feature) {
+  DCHECK(!feature.empty());
   std::string metric("PDF_Unsupported_");
   metric += feature;
   if (!unsupported_features_reported_.count(metric)) {

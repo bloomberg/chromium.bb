@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
@@ -60,7 +61,10 @@ pp::FloatRect FloatPageRectToPixelRect(FPDF_PAGE page,
 pp::FloatRect GetFloatCharRectInPixels(FPDF_PAGE page,
                                        FPDF_TEXTPAGE text_page,
                                        int index) {
-  double left, right, bottom, top;
+  double left;
+  double right;
+  double bottom;
+  double top;
   FPDFText_GetCharBox(text_page, index, &left, &right, &bottom, &top);
   if (right < left)
     std::swap(left, right);
@@ -420,7 +424,10 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
 
   // Get the bounding box of the rect again, since it might have moved because
   // of the tolerance above.
-  double left, right, bottom, top;
+  double left;
+  double right;
+  double bottom;
+  double top;
   FPDFText_GetCharBox(GetTextPage(), char_index, &left, &right, &bottom, &top);
 
   pp::Point origin(
