@@ -12,7 +12,6 @@
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -169,7 +168,6 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
 
   // Navigate initially, should be no activation.
   SimulateNavigateAndCommit(url, main_rfh());
-  EXPECT_FALSE(GetClient()->ForceActivationInCurrentWebContents());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 
@@ -179,18 +177,17 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   GetClient()->ToggleForceActivationInCurrentWebContents(true);
   histogram_tester.ExpectBucketCount(actions_histogram,
                                      kActionForcedActivationEnabled, 1);
-  EXPECT_TRUE(GetClient()->ForceActivationInCurrentWebContents());
 
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  EXPECT_FALSE(GetClient()->did_show_ui_for_navigation());
-  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_TRUE(GetClient()->did_show_ui_for_navigation());
+  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
   histogram_tester.ExpectBucketCount(
-      "SubresourceFilter.PageLoad.ForcedActivation.DisallowedLoad", true, 1);
+      "SubresourceFilter.PageLoad.ActivationDecision",
+      subresource_filter::ActivationDecision::FORCED_ACTIVATION, 1);
 
   // Simulate closing devtools.
   GetClient()->ToggleForceActivationInCurrentWebContents(false);
-  EXPECT_FALSE(GetClient()->ForceActivationInCurrentWebContents());
 
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
@@ -208,9 +205,8 @@ TEST_F(SubresourceFilterTest, ToggleOffForceActivation_AfterCommit) {
   // Resource should be disallowed, since navigation commit had activation.
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  // UI should not have shown though.
   histogram_tester.ExpectBucketCount("SubresourceFilter.Actions",
-                                     kActionUIShown, 0);
+                                     kActionUIShown, 1);
 }
 
 TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {

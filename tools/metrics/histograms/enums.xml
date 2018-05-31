@@ -43774,6 +43774,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Unsupported scheme (deprecated)"/>
   <int value="4" label="URL whitelisted"/>
   <int value="5" label="Activation conditions not met"/>
+  <int value="6" label="Forced activation (e.g. devtools toggle)"/>
 </enum>
 
 <enum name="SubresourceFilterActivationState">

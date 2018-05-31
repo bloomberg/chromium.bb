@@ -13,14 +13,16 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/navigation_console_logger.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/ukm/ukm_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/console_message_level.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/page_transition_types.h"
@@ -129,32 +131,17 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
                "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
   DCHECK(!check_results_.empty());
 
-  // For forced activation, the configuration is always the same, but we still
-  // need to compute the warning value base on the final check result.
-  bool forced_activation = client_->ForceActivationInCurrentWebContents();
   std::vector<ConfigResult> matched_configurations;
-  if (forced_activation) {
-    const auto& check_result = check_results_.back();
-    bool warning = false;
-    GetListForThreatTypeAndMetadata(check_result.threat_type,
-                                    check_result.threat_metadata, &warning);
+  for (const auto& current_result : check_results_) {
     matched_configurations.push_back(
-        ConfigResult(Configuration::MakeForForcedActivation(), warning,
-                     ActivationList::NONE));
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ActivationForced");
-  } else {
-    // Otherwise loop over all the results, computing their configurations and
-    // associated warning booleans.
-    for (const auto& current_result : check_results_) {
-      matched_configurations.push_back(
-          GetHighestPriorityConfiguration(current_result));
-    }
+        GetHighestPriorityConfiguration(current_result));
   }
 
   // Get the activation decision and the matched configuration and warning.
   ConfigResult selection;
   ActivationDecision activation_decision =
       GetActivationDecision(matched_configurations, &selection);
+  DCHECK_NE(activation_decision, ActivationDecision::UNKNOWN);
   Configuration matched_configuration =
       selection.config.has_value() ? selection.config.value() : Configuration();
   bool warning = selection.warning;
@@ -169,31 +156,29 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
                                         check_result.threat_type,
                                         check_result.threat_metadata);
 
-  // Check for whitelisted status last, so that the client gets an accurate
-  // indication of whether there would be activation otherwise.
-  // Note that the client is responsible for noticing if we're forcing
-  // activation.
-  bool whitelisted = client_->OnPageActivationComputed(
-      navigation_handle(),
-      !warning && matched_configuration.activation_options.activation_level ==
-                      ActivationLevel::ENABLED);
+  ActivationLevel activation_level =
+      matched_configuration.activation_options.activation_level;
 
-  // Only reset the activation decision reason if we would have activated.
-  if (whitelisted && activation_decision == ActivationDecision::ACTIVATED) {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ActivationWhitelisted");
-    activation_decision = ActivationDecision::URL_WHITELISTED;
-    matched_configuration = Configuration();
+  if (warning && activation_level == ActivationLevel::ENABLED) {
+    NavigationConsoleLogger::LogMessageOnCommit(
+        navigation_handle(), content::CONSOLE_MESSAGE_LEVEL_WARNING,
+        kActivationWarningConsoleMessage);
+    activation_level = ActivationLevel::DISABLED;
   }
 
-  LogMetricsOnChecksComplete(
-      selection.matched_list, activation_decision,
-      matched_configuration.activation_options.activation_level);
+  // Let the embedder get the last word when it comes to activation level.
+  // TODO(csharrison): Move all ActivationDecision code to the embedder.
+  activation_level = client_->OnPageActivationComputed(
+      navigation_handle(), activation_level, &activation_decision);
 
-  auto* driver_factory = ContentSubresourceFilterDriverFactory::FromWebContents(
-      navigation_handle()->GetWebContents());
-  DCHECK(driver_factory);
-  driver_factory->NotifyPageActivationComputed(
-      navigation_handle(), activation_decision, matched_configuration, warning);
+  LogMetricsOnChecksComplete(selection.matched_list, activation_decision,
+                             activation_level);
+
+  SubresourceFilterObserverManager::FromWebContents(
+      navigation_handle()->GetWebContents())
+      ->NotifyPageActivationComputed(
+          navigation_handle(), activation_decision,
+          matched_configuration.GetActivationState(activation_level));
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::
