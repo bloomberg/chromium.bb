@@ -42,6 +42,7 @@
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_remote_gatt_characteristic_bluez.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
@@ -1549,6 +1550,7 @@ void ArcBluetoothBridge::WriteGattCharacteristic(
     mojom::BluetoothGattServiceIDPtr service_id,
     mojom::BluetoothGattIDPtr char_id,
     mojom::BluetoothGattValuePtr value,
+    bool prepare,
     WriteGattCharacteristicCallback callback) {
   BluetoothRemoteGattCharacteristic* characteristic = FindGattCharacteristic(
       std::move(remote_addr), std::move(service_id), std::move(char_id));
@@ -1559,9 +1561,15 @@ void ArcBluetoothBridge::WriteGattCharacteristic(
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  characteristic->WriteRemoteCharacteristic(
-      value->value, base::Bind(&OnGattOperationDone, repeating_callback),
-      base::Bind(&OnGattOperationError, repeating_callback));
+  if (prepare) {
+    characteristic->PrepareWriteRemoteCharacteristic(
+        value->value, base::Bind(&OnGattOperationDone, repeating_callback),
+        base::Bind(&OnGattOperationError, repeating_callback));
+  } else {
+    characteristic->WriteRemoteCharacteristic(
+        value->value, base::Bind(&OnGattOperationDone, repeating_callback),
+        base::Bind(&OnGattOperationError, repeating_callback));
+  }
 }
 
 void ArcBluetoothBridge::ReadGattDescriptor(
@@ -1640,6 +1648,30 @@ void ArcBluetoothBridge::WriteGattDescriptor(
       return;
     default:
       repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+  }
+}
+
+void ArcBluetoothBridge::ExecuteWrite(mojom::BluetoothAddressPtr remote_addr,
+                                      bool execute,
+                                      ExecuteWriteCallback callback) {
+  bluez::BluetoothDeviceBlueZ* device =
+      static_cast<bluez::BluetoothDeviceBlueZ*>(
+          bluetooth_adapter_->GetDevice(remote_addr->To<std::string>()));
+  if (device == nullptr) {
+    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
+  // the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
+  if (execute) {
+    device->ExecuteWrite(base::Bind(&OnGattOperationDone, repeating_callback),
+                         base::Bind(&OnGattOperationError, repeating_callback));
+  } else {
+    device->AbortWrite(base::Bind(&OnGattOperationDone, repeating_callback),
+                       base::Bind(&OnGattOperationError, repeating_callback));
   }
 }
 
