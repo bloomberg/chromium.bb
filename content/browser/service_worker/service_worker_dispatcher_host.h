@@ -33,40 +33,29 @@ class TestingServiceWorkerDispatcherHost;
 FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
                      ProviderCreatedAndDestroyed);
 FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash);
-FORWARD_DECLARE_TEST(BackgroundSyncManagerTest,
-                     RegisterWithoutLiveSWRegistration);
 }  // namespace service_worker_dispatcher_host_unittest
 
-// ServiceWorkerDispatcherHost is the browser-side endpoint for several IPC
-// messages for service workers. There is a 1:1 correspondence between
-// renderer processes and ServiceWorkerDispatcherHosts. Currently
-// ServiceWorkerDispatcherHost sends the legacy IPC message
-// ServiceWorkerMsg_ServiceWorkerStateChanged to its corresponding
-// ServiceWorkerDispatcher on the renderer and receives Mojo IPC messages from
-// any ServiceWorkerNetworkProvider on the renderer.
+// ServiceWorkerDispatcherHost is a browser-side endpoint for the renderer to
+// notify the browser ServiceWorkerProviderHost is created. In order to
+// associate the Mojo interface with the legacy IPC channel,
+// ServiceWorkerDispatcherHost overrides BrowserMessageFilter and
+// BrowserAssociatedInterface.
 //
 // ServiceWorkerDispatcherHost is created on the UI thread in
 // RenderProcessHostImpl::Init() via CreateMessageFilters(), but initialization,
-// destruction, and IPC message handling occur on the IO thread. It lives as
-// long as the renderer process lives. Therefore much tracking of renderer
-// processes in browser-side service worker code is built on
-// ServiceWorkerDispatcherHost lifetime.
+// destruction, and Mojo calls occur on the IO thread. It lives as
+// long as the renderer process lives.
 //
-// This class is bound with mojom::ServiceWorkerDispatcherHost. All
-// InterfacePtrs on the same render process are bound to the same
-// content::ServiceWorkerDispatcherHost. This can be overridden only for
-// testing.
-//
-// TODO(leonhsl): This class no longer needs to be a BrowserMessageFilter
-// because we are already in a pure Mojo world.
+// TODO(leonhsl): Remove this class once we can understand how to move
+// OnProviderCreated() to an isolated message pipe.
 class CONTENT_EXPORT ServiceWorkerDispatcherHost
     : public BrowserMessageFilter,
       public BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>,
       public mojom::ServiceWorkerDispatcherHost {
  public:
-  explicit ServiceWorkerDispatcherHost(int render_process_id);
-
-  void Init(ServiceWorkerContextWrapper* context_wrapper);
+  ServiceWorkerDispatcherHost(
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      int render_process_id);
 
   // BrowserMessageFilter implementation
   void OnFilterRemoved() override;
@@ -89,13 +78,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
       CleanupOnRendererCrash);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_dispatcher_host_unittest::BackgroundSyncManagerTest,
-      RegisterWithoutLiveSWRegistration);
-
-  enum class ProviderStatus { OK, NO_CONTEXT, DEAD_HOST, NO_HOST, NO_URL };
-  // Debugging for https://crbug.com/750267
-  enum class Phase { kInitial, kAddedToContext, kRemovedFromContext };
 
   // mojom::ServiceWorkerDispatcherHost implementation
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
@@ -103,8 +85,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ServiceWorkerContextCore* GetContext();
 
   const int render_process_id_;
-  // Only accessed on the IO thread.
-  Phase phase_ = Phase::kInitial;
   // Only accessed on the IO thread.
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 

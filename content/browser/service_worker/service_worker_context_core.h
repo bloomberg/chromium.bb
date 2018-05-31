@@ -43,7 +43,6 @@ namespace content {
 class EmbeddedWorkerRegistry;
 class ServiceWorkerContextCoreObserver;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerDispatcherHost;
 class ServiceWorkerJobCoordinator;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
@@ -159,13 +158,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerJobCoordinator* job_coordinator() {
     return job_coordinator_.get();
   }
-
-  // Maintains DispatcherHosts to exchange service worker related messages
-  // through them. The DispatcherHosts are not owned by this class.
-  void AddDispatcherHost(int process_id,
-                         ServiceWorkerDispatcherHost* dispatcher_host);
-  ServiceWorkerDispatcherHost* GetDispatcherHost(int process_id);
-  void RemoveDispatcherHost(int process_id);
 
   // The context class owns the set of ProviderHosts.
   void AddProviderHost(
@@ -339,8 +331,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // because the Wrapper::Shutdown call that hops threads to destroy |this| uses
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
-  std::map<int /* process_id */, ServiceWorkerDispatcherHost*>
-      dispatcher_hosts_;
   std::unique_ptr<ProcessToProviderMap> providers_;
   std::unique_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
   std::unique_ptr<ServiceWorkerStorage> storage_;

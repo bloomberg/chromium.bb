@@ -48,51 +48,40 @@ const uint32_t kServiceWorkerFilteredMessageClasses[] = {
     ServiceWorkerMsgStart,
 };
 
+void RemoveAllProviderHostsForProcess(ServiceWorkerContextCore* context,
+                                      int render_process_id) {
+  // TODO(falken) Try to remove this call. It should be unnecessary because
+  // provider hosts remove themselves when their Mojo connection to the
+  // renderer is destroyed. But if we don't remove the hosts immediately here,
+  // collisions of <process_id, provider_id> can occur if a new dispatcher
+  // host is created for a reused RenderProcessHost. https://crbug.com/736203
+  if (context) {
+    context->RemoveAllProviderHostsForProcess(render_process_id);
+  }
+}
+
 }  // namespace
 
-ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(int render_process_id)
+ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    int render_process_id)
     : BrowserMessageFilter(kServiceWorkerFilteredMessageClasses,
                            arraysize(kServiceWorkerFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>(this,
                                                                      this),
-      render_process_id_(render_process_id) {}
+      render_process_id_(render_process_id),
+      context_wrapper_(context_wrapper) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (GetContext() && phase_ == Phase::kAddedToContext)
-    GetContext()->RemoveDispatcherHost(render_process_id_);
-}
-
-void ServiceWorkerDispatcherHost::Init(
-    ServiceWorkerContextWrapper* context_wrapper) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ServiceWorkerDispatcherHost::Init, this,
-                       base::RetainedRef(context_wrapper)));
-    return;
-  }
-
-  // Just speculating that maybe we were destructed before Init() was called on
-  // the IO thread in order to try to fix https://crbug.com/750267.
-  if (phase_ != Phase::kInitial)
-    return;
-
-  context_wrapper_ = context_wrapper;
-  if (!GetContext())
-    return;
-  GetContext()->AddDispatcherHost(render_process_id_, this);
-  phase_ = Phase::kAddedToContext;
+  RemoveAllProviderHostsForProcess(GetContext(), render_process_id_);
 }
 
 void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Don't wait until the destructor to teardown since a new dispatcher host
   // for this process might be created before then.
-  if (GetContext() && phase_ == Phase::kAddedToContext) {
-    GetContext()->RemoveDispatcherHost(render_process_id_);
-  }
-  phase_ = Phase::kRemovedFromContext;
+  RemoveAllProviderHostsForProcess(GetContext(), render_process_id_);
   context_wrapper_ = nullptr;
 }
 
@@ -109,6 +98,7 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
 
 void ServiceWorkerDispatcherHost::OnProviderCreated(
     ServiceWorkerProviderHostInfo info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnProviderCreated");
   if (!GetContext())
