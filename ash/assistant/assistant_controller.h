@@ -139,6 +139,8 @@ class AssistantController
   }
 
  private:
+  void OpenUrl(const GURL& url);
+
   mojo::BindingSet<mojom::AssistantController> assistant_controller_bindings_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
@@ -149,6 +151,11 @@ class AssistantController
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
 
   std::unique_ptr<AssistantBubble> assistant_bubble_;
+
+  // Indicates whether or not there is an active interaction in progress. If
+  // there is no active interaction, UI related service events should be
+  // discarded.
+  bool has_active_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };
