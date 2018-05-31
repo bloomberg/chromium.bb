@@ -80,6 +80,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   bool CreateGrContextIfNecessary(gl::GLSurface* surface);
 
+  // Notifies the GpuHost to stop using GPU compositing. This should be called
+  // in response to an error in the GPU process that occurred after
+  // InitializeWithHost() was called, otherwise GpuFeatureInfo should be set
+  // accordingly. This can safely be called from any thread.
+  void DisableGpuCompositing();
+
   bool is_initialized() const { return !!gpu_host_; }
 
   media::MediaGpuChannelManager* media_gpu_channel_manager() {

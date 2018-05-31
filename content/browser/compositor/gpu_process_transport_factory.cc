@@ -796,6 +796,11 @@ cc::TaskGraphRunner* GpuProcessTransportFactory::GetTaskGraphRunner() {
   return task_graph_runner_.get();
 }
 
+void GpuProcessTransportFactory::DisableGpuCompositing() {
+  if (!is_gpu_compositing_disabled_)
+    DisableGpuCompositing(nullptr);
+}
+
 bool GpuProcessTransportFactory::IsGpuCompositingDisabled() {
   return is_gpu_compositing_disabled_;
 }
