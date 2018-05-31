@@ -366,6 +366,7 @@ public class OverlayPanelContent {
         int viewHeight = mContentViewHeight - (mSubtractBarHeight ? mBarHeightPx : 0);
         onPhysicalBackingSizeChanged(mContentViewWidth, viewHeight);
         mWebContents.setSize(mContentViewWidth, viewHeight);
+        mActivity.getCompositorViewHolder().addView(mContainerView, 1);
     }
 
     /**

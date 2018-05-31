@@ -414,6 +414,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     protected void destroyOverlayPanelContent() {
         // It is possible that an OverlayPanelContent was never created for this panel.
         if (mContent != null) {
+            mActivity.getCompositorViewHolder().removeView(getContainerView());
             mContent.destroy();
             mContent = null;
         }
@@ -793,19 +794,17 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
           // In either case the screen's viewport width or height will certainly change.
             mViewportWidth = width;
             mViewportHeight = height;
-            resizePanelContentViewCore(width, height);
+            resizePanelContentView(width, height);
             onLayoutChanged(width, height, visibleViewportOffsetY);
         }
     }
 
     /**
-     * Resize the panel's ContentViewCore manually since it is not attached to the view hierarchy.
-     * TODO(mdjones): Remove the need for this method by supporting multiple ContentViewCores
-     * existing simultaneously in the view hierarchy.
+     * Resize the panel's ContentView. Apply adjusted bar size to the height.
      * @param width The new width in dp.
      * @param height The new height in dp.
      */
-    protected void resizePanelContentViewCore(float width, float height) {
+    protected void resizePanelContentView(float width, float height) {
         if (!isShowing()) return;
         OverlayPanelContent panelContent = getOverlayPanelContent();
         int widthPx = (int) (width / mPxToDp);
