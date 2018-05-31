@@ -217,6 +217,10 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   if (!focus_)
     return;
 
+  // Ignore synthetic key repeat events.
+  if (event->is_repeat())
+    return;
+
   // Process reserved accelerators before sending it to client.
   if (ProcessAcceleratorIfReserved(focus_, event)) {
     // Discard a key press event if it's a reserved accelerator and it's
