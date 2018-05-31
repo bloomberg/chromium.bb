@@ -127,7 +127,7 @@
       'ToTAndroid64': 'android_clang_tot_release_arm64',
       'ToTAndroid x64': 'android_clang_tot_x64',
       'ToTLinux': 'clang_tot_linux_full_symbols_shared_release',
-      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_shared_release',
+      'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_shared_release_with_libfuzzer',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'release_libfuzzer_asan_clang_tot',
@@ -1148,6 +1148,10 @@
 
     'clang_tot_minimal_symbols_shared_release': [
       'clang_tot', 'minimal_symbols', 'shared', 'release',
+    ],
+
+    'clang_tot_coverage_minimal_symbols_shared_release_with_libfuzzer': [
+      'clang_tot', 'use_clang_coverage', 'minimal_symbols', 'shared', 'release', 'libfuzzer',
     ],
 
     'clang_tot_coverage_minimal_symbols_shared_release': [
