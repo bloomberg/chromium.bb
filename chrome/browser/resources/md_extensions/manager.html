@@ -16,7 +16,6 @@
 <link rel="import" href="load_error.html">
 <link rel="import" href="navigation_helper.html">
 <link rel="import" href="options_dialog.html">
-<link rel="import" href="pack_dialog.html">
 <link rel="import" href="service.html">
 <link rel="import" href="sidebar.html">
 <link rel="import" href="toolbar.html">
@@ -60,8 +59,7 @@
         can-load-unpacked="[[canLoadUnpacked]]"
         is-supervised="[[isSupervised_]]"
         dev-mode-controlled-by-policy="[[devModeControlledByPolicy]]"
-        on-pack-tap="onPackTap_" delegate="[[delegate]]"
-        on-cr-toolbar-menu-tap="onMenuButtonTap_"
+        delegate="[[delegate]]" on-cr-toolbar-menu-tap="onMenuButtonTap_"
         on-search-changed="onFilterChanged_"
 <if expr="chromeos">
         on-kiosk-tap="onKioskTap_"
@@ -114,11 +112,6 @@
       <extensions-options-dialog id="options-dialog"
           on-close="onOptionsDialogClose_">
       </extensions-options-dialog>
-    </template>
-    <template is="dom-if" if="[[showPackDialog_]]" restamp>
-      <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]"
-          on-close="onPackDialogClose_">
-      </extensions-pack-dialog>
     </template>
     <template is="dom-if" if="[[showLoadErrorDialog_]]" restamp>
       <extensions-load-error id="load-error" delegate="[[delegate]]"

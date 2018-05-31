@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="icons.html">
+<link rel="import" href="pack_dialog.html">
 
 <dom-module id="extensions-toolbar">
   <template>
@@ -110,6 +111,11 @@
         </cr-toggle>
       </div>
     </cr-toolbar>
+    <template is="dom-if" if="[[showPackDialog_]]" restamp>
+      <extensions-pack-dialog delegate="[[delegate]]"
+          on-close="onPackDialogClose_">
+      </extensions-pack-dialog>
+    </template>
     <div id="devDrawer" expanded$="[[expanded_]]">
       <div id="buttonStrip">
         <paper-button hidden$="[[!canLoadUnpacked]]" id="loadUnpacked"

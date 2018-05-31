@@ -67,8 +67,6 @@ cr.define('extension_pack_dialog_tests', function() {
     test(assert(TestNames.Interaction), function() {
       var dialogElement = packDialog.$$('cr-dialog').getNative();
 
-      expectFalse(extension_test_util.isElementVisible(dialogElement));
-      packDialog.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
       expectEquals('', packDialog.$$('#root-dir').value);
       MockInteractions.tap(packDialog.$$('#root-dir-browse'));
@@ -109,7 +107,6 @@ cr.define('extension_pack_dialog_tests', function() {
       var packDialogAlert;
       var alertElement;
 
-      packDialog.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       var kRootPath = 'this/is/a/path';
@@ -149,7 +146,6 @@ cr.define('extension_pack_dialog_tests', function() {
       var packDialogAlert;
       var alertElement;
 
-      packDialog.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       var kRootPath = 'this/is/a/path';
@@ -186,7 +182,6 @@ cr.define('extension_pack_dialog_tests', function() {
       var packDialogAlert;
       var alertElement;
 
-      packDialog.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       var kRootPath = 'this/is/a/path';
