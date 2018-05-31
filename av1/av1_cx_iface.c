@@ -464,12 +464,10 @@ static aom_codec_err_t set_encoder_config(
     oxcf->timing_info.num_ticks_per_picture = 1;
   } else {
     oxcf->timing_info_present = 0;
-    oxcf->operating_points_decoder_model_cnt = 0;
   }
   if (extra_cfg->timing_info_type == AOM_TIMING_EQUAL) {
     oxcf->timing_info.equal_picture_interval = 1;
     oxcf->decoder_model_info_present_flag = 0;
-    oxcf->operating_points_decoder_model_cnt = 0;
   } else if (extra_cfg->timing_info_type == AOM_TIMING_DEC_MODEL) {
     //    if( extra_cfg->arnr_strength > 0 )
     //    {
@@ -485,7 +483,6 @@ static aom_codec_err_t set_encoder_config(
     oxcf->timing_info.equal_picture_interval = 0;
     oxcf->decoder_model_info_present_flag = 1;
     oxcf->buffer_removal_delay_present = 1;
-    oxcf->operating_points_decoder_model_cnt = 1;
   }
   if (oxcf->init_framerate > 180) {
     oxcf->init_framerate = 30;

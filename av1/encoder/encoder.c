@@ -1014,6 +1014,19 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->enable_filter_intra = 1;
 
   set_bitstream_level_tier(seq, oxcf);
+
+  if (seq->operating_points_cnt_minus_1 == 0) {
+    seq->operating_point_idc[0] = 0;
+  } else {
+    // Set operating_point_idc[] such that for the i-th operating point the
+    // first (operating_points_cnt-i) spatial layers and the first temporal
+    // layer are decoded Note that highest quality operating point should come
+    // first
+    for (int i = 0; i < seq->operating_points_cnt_minus_1 + 1; i++)
+      seq->operating_point_idc[i] =
+          (~(~0u << (seq->operating_points_cnt_minus_1 + 1 - i)) << 8) | 1;
+  }
+  seq->display_model_info_present_flag = 0;
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
@@ -1040,16 +1053,15 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
   cm->timing_info.num_ticks_per_picture =
       oxcf->timing_info.num_ticks_per_picture;
 
-  cm->decoder_model_info_present_flag = oxcf->decoder_model_info_present_flag;
-  cm->operating_points_decoder_model_cnt =
-      oxcf->operating_points_decoder_model_cnt;
+  cm->seq_params.decoder_model_info_present_flag =
+      oxcf->decoder_model_info_present_flag;
   if (oxcf->decoder_model_info_present_flag) {
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_delay_present = 1;
     set_aom_dec_model_info(&cm->buffer_model);
     set_dec_model_op_parameters(&cm->op_params[0], &cm->buffer_model,
-                                oxcf->target_bandwidth, 0);
+                                oxcf->target_bandwidth);
   }
   cm->width = oxcf->width;
   cm->height = oxcf->height;
@@ -2283,16 +2295,15 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->timing_info.num_ticks_per_picture =
       oxcf->timing_info.num_ticks_per_picture;
 
-  cm->decoder_model_info_present_flag = oxcf->decoder_model_info_present_flag;
-  cm->operating_points_decoder_model_cnt =
-      oxcf->operating_points_decoder_model_cnt;
+  cm->seq_params.decoder_model_info_present_flag =
+      oxcf->decoder_model_info_present_flag;
   if (oxcf->decoder_model_info_present_flag) {
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
     cm->buffer_removal_delay_present = 1;
     set_aom_dec_model_info(&cm->buffer_model);
     set_dec_model_op_parameters(&cm->op_params[0], &cm->buffer_model,
-                                oxcf->target_bandwidth, 0);
+                                oxcf->target_bandwidth);
   }
 
   update_film_grain_parameters(cpi, oxcf);
@@ -2392,6 +2403,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   // Init sequence level coding tools
   // This should not be called after the first key frame.
   if (!cpi->seq_params_locked) {
+    cm->seq_params.operating_points_cnt_minus_1 =
+        cm->number_spatial_layers > 1 ? cm->number_spatial_layers - 1 : 0;
     init_seq_coding_tools(&cm->seq_params, oxcf);
   }
 }

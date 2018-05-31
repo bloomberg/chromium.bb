@@ -3313,7 +3313,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // Show an existing frame directly.
       const int existing_frame_idx = aom_rb_read_literal(rb, 3);
       const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
-      if (cm->decoder_model_info_present_flag &&
+      if (cm->seq_params.decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0) {
         av1_read_tu_pts_info(cm, rb);
       }
@@ -3367,7 +3367,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
     cm->showable_frame = 0;
     if (cm->show_frame) {
-      if (cm->decoder_model_info_present_flag &&
+      if (cm->seq_params.decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0)
         av1_read_tu_pts_info(cm, rb);
     } else {
@@ -3458,21 +3458,27 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
-  if (cm->decoder_model_info_present_flag) {
+  if (cm->seq_params.decoder_model_info_present_flag) {
     cm->buffer_removal_delay_present = aom_rb_read_bit(rb);
     if (cm->buffer_removal_delay_present) {
-      for (int op_num = 0; op_num < cm->operating_points_decoder_model_cnt;
-           op_num++) {
-        if ((((cm->op_params[op_num].decoder_model_operating_point_idc >>
-               cm->temporal_layer_id) &
-              0x1) &&
-             ((cm->op_params[op_num].decoder_model_operating_point_idc >>
-               (cm->spatial_layer_id + 8)) &
-              0x1)) ||
-            cm->op_params[op_num].decoder_model_operating_point_idc == 0) {
-          cm->op_frame_timing[op_num].buffer_removal_delay =
-              aom_rb_read_literal(rb,
-                                  cm->buffer_model.buffer_removal_delay_length);
+      for (int op_num = 0;
+           op_num < cm->seq_params.operating_points_cnt_minus_1 + 1; op_num++) {
+        if (cm->op_params[op_num].decoder_model_param_present_flag) {
+          if ((((cm->seq_params.operating_point_idc[op_num] >>
+                 cm->temporal_layer_id) &
+                0x1) &&
+               ((cm->seq_params.operating_point_idc[op_num] >>
+                 (cm->spatial_layer_id + 8)) &
+                0x1)) ||
+              cm->seq_params.operating_point_idc[op_num] == 0) {
+            cm->op_frame_timing[op_num].buffer_removal_delay =
+                aom_rb_read_literal(
+                    rb, cm->buffer_model.buffer_removal_delay_length);
+          } else {
+            cm->op_frame_timing[op_num].buffer_removal_delay = 0;
+          }
+        } else {
+          cm->op_frame_timing[op_num].buffer_removal_delay = 0;
         }
       }
     }

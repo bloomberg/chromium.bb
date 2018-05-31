@@ -22,8 +22,7 @@ void set_aom_dec_model_info(aom_dec_model_info_t *decoder_model) {
 
 void set_dec_model_op_parameters(aom_dec_model_op_parameters_t *op_params,
                                  aom_dec_model_info_t *decoder_model,
-                                 int64_t bitrate, int op_idc) {
-  op_params->decoder_model_operating_point_idc = op_idc;
+                                 int64_t bitrate) {
   op_params->decoder_model_param_present_flag = 1;
   op_params->bitrate = (uint32_t)ROUND_POWER_OF_TWO_64(
       bitrate, decoder_model->bitrate_scale + 6);
