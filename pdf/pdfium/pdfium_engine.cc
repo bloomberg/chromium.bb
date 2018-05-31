@@ -1069,11 +1069,9 @@ void PDFiumEngine::FinishLoadingDocument() {
 void PDFiumEngine::UnsupportedFeature(int type) {
   std::string feature;
   switch (type) {
-#if !defined(PDF_ENABLE_XFA)
     case FPDF_UNSP_DOC_XFAFORM:
       feature = "XFA";
       break;
-#endif
     case FPDF_UNSP_DOC_PORTABLECOLLECTION:
       feature = "Portfolios_Packages";
       break;
