@@ -41,6 +41,7 @@ issues]].
   - Fixed curly brackets representation
   - Fixed number sign representation
   - Added copyright sign
+- Minor fixes to Hebrew thanks to Erez Kugler.
 
 ** Other changes
 - Refactoring thanks to Bert Frees
