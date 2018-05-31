@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
+#include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
@@ -20,10 +21,11 @@ namespace viz {
 class BitmapData;
 
 // A SharedBitmapManager implementation that lives in-process with the
-// display compositor. It manages mappings from SharedBitmapId to
-// SharedMemory segments. While the returned SharedBitmap is kept alive
-// for a given SharedBitmapId, the backing pixels are guaranteed to remain
-// valid.
+// display compositor. It returns SharedBitmaps that can be transported
+// over Mojo/IPC to the display compositor, but which are backed by
+// non-shared memory. This is a cheaper implementation by using
+// malloc/free, but can only be used in the same process as the display
+// compositor.
 class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
     : public SharedBitmapManager,
       public base::trace_event::MemoryDumpProvider {
@@ -46,8 +48,15 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  size_t AllocatedBitmapCount() const;
+  void FreeSharedMemoryFromMap(const SharedBitmapId& id);
+
+  bool ChildAllocatedSharedBitmapForTest(size_t buffer_size,
+                                         const base::SharedMemoryHandle& handle,
+                                         const SharedBitmapId& id);
+
  private:
-  SEQUENCE_CHECKER(sequence_checker_);
+  mutable base::Lock lock_;
 
   std::unordered_map<SharedBitmapId,
                      scoped_refptr<BitmapData>,
