@@ -31,7 +31,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
@@ -323,8 +323,11 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         if (dseTemplateUrl != null) {
             String searchEngineUrl =
                     service.getSearchEngineUrlFromTemplateUrl(dseTemplateUrl.getKeyword());
+            UrlBarData urlBarData = UrlBarData.forUrl(searchEngineUrl);
             sDefaultSearchEngineUrl =
-                    LocationBarLayout.splitPathFromUrlDisplayText(searchEngineUrl).first;
+                    urlBarData.displayText
+                            .subSequence(urlBarData.originStartIndex, urlBarData.originEndIndex)
+                            .toString();
             engineName = dseTemplateUrl.getShortName();
         }
 

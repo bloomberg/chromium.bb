@@ -9,12 +9,12 @@ import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.support.v4.view.ViewCompat;
 import android.text.Selection;
-import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -181,7 +181,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable(){
             @Override
             public void run() {
-                urlBar.setUrl("http://www.example.com/", null);
+                urlBar.setUrl(UrlBarData.forUrl("http://www.example.com/"));
             }
         });
 
@@ -780,63 +780,56 @@ public class OmniboxTest {
         }
     }
 
+    // TODO(bauerb): Move this to a Robolectric test.
     @Test
     @SmallTest
-    @RetryOnFailure
-    public void testSplitPathFromUrlDisplayText() {
-        verifySplitUrlAndPath("", null, LocationBarLayout.splitPathFromUrlDisplayText(""));
-        verifySplitUrlAndPath(
-                "https:", null, LocationBarLayout.splitPathFromUrlDisplayText("https:"));
-        verifySplitUrlAndPath("about:blank", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("about:blank"));
+    @SkipCommandLineParameterization
+    public void testOriginSpan() {
+        verifyOriginSpan("", null, "");
+        verifyOriginSpan("https:", null, "https:");
+        verifyOriginSpan("about:blank", null, "about:blank");
 
-        verifySplitUrlAndPath("chrome://flags", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("chrome://flags"));
-        verifySplitUrlAndPath("chrome://flags", "/?egads",
-                LocationBarLayout.splitPathFromUrlDisplayText("chrome://flags/?egads"));
+        verifyOriginSpan("chrome://flags", null, "chrome://flags");
+        verifyOriginSpan("chrome://flags", "/?egads", "chrome://flags/?egads");
 
-        verifySplitUrlAndPath("www.google.com", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("www.google.com"));
-        verifySplitUrlAndPath("www.google.com", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("www.google.com/"));
-        verifySplitUrlAndPath("www.google.com", "/?q=blah",
-                LocationBarLayout.splitPathFromUrlDisplayText("www.google.com/?q=blah"));
+        verifyOriginSpan("www.google.com", null, "www.google.com");
+        verifyOriginSpan("www.google.com", null, "www.google.com/");
+        verifyOriginSpan("www.google.com", "/?q=blah", "www.google.com/?q=blah");
 
-        verifySplitUrlAndPath("https://www.google.com", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("https://www.google.com"));
-        verifySplitUrlAndPath("https://www.google.com", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("https://www.google.com/"));
-        verifySplitUrlAndPath("https://www.google.com", "/?q=blah",
-                LocationBarLayout.splitPathFromUrlDisplayText("https://www.google.com/?q=blah"));
+        verifyOriginSpan("https://www.google.com", null, "https://www.google.com");
+        verifyOriginSpan("https://www.google.com", null, "https://www.google.com/");
+        verifyOriginSpan("https://www.google.com", "/?q=blah", "https://www.google.com/?q=blah");
 
         // crbug.com/414990
         String testUrl = "https://disneyworld.disney.go.com/special-offers/"
                 + "?CMP=KNC-WDW_FY15_DOM_Q1RO_BR_Gold_SpOffer|G|4141300.RR.AM.01.47"
                 + "&keyword_id=s6JyxRifG_dm|walt%20disney%20world|37174067873|e|1540wwa14043";
-        verifySplitUrlAndPath("https://disneyworld.disney.go.com",
+        verifyOriginSpan("https://disneyworld.disney.go.com",
                 "/special-offers/?CMP=KNC-WDW_FY15_DOM_Q1RO_BR_Gold_SpOffer|G|4141300.RR.AM.01.47"
                         + "&keyword_id=s6JyxRifG_dm|walt%20disney%20world|37174067873|e|"
                         + "1540wwa14043",
-                LocationBarLayout.splitPathFromUrlDisplayText(testUrl));
+                testUrl);
 
         // crbug.com/415387
-        verifySplitUrlAndPath("ftp://example.com", "/ftp.html",
-                LocationBarLayout.splitPathFromUrlDisplayText("ftp://example.com/ftp.html"));
+        verifyOriginSpan("ftp://example.com", "/ftp.html", "ftp://example.com/ftp.html");
 
         // crbug.com/447416
-        verifySplitUrlAndPath("file:///dev/blah", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("file:///dev/blah"));
-        verifySplitUrlAndPath("javascript:window.alert('hello');", null,
-                LocationBarLayout.splitPathFromUrlDisplayText("javascript:window.alert('hello');"));
-        verifySplitUrlAndPath("data:text/html;charset=utf-8,Page%201", null,
-                LocationBarLayout.splitPathFromUrlDisplayText(
-                        "data:text/html;charset=utf-8,Page%201"));
+        verifyOriginSpan("file:///dev/blah", null, "file:///dev/blah");
+        verifyOriginSpan(
+                "javascript:window.alert('hello');", null, "javascript:window.alert('hello');");
+        verifyOriginSpan("data:text/html;charset=utf-8,Page%201", null,
+                "data:text/html;charset=utf-8,Page%201");
     }
 
-    private void verifySplitUrlAndPath(
-            String expectedPrePath, String expectedPostPath, Pair<String, String> actualValues) {
-        Assert.assertEquals(expectedPrePath, actualValues.first);
-        Assert.assertEquals(expectedPostPath, actualValues.second);
+    private void verifyOriginSpan(
+            String expectedOrigin, @Nullable String expectedOriginSuffix, String url) {
+        UrlBarData urlBarData = UrlBarData.forUrl(url);
+        String displayText = urlBarData.displayText.toString();
+        Assert.assertEquals(expectedOriginSuffix == null ? expectedOrigin
+                                                         : expectedOrigin + expectedOriginSuffix,
+                displayText);
+        Assert.assertEquals(expectedOrigin,
+                displayText.substring(urlBarData.originStartIndex, urlBarData.originEndIndex));
     }
 
     @Test

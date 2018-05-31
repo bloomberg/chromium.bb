@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.searchwidget;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -113,12 +115,12 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
      * @param isVoiceSearchIntent Whether this is a voice search.
      * @param optionalText Prepopulate with a query, this may be null.
      * */
-    void beginQuery(boolean isVoiceSearchIntent, String optionalText) {
+    void beginQuery(boolean isVoiceSearchIntent, @Nullable String optionalText) {
         // Clear the text regardless of the promo decision.  This allows the user to enter text
         // before native has been initialized and have it not be cleared one the delayed beginQuery
         // logic is performed.
         mUrlBar.setIgnoreTextChangesForAutocomplete(true);
-        mUrlBar.setUrl(optionalText == null ? "" : optionalText, null);
+        mUrlBar.setUrl(UrlBarData.forNonUrlText(optionalText == null ? "" : optionalText));
         mUrlBar.setIgnoreTextChangesForAutocomplete(false);
 
         mUrlBar.setCursorVisible(true);

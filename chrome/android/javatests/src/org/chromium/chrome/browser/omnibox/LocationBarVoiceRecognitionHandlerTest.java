@@ -38,7 +38,6 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.base.WindowAndroid.IntentCallback;
 
 import java.util.HashMap;
 import java.util.List;
@@ -195,6 +194,11 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
+        public UrlBarData getUrlBarData() {
+            return UrlBarData.EMPTY;
+        }
+
+        @Override
         public String getTitle() {
             return null;
         }
@@ -211,11 +215,6 @@ public class LocationBarVoiceRecognitionHandlerTest {
 
         @Override
         public boolean isOfflinePage() {
-            return false;
-        }
-
-        @Override
-        public boolean isShowingUntrustedOfflinePage() {
             return false;
         }
 
@@ -247,16 +246,6 @@ public class LocationBarVoiceRecognitionHandlerTest {
         @Override
         public boolean shouldDisplaySearchTerms() {
             return false;
-        }
-
-        @Override
-        public String getDisplayText() {
-            return null;
-        }
-
-        @Override
-        public String getEditingText() {
-            return null;
         }
     }
 
