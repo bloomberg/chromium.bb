@@ -7,8 +7,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -44,17 +43,22 @@ using testing::UnorderedElementsAre;
 
 class MainThreadMetricsHelperTest : public testing::Test {
  public:
-  MainThreadMetricsHelperTest() = default;
+  MainThreadMetricsHelperTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {
+    // Null clock might trigger some assertions.
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  }
+
   ~MainThreadMetricsHelperTest() override = default;
 
   void SetUp() override {
     histogram_tester_.reset(new base::HistogramTester());
-    clock_.Advance(base::TimeDelta::FromMilliseconds(1));
-    mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_ = std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::TaskQueueManagerForTest::Create(
-            nullptr, mock_task_runner_, &clock_),
+            nullptr, task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMockTickClock()),
         base::nullopt);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }
@@ -64,11 +68,20 @@ class MainThreadMetricsHelperTest : public testing::Test {
     scheduler_.reset();
   }
 
+  base::TimeTicks Now() {
+    return task_environment_.GetMockTickClock()->NowTicks();
+  }
+
+  void FastForwardTo(base::TimeTicks time) {
+    CHECK_LE(Now(), time);
+    task_environment_.FastForwardBy(time - Now());
+  }
+
   void RunTask(MainThreadTaskQueue::QueueType queue_type,
                base::TimeTicks start,
                base::TimeDelta duration) {
-    DCHECK_LE(clock_.NowTicks(), start);
-    clock_.SetNowTicks(start + duration);
+    DCHECK_LE(Now(), start);
+    FastForwardTo(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue;
     if (queue_type != MainThreadTaskQueue::QueueType::kDetached) {
       queue = scoped_refptr<MainThreadTaskQueueForTest>(
@@ -85,8 +98,8 @@ class MainThreadMetricsHelperTest : public testing::Test {
   void RunTask(FrameSchedulerImpl* scheduler,
                base::TimeTicks start,
                base::TimeDelta duration) {
-    DCHECK_LE(clock_.NowTicks(), start);
-    clock_.SetNowTicks(start + duration);
+    DCHECK_LE(Now(), start);
+    FastForwardTo(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(QueueType::kDefault));
     queue->SetFrameSchedulerForTest(scheduler);
@@ -100,8 +113,8 @@ class MainThreadMetricsHelperTest : public testing::Test {
   void RunTask(UseCase use_case,
                base::TimeTicks start,
                base::TimeDelta duration) {
-    DCHECK_LE(clock_.NowTicks(), start);
-    clock_.SetNowTicks(start + duration);
+    DCHECK_LE(Now(), start);
+    FastForwardTo(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(QueueType::kDefault));
     scheduler_->SetCurrentUseCaseForTest(use_case);
@@ -226,8 +239,7 @@ class MainThreadMetricsHelperTest : public testing::Test {
     return builder.Build();
   }
 
-  base::SimpleTestTickClock clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
   MainThreadMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;
