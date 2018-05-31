@@ -12,6 +12,23 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
+class _BattOrPowerBenchmark(perf_benchmark.PerfBenchmark):
+
+  def CreateCoreTimelineBasedMeasurementOptions(self):
+    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
+        filter_string='toplevel')
+    options = timeline_based_measurement.Options(category_filter)
+    options.config.chrome_trace_config.category_filter.AddFilterString('rail')
+    options.config.enable_atrace_trace = True
+    options.config.atrace_config.categories = ['sched']
+    options.config.enable_battor_trace = True
+    options.config.enable_chrome_trace = True
+    options.config.enable_cpu_trace = True
+    options.SetTimelineBasedMetrics(
+        ['powerMetric', 'clockSyncLatencyMetric', 'cpuTimeMetric'])
+    return options
+
+
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
@@ -27,7 +44,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
     return 'power.typical_10_mobile'
 
 
-@benchmark.Owner(emails=['charliea@chromium.org', 'rnephew@chromium.org'])
+@benchmark.Owner(emails=['charliea@chromium.org'])
 class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   """Idle platform benchmark.
 
@@ -56,3 +73,15 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'power.idle_platform'
+
+
+@benchmark.Owner(emails=['charliea@chromium.org'])
+class PowerDesktop(_BattOrPowerBenchmark):
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
+
+  def CreateStorySet(self, options):
+    return page_sets.DesktopPowerStorySet()
+
+  @classmethod
+  def Name(cls):
+    return 'power.desktop'

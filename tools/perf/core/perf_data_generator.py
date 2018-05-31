@@ -35,7 +35,8 @@ from core.sharding_map_generator import load_benchmark_sharding_map
 
 
 _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
-  'experimental.startup.android.coldish'
+  'experimental.startup.android.coldish',
+  'power.desktop'
   ])
 
 
