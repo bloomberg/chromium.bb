@@ -10,7 +10,6 @@ from __future__ import print_function
 import copy
 import itertools
 import json
-import os
 
 from chromite.lib.const import waterfall
 from chromite.lib import constants
@@ -1894,13 +1893,6 @@ def GetConfig():
   global _CACHED_CONFIG
 
   if _CACHED_CONFIG is None:
-    if os.path.exists(constants.SITE_CONFIG_FILE):
-      # Use a site specific config, if present.
-      filename = constants.SITE_CONFIG_FILE
-    else:
-      # Fall back to default Chrome OS configuration.
-      filename = constants.CHROMEOS_CONFIG_FILE
-
-    _CACHED_CONFIG = LoadConfigFromFile(filename)
+    _CACHED_CONFIG = LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)
 
   return _CACHED_CONFIG

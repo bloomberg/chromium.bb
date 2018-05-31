@@ -10,9 +10,6 @@ tags
 .ctags
 cscope.out
 
-# Directory that might hold site config checkout.
-/config/
-
 # Chromite virtualenv.
 *.egg-info/
 

@@ -44,9 +44,6 @@ CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 
-SITE_CONFIG_DIR = os.path.join(CHROMITE_DIR, 'config')
-SITE_CONFIG_FILE = os.path.join(SITE_CONFIG_DIR, 'config_dump.json')
-
 CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
                                     'config_dump.json')
 WATERFALL_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
