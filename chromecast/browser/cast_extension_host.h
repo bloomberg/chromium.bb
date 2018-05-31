@@ -6,9 +6,11 @@
 #define CHROMECAST_BROWSER_CAST_EXTENSION_HOST_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chromecast/browser/cast_web_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 
 namespace content {
@@ -43,6 +45,11 @@ class CastExtensionHost : public extensions::ExtensionHost,
       content::NavigationHandle* navigation_handle) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
 
  private:
   // content::NotificationObserver implementation:
