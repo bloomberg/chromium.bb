@@ -116,7 +116,7 @@ void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
     return;
 
   if (listener_)
-    listener_->OnChanged(display_info.Clone());
+    listener_->OnChanged(display_info_.Clone());
 }
 
 void VRDeviceBase::OnActivate(mojom::VRDisplayEventReason reason,
