@@ -2507,28 +2507,6 @@
             ]
         }
     ],
-    "PageLoadMetricsTimerDelay": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "10MS",
-                    "params": {
-                        "BufferTimerDelayMillis": "10"
-                    },
-                    "enable_features": [
-                        "PageLoadMetricsTimerDelay"
-                    ]
-                }
-            ]
-        }
-    ],
     "ParallelDownloading": [
         {
             "platforms": [
