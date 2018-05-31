@@ -28,13 +28,16 @@ namespace {
 bool ShouldUseViewsDialog() {
 #if defined(OS_MACOSX)
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
-  return base::FeatureList::IsEnabled(features::kViewsCastDialog) &&
-         !features::IsViewsBrowserCocoa();
+  // Cocoa browser is disabled if kUiFood is enabled.
+  return (base::FeatureList::IsEnabled(features::kViewsCastDialog) &&
+          !features::IsViewsBrowserCocoa()) ||
+         base::FeatureList::IsEnabled(features::kUiFood);
 #else  // !BUILDFLAG(MAC_VIEWS_BROWSER)
   return false;
 #endif
 #else  // !defined(OS_MACOSX)
-  return base::FeatureList::IsEnabled(features::kViewsCastDialog);
+  return base::FeatureList::IsEnabled(features::kViewsCastDialog) ||
+         base::FeatureList::IsEnabled(features::kUiFood);
 #endif
 }
 
