@@ -16,7 +16,6 @@ import os
 import time
 import tempfile
 
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
@@ -33,6 +32,7 @@ from chromite.lib import build_requests
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cl_messages
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cq_config
 from chromite.lib import cros_build_lib
@@ -779,7 +779,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testVerificationsForChangeValidConfig(self):
     change = MockPatch()
-    configs_to_test = chromeos_config.GetConfig().keys()[:5]
+    configs_to_test = config_lib.GetConfig().keys()[:5]
     return_string = ' '.join(configs_to_test)
     self.PatchObject(cq_config.CQConfigParser, 'GetOption',
                      return_value=return_string)

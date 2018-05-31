@@ -15,12 +15,12 @@ import sys
 import unittest
 
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
@@ -133,7 +133,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self._bot_id = options.build_config_name
 
     if site_config is None:
-      site_config = chromeos_config.GetConfig()
+      site_config = config_lib.GetConfig()
 
     # Populate build_config corresponding to self._bot_id.
     build_config = copy.deepcopy(site_config[self._bot_id])

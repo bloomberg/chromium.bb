@@ -13,7 +13,6 @@ import os
 import tempfile
 
 from chromite.cbuildbot import cbuildbot_unittest
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -23,6 +22,7 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import build_summary
 from chromite.lib import builder_status_lib
 from chromite.lib import cidb
+from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
@@ -213,7 +213,7 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
   def RunAllConfigs(self, task, skip_missing=False, site_config=None):
     """Run |task| against all major configurations"""
     if site_config is None:
-      site_config = chromeos_config.GetConfig()
+      site_config = config_lib.GetConfig()
 
     boards = ('samus', 'arm-generic')
 

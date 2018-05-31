@@ -11,7 +11,6 @@ import cPickle
 import mock
 import time
 
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib.const import waterfall
 from chromite.lib import config_lib
@@ -155,7 +154,7 @@ class BuilderRunPickleTest(_BuilderRunTestCase):
   """Make sure BuilderRun objects can be pickled."""
 
   def setUp(self):
-    self.real_config = chromeos_config.GetConfig()['test-ap-group']
+    self.real_config = config_lib.GetConfig()['test-ap-group']
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersion',
                      return_value=DEFAULT_VERSION)
 

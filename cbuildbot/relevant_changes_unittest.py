@@ -11,10 +11,10 @@ import copy
 import mock
 
 from chromite.cbuildbot import build_status_unittest
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import relevant_changes
 from chromite.lib import builder_status_lib
 from chromite.lib import build_failure_message
+from chromite.lib import config_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import clactions
 from chromite.lib import constants
@@ -30,7 +30,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self._bot_id = 'master-paladin'
-    self.site_config = chromeos_config.GetConfig()
+    self.site_config = config_lib.GetConfig()
     self.build_config = copy.deepcopy(self.site_config[self._bot_id])
 
     self.fake_cidb = fake_cidb.FakeCIDBConnection()
@@ -303,7 +303,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
   def setUp(self):
     self._bot_id = 'master-paladin'
     self._patch_factory = patch_unittest.MockPatchFactory()
-    self.site_config = chromeos_config.GetConfig()
+    self.site_config = config_lib.GetConfig()
     self.build_config = self.site_config[self._bot_id]
     self.fake_cidb = fake_cidb.FakeCIDBConnection()
     self.slaves = ['slave_1', 'slave_2', 'slave_3', 'slave_4']
