@@ -6,6 +6,11 @@ The easiest way to identify these is to use the [Flakiness dashboard](https://te
 
 ![The flakiness dashboard](images/flakiness_dashboard.png)
 
+If the bot is running the new performance_test_suite than all stories will be
+listed under test type 'performance_test_suite' and the associated builder.
+
+![The flakiness dashboard new recipe](images/flakiness_dashboard_new_recipe.png)
+
 Each row represents a particular story and each column represents a recent run, listed with the most recent run on the left. If the cell is green, then the story passed; if it's red, then it failed. Only stories that have failed at least once will be listed. You can click on a particular cell to see more information like revision ranges (useful for launching bisects) and logs.
 
 With this view, you can easily see how often a given story is failing. Usually, any story that appears to be failing in over 20% of recent runs should be disabled.
