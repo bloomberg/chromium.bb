@@ -918,6 +918,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -1021,6 +1027,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -1094,6 +1106,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -1389,6 +1407,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -1492,6 +1516,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -1565,6 +1595,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -1860,6 +1896,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -1956,6 +1998,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -2029,6 +2077,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -2324,6 +2378,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -2427,6 +2487,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -2500,6 +2566,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -2795,6 +2867,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -2898,6 +2976,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -2971,6 +3055,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -3266,6 +3356,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -3369,6 +3465,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -3442,6 +3544,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -3737,6 +3845,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -3840,6 +3954,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -3913,6 +4033,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -10427,6 +10553,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -10530,6 +10662,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -10603,6 +10741,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -10898,6 +11042,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -11001,6 +11151,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -11074,6 +11230,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -11369,6 +11531,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -11472,6 +11640,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -11545,6 +11719,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -11840,6 +12020,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -11943,6 +12129,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -12016,6 +12208,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -12311,6 +12509,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -12414,6 +12618,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -12487,6 +12697,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -12782,6 +12998,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -12885,6 +13107,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -12958,6 +13186,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -13253,6 +13487,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -13356,6 +13596,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -13429,6 +13675,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -13724,6 +13976,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -13827,6 +14085,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -13900,6 +14164,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -14195,6 +14465,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -14298,6 +14574,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -14371,6 +14653,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -14666,6 +14954,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "angle_unittests"
       },
       {
@@ -14769,6 +15063,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "components_browsertests"
       },
       {
@@ -14842,6 +15142,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -15566,6 +15872,17 @@
             }
           ]
         },
+        "test": "accessibility_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
         "test": "angle_unittests"
       },
       {
@@ -15742,6 +16059,17 @@
             }
           ]
         },
+        "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
         "test": "components_browsertests"
       },
       {
@@ -15865,6 +16193,17 @@
           ]
         },
         "test": "elevation_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
