@@ -5,6 +5,8 @@ include_rules = [
   "+components/prefs",
   "+components/version_info",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+ui/base",
 
   # web_resource is used on iOS.

@@ -19,9 +19,9 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 // No anonymous namespace, because const variables automatically get internal
@@ -41,7 +41,7 @@ WebResourceService::WebResourceService(
     const char* last_update_time_pref_name,
     int start_fetch_delay_ms,
     int cache_update_delay_ms,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const char* disable_network_switch,
     const ParseJSONCallback& parse_json_callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
@@ -55,7 +55,7 @@ WebResourceService::WebResourceService(
       last_update_time_pref_name_(last_update_time_pref_name),
       start_fetch_delay_ms_(start_fetch_delay_ms),
       cache_update_delay_ms_(cache_update_delay_ms),
-      request_context_(request_context),
+      url_loader_factory_(url_loader_factory),
       parse_json_callback_(parse_json_callback),
       traffic_annotation_(traffic_annotation),
       weak_ptr_factory_(this) {
@@ -69,25 +69,21 @@ void WebResourceService::StartAfterDelay() {
     OnResourceRequestsAllowed();
 }
 
-WebResourceService::~WebResourceService() {
-}
+WebResourceService::~WebResourceService() = default;
 
-void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
-  // Delete the URLFetcher when this function exits.
-  std::unique_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
-
-  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
-    std::string data;
-    source->GetResponseAsString(&data);
+void WebResourceService::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  simple_url_loader_.reset();
+  if (response_body) {
     // Calls EndFetch() on completion.
     // Full JSON parsing might spawn a utility process (for security).
     // To limit the the number of simultaneously active processes
     // (on Android in particular) we short-cut the full parsing in the case of
     // trivially "empty" JSONs.
-    if (data.empty() || data == "{}") {
+    if (response_body->empty() || *response_body == "{}") {
       OnUnpackFinished(std::make_unique<base::DictionaryValue>());
     } else {
-      parse_json_callback_.Run(data,
+      parse_json_callback_.Run(*response_body,
                                base::Bind(&WebResourceService::OnUnpackFinished,
                                           weak_ptr_factory_.GetWeakPtr()),
                                base::Bind(&WebResourceService::OnUnpackError,
@@ -125,10 +121,10 @@ bool WebResourceService::GetFetchScheduled() const {
 }
 
 // Initializes the fetching of data from the resource server.  Data
-// load calls OnURLFetchComplete.
+// load calls OnSimpleLoaderComplete.
 void WebResourceService::StartFetch() {
   // Set to false so that next fetch can be scheduled after this fetch or
-  // if we recieve notification that resource is allowed.
+  // if we receive notification that resource is allowed.
   fetch_scheduled_ = false;
   // Check whether fetching is allowed.
   if (!resource_request_allowed_notifier_->ResourceRequestsAllowed())
@@ -153,18 +149,22 @@ void WebResourceService::StartFetch() {
                                                  application_locale_);
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
-  url_fetcher_ = net::URLFetcher::Create(
-      web_resource_server, net::URLFetcher::GET, this, traffic_annotation_);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(),
-      data_use_measurement::DataUseUserData::WEB_RESOURCE_SERVICE);
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = web_resource_server;
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).
-  url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->SetRequestContext(request_context_.get());
-  url_fetcher_->Start();
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE |
+                                 net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::WEB_RESOURCE_SERVICE
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation_);
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&WebResourceService::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
 void WebResourceService::EndFetch() {

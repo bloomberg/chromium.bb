@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -26,18 +25,16 @@ class DictionaryValue;
 class Value;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
 }
 
 namespace web_resource {
 
 // A WebResourceService fetches JSON data from a web server and periodically
 // refreshes it.
-class WebResourceService
-    : public net::URLFetcherDelegate,
-      public ResourceRequestAllowedNotifier::Observer {
+class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
  public:
   // Callbacks for JSON parsing.
   using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
@@ -55,7 +52,7 @@ class WebResourceService
       const char* last_update_time_pref_name,
       int start_fetch_delay_ms,
       int cache_update_delay_ms,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const char* disable_network_switch,
       const ParseJSONCallback& parse_json_callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
@@ -81,8 +78,8 @@ class WebResourceService
   // For the subclasses to process the result of a fetch.
   virtual void Unpack(const base::DictionaryValue& parsed_json) = 0;
 
-  // net::URLFetcherDelegate implementation:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Callback from SimpleURLLoader.
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Schedules a fetch after |delay_ms| milliseconds.
   void ScheduleFetch(int64_t delay_ms);
@@ -112,8 +109,8 @@ class WebResourceService
   // point in time.
   bool fetch_scheduled_;
 
-  // The tool that fetches the url data from the server.
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  // The tool that loads the url data from the server.
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // True if we are currently fetching or unpacking data. If we are asked to
   // start a fetch when we are still fetching resource data, schedule another
@@ -136,8 +133,8 @@ class WebResourceService
   // different for different builds of Chrome.
   int cache_update_delay_ms_;
 
-  // The request context for the resource fetch.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // The URL loader factory for the resource load.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Callback used to parse JSON.
   ParseJSONCallback parse_json_callback_;
