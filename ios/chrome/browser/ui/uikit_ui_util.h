@@ -221,7 +221,7 @@ bool IsSplitToolbarMode();
 // toolbar or if it is displayed as only one toolbar.
 bool IsSplitToolbarMode(id<UITraitEnvironment> environment);
 
-// Returns the current first responder.
+// Returns the current first responder for keyWindow.
 UIResponder* GetFirstResponder();
 
 // Trigger a haptic vibration for various types of actions. This is a no-op for
