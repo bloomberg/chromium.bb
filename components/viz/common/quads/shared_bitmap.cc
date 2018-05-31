@@ -17,10 +17,7 @@
 
 namespace viz {
 
-SharedBitmap::SharedBitmap(uint8_t* pixels,
-                           const SharedBitmapId& id,
-                           uint32_t sequence_number)
-    : pixels_(pixels), id_(id), sequence_number_(sequence_number) {}
+SharedBitmap::SharedBitmap(uint8_t* pixels) : pixels_(pixels) {}
 
 SharedBitmap::~SharedBitmap() {}
 
@@ -30,13 +27,6 @@ SharedBitmapId SharedBitmap::GenerateId() {
   // Needs cryptographically-secure random numbers.
   base::RandBytes(id.name, sizeof(id.name));
   return id;
-}
-
-base::trace_event::MemoryAllocatorDumpGuid GetSharedBitmapGUIDForTracing(
-    const SharedBitmapId& bitmap_id) {
-  auto bitmap_id_hex = base::HexEncode(bitmap_id.name, sizeof(bitmap_id.name));
-  return base::trace_event::MemoryAllocatorDumpGuid(
-      base::StringPrintf("sharedbitmap-x-process/%s", bitmap_id_hex.c_str()));
 }
 
 }  // namespace viz

@@ -34,21 +34,16 @@ class BitmapData : public base::RefCounted<BitmapData> {
 
 namespace {
 
+// Holds a reference on the BitmapData so that the SharedMemory can outlive the
+// SharedBitmapId registration as long as this SharedBitmap object is held
+// alive.
 class ServerSharedBitmap : public SharedBitmap {
  public:
-  ServerSharedBitmap(scoped_refptr<BitmapData> bitmap_data,
-                     const SharedBitmapId& id)
-      : SharedBitmap(static_cast<uint8_t*>(bitmap_data->memory->memory()),
-                     id,
-                     0 /* sequence_number */),
+  explicit ServerSharedBitmap(scoped_refptr<BitmapData> bitmap_data)
+      : SharedBitmap(static_cast<uint8_t*>(bitmap_data->memory->memory())),
         bitmap_data_(std::move(bitmap_data)) {}
 
   ~ServerSharedBitmap() override {
-  }
-
-  // SharedBitmap implementation.
-  base::UnguessableToken GetCrossProcessGUID() const override {
-    return bitmap_data_->memory->mapped_id();
   }
 
  private:
@@ -85,7 +80,18 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
     return nullptr;
   }
 
-  return std::make_unique<ServerSharedBitmap>(data, id);
+  return std::make_unique<ServerSharedBitmap>(data);
+}
+
+base::UnguessableToken
+ServerSharedBitmapManager::GetSharedBitmapTracingGUIDFromId(
+    const SharedBitmapId& id) {
+  base::AutoLock lock(lock_);
+  auto it = handle_map_.find(id);
+  if (it == handle_map_.end())
+    return {};
+  BitmapData* data = it->second.get();
+  return data->memory->mapped_id();
 }
 
 bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
@@ -139,20 +145,12 @@ bool ServerSharedBitmapManager::OnMemoryDump(
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     data->buffer_size);
 
-    if (data->memory) {
-      // Resources from a client have shared memory, and we use the guid from
-      // that.
-      base::UnguessableToken shared_memory_guid = data->memory->mapped_id();
-      DCHECK(!shared_memory_guid.is_empty());
-      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
-                                           0 /* importance*/);
-    } else {
-      // Otherwise, resources were allocated locally for in-process use, and
-      // there is no shared memory. Instead make up a GUID for them.
-      auto guid = GetSharedBitmapGUIDForTracing(id);
-      pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid);
-    }
+    // This GUID is the same returned by GetSharedBitmapTracingGUIDFromId() so
+    // other components use a consistent GUID for a given SharedBitmapId.
+    base::UnguessableToken shared_memory_guid = data->memory->mapped_id();
+    DCHECK(!shared_memory_guid.is_empty());
+    pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid,
+                                         0 /* importance*/);
   }
 
   return true;
