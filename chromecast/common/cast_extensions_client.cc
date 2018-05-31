@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "chromecast/common/extensions_api/cast_aliases.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
 #include "chromecast/common/extensions_api/cast_api_permissions.h"
@@ -44,6 +45,7 @@ namespace {
 void RegisterCastManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
   (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
+  (new chromecast::CastRedirectHandler)->Register();
   (new ContentScriptsHandler)->Register();
   (new TtsEngineManifestHandler)->Register();
 }

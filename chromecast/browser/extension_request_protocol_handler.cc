@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/extension_request_protocol_handler.h"
 
+#include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
@@ -278,14 +279,25 @@ net::URLRequestJob* ExtensionRequestProtocolHandler::MaybeCreateJob(
     return nullptr;
   }
 
+  const GURL& url = request->url();
   std::string cast_url;
-  if (!extension->manifest()->GetString("cast_url", &cast_url)) {
+  // See if we are being redirected to an extension-specific URL.
+  if (!CastRedirectHandler::ParseUrl(&cast_url, extension, url)) {
     // Defer to the default handler to load from disk.
     return default_handler_->MaybeCreateJob(request, network_delegate);
   }
 
-  // Replace chrome-extension://<id> with whatever the extension wants to go to.
-  cast_url.append(request->url().path());
+  // The above only handles the scheme, host & path, any query or fragment needs
+  // to be copied separately.
+  if (url.has_query()) {
+    cast_url.push_back('?');
+    url.query_piece().AppendToString(&cast_url);
+  }
+
+  if (url.has_ref()) {
+    cast_url.push_back('#');
+    url.ref_piece().AppendToString(&cast_url);
+  }
 
   // Force a redirect to the new URL but without changing where the webpage
   // thinks it is.
