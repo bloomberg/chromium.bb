@@ -957,9 +957,9 @@ void URLLoader::RecordBodyReadFromNetBeforePausedIfNeeded() {
 }
 
 void URLLoader::BlockResponseForCorb() {
-  // TODO(lukasza): Need to make sure that the cache is still populated in the
-  // prefetch case (e.g. the CrossSiteDocumentResourceHandler implementation of
-  // CORB would detach rather than cancelling).
+  // TODO(lukasza): https://crbug.com/846334: Need to make sure that the cache
+  // is still populated in the prefetch case (e.g. the implementation of CORB in
+  // CrossSiteDocumentResourceHandler would detach rather than cancel).
   url_request_->Cancel();
 
   // Remember that blocking happened (so that we can report success, rather than
