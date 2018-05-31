@@ -150,7 +150,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
-  // Do not remove this, it modifies V8 state.
+  // Do not remove this, |scope| is needed by
+  // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
   BackgroundFetchSettledEventInit init;
@@ -204,7 +205,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
-  // Do not remove this, it modifies V8 state.
+  // Do not remove this, |scope| is needed by
+  // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
   BackgroundFetchSettledEventInit init;
@@ -230,7 +232,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchedEvent(
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
-  // Do not remove this, it modifies V8 state.
+  // Do not remove this, |scope| is needed by
+  // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
   BackgroundFetchSettledEventInit init;
