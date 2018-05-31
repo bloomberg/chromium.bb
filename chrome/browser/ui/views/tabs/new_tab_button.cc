@@ -101,6 +101,9 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
 
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
     set_ink_drop_visible_opacity(0.14f);
+
+    SetFocusPainter(nullptr);
+    focus_ring_ = views::FocusRing::Install(this);
   }
 }
 
@@ -321,6 +324,10 @@ void NewTabButton::Layout() {
     const gfx::Rect ink_drop_bounds(gfx::Point(0, GetTopOffset()),
                                     GetVisibleBounds().size());
     ink_drop_container_->SetBoundsRect(ink_drop_bounds);
+
+    SkPath path;
+    path.addOval(gfx::RectToSkRect(ink_drop_bounds));
+    focus_ring_->SetPath(path);
   }
 }
 
