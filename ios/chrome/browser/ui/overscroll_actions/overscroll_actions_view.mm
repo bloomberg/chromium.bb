@@ -25,8 +25,8 @@ namespace {
 // Actions images.
 NSString* const kNewTabActionImage = @"ptr_new_tab";
 NSString* const kNewTabActionActiveImage = @"ptr_new_tab_active";
-NSString* const kRefreshActionImage = @"ptr_reload";
-NSString* const kRefreshActionActiveImage = @"ptr_reload_active";
+NSString* const kReloadActionImage = @"ptr_reload";
+NSString* const kReloadActionActiveImage = @"ptr_reload_active";
 NSString* const kCloseActionImage = @"ptr_close";
 NSString* const kCloseActionActiveImage = @"ptr_close_active";
 
@@ -163,18 +163,18 @@ enum class OverscrollViewState {
 
 // Actions image views.
 @property(nonatomic, strong) UIImageView* addTabActionImageView;
-@property(nonatomic, strong) UIImageView* refreshActionImageView;
+@property(nonatomic, strong) UIImageView* reloadActionImageView;
 @property(nonatomic, strong) UIImageView* closeTabActionImageView;
 
 @property(nonatomic, strong) CALayer* highlightMaskLayer;
 
 @property(nonatomic, strong) UIImageView* addTabActionImageViewHighlighted;
-@property(nonatomic, strong) UIImageView* refreshActionImageViewHighlighted;
+@property(nonatomic, strong) UIImageView* reloadActionImageViewHighlighted;
 @property(nonatomic, strong) UIImageView* closeTabActionImageViewHighlighted;
 
 // Action labels.
 @property(nonatomic, strong) UILabel* addTabLabel;
-@property(nonatomic, strong) UILabel* refreshLabel;
+@property(nonatomic, strong) UILabel* reloadLabel;
 @property(nonatomic, strong) UILabel* closeTabLabel;
 
 // The layer displaying the selection circle.
@@ -252,16 +252,16 @@ enum class OverscrollViewState {
 
 @synthesize selectedAction = _selectedAction;
 @synthesize addTabActionImageView = _addTabActionImageView;
-@synthesize refreshActionImageView = _refreshActionImageView;
+@synthesize reloadActionImageView = _reloadActionImageView;
 @synthesize closeTabActionImageView = _closeTabActionImageView;
 @synthesize addTabActionImageViewHighlighted =
     _addTabActionImageViewHighlighted;
-@synthesize refreshActionImageViewHighlighted =
-    _refreshActionImageViewHighlighted;
+@synthesize reloadActionImageViewHighlighted =
+    _reloadActionImageViewHighlighted;
 @synthesize closeTabActionImageViewHighlighted =
     _closeTabActionImageViewHighlighted;
 @synthesize addTabLabel = _addTabLabel;
-@synthesize refreshLabel = _refreshLabel;
+@synthesize reloadLabel = _reloadLabel;
 @synthesize closeTabLabel = _closeTabLabel;
 @synthesize highlightMaskLayer = _highlightMaskLayer;
 @synthesize selectionCircleLayer = _selectionCircleLayer;
@@ -294,10 +294,10 @@ enum class OverscrollViewState {
 
     _addTabActionImageView = [[UIImageView alloc] init];
     [self addSubview:_addTabActionImageView];
-    _refreshActionImageView = [[UIImageView alloc] init];
+    _reloadActionImageView = [[UIImageView alloc] init];
     if (UseRTLLayout())
-      [_refreshActionImageView setTransform:CGAffineTransformMakeScale(-1, 1)];
-    [self addSubview:_refreshActionImageView];
+      [_reloadActionImageView setTransform:CGAffineTransformMakeScale(-1, 1)];
+    [self addSubview:_reloadActionImageView];
     _closeTabActionImageView = [[UIImageView alloc] init];
     [self addSubview:_closeTabActionImageView];
 
@@ -309,14 +309,14 @@ enum class OverscrollViewState {
     [self.layer addSublayer:_highlightMaskLayer];
 
     _addTabActionImageViewHighlighted = [[UIImageView alloc] init];
-    _refreshActionImageViewHighlighted = [[UIImageView alloc] init];
+    _reloadActionImageViewHighlighted = [[UIImageView alloc] init];
     if (UseRTLLayout()) {
-      [_refreshActionImageViewHighlighted
+      [_reloadActionImageViewHighlighted
           setTransform:CGAffineTransformMakeScale(-1, 1)];
     }
     _closeTabActionImageViewHighlighted = [[UIImageView alloc] init];
     [_highlightMaskLayer addSublayer:_addTabActionImageViewHighlighted.layer];
-    [_highlightMaskLayer addSublayer:_refreshActionImageViewHighlighted.layer];
+    [_highlightMaskLayer addSublayer:_reloadActionImageViewHighlighted.layer];
     [_highlightMaskLayer addSublayer:_closeTabActionImageViewHighlighted.layer];
 
     if (IsUIRefreshPhase1Enabled()) {
@@ -333,19 +333,19 @@ enum class OverscrollViewState {
       _addTabLabel.text =
           l10n_util::GetNSString(IDS_IOS_OVERSCROLL_NEW_TAB_LABEL);
       [self addSubview:_addTabLabel];
-      _refreshLabel = [[UILabel alloc] init];
-      _refreshLabel.numberOfLines = 0;
-      _refreshLabel.lineBreakMode = NSLineBreakByWordWrapping;
-      _refreshLabel.textAlignment = NSTextAlignmentCenter;
-      _refreshLabel.alpha = 0.0;
-      _refreshLabel.font =
+      _reloadLabel = [[UILabel alloc] init];
+      _reloadLabel.numberOfLines = 0;
+      _reloadLabel.lineBreakMode = NSLineBreakByWordWrapping;
+      _reloadLabel.textAlignment = NSTextAlignmentCenter;
+      _reloadLabel.alpha = 0.0;
+      _reloadLabel.font =
           [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-      _refreshLabel.adjustsFontForContentSizeCategory = NO;
-      _refreshLabel.textColor =
+      _reloadLabel.adjustsFontForContentSizeCategory = NO;
+      _reloadLabel.textColor =
           [UIColor colorWithWhite:kSelectionColor alpha:1.0];
-      _refreshLabel.text =
-          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_REFRESH_LABEL);
-      [self addSubview:_refreshLabel];
+      _reloadLabel.text =
+          l10n_util::GetNSString(IDS_IOS_OVERSCROLL_RELOAD_LABEL);
+      [self addSubview:_reloadLabel];
       _closeTabLabel = [[UILabel alloc] init];
       _closeTabLabel.numberOfLines = 0;
       _closeTabLabel.lineBreakMode = NSLineBreakByWordWrapping;
@@ -374,7 +374,7 @@ enum class OverscrollViewState {
       // Reverse labels again because they are subview of |self|, otherwise they
       // will be rendered backwards.
       [_addTabLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
-      [_refreshLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
+      [_reloadLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
       [_closeTabLabel setTransform:CGAffineTransformMakeScale(-1, 1)];
     }
 
@@ -540,8 +540,8 @@ enum class OverscrollViewState {
 
   [UIView beginAnimations:@"position" context:NULL];
   [UIView setAnimationDuration:0.1];
-  SetLayerPositionX(self.refreshActionImageView.layer, centerX);
-  SetLayerPositionX(self.refreshActionImageViewHighlighted.layer, centerX);
+  SetLayerPositionX(self.reloadActionImageView.layer, centerX);
+  SetLayerPositionX(self.reloadActionImageViewHighlighted.layer, centerX);
 
   const CGFloat addTabPositionX =
       MapValueToRange({kRefreshThreshold, kFullThreshold},
@@ -565,10 +565,10 @@ enum class OverscrollViewState {
 
   [UIView beginAnimations:@"opacity" context:NULL];
   [UIView setAnimationDuration:0.1];
-  self.refreshActionImageView.layer.opacity = MapValueToRange(
+  self.reloadActionImageView.layer.opacity = MapValueToRange(
       {kFullThreshold / 2.0, kFullThreshold}, {0, 1}, self.verticalOffset);
-  self.refreshActionImageViewHighlighted.layer.opacity =
-      self.refreshActionImageView.layer.opacity;
+  self.reloadActionImageViewHighlighted.layer.opacity =
+      self.reloadActionImageView.layer.opacity;
   self.addTabActionImageView.layer.opacity = MapValueToRange(
       {kRefreshThreshold, kFullThreshold}, {0, 1}, self.verticalOffset);
   self.addTabActionImageViewHighlighted.layer.opacity =
@@ -586,8 +586,8 @@ enum class OverscrollViewState {
                       {-base::kPiFloat / 2, base::kPiFloat / 4},
                       self.verticalOffset),
       0, 0, 1);
-  self.refreshActionImageView.layer.transform = rotation;
-  self.refreshActionImageViewHighlighted.layer.transform = rotation;
+  self.reloadActionImageView.layer.transform = rotation;
+  self.reloadActionImageViewHighlighted.layer.transform = rotation;
   [UIView commitAnimations];
 }
 
@@ -601,10 +601,9 @@ enum class OverscrollViewState {
 
   // The UILabels in |labels| are laid out according to the location of their
   // corresponding UIImageView in |images|.
-  NSArray* labels =
-      @[ self.addTabLabel, self.refreshLabel, self.closeTabLabel ];
+  NSArray* labels = @[ self.addTabLabel, self.reloadLabel, self.closeTabLabel ];
   NSArray* images = @[
-    self.addTabActionImageView, self.refreshActionImageView,
+    self.addTabActionImageView, self.reloadActionImageView,
     self.closeTabActionImageView
   ];
 
@@ -744,14 +743,14 @@ enum class OverscrollViewState {
   const CGPoint selectionPosition = [self selectionCirclePosition];
   if (_deformationBehaviorEnabled) {
     const CGFloat distanceBetweenTwoActions =
-        (self.refreshActionImageView.frame.origin.x -
+        (self.reloadActionImageView.frame.origin.x -
          self.addTabActionImageView.frame.origin.x) /
         2;
     if (fabs(self.addTabActionImageView.center.x - selectionPosition.x) <
         distanceBetweenTwoActions) {
       self.selectedAction = OverscrollAction::NEW_TAB;
     }
-    if (fabs(self.refreshActionImageView.center.x - selectionPosition.x) <
+    if (fabs(self.reloadActionImageView.center.x - selectionPosition.x) <
         distanceBetweenTwoActions) {
       self.selectedAction = OverscrollAction::REFRESH;
     }
@@ -766,7 +765,7 @@ enum class OverscrollViewState {
                    kSelectionEdge);
     const CGRect addTabRect = self.addTabActionImageView.frame;
     const CGRect closeTabRect = self.closeTabActionImageView.frame;
-    const CGRect refreshRect = self.refreshActionImageView.frame;
+    const CGRect refreshRect = self.reloadActionImageView.frame;
 
     if (CGRectContainsRect(selectionRect, addTabRect)) {
       self.selectedAction = OverscrollAction::NEW_TAB;
@@ -822,9 +821,9 @@ enum class OverscrollViewState {
   if (!_layersToCenterVertically) {
     _layersToCenterVertically = @[
       _selectionCircleLayer, _selectionCircleMaskLayer,
-      _addTabActionImageView.layer, _refreshActionImageView.layer,
+      _addTabActionImageView.layer, _reloadActionImageView.layer,
       _closeTabActionImageView.layer, _addTabActionImageViewHighlighted.layer,
-      _refreshActionImageViewHighlighted.layer,
+      _reloadActionImageViewHighlighted.layer,
       _closeTabActionImageViewHighlighted.layer, _backgroundView.layer
     ];
   }
@@ -991,25 +990,25 @@ enum class OverscrollViewState {
   if (incognito) {
     [_addTabActionImageView
         setImage:[UIImage imageNamed:kNewTabActionActiveImage]];
-    [_refreshActionImageView
-        setImage:[UIImage imageNamed:kRefreshActionActiveImage]];
+    [_reloadActionImageView
+        setImage:[UIImage imageNamed:kReloadActionActiveImage]];
     [_closeTabActionImageView
         setImage:[UIImage imageNamed:kCloseActionActiveImage]];
     _selectionCircleLayer.fillColor =
         [UIColor colorWithRed:1 green:1 blue:1 alpha:0.2].CGColor;
     _selectionCircleMaskLayer.fillColor = [[UIColor clearColor] CGColor];
     [_addTabLabel setTextColor:[UIColor whiteColor]];
-    [_refreshLabel setTextColor:[UIColor whiteColor]];
+    [_reloadLabel setTextColor:[UIColor whiteColor]];
     [_closeTabLabel setTextColor:[UIColor whiteColor]];
   } else {
     [_addTabActionImageView setImage:[UIImage imageNamed:kNewTabActionImage]];
-    [_refreshActionImageView setImage:[UIImage imageNamed:kRefreshActionImage]];
+    [_reloadActionImageView setImage:[UIImage imageNamed:kReloadActionImage]];
     [_closeTabActionImageView setImage:[UIImage imageNamed:kCloseActionImage]];
 
     [_addTabActionImageViewHighlighted
         setImage:[UIImage imageNamed:kNewTabActionActiveImage]];
-    [_refreshActionImageViewHighlighted
-        setImage:[UIImage imageNamed:kRefreshActionActiveImage]];
+    [_reloadActionImageViewHighlighted
+        setImage:[UIImage imageNamed:kReloadActionActiveImage]];
     [_closeTabActionImageViewHighlighted
         setImage:[UIImage imageNamed:kCloseActionActiveImage]];
 
@@ -1024,10 +1023,10 @@ enum class OverscrollViewState {
     _selectionCircleMaskLayer.fillColor = [[UIColor blackColor] CGColor];
   }
   [_addTabActionImageView sizeToFit];
-  [_refreshActionImageView sizeToFit];
+  [_reloadActionImageView sizeToFit];
   [_closeTabActionImageView sizeToFit];
   [_addTabActionImageViewHighlighted sizeToFit];
-  [_refreshActionImageViewHighlighted sizeToFit];
+  [_reloadActionImageViewHighlighted sizeToFit];
   [_closeTabActionImageViewHighlighted sizeToFit];
 }
 
@@ -1038,7 +1037,7 @@ enum class OverscrollViewState {
                       -kDirectTouchFrameExpansion, -kDirectTouchFrameExpansion),
           location)) {
     action = OverscrollAction::NEW_TAB;
-  } else if (CGRectContainsPoint(CGRectInset([_refreshActionImageView frame],
+  } else if (CGRectContainsPoint(CGRectInset([_reloadActionImageView frame],
                                              -kDirectTouchFrameExpansion,
                                              -kDirectTouchFrameExpansion),
                                  location)) {
@@ -1087,7 +1086,7 @@ enum class OverscrollViewState {
     case OverscrollAction::NEW_TAB:
       return self.addTabLabel;
     case OverscrollAction::REFRESH:
-      return self.refreshLabel;
+      return self.reloadLabel;
     case OverscrollAction::CLOSE_TAB:
       return self.closeTabLabel;
     case OverscrollAction::NONE:
