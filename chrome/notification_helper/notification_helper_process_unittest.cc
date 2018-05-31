@@ -3,10 +3,17 @@
 // found in the LICENSE file.
 
 // This file tests launching notification_helper.exe by the OS via the registry.
-// An advanced version of this test is in
-// chrome/browser/notifications/notification_helper_launches_chrome_unittest.cc,
+//
+// An advanced version of this test is
+// chrome/browser/notifications/win/notification_helper_launches_chrome_unittest.cc,
 // which additionally tests if chrome.exe can be successfully launched by
 // notification_helper.exe via the NotificationActivator::Activate function.
+//
+// Different from this test being compiled into
+// notification_helper_unittests.exe, the advanced test is compiled into
+// unit_tests.exe. This is because the advanced test requires data dependency on
+// chrome.exe which unit_tests.exe already has, and it's undesired to make
+// notification_helper_unittests.exe have data dependency on chrome.exe.
 
 #include <memory>
 
