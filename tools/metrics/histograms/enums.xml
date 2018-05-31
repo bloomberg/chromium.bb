@@ -7784,6 +7784,7 @@ Called by update_net_error_codes.py.-->
   <int value="29" label="RESULT_CODE_SXS_MIGRATION_FAILED_NOT_USED"/>
   <int value="30" label="RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
   <int value="31" label="RESULT_CODE_INVALID_SANDBOX_STATE"/>
+  <int value="32" label="RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED"/>
   <int value="131" label="SIGQUIT"/>
   <int value="132" label="SIGILL"/>
   <int value="133" label="SIGTRAP"/>
@@ -48603,6 +48604,7 @@ Full version information for the fingerprint enum values:
   <int value="29" label="chrome::RESULT_CODE_SXS_MIGRATION_FAILED"/>
   <int value="30" label="chrome::RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
   <int value="31" label="chrome::RESULT_CODE_INVALID_SANDBOX_STATE"/>
+  <int value="32" label="chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED"/>
   <int value="259" label="0x103 - STILL_ACTIVE."/>
   <int value="85436397" label="0x517a7ed - Crashpad simulated exception"/>
   <int value="1073807364" label="0x40010004 - DBG_TERMINATE_PROCESS"/>

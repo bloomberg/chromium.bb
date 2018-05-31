@@ -72,6 +72,7 @@
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/webrtc_log_util.h"
@@ -299,7 +300,6 @@
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/env.h"
 #endif
@@ -711,6 +711,29 @@ bool IsSiteIsolationEnterprisePolicyApplicable() {
   // errors and 2) this is the bucket boundary in Memory.Stats.Win.TotalPhys2.
   bool have_enough_memory = base::SysInfo::AmountOfPhysicalMemoryMB() > 1077;
   return have_enough_memory;
+#else
+  return true;
+#endif
+}
+
+bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
+    policy::ChromeBrowserPolicyConnector* connector) {
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  switch (connector->WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished()) {
+    case policy::ChromeBrowserPolicyConnector::
+        MachineLevelUserCloudPolicyRegisterResult::kNoEnrollmentNeeded:
+    case policy::ChromeBrowserPolicyConnector::
+        MachineLevelUserCloudPolicyRegisterResult::kEnrollmentSuccess:
+      return true;
+    case policy::ChromeBrowserPolicyConnector::
+        MachineLevelUserCloudPolicyRegisterResult::kRestartDueToFailure:
+      chrome::AttemptRestart();
+      return false;
+    case policy::ChromeBrowserPolicyConnector::
+        MachineLevelUserCloudPolicyRegisterResult::kQuitDueToFailure:
+      chrome::AttemptExit();
+      return false;
+  }
 #else
   return true;
 #endif
@@ -1628,6 +1651,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Do any initializating in the browser process that requires all threads
   // running.
   browser_process_->PreMainMessageLoopRun();
+
+  // Wait for the result of machine level user cloud policy enrollment after
+  // we start the enrollment process in browser_porcess_->PreMainMessageLoopRun.
+  // Abort the launch process if the enrollment is failed.
+  if (!WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
+          browser_process_->browser_policy_connector())) {
+    return chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED;
+  }
 
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
