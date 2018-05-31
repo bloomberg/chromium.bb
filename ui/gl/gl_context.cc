@@ -9,13 +9,11 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local.h"
-#include "components/crash/core/common/crash_key.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
@@ -236,10 +234,6 @@ GLContext* GLContext::GetRealCurrent() {
   return current_real_context_.Pointer()->Get();
 }
 
-GLContext* GLContext::GetRealCurrentForDebugging() {
-  return GetRealCurrent();
-}
-
 std::unique_ptr<gl::GLVersionInfo> GLContext::GenerateGLVersionInfo() {
   return std::make_unique<GLVersionInfo>(
       GetGLVersion().c_str(), GetGLRenderer().c_str(), GetExtensions());
@@ -252,14 +246,8 @@ void GLContext::SetCurrent(GLSurface* surface) {
   // TODO(sievers): Remove this, but needs all gpu_unittest classes
   // to create and make current a context.
   if (!surface && GetGLImplementation() != kGLImplementationMockGL &&
-      GetGLImplementation() != kGLImplementationStubGL) {
-    // TODO(sunnyps): Remove after fixing crbug.com/724999.
-    static crash_reporter::CrashKeyString<1024> crash_key(
-        "gl-context-set-current-stack-trace");
-    crash_reporter::SetCrashKeyStringToStackTrace(&crash_key,
-                                                  base::debug::StackTrace());
+      GetGLImplementation() != kGLImplementationStubGL)
     SetCurrentGL(nullptr);
-  }
 }
 
 void GLContext::SetGLWorkarounds(const GLWorkarounds& workarounds) {

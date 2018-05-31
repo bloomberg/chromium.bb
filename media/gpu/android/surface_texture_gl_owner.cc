@@ -56,7 +56,7 @@ SurfaceTextureGLOwner::~SurfaceTextureGLOwner() {
   if (!context_->IsCurrent(nullptr)) {
     scoped_make_current =
         std::make_unique<ui::ScopedMakeCurrent>(context_.get(), surface_.get());
-    if (!scoped_make_current->Succeeded())
+    if (!context_->IsCurrent(surface_.get()))
       return;
   }
 

@@ -104,7 +104,7 @@ ImageReaderGLOwner::~ImageReaderGLOwner() {
 
   // Delete texture
   ui::ScopedMakeCurrent scoped_make_current(context_.get(), surface_.get());
-  if (scoped_make_current.Succeeded()) {
+  if (context_->IsCurrent(surface_.get())) {
     glDeleteTextures(1, &texture_id_);
     DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   }

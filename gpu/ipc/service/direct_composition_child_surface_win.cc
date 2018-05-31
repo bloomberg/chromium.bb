@@ -76,15 +76,6 @@ bool DirectCompositionChildSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   if (!default_surface_) {
     DLOG(ERROR) << "eglCreatePbufferSurface failed with error "
                 << ui::GetLastEGLErrorString();
-    // It is likely that restoring the context will fail, so call Restore here
-    // to avoid the assert during ScopedReleaseCurrent destruction.
-    ignore_result(release_current.Restore());
-    return false;
-  }
-
-  if (!release_current.Restore()) {
-    DLOG(ERROR) << "Failed to restore context with error "
-                << ui::GetLastEGLErrorString();
     return false;
   }
 
@@ -243,6 +234,7 @@ gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
   // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
   // surface doesn't need provide presentation feedback.
   DCHECK(!callback);
+  ui::ScopedReleaseCurrent release_current;
   if (!ReleaseDrawTexture(false /* will_discard */))
     return gfx::SwapResult::SWAP_FAILED;
   return gfx::SwapResult::SWAP_ACK;
@@ -302,9 +294,6 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       (!use_dcomp_surface_ && !swap_chain_)) {
     if (!InitializeSurface()) {
       DLOG(ERROR) << "InitializeSurface failed";
-      // It is likely that restoring the context will fail, so call Restore here
-      // to avoid the assert during ScopedReleaseCurrent destruction.
-      ignore_result(release_current.Restore());
       return false;
     }
   }
@@ -354,15 +343,6 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       &pbuffer_attribs[0]);
   if (!real_surface_) {
     DLOG(ERROR) << "eglCreatePbufferFromClientBuffer failed with error "
-                << ui::GetLastEGLErrorString();
-    // It is likely that restoring the context will fail, so call Restore here
-    // to avoid the assert during ScopedReleaseCurrent destruction.
-    ignore_result(release_current.Restore());
-    return false;
-  }
-
-  if (!release_current.Restore()) {
-    DLOG(ERROR) << "Failed to restore context with error "
                 << ui::GetLastEGLErrorString();
     return false;
   }
