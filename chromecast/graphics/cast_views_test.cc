@@ -14,8 +14,8 @@ namespace test {
 using CastViewsTest = aura::test::AuraTestBase;
 
 TEST_F(CastViewsTest, ProgressBar) {
-  std::unique_ptr<CastWindowManager> window_manager(
-      CastWindowManager::Create(true /* enable input */));
+  std::unique_ptr<CastWindowManager> window_manager(CastWindowManager::Create(
+      true /* enable input */, nullptr /* accessibility manager */));
   gfx::Rect bounds = window_manager->GetRootWindow()->bounds();
 
   views::ProgressBar* progress_bar = new views::ProgressBar(bounds.height());

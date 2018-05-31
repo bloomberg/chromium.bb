@@ -2,6 +2,7 @@ include_rules = [
   "+ui/aura",
   "+ui/base",
   "+ui/base/ime",
+  "+ui/compositor",
   "+ui/display",
   "+ui/events",
   "+ui/events/test",
@@ -10,6 +11,7 @@ include_rules = [
   "+ui/views",
   "+ui/wm/core",
   "+ui/wm/public",
+  "+third_party/skia",
 ]
 
 specific_include_rules = {

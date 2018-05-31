@@ -20,6 +20,25 @@ cast_source_set("graphics") {
 
   if (use_aura) {
     sources += [
+      "accessibility/accessibility_cursor_ring_layer.cc",
+      "accessibility/accessibility_cursor_ring_layer.h",
+      "accessibility/accessibility_focus_ring.cc",
+      "accessibility/accessibility_focus_ring.h",
+      "accessibility/accessibility_focus_ring_controller.cc",
+      "accessibility/accessibility_focus_ring_controller.h",
+      "accessibility/accessibility_focus_ring_layer.cc",
+      "accessibility/accessibility_focus_ring_layer.h",
+      "accessibility/accessibility_highlight_layer.cc",
+      "accessibility/accessibility_highlight_layer.h",
+      "accessibility/accessibility_layer.cc",
+      "accessibility/accessibility_layer.h",
+      "accessibility/accessibility_manager.cc",
+      "accessibility/accessibility_manager.h",
+      "accessibility/accessibility_observer.h",
+      "accessibility/focus_ring_controller.cc",
+      "accessibility/focus_ring_controller.h",
+      "accessibility/focus_ring_layer.cc",
+      "accessibility/focus_ring_layer.h",
       "cast_focus_client_aura.cc",
       "cast_focus_client_aura.h",
       "cast_system_gesture_event_handler.cc",
@@ -51,7 +70,9 @@ cast_source_set("graphics") {
       ":libcast_graphics_1.0",
       "//chromecast/base",
       "//chromecast/public",
+      "//skia",
       "//ui/aura",
+      "//ui/compositor",
       "//ui/display",
       "//ui/gfx/geometry",
     ]
@@ -79,6 +100,7 @@ cast_shared_library("libcast_graphics_1.0") {
 if (use_aura && !is_cast_audio_only) {
   test("cast_graphics_unittests") {
     sources = [
+      "accessibility/accessibility_focus_ring_controller_unittest.cc",
       "cast_focus_client_aura_test.cc",
       "cast_system_gesture_event_handler_test.cc",
       "cast_views_test.cc",

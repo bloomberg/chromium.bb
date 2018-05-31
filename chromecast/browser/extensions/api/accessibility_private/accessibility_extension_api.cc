@@ -4,8 +4,15 @@
 
 #include "chromecast/browser/extensions/api/accessibility_private/accessibility_extension_api.h"
 
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/common/extensions_api/accessibility_private.h"
+#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/common/service_manager_connection.h"
+#include "extensions/common/image_util.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {
 
@@ -31,14 +38,65 @@ AccessibilityPrivateSetNativeAccessibilityEnabledFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetFocusRingFunction::Run() {
-  LOG(ERROR) << "AccessibilityPrivateSetFocusRingFunction";
-  return RespondNow(Error(kErrorNotSupported));
+  auto* accessibility_manager =
+      chromecast::shell::CastBrowserProcess::GetInstance()
+          ->accessibility_manager();
+
+  std::unique_ptr<accessibility_private::SetFocusRing::Params> params(
+      accessibility_private::SetFocusRing::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::vector<gfx::Rect> rects;
+  for (const accessibility_private::ScreenRect& rect : params->rects) {
+    rects.push_back(gfx::Rect(rect.left, rect.top, rect.width, rect.height));
+  }
+
+  if (params->color) {
+    SkColor color;
+    if (!extensions::image_util::ParseHexColorString(*(params->color), &color))
+      return RespondNow(Error("Could not parse hex color"));
+    accessibility_manager->SetFocusRingColor(color);
+  } else {
+    accessibility_manager->ResetFocusRingColor();
+  }
+
+  // Move the visible focus ring to cover all of these rects.
+  accessibility_manager->SetFocusRing(
+      rects, chromecast::FocusRingBehavior::PERSIST_FOCUS_RING);
+
+  // Also update the touch exploration controller so that synthesized
+  // touch events are anchored within the focused object.
+  if (!rects.empty()) {
+    accessibility_manager->SetTouchAccessibilityAnchorPoint(
+        rects[0].CenterPoint());
+  }
+
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetHighlightsFunction::Run() {
-  LOG(ERROR) << "AccessibilityPrivateSetHighlightsFunction";
-  return RespondNow(Error(kErrorNotSupported));
+  auto* accessibility_manager =
+      chromecast::shell::CastBrowserProcess::GetInstance()
+          ->accessibility_manager();
+
+  std::unique_ptr<accessibility_private::SetHighlights::Params> params(
+      accessibility_private::SetHighlights::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::vector<gfx::Rect> rects;
+  for (const accessibility_private::ScreenRect& rect : params->rects) {
+    rects.push_back(gfx::Rect(rect.left, rect.top, rect.width, rect.height));
+  }
+
+  SkColor color;
+  if (!extensions::image_util::ParseHexColorString(params->color, &color))
+    return RespondNow(Error("Could not parse hex color"));
+
+  // Set the highlights to cover all of these rects.
+  accessibility_manager->SetHighlights(rects, color);
+
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

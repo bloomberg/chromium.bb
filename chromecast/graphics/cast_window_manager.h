@@ -16,6 +16,10 @@ class Event;
 
 namespace chromecast {
 
+#if defined(USE_AURA)
+class AccessibilityManager;
+#endif
+
 class CastSideSwipeGestureHandlerInterface;
 
 // Chromecast's window-manager interface.
@@ -37,8 +41,15 @@ class CastWindowManager {
     TOP = MEDIA_INFO
   };
 
-  // Creates the platform-specific CastWindowManager.
+#if defined(USE_AURA)
+  // Creates the platform-specific CastWindowManager, configuring the given
+  // AccessibilityManager, if any.
+  static std::unique_ptr<CastWindowManager> Create(
+      bool enable_input,
+      AccessibilityManager* accessibility_manager);
+#else
   static std::unique_ptr<CastWindowManager> Create(bool enable_input);
+#endif
 
   virtual ~CastWindowManager() {}
 

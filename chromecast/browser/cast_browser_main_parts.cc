@@ -90,6 +90,7 @@
 // header, but is exported to allow injecting the overlay-composited
 // callback.
 #include "chromecast/browser/cast_display_configurator.h"
+#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "chromecast/graphics/cast_screen.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"  // nogncheck
 #include "ui/display/screen.h"
@@ -524,9 +525,18 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
                           base::Unretained(video_plane_controller_.get())));
 #endif
 
+#if defined(USE_AURA)
+  cast_browser_process_->SetAccessibilityManager(
+      std::make_unique<AccessibilityManager>());
+  window_manager_ = CastWindowManager::Create(
+      CAST_IS_DEBUG_BUILD() ||
+          GetSwitchValueBoolean(switches::kEnableInput, false),
+      cast_browser_process_->accessibility_manager());
+#else
   window_manager_ = CastWindowManager::Create(
       CAST_IS_DEBUG_BUILD() ||
       GetSwitchValueBoolean(switches::kEnableInput, false));
+#endif
 
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(

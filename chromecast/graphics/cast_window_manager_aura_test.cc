@@ -46,8 +46,8 @@ TEST_F(CastWindowManagerAuraTest, InitialWindowId) {
 }
 
 TEST_F(CastWindowManagerAuraTest, WindowInput) {
-  std::unique_ptr<CastWindowManager> window_manager(
-      CastWindowManager::Create(true /* enable input */));
+  std::unique_ptr<CastWindowManager> window_manager(CastWindowManager::Create(
+      true /* enable input */, nullptr /* accessibility manager */));
 
   CastTestWindowDelegate window_delegate;
   aura::Window window(&window_delegate);
@@ -74,8 +74,8 @@ TEST_F(CastWindowManagerAuraTest, WindowInput) {
 }
 
 TEST_F(CastWindowManagerAuraTest, WindowInputDisabled) {
-  std::unique_ptr<CastWindowManager> window_manager(
-      CastWindowManager::Create(false /* enable input */));
+  std::unique_ptr<CastWindowManager> window_manager(CastWindowManager::Create(
+      false /* enable input */, nullptr /* accessibility manager */));
 
   CastTestWindowDelegate window_delegate;
   aura::Window window(&window_delegate);

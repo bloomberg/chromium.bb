@@ -5,6 +5,7 @@
 #include "chromecast/graphics/cast_window_manager_aura.h"
 
 #include "base/memory/ptr_util.h"
+#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_system_gesture_event_handler.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -222,12 +223,17 @@ void CastLayoutManager::SetChildBounds(aura::Window* child,
 
 // static
 std::unique_ptr<CastWindowManager> CastWindowManager::Create(
-    bool enable_input) {
-  return base::WrapUnique(new CastWindowManagerAura(enable_input));
+    bool enable_input,
+    AccessibilityManager* accessibility_manager) {
+  return base::WrapUnique(
+      new CastWindowManagerAura(enable_input, accessibility_manager));
 }
 
-CastWindowManagerAura::CastWindowManagerAura(bool enable_input)
-    : enable_input_(enable_input) {}
+CastWindowManagerAura::CastWindowManagerAura(
+    bool enable_input,
+    AccessibilityManager* accessibility_manager)
+    : enable_input_(enable_input),
+      accessibility_manager_(accessibility_manager) {}
 
 CastWindowManagerAura::~CastWindowManagerAura() {
   TearDown();
@@ -262,14 +268,19 @@ void CastWindowManagerAura::Setup() {
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
 
   screen_position_client_.reset(new wm::DefaultScreenPositionClient());
-  aura::client::SetScreenPositionClient(
-      window_tree_host_->window()->GetRootWindow(),
-      screen_position_client_.get());
+
+  aura::Window* root_window = window_tree_host_->window()->GetRootWindow();
+  aura::client::SetScreenPositionClient(root_window,
+                                        screen_position_client_.get());
 
   window_tree_host_->Show();
   system_gesture_event_handler_ =
-      std::make_unique<CastSystemGestureEventHandler>(
-          window_tree_host_->window()->GetRootWindow());
+      std::make_unique<CastSystemGestureEventHandler>(root_window);
+
+  // Set up the accessibility manager (if we have one) with our state.
+  if (accessibility_manager_) {
+    accessibility_manager_->Setup(root_window, focus_client_.get());
+  }
 }
 
 void CastWindowManagerAura::TearDown() {

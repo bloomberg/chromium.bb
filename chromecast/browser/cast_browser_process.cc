@@ -16,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 
 #if defined(USE_AURA)
+#include "chromecast/graphics/accessibility/accessibility_manager.h"
 #include "chromecast/graphics/cast_screen.h"
 #endif  // defined(USE_AURA)
 
@@ -69,6 +70,12 @@ void CastBrowserProcess::SetCastScreen(
     std::unique_ptr<CastScreen> cast_screen) {
   DCHECK(!cast_screen_);
   cast_screen_ = std::move(cast_screen);
+}
+
+void CastBrowserProcess::SetAccessibilityManager(
+    std::unique_ptr<AccessibilityManager> accessibility_manager) {
+  DCHECK(!accessibility_manager_);
+  accessibility_manager_ = std::move(accessibility_manager);
 }
 #endif  // defined(USE_AURA)
 

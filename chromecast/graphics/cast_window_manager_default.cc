@@ -8,11 +8,20 @@
 
 namespace chromecast {
 
+#if defined(USE_AURA)
+// static
+std::unique_ptr<CastWindowManager> CastWindowManager::Create(
+    bool enable_input,
+    AccessibilityManager* accessibility_manager) {
+  return base::WrapUnique(new CastWindowManagerDefault());
+}
+#else
 // static
 std::unique_ptr<CastWindowManager> CastWindowManager::Create(
     bool enable_input) {
   return base::WrapUnique(new CastWindowManagerDefault());
 }
+#endif
 
 CastWindowManagerDefault::CastWindowManagerDefault() {}
 
