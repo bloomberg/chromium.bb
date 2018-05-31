@@ -2,11 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Enable DCHECKs to be compiled in, even if it's not a debug build.
+  dcheck_always_on = false
+}
+
 config("openscreen_code") {
   cflags = [
     "-Wall",
     "-Werror",
   ]
+
+  if (dcheck_always_on) {
+    defines = [ "DCHECK_ALWAYS_ON" ]
+  }
 }
 
 config("default_optimization") {
