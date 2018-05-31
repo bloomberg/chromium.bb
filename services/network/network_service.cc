@@ -144,16 +144,10 @@ NetworkService::NetworkService(
       net_log_);
 
 #if defined(OS_CHROMEOS)
-  // Set a task runner for the get network id call for NetworkQualityEstimator
-  // to workaround https://crbug.com/821607 where AddressTrackerLinux stucks
-  // with a recv() call and blocks IO thread. Using SingleThreadTaskRunner so
-  // that task scheduler does not create too many worker threads when the
-  // problem happens.
+  // Get network id asynchronously to workaround https://crbug.com/821607 where
+  // AddressTrackerLinux stucks with a recv() call and blocks IO thread.
   // TODO(https://crbug.com/821607): Remove after the bug is resolved.
-  network_quality_estimator_->set_get_network_id_task_runner(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
+  network_quality_estimator_->EnableGetNetworkIdAsynchronously();
 #endif
 
   host_resolver_ = CreateHostResolver();
