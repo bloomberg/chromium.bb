@@ -40,6 +40,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
+  init_params.show_by_click = show_by_click;
 
   bubble_view_ = new views::TrayBubbleView(init_params);
   int max_height = tray->shelf()->GetUserWorkAreaBounds().height() -
@@ -67,9 +68,6 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
         kUnifiedMenuBackgroundBlur);
   }
 
-  bubble_widget_->widget_delegate()->set_can_activate(true);
-  bubble_widget_->Activate();
-
   tray->tray_event_filter()->AddBubble(this);
 }
 
@@ -84,6 +82,12 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
 gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
   DCHECK(bubble_view_);
   return bubble_view_->GetBoundsInScreen();
+}
+
+void UnifiedSystemTrayBubble::ActivateBubble() {
+  DCHECK(bubble_widget_);
+  bubble_widget_->widget_delegate()->set_can_activate(true);
+  bubble_widget_->Activate();
 }
 
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {

@@ -437,10 +437,12 @@ void HandleToggleSystemTrayBubble() {
     UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
                                   ->GetStatusAreaWidget()
                                   ->unified_system_tray();
-    if (tray->IsBubbleShown())
+    if (tray->IsBubbleShown()) {
       tray->CloseBubble();
-    else
+    } else {
       tray->ShowBubble(false /* show_by_click */);
+      tray->ActivateBubble();
+    }
   } else {
     SystemTray* tray =
         RootWindowController::ForWindow(target_root)->GetSystemTray();

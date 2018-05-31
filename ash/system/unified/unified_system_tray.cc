@@ -172,6 +172,11 @@ bool UnifiedSystemTray::IsBubbleShown() const {
   return !!bubble_;
 }
 
+void UnifiedSystemTray::ActivateBubble() {
+  if (bubble_)
+    bubble_->ActivateBubble();
+}
+
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
   return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
 }

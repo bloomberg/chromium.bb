@@ -39,6 +39,9 @@ class UnifiedSystemTray : public TrayBackgroundView {
   // True if the bubble is shown.
   bool IsBubbleShown() const;
 
+  // Activates the system tray bubble.
+  void ActivateBubble();
+
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
 
