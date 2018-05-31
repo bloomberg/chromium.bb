@@ -1059,11 +1059,7 @@ if (is_win) {
 
   if (enable_widevine_cdm_host_verification) {
     widevine_sign_file("sign_chrome_framework_for_widevine") {
-      file = "$root_out_dir/$chrome_framework_name.framework/"
-      if (defined(chrome_framework_version)) {
-        file += "Versions/$chrome_framework_version/"
-      }
-      file += "$chrome_framework_name"
+      file = "$root_out_dir/$chrome_framework_name.framework/Versions/$chrome_framework_version/$chrome_framework_name"
       flags = 1
       signature_file = "$root_out_dir/$chrome_framework_name.sig"
       deps = [
@@ -1122,11 +1118,7 @@ if (is_win) {
       script = "//chrome/tools/build/mac/copy_keystone_framework.py"
 
       framework_path = "//third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework"
-      output_path = "$root_out_dir/$chrome_framework_name.framework/"
-      if (defined(chrome_framework_version)) {
-        output_path += "/Versions/$chrome_framework_version/"
-      }
-      output_path += "Frameworks/"
+      output_path = "$root_out_dir/$chrome_framework_name.framework/Versions/$chrome_framework_version/Frameworks/"
 
       sources = [
         framework_path,
@@ -1220,24 +1212,22 @@ if (is_win) {
   mac_framework_bundle("chrome_framework") {
     output_name = chrome_framework_name
 
-    if (defined(chrome_framework_version)) {
-      framework_version = chrome_framework_version
-      framework_contents = [
-        "Helpers",
-        "Resources",
-        "XPCServices",
-      ]
+    framework_version = chrome_framework_version
+    framework_contents = [
+      "Helpers",
+      "Libraries",
+      "Resources",
+      "XPCServices",
+    ]
 
-      if (is_chrome_branded) {
-        framework_contents += [
-          "Default Apps",
-          "Frameworks",  # For KeystoneRegistration.framework.
-        ]
-      }
-      if (enable_nacl) {
-        framework_contents += [ "Internet Plug-Ins" ]
-      }
-      framework_contents += [ "Libraries" ]
+    if (is_chrome_branded) {
+      framework_contents += [
+        "Default Apps",
+        "Frameworks",  # For KeystoneRegistration.framework.
+      ]
+    }
+    if (enable_nacl) {
+      framework_contents += [ "Internet Plug-Ins" ]
     }
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -1291,13 +1281,7 @@ if (is_win) {
     }
   }
 
-  _framework_binary_path = "$root_out_dir/$chrome_framework_name.framework/"
-  if (defined(chrome_framework_version)) {
-    _framework_binary_path +=
-        "Versions/$chrome_framework_version/$chrome_framework_name"
-  } else {
-    _framework_binary_path += "$chrome_framework_name"
-  }
+  _framework_binary_path = "$root_out_dir/$chrome_framework_name.framework/Versions/$chrome_framework_version/$chrome_framework_name"
   assert(_framework_binary_path != "",
          "Ignore configuration-dependent unused variable warning")
 
