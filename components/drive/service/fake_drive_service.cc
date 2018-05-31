@@ -453,6 +453,7 @@ CancelCallback FakeDriveService::GetAllTeamDriveList(
 }
 
 CancelCallback FakeDriveService::GetAllFileList(
+    const std::string& team_drive_id,
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
