@@ -7,6 +7,8 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_editing.h"
+
 typedef NS_ENUM(NSInteger, BookmarkFolderStyle) {
   BookmarkFolderStyleFolderEntry,
   BookmarkFolderStyleNewFolder,
@@ -40,7 +42,8 @@ typedef NS_ENUM(NSInteger, TableViewBookmarkFolderAccessoryType) {
 @end
 
 // TableViewCell that displays BookmarkFolderItem data.
-@interface TableViewBookmarkFolderCell : UITableViewCell
+@interface TableViewBookmarkFolderCell
+    : UITableViewCell<BookmarkTableCellTitleEditing>
 
 // The leading constraint used to set the cell's leading indentation. The
 // default indentationLevel property doesn't affect any custom Cell subviews,
@@ -50,8 +53,8 @@ typedef NS_ENUM(NSInteger, TableViewBookmarkFolderAccessoryType) {
 // The folder image displayed by this cell.
 @property(nonatomic, strong) UIImageView* folderImageView;
 // The folder title displayed by this cell.
-@property(nonatomic, strong) UILabel* folderTitleLabel;
-// Accessory View.
+@property(nonatomic, strong) UITextField* folderTitleTextField;
+// Accessory Type.
 @property(nonatomic, assign)
     TableViewBookmarkFolderAccessoryType bookmarkAccessoryType;
 @end

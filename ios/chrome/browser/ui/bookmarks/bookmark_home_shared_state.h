@@ -11,6 +11,7 @@
 
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 
+@protocol BookmarkTableCellTitleEditing;
 @class BookmarkHomeSharedState;
 @class BookmarkTableCell;
 @class TableViewModel;
@@ -72,7 +73,8 @@ typedef NS_ENUM(NSInteger, BookmarkHomeItemType) {
 
 // The cell for the newly created folder while its name is being edited. Set
 // to nil once the editing completes. Corresponds to |editingFolderNode|.
-@property(nonatomic, weak) BookmarkTableCell* editingFolderCell;
+@property(nonatomic, weak)
+    UITableViewCell<BookmarkTableCellTitleEditing>* editingFolderCell;
 
 // The newly created folder node its name is being edited.
 @property(nonatomic, assign) const bookmarks::BookmarkNode* editingFolderNode;

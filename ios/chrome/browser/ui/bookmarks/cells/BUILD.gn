@@ -14,6 +14,8 @@ source_set("cells") {
     "bookmark_parent_folder_item.mm",
     "bookmark_table_cell.h",
     "bookmark_table_cell.mm",
+    "bookmark_table_cell_title_edit_delegate.h",
+    "bookmark_table_cell_title_editing.h",
     "bookmark_table_signin_promo_cell.h",
     "bookmark_table_signin_promo_cell.mm",
     "bookmark_text_field_item.h",

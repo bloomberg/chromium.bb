@@ -36,14 +36,17 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/ui_util.h"
@@ -1608,18 +1611,25 @@ const CGFloat kShadowRadius = 12.0f;
               backgroundColor:(UIColor*)backgroundColor
                     textColor:(UIColor*)textColor
                  fallbackText:(NSString*)fallbackText {
-  BookmarkTableCell* cell =
-      [self.sharedState.tableView cellForRowAtIndexPath:indexPath];
-  if (!cell) {
-    return;
-  }
-
-  if (image) {
-    [cell setImage:image];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(
+        [self.sharedState.tableView cellForRowAtIndexPath:indexPath]);
+    if (!URLCell)
+      return;
+    if (image)
+      URLCell.faviconView.image = image;
   } else {
-    [cell setPlaceholderText:fallbackText
-                   textColor:textColor
-             backgroundColor:backgroundColor];
+    BookmarkTableCell* cell =
+        [self.sharedState.tableView cellForRowAtIndexPath:indexPath];
+    if (!cell)
+      return;
+    if (image) {
+      [cell setImage:image];
+    } else {
+      [cell setPlaceholderText:fallbackText
+                     textColor:textColor
+               backgroundColor:backgroundColor];
+    }
   }
 }
 
@@ -1753,10 +1763,7 @@ const CGFloat kShadowRadius = 12.0f;
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-      // TODO(crbug.com/839442): Implement support for
-      // TableViewBookmarkFolderCell editing.
-    } else {
+    if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
       BookmarkTableCell* tableCell =
           base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
       if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
@@ -1767,13 +1774,12 @@ const CGFloat kShadowRadius = 12.0f;
           tableCell.textDelegate = self;
         });
       }
-
-      // Cancel previous load attempts.
-      [self cancelLoadingFaviconAtIndexPath:indexPath];
-      // Load the favicon from cache.  If not found, try fetching it from a
-      // Google Server.
-      [self loadFaviconAtIndexPath:indexPath continueToGoogleServer:YES];
     }
+    // Cancel previous load attempts.
+    [self cancelLoadingFaviconAtIndexPath:indexPath];
+    // Load the favicon from cache.  If not found, try fetching it from a
+    // Google Server.
+    [self loadFaviconAtIndexPath:indexPath continueToGoogleServer:YES];
   }
 
   return cell;
@@ -1896,6 +1902,27 @@ const CGFloat kShadowRadius = 12.0f;
     DCHECK(node);
     self.sharedState.editNodes.erase(node);
     [self handleSelectEditNodes:self.sharedState.editNodes];
+  }
+}
+
+- (void)tableView:(UITableView*)tableView
+      willDisplayCell:(UITableViewCell*)cell
+    forRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    TableViewItem* item =
+        [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
+    if (item.type == BookmarkHomeItemTypeBookmark) {
+      BookmarkHomeNodeItem* nodeItem =
+          base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
+      if (nodeItem.bookmarkNode->is_folder() &&
+          nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
+        TableViewBookmarkFolderCell* tableCell =
+            base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
+        self.sharedState.editingFolderCell = tableCell;
+        [tableCell startEdit];
+        tableCell.textDelegate = self;
+      }
+    }
   }
 }
 
