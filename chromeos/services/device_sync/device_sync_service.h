@@ -42,7 +42,7 @@ class DeviceSyncService : public service_manager::Service {
   DeviceSyncService(
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
       scoped_refptr<net::URLRequestContextGetter> url_request_context);
   ~DeviceSyncService() override;
 
@@ -56,7 +56,7 @@ class DeviceSyncService : public service_manager::Service {
  private:
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
-  cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
+  const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
   std::unique_ptr<DeviceSyncBase> device_sync_;

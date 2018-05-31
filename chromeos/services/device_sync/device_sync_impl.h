@@ -67,7 +67,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
         identity::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
-        cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
         scoped_refptr<net::URLRequestContextGetter> url_request_context);
     static void SetInstanceForTesting(Factory* test_factory);
 
@@ -76,7 +76,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
         identity::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
-        cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
         scoped_refptr<net::URLRequestContextGetter> url_request_context);
 
    private:
@@ -135,7 +135,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
-      cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
       scoped_refptr<net::URLRequestContextGetter> url_request_context,
       base::Clock* clock,
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
@@ -174,7 +174,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   service_manager::Connector* connector_;
-  cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
+  const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   base::Clock* clock_;
   std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
