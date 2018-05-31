@@ -86,7 +86,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       if (tokens.size() == 1) {
         if (!src_origin) {
           origins.push_back(self_origin->ToUrlOrigin());
-        } else if (!src_origin->IsUnique()) {
+        } else if (!src_origin->IsOpaque()) {
           origins.push_back(src_origin->ToUrlOrigin());
         } else {
           whitelist.matches_opaque_src = true;
@@ -109,7 +109,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           // opaque origin of the frame, which is not known yet. In this case,
           // the |matches_opaque_src| flag on the declaration is set, rather
           // than adding an origin to the allowlist.
-          if (src_origin->IsUnique()) {
+          if (src_origin->IsOpaque()) {
             whitelist.matches_opaque_src = true;
           } else {
             origins.push_back(src_origin->ToUrlOrigin());

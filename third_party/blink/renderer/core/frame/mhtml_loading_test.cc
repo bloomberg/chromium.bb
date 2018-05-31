@@ -128,7 +128,7 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
             document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
-  EXPECT_TRUE(document->GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(document->GetSecurityOrigin()->IsOpaque());
   // Script execution should be disabled.
   EXPECT_FALSE(document->CanExecuteScripts(kNotAboutToExecuteScript));
 
@@ -147,7 +147,7 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
             child_document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
-  EXPECT_TRUE(child_document->GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(child_document->GetSecurityOrigin()->IsOpaque());
   // Script execution should be disabled.
   EXPECT_FALSE(child_document->CanExecuteScripts(kNotAboutToExecuteScript));
 
@@ -174,7 +174,7 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlagsInXSLT) {
             document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
-  EXPECT_TRUE(document->GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(document->GetSecurityOrigin()->IsOpaque());
   // Script execution should be disabled.
   EXPECT_FALSE(document->CanExecuteScripts(kNotAboutToExecuteScript));
 }

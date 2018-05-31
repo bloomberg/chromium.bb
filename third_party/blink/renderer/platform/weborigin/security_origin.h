@@ -196,8 +196,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // details), such as for documents generated from data: URLs or documents
   // with the sandboxed origin browsing context flag set.
   bool IsOpaque() const { return is_opaque_; }
-  // Deprecated alias for IsOpaque().
-  bool IsUnique() const { return IsOpaque(); }
 
   // By default 'file:' URLs may access other 'file:' URLs. This method
   // denies access. If either SecurityOrigin sets this flag, the access

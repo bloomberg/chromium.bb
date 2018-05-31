@@ -59,7 +59,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
-  if (security_origin->IsUnique()) {
+  if (security_origin->IsOpaque()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;
@@ -84,7 +84,7 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
-  if (security_origin->IsUnique()) {
+  if (security_origin->IsOpaque()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;
@@ -105,7 +105,7 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   DCHECK(execution_context->IsSecureContext());  // [SecureContext] in IDL
   const SecurityOrigin* security_origin =
       execution_context->GetSecurityOrigin();
-  if (security_origin->IsUnique()) {
+  if (security_origin->IsOpaque()) {
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), kUniqueOriginErrorMessage));
     return promise;

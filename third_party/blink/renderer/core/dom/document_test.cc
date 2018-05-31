@@ -581,7 +581,7 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
 
   mask |= kSandboxOrigin;
   GetDocument().EnforceSandboxFlags(mask);
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   // A unique origin does not bypass secure context checks unless it
@@ -592,19 +592,19 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
       SecurityOrigin::CreateFromString("very-special-scheme://example.test");
   GetDocument().SetSecurityOrigin(origin);
   GetDocument().EnforceSandboxFlags(mask);
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   SchemeRegistry::RegisterURLSchemeAsSecure("very-special-scheme");
   GetDocument().SetSecurityOrigin(origin);
   GetDocument().EnforceSandboxFlags(mask);
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
   origin = SecurityOrigin::CreateFromString("https://example.test");
   GetDocument().SetSecurityOrigin(origin);
   GetDocument().EnforceSandboxFlags(mask);
-  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 }
 

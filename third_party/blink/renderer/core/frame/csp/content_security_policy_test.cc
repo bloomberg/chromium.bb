@@ -239,10 +239,10 @@ TEST_F(ContentSecurityPolicyTest, SandboxInMeta) {
   csp->BindToExecutionContext(execution_context.Get());
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
-  EXPECT_FALSE(execution_context->GetSecurityOrigin()->IsUnique());
+  EXPECT_FALSE(execution_context->GetSecurityOrigin()->IsOpaque());
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
-  EXPECT_TRUE(execution_context->GetSecurityOrigin()->IsUnique());
+  EXPECT_TRUE(execution_context->GetSecurityOrigin()->IsOpaque());
 }
 
 // Tests that report-uri directives are discarded from policies

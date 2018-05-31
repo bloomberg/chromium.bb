@@ -123,7 +123,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   const SecurityOrigin* origin =
       resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin();
 
-  if (origin->IsUnique()) {
+  if (origin->IsOpaque()) {
     String error_message =
         "The origin ' " + origin->ToRawString() +
         "' is an opaque origin and hence not allowed to access " +
