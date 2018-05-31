@@ -147,6 +147,9 @@ static short gOpcodeLengths[CTO_None] = { 0 };
 static void
 compileError(FileInfo *nested, char *format, ...);
 
+static void
+free_tablefiles(char **tables);
+
 static int
 getAChar(FileInfo *nested) {
 	/* Read a big endian, little endian or ASCII 8 file and convert it to
@@ -4478,7 +4481,11 @@ copyStringArray(char **array) {
 
 char **EXPORT_CALL
 _lou_resolveTable(const char *tableList, const char *base) {
-	return copyStringArray((*tableResolver)(tableList, base));
+	char **tableFiles = (*tableResolver)(tableList, base);
+	char **result = copyStringArray(tableFiles);
+	if (tableResolver == &_lou_defaultTableResolver)
+		free_tablefiles(tableFiles);
+	return result;
 }
 
 /**
