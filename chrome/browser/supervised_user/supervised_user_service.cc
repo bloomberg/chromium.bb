@@ -979,7 +979,7 @@ void SupervisedUserService::ChangeExtensionStateIfNecessary(
     return;
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
-  ExtensionService* service =
+  extensions::ExtensionService* service =
       ExtensionSystem::Get(profile_)->extension_service();
 
   ExtensionState state = GetExtensionState(*extension);

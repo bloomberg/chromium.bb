@@ -77,13 +77,13 @@ namespace {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void BlockExtensions(Profile* profile) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extension_service->BlockAllExtensions();
 }
 
 void UnblockExtensions(Profile* profile) {
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extension_service->UnblockAllExtensions();
 }
