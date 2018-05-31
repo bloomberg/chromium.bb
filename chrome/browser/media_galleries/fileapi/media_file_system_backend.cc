@@ -91,7 +91,7 @@ void AttemptAutoMountOnUIThread(
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-    ExtensionService* extension_service =
+    extensions::ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
     const extensions::Extension* extension =
         extension_service->GetExtensionById(storage_domain,
