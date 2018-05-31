@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
@@ -34,6 +35,7 @@ class ScriptState;
 // CallbackPromiseAdapter class comments.
 class BluetoothRemoteGATTCharacteristic final
     : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<BluetoothRemoteGATTCharacteristic>,
       public ContextLifecycleObserver,
       public mojom::blink::WebBluetoothCharacteristicClient {
   USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, Dispose);
@@ -70,6 +72,9 @@ class BluetoothRemoteGATTCharacteristic final
   // EventTarget methods:
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
+
+  // ActiveScriptWrappable methods:
+  bool HasPendingActivity() const override;
 
   // Interface required by garbage collection.
   void Trace(blink::Visitor*) override;

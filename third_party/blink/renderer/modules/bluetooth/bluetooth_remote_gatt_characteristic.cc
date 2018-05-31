@@ -76,6 +76,13 @@ ExecutionContext* BluetoothRemoteGATTCharacteristic::GetExecutionContext()
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
+bool BluetoothRemoteGATTCharacteristic::HasPendingActivity() const {
+  // This object should be considered active as long as there are registered
+  // event listeners. Even if script drops all references this can still be
+  // found again through the BluetoothRemoteGATTServer object.
+  return GetExecutionContext() && HasEventListeners();
+}
+
 void BluetoothRemoteGATTCharacteristic::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
