@@ -340,12 +340,6 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT void SetNavigationStartTime(base::TimeTicks);
 
-  // PlzNavigate: specify that the request was intended to be loaded as a same
-  // document navigation. No network requests should be made and the request
-  // should be dropped if a different document was loaded in the frame
-  // in-between.
-  BLINK_PLATFORM_EXPORT void SetIsSameDocumentNavigation(bool);
-
   // If this request was created from an anchor with a download attribute, this
   // is the value provided there.
   BLINK_PLATFORM_EXPORT base::Optional<WebString> GetSuggestedFilename() const;

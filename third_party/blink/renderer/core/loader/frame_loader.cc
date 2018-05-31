@@ -718,7 +718,6 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
   // embedder figure out what to do with it. Navigations to filesystem URLs are
   // always blocked here.
   if (frame_->IsMainFrame() &&
-      !request.GetResourceRequest().IsSameDocumentNavigation() &&
       !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
           request.OriginDocument()->Url()) &&
       (url.ProtocolIs("filesystem") ||
@@ -942,14 +941,6 @@ void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
         request.TriggeringEvent());
     return;
   }
-
-  // PlzNavigate
-  // If the loader classifies this navigation as a different document navigation
-  // while the browser intended the navigation to be same-document, it means
-  // that a different navigation must have committed while the IPC was sent.
-  // This navigation is no more same-document. The navigation is simply dropped.
-  if (request.GetResourceRequest().IsSameDocumentNavigation())
-    return;
 
   StartLoad(request, new_load_type, policy, history_item, check_with_client);
 }
@@ -1621,7 +1612,6 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
     provisional_document_loader_->SetItemForHistoryNavigation(history_item);
   }
 
-  DCHECK(!frame_load_request.GetResourceRequest().IsSameDocumentNavigation());
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
 
   // TODO(ananta):

@@ -366,11 +366,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetNavigationStartTime(TimeTicks);
   TimeTicks NavigationStartTime() const { return navigation_start_; }
 
-  void SetIsSameDocumentNavigation(bool is_same_document) {
-    is_same_document_navigation_ = is_same_document;
-  }
-  bool IsSameDocumentNavigation() const { return is_same_document_navigation_; }
-
   void SetIsAdResource() { is_ad_resource_ = true; }
   bool IsAdResource() const { return is_ad_resource_; }
 
@@ -436,7 +431,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   double ui_start_time_;
   bool is_external_request_;
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;
-  bool is_same_document_navigation_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;

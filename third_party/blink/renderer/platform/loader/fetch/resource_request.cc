@@ -79,7 +79,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       is_external_request_(false),
       cors_preflight_policy_(
           network::mojom::CORSPreflightPolicy::kConsiderPreflight),
-      is_same_document_navigation_(false),
       input_perf_metric_report_policy_(
           InputToLoadPerfMetricReportPolicy::kNoReport),
       redirect_status_(RedirectStatus::kNoRedirect) {}
