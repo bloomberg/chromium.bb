@@ -829,7 +829,7 @@ TEST_F(WindowServerTest, EmbedRoot) {
   }
 }
 
-TEST_F(WindowServerTest, DeleteEmbedRoot) {
+TEST_F(WindowServerTest, DISABLED_DeleteEmbedRoot) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
   std::unique_ptr<aura::WindowTreeClient> second_client =
