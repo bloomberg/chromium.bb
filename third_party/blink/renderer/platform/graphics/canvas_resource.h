@@ -44,13 +44,14 @@ class PLATFORM_EXPORT CanvasResource
   virtual bool IsRecycleable() const = 0;
   virtual bool IsAccelerated() const = 0;
   virtual bool IsValid() const = 0;
+  virtual bool NeedsReadLockFences() const { return false; }
   virtual IntSize Size() const = 0;
-  virtual const gpu::Mailbox& GetOrCreateGpuMailbox() = 0;
+  virtual const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) = 0;
   virtual void Transfer() { NOTREACHED(); }
   virtual const gpu::SyncToken& GetSyncToken() = 0;
-  bool PrepareTransferableResource(
-      viz::TransferableResource* out_resource,
-      std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
+  bool PrepareTransferableResource(viz::TransferableResource*,
+                                   std::unique_ptr<viz::SingleReleaseCallback>*,
+                                   MailboxSyncMode);
   void WaitSyncToken(const gpu::SyncToken&);
   virtual scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
@@ -71,6 +72,7 @@ class PLATFORM_EXPORT CanvasResource
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
                  const CanvasColorParams&);
+
   virtual GLenum TextureTarget() const = 0;
   virtual bool IsOverlayCandidate() const { return false; }
   virtual bool HasGpuMailbox() const = 0;
@@ -80,9 +82,6 @@ class PLATFORM_EXPORT CanvasResource
   GrContext* GetGrContext() const;
   virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>
   ContextProviderWrapper() const = 0;
-  void PrepareTransferableResourceCommon(
-      viz::TransferableResource* out_resource,
-      std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
   SkFilterQuality FilterQuality() const { return filter_quality_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void OnDestroy();
@@ -128,7 +127,7 @@ class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
   GLenum TextureTarget() const final;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;
-  const gpu::Mailbox& GetOrCreateGpuMailbox() override;
+  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
   bool HasGpuMailbox() const override;
   const gpu::SyncToken& GetSyncToken() override;
 
@@ -156,6 +155,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   bool IsValid() const override {
     return context_provider_wrapper_ && image_id_;
   }
+  bool NeedsReadLockFences() const final { return true; }
   scoped_refptr<CanvasResource> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     return base::WrapRefCounted(this);
@@ -171,7 +171,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   void TearDown() override;
   GLenum TextureTarget() const final;
   bool IsOverlayCandidate() const final { return true; }
-  const gpu::Mailbox& GetOrCreateGpuMailbox() override;
+  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
   bool HasGpuMailbox() const override;
   const gpu::SyncToken& GetSyncToken() override;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
@@ -195,6 +195,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   GLuint image_id_ = 0;
   GLuint texture_id_ = 0;
   CanvasColorParams color_params_;
+  MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
 };
 
 }  // namespace blink

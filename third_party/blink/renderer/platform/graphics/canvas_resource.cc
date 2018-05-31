@@ -86,7 +86,8 @@ static void ReleaseFrameResources(
 
 bool CanvasResource::PrepareTransferableResource(
     viz::TransferableResource* out_resource,
-    std::unique_ptr<viz::SingleReleaseCallback>* out_callback) {
+    std::unique_ptr<viz::SingleReleaseCallback>* out_callback,
+    MailboxSyncMode sync_mode) {
   DCHECK(IsValid());
 
   // This should never be called on unaccelerated canvases (for now).
@@ -97,7 +98,7 @@ bool CanvasResource::PrepareTransferableResource(
   auto* gl = ContextGL();
   DCHECK(gl);
 
-  const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox();
+  const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox(sync_mode);
   if (mailbox.IsZero())
     return false;
 
@@ -106,6 +107,8 @@ bool CanvasResource::PrepareTransferableResource(
       IsOverlayCandidate());
 
   out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
+  out_resource->format = color_params_.TransferableResourceFormat();
+  out_resource->read_lock_fences_enabled = NeedsReadLockFences();
 
   scoped_refptr<CanvasResource> this_ref(this);
   auto func = WTF::Bind(&ReleaseFrameResources, provider_,
@@ -216,9 +219,10 @@ scoped_refptr<StaticBitmapImage> CanvasResourceBitmap::Bitmap() {
   return image_;
 }
 
-const gpu::Mailbox& CanvasResourceBitmap::GetOrCreateGpuMailbox() {
+const gpu::Mailbox& CanvasResourceBitmap::GetOrCreateGpuMailbox(
+    MailboxSyncMode sync_mode) {
   DCHECK(image_);  // Calling code should check IsValid() before calling this.
-  image_->EnsureMailbox(kUnverifiedSyncToken, GLFilter());
+  image_->EnsureMailbox(sync_mode, GLFilter());
   return image_->GetMailbox();
 }
 
@@ -340,13 +344,15 @@ void CanvasResourceGpuMemoryBuffer::Abandon() {
   gpu_memory_buffer_ = nullptr;
 }
 
-const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox() {
+const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox(
+    MailboxSyncMode sync_mode) {
   auto* gl = ContextGL();
   DCHECK(gl);  // caller should already have early exited if !gl.
   if (gpu_mailbox_.IsZero() && gl) {
     gl->GenMailboxCHROMIUM(gpu_mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_id_, gpu_mailbox_.name);
     mailbox_needs_new_sync_token_ = true;
+    mailbox_sync_mode_ = sync_mode;
   }
   return gpu_mailbox_;
 }
@@ -360,7 +366,11 @@ const gpu::SyncToken& CanvasResourceGpuMemoryBuffer::GetSyncToken() {
     auto* gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
     mailbox_needs_new_sync_token_ = false;
-    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
+    if (mailbox_sync_mode_ == kVerifiedSyncToken) {
+      gl->GenSyncTokenCHROMIUM(sync_token_.GetData());
+    } else {
+      gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
+    }
   }
   return sync_token_;
 }

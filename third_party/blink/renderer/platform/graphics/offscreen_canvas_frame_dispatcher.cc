@@ -169,12 +169,12 @@ void OffscreenCanvasFrameDispatcher::DispatchFrame(
 }
 
 bool OffscreenCanvasFrameDispatcher::PrepareFrame(
-    scoped_refptr<CanvasResource> image,
+    scoped_refptr<CanvasResource> canvas_resource,
     double commit_start_time,
     const SkIRect& damage_rect,
     viz::CompositorFrame* frame) {
-  DCHECK(image->IsBitmap());
-  if (!image || !VerifyImageSize(image->Size()))
+  DCHECK(canvas_resource->IsBitmap());
+  if (!canvas_resource || !VerifyImageSize(canvas_resource->Size()))
     return false;
 
   offscreen_canvas_resource_provider_->IncNextResourceId();
@@ -182,7 +182,7 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
   // For frameless canvas, we don't get a valid frame_sink_id and should drop.
   if (!frame_sink_id_.is_valid()) {
     PostImageToPlaceholderIfNotBlocked(
-        std::move(image),
+        std::move(canvas_resource),
         offscreen_canvas_resource_provider_->GetNextResourceId());
     return false;
   }
@@ -215,14 +215,13 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
               are_contents_opaque, 1.f, SkBlendMode::kSrcOver, 0);
 
   viz::TransferableResource resource;
-  offscreen_canvas_resource_provider_->TransferResource(&resource);
 
   bool yflipped = false;
   OffscreenCanvasCommitType commit_type;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, commit_type_histogram,
       ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
-  if (image->IsAccelerated()) {
+  if (canvas_resource->IsAccelerated()) {
     // While |image| is texture backed, it could be generated with "software
     // rendering" aka swiftshader. If the compositor is not also using
     // swiftshader, then we could not give a swiftshader based texture
@@ -232,39 +231,41 @@ bool OffscreenCanvasFrameDispatcher::PrepareFrame(
       // Case 1: both canvas and compositor are gpu accelerated.
       commit_type = kCommitGPUCanvasGPUCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToStaticBitmapImage(resource,
-                                                       image->Bitmap());
+          ->SetTransferableResourceToStaticBitmapImage(&resource,
+                                                       canvas_resource);
       yflipped = true;
     } else {
       // Case 2: canvas is accelerated but gpu compositing is disabled.
       commit_type = kCommitGPUCanvasSoftwareCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToSharedBitmap(resource, image->Bitmap());
+          ->SetTransferableResourceToSharedBitmap(resource,
+                                                  canvas_resource->Bitmap());
     }
   } else {
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       // Case 3: canvas is not gpu-accelerated, but compositor is.
       commit_type = kCommitSoftwareCanvasGPUCompositing;
-      scoped_refptr<StaticBitmapImage> accelerated_image =
-          image->Bitmap()->MakeAccelerated(
+      scoped_refptr<CanvasResource> accelerated_resource =
+          canvas_resource->MakeAccelerated(
               SharedGpuContext::ContextProviderWrapper());
-      if (!accelerated_image)
+      if (!accelerated_resource)
         return false;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToStaticBitmapImage(resource,
-                                                       accelerated_image);
+          ->SetTransferableResourceToStaticBitmapImage(&resource,
+                                                       accelerated_resource);
     } else {
       // Case 4: both canvas and compositor are not gpu accelerated.
       commit_type = kCommitSoftwareCanvasSoftwareCompositing;
       offscreen_canvas_resource_provider_
-          ->SetTransferableResourceToSharedBitmap(resource, image->Bitmap());
+          ->SetTransferableResourceToSharedBitmap(resource,
+                                                  canvas_resource->Bitmap());
     }
   }
 
   commit_type_histogram.Count(commit_type);
 
   PostImageToPlaceholderIfNotBlocked(
-      std::move(image),
+      std::move(canvas_resource),
       offscreen_canvas_resource_provider_->GetNextResourceId());
 
   frame->resource_list.push_back(std::move(resource));

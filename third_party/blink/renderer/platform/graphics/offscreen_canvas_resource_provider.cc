@@ -8,11 +8,13 @@
 #include "base/numerics/checked_math.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -57,18 +59,6 @@ OffscreenCanvasResourceProvider::CreateOrRecycleFrameResource() {
     return std::move(recyclable_resource_);
   }
   return std::make_unique<FrameResource>();
-}
-
-void OffscreenCanvasResourceProvider::TransferResource(
-    viz::TransferableResource* resource) {
-  resource->id = next_resource_id_;
-  resource->format = viz::ResourceFormat::RGBA_8888;
-  resource->size = gfx::Size(width_, height_);
-  // This indicates the filtering on the resource inherently, not the desired
-  // filtering effect on the quad.
-  resource->filter = GL_NEAREST;
-  // TODO(crbug.com/646022): making this overlay-able.
-  resource->is_overlay_candidate = false;
 }
 
 void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
@@ -116,27 +106,35 @@ void OffscreenCanvasResourceProvider::SetTransferableResourceToSharedBitmap(
   resource.mailbox_holder.mailbox = frame_resource->shared_bitmap_id;
   resource.mailbox_holder.texture_target = 0;
   resource.is_software = true;
+  resource.id = next_resource_id_;
+  resource.format = viz::ResourceFormat::RGBA_8888;
+  resource.size = gfx::Size(width_, height_);
+  // This indicates the filtering on the resource inherently, not the desired
+  // filtering effect on the quad.
+  resource.filter = GL_NEAREST;
+  // TODO(crbug.com/646022): making this overlay-able.
+  resource.is_overlay_candidate = false;
 
   resources_.insert(next_resource_id_, std::move(frame_resource));
 }
 
 void OffscreenCanvasResourceProvider::
     SetTransferableResourceToStaticBitmapImage(
-        viz::TransferableResource& resource,
-        scoped_refptr<StaticBitmapImage> image) {
-  DCHECK(image->IsTextureBacked());
+        viz::TransferableResource* out_resource,
+        scoped_refptr<CanvasResource> image) {
+  DCHECK(image->IsAccelerated());
   DCHECK(image->IsValid());
-  image->EnsureMailbox(kVerifiedSyncToken, GL_LINEAR);
-  resource.mailbox_holder = gpu::MailboxHolder(
-      image->GetMailbox(), image->GetSyncToken(), GL_TEXTURE_2D);
-  resource.read_lock_fences_enabled = false;
-  resource.is_software = false;
 
   std::unique_ptr<FrameResource> frame_resource =
       CreateOrRecycleFrameResource();
 
-  frame_resource->provider = this;
-  frame_resource->image = std::move(image);
+  // TODO(junov): Using verified sync tokens for each offscreencanvas is
+  // suboptimal in the case where there are multiple offscreen canvases
+  // commiting frames.  Would be more efficient to batch the verifications.
+  image->PrepareTransferableResource(
+      out_resource, &frame_resource->release_callback, kVerifiedSyncToken);
+  out_resource->id = next_resource_id_;
+
   resources_.insert(next_resource_id_, std::move(frame_resource));
 }
 
@@ -149,13 +147,8 @@ void OffscreenCanvasResourceProvider::ReclaimResources(
     if (it == resources_.end())
       continue;
 
-    if (it->value->image && it->value->image->ContextProviderWrapper() &&
-        resource.sync_token.HasData()) {
-      it->value->image->ContextProviderWrapper()
-          ->ContextProvider()
-          ->ContextGL()
-          ->WaitSyncTokenCHROMIUM(resource.sync_token.GetConstData());
-    }
+    it->value->sync_token = resource.sync_token;
+    it->value->is_lost = resource.lost;
     ReclaimResourceInternal(it);
   }
 }
@@ -172,16 +165,23 @@ void OffscreenCanvasResourceProvider::ReclaimResourceInternal(
   if (it->value->spare_lock) {
     it->value->spare_lock = false;
   } else {
-    // Really reclaim the resources.
+    if (it->value->release_callback) {
+      it->value->release_callback->Run(it->value->sync_token,
+                                       it->value->is_lost);
+    }
+    // Recycle resource.
     recyclable_resource_ = std::move(it->value);
-    // Release SkImage immediately since it is not recyclable.
-    recyclable_resource_->image = nullptr;
+    recyclable_resource_->release_callback = nullptr;
+    recyclable_resource_->sync_token.Clear();
+    recyclable_resource_->is_lost = false;
     resources_.erase(it);
   }
 }
 
 OffscreenCanvasResourceProvider::FrameResource::~FrameResource() {
-  if (!shared_bitmap_id.IsZero()) {
+  if (release_callback)
+    release_callback->Run(sync_token, is_lost);
+  if (provider && !shared_bitmap_id.IsZero()) {
     provider->frame_dispatcher_->DidDeleteSharedBitmap(
         SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id));
   }

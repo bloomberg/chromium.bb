@@ -222,4 +222,17 @@ GLenum CanvasColorParams::GLType() const {
   return GL_UNSIGNED_BYTE;
 }
 
+viz::ResourceFormat CanvasColorParams::TransferableResourceFormat() const {
+  switch (pixel_format_) {
+    case kRGBA8CanvasPixelFormat:
+      return viz::RGBA_8888;
+    case kF16CanvasPixelFormat:
+      return viz::RGBA_F16;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return viz::RGBA_8888;
+}
+
 }  // namespace blink

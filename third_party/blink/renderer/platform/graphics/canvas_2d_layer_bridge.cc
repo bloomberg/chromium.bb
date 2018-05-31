@@ -618,8 +618,8 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   scoped_refptr<CanvasResource> frame = ResourceProvider()->ProduceFrame();
   if (frame && frame->IsValid()) {
     // Note frame is kept alive via a reference kept in out_release_callback.
-    bool success =
-        frame->PrepareTransferableResource(out_resource, out_release_callback);
+    bool success = frame->PrepareTransferableResource(
+        out_resource, out_release_callback, kUnverifiedSyncToken);
     return success;
   }
   return false;
