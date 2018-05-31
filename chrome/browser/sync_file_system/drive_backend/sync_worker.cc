@@ -45,7 +45,8 @@ void InvokeIdleCallback(const base::Closure& idle_callback,
 
 SyncWorker::SyncWorker(
     const base::FilePath& base_dir,
-    const base::WeakPtr<ExtensionServiceInterface>& extension_service,
+    const base::WeakPtr<extensions::ExtensionServiceInterface>&
+        extension_service,
     leveldb::Env* env_override)
     : base_dir_(base_dir),
       env_override_(env_override),
@@ -411,11 +412,13 @@ void SyncWorker::UpdateRegisteredApps() {
 }
 
 void SyncWorker::QueryAppStatusOnUIThread(
-    const base::WeakPtr<ExtensionServiceInterface>& extension_service_ptr,
+    const base::WeakPtr<extensions::ExtensionServiceInterface>&
+        extension_service_ptr,
     const std::vector<std::string>* app_ids,
     AppStatusMap* status,
     const base::Closure& callback) {
-  ExtensionServiceInterface* extension_service = extension_service_ptr.get();
+  extensions::ExtensionServiceInterface* extension_service =
+      extension_service_ptr.get();
   if (!extension_service) {
     callback.Run();
     return;

@@ -209,7 +209,7 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   Profile* profile = Profile::FromBrowserContext(context);
   drive::DriveNotificationManager* notification_manager =
       drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
-  ExtensionService* extension_service =
+  extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(context)->extension_service();
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
@@ -336,7 +336,8 @@ void SyncEngine::InitializeInternal(
   worker_observer_.reset(new WorkerObserver(ui_task_runner_.get(),
                                             weak_ptr_factory_.GetWeakPtr()));
 
-  base::WeakPtr<ExtensionServiceInterface> extension_service_weak_ptr;
+  base::WeakPtr<extensions::ExtensionServiceInterface>
+      extension_service_weak_ptr;
   if (extension_service_)
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
@@ -720,7 +721,7 @@ SyncEngine::SyncEngine(
     const base::FilePath& sync_file_system_dir,
     TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
-    ExtensionServiceInterface* extension_service,
+    extensions::ExtensionServiceInterface* extension_service,
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     net::URLRequestContextGetter* request_context,
