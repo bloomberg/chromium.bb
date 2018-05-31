@@ -7,7 +7,6 @@
 #import "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_flags.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
