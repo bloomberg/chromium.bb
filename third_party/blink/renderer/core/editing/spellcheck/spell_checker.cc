@@ -783,7 +783,8 @@ bool SpellChecker::IsSpellCheckingEnabledAt(const Position& position) {
   }
   HTMLElement* element =
       Traversal<HTMLElement>::FirstAncestorOrSelf(*position.AnchorNode());
-  return element && element->IsSpellCheckingEnabled();
+  return element && element->IsSpellCheckingEnabled() &&
+         HasEditableStyle(*element);
 }
 
 STATIC_ASSERT_ENUM(kWebTextDecorationTypeSpelling, kTextDecorationTypeSpelling);
