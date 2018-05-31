@@ -12,6 +12,7 @@
 #include "chromeos/audio/chromeos_sounds.h"
 #include "components/prefs/pref_service.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 
@@ -29,14 +30,17 @@ std::string GetUserLocale(Profile* profile) {
 }  // namespace
 
 DictationChromeos::DictationChromeos(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile), weak_ptr_factory_(this) {
+  composition_ = std::make_unique<ui::CompositionText>();
+  input_context_ = ui::IMEBridge::Get()->GetInputContextHandler();
+  ui::IMEBridge::Get()->SetObserver(this);
+}
 
 DictationChromeos::~DictationChromeos() = default;
 
 bool DictationChromeos::OnToggleDictation() {
   if (speech_recognizer_) {
-    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_CANCEL);
-    speech_recognizer_.reset();
+    DictationOff();
     return false;
   }
 
@@ -49,21 +53,13 @@ bool DictationChromeos::OnToggleDictation() {
 
 void DictationChromeos::OnSpeechResult(const base::string16& query,
                                        bool is_final) {
-  if (!is_final)
+  if (!is_final) {
+    composition_->text = query;
+    if (input_context_)
+      input_context_->UpdateCompositionText(*composition_, 0, true);
     return;
-
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->CommitText(base::UTF16ToASCII(query));
-
-  media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
-  chromeos::AccessibilityStatusEventDetails details(
-      chromeos::AccessibilityNotificationType::ACCESSIBILITY_TOGGLE_DICTATION,
-      /*enabled=*/false);
-  chromeos::AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(
-      details);
-  speech_recognizer_.reset();
+  }
+  DictationOff();
 }
 
 void DictationChromeos::OnSpeechSoundLevelChanged(int16_t level) {}
@@ -72,7 +68,38 @@ void DictationChromeos::OnSpeechRecognitionStateChanged(
     SpeechRecognizerStatus new_state) {
   if (new_state == SPEECH_RECOGNIZER_RECOGNIZING)
     media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_START);
+  else if (new_state == SPEECH_RECOGNIZER_READY)
+    // This state is only reached when nothing has been said for a fixed time.
+    // In this case, the expected behavior is for dictation to terminate.
+    DictationOff();
 }
 
 void DictationChromeos::GetSpeechAuthParameters(std::string* auth_scope,
                                                 std::string* auth_token) {}
+
+void DictationChromeos::OnRequestSwitchEngine() {
+  input_context_ = ui::IMEBridge::Get()->GetInputContextHandler();
+}
+
+void DictationChromeos::DictationOff() {
+  if (!speech_recognizer_)
+    return;
+
+  if (!composition_->text.empty()) {
+    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
+
+    if (input_context_)
+      input_context_->CommitText(base::UTF16ToASCII(composition_->text));
+
+    composition_->text = base::string16();
+  } else {
+    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_CANCEL);
+  }
+
+  chromeos::AccessibilityStatusEventDetails details(
+      chromeos::AccessibilityNotificationType::ACCESSIBILITY_TOGGLE_DICTATION,
+      false /* enabled */);
+  chromeos::AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(
+      details);
+  speech_recognizer_.reset();
+}

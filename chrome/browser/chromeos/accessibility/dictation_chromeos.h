@@ -11,12 +11,19 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/speech/speech_recognizer_delegate.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
+#include "ui/base/ime/ime_bridge_observer.h"
+
+namespace ui {
+struct CompositionText;
+class IMEInputContextHandlerInterface;
+}  // namespace ui
 
 class Profile;
 class SpeechRecognizer;
 
 // Provides global dictation (type what you speak) on Chrome OS.
-class DictationChromeos : public SpeechRecognizerDelegate {
+class DictationChromeos : public SpeechRecognizerDelegate,
+                          ui::IMEBridgeObserver {
  public:
   explicit DictationChromeos(Profile* profile);
   ~DictationChromeos() override;
@@ -33,7 +40,15 @@ class DictationChromeos : public SpeechRecognizerDelegate {
   void GetSpeechAuthParameters(std::string* auth_scope,
                                std::string* auth_token) override;
 
+  // IMEBridgeObserver
+  void OnRequestSwitchEngine() override;
+
+  // Saves current dictation state and stops listening.
+  void DictationOff();
+
   std::unique_ptr<SpeechRecognizer> speech_recognizer_;
+  std::unique_ptr<ui::CompositionText> composition_;
+  ui::IMEInputContextHandlerInterface* input_context_;
 
   Profile* profile_;
 
