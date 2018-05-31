@@ -1,14 +1,22 @@
 <!DOCTYPE html>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../../resources/gesture-util.js'></script>
 
-<a href="./same-page-navigate.html" id="same-page" style="position: absolute; top: 2000px">link to self</a>
+<style>
+  #same-page {
+    position: absolute;
+    top: 2000px;
+  }
+</style>
 
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<a href='./same-page-navigate.html' id='same-page'>link to self</a>
 
 <script>
-var same_page_navigate_test = async_test("Ensure that the scroll position is correct when we navigate to same page after scale(zoom-in/zoom-out)");
+let same_page_navigate_test = async_test("Ensure that the scroll position is correct when we navigate to same page after scale(zoom-in/zoom-out)");
 
-same_page_navigate_test.step(function(){
+same_page_navigate_test.step(async () => {
+  await waitForCompositorCommit();
   // exit in second load, using scale to detect
   if (internals.pageScaleFactor() == 2) {
     assert_equals(scrollX, 0);
@@ -18,15 +26,11 @@ same_page_navigate_test.step(function(){
   }
 
   internals.setPageScaleFactor(2);
+  await waitForCompositorCommit();
+
   scrollTo(0, 10000);
 
-  var atag = document.getElementById('same-page');
-  var x = (atag.offsetLeft - scrollX + 1) * 2;
-  var y = (atag.offsetTop - scrollY + 1) * 2;
-
   // this clicks on the link which causes a reload of this page.
-  eventSender.mouseMoveTo(x, y);
-  eventSender.mouseDown();
-  eventSender.mouseUp();
+  document.getElementById('same-page').click();
 });
 </script>
