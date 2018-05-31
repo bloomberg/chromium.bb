@@ -31,6 +31,7 @@
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -153,10 +154,14 @@ class WebServiceWorkerNetworkProviderForSharedWorker
       return nullptr;
     }
 
-    // If it's not for HTTP or HTTPS, no need to intercept the request.
-    // TODO(falken): Allow SubresourceLoaderFactory to handle it in order
-    // to support chrome-extension://.
-    if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS()) {
+    // If the URL is not http(s) or otherwise whitelisted, do not intercept the
+    // request. Schemes like 'blob' and 'file' are not eligible to be
+    // intercepted by service workers.
+    // TODO(falken): Let ServiceWorkerSubresourceLoaderFactory handle the
+    // request and move this check there (i.e., for such URLs, it should use
+    // its fallback factory).
+    if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS() &&
+        !OriginCanAccessServiceWorkers(request.Url())) {
       return nullptr;
     }
 
@@ -209,35 +214,45 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   service_worker_provider_info_ = std::move(service_worker_provider_info);
   script_loader_factory_info_ = std::move(script_loader_factory_info);
 
-  // Make the factory bundle for the shadow page to use for importScripts().
-  auto loader_factories = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
+  // Make the factory bundle.
+  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
       impl_->GetTaskRunner(blink::TaskType::kInternalLoading));
   // In some tests |render_thread| could be null.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread) {
-    loader_factories->Update(render_thread->blink_platform_impl()
-                                 ->CreateDefaultURLLoaderFactoryBundle()
-                                 ->PassInterface(),
-                             base::nullopt /* subresource_overrides */);
+  if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
+    loader_factories_->Update(render_thread->blink_platform_impl()
+                                  ->CreateDefaultURLLoaderFactoryBundle()
+                                  ->PassInterface(),
+                              base::nullopt /* subresource_overrides */);
   }
-  if (subresource_loaders) {
-    // S13nServiceWorker enabled, NetworkService disabled:Clear the default
-    // factory from |subresource_loaders|, as it's the NetworkService factory.
-    // We'll continue using the default from CreateDefaultURLLoaderFactoryBundle
-    // instead.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-      subresource_loaders->default_factory_info() = nullptr;
 
-    loader_factories->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-                                 std::move(subresource_loaders)),
-                             base::nullopt /* subresource_overrides */);
+  if (subresource_loaders) {
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // S13nServiceWorker enabled, NetworkService disabled:
+      // Clear the default factory from |subresource_loaders|, as it's the
+      // NetworkService factory.
+      subresource_loaders->default_factory_info() = nullptr;
+    }
+
+    loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+                                  std::move(subresource_loaders)),
+                              base::nullopt /* subresource_overrides */);
   }
+
+  // It is important to understand the default factory of |loader_factories_|.
+  // Since |loader_factories_| was made from
+  // CreateDefaultURLLoaderFactoryBundle, which does not set a default factory,
+  // and |subresource_loaders|, whose default factory is the restartable
+  // NetworkService (as SharedWorkerHost sets it that way), the default factory
+  // either does not exist (when NetworkService is disabled) or is a
+  // NetworkService-backed factory with auto-reconnect. Therefore, we don't need
+  // to call CloneWithoutDefault() to bypass features like AppCache, unlike the
+  // bundle created for a frame.
 
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      devtools_worker_token, std::move(loader_factories),
+      devtools_worker_token, loader_factories_,
       content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle());
 
@@ -309,23 +324,11 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
-  scoped_refptr<network::SharedURLLoaderFactory> fallback_factory;
-  // current() may be null in tests.
-  if (RenderThreadImpl* render_thread = RenderThreadImpl::current()) {
-    // TODO(crbug.com/839982): Make a bundle using the |factory_bundle| passed
-    // to the ctor instead, otherwise chrome-extension:// won't work for network
-    // fallback.
-    scoped_refptr<ChildURLLoaderFactoryBundle> bundle =
-        render_thread->blink_platform_impl()
-            ->CreateDefaultURLLoaderFactoryBundle();
-    fallback_factory = network::SharedURLLoaderFactory::Create(
-        bundle->CloneWithoutDefaultFactory());
-  }
-
   std::unique_ptr<ServiceWorkerNetworkProvider> provider =
       ServiceWorkerNetworkProvider::CreateForSharedWorker(
           std::move(service_worker_provider_info_),
-          std::move(script_loader_factory_info_), std::move(fallback_factory));
+          std::move(script_loader_factory_info_), loader_factories_);
+
   return std::make_unique<WebServiceWorkerNetworkProviderForSharedWorker>(
       std::move(provider), IsOriginSecure(url_));
 }
@@ -354,22 +357,24 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
       context->CreateWorkerClientRequest();
 
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
-  // TODO(horo): Use this host pointer also when S13nServiceWorker is not
-  // enabled once we support navigator.serviceWorker on shared workers:
-  // crbug.com/371690. Currently we use this only to call
-  // GetControllerServiceWorker() from the worker thread if S13nServiceWorker
-  // is enabled.
   if (ServiceWorkerUtils::IsServicificationEnabled())
     container_host_ptr_info = context->CloneContainerHostPtrInfo();
 
-  scoped_refptr<ChildURLLoaderFactoryBundle> url_loader_factory_bundle =
-      RenderThreadImpl::current()
-          ->blink_platform_impl()
-          ->CreateDefaultURLLoaderFactoryBundle();
+  // We know |loader_factories_|'s default factory is not a feature like
+  // AppCache, so it's OK to call Clone() and not CloneWithoutDefault() to get
+  // the fallback factory. We don't want to call CloneWithoutDefault() because
+  // the default is a NetworkService-backed factory with auto-reconnect
+  // when NetworkService is enabled (it will support auto-reconnect once
+  // https://crbug.com/848256 is addressed). See comments in the constructor.
+  //
+  // TODO(falken): We might need to set the default factory of
+  // |loader_factories_| to AppCache if requests from this shared worker are
+  // supposed to go through AppCache.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
+      loader_factories_->Clone();
   auto worker_fetch_context = std::make_unique<WorkerFetchContextImpl>(
       std::move(request), std::move(container_host_ptr_info),
-      url_loader_factory_bundle->Clone(),
-      url_loader_factory_bundle->CloneWithoutDefaultFactory(),
+      loader_factories_->Clone(), std::move(fallback_factory),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()

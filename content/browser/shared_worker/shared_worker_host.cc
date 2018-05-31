@@ -171,6 +171,10 @@ void SharedWorkerHost::Start(
     // ResourceRequestorInfo. So, just send the bundle and count on the renderer
     // to clear the default factory upon arrival in that case.
     factory_bundle->default_factory_info() = std::move(network_factory_info);
+
+    // TODO(falken): We might need to set the default factory to AppCache
+    // instead, as we do for frames, if requests from this shared worker are
+    // supposed to go through AppCache.
   }
 
   // Send the CreateSharedWorker message.
@@ -200,8 +204,8 @@ void SharedWorkerHost::CreateNetworkFactory(
   service_->storage_partition()->GetNetworkContext()->CreateURLLoaderFactory(
       std::move(request), std::move(params));
 
-  // TODO(falken): Detect connection error and send a IPC with a new network
-  // factory like UpdateSubresourceLoaderFactories does for frames.
+  // TODO(crbug.com/848256): Detect connection error and send a IPC with a new
+  // network factory like UpdateSubresourceLoaderFactories does for frames.
 }
 
 void SharedWorkerHost::AllowFileSystem(
