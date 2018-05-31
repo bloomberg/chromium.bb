@@ -84,6 +84,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   // Returns the time at which the response was completed.
   const base::Time& GetResponseTime() const;
 
+  // Whether the BackgroundFetchResult was successful.
+  bool IsResultSuccess() const;
+
  private:
   friend class base::RefCountedDeleteOnSequence<BackgroundFetchRequestInfo>;
   friend class base::DeleteHelper<BackgroundFetchRequestInfo>;

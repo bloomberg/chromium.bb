@@ -10,6 +10,7 @@
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/database_task.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
 namespace content {
@@ -38,6 +39,13 @@ class MarkRequestCompleteTask : public DatabaseTask {
 
  private:
   void StoreResponse();
+
+  void DidOpenCache(std::unique_ptr<ServiceWorkerResponse> response,
+                    CacheStorageCacheHandle handle,
+                    blink::mojom::CacheStorageError error);
+
+  void DidWriteToCache(CacheStorageCacheHandle handle,
+                       blink::mojom::CacheStorageError error);
 
   void CreateAndStoreCompletedRequest(bool succeeded);
 
