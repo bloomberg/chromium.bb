@@ -9,7 +9,6 @@
 module chrome.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
-import "mojo/public/mojom/base/file_path.mojom";
 
 interface SafeArchiveAnalyzer {
   // Build flag FULL_SAFE_BROWSING: Analyze the |zip_file| for malicious
@@ -26,8 +25,7 @@ interface SafeArchiveAnalyzer {
 
   // Build flag FULL_SAFE_BROWSING: Analyze the |rar_file| for malicious
   // download protection.
-  AnalyzeRarFile(mojo_base.mojom.File rar_file,
-                 mojo_base.mojom.FilePath rar_file_path)
+  AnalyzeRarFile(mojo_base.mojom.File rar_file)
       => (SafeArchiveAnalyzerResults results);
 };
 

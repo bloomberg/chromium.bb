@@ -46,13 +46,10 @@ void SafeArchiveAnalyzer::AnalyzeDmgFile(base::File dmg_file,
 }
 
 void SafeArchiveAnalyzer::AnalyzeRarFile(base::File rar_file,
-                                         const base::FilePath& rar_file_path,
                                          AnalyzeRarFileCallback callback) {
   DCHECK(rar_file.IsValid());
-  DCHECK(!rar_file_path.value().empty());
 
   safe_browsing::ArchiveAnalyzerResults results;
-  safe_browsing::rar_analyzer::AnalyzeRarFile(std::move(rar_file),
-                                              rar_file_path, &results);
+  safe_browsing::rar_analyzer::AnalyzeRarFile(std::move(rar_file), &results);
   std::move(callback).Run(results);
 }

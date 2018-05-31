@@ -22,7 +22,6 @@
 #define CHROME_COMMON_SAFE_BROWSING_RAR_ANALYZER_H_
 
 #include "base/files/file.h"
-#include "base/files/file_path.h"
 
 namespace safe_browsing {
 
@@ -33,14 +32,11 @@ namespace rar_analyzer {
 // |rar_file| is a platform-agnostic handle to the file. Since |AnalyzeRarFile|
 // runs inside a sandbox, it isn't allowed to open file handles. So the file is
 // opened in |SandboxedRarAnalyzer|, which runs in the browser process, and the
-// handle is passed here. |rar_file_path| is the path to the same file. It is
-// required only because the unrar library expects it to be used with a
-// filename. The function populates the various fields in |results| based on the
-// results of parsing the rar file.
+// handle is passed here. The function populates the various fields in |results|
+// based on the results of parsing the rar file.
 // If the parsing fails for any reason, including crashing the sandbox process,
 // the browser process considers the file safe.
 void AnalyzeRarFile(base::File rar_file,
-                    const base::FilePath& rar_file_path,
                     ArchiveAnalyzerResults* results);
 
 }  // namespace rar_analyzer

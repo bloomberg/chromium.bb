@@ -49,7 +49,7 @@ void SandboxedRarAnalyzer::AnalyzeFile(base::File file) {
       &SandboxedRarAnalyzer::AnalyzeFileDone, base::Unretained(this),
       safe_browsing::ArchiveAnalyzerResults()));
   analyzer_ptr_->AnalyzeRarFile(
-      std::move(file), file_path_,
+      std::move(file),
       base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFileDone, this));
 }
 
