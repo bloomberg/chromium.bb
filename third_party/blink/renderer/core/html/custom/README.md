@@ -85,9 +85,9 @@ with CustomElement so you can run them with:
 The custom element layout tests are generally in
 third_party/WebKit/LayoutTests/custom-elements.
 
-All custom elements layout tests use the [W3C web-platform-tests
-harness](http://web-platform-tests.org/) and follow its style. The
-W3C is not very prescriptive, so be consistent with other custom
+All custom elements layout tests use the [web-platform-tests
+harness](https://web-platform-tests.org/) and follow its style. The
+WPT style is not very prescriptive, so be consistent with other custom
 elements tests.
 
 When naming tests, use short names describing what the test is doing.
@@ -99,8 +99,8 @@ behavior is.
 
 ###### Spec Tests
 
-These will be upstreamed to the W3C, replacing [the tests for
-registerElement](https://github.com/w3c/web-platform-tests/commits/master/custom-elements)
+These will be upstreamed to WPT, replacing [the tests for
+registerElement](https://github.com/web-platform-tests/wpt/tree/master/custom-elements)
 we contributed earlier. To facilitate that, follow these guidelines:
 
 * Keep the tests together in the `spec` directory.

@@ -3,7 +3,7 @@ W3C Web Platform Tests in Blink Layout Tests
 Design Doc: https://goo.gl/iXUaZd
 
 This directory contains checked out and reduced code from web-platform-tests
-(https://github.com/w3c/web-platform-tests/) required to run WPT tests as part
+(https://github.com/web-platform-tests/wpt/) required to run WPT tests as part
 of Blink's test infrastructure and some maintenance/configuration code.
 
 The third party code lives entirely in the wpt subdirectory:
@@ -126,7 +126,7 @@ Note that calling "./checkout.sh" without arguments is equivalent of calling
 Configuration
 
 Read instructions in WPT README:
-https://github.com/w3c/web-platform-tests/blob/master/README.md
+https://github.com/web-platform-tests/wpt/blob/master/README.md
 
 Also, check out the WPTServe Documentation
 (https://wptserve.readthedocs.org/en/latest/).

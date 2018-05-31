@@ -319,11 +319,11 @@ void TestRunnerBindings::Install(
   //
   // 1. For normal reftest, we would like to take screenshots after web fonts
   //    are loaded, i.e. replicate the behavior of this injected script:
-  //    https://github.com/w3c/web-platform-tests/blob/master/tools/wptrunner/wptrunner/executors/reftest-wait_webdriver.js
+  //    https://github.com/web-platform-tests/wpt/blob/master/tools/wptrunner/wptrunner/executors/reftest-wait_webdriver.js
   // 2. For reftests with a 'reftest-wait' class on the root element, reference
   //    comparison is delayed until that class attribute is removed. To support
   //    this feature, we use a mutation observer.
-  //    http://web-platform-tests.org/writing-tests/reftests.html#controlling-when-comparison-occurs
+  //    https://web-platform-tests.org/writing-tests/reftests.html#controlling-when-comparison-occurs
   //
   // Note that this method may be called multiple times on a frame, so we put
   // the code behind a flag. The flag is safe to be installed on testRunner

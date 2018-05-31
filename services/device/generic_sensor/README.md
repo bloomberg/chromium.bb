@@ -48,7 +48,7 @@ Testing:
 
 * Browser tests are located in `content/browser/device_sensors`.
 * Layout tests are located in `third_party/WebKit/LayoutTests/device_orientation`.
-* Web platform tests are located in `third_party/WebKit/LayoutTests/external/wpt/orientation-event` and are a mirror of the [web-platform-tests GitHub repository](https://github.com/w3c/web-platform-tests).
+* Web platform tests are located in `third_party/WebKit/LayoutTests/external/wpt/orientation-event` and are a mirror of the [web-platform-tests GitHub repository](https://github.com/web-platform-tests/wpt).
 
 ## Permissions
 

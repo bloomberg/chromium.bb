@@ -18,5 +18,5 @@ See also:
 https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_platform_tests.md
 
 References:
-* web-platform-tests  https://github.com/w3c/web-platform-tests
+* web-platform-tests  https://github.com/web-platform-tests/wpt
 * webidl2.js          https://github.com/w3c/webidl2.js

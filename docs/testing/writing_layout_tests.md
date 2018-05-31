@@ -73,7 +73,7 @@ There are four broad types of layout tests, listed in the order of preference.
 
 Tests should be written under the assumption that they will be upstreamed
 to the WPT project. To this end, tests should follow the
-[WPT guidelines](http://web-platform-tests.org/writing-tests/).
+[WPT guidelines](https://web-platform-tests.org/writing-tests/).
 
 
 There is no style guide that applies to all layout tests. However, some projects
@@ -93,18 +93,18 @@ alternatives, which will be described in future sections, result in slower and
 less reliable tests.
 
 All new JavaScript tests should be written using the
-[testharness.js](https://github.com/w3c/web-platform-tests/tree/master/resources)
+[testharness.js](https://github.com/web-platform-tests/wpt/tree/master/resources)
 testing framework. This framework is used by the tests in the
-[web-platform-tests](https://github.com/w3c/web-platform-tests) repository,
+[web-platform-tests](https://github.com/web-platform-tests/wpt) repository,
 which is shared with all the other browser vendors, so `testharness.js` tests
 are more accessible to browser developers.
 
-See the [API documentation](http://web-platform-tests.org/writing-tests/testharness-api.html)
+See the [API documentation](https://web-platform-tests.org/writing-tests/testharness-api.html)
 for a thorough introduction to `testharness.js`.
 
 Layout tests should follow the recommendations of the above documentation.
 Furthermore, layout tests should include relevant
-[metadata](http://web-platform-tests.org/writing-tests/css-metadata.html). The
+[metadata](https://web-platform-tests.org/writing-tests/css-metadata.html). The
 specification URL (in `<link rel="help">`) is almost always relevant, and is
 incredibly helpful to a developer who needs to understand the test quickly.
 
@@ -190,7 +190,7 @@ and
 This is contrary to the WPT guidelines, which call for absolute paths.
 This limitation does not apply to the tests in `LayoutTests/http`, which rely on
 an HTTP server, or to the tests in `LayoutTests/external/wpt`, which are
-imported from the [WPT repository](https://github.com/w3c/web-platform-tests).
+imported from the [WPT repository](https://github.com/web-platform-tests/wpt).
 ***
 
 ### WPT Supplemental Testing APIs
@@ -362,7 +362,7 @@ be slower as well. Therefore, they should only be used for functionality that
 cannot be covered by JavaScript tests.
 
 New reference tests should follow the
-[WPT reftests guidelines](http://web-platform-tests.org/writing-tests/reftests.html).
+[WPT reftests guidelines](https://web-platform-tests.org/writing-tests/reftests.html).
 The most important points are summarized below.
 
 * &#x1F6A7; The test page declares the reference page using a
@@ -435,7 +435,7 @@ tests**.
 Pixel tests should still follow the principles laid out above. Pixel tests pose
 unique challenges to the desire to have *self-describing* and *cross-platform*
 tests. The
-[WPT rendering test guidelines](http://web-platform-tests.org/writing-tests/rendering.html)
+[WPT rendering test guidelines](https://web-platform-tests.org/writing-tests/rendering.html)
 contain useful guidance. The most relevant pieces of advice are below.
 
 * Whenever possible, use a green paragraph / page / square to indicate success.
