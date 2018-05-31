@@ -300,26 +300,9 @@ class PLATFORM_EXPORT ThreadState {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
-  // A GC runs in the following sequence.
-  //
-  // 1) preGC() is called.
-  // 2) ThreadHeap::collectGarbage() is called. This marks live objects.
-  // 3) postGC() is called. This does thread-local weak processing.
-  // 4) preSweep() is called. This does pre-finalization, eager sweeping and
-  //    heap compaction.
-  // 4) Lazy sweeping sweeps heaps incrementally. completeSweep() may be called
-  //    to complete the sweeping.
-  // 5) postSweep() is called.
-  void MarkPhasePrologue(BlinkGC::StackState,
-                         BlinkGC::MarkingType,
-                         BlinkGC::GCReason);
-  void MarkPhaseVisitRoots();
-  bool MarkPhaseAdvanceMarking(double deadline_seconds);
-  void MarkPhaseEpilogue(BlinkGC::MarkingType);
-  void VerifyMarking(BlinkGC::MarkingType);
-
   void CompleteSweep();
   void PreSweep(BlinkGC::MarkingType, BlinkGC::SweepingType);
+  void FinishSnapshot();
   void PostSweep();
 
   // Support for disallowing allocation. Mainly used for sanity
@@ -592,6 +575,7 @@ class PLATFORM_EXPORT ThreadState {
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
   template <typename T>
   friend class PrefinalizerRegistration;
+  friend class TestGCMarkingScope;
 
   // Number of ThreadState's that are currently in incremental marking. The
   // counter is incremented by one when some ThreadState enters incremental
@@ -603,6 +587,19 @@ class PLATFORM_EXPORT ThreadState {
 
   ThreadState();
   ~ThreadState();
+
+  void MarkPhasePrologue(BlinkGC::StackState,
+                         BlinkGC::MarkingType,
+                         BlinkGC::GCReason);
+  void MarkPhaseVisitRoots();
+  bool MarkPhaseAdvanceMarking(double deadline_seconds);
+  void MarkPhaseEpilogue(BlinkGC::MarkingType);
+  void VerifyMarking(BlinkGC::MarkingType);
+
+  void RunAtomicPause(BlinkGC::StackState,
+                      BlinkGC::MarkingType,
+                      BlinkGC::SweepingType,
+                      BlinkGC::GCReason);
 
   void ClearSafePointScopeMarker() {
     safe_point_stack_copy_.clear();

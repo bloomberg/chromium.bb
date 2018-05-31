@@ -36,6 +36,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     kInvokePreFinalizers,
     kLazySweepInIdle,
     kLazySweepOnAllocation,
+    kAtomicPhase,
     kAtomicPhaseMarking,
     kVisitDOMWrappers,
     kNumScopeIds,
@@ -43,6 +44,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   static const char* ToString(Id id) {
     switch (id) {
+      case Id::kAtomicPhase:
+        return "BlinkGC.AtomicPhase";
       case Id::kAtomicPhaseMarking:
         return "BlinkGC.AtomicPhaseMarking";
       case Id::kCompleteSweep:
