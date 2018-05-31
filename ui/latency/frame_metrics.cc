@@ -388,51 +388,68 @@ void FrameMetrics::StartNewReportPeriod() {
 
 namespace {
 
-struct FrameMetricsTraceData {
+// FrameMetricsTraceData delegates tracing logic to TracedValue in a deferred
+// manner. Rather that making copies of keys, values, and strings when the
+// trace is emitted (as using TracedValue directly would), it implements
+// ConvertableToTraceFormat so we do the copying after the capture period.
+// i.e. when we are producing the trace output. On a Linux z840, deferring
+// decreases the cost of emitting a trace from ~25us to ~7us.
+class FrameMetricsTraceData
+    : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  FrameMetricsTraceData() = default;
+  ~FrameMetricsTraceData() override = default;
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    base::trace_event::TracedValue state;
+
+    state.BeginDictionary("Source");
+    settings.AsValueInto(&state);
+    state.EndDictionary();
+
+    state.BeginDictionary("Skips");
+    skips.AsValueInto(&state);
+    state.EndDictionary();
+
+    state.BeginDictionary("Latency");
+    latency.AsValueInto(&state);
+    state.EndDictionary();
+
+    state.BeginDictionary("Speed");
+    speed.AsValueInto(&state);
+    state.EndDictionary();
+
+    state.BeginDictionary("Acceleration");
+    acceleration.AsValueInto(&state);
+    state.EndDictionary();
+
+    state.AppendAsTraceFormat(out);
+  }
+
+  void EstimateTraceMemoryOverhead(
+      base::trace_event::TraceEventMemoryOverhead* overhead) override {
+    overhead->Add(base::trace_event::TraceEventMemoryOverhead::kFrameMetrics,
+                  sizeof(FrameMetricsTraceData));
+  }
+
   FrameMetricsSettings settings;
   StreamAnalysis skips, latency, speed, acceleration;
-
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const {
-    auto state = std::make_unique<base::trace_event::TracedValue>();
-
-    state->BeginDictionary("Source");
-    settings.AsValueInto(state.get());
-    state->EndDictionary();
-
-    state->BeginDictionary("Skips");
-    skips.AsValueInto(state.get());
-    state->EndDictionary();
-
-    state->BeginDictionary("Latency");
-    latency.AsValueInto(state.get());
-    state->EndDictionary();
-
-    state->BeginDictionary("Speed");
-    speed.AsValueInto(state.get());
-    state->EndDictionary();
-
-    state->BeginDictionary("Acceleration");
-    acceleration.AsValueInto(state.get());
-    state->EndDictionary();
-
-    return std::move(state);
-  }
 };
 
 }  // namespace
 
 void FrameMetrics::TraceStats() const {
-  FrameMetricsTraceData trace_data;
+  auto trace_data = std::make_unique<FrameMetricsTraceData>();
   {
     TRACE_EVENT0(kTraceCategories, "CalculateFrameDisplayed");
-    trace_data.settings = settings_;
-    frame_skips_analyzer_.ComputeSummary(&trace_data.skips);
-    latency_analyzer_.ComputeSummary(&trace_data.latency);
-    latency_speed_analyzer_.ComputeSummary(&trace_data.speed);
-    latency_acceleration_analyzer_.ComputeSummary(&trace_data.acceleration);
+    trace_data->settings = settings_;
+    frame_skips_analyzer_.ComputeSummary(&trace_data->skips);
+    latency_analyzer_.ComputeSummary(&trace_data->latency);
+    latency_speed_analyzer_.ComputeSummary(&trace_data->speed);
+    latency_acceleration_analyzer_.ComputeSummary(&trace_data->acceleration);
   }
   TRACE_EVENT_INSTANT1(kTraceCategories, "FrameMetrics",
-                       TRACE_EVENT_SCOPE_THREAD, "Info", trace_data.AsValue());
+                       TRACE_EVENT_SCOPE_THREAD, "Info", std::move(trace_data));
 }
 
 }  // namespace ui
