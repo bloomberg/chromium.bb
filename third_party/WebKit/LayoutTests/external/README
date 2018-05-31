@@ -1,6 +1,6 @@
 The test suites in this directory are synced with third-party repos.
 
-The tests in wpt are imported from https://github.com/w3c/web-platform-tests,
+The tests in wpt are imported from https://github.com/web-platform-tests/wpt,
 and changes in the wpt directory are automatically upstreamed, usually within
 24 hours.
 

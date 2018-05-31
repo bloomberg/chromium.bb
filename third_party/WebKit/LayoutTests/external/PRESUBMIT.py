@@ -5,7 +5,7 @@
 """Lint functionality duplicated from web-platform-tests upstream.
 
 This is to catch lint errors that would otherwise be caught in WPT CI.
-See http://web-platform-tests.org/writing-tests/lint-tool.html for more
+See https://web-platform-tests.org/writing-tests/lint-tool.html for more
 information about the lint tool.
 """
 

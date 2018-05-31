@@ -9,7 +9,7 @@
  *
  * For more documentation about the callback functions and the
  * parameters they are called with, see testharness.js, or the docs at:
- * http://web-platform-tests.org/writing-tests/testharness-api.html
+ * https://web-platform-tests.org/writing-tests/testharness-api.html
  */
 
 (function() {

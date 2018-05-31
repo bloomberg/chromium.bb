@@ -11,7 +11,7 @@ normal browser session.
 A popular pattern used in these tests is to rely on the user to perform some
 manual steps in order to run the test case in a normal browser session. These
 tests are effectively
-[manual tests](http://web-platform-tests.org/writing-tests/manual.html), with
+[manual tests](https://web-platform-tests.org/writing-tests/manual.html), with
 additional JavaScript code that automatically performs the desired manual steps,
 when loaded in an environment that exposes the needed testing APIs.
 
