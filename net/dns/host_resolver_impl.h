@@ -19,7 +19,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
 namespace base {
