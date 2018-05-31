@@ -128,6 +128,7 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
 ComputedStyle& LayoutTreeBuilderForElement::Style() const {
   if (!style_) {
     DCHECK(!node_->GetNonAttachedStyle());
+    DCHECK(node_->IsPseudoElement());
     style_ = node_->StyleForLayoutObject();
   }
   return *style_;

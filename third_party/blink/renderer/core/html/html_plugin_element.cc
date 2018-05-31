@@ -707,17 +707,15 @@ void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {
   }
 }
 
-void HTMLPlugInElement::DidRecalcStyle(StyleRecalcChange change) {
-  if (change != kReattach)
-    return;
-  ComputedStyle* style = GetNonAttachedStyle();
-  if (!style || style->Display() == EDisplay::kNone)
-    return;
-  if (!IsImageType())
-    return;
-  if (!image_loader_)
-    image_loader_ = HTMLImageLoader::Create(this);
-  image_loader_->UpdateFromElement();
+scoped_refptr<ComputedStyle> HTMLPlugInElement::CustomStyleForLayoutObject() {
+  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+  if (IsImageType() && !GetLayoutObject() && style &&
+      LayoutObjectIsNeeded(*style)) {
+    if (!image_loader_)
+      image_loader_ = HTMLImageLoader::Create(this);
+    image_loader_->UpdateFromElement();
+  }
+  return style;
 }
 
 }  // namespace blink
