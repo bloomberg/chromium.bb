@@ -346,7 +346,7 @@ NSString* const kVersionKey = @"KSVersion";
   NSString* systemBrandFile = SystemBrandFilePath(channel);
 
   // Default to none.
-  brandFile_ = @"";
+  brandFile_.reset(@"", base::scoped_policy::RETAIN);
 
   // Only the stable and canary channel can have independent brand codes.
 
@@ -376,7 +376,7 @@ NSString* const kVersionKey = @"KSVersion";
       // System
 
       // Use the system file that is there.
-      brandFile_ = systemBrandFile;
+      brandFile_.reset(systemBrandFile, base::scoped_policy::RETAIN);
 
       // Clean up any old user level file.
       if ([fm fileExistsAtPath:userBrandFile]) {
@@ -417,11 +417,11 @@ NSString* const kVersionKey = @"KSVersion";
           }
         }
         if ([storedBrandDict writeToFile:userBrandFile atomically:YES]) {
-          brandFile_ = userBrandFile;
+          brandFile_.reset(userBrandFile, base::scoped_policy::RETAIN);
         }
       } else if (storedBrandID) {
         // Had stored brand, use it.
-        brandFile_ = userBrandFile;
+        brandFile_.reset(userBrandFile, base::scoped_policy::RETAIN);
       }
     }
   }
@@ -1046,7 +1046,7 @@ NSString* const kVersionKey = @"KSVersion";
     NSMutableDictionary* temp_parameters =
         [[parameters mutableCopy] autorelease];
     temp_parameters[ksr::KSRegistrationBrandPathKey] = systemBrandFile;
-    brandFile_ = systemBrandFile;
+    brandFile_.reset(systemBrandFile, base::scoped_policy::RETAIN);
     parameters = temp_parameters;
   }
 
