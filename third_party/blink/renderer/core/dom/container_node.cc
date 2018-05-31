@@ -1340,7 +1340,7 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
 
 void ContainerNode::RecalcDescendantStylesForReattach() {
   for (Node* child = lastChild(); child; child = child->previousSibling()) {
-    if (child->IsElementNode())
+    if (child->IsElementNode() && !child->NeedsReattachLayoutTree())
       ToElement(child)->RecalcStyleForReattach();
   }
 }

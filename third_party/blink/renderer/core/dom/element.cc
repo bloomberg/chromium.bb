@@ -2327,6 +2327,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
 }
 
 void Element::RecalcStyleForReattach() {
+  DCHECK(!GetNonAttachedStyle());
   if (HasCustomStyleCallbacks())
     WillRecalcStyle(kReattach);
 
