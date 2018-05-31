@@ -5028,6 +5028,7 @@ histogram as enum -->
   <int value="3" label="Primary Error, Secondary Valid"/>
   <int value="4" label="Both Valid, Different Details"/>
   <int value="5" label="Both Error, Different Details"/>
+  <int value="6" label="Ignored Mac Undesired Revocation Checking"/>
 </enum>
 
 <enum name="ChannelLayout">
