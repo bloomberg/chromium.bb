@@ -60,6 +60,27 @@ class Tab : public gfx::AnimationDelegate,
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 
+  // views::View:
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintChildren(const views::PaintInfo& info) override;
+  void Layout() override;
+  void OnThemeChanged() override;
+  const char* GetClassName() const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  bool GetTooltipTextOrigin(const gfx::Point& p,
+                            gfx::Point* origin) const override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
   TabController* controller() const { return controller_; }
 
   // Used to set/check whether this Tab is being animated closed.
@@ -133,10 +154,6 @@ class Tab : public gfx::AnimationDelegate,
   // user to click to select/activate the tab.
   int GetWidthOfLargestSelectableRegion() const;
 
-  // Called when stacked layout changes and the close button may need to
-  // be updated.
-  void HideCloseButtonForInactiveTabsChanged() { Layout(); }
-
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumInactiveSize();
 
@@ -186,27 +203,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(gfx::Path* mask) const override;
-
-  // views::View:
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const views::PaintInfo& info) override;
-  void Layout() override;
-  void OnThemeChanged() override;
-  const char* GetClassName() const override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
-  bool GetTooltipTextOrigin(const gfx::Point& p,
-                            gfx::Point* origin) const override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

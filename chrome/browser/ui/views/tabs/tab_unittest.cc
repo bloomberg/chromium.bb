@@ -38,9 +38,7 @@ class FakeTabController : public TabController {
     return selection_model_;
   }
   bool SupportsMultipleSelection() override { return false; }
-  bool ShouldHideCloseButtonForInactiveTabs() override {
-    return false;
-  }
+  bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
   bool ShouldShowCloseButtonOnHover() override { return false; }
   bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab) override {}

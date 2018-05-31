@@ -1343,7 +1343,7 @@ void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
 
 void Tab::UpdateIconVisibility() {
   center_favicon_ = false;
-  showing_icon_ = showing_alert_indicator_ = showing_close_button_ = false;
+  showing_icon_ = showing_alert_indicator_ = false;
   extra_padding_before_content_ = false;
 
   const gfx::Size min_size(GetMinimumInactiveSize());
@@ -1371,10 +1371,6 @@ void Tab::UpdateIconVisibility() {
   const bool has_alert_icon =
       (alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
                                : data().alert_state) != TabAlertState::NONE;
-  const bool hide_inactive_close_button =
-      controller_->ShouldHideCloseButtonForInactiveTabs();
-  const bool show_close_button_on_hover =
-      controller_->ShouldShowCloseButtonOnHover();
 
   if (is_pinned) {
     // When the tab is pinned, we can show one of the two icons. Alert icon
@@ -1382,10 +1378,10 @@ void Tab::UpdateIconVisibility() {
     // tab is pinned.
     showing_alert_indicator_ = has_alert_icon;
     showing_icon_ = has_favicon && !has_alert_icon;
+    showing_close_button_ = false;
   } else {
+    showing_close_button_ = !controller_->ShouldHideCloseButtonForTab(this);
     if (is_active) {
-      // The close button is always visible for an active tab.
-      showing_close_button_ = true;
       available_width -= close_button_width;
 
       showing_alert_indicator_ =
@@ -1412,18 +1408,17 @@ void Tab::UpdateIconVisibility() {
       if (!showing_icon_ || !showing_alert_indicator_)
         extra_padding = 0;
 
-      // For an inactive tab, the close button will be visible only when
-      // it is not forced to hide and the total width can accomodate all 3
-      // icons. When favicon or alert button is not visible, its space
-      // will be occupied by the title of this tab.
+      // Show the close button if it's allowed to show on hover, even if it's
+      // forced to be hidden normally.
+      showing_close_button_ |= controller_->ShouldShowCloseButtonOnHover() &&
+                               hover_controller_.ShouldDraw();
+      // Always hide the close button if the total width can't accomodate all 3
+      // icons. When favicon or alert button is not visible, its space will be
+      // occupied by the title of this tab.
       int title_width =
           (!showing_icon_ + !showing_alert_indicator_) * favicon_width;
-      if ((!hide_inactive_close_button ||
-           (show_close_button_on_hover && hover_controller_.ShouldDraw())) &&
-          (title_width + close_button_width + extra_padding <=
-           available_width)) {
-        showing_close_button_ = true;
-      }
+      if (title_width + close_button_width + extra_padding > available_width)
+        showing_close_button_ = false;
 
       // If no other controls are visible, show favicon even though we
       // don't have enough space. We'll clip the favicon in PaintChildren().

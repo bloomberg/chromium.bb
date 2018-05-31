@@ -346,6 +346,10 @@ void BrowserTabStripController::StackedLayoutMaybeChanged() {
                                                tabstrip_->stacked_layout());
 }
 
+bool BrowserTabStripController::IsSingleTabModeAvailable() {
+  return browser_view_->frame()->GetFrameView()->IsSingleTabModeAvailable();
+}
+
 void BrowserTabStripController::OnStartedDraggingTabs() {
   if (!immersive_reveal_lock_.get()) {
     // The top-of-window views should be revealed while the user is dragging

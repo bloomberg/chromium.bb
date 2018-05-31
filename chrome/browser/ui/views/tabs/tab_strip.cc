@@ -409,7 +409,11 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
   }
 
   for (int i = 0; i < tab_count(); ++i)
-    tab_at(i)->HideCloseButtonForInactiveTabsChanged();
+    tab_at(i)->Layout();
+}
+
+bool TabStrip::SingleTabMode() const {
+  return controller_->IsSingleTabModeAvailable() && tab_count() == 1;
 }
 
 bool TabStrip::SizeTabButtonToTopOfTabStrip() {
@@ -429,6 +433,8 @@ void TabStrip::StopAllHighlighting() {
 }
 
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
+  const bool was_single_tab_mode = SingleTabMode();
+
   Tab* tab = new Tab(this, animation_container_.get());
   AddChildView(tab);
   const bool pinned = data.pinned;
@@ -455,6 +461,9 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
     DoLayout();
 
   SwapLayoutIfNecessary();
+
+  if (was_single_tab_mode)
+    SingleTabModeChanged();
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabAdded(model_index);
@@ -524,6 +533,9 @@ void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabRemoved(model_index);
+
+  if (SingleTabMode())
+    SingleTabModeChanged();
 
   // Stop dragging when a new tab is removed and dragging a window. Doing
   // otherwise results in a confusing state if the user attempts to reattach. We
@@ -781,7 +793,9 @@ bool TabStrip::SupportsMultipleSelection() {
   return touch_layout_ == nullptr;
 }
 
-bool TabStrip::ShouldHideCloseButtonForInactiveTabs() {
+bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
+  if (tab->IsActive())
+    return SingleTabMode();
   return touch_layout_ != nullptr || MD::IsRefreshUi();
 }
 
@@ -2404,6 +2418,12 @@ void TabStrip::SetResetToShrinkOnExit(bool value) {
     AddMessageLoopObserver();
   else
     RemoveMessageLoopObserver();
+}
+
+void TabStrip::SingleTabModeChanged() {
+  const int active_tab_index = controller_->GetActiveIndex();
+  if (IsValidModelIndex(active_tab_index))
+    tab_at(active_tab_index)->Layout();
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {

@@ -124,6 +124,13 @@ class TabStrip : public views::View,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
+  // Whether the special painting mode for a single tab is enabled. This is only
+  // true if both the mode is available and we have exactly one tab.
+  bool SingleTabMode() const;
+
+  // Called when the value of SingleTabMode() changes.
+  void SingleTabModeChanged();
+
   // Returns the bounds of the new tab button.
   gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
 
@@ -219,7 +226,7 @@ class TabStrip : public views::View,
   // TabController overrides:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
-  bool ShouldHideCloseButtonForInactiveTabs() override;
+  bool ShouldHideCloseButtonForTab(Tab* tab) const override;
   bool ShouldShowCloseButtonOnHover() override;
   bool MaySetClip() override;
   void SelectTab(Tab* tab) override;
