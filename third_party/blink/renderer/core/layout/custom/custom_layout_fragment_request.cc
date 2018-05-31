@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints_options.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 
@@ -14,10 +15,14 @@ namespace blink {
 
 CustomLayoutFragmentRequest::CustomLayoutFragmentRequest(
     CustomLayoutChild* child,
-    const CustomLayoutConstraintsOptions& options)
-    : child_(child), options_(options) {}
+    const CustomLayoutConstraintsOptions& options,
+    scoped_refptr<SerializedScriptValue> constraint_data)
+    : child_(child),
+      options_(options),
+      constraint_data_(std::move(constraint_data)) {}
 
-CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout() {
+CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
+    v8::Isolate* isolate) {
   // Abort if the child we are trying to perform layout upon doesn't exist.
   if (!IsValid())
     return nullptr;
@@ -70,10 +75,16 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout() {
     }
   }
 
+  if (box->IsLayoutCustom())
+    ToLayoutCustom(box)->SetConstraintData(constraint_data_);
+
   box->ForceLayout();
 
   box->ClearOverrideContainingBlockContentSize();
   box->ClearOverrideSize();
+
+  if (box->IsLayoutCustom())
+    ToLayoutCustom(box)->ClearConstraintData();
 
   LayoutUnit fragment_inline_size =
       is_parallel_writing_mode ? box->LogicalWidth() : box->LogicalHeight();
@@ -81,7 +92,7 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout() {
       is_parallel_writing_mode ? box->LogicalHeight() : box->LogicalWidth();
 
   return new CustomLayoutFragment(this, fragment_inline_size,
-                                  fragment_block_size);
+                                  fragment_block_size, isolate);
 }
 
 LayoutBox* CustomLayoutFragmentRequest::GetLayoutBox() const {

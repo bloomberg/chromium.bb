@@ -19,5 +19,5 @@ interface LayoutConstraints {
   // readonly attribute double percentageInlineSize;
   // readonly attribute double percentageBlockSize;
 
-  // readonly attribute any data;
+  [CallWith=ScriptState] readonly attribute any data;
 };

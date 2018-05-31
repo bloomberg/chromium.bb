@@ -17,5 +17,5 @@ dictionary CustomLayoutConstraintsOptions {
   // double percentageInlineSize;
   // double percentageBlockSize;
 
-  // any data;
+  any data;
 };

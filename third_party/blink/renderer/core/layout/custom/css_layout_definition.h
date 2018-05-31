@@ -19,6 +19,7 @@ namespace blink {
 class FragmentResultOptions;
 class LayoutCustom;
 class ScriptState;
+class SerializedScriptValue;
 
 // Represents a javascript class registered on the LayoutWorkletGlobalScope by
 // the author.
@@ -45,8 +46,11 @@ class CSSLayoutDefinition final
     Instance(CSSLayoutDefinition*, v8::Local<v8::Object> instance);
 
     // Runs the web developer defined layout, returns true if everything
-    // succeeded, and populates the FragmentResultOptions dictionary.
-    bool Layout(const LayoutCustom&, FragmentResultOptions*);
+    // succeeded. It populates the FragmentResultOptions dictionary, and
+    // fragment_result_data.
+    bool Layout(const LayoutCustom&,
+                FragmentResultOptions*,
+                scoped_refptr<SerializedScriptValue>* fragment_result_data);
 
     void Trace(blink::Visitor*);
 

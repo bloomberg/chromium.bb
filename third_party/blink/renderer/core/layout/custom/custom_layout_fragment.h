@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 
@@ -13,6 +14,8 @@ namespace blink {
 
 class CustomLayoutFragmentRequest;
 class LayoutBox;
+class ScriptState;
+class ScriptValue;
 
 // This represents the result of a layout (on a LayoutChild).
 //
@@ -30,7 +33,8 @@ class CustomLayoutFragment : public ScriptWrappable {
  public:
   CustomLayoutFragment(CustomLayoutFragmentRequest*,
                        const LayoutUnit inline_size,
-                       const LayoutUnit block_size);
+                       const LayoutUnit block_size,
+                       v8::Isolate*);
   ~CustomLayoutFragment() override = default;
 
   double inlineSize() const { return inline_size_; }
@@ -41,6 +45,8 @@ class CustomLayoutFragment : public ScriptWrappable {
 
   void setInlineOffset(double inline_offset) { inline_offset_ = inline_offset; }
   void setBlockOffset(double block_offset) { block_offset_ = block_offset; }
+
+  ScriptValue data(ScriptState*) const;
 
   LayoutBox* GetLayoutBox() const;
   bool IsValid() const;
@@ -68,6 +74,8 @@ class CustomLayoutFragment : public ScriptWrappable {
   // The offset is relative to our parent, and in the parent's writing mode.
   double inline_offset_ = 0;
   double block_offset_ = 0;
+
+  TraceWrapperV8Reference<v8::Value> layout_worklet_world_v8_data_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomLayoutFragment);
 };

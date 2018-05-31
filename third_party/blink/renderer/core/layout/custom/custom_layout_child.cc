@@ -22,8 +22,26 @@ CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
           definition.ChildCustomInvalidationProperties())) {}
 
 CustomLayoutFragmentRequest* CustomLayoutChild::layoutNextFragment(
-    const CustomLayoutConstraintsOptions& options) {
-  return new CustomLayoutFragmentRequest(this, options);
+    ScriptState* script_state,
+    const CustomLayoutConstraintsOptions& options,
+    ExceptionState& exception_state) {
+  // Serialize the provided data if needed.
+  scoped_refptr<SerializedScriptValue> constraint_data;
+  if (options.hasData()) {
+    // We serialize "kForStorage" so that SharedArrayBuffers can't be shared
+    // between LayoutWorkletGlobalScopes.
+    constraint_data = SerializedScriptValue::Serialize(
+        script_state->GetIsolate(), options.data().V8Value(),
+        SerializedScriptValue::SerializeOptions(
+            SerializedScriptValue::kForStorage),
+        exception_state);
+
+    if (exception_state.HadException())
+      return nullptr;
+  }
+
+  return new CustomLayoutFragmentRequest(this, options,
+                                         std::move(constraint_data));
 }
 
 void CustomLayoutChild::Trace(blink::Visitor* visitor) {
