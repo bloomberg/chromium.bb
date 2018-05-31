@@ -9,6 +9,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -29,7 +30,8 @@ class IdentityManagerHolder : public KeyedService {
   explicit IdentityManagerHolder(WebViewBrowserState* browser_state)
       : identity_manager_(
             WebViewSigninManagerFactory::GetForBrowserState(browser_state),
-            WebViewOAuth2TokenServiceFactory::GetForBrowserState(
+            WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+            WebViewAccountTrackerServiceFactory::GetForBrowserState(
                 browser_state)) {}
 
   identity::IdentityManager* identity_manager() { return &identity_manager_; }
@@ -42,6 +44,7 @@ WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(WebViewAccountTrackerServiceFactory::GetInstance());
   DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
   DependsOn(WebViewSigninManagerFactory::GetInstance());
 }

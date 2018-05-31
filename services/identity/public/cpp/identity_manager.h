@@ -7,6 +7,7 @@
 
 #include "base/observer_list.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
@@ -90,7 +91,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   };
 
   IdentityManager(SigninManagerBase* signin_manager,
-                  ProfileOAuth2TokenService* token_service);
+                  ProfileOAuth2TokenService* token_service,
+                  AccountTrackerService* account_tracker_service);
   ~IdentityManager() override;
 
   // Provides access to the latest cached information of the user's primary
@@ -186,6 +188,7 @@ class IdentityManager : public SigninManagerBase::Observer,
   // the Identity Service.
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
+  AccountTrackerService* account_tracker_service_;
 
   // The latest (cached) value of the primary account.
   AccountInfo primary_account_info_;

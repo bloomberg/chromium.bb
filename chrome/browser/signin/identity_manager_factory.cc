@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -22,7 +23,8 @@ class IdentityManagerHolder : public KeyedService {
   explicit IdentityManagerHolder(Profile* profile)
       : identity_manager_(
             SigninManagerFactory::GetForProfile(profile),
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile)) {}
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+            AccountTrackerServiceFactory::GetForProfile(profile)) {}
 
   identity::IdentityManager* identity_manager() { return &identity_manager_; }
 
@@ -34,6 +36,7 @@ IdentityManagerFactory::IdentityManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "IdentityManager",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
 }

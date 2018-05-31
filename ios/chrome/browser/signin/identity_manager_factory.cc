@@ -10,6 +10,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -23,7 +24,8 @@ class IdentityManagerHolder : public KeyedService {
   explicit IdentityManagerHolder(ios::ChromeBrowserState* browser_state)
       : identity_manager_(
             ios::SigninManagerFactory::GetForBrowserState(browser_state),
-            ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+            ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+            ios::AccountTrackerServiceFactory::GetForBrowserState(
                 browser_state)) {}
 
   identity::IdentityManager* identity_manager() { return &identity_manager_; }
@@ -36,6 +38,7 @@ IdentityManagerFactory::IdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
 }
