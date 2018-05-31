@@ -657,6 +657,31 @@
             ]
         }
     ],
+    "BlinkSchedulerDedicatedWorkerThrottling": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "max_budget_ms": "1000",
+                        "max_delay_ms": "60000",
+                        "recovery_rate": "0.01"
+                    },
+                    "enable_features": [
+                        "BlinkSchedulerWorkerThrottling"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlinkSchedulerHighPriorityInput": [
         {
             "platforms": [
