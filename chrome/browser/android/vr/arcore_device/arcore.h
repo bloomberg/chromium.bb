@@ -21,6 +21,8 @@ class ARCore {
  public:
   virtual ~ARCore() = default;
 
+  // Initializes the runtime and returns whether it was successful.
+  // If successful, the runtime must be paused when this method returns.
   virtual bool Initialize() = 0;
 
   virtual void SetDisplayGeometry(
@@ -38,6 +40,9 @@ class ARCore {
       const mojom::XRRayPtr& ray,
       const gfx::Size& image_size,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
+
+  virtual void Pause() = 0;
+  virtual void Resume() = 0;
 };
 
 }  // namespace device

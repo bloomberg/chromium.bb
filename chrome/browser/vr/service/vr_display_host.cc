@@ -42,6 +42,8 @@ VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
                              device::mojom::VRServiceClient* service_client,
                              device::mojom::VRDisplayInfoPtr display_info)
     : browser_device_(device),
+      // TODO(https://crbug.com/846392): render_frame_host can be null because
+      // of a test, not because a VRDisplayHost can be created without it.
       in_focused_frame_(
           render_frame_host ? render_frame_host->GetView()->HasFocus() : false),
       render_frame_host_(render_frame_host),
