@@ -431,7 +431,6 @@ if ($opts{arch} eq 'x86') {
   mips;
 } elsif ($opts{arch} =~ /armv7\w?/) {
   @ALL_ARCHS = filter(qw/neon/);
-  &require(@REQUIRES);
   arm;
 } elsif ($opts{arch} eq 'armv8' || $opts{arch} eq 'arm64' ) {
   @ALL_ARCHS = filter(qw/neon/);
