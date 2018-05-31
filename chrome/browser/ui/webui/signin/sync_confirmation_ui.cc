@@ -84,8 +84,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                       IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_TITLE);
     AddStringResource(source, "syncConfirmationOptionsUseDefaultSubtitle",
                       IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_USE_DEFAULT_SUBTITLE);
-    AddStringResource(source, "syncConfirmationOptionsConfirmLabel",
-                      IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_CONFIRM_BUTTON_LABEL);
+    AddStringResource(source, "syncConfirmationOptionsConfirmLabel", IDS_OK);
     AddStringResource(source, "syncConfirmationOptionsBackLabel",
                       IDS_SYNC_CONFIRMATION_UNITY_OPTIONS_BACK_BUTTON_LABEL);
     AddStringResource(source, "syncConsentBumpTitle",

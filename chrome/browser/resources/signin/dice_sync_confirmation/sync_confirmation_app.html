@@ -266,16 +266,16 @@
                consent-description>
             $i18n{syncConfirmationOptionsSubtitle}
           </div>
-          <paper-radio-group selected="reviewSettings"
+          <paper-radio-group selected="noChanges"
               selectable="cr-radio-button">
-            <cr-radio-button name="reviewSettings">
-              $i18n{syncConfirmationOptionsReviewSettingsTitle}
-            </cr-radio-button>
             <cr-radio-button name="noChanges">
               $i18n{syncConfirmationOptionsMakeNoChangesTitle}
               <div class="subtitle-text">
                 $i18n{syncConfirmationOptionsMakeNoChangesSubtitle}
               </div>
+            </cr-radio-button>
+            <cr-radio-button name="reviewSettings">
+              $i18n{syncConfirmationOptionsReviewSettingsTitle}
             </cr-radio-button>
             <cr-radio-button name="defaultSettings">
               <div consent-description>
