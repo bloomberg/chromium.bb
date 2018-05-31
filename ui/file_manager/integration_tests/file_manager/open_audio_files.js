@@ -46,6 +46,21 @@ function audioPlayingQuery(fileName) {
   return 'audio-player[playing]' + audioTrackQuery(fileName);
 }
 
+
+/**
+ * Makes the current Audio Player track leap forward in time in 10% increments
+ * to 90% of the track duration. This "leap-forward-in-time" effect works best
+ * if called real-soon™ after the track starts playing.
+ *
+ * @param {string} audioAppId The Audio Player window ID.
+ */
+function audioTimeLeapForward(audioAppId) {
+  for (let i = 1; i <= 9; ++i) {
+    audioPlayerApp.fakeKeyDown(
+        audioAppId, 'body', 'ArrowRight', 'Right', false, false, false);
+  }
+}
+
 /**
  * Converts a file name to a file system scheme URL for a given volume path.
  * TODO(noel): remove all uses of this routine.
