@@ -95,13 +95,11 @@ public class LocationBarLayoutTest {
         }
 
         @Override
-        public String getDisplayText() {
-            return mDisplayText == null ? super.getDisplayText() : mDisplayText;
-        }
-
-        @Override
-        public String getEditingText() {
-            return mEditingText == null ? super.getEditingText() : mEditingText;
+        public UrlBarData getUrlBarData() {
+            UrlBarData urlBarData = super.getUrlBarData();
+            CharSequence displayText = mDisplayText == null ? urlBarData.displayText : mDisplayText;
+            String editingText = mEditingText == null ? urlBarData.editingText : mEditingText;
+            return UrlBarData.forUrlAndText(getCurrentUrl(), displayText.toString(), editingText);
         }
 
         @Override

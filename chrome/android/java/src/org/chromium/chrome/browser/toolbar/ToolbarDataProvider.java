@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -51,15 +52,9 @@ public interface ToolbarDataProvider {
     Profile getProfile();
 
     /**
-     * @return The formatted text (URL or search terms) for display.
+     * @return The contents of the {@link org.chromium.chrome.browser.omnibox.UrlBar}.
      */
-    String getDisplayText();
-
-    /**
-     * @return The formatted text for editing.  Returning null will leave the display text untouched
-     *         when entering the edit state.
-     */
-    String getEditingText();
+    UrlBarData getUrlBarData();
 
     /**
      * @return The title of the current tab, or the empty string if there is currently no tab.
@@ -80,11 +75,6 @@ public interface ToolbarDataProvider {
      * @return Whether the page currently shown is an offline page.
      */
     boolean isOfflinePage();
-
-    /**
-     * @return Whether the page currently shown is an untrusted offline page.
-     */
-    boolean isShowingUntrustedOfflinePage();
 
     /**
      * @param urlBarText The text currently displayed in the url bar.

@@ -15,8 +15,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -26,7 +24,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Pair;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -42,7 +39,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -53,7 +49,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -81,7 +76,6 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -90,7 +84,6 @@ import org.chromium.ui.base.WindowAndroid;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -106,29 +99,6 @@ public class LocationBarLayout
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
-
-    // Unicode "Left-To-Right Mark" (LRM) character.
-    private static final char LRM = '\u200E';
-
-    /**
-     * URI schemes that ContentView can handle.
-     *
-     * Copied from UrlUtilities.java.  UrlUtilities uses a URI to check for schemes, which
-     * is more strict than Uri and causes the path stripping to fail.
-     *
-     * The following additions have been made: "chrome", "ftp".
-     */
-    private static final HashSet<String> ACCEPTED_SCHEMES = CollectionUtil.newHashSet(
-            ContentUrlConstants.ABOUT_SCHEME, UrlConstants.DATA_SCHEME, UrlConstants.FILE_SCHEME,
-            UrlConstants.FTP_SCHEME, UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME,
-            UrlConstants.INLINE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME, UrlConstants.CHROME_SCHEME);
-
-    /**
-     * The URL schemes that should be displayed complete with path.
-     */
-    protected static final HashSet<String> UNSUPPORTED_SCHEMES_TO_SPLIT =
-            CollectionUtil.newHashSet(UrlConstants.FILE_SCHEME,
-                    UrlConstants.JAVASCRIPT_SCHEME, UrlConstants.DATA_SCHEME);
 
     protected ImageView mNavigationButton;
     protected TintedImageButton mSecurityButton;
@@ -295,7 +265,7 @@ public class LocationBarLayout
                                 mSuggestionList.getSelectedItemPosition());
                 // Set the UrlBar text to empty, so that it will trigger a text change when we
                 // set the text to the suggestion again.
-                setUrlBarText("", null);
+                setUrlBarText(UrlBarData.EMPTY);
                 mUrlBar.setText(selectedItem.getSuggestion().getFillIntoEdit());
                 mSuggestionList.setSelection(0);
                 mUrlBar.setSelection(mUrlBar.getText().length());
@@ -729,9 +699,9 @@ public class LocationBarLayout
         } else {
             String currentUrl = mToolbarDataProvider.getCurrentUrl();
             if (NativePageFactory.isNativePageUrl(currentUrl, mToolbarDataProvider.isIncognito())) {
-                setUrlBarText("", null);
+                setUrlBarText(UrlBarData.EMPTY);
             } else {
-                setUrlBarText(mToolbarDataProvider.getDisplayText(), currentUrl);
+                setUrlBarText(mToolbarDataProvider.getUrlBarData());
                 selectAll();
             }
             hideSuggestions();
@@ -788,9 +758,8 @@ public class LocationBarLayout
 
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
-            String editingText = mToolbarDataProvider.getEditingText();
-            if (editingText == null
-                    || !setUrlBarText(mToolbarDataProvider.getCurrentUrl(), editingText)) {
+            UrlBarData urlBarData = mToolbarDataProvider.getUrlBarData();
+            if (urlBarData.editingText == null || !setUrlBarText(urlBarData)) {
                 mUrlBar.deEmphasizeUrl();
             }
 
@@ -982,7 +951,7 @@ public class LocationBarLayout
 
         if (pastedText != null) {
             // This must be happen after requestUrlFocus(), which changes the selection.
-            mUrlBar.setUrl(pastedText, null);
+            mUrlBar.setUrl(UrlBarData.forNonUrlText(pastedText));
             mUrlBar.setSelection(mUrlBar.getText().length());
         }
     }
@@ -1409,7 +1378,7 @@ public class LocationBarLayout
             @Override
             public void onRefineSuggestion(OmniboxSuggestion suggestion) {
                 stopAutocomplete(false);
-                mUrlBar.setUrl(suggestion.getFillIntoEdit(), null);
+                mUrlBar.setUrl(UrlBarData.forNonUrlText(suggestion.getFillIntoEdit()));
                 mUrlBar.setSelection(mUrlBar.getText().length());
                 if (suggestion.isUrlSuggestion()) {
                     RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
@@ -1421,7 +1390,7 @@ public class LocationBarLayout
             @Override
             public void onSetUrlToSuggestion(OmniboxSuggestion suggestion) {
                 if (mIgnoreOmniboxItemSelection) return;
-                setUrlBarText(suggestion.getFillIntoEdit(), null);
+                setUrlBarText(UrlBarData.forNonUrlText(suggestion.getFillIntoEdit()));
                 mUrlBar.setSelection(mUrlBar.getText().length());
                 mIgnoreOmniboxItemSelection = true;
             }
@@ -1635,7 +1604,7 @@ public class LocationBarLayout
             return;
         }
 
-        setUrlBarText(query, null);
+        setUrlBarText(UrlBarData.forNonUrlText(query));
         setUrlBarFocus(true);
         selectAll();
         stopAutocomplete(false);
@@ -1663,7 +1632,7 @@ public class LocationBarLayout
     public void onClick(View v) {
         if (v == mDeleteButton) {
             if (!TextUtils.isEmpty(mUrlBar.getTextWithAutocomplete())) {
-                setUrlBarText("", null);
+                setUrlBarText(UrlBarData.EMPTY);
                 hideSuggestions();
                 updateButtonVisibility();
             }
@@ -1829,47 +1798,6 @@ public class LocationBarLayout
     }
 
     /**
-     * Given the URL display text, this will remove any path portion contained within.
-     * @param displayText The text to strip the path from.
-     * @return A pair where the first item is the text without any path content (if the path was
-     *         successfully found), and the second item is the path content (or null if no path
-     *         was found or parsing the path failed).
-     * @see ToolbarDataProvider#getDisplayText()
-     */
-    // TODO(tedchoc): Move this logic into the original display text calculation.
-    @VisibleForTesting
-    public static Pair<String, String> splitPathFromUrlDisplayText(String displayText) {
-        int pathSearchOffset = 0;
-        Uri uri = Uri.parse(displayText);
-        String scheme = uri.getScheme();
-        if (!TextUtils.isEmpty(scheme)) {
-            if (UNSUPPORTED_SCHEMES_TO_SPLIT.contains(scheme)) {
-                return Pair.create(displayText, null);
-            } else if (ACCEPTED_SCHEMES.contains(scheme)) {
-                for (pathSearchOffset = scheme.length();
-                        pathSearchOffset < displayText.length();
-                        pathSearchOffset++) {
-                    char c = displayText.charAt(pathSearchOffset);
-                    if (c != ':' && c != '/') break;
-                }
-            }
-        }
-        int pathOffset = -1;
-        if (pathSearchOffset < displayText.length()) {
-            pathOffset = displayText.indexOf('/', pathSearchOffset);
-        }
-        if (pathOffset != -1) {
-            String prePathText = displayText.substring(0, pathOffset);
-            // If the '/' is the last character and the beginning of the path, then just drop
-            // the path entirely.
-            String pathText = pathOffset == displayText.length() - 1
-                    ? null : displayText.substring(pathOffset);
-            return Pair.create(prePathText, pathText);
-        }
-        return Pair.create(displayText, null);
-    }
-
-    /**
      * Sets the displayed URL to be the URL of the page currently showing.
      *
      * <p>The URL is converted to the most user friendly format (removing HTTP:// for example).
@@ -1894,13 +1822,8 @@ public class LocationBarLayout
         }
 
         mOriginalUrl = currentUrl;
-        String displayText = getDisplayText();
-        if (TextUtils.isEmpty(displayText)) {
-            setUrlBarText("", null);
-        } else {
-            if (setUrlBarText(currentUrl, displayText)) {
-                emphasizeUrl();
-            }
+        if (setUrlBarText(mToolbarDataProvider.getUrlBarData())) {
+            emphasizeUrl();
         }
         if (!mToolbarDataProvider.hasTab()) return;
 
@@ -1909,29 +1832,14 @@ public class LocationBarLayout
         if (profile != null) mOmniboxPrerender.clear(profile);
     }
 
-    private String getDisplayText() {
-        if (!mToolbarDataProvider.hasTab()) return "";
-
-        String displayText = mToolbarDataProvider.getDisplayText();
-        // Because Android versions 4.2 and before lack proper RTL support,
-        // force the formatted URL to render as LTR using an LRM character.
-        // See: https://www.ietf.org/rfc/rfc3987.txt and crbug.com/709417
-        if (!TextUtils.isEmpty(displayText)
-                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            displayText = LRM + displayText;
-        }
-        return displayText;
-    }
-
     /**
      * Changes the text on the url bar.
-     * @param originalText The original text (URL or search terms) for copy/cut.
-     * @param displayText The text (URL or search terms) for user display.
+     * @param urlBarData The contents of the URL bar, both for editing and displaying.
      * @return Whether the URL was changed as a result of this call.
      */
-    private boolean setUrlBarText(String originalText, String displayText) {
+    private boolean setUrlBarText(UrlBarData urlBarData) {
         mUrlBar.setIgnoreTextChangesForAutocomplete(true);
-        boolean urlChanged = mUrlBar.setUrl(originalText, displayText);
+        boolean urlChanged = mUrlBar.setUrl(urlBarData);
         mUrlBar.setIgnoreTextChangesForAutocomplete(false);
         return urlChanged;
     }
@@ -2129,7 +2037,8 @@ public class LocationBarLayout
         } else if (hasWindowFocus && mUrlHasFocus && mNativeInitialized) {
             Editable currentUrlBarText = mUrlBar.getText();
             if (TextUtils.isEmpty(currentUrlBarText)
-                    || TextUtils.equals(currentUrlBarText, getDisplayText())) {
+                    || TextUtils.equals(currentUrlBarText,
+                               mToolbarDataProvider.getUrlBarData().getEditingOrDisplayText())) {
                 startZeroSuggest();
             } else {
                 onTextChangedForAutocomplete();

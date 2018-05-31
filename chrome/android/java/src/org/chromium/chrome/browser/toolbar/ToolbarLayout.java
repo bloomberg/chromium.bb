@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.InputDevice;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -45,16 +47,12 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
-import javax.annotation.Nullable;
-
 /**
  * Layout class that contains the base shared logic for manipulating the toolbar component. For
  * interaction that are not from Views inside Toolbar hierarchy all interactions should be done
  * through {@link Toolbar} rather than using this class directly.
  */
 public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
-    protected static final int BACKGROUND_TRANSITION_DURATION_MS = 400;
-
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIATION_PARAM_NAME = "variation";
 
@@ -180,13 +178,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
-            public String getDisplayText() {
-                return null;
-            }
-
-            @Override
-            public String getEditingText() {
-                return null;
+            public UrlBarData getUrlBarData() {
+                return UrlBarData.EMPTY;
             }
 
             @Override
@@ -211,11 +204,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
             @Override
             public boolean isOfflinePage() {
-                return false;
-            }
-
-            @Override
-            public boolean isShowingUntrustedOfflinePage() {
                 return false;
             }
 

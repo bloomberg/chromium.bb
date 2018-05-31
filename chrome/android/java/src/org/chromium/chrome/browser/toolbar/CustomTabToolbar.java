@@ -20,10 +20,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v4.text.BidiFormatter;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
-import android.util.Pair;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -42,13 +42,11 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
-import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -56,8 +54,6 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
-import org.chromium.components.dom_distiller.core.DomDistillerService;
-import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.GURLUtils;
@@ -76,6 +72,7 @@ import java.util.regex.Pattern;
  */
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
+    private static final Object ORIGIN_SPAN = new Object();
 
     /**
      * A simple {@link FrameLayout} that prevents its children from getting touch events. This is
@@ -399,7 +396,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public void setUrlToPageUrl() {
         if (getCurrentTab() == null) {
-            mUrlBar.setUrl("", null);
+            mUrlBar.setUrl(UrlBarData.EMPTY);
             return;
         }
 
@@ -414,52 +411,35 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // is "about:blank". We should not display it.
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
                 || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
-            mUrlBar.setUrl("", null);
+            mUrlBar.setUrl(UrlBarData.EMPTY);
             return;
         }
-        CharSequence displayText;
+        final CharSequence displayText;
+        final int originStart;
+        final int originEnd;
         if (publisherUrl != null) {
+            // TODO(bauerb): Move this into the ToolbarDataProvider as well?
             String plainDisplayText = getContext().getString(R.string.custom_tab_amp_publisher_url,
                     extractPublisherFromPublisherUrl(publisherUrl));
             ColorStateList tint = mUseDarkColors ? mDarkModeTint : mLightModeTint;
-            displayText = SpanApplier.applySpans(plainDisplayText,
+            SpannableString formattedDisplayText = SpanApplier.applySpans(plainDisplayText,
+                    new SpanInfo("<pub>", "</pub>", ORIGIN_SPAN),
                     new SpanInfo("<bg>", "</bg>", new ForegroundColorSpan(tint.getDefaultColor())));
+            originStart = formattedDisplayText.getSpanStart(ORIGIN_SPAN);
+            originEnd = formattedDisplayText.getSpanEnd(ORIGIN_SPAN);
+            formattedDisplayText.removeSpan(ORIGIN_SPAN);
+            displayText = formattedDisplayText;
         } else {
-            String fullDisplayText = getToolbarDataProvider().getDisplayText();
-            Pair<String, String> urlText =
-                    LocationBarLayout.splitPathFromUrlDisplayText(fullDisplayText);
-            displayText = urlText.first;
+            UrlBarData urlBarData = getToolbarDataProvider().getUrlBarData();
+            displayText = urlBarData.displayText.subSequence(
+                    urlBarData.originStartIndex, urlBarData.originEndIndex);
+            originStart = 0;
+            originEnd = displayText.length();
         }
 
-        if (DomDistillerUrlUtils.isDistilledPage(url)) {
-            if (isStoredArticle(url)) {
-                Profile profile = getCurrentTab().getProfile();
-                DomDistillerService domDistillerService =
-                        DomDistillerServiceFactory.getForProfile(profile);
-                String originalUrl = domDistillerService.getUrlForEntry(
-                        DomDistillerUrlUtils.getValueForKeyInUrl(url, "entry_id"));
-                displayText =
-                        DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
-            } else if (DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url) != null) {
-                String originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-                displayText =
-                        DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
-            }
-        }
-
-        if (mUrlBar.setUrl(url, displayText)) {
+        if (mUrlBar.setUrl(UrlBarData.create(url, displayText, originStart, originEnd, url))) {
             mUrlBar.emphasizeUrl();
         }
-
-        mUrlBar.setShouldEllipsizeUrlText(publisherUrl != null);
-    }
-
-    private boolean isStoredArticle(String url) {
-        DomDistillerService domDistillerService =
-                DomDistillerServiceFactory.getForProfile(Profile.getLastUsedProfile());
-        String entryIdFromUrl = DomDistillerUrlUtils.getValueForKeyInUrl(url, "entry_id");
-        if (TextUtils.isEmpty(entryIdFromUrl)) return false;
-        return domDistillerService.hasEntry(entryIdFromUrl);
     }
 
     @Override
@@ -754,7 +734,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     @UrlBar.ScrollType
     public int getScrollType() {
-        return shouldEmphasizeUrl() ? UrlBar.SCROLL_TO_TLD : UrlBar.SCROLL_TO_BEGINNING;
+        return UrlBar.SCROLL_TO_TLD;
     }
 
     @Override
