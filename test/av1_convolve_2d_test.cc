@@ -144,6 +144,13 @@ INSTANTIATE_TEST_CASE_P(NEON_COPY, AV1JntConvolve2DTest,
 INSTANTIATE_TEST_CASE_P(
     NEON, AV1JntConvolve2DTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_2d_neon, 1, 1));
+INSTANTIATE_TEST_CASE_P(
+    NEON_X, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_x_neon, 1, 0));
+
+INSTANTIATE_TEST_CASE_P(
+    NEON_Y, AV1JntConvolve2DTest,
+    libaom_test::AV1Convolve2D::BuildParams(av1_jnt_convolve_y_neon, 0, 1));
 #endif  // HAVE_NEON
 
 TEST_P(AV1HighbdConvolve2DSrTest, CheckOutput) { RunCheckOutput(GET_PARAM(1)); }
