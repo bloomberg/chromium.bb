@@ -17,7 +17,6 @@ Resource::Resource(const gfx::Size& size,
     : locked_for_external_use(false),
       marked_for_deletion(false),
       read_lock_fences_enabled(false),
-      has_shared_bitmap_id(false),
       is_overlay_candidate(false),
 #if defined(OS_ANDROID)
       is_backed_by_surface_texture(false),
@@ -32,15 +31,6 @@ Resource::Resource(const gfx::Size& size,
 Resource::Resource(Resource&& other) = default;
 Resource::~Resource() = default;
 Resource& Resource::operator=(Resource&& other) = default;
-
-void Resource::SetSharedBitmap(SharedBitmap* bitmap) {
-  DCHECK(bitmap);
-  DCHECK(bitmap->pixels());
-  shared_bitmap = bitmap;
-  pixels = bitmap->pixels();
-  has_shared_bitmap_id = true;
-  shared_bitmap_id = bitmap->id();
-}
 
 void Resource::SetLocallyUsed() {
   synchronization_state_ = LOCALLY_USED;

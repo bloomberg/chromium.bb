@@ -39,17 +39,16 @@ struct VIZ_COMMON_EXPORT Resource {
     // The LOCALLY_USED state is the state each resource defaults to when
     // constructed or modified or read. This state indicates that the
     // resource has not been properly synchronized and it would be an error
-    // to send this resource to a parent, child, or client.
+    // to return this resource to a client.
     LOCALLY_USED,
 
     // The NEEDS_WAIT state is the state that indicates a resource has been
     // modified but it also has an associated sync token assigned to it.
     // The sync token has not been waited on with the local context. When
-    // a sync token arrives from an external resource (such as a child or
-    // parent), it is automatically initialized as NEEDS_WAIT as well
-    // since we still need to wait on it before the resource is synchronized
-    // on the current context. It is an error to use the resource locally for
-    // reading or writing if the resource is in this state.
+    // a sync token arrives from a client, it is automatically initialized as
+    // NEEDS_WAIT as well since we still need to wait on it before the resource
+    // is synchronized on the current context. It is an error to use the
+    // resource locally for reading or writing if the resource is in this state.
     NEEDS_WAIT,
 
     // The SYNCHRONIZED state indicates that the resource has been properly
@@ -89,8 +88,6 @@ struct VIZ_COMMON_EXPORT Resource {
     return synchronization_state_;
   }
 
-  void SetSharedBitmap(SharedBitmap* bitmap);
-
   void SetLocallyUsed();
   void SetSynchronized();
   void UpdateSyncToken(const gpu::SyncToken& sync_token);
@@ -107,9 +104,6 @@ struct VIZ_COMMON_EXPORT Resource {
   // Tracks if a gpu fence needs to be used for reading a GpuMemoryBuffer-
   // backed or texture-backed resource.
   bool read_lock_fences_enabled : 1;
-  // True if the software-backed resource is in shared memory, in which case
-  // |shared_bitmap_id| will be valid.
-  bool has_shared_bitmap_id : 1;
   // When true, the resource should be considered for being displayed in an
   // overlay.
   bool is_overlay_candidate : 1;
@@ -138,8 +132,6 @@ struct VIZ_COMMON_EXPORT Resource {
   // service. The mailbox has the IPC-capable data for sharing the resource
   // backing between modules/GL contexts/processes.
   gpu::Mailbox mailbox;
-  // Non-owning pointer to a software-backed resource when mapped.
-  uint8_t* pixels = nullptr;
   // Reference-counts to know when a resource can be released through the
   // |release_callback| after it is deleted, and for verifying correct use
   // of the resource.
@@ -177,14 +169,18 @@ struct VIZ_COMMON_EXPORT Resource {
   // format for texture-backed resources, the image format for GpuMemoryBuffer-
   // backed resources, or the SkColorType used for software-backed resources.
   ResourceFormat format = ResourceFormat::RGBA_8888;
-  // The name of the shared memory for software-backed resources, but not
-  // present if the resource isn't shared memory.
+  // The name of the shared memory for software-backed resources. Present when
+  // the type is kBitmap, and empty otherwise.
   SharedBitmapId shared_bitmap_id;
   // A pointer to the shared memory structure for software-backed resources, but
-  // not present if the resources isn't shared memory.
-  SharedBitmap* shared_bitmap = nullptr;
-  // Ownership of |shared_bitmap| for when it is created internally.
-  std::unique_ptr<SharedBitmap> owned_shared_bitmap;
+  // not present if the resources isn't shared memory. This is null until the
+  // resource is mapped for use in the display compositor.
+  std::unique_ptr<SharedBitmap> shared_bitmap;
+  // A GUID for reporting the |shared_bitmap| to memory tracing. The GUID is
+  // known by other components in the system as well to give the same id for
+  // this shared memory bitmap everywhere. This is empty until the resource is
+  // mapped for use in the display compositor.
+  base::UnguessableToken shared_bitmap_tracing_guid;
   // The color space for all resource types, to control how the resource should
   // be drawn to output device.
   gfx::ColorSpace color_space;
