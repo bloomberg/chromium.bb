@@ -337,6 +337,10 @@ const CGFloat kSearchByImageMaxImageArea = 90000.0;
 const CGFloat kSearchByImageMaxImageWidth = 600.0;
 const CGFloat kSearchByImageMaxImageHeight = 400.0;
 
+// When the tab strip moves beyond this origin offset, switch the status bar
+// appearance from light to dark.
+const CGFloat kTabStripAppearanceOffset = -29;
+
 enum HeaderBehaviour {
   // The header moves completely out of the screen.
   Hideable = 0,
@@ -1859,6 +1863,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (IsUIRefreshPhase1Enabled() && !base::ios::IsRunningOnIOS11OrLater()) {
     [self setUpViewLayout:NO];
   }
+
+  [self setNeedsStatusBarAppearanceUpdate];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -1990,9 +1996,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
-  return ([self canShowTabStrip] || _isOffTheRecord)
-             ? UIStatusBarStyleLightContent
-             : UIStatusBarStyleDefault;
+  if ([self canShowTabStrip] && !_isOffTheRecord) {
+    return self.tabStripView.frame.origin.y < kTabStripAppearanceOffset
+               ? UIStatusBarStyleDefault
+               : UIStatusBarStyleLightContent;
+  }
+  return _isOffTheRecord ? UIStatusBarStyleLightContent
+                         : UIStatusBarStyleDefault;
 }
 
 #pragma mark - ** Private BVC Methods **
@@ -2052,7 +2062,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (IsIPadIdiom()) {
     [_fakeStatusBarView setBackgroundColor:StatusBarBackgroundColor()];
     [_fakeStatusBarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-    [_fakeStatusBarView layer].zPosition = 99;
+    if (!IsUIRefreshPhase1Enabled())
+      [_fakeStatusBarView layer].zPosition = 99;
     [[self view] addSubview:_fakeStatusBarView];
   } else {
     // Add a white bar on phone so that the status bar on the NTP is white.
@@ -2396,9 +2407,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Place the toolbar controller above the infobar container and adds the
   // layout guides.
   if (initialLayout) {
+    UIView* bottomView = IsIPadIdiom() && IsUIRefreshPhase1Enabled()
+                             ? _fakeStatusBarView
+                             : infoBarContainerView;
     [[self view]
         insertSubview:self.primaryToolbarCoordinator.viewController.view
-         aboveSubview:infoBarContainerView];
+         aboveSubview:bottomView];
     if (self.secondaryToolbarCoordinator) {
       [[self view]
           insertSubview:self.secondaryToolbarCoordinator.viewController.view
@@ -2633,6 +2647,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [header.view setFrame:frame];
     if (header.behaviour != Overlap)
       height += CGRectGetHeight(frame);
+
+    if (header.view == self.tabStripView && IsUIRefreshPhase1Enabled())
+      [self setNeedsStatusBarAppearanceUpdate];
   }
 }
 
