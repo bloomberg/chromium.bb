@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/chrome_sync_client.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -127,10 +128,20 @@ using syncer::AsyncDirectoryTypeController;
 namespace browser_sync {
 
 namespace {
+
 #if defined(OS_WIN)
 const base::FilePath::CharType kLoopbackServerBackendFilename[] =
     FILE_PATH_LITERAL("profile.pb");
 #endif  // defined(OS_WIN)
+
+syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
+  std::string disabled_types_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDisableSyncTypes);
+
+  return syncer::ModelTypeSetFromString(disabled_types_str);
+}
+
 }  // namespace
 
 // Chrome implementation of SyncSessionsClient. Needs to be in a separate class
@@ -197,8 +208,8 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 
 ChromeSyncClient::ChromeSyncClient(Profile* profile)
     : profile_(profile),
-      sync_sessions_client_(new SyncSessionsClientImpl(profile)),
-      weak_ptr_factory_(this) {}
+      sync_sessions_client_(std::make_unique<SyncSessionsClientImpl>(profile)) {
+}
 
 ChromeSyncClient::~ChromeSyncClient() {
 }
@@ -218,7 +229,6 @@ void ChromeSyncClient::Initialize() {
     component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
         this, chrome::GetChannel(), chrome::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-        *base::CommandLine::ForCurrentProcess(),
         prefs::kSavingBrowserHistoryDisabled,
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
@@ -297,15 +307,23 @@ base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
       base::Unretained(profile_));
 }
 
-syncer::SyncApiComponentFactory::RegisterDataTypesMethod
-ChromeSyncClient::GetRegisterPlatformTypesCallback() {
-  return base::Bind(
+syncer::DataTypeController::TypeVector
+ChromeSyncClient::CreateDataTypeControllers(
+    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+  syncer::ModelTypeSet disabled_types = GetDisabledTypesFromCommandLine();
+
+  syncer::DataTypeController::TypeVector controllers =
+      component_factory_->CreateCommonDataTypeControllers(
+          disabled_types, local_device_info_provider);
+
+// TODO(mastiz): Merge the two functions below into one or inline bodies here,
+// since there is common code.
 #if defined(OS_ANDROID)
-      &ChromeSyncClient::RegisterAndroidDataTypes,
+  RegisterAndroidDataTypes(&controllers);
 #else
-      &ChromeSyncClient::RegisterDesktopDataTypes,
+  RegisterDesktopDataTypes(disabled_types, &controllers);
 #endif  // defined(OS_ANDROID)
-      weak_ptr_factory_.GetWeakPtr());
+  return controllers;
 }
 
 BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -567,9 +585,8 @@ void ChromeSyncClient::GetDeviceInfoTrackers(
 }
 
 void ChromeSyncClient::RegisterDesktopDataTypes(
-    syncer::SyncService* sync_service,
     syncer::ModelTypeSet disabled_types,
-    syncer::ModelTypeSet enabled_types) {
+    syncer::DataTypeController::TypeVector* controllers) {
   base::Closure error_callback =
       base::Bind(&syncer::ReportUnrecoverableError, chrome::GetChannel());
 
@@ -577,112 +594,96 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APPS)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ExtensionDataTypeController>(
-            syncer::APPS, error_callback, this, profile_));
+    controllers->push_back(std::make_unique<ExtensionDataTypeController>(
+        syncer::APPS, error_callback, this, profile_));
   }
 
   // Extension sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSIONS)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ExtensionDataTypeController>(
-            syncer::EXTENSIONS, error_callback, this, profile_));
+    controllers->push_back(std::make_unique<ExtensionDataTypeController>(
+        syncer::EXTENSIONS, error_callback, this, profile_));
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::THEMES)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ThemeDataTypeController>(error_callback, this,
-                                                  profile_));
+    controllers->push_back(std::make_unique<ThemeDataTypeController>(
+        error_callback, this, profile_));
   }
 #endif  // !defined(OS_ANDROID)
 
   // Search Engine sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<SearchEngineDataTypeController>(
-            error_callback, this,
-            TemplateURLServiceFactory::GetForProfile(profile_)));
+    controllers->push_back(std::make_unique<SearchEngineDataTypeController>(
+        error_callback, this,
+        TemplateURLServiceFactory::GetForProfile(profile_)));
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Extension setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ExtensionSettingDataTypeController>(
-            syncer::EXTENSION_SETTINGS, error_callback, this, profile_));
+    controllers->push_back(std::make_unique<ExtensionSettingDataTypeController>(
+        syncer::EXTENSION_SETTINGS, error_callback, this, profile_));
   }
 
   // App setting sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::APP_SETTINGS)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ExtensionSettingDataTypeController>(
-            syncer::APP_SETTINGS, error_callback, this, profile_));
+    controllers->push_back(std::make_unique<ExtensionSettingDataTypeController>(
+        syncer::APP_SETTINGS, error_callback, this, profile_));
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-  sync_service->RegisterDataTypeController(
-      std::make_unique<AsyncDirectoryTypeController>(
-          syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+  controllers->push_back(std::make_unique<AsyncDirectoryTypeController>(
+      syncer::APP_LIST, error_callback, this, syncer::GROUP_UI,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 #if defined(OS_LINUX) || defined(OS_WIN)
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<AsyncDirectoryTypeController>(
-            syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+    controllers->push_back(std::make_unique<AsyncDirectoryTypeController>(
+        syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
 #endif  // defined(OS_LINUX) || defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  sync_service->RegisterDataTypeController(
-      std::make_unique<SupervisedUserSyncDataTypeController>(
-          syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
-  sync_service->RegisterDataTypeController(
-      std::make_unique<SupervisedUserSyncDataTypeController>(
-          syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
+  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
+      syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
+  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
+      syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWifiCredentialSync) &&
       !disabled_types.Has(syncer::WIFI_CREDENTIALS)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<AsyncDirectoryTypeController>(
-            syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+    controllers->push_back(std::make_unique<AsyncDirectoryTypeController>(
+        syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
   if (arc::IsArcAllowedForProfile(profile_)) {
-    sync_service->RegisterDataTypeController(
-        std::make_unique<ArcPackageSyncDataTypeController>(
-            syncer::ARC_PACKAGE, error_callback, this, profile_));
+    controllers->push_back(std::make_unique<ArcPackageSyncDataTypeController>(
+        syncer::ARC_PACKAGE, error_callback, this, profile_));
   }
 #endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeSyncClient::RegisterAndroidDataTypes(
-    syncer::SyncService* sync_service,
-    syncer::ModelTypeSet disabled_types,
-    syncer::ModelTypeSet enabled_types) {
+    syncer::DataTypeController::TypeVector* controllers) {
   base::Closure error_callback =
       base::Bind(&syncer::ReportUnrecoverableError, chrome::GetChannel());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  sync_service->RegisterDataTypeController(
-      std::make_unique<SupervisedUserSyncDataTypeController>(
-          syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
-  sync_service->RegisterDataTypeController(
-      std::make_unique<SupervisedUserSyncDataTypeController>(
-          syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
+  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
+      syncer::SUPERVISED_USER_SETTINGS, error_callback, this, profile_));
+  controllers->push_back(std::make_unique<SupervisedUserSyncDataTypeController>(
+      syncer::SUPERVISED_USER_WHITELISTS, error_callback, this, profile_));
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 }
 

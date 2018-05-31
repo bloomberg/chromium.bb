@@ -18,7 +18,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
@@ -198,9 +197,15 @@ class ProfileSyncServiceTest : public ::testing::Test {
         syncer::ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest();
 
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
-    service_->RegisterDataTypeController(
-        std::make_unique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
 
+    ON_CALL(*component_factory_, CreateCommonDataTypeControllers(_, _))
+        .WillByDefault(testing::InvokeWithoutArgs([=]() {
+          syncer::DataTypeController::TypeVector controllers;
+          controllers.push_back(
+              std::make_unique<syncer::FakeDataTypeController>(
+                  syncer::BOOKMARKS));
+          return controllers;
+        }));
     ON_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
         .WillByDefault(ReturnNewFakeSyncEngine());
     ON_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
@@ -222,9 +227,15 @@ class ProfileSyncServiceTest : public ::testing::Test {
     init_params.signin_wrapper.reset();
 
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
-    service_->RegisterDataTypeController(
-        std::make_unique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
 
+    ON_CALL(*component_factory_, CreateCommonDataTypeControllers(_, _))
+        .WillByDefault(testing::InvokeWithoutArgs([=]() {
+          syncer::DataTypeController::TypeVector controllers;
+          controllers.push_back(
+              std::make_unique<syncer::FakeDataTypeController>(
+                  syncer::BOOKMARKS));
+          return controllers;
+        }));
     ON_CALL(*component_factory_, CreateSyncEngine(_, _, _, _))
         .WillByDefault(ReturnNewFakeSyncEngine());
     ON_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _, _))
@@ -1175,19 +1186,48 @@ TEST_F(ProfileSyncServiceTest, ValidPointersInDTCMap) {
       /*has_remaining_local_changes=*/false));
 }
 
-// The OpenTabsUIDelegate should only be accessable when PROXY_TABS is enabled.
-TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegate) {
+// The OpenTabsUIDelegate should not be accessible when PROXY_TABS is not
+// enabled.
+TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegateNullIfDisabled) {
   CreateService(ProfileSyncService::AUTO_START);
+
+  ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
+      .WillByDefault(testing::InvokeWithoutArgs([=]() {
+        auto controller =
+            std::make_unique<syncer::FakeDataTypeController>(syncer::SESSIONS);
+        // Progress the controller to RUNNING first, which is how the
+        // service determines whether a type is enabled.
+        controller->StartAssociating(base::DoNothing());
+        controller->FinishStart(syncer::DataTypeController::OK_FIRST_RUN);
+
+        syncer::DataTypeController::TypeVector controllers;
+        controllers.push_back(std::move(controller));
+        return controllers;
+      }));
+
   InitializeForNthSync();
   EXPECT_EQ(nullptr, service()->GetOpenTabsUIDelegate());
+}
 
-  auto controller =
-      std::make_unique<syncer::FakeDataTypeController>(syncer::PROXY_TABS);
-  // Progress the controller to RUNNING first, which is how the service
-  // determines whether a type is enabled.
-  controller->StartAssociating(base::DoNothing());
-  controller->FinishStart(syncer::DataTypeController::OK_FIRST_RUN);
-  service()->RegisterDataTypeController(std::move(controller));
+// The OpenTabsUIDelegate should be accessible when PROXY_TABS is enabled.
+TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegateNotNullIfEnabled) {
+  CreateService(ProfileSyncService::AUTO_START);
+
+  ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
+      .WillByDefault(testing::InvokeWithoutArgs([=]() {
+        auto controller = std::make_unique<syncer::FakeDataTypeController>(
+            syncer::PROXY_TABS);
+        // Progress the controller to RUNNING first, which is how the
+        // service determines whether a type is enabled.
+        controller->StartAssociating(base::DoNothing());
+        controller->FinishStart(syncer::DataTypeController::OK_FIRST_RUN);
+
+        syncer::DataTypeController::TypeVector controllers;
+        controllers.push_back(std::move(controller));
+        return controllers;
+      }));
+
+  InitializeForNthSync();
   EXPECT_NE(nullptr, service()->GetOpenTabsUIDelegate());
 }
 

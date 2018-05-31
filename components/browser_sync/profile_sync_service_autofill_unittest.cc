@@ -415,6 +415,16 @@ class ProfileSyncServiceAutofillTest
     CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
+                CreateCommonDataTypeControllers(_, _))
+        .WillOnce(testing::InvokeWithoutArgs([=]() {
+          syncer::DataTypeController::TypeVector controllers;
+          controllers.push_back(
+              std::make_unique<AutofillProfileDataTypeController>(
+                  data_type_thread()->task_runner(), base::DoNothing(),
+                  sync_client_, web_data_service_));
+          return controllers;
+        }));
+    EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
                 CreateDataTypeManager(_, _, _, _, _, _))
         .WillOnce(ReturnNewDataTypeManagerWithDebugListener(
             sync_client_,
@@ -423,10 +433,6 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(personal_data_manager(), IsDataLoaded())
         .WillRepeatedly(Return(true));
 
-    sync_service()->RegisterDataTypeController(
-        std::make_unique<AutofillProfileDataTypeController>(
-            data_type_thread()->task_runner(), base::DoNothing(), sync_client_,
-            web_data_service_));
     sync_service()->Initialize();
     base::RunLoop().Run();
 

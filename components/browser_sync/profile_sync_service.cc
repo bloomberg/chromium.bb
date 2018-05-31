@@ -135,6 +135,18 @@ EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
   return factory_switches;
 }
 
+DataTypeController::TypeMap BuildDataTypeControllerMap(
+    DataTypeController::TypeVector controllers) {
+  DataTypeController::TypeMap type_map;
+  for (std::unique_ptr<DataTypeController>& controller : controllers) {
+    DCHECK(controller);
+    ModelType type = controller->type();
+    DCHECK_EQ(0U, type_map.count(type));
+    type_map[type] = std::move(controller);
+  }
+  return type_map;
+}
+
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
@@ -226,6 +238,7 @@ void ProfileSyncService::Initialize() {
                           weak_factory_.GetWeakPtr()));
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
+  DCHECK(local_device_);
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
       sync_service_url_, local_device_->GetSyncUserAgent(),
       url_request_context_, syncer::SyncStoppedReporter::ResultCallback());
@@ -256,11 +269,8 @@ void ProfileSyncService::Initialize() {
           /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
                                              channel_)));
 
-  syncer::SyncApiComponentFactory::RegisterDataTypesMethod
-      register_platform_types_callback =
-          sync_client_->GetRegisterPlatformTypesCallback();
-  sync_client_->GetSyncApiComponentFactory()->RegisterDataTypes(
-      this, register_platform_types_callback);
+  data_type_controllers_ = BuildDataTypeControllerMap(
+      sync_client_->CreateDataTypeControllers(local_device_.get()));
 
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->AddObserver(this);
@@ -354,14 +364,6 @@ void ProfileSyncService::StartSyncingWithServer() {
 
   if (engine_)
     engine_->StartSyncingWithServer();
-}
-
-void ProfileSyncService::RegisterDataTypeController(
-    std::unique_ptr<DataTypeController> data_type_controller) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
-  data_type_controllers_[data_type_controller->type()] =
-      std::move(data_type_controller);
 }
 
 bool ProfileSyncService::IsDataTypeControllerRunning(

@@ -26,13 +26,14 @@
 #include "components/sync/model/model_type_store_test_util.h"
 
 using browser_sync::ProfileSyncService;
+using testing::NiceMock;
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
   auto sync_client = std::make_unique<browser_sync::ChromeSyncClient>(profile);
 
   sync_client->SetSyncApiComponentFactoryForTesting(
-      std::make_unique<syncer::SyncApiComponentFactoryMock>());
+      std::make_unique<NiceMock<syncer::SyncApiComponentFactoryMock>>());
 
   ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(std::move(sync_client), profile);
@@ -74,7 +75,7 @@ std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
 
 std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     content::BrowserContext* context) {
-  return std::make_unique<browser_sync::ProfileSyncServiceMock>(
+  return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(
       CreateProfileSyncServiceParamsForTest(
           Profile::FromBrowserContext(context)));
 }

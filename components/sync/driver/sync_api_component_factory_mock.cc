@@ -7,48 +7,18 @@
 #include <utility>
 
 #include "components/sync/device_info/local_device_info_provider_mock.h"
-#include "components/sync/driver/model_associator.h"
-#include "components/sync/model/change_processor.h"
-
-using testing::_;
-using testing::InvokeWithoutArgs;
-using testing::Return;
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
 
-SyncApiComponentFactoryMock::SyncApiComponentFactoryMock() = default;
-
-SyncApiComponentFactoryMock::SyncApiComponentFactoryMock(
-    AssociatorInterface* model_associator,
-    ChangeProcessor* change_processor)
-    : model_associator_(model_associator),
-      change_processor_(change_processor) {}
-
-SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() {}
-
-SyncApiComponentFactory::SyncComponents
-SyncApiComponentFactoryMock::CreateBookmarkSyncComponents(
-    SyncService* sync_service,
-    std::unique_ptr<DataTypeErrorHandler> error_handler) {
-  return MakeSyncComponents();
+SyncApiComponentFactoryMock::SyncApiComponentFactoryMock() {
+  // To avoid returning nulls and crashes in many tests, we default to create
+  // a mock device info provider.
+  ON_CALL(*this, CreateLocalDeviceInfoProvider())
+      .WillByDefault(testing::Invoke(
+          []() { return std::make_unique<LocalDeviceInfoProviderMock>(); }));
 }
 
-SyncApiComponentFactory::SyncComponents
-SyncApiComponentFactoryMock::MakeSyncComponents() {
-  return SyncApiComponentFactory::SyncComponents(model_associator_.release(),
-                                                 change_processor_.release());
-}
-
-std::unique_ptr<LocalDeviceInfoProvider>
-SyncApiComponentFactoryMock::CreateLocalDeviceInfoProvider() {
-  if (local_device_)
-    return std::move(local_device_);
-  return std::make_unique<LocalDeviceInfoProviderMock>();
-}
-
-void SyncApiComponentFactoryMock::SetLocalDeviceInfoProvider(
-    std::unique_ptr<LocalDeviceInfoProvider> local_device) {
-  local_device_ = std::move(local_device);
-}
+SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() = default;
 
 }  // namespace syncer

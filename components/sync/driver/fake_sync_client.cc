@@ -13,14 +13,6 @@
 
 namespace syncer {
 
-namespace {
-
-void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
-                                        ModelTypeSet,
-                                        ModelTypeSet) {}
-
-}  // namespace
-
 FakeSyncClient::FakeSyncClient()
     : bridge_(nullptr),
       factory_(nullptr),
@@ -73,9 +65,11 @@ base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {
   return base::DoNothing();
 }
 
-SyncApiComponentFactory::RegisterDataTypesMethod
-FakeSyncClient::GetRegisterPlatformTypesCallback() {
-  return base::Bind(&DummyRegisterPlatformTypesCallback);
+DataTypeController::TypeVector FakeSyncClient::CreateDataTypeControllers(
+    LocalDeviceInfoProvider* local_device_info_provider) {
+  DCHECK(factory_);
+  return factory_->CreateCommonDataTypeControllers(
+      /*disabled_types=*/ModelTypeSet(), local_device_info_provider);
 }
 
 autofill::PersonalDataManager* FakeSyncClient::GetPersonalDataManager() {

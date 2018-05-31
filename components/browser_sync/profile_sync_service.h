@@ -94,9 +94,6 @@ class SyncAuthManager;
 //      never be shown for an unregistered type, and nor should it ever be
 //      synced.
 //
-//      A datatype is considered registered once RegisterDataTypeController
-//      has been called with that datatype's DataTypeController.
-//
 //   'Preferred' (user preferences and opt-out for a datatype)
 //
 //      This means the user's opt-in or opt-out preference on a per-datatype
@@ -274,8 +271,6 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
   syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
-  void RegisterDataTypeController(std::unique_ptr<syncer::DataTypeController>
-                                      data_type_controller) override;
   void ReenableDatatype(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;

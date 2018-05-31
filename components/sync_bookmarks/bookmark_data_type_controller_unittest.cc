@@ -5,6 +5,7 @@
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -37,6 +38,7 @@ using syncer::StartCallbackMock;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
+using testing::NiceMock;
 using testing::Return;
 using testing::SetArgPointee;
 
@@ -64,18 +66,27 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   }
   syncer::SyncService* GetSyncService() override { return &service_; }
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
-    return profile_sync_factory_.get();
+    return &components_factory_;
   }
 
   void SetUp() override {
-    model_associator_ = new ModelAssociatorMock();
-    change_processor_ = new ChangeProcessorMock();
+    model_associator_deleter_ =
+        std::make_unique<NiceMock<ModelAssociatorMock>>();
+    change_processor_deleter_ =
+        std::make_unique<NiceMock<ChangeProcessorMock>>();
+    model_associator_ = model_associator_deleter_.get();
+    change_processor_ = change_processor_deleter_.get();
     history_service_ = std::make_unique<HistoryMock>();
-    profile_sync_factory_ =
-        std::make_unique<syncer::SyncApiComponentFactoryMock>(
-            model_associator_, change_processor_);
     bookmark_dtc_ =
         std::make_unique<BookmarkDataTypeController>(base::DoNothing(), this);
+
+    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_))
+        .WillByDefault(testing::InvokeWithoutArgs([=]() {
+          syncer::SyncApiComponentFactory::SyncComponents components;
+          components.model_associator = std::move(model_associator_deleter_);
+          components.change_processor = std::move(change_processor_deleter_);
+          return components;
+        }));
   }
 
  protected:
@@ -131,13 +142,15 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   }
 
   base::MessageLoop message_loop_;
-  std::unique_ptr<syncer::SyncApiComponentFactoryMock> profile_sync_factory_;
+  testing::NiceMock<syncer::SyncApiComponentFactoryMock> components_factory_;
   std::unique_ptr<BookmarkModel> bookmark_model_;
   std::unique_ptr<HistoryMock> history_service_;
   std::unique_ptr<BookmarkDataTypeController> bookmark_dtc_;
   syncer::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
+  std::unique_ptr<ModelAssociatorMock> model_associator_deleter_;
+  std::unique_ptr<ChangeProcessorMock> change_processor_deleter_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
 };

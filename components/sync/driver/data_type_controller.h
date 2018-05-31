@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -73,6 +74,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
       base::Callback<void(ModelType, const StatusCounters&)>;
 
   using TypeMap = std::map<ModelType, std::unique_ptr<DataTypeController>>;
+  using TypeVector = std::vector<std::unique_ptr<DataTypeController>>;
 
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.

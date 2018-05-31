@@ -15,7 +15,7 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/driver/sync_api_component_factory.h"
+#include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
@@ -33,42 +33,6 @@
 namespace syncer {
 
 namespace {
-
-// MockSyncApiComponentFactory needed to initialize GenericChangeProcessor.
-class MockSyncApiComponentFactory : public SyncApiComponentFactory {
- public:
-  MockSyncApiComponentFactory() {}
-
-  // SyncApiComponentFactory implementation.
-  void RegisterDataTypes(
-      SyncService* sync_service,
-      const RegisterDataTypesMethod& register_platform_types_method) override {}
-  std::unique_ptr<DataTypeManager> CreateDataTypeManager(
-      ModelTypeSet initial_types,
-      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const DataTypeController::TypeMap* controllers,
-      const DataTypeEncryptionHandler* encryption_handler,
-      ModelTypeConfigurer* configurer,
-      DataTypeManagerObserver* observer) override {
-    return nullptr;
-  };
-  std::unique_ptr<SyncEngine> CreateSyncEngine(
-      const std::string& name,
-      invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder) override {
-    return nullptr;
-  }
-  std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
-      override {
-    return nullptr;
-  }
-  SyncComponents CreateBookmarkSyncComponents(
-      SyncService* sync_service,
-      std::unique_ptr<DataTypeErrorHandler> error_handler) override {
-    return SyncComponents(nullptr, nullptr);
-  }
-};
 
 class SyncGenericChangeProcessorTest : public testing::Test {
  public:
@@ -151,7 +115,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
 
   std::unique_ptr<TestUserShare> test_user_share_;
   FakeSyncClient sync_client_;
-  MockSyncApiComponentFactory sync_factory_;
+  testing::NiceMock<SyncApiComponentFactoryMock> sync_factory_;
 
   std::unique_ptr<GenericChangeProcessor> change_processor_;
 };

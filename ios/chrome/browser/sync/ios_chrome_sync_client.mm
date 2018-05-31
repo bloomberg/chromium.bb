@@ -71,6 +71,14 @@
 
 namespace {
 
+syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
+  std::string disabled_types_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDisableSyncTypes);
+
+  return syncer::ModelTypeSetFromString(disabled_types_str);
+}
+
 // iOS implementation of SyncSessionsClient. Needs to be in a separate class
 // due to possible multiple inheritance issues, wherein IOSChromeSyncClient
 // might inherit from other interfaces with same methods.
@@ -137,8 +145,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       sync_sessions_client_(
-          std::make_unique<SyncSessionsClientImpl>(browser_state)),
-      weak_ptr_factory_(this) {}
+          std::make_unique<SyncSessionsClientImpl>(browser_state)) {}
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
 
@@ -158,7 +165,6 @@ void IOSChromeSyncClient::Initialize() {
     component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
         this, ::GetChannel(), ::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-        *base::CommandLine::ForCurrentProcess(),
         prefs::kSavingBrowserHistoryDisabled,
         web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), db_thread_,
         web_data_service_, password_store_));
@@ -213,10 +219,12 @@ base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
       base::Unretained(browser_state_));
 }
 
-syncer::SyncApiComponentFactory::RegisterDataTypesMethod
-IOSChromeSyncClient::GetRegisterPlatformTypesCallback() {
+syncer::DataTypeController::TypeVector
+IOSChromeSyncClient::CreateDataTypeControllers(
+    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
   // The iOS port does not have any platform-specific datatypes.
-  return syncer::SyncApiComponentFactory::RegisterDataTypesMethod();
+  return component_factory_->CreateCommonDataTypeControllers(
+      GetDisabledTypesFromCommandLine(), local_device_info_provider);
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
