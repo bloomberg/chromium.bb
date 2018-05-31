@@ -7,7 +7,6 @@
 
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
-#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -76,12 +75,12 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
 
 }  // namespace
 
-TEST(GpuPreferencesUtilTest, EncodeDecode) {
+TEST(GpuPreferencesTest, EncodeDecode) {
   {  // Testing default values.
     GpuPreferences input_prefs;
     GpuPreferences decoded_prefs;
-    std::string encoded = GpuPreferencesToSwitchValue(input_prefs);
-    bool flag = SwitchValueToGpuPreferences(encoded, &decoded_prefs);
+    std::string encoded = input_prefs.ToSwitchValue();
+    bool flag = decoded_prefs.FromSwitchValue(encoded);
     EXPECT_TRUE(flag);
     CheckGpuPreferencesEqual(input_prefs, decoded_prefs);
   }
@@ -153,8 +152,8 @@ TEST(GpuPreferencesUtilTest, EncodeDecode) {
         gfx::BufferUsage::GPU_READ, gfx::BufferFormat::BGRA_8888);
 
     // Make sure every field is encoded/decoded.
-    std::string encoded = GpuPreferencesToSwitchValue(input_prefs);
-    bool flag = SwitchValueToGpuPreferences(encoded, &decoded_prefs);
+    std::string encoded = input_prefs.ToSwitchValue();
+    bool flag = decoded_prefs.FromSwitchValue(encoded);
     EXPECT_TRUE(flag);
     CheckGpuPreferencesEqual(input_prefs, decoded_prefs);
   }

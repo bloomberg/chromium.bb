@@ -6,6 +6,7 @@
 #define GPU_CONFIG_GPU_PREFERENCES_H_
 
 #include <stddef.h>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -31,6 +32,13 @@ struct GPU_EXPORT GpuPreferences {
   GpuPreferences(const GpuPreferences& other);
 
   ~GpuPreferences();
+
+  // Encode struct into a string so it can be passed as a commandline switch.
+  std::string ToSwitchValue();
+
+  // Decode the encoded string back to GpuPrefences struct.
+  // If return false, |this| won't be touched.
+  bool FromSwitchValue(const std::string& data);
 
   // Support for accelerated vpx decoding for various vendors,
   // intended to be used as a bitfield.
@@ -179,7 +187,7 @@ struct GPU_EXPORT GpuPreferences {
   // Use GpuFence objects to synchronize display of overlay planes.
   bool use_gpu_fences_for_overlay_planes = false;
 
-  // Please update gpu_preferences_util_unittest.cc when making additions or
+  // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.
 };
 

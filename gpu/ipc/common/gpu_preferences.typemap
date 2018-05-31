@@ -6,7 +6,6 @@ mojom = "//gpu/ipc/common/gpu_preferences.mojom"
 public_headers = [ "//gpu/config/gpu_preferences.h" ]
 traits_headers = [ "//gpu/ipc/common/gpu_preferences_struct_traits.h" ]
 public_deps = [
-  "//gpu/command_buffer/service",
   "//media:media_buildflags",
 ]
 type_mappings = [

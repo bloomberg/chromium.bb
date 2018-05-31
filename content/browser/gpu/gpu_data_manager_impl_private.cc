@@ -42,7 +42,6 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/config/software_rendering_list_autogen.h"
-#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
@@ -514,7 +513,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   gpu::GpuPreferences gpu_prefs = GetGpuPreferencesFromCommandLine();
   UpdateGpuPreferences(&gpu_prefs);
   command_line->AppendSwitchASCII(switches::kGpuPreferences,
-                                  gpu::GpuPreferencesToSwitchValue(gpu_prefs));
+                                  gpu_prefs.ToSwitchValue());
 
   std::string use_gl;
   if (card_disabled_ && SwiftShaderAllowed()) {

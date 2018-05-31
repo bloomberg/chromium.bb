@@ -22,7 +22,6 @@ source_set("main") {
     "//components/viz/service",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/common",
-    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/service",
     "//ipc",
     "//mojo/public/cpp/system",
