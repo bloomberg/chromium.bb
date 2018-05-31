@@ -643,21 +643,8 @@ void KeyboardController::PopulateKeyboardContent(
 
   ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
 
-  // If |container_| has hide animation, its visibility is set to false when the
-  // hide animation finished. So even if the container is visible at this
-  // point, it may be in the process of hiding. We still need to show keyboard
-  // container in this case.
-  if (container_->IsVisible() && !container_animator->is_animating()) {
-    // TODO(oka): This clause is excercised in
-    // VirtualKeyboardRootWindowControllerTest
-    //     .EnsureCaretInWorkAreaWithMultipleDisplays
-    // when keyboard container window has been shown from outside.
-    // This should not happen in the real code. Fix the test and change this to
-    // NOTREACHED.
-    DCHECK_EQ(state_, KeyboardControllerState::HIDDEN);
-    ChangeState(KeyboardControllerState::SHOWN);
-    return;
-  }
+  // Ensure that the keyboard is either hidden or is in the process of hiding.
+  DCHECK(!container_->IsVisible() || container_animator->is_animating());
 
   SetTouchEventLogging(!show_keyboard /* enable */);
 
