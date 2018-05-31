@@ -1726,6 +1726,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "HelpURL": "https://support.google.com/chrome/?p=blocked"
+                    },
                     "enable_features": [
                         "IncompatibleApplicationsWarning",
                         "ModuleDatabase"
