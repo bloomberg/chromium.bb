@@ -30,8 +30,6 @@ cast_source_set("renderer") {
     "cast_content_renderer_client.h",
     "cast_media_load_deferrer.cc",
     "cast_media_load_deferrer.h",
-    "tts_dispatcher.cc",
-    "tts_dispatcher.h",
   ]
 
   public_deps = [

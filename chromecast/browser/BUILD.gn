@@ -84,8 +84,6 @@ cast_source_set("browser") {
     "tts/tts_controller.h",
     "tts/tts_controller_impl.cc",
     "tts/tts_controller_impl.h",
-    "tts/tts_message_filter.cc",
-    "tts/tts_message_filter.h",
     "tts/tts_platform.cc",
     "tts/tts_platform.h",
     "url_request_context_factory.cc",

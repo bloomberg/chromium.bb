@@ -37,7 +37,6 @@
 #include "chromecast/browser/renderer_config.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/tts/tts_controller.h"
-#include "chromecast/browser/tts/tts_message_filter.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
@@ -325,7 +324,6 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       render_process_id, browser_context));
   host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(
       render_process_id, browser_context));
-  host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
   host->AddFilter(
       new CastExtensionMessageFilter(render_process_id, browser_context));
 #endif
