@@ -151,6 +151,11 @@ const char kSystemGestureStartHeight[] = "system-gesture-start-height";
 const char kBackGestureHorizontalThreshold[] =
     "back-gesture-horizontal-threshold";
 
+extern const char kCastMemoryPressureCriticalFraction[] =
+    "memory-pressure-critical-fraction";
+extern const char kCastMemoryPressureModerateFraction[] =
+    "memory-pressure-moderate-fraction";
+
 }  // namespace switches
 
 namespace chromecast {

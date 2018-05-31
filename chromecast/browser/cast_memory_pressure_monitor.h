@@ -26,6 +26,9 @@ class CastMemoryPressureMonitor : public base::MemoryPressureMonitor {
   void PollPressureLevel();
   void UpdateMemoryPressureLevel(MemoryPressureLevel new_level);
 
+  const float critical_memory_fraction_;
+  const float moderate_memory_fraction_;
+
   MemoryPressureLevel current_level_;
   const int system_reserved_kb_;
   DispatchCallback dispatch_callback_;
