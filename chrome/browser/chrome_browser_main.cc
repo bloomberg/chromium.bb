@@ -698,7 +698,12 @@ std::string InitResourceBundleAndDetermineLocale(
   locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
       locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
-  ui::ResourceBundle::GetSharedInstance().AddDataPack(std::move(data_pack));
+  if (data_pack) {
+    ui::ResourceBundle::GetSharedInstance().AddDataPack(std::move(data_pack));
+  } else {
+    LOG(ERROR) << "Failed to load resources.pak\n"
+               << "Some features may not be available.";
+  }
 
   return locale;
 }
