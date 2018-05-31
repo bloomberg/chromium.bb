@@ -14,6 +14,10 @@
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -73,12 +77,44 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   }
 
  private:
+  friend class identity::IdentityManager;
+
+  // Interface that gives information on internal TokenService operations. Only
+  // for use by IdentityManager during the conversion of the codebase to use
+  // //services/identity/public/cpp.
+  // NOTE: This interface is defined on ProfileOAuth2TokenService rather than
+  // on the OAuth2TokenService base class for multiple reasons:
+  // (1) The base class already has a DiagnosticsObserver interface, from
+  // which this interface differs because there can be only one instance.
+  // (2) PO2TS itself observes O2TS and for correctness must receive observer
+  // callbacks before any other O2TS observer. Hence, these DiagnosticsClient
+  // callouts must go *inside* PO2TS's implementations of the O2TS observer
+  // methods.
+  class DiagnosticsClient {
+   public:
+    // Sent just before OnRefreshTokenAvailable() is fired on observers.
+    // |is_valid| indicates whether the token is valid.
+    virtual void WillFireOnRefreshTokenAvailable(const std::string& account_id,
+                                                 bool is_valid) = 0;
+    // Sent just before OnRefreshTokenRevoked() is fired on observers.
+    virtual void WillFireOnRefreshTokenRevoked(
+        const std::string& account_id) = 0;
+  };
+
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
 
+  void set_diagnostics_client(DiagnosticsClient* diagnostics_client) {
+    DCHECK(!diagnostics_client_ || !diagnostics_client);
+    diagnostics_client_ = diagnostics_client;
+  }
+
   // Whether all credentials have been loaded.
   bool all_credentials_loaded_;
+
+  // The DiagnosticsClient object associated with this object. May be null.
+  DiagnosticsClient* diagnostics_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

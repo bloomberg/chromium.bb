@@ -12,7 +12,9 @@
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : OAuth2TokenService(std::move(delegate)), all_credentials_loaded_(false) {
+    : OAuth2TokenService(std::move(delegate)),
+      all_credentials_loaded_(false),
+      diagnostics_client_(nullptr) {
   AddObserver(this);
 }
 
@@ -61,12 +63,38 @@ const net::BackoffEntry* ProfileOAuth2TokenService::GetDelegateBackoffEntry() {
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const std::string& account_id) {
+  // Check if the newly-updated token is valid (invalid tokens are inserted when
+  // the user signs out on the web with DICE enabled).
+  bool is_valid = true;
+  GoogleServiceAuthError token_error = GetAuthError(account_id);
+  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                             CREDENTIALS_REJECTED_BY_CLIENT)) {
+    is_valid = false;
+  }
+
+  // NOTE: The code executed in the rest of this method does not affect the
+  // state of the accounts in this object, so it doesn't matter whether the
+  // callout to |diagnostics_client_| is made before or after. If that fact ever
+  // changes, it will be necessary to reason about what the ordering should be.
+  if (diagnostics_client_) {
+    diagnostics_client_->WillFireOnRefreshTokenAvailable(account_id, is_valid);
+  }
+
   CancelRequestsForAccount(account_id);
   ClearCacheForAccount(account_id);
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
     const std::string& account_id) {
+  // NOTE: The code executed in the rest of this method does not affect the
+  // state of the accounts in this object, so it doesn't matter whether the
+  // callout to |diagnostics_client_| is made before or after. If that fact ever
+  // changes, it will be necessary to reason about what the ordering should be.
+  if (diagnostics_client_) {
+    diagnostics_client_->WillFireOnRefreshTokenRevoked(account_id);
+  }
+
   CancelRequestsForAccount(account_id);
   ClearCacheForAccount(account_id);
 }
