@@ -470,7 +470,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
 
-  relation_cache_->UpdateRelatedTree(node);
+  MaybeNewRelationTarget(node, new_obj);
 
   return new_obj;
 }
@@ -492,6 +492,8 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   layout_object_mapping_.Set(layout_object, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
+  if (layout_object->GetNode())
+    MaybeNewRelationTarget(layout_object->GetNode(), new_obj);
 
   return new_obj;
 }
@@ -741,8 +743,8 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
   // Calling get() will update the AX object if we had an AXNodeObject but now
   // we need an AXLayoutObject, because it was reparented to a location outside
   // of a canvas.
-  Get(node);
-  relation_cache_->UpdateRelatedTree(node);
+  AXObject* obj = Get(node);
+  MaybeNewRelationTarget(node, obj);
 }
 
 void AXObjectCacheImpl::ChildrenChanged(Node* node) {
@@ -922,6 +924,26 @@ void AXObjectCacheImpl::HandleAriaSelectedChanged(Node* node) {
     PostNotification(listbox, kAXSelectedChildrenChanged);
 }
 
+// This might be the new target of a relation. Handle all possible cases.
+void AXObjectCacheImpl::MaybeNewRelationTarget(Node* node, AXObject* obj) {
+  // Track reverse relations
+  relation_cache_->UpdateRelatedTree(node);
+
+  if (!obj)
+    return;
+
+  // Check whether aria-activedescendant on a focused object points to |obj|.
+  // If so, fire activedescendantchanged event now.
+  // This is only for ARIA active descendants, not in a native control like a
+  // listbox, which has its own initial active descendant handling.
+  AXObject* focus = FocusedObject();
+  if (!focus)
+    return;
+
+  if (focus->ActiveDescendant() == obj && obj->CanBeActiveDescendant())
+    focus->HandleActiveDescendantChanged();
+}
+
 void AXObjectCacheImpl::HandleActiveDescendantChanged(Node* node) {
   // Changing the active descendant should trigger recomputing all
   // cached values even if it doesn't result in a notification, because
@@ -974,7 +996,7 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   else if (attr_name == forAttr && IsHTMLLabelElement(*element))
     LabelChanged(element);
   else if (attr_name == idAttr)
-    relation_cache_->UpdateRelatedTree(element);
+    MaybeNewRelationTarget(element, Get(element));
 
   if (!attr_name.LocalName().StartsWith("aria-"))
     return;
