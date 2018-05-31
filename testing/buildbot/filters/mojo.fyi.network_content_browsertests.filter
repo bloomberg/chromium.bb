@@ -49,6 +49,9 @@
 # headers in the NetworkService world.
 -CrossSiteDocumentBlockingTest.BlockHeaders
 
+# https://crbug.com/846334: CORB: Need to make sure that prefetch/caching works
+-CrossSiteDocumentBlockingTest.PrefetchIsNotImpacted
+
 # https://crbug.com/846352: CORB/NetworkService: Remove
 # CrossSiteDocumentResourceHandler while preserving test coverage - the tests
 # below can be probably removed altogether once NetworkService ships and the
