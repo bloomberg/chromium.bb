@@ -75,7 +75,7 @@ uint32_t CalculateTimeDateStamp(base::Time time) {
   return delta < base::TimeDelta() ? 0 : static_cast<uint32_t>(delta.InHours());
 }
 
-bool ReadModuleBlacklistCache(
+ReadResult ReadModuleBlacklistCache(
     const base::FilePath& module_blacklist_cache_path,
     third_party_dlls::PackedListMetadata* metadata,
     std::vector<third_party_dlls::PackedListModule>* blacklisted_modules,
@@ -88,48 +88,48 @@ bool ReadModuleBlacklistCache(
                   base::File::FLAG_OPEN | base::File::FLAG_READ |
                       base::File::FLAG_SHARE_DELETE);
   if (!file.IsValid())
-    return false;
+    return ReadResult::kFailOpenFile;
 
   third_party_dlls::PackedListMetadata read_metadata;
   if (!SafeRead(&file, reinterpret_cast<char*>(&read_metadata),
                 sizeof(read_metadata))) {
-    return false;
+    return ReadResult::kFailReadMetadata;
   }
 
   // Make sure the version is supported.
   if (read_metadata.version > third_party_dlls::PackedListVersion::kCurrent)
-    return false;
+    return ReadResult::kFailInvalidVersion;
 
   std::vector<third_party_dlls::PackedListModule> read_blacklisted_modules(
       read_metadata.module_count);
   if (!SafeRead(&file, reinterpret_cast<char*>(read_blacklisted_modules.data()),
                 sizeof(third_party_dlls::PackedListModule) *
                     read_metadata.module_count)) {
-    return false;
+    return ReadResult::kFailReadModules;
   }
 
   // The list should be sorted.
   if (!std::is_sorted(read_blacklisted_modules.begin(),
                       read_blacklisted_modules.end(), internal::ModuleLess())) {
-    return false;
+    return ReadResult::kFailModulesNotSorted;
   }
 
   base::MD5Digest read_md5_digest;
   if (!SafeRead(&file, reinterpret_cast<char*>(&read_md5_digest.a),
                 base::size(read_md5_digest.a))) {
-    return false;
+    return ReadResult::kFailReadMD5;
   }
 
   if (!IsMD5DigestEqual(read_md5_digest,
                         CalculateModuleBlacklistCacheMD5(
                             read_metadata, read_blacklisted_modules))) {
-    return false;
+    return ReadResult::kFailInvalidMD5;
   }
 
   *metadata = read_metadata;
   *blacklisted_modules = std::move(read_blacklisted_modules);
   *md5_digest = read_md5_digest;
-  return true;
+  return ReadResult::kSuccess;
 }
 
 bool WriteModuleBlacklistCache(

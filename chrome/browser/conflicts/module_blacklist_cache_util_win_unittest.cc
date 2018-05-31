@@ -162,7 +162,8 @@ TEST_F(ModuleBlacklistCacheUtilTest, WriteAndRead) {
   third_party_dlls::PackedListMetadata read_metadata;
   std::vector<third_party_dlls::PackedListModule> read_blacklisted_modules;
   base::MD5Digest read_md5_digest;
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      ReadResult::kSuccess,
       ReadModuleBlacklistCache(module_blacklist_cache_path(), &read_metadata,
                                &read_blacklisted_modules, &read_md5_digest));
 

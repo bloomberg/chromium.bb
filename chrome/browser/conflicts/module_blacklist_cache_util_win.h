@@ -28,11 +28,33 @@ class ModuleListFilter;
 // (1601-01-01 00:00:00 UTC).
 uint32_t CalculateTimeDateStamp(base::Time time);
 
+// The possible result value when trying to read an existing module blacklist
+// cache. These values are persisted to logs. Entries should not be renumbered
+// and numeric values should never be reused.
+enum class ReadResult {
+  // A valid cache was successfully read.
+  kSuccess = 0,
+  // Failed to open the cache file for reading.
+  kFailOpenFile = 1,
+  // Failed to parse the metadata structure.
+  kFailReadMetadata = 2,
+  // The version of the cache is not supported by the current version of Chrome.
+  kFailInvalidVersion = 3,
+  // Failed to read the entire array of PackedListModule.
+  kFailReadModules = 4,
+  // The cache was rejected because the array was not correctly sorted.
+  kFailModulesNotSorted = 5,
+  // Failed to read the MD5 digest.
+  kFailReadMD5 = 6,
+  // The cache was rejected because the MD5 digest did not match the content.
+  kFailInvalidMD5 = 7,
+  kMaxValue = kFailInvalidMD5
+};
+
 // Reads an existing module blacklist cache at |module_blacklist_cache_path|
-// into |metadata| and |blacklisted_modules|. Returns false on failure or if
-// the md5 digest doesn't match. Failures also does not modify the out
-// arguments.
-bool ReadModuleBlacklistCache(
+// into |metadata| and |blacklisted_modules| and return a ReadResult. Failures
+// do not modify the out arguments.
+ReadResult ReadModuleBlacklistCache(
     const base::FilePath& module_blacklist_cache_path,
     third_party_dlls::PackedListMetadata* metadata,
     std::vector<third_party_dlls::PackedListModule>* blacklisted_modules,
