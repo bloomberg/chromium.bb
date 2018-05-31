@@ -29,7 +29,6 @@
 - (void)viewDidLoad {
   [self.navigationBar setBackgroundImage:[UIImage new]
                            forBarMetrics:UIBarMetricsDefault];
-
   if (self.tableViewController.styler.tableViewBackgroundColor !=
       [UIColor clearColor]) {
     self.navigationBar.translucent = NO;

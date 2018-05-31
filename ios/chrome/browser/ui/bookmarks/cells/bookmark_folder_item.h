@@ -12,6 +12,12 @@ typedef NS_ENUM(NSInteger, BookmarkFolderStyle) {
   BookmarkFolderStyleNewFolder,
 };
 
+typedef NS_ENUM(NSInteger, TableViewBookmarkFolderAccessoryType) {
+  TableViewBookmarkFolderAccessoryTypeNone,
+  TableViewBookmarkFolderAccessoryTypeCheckmark,
+  TableViewBookmarkFolderAccessoryTypeDisclosureIndicator,
+};
+
 // BookmarkFolderItem provides data for a table view row that displays a
 // single bookmark folder.
 @interface BookmarkFolderItem : TableViewItem
@@ -45,9 +51,9 @@ typedef NS_ENUM(NSInteger, BookmarkFolderStyle) {
 @property(nonatomic, strong) UIImageView* folderImageView;
 // The folder title displayed by this cell.
 @property(nonatomic, strong) UILabel* folderTitleLabel;
-// Whether the cell is displaying a checkmark.
-@property(nonatomic, assign, getter=isChecked) BOOL checked;
-
+// Accessory View.
+@property(nonatomic, assign)
+    TableViewBookmarkFolderAccessoryType bookmarkAccessoryType;
 @end
 
 // TableViewCell that displays BookmarkFolderItem data.

@@ -255,9 +255,15 @@ const CGFloat kShadowRadius = 12.0f;
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
-  self =
-      [super initWithTableViewStyle:UITableViewStylePlain
-                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  } else {
+    self =
+        [super initWithTableViewStyle:UITableViewStylePlain
+                          appBarStyle:ChromeTableViewControllerStyleWithAppBar];
+  }
   if (self) {
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
@@ -288,6 +294,12 @@ const CGFloat kShadowRadius = 12.0f;
   DCHECK_EQ(_rootNode, self.bookmarks->root_node());
 
   NSMutableArray<BookmarkHomeViewController*>* stack = [NSMutableArray array];
+  // On UIRefresh we need to configure the root controller Navigationbar at this
+  // time when reconstructing from cache, or there will be a loading flicker if
+  // this gets done on viewDidLoad.
+  if (experimental_flags::IsBookmarksUIRebootEnabled())
+    [self setupNavigationForBookmarkHomeViewController:self
+                                     usingBookmarkNode:_rootNode];
   [stack addObject:self];
 
   int64_t cachedFolderID;
@@ -324,6 +336,12 @@ const CGFloat kShadowRadius = 12.0f;
 
     BookmarkHomeViewController* controller =
         [self createControllerWithRootFolder:node];
+    // On UIRefresh we need to configure the controller's Navigationbar at this
+    // time when reconstructing from cache, or there will be a loading flicker
+    // if this gets done on viewDidLoad.
+    if (experimental_flags::IsBookmarksUIRebootEnabled())
+      [self setupNavigationForBookmarkHomeViewController:controller
+                                       usingBookmarkNode:node];
     if (nodeID == cachedFolderID) {
       [controller
           setCachedContentPosition:[NSNumber
@@ -340,13 +358,21 @@ const CGFloat kShadowRadius = 12.0f;
   [super viewDidLoad];
 
   // Set Navigation Bar and Toolbar appearance.
-  self.navigationController.navigationBarHidden = YES;
-  self.navigationController.toolbar.translucent = NO;
-  self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.toolbar.translucent = YES;
+    // If the NavigationBar is not translucent, set
+    // |self.extendedLayoutIncludesOpaqueBars| to YES.
+    self.extendedLayoutIncludesOpaqueBars = YES;
+  } else {
+    self.navigationController.navigationBarHidden = YES;
+    self.navigationController.toolbar.translucent = NO;
+    self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
+    self.navigationController.toolbar.layer.shadowRadius = kShadowRadius;
+    self.navigationController.toolbar.layer.shadowOpacity = kShadowOpacity;
+  }
   self.navigationController.toolbar.accessibilityIdentifier =
       kBookmarkHomeUIToolbarIdentifier;
-  self.navigationController.toolbar.layer.shadowRadius = kShadowRadius;
-  self.navigationController.toolbar.layer.shadowOpacity = kShadowOpacity;
 
   // Disable separators while the loading spinner is showing. |loadBookmarkView|
   // will bring them back if needed.
@@ -445,8 +471,8 @@ const CGFloat kShadowRadius = 12.0f;
   self.mediator.consumer = self;
   [self.mediator startMediating];
 
-  // After the table view has been added.
-  [self setupNavigationBar];
+  [self setupNavigationForBookmarkHomeViewController:self
+                                   usingBookmarkNode:_rootNode];
 
   [self setupContextBar];
 
@@ -945,24 +971,38 @@ const CGFloat kShadowRadius = 12.0f;
   }
 }
 
-// Set up navigation bar for the new UI.
-- (void)setupNavigationBar {
-  DCHECK(self.sharedState.tableView);
-  self.navigationController.navigationBarHidden = YES;
-  if (self.navigationController.viewControllers.count > 1) {
-    // Add custom back button.
-    UIBarButtonItem* backButton =
-        [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
-                                            target:self
-                                            action:@selector(back)];
-    self.navigationItem.leftBarButtonItem = backButton;
+// Set up navigation bar for |viewController|'s navigationBar using |node|.
+- (void)setupNavigationForBookmarkHomeViewController:
+            (BookmarkHomeViewController*)viewController
+                                   usingBookmarkNode:
+                                       (const bookmarks::BookmarkNode*)node {
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    viewController.navigationItem.leftBarButtonItem.action = @selector(back);
+    // Disable large titles on every VC but the root controller.
+    if (@available(iOS 11, *)) {
+      if (node != self.bookmarks->root_node()) {
+        viewController.navigationItem.largeTitleDisplayMode =
+            UINavigationItemLargeTitleDisplayModeNever;
+      }
+    }
+  } else {
+    viewController.navigationController.navigationBarHidden = YES;
+    if (viewController.navigationController.viewControllers.count > 1) {
+      // Add custom back button.
+      UIBarButtonItem* backButton =
+          [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
+                                              target:self
+                                              action:@selector(back)];
+      viewController.navigationItem.leftBarButtonItem = backButton;
+    }
   }
 
   // Add custom title.
-  self.title = bookmark_utils_ios::TitleForBookmarkNode(_rootNode);
+  viewController.title = bookmark_utils_ios::TitleForBookmarkNode(node);
 
   // Add custom done button.
-  self.navigationItem.rightBarButtonItem = [self customizedDoneButton];
+  viewController.navigationItem.rightBarButtonItem =
+      [self customizedDoneButton];
 }
 
 // Back button callback for the new ui.
@@ -1713,22 +1753,27 @@ const CGFloat kShadowRadius = 12.0f;
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
         base::mac::ObjCCastStrict<BookmarkHomeNodeItem>(item);
-    BookmarkTableCell* tableCell =
-        base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
-    if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
-      // Delay starting edit, so that the cell is fully created.
-      dispatch_async(dispatch_get_main_queue(), ^{
-        self.sharedState.editingFolderCell = tableCell;
-        [tableCell startEdit];
-        tableCell.textDelegate = self;
-      });
-    }
+    if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+      // TODO(crbug.com/839442): Implement support for
+      // TableViewBookmarkFolderCell editing.
+    } else {
+      BookmarkTableCell* tableCell =
+          base::mac::ObjCCastStrict<BookmarkTableCell>(cell);
+      if (nodeItem.bookmarkNode == self.sharedState.editingFolderNode) {
+        // Delay starting edit, so that the cell is fully created.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          self.sharedState.editingFolderCell = tableCell;
+          [tableCell startEdit];
+          tableCell.textDelegate = self;
+        });
+      }
 
-    // Cancel previous load attempts.
-    [self cancelLoadingFaviconAtIndexPath:indexPath];
-    // Load the favicon from cache.  If not found, try fetching it from a Google
-    // Server.
-    [self loadFaviconAtIndexPath:indexPath continueToGoogleServer:YES];
+      // Cancel previous load attempts.
+      [self cancelLoadingFaviconAtIndexPath:indexPath];
+      // Load the favicon from cache.  If not found, try fetching it from a
+      // Google Server.
+      [self loadFaviconAtIndexPath:indexPath continueToGoogleServer:YES];
+    }
   }
 
   return cell;
