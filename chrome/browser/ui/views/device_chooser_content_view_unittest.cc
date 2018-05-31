@@ -62,6 +62,7 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
   DeviceChooserContentView& content_view() { return *content_view_; }
 
   views::TableView* table_view() { return content_view().table_view_; }
+  views::View* table_parent() { return content_view().table_parent_; }
   ui::TableModel* table_model() { return table_view()->model(); }
   views::StyledLabel* adapter_off_help_link() {
     return content_view().adapter_off_help_;
@@ -210,7 +211,7 @@ TEST_F(DeviceChooserContentViewTest, TurnBluetoothOffAndOn) {
   controller()->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::UNAVAILABLE);
 
-  EXPECT_FALSE(table_view()->visible());
+  EXPECT_FALSE(table_parent()->visible());
   EXPECT_TRUE(adapter_off_help_link()->visible());
   EXPECT_FALSE(throbber()->visible());
   EXPECT_FALSE(scanning_label()->visible());
