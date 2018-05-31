@@ -3,6 +3,6 @@
 // found in the LICENSE file.
 
 dictionary CableRegistrationData {
-  required sequence<long> versions;
+  required sequence<octet> versions;
   required BufferSource rpPublicKey;
 };
