@@ -12,6 +12,10 @@ namespace ui {
 class MouseEvent;
 }
 
+namespace views {
+class InkDrop;
+}
+
 namespace media_router {
 
 // A button representing a sink in the Cast dialog. It is highlighted when
@@ -28,6 +32,7 @@ class CastDialogSinkButton : public HoverButton {
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnBlur() override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   // Returns the text that should be shown on the main action button of the Cast
   // dialog when this button is selected.
