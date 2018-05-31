@@ -96,6 +96,8 @@ if (enable_pdf) {
         "pdfium/pdfium_print.h",
         "pdfium/pdfium_range.cc",
         "pdfium/pdfium_range.h",
+        "pdfium/pdfium_unsupported_features.cc",
+        "pdfium/pdfium_unsupported_features.h",
       ]
 
       include_dirs += [ "//third_party/pdfium" ]

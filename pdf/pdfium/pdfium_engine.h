@@ -142,7 +142,7 @@ class PDFiumEngine : public PDFEngine,
   void CancelBrowserDownload() override;
   void KillFormFocus() override;
 
-  void UnsupportedFeature(int type);
+  void UnsupportedFeature(const std::string& feature);
   void FontSubstituted();
 
   FPDF_AVAIL fpdf_availability() const { return fpdf_availability_.get(); }
@@ -708,19 +708,6 @@ class PDFiumEngine : public PDFEngine,
   PDFiumPrint print_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
-};
-
-// Create a local variable of this when calling PDFium functions which can call
-// our global callback when an unsupported feature is reached.
-class ScopedUnsupportedFeature {
- public:
-  explicit ScopedUnsupportedFeature(PDFiumEngine* engine);
-  ~ScopedUnsupportedFeature();
-
- private:
-  PDFiumEngine* const old_engine_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUnsupportedFeature);
 };
 
 // Create a local variable of this when calling PDFium functions which can call
