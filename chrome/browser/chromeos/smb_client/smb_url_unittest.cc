@@ -8,205 +8,94 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
-#include "url/url_util.h"
 
 namespace chromeos {
 namespace smb_client {
 
 class SmbUrlTest : public testing::Test {
  public:
-  SmbUrlTest() {
-    // Add the scheme to the "standard" list for url_util. This enables GURL to
-    // properly process the domain from the url.
-    url::AddStandardScheme(kSmbScheme, url::SCHEME_WITH_HOST);
+  SmbUrlTest() = default;
+  ~SmbUrlTest() override = default;
+
+  void ExpectInvalidUrl(const std::string& url) {
+    SmbUrl smb_url(url);
+    EXPECT_FALSE(smb_url.IsValid());
   }
 
-  ~SmbUrlTest() override = default;
+  void ExpectValidUrl(const std::string& url,
+                      const std::string& expected_url,
+                      const std::string& expected_host) {
+    SmbUrl smb_url(url);
+    EXPECT_TRUE(smb_url.IsValid());
+    EXPECT_EQ(expected_url, smb_url.ToString());
+    EXPECT_EQ(expected_host, smb_url.GetHost());
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmbUrlTest);
 };
 
-TEST_F(SmbUrlTest, NotValidWhenInitialized) {
-  SmbUrl smb_url;
-
-  EXPECT_FALSE(smb_url.IsValid());
-}
-
 TEST_F(SmbUrlTest, EmptyUrlIsInvalid) {
-  const std::string empty_url = "";
-  SmbUrl smb_url;
-  EXPECT_FALSE(smb_url.InitializeWithUrl(empty_url));
-
-  EXPECT_FALSE(smb_url.IsValid());
+  ExpectInvalidUrl("");
 }
 
 TEST_F(SmbUrlTest, InvalidUrls) {
-  {
-    SmbUrl smb_url;
-    EXPECT_FALSE(smb_url.InitializeWithUrl("smb"));
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_FALSE(smb_url.InitializeWithUrl("smb://"));
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_FALSE(smb_url.InitializeWithUrl("\\"));
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_FALSE(smb_url.InitializeWithUrl("\\\\"));
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_FALSE(smb_url.InitializeWithUrl("smb:///"));
-  }
+  ExpectInvalidUrl("smb");
+  ExpectInvalidUrl("smb://");
+  ExpectInvalidUrl("\\");
+  ExpectInvalidUrl("\\\\");
+  ExpectInvalidUrl("smb:///");
+  ExpectInvalidUrl("://host/path");
+  ExpectInvalidUrl("\\://host/path");
+  ExpectInvalidUrl("\\:/host/path");
 }
 
 TEST_F(SmbUrlTest, ValidUrls) {
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(smb_url.InitializeWithUrl("smb://x"));
-
-    const std::string expected_url = "smb://x/";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "x";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(smb_url.InitializeWithUrl("smb:///x"));
-
-    const std::string expected_url = "smb://x/";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "x";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(smb_url.InitializeWithUrl("smb://server/share/long/folder"));
-
-    const std::string expected_url = "smb://server/share/long/folder";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "server";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(
-        smb_url.InitializeWithUrl("smb://server/share/folder.with.dots"));
-
-    const std::string expected_url = "smb://server/share/folder.with.dots";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "server";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(
-        smb_url.InitializeWithUrl("smb://server\\share/mixed\\slashes"));
-
-    const std::string expected_url = "smb://server/share/mixed/slashes";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "server";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(smb_url.InitializeWithUrl("\\\\server/share"));
-
-    const std::string expected_url = "smb://server/share";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "server";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(smb_url.InitializeWithUrl("\\\\server\\share/mixed//slashes"));
-
-    const std::string expected_url = "smb://server/share/mixed//slashes";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "server";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
-  {
-    SmbUrl smb_url;
-    EXPECT_TRUE(smb_url.InitializeWithUrl("smb://192.168.0.1/share"));
-
-    const std::string expected_url = "smb://192.168.0.1/share";
-    EXPECT_EQ(expected_url, smb_url.ToString());
-
-    const std::string expected_host = "192.168.0.1";
-    EXPECT_EQ(expected_host, smb_url.GetHost());
-  }
+  ExpectValidUrl("smb://x", "smb://x/", "x");
+  ExpectValidUrl("smb:///x", "smb://x/", "x");
+  ExpectValidUrl("smb://server/share/long/folder",
+                 "smb://server/share/long/folder", "server");
+  ExpectValidUrl("smb://server/share/folder.with.dots",
+                 "smb://server/share/folder.with.dots", "server");
+  ExpectValidUrl("smb://server\\share/mixed\\slashes",
+                 "smb://server/share/mixed/slashes", "server");
+  ExpectValidUrl("\\\\server/share", "smb://server/share", "server");
+  ExpectValidUrl("\\\\server\\share/mixed//slashes",
+                 "smb://server/share/mixed//slashes", "server");
+  ExpectValidUrl("smb://192.168.0.1/share", "smb://192.168.0.1/share",
+                 "192.168.0.1");
 }
 
 TEST_F(SmbUrlTest, NotValidIfStartsWithoutSchemeOrDoubleBackslash) {
-  const std::string url = "192.168.0.1/share";
-  SmbUrl smb_url;
-  EXPECT_FALSE(smb_url.InitializeWithUrl(url));
-
-  EXPECT_FALSE(smb_url.IsValid());
+  ExpectInvalidUrl("192.168.0.1/share");
 }
 
 TEST_F(SmbUrlTest, StartsWithBackslashRemovesBackslashAndAddsScheme) {
-  const std::string url = "\\\\192.168.0.1\\share";
-  SmbUrl smb_url;
-  EXPECT_TRUE(smb_url.InitializeWithUrl(url));
-
-  const std::string expected_url = "smb://192.168.0.1/share";
-  EXPECT_TRUE(smb_url.IsValid());
-  EXPECT_EQ(expected_url, smb_url.ToString());
+  ExpectValidUrl("\\\\192.168.0.1\\share", "smb://192.168.0.1/share",
+                 "192.168.0.1");
 }
 
 TEST_F(SmbUrlTest, GetHostWithIp) {
-  const std::string url = "smb://192.168.0.1/share";
-  SmbUrl smb_url;
-  EXPECT_TRUE(smb_url.InitializeWithUrl(url));
-
-  const std::string expected_host = "192.168.0.1";
-  EXPECT_EQ(expected_host, smb_url.GetHost());
+  ExpectValidUrl("smb://192.168.0.1/share", "smb://192.168.0.1/share",
+                 "192.168.0.1");
 }
 
 TEST_F(SmbUrlTest, GetHostWithDomain) {
-  const std::string url = "smb://server/share";
-  SmbUrl smb_url;
-  EXPECT_TRUE(smb_url.InitializeWithUrl(url));
-
-  const std::string expected_host = "server";
-  EXPECT_EQ(expected_host, smb_url.GetHost());
+  ExpectValidUrl("smb://server/share", "smb://server/share", "server");
 }
 
 TEST_F(SmbUrlTest, HostBecomesLowerCase) {
-  const std::string url = "smb://SERVER/share";
-  SmbUrl smb_url;
-  EXPECT_TRUE(smb_url.InitializeWithUrl(url));
-
-  const std::string expected_host = "server";
-  EXPECT_EQ(expected_host, smb_url.GetHost());
-
-  const std::string expected_url = "smb://server/share";
-  EXPECT_EQ(expected_url, smb_url.ToString());
+  ExpectValidUrl("smb://SERVER/share", "smb://server/share", "server");
 }
 
 TEST_F(SmbUrlTest, ReplacesHost) {
-  const std::string url = "smb://server/share";
-  const std::string new_host = "192.168.0.1";
-  SmbUrl smb_url;
-  EXPECT_TRUE(smb_url.InitializeWithUrl(url));
+  SmbUrl smb_url("smb://server/share");
+  EXPECT_TRUE(smb_url.IsValid());
 
   const std::string expected_host = "server";
   EXPECT_EQ(expected_host, smb_url.GetHost());
 
+  const std::string new_host = "192.168.0.1";
   const std::string expected_url = "smb://192.168.0.1/share";
   EXPECT_EQ(expected_url, smb_url.ReplaceHost(new_host));
 

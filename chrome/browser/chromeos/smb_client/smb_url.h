@@ -8,25 +8,20 @@
 #include <string>
 
 #include "base/macros.h"
-#include "url/gurl.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 namespace chromeos {
 namespace smb_client {
 
 // Represents an SMB URL.
-// This class stores a URL using GURL to a share and can contain either an
+// This class stores a URL using url::Component and can contain either a
 // resolved or unresolved host. The host can be replaced when the address is
 // resolved by using ReplaceHost(). The passed URL must start with either
-// "smb://" or "\\" when initializing with InitializeWithUrl.
+// "smb://" or "\\" when constructed.
 class SmbUrl {
  public:
-  // Initializes an empty and invalid SmbUrl.
-  SmbUrl();
+  explicit SmbUrl(const std::string& url);
   ~SmbUrl();
-
-  // Initializes SmbUrl and saves |url|. |url| must start with
-  // either "smb://" or "\\". Returns true if |url| is valid.
-  bool InitializeWithUrl(const std::string& url) WARN_UNUSED_RESULT;
 
   // Returns the host of the URL which can be resolved or unresolved.
   std::string GetHost() const;
@@ -38,11 +33,22 @@ class SmbUrl {
   // change the original URL.
   std::string ReplaceHost(const std::string& new_host) const;
 
-  // Returns true if the passed URL is valid and was properly parsed.
+  // Returns true if the passed URL is valid and was properly parsed. This
+  // should be called after the constructor.
   bool IsValid() const;
 
  private:
-  GURL url_;
+  // Canonicalize |url| and saves the output as url_ and host_ if successful.
+  void CanonicalizeSmbUrl(const std::string& url);
+
+  // Resets url_ and parsed_.
+  void Reset();
+
+  // String form of the canonical url.
+  std::string url_;
+
+  // Holds the identified host of the URL. This does not store the host itself.
+  url::Component host_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbUrl);
 };
