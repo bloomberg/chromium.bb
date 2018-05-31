@@ -28,6 +28,8 @@ namespace device {
 
 namespace {
 
+constexpr uint8_t kTestCableVersionNumber = 0x01;
+
 // Constants required for discovering and constructing a Cable device that
 // are given by the relying party via an extension.
 constexpr FidoCableDiscovery::EidArray kClientEid = {
@@ -104,8 +106,14 @@ MATCHER_P2(IsAdvertisementContent,
   const auto service_data = arg->service_data();
   const auto service_data_with_uuid =
       service_data->find(kCableAdvertisementUUID);
-  return service_data_with_uuid != service_data->end() &&
-         base::make_span(service_data_with_uuid->second) == expected_client_eid;
+
+  if (service_data_with_uuid == service_data->end())
+    return false;
+
+  const auto& service_data_value = service_data_with_uuid->second;
+  return service_data_value[0] == kTestCableVersionNumber &&
+         service_data_value.size() == 24u &&
+         base::make_span(service_data_value).subspan(8) == expected_client_eid;
 
 #endif
 
@@ -198,7 +206,8 @@ class FidoCableDiscoveryTest : public ::testing::Test {
  public:
   std::unique_ptr<FidoCableDiscovery> CreateDiscovery() {
     std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
-    discovery_data.emplace_back(kClientEid, kAuthenticatorEid, kTestSessionKey);
+    discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
+                                kAuthenticatorEid, kTestSessionKey);
     return std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
   }
 
@@ -260,9 +269,10 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 // BluetoothAdapter::RegisterAdvertisement().
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kClientEid, kAuthenticatorEid, kTestSessionKey);
-  discovery_data.emplace_back(kSecondaryClientEid, kSecondaryAuthenticatorEid,
-                              kSecondarySessionKey);
+  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
+                              kAuthenticatorEid, kTestSessionKey);
+  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+                              kSecondaryAuthenticatorEid, kSecondarySessionKey);
   auto cable_discovery =
       std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
@@ -294,9 +304,10 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 // scanning process should be invoked.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kClientEid, kAuthenticatorEid, kTestSessionKey);
-  discovery_data.emplace_back(kSecondaryClientEid, kSecondaryAuthenticatorEid,
-                              kSecondarySessionKey);
+  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
+                              kAuthenticatorEid, kTestSessionKey);
+  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+                              kSecondaryAuthenticatorEid, kSecondarySessionKey);
   auto cable_discovery =
       std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
@@ -326,9 +337,10 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 // Test the scenario when all advertisement for client EID's fails.
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kClientEid, kAuthenticatorEid, kTestSessionKey);
-  discovery_data.emplace_back(kSecondaryClientEid, kSecondaryAuthenticatorEid,
-                              kSecondarySessionKey);
+  discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
+                              kAuthenticatorEid, kTestSessionKey);
+  discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
+                              kSecondaryAuthenticatorEid, kSecondarySessionKey);
   auto cable_discovery =
       std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
 

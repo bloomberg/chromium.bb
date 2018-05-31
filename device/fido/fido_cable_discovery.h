@@ -40,13 +40,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // TODO(hongjunchoi): Add discovery data required for MakeCredential request.
   // See: https://crbug.com/837088
   struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
-    CableDiscoveryData(const EidArray& client_eid,
+    CableDiscoveryData(uint8_t version,
+                       const EidArray& client_eid,
                        const EidArray& authenticator_eid,
                        const SessionKeyArray& session_key);
     CableDiscoveryData(const CableDiscoveryData& data);
     CableDiscoveryData& operator=(const CableDiscoveryData& other);
     ~CableDiscoveryData();
 
+    uint8_t version;
     EidArray client_eid;
     EidArray authenticator_eid;
     SessionKeyArray session_key;
@@ -69,7 +71,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // FidoBleDiscoveryBase:
   void OnSetPowered() override;
 
-  void StartAdvertisement(const EidArray& client_eid);
+  void StartAdvertisement();
   void OnAdvertisementRegistered(
       const EidArray& client_eid,
       scoped_refptr<BluetoothAdvertisement> advertisement);
