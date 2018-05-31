@@ -23,7 +23,7 @@ CompositorThreadScheduler::CompositorThreadScheduler(
     base::Thread* thread,
     std::unique_ptr<base::sequence_manager::TaskQueueManager>
         task_queue_manager)
-    : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
+    : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),
           this,
           TaskType::kCompositorThreadTaskQueueDefault)),

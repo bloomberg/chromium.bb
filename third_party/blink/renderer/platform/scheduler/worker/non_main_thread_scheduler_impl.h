@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_NON_MAIN_THREAD_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_NON_MAIN_THREAD_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_SCHEDULER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_SCHEDULER_IMPL_H_
 
 #include <memory>
 
@@ -27,21 +27,15 @@ class TaskQueueThrottler;
 class WakeUpBudgetPool;
 class CPUTimeBudgetPool;
 
-// TODO(yutak): Rename this class to NonMainThreadSchedulerImpl and consider
-// changing all non-impl scheduler classes to have only static methods.
-class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
+class PLATFORM_EXPORT NonMainThreadSchedulerImpl : public ThreadSchedulerImpl {
  public:
-  ~NonMainThreadScheduler() override;
+  ~NonMainThreadSchedulerImpl() override;
 
-  static std::unique_ptr<NonMainThreadScheduler> Create(
+  static std::unique_ptr<NonMainThreadSchedulerImpl> Create(
       WebThreadType thread_type,
       WorkerSchedulerProxy* proxy);
 
-  // Same as ThreadScheduler::Current(), but this asserts the caller is on
-  // a non-main thread.
-  static NonMainThreadScheduler* Current();
-
-  // Blink should use NonMainThreadScheduler::DefaultTaskQueue instead of
+  // Blink should use NonMainThreadSchedulerImpl::DefaultTaskQueue instead of
   // WebThreadScheduler::DefaultTaskRunner.
   virtual scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() = 0;
 
@@ -80,7 +74,9 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
   // Returns TimeTicks::Now() by default.
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
 
-  NonMainThreadScheduler* AsNonMainThreadScheduler() override { return this; }
+  NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
+    return this;
+  }
 
   // The following virtual methods are defined in *both* WebThreadScheduler
   // and ThreadScheduler, with identical interfaces and semantics. They are
@@ -105,12 +101,12 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
   }
 
  protected:
-  explicit NonMainThreadScheduler(
+  explicit NonMainThreadSchedulerImpl(
       std::unique_ptr<NonMainThreadSchedulerHelper> helper);
 
   friend class WorkerScheduler;
 
-  // Each WorkerScheduler should notify NonMainThreadScheduler when it is
+  // Each WorkerScheduler should notify NonMainThreadSchedulerImpl when it is
   // created or destroyed.
   virtual void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler);
   virtual void UnregisterWorkerScheduler(WorkerScheduler* worker_scheduler);
@@ -135,10 +131,10 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public ThreadSchedulerImpl {
  private:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
 
-  DISALLOW_COPY_AND_ASSIGN(NonMainThreadScheduler);
+  DISALLOW_COPY_AND_ASSIGN(NonMainThreadSchedulerImpl);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_NON_MAIN_THREAD_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_SCHEDULER_IMPL_H_

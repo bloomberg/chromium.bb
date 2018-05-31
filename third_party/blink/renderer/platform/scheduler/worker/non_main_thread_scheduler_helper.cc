@@ -16,7 +16,7 @@ using base::sequence_manager::TaskQueue;
 NonMainThreadSchedulerHelper::NonMainThreadSchedulerHelper(
     std::unique_ptr<base::sequence_manager::TaskQueueManager>
         task_queue_manager,
-    NonMainThreadScheduler* non_main_thread_scheduler,
+    NonMainThreadSchedulerImpl* non_main_thread_scheduler,
     TaskType default_task_type)
     : SchedulerHelper(std::move(task_queue_manager)),
       non_main_thread_scheduler_(non_main_thread_scheduler),

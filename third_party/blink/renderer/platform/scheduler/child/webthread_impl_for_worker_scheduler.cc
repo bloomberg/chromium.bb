@@ -85,10 +85,10 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
     completion->Signal();
 }
 
-std::unique_ptr<NonMainThreadScheduler>
+std::unique_ptr<NonMainThreadSchedulerImpl>
 WebThreadImplForWorkerScheduler::CreateNonMainThreadScheduler() {
-  return NonMainThreadScheduler::Create(thread_type_,
-                                        worker_scheduler_proxy_.get());
+  return NonMainThreadSchedulerImpl::Create(thread_type_,
+                                            worker_scheduler_proxy_.get());
 }
 
 void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {

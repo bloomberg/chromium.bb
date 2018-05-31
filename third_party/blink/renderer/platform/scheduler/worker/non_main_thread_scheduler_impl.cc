@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 
 #include <utility>
 
@@ -15,16 +15,16 @@
 namespace blink {
 namespace scheduler {
 
-NonMainThreadScheduler::NonMainThreadScheduler(
+NonMainThreadSchedulerImpl::NonMainThreadSchedulerImpl(
     std::unique_ptr<NonMainThreadSchedulerHelper> helper)
     : helper_(std::move(helper)) {}
 
-NonMainThreadScheduler::~NonMainThreadScheduler() {
+NonMainThreadSchedulerImpl::~NonMainThreadSchedulerImpl() {
   DCHECK(worker_schedulers_.empty());
 }
 
 // static
-std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
+std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
     WebThreadType thread_type,
     WorkerSchedulerProxy* proxy) {
   return std::make_unique<WorkerThreadScheduler>(
@@ -32,18 +32,11 @@ std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
       base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(), proxy);
 }
 
-// static
-NonMainThreadScheduler* NonMainThreadScheduler::Current() {
-  DCHECK_NE(Platform::Current()->CurrentThread(),
-            Platform::Current()->MainThread());
-  return ThreadScheduler::Current()->AsNonMainThreadScheduler();
-}
-
-void NonMainThreadScheduler::Init() {
+void NonMainThreadSchedulerImpl::Init() {
   InitImpl();
 }
 
-scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
+scoped_refptr<WorkerTaskQueue> NonMainThreadSchedulerImpl::CreateTaskRunner() {
   helper_->CheckOnValidThread();
   return helper_->NewTaskQueue(
       base::sequence_manager::TaskQueue::Spec("worker_tq")
@@ -51,73 +44,75 @@ scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
           .SetTimeDomain(nullptr));
 }
 
-void NonMainThreadScheduler::RunIdleTask(blink::WebThread::IdleTask task,
-                                         base::TimeTicks deadline) {
+void NonMainThreadSchedulerImpl::RunIdleTask(blink::WebThread::IdleTask task,
+                                             base::TimeTicks deadline) {
   std::move(task).Run((deadline - base::TimeTicks()).InSecondsF());
 }
 
-void NonMainThreadScheduler::PostIdleTask(const base::Location& location,
-                                          blink::WebThread::IdleTask task) {
+void NonMainThreadSchedulerImpl::PostIdleTask(const base::Location& location,
+                                              blink::WebThread::IdleTask task) {
   IdleTaskRunner()->PostIdleTask(
-      location,
-      base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
+      location, base::BindOnce(&NonMainThreadSchedulerImpl::RunIdleTask,
+                               std::move(task)));
 }
 
-void NonMainThreadScheduler::PostNonNestableIdleTask(
+void NonMainThreadSchedulerImpl::PostNonNestableIdleTask(
     const base::Location& location,
     blink::WebThread::IdleTask task) {
   IdleTaskRunner()->PostNonNestableIdleTask(
-      location,
-      base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
+      location, base::BindOnce(&NonMainThreadSchedulerImpl::RunIdleTask,
+                               std::move(task)));
 }
 
 std::unique_ptr<blink::PageScheduler>
-NonMainThreadScheduler::CreatePageScheduler(PageScheduler::Delegate* delegate) {
+NonMainThreadSchedulerImpl::CreatePageScheduler(
+    PageScheduler::Delegate* delegate) {
   NOTREACHED();
   return nullptr;
 }
 
-std::unique_ptr<NonMainThreadScheduler::RendererPauseHandle>
-NonMainThreadScheduler::PauseScheduler() {
+std::unique_ptr<NonMainThreadSchedulerImpl::RendererPauseHandle>
+NonMainThreadSchedulerImpl::PauseScheduler() {
   return nullptr;
 }
 
-base::TimeTicks NonMainThreadScheduler::MonotonicallyIncreasingVirtualTime() {
+base::TimeTicks
+NonMainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
   return base::TimeTicks::Now();
 }
 
-void NonMainThreadScheduler::RegisterWorkerScheduler(
+void NonMainThreadSchedulerImpl::RegisterWorkerScheduler(
     WorkerScheduler* worker_scheduler) {
   worker_schedulers_.insert(worker_scheduler);
 }
 
-void NonMainThreadScheduler::UnregisterWorkerScheduler(
+void NonMainThreadSchedulerImpl::UnregisterWorkerScheduler(
     WorkerScheduler* worker_scheduler) {
   DCHECK(worker_schedulers_.find(worker_scheduler) != worker_schedulers_.end());
   worker_schedulers_.erase(worker_scheduler);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-NonMainThreadScheduler::ControlTaskRunner() {
+NonMainThreadSchedulerImpl::ControlTaskRunner() {
   return helper_->ControlWorkerTaskQueue();
 }
 
-void NonMainThreadScheduler::RegisterTimeDomain(
+void NonMainThreadSchedulerImpl::RegisterTimeDomain(
     base::sequence_manager::TimeDomain* time_domain) {
   return helper_->RegisterTimeDomain(time_domain);
 }
 
-void NonMainThreadScheduler::UnregisterTimeDomain(
+void NonMainThreadSchedulerImpl::UnregisterTimeDomain(
     base::sequence_manager::TimeDomain* time_domain) {
   return helper_->UnregisterTimeDomain(time_domain);
 }
 
 base::sequence_manager::TimeDomain*
-NonMainThreadScheduler::GetActiveTimeDomain() {
+NonMainThreadSchedulerImpl::GetActiveTimeDomain() {
   return helper_->real_time_domain();
 }
 
-const base::TickClock* NonMainThreadScheduler::GetTickClock() {
+const base::TickClock* NonMainThreadSchedulerImpl::GetTickClock() {
   return helper_->GetClock();
 }
 

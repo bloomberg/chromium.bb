@@ -76,7 +76,7 @@ class WebThreadImplForWorkerSchedulerForTest
     completion->Signal();
   }
 
-  std::unique_ptr<NonMainThreadScheduler> CreateNonMainThreadScheduler()
+  std::unique_ptr<NonMainThreadSchedulerImpl> CreateNonMainThreadScheduler()
       override {
     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
         base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(),

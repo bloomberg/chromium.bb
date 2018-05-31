@@ -50,7 +50,7 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override {}
 
-  scheduler::NonMainThreadScheduler* AsNonMainThreadScheduler() override {
+  scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
 
