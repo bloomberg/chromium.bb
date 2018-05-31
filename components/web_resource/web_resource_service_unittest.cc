@@ -13,10 +13,9 @@
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "components/web_resource/web_resource_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -53,22 +52,23 @@ class TestResourceRequestAllowedNotifier
 
 class TestWebResourceService : public WebResourceService {
  public:
-  TestWebResourceService(PrefService* prefs,
-                         const GURL& web_resource_server,
-                         const std::string& application_locale,
-                         const char* last_update_time_pref_name,
-                         int start_fetch_delay_ms,
-                         int cache_update_delay_ms,
-                         net::URLRequestContextGetter* request_context,
-                         const char* disable_network_switch,
-                         const ParseJSONCallback& parse_json_callback)
+  TestWebResourceService(
+      PrefService* prefs,
+      const GURL& web_resource_server,
+      const std::string& application_locale,
+      const char* last_update_time_pref_name,
+      int start_fetch_delay_ms,
+      int cache_update_delay_ms,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const char* disable_network_switch,
+      const ParseJSONCallback& parse_json_callback)
       : WebResourceService(prefs,
                            web_resource_server,
                            application_locale,
                            last_update_time_pref_name,
                            start_fetch_delay_ms,
                            cache_update_delay_ms,
-                           request_context,
+                           url_loader_factory,
                            disable_network_switch,
                            parse_json_callback,
                            TRAFFIC_ANNOTATION_FOR_TESTS){};
@@ -81,13 +81,14 @@ class WebResourceServiceTest : public testing::Test {
   WebResourceServiceTest() {}
 
   void SetUp() override {
-    request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
     local_state_.reset(new TestingPrefServiceSimple());
     local_state_->registry()->RegisterStringPref(kCacheUpdatePath, "0");
     test_web_resource_service_.reset(new TestWebResourceService(
         local_state_.get(), GURL(kTestUrl), "", kCacheUpdatePath.c_str(), 100,
-        5000, request_context_getter_.get(), nullptr,
+        5000, test_shared_loader_factory_, nullptr,
         base::Bind(web_resource::WebResourceServiceTest::Parse)));
     error_message_ = "";
     TestResourceRequestAllowedNotifier* notifier =
@@ -127,8 +128,9 @@ class WebResourceServiceTest : public testing::Test {
   void CallStartFetch() { test_web_resource_service_->StartFetch(); }
 
  private:
-  base::MessageLoop message_loop_;  // needed for TestURLFetcherFactory
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  base::MessageLoop message_loop_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   std::unique_ptr<TestWebResourceService> test_web_resource_service_;
 };
