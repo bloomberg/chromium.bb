@@ -7,17 +7,21 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/file_change.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
@@ -470,4 +474,17 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
   }
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/recent_test"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
+  // TODO(joelhockey): Setting prefs and features to allow crostini is not
+  // ideal.  It would be better if the crostini interface allowed for testing
+  // without such tight coupling.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      crostini::prefs::kCrostiniEnabled, true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kCrostini, features::kExperimentalCrostiniUI}, {});
+
+  ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
 }
