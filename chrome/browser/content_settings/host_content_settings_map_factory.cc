@@ -89,7 +89,8 @@ scoped_refptr<RefcountedKeyedService>
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // These must be registered before before the HostSettings are passed over to
   // the IOThread.  Simplest to do this on construction.
-  ExtensionService::RegisterContentSettings(settings_map.get(), profile);
+  extensions::ExtensionService::RegisterContentSettings(settings_map.get(),
+                                                        profile);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserSettingsService* supervised_service =
