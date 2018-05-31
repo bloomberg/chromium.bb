@@ -46,7 +46,6 @@ function audioPlayingQuery(fileName) {
   return 'audio-player[playing]' + audioTrackQuery(fileName);
 }
 
-
 /**
  * Makes the current Audio Player track leap forward in time in 10% increments
  * to 90% of the track duration. This "leap-forward-in-time" effect works best
@@ -261,7 +260,13 @@ function audioAutoAdvance(path) {
       const playFile = audioPlayingQuery('Beautiful Song.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
-    // Wait for next song.
+    // Leap forward and check: the same file should still be playing.
+    function() {
+      audioTimeLeapForward(audioAppId);
+      const playFile = audioPlayingQuery('Beautiful Song.ogg');
+      audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
+    },
+    // When it ends, Audio Player should play the next file (advance).
     function() {
       const playFile = audioPlayingQuery('newly added file.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
