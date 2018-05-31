@@ -73,7 +73,9 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
         folderCell.folderTitleLabel.text = self.title;
         folderCell.accessibilityIdentifier = self.title;
         folderCell.accessibilityLabel = self.title;
-        folderCell.checked = self.isCurrentFolder;
+        if (self.isCurrentFolder)
+          folderCell.bookmarkAccessoryType =
+              TableViewBookmarkFolderAccessoryTypeCheckmark;
         // In order to indent the cell's content we need to modify its
         // indentation constraint.
         folderCell.indentationConstraint.constant =
@@ -121,7 +123,7 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
 @end
 
 @implementation TableViewBookmarkFolderCell
-@synthesize checked = _checked;
+@synthesize bookmarkAccessoryType = _bookmarkAccessoryType;
 @synthesize folderImageView = _folderImageView;
 @synthesize folderTitleLabel = _folderTitleLabel;
 @synthesize indentationConstraint = _indentationConstraint;
@@ -183,20 +185,27 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
   return self;
 }
 
-- (void)setChecked:(BOOL)checked {
-  if (checked != _checked) {
-    _checked = checked;
-    UIImageView* checkImageView =
-        checked ? [[UIImageView alloc]
-                      initWithImage:[UIImage imageNamed:@"bookmark_blue_check"]]
-                : nil;
-    self.accessoryView = checkImageView;
+- (void)setBookmarkAccessoryType:
+    (TableViewBookmarkFolderAccessoryType)bookmarkAccessoryType {
+  _bookmarkAccessoryType = bookmarkAccessoryType;
+  switch (_bookmarkAccessoryType) {
+    case TableViewBookmarkFolderAccessoryTypeCheckmark:
+      self.accessoryView = [[UIImageView alloc]
+          initWithImage:[UIImage imageNamed:@"bookmark_blue_check"]];
+      break;
+    case TableViewBookmarkFolderAccessoryTypeDisclosureIndicator:
+      self.accessoryView = [[UIImageView alloc]
+          initWithImage:[UIImage imageNamed:@"table_view_cell_chevron"]];
+      break;
+    case TableViewBookmarkFolderAccessoryTypeNone:
+      self.accessoryView = nil;
+      break;
   }
 }
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  self.checked = NO;
+  self.bookmarkAccessoryType = TableViewBookmarkFolderAccessoryTypeNone;
   self.indentationWidth = 0;
   self.imageView.image = nil;
   self.indentationConstraint.constant = kFolderCellHorizonalInset;
