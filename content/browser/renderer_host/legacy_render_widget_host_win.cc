@@ -135,6 +135,8 @@ void LegacyRenderWidgetHostHWND::SetBounds(const gfx::Rect& bounds) {
   ::SetWindowPos(hwnd(), NULL, bounds_in_pixel.x(), bounds_in_pixel.y(),
                  bounds_in_pixel.width(), bounds_in_pixel.height(),
                  SWP_NOREDRAW);
+  if (direct_manipulation_helper_)
+    direct_manipulation_helper_->SetSize(bounds_in_pixel.size());
 }
 
 void LegacyRenderWidgetHostHWND::MoveCaretTo(const gfx::Rect& bounds) {

@@ -12,6 +12,7 @@
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/win/screen_win.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 namespace win {
@@ -70,10 +71,6 @@ DirectManipulationHelper::~DirectManipulationHelper() {
 
 DirectManipulationHelper::DirectManipulationHelper() {}
 
-// We only use Direct Manipulation as event handler so we can use any size for
-// the fake viewport.
-const RECT VIEWPORT_DEFAULT_RECT = {0, 0, 1000, 1000};
-
 bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
   // IDirectManipulationUpdateManager is the first COM object created by the
   // application to retrieve other objects in the Direct Manipulation API.
@@ -127,7 +124,10 @@ bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
   if (!SUCCEEDED(hr))
     return false;
 
-  hr = viewport_->SetViewportRect(&VIEWPORT_DEFAULT_RECT);
+  // Set default rect for viewport before activate.
+  viewport_size_ = {1000, 1000};
+  RECT rect = gfx::Rect(viewport_size_).ToRECT();
+  hr = viewport_->SetViewportRect(&rect);
   if (!SUCCEEDED(hr))
     return false;
 
@@ -142,11 +142,24 @@ bool DirectManipulationHelper::Initialize(WindowEventTarget* event_target) {
 }
 
 void DirectManipulationHelper::Activate() {
+  viewport_->Stop();
   manager_->Activate(window_);
 }
 
 void DirectManipulationHelper::Deactivate() {
+  viewport_->Stop();
   manager_->Deactivate(window_);
+}
+
+void DirectManipulationHelper::SetSize(const gfx::Size& size) {
+  if (viewport_size_ == size)
+    return;
+
+  viewport_->Stop();
+
+  viewport_size_ = size;
+  RECT rect = gfx::Rect(viewport_size_).ToRECT();
+  viewport_->SetViewportRect(&rect);
 }
 
 bool DirectManipulationHelper::OnPointerHitTest(
@@ -181,11 +194,10 @@ bool DirectManipulationHelper::OnPointerHitTest(
 HRESULT DirectManipulationHelper::ResetViewport(bool need_poll_events) {
   // By zooming the primary content to a rect that match the viewport rect, we
   // reset the content's transform to identity.
-  HRESULT hr = viewport_->ZoomToRect(
-      static_cast<float>(VIEWPORT_DEFAULT_RECT.left),
-      static_cast<float>(VIEWPORT_DEFAULT_RECT.top),
-      static_cast<float>(VIEWPORT_DEFAULT_RECT.right),
-      static_cast<float>(VIEWPORT_DEFAULT_RECT.bottom), FALSE);
+  HRESULT hr =
+      viewport_->ZoomToRect(static_cast<float>(0), static_cast<float>(0),
+                            static_cast<float>(viewport_size_.width()),
+                            static_cast<float>(viewport_size_.height()), FALSE);
   if (!SUCCEEDED(hr))
     return hr;
 
