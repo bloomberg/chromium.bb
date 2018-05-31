@@ -31,7 +31,7 @@ class FakeRtpSender : public webrtc::RtpSenderInterface {
   cricket::MediaType media_type() const override;
   std::string id() const override;
   std::vector<std::string> stream_ids() const override;
-  webrtc::RtpParameters GetParameters() const override;
+  webrtc::RtpParameters GetParameters() override;
   webrtc::RTCError SetParameters(
       const webrtc::RtpParameters& parameters) override;
   rtc::scoped_refptr<webrtc::DtmfSenderInterface> GetDtmfSender()
