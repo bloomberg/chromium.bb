@@ -196,6 +196,21 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
   return true;
 }
 
+bool RenderViewTest::ExecuteJavaScriptAndReturnNumberValue(
+    const base::string16& script,
+    double* number_result) {
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> result = GetMainFrame()->ExecuteScriptAndReturnValue(
+      WebScriptSource(blink::WebString::FromUTF16(script)));
+  if (result.IsEmpty() || !result->IsNumber())
+    return false;
+
+  if (number_result)
+    *number_result = result->NumberValue();
+
+  return true;
+}
+
 void RenderViewTest::LoadHTML(const char* html) {
   std::string url_string = "data:text/html;charset=utf-8,";
   url_string.append(net::EscapeQueryParamValue(html, false));
