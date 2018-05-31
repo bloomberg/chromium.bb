@@ -2,7 +2,7 @@ Verifies viewport correctly shows and hides messages while logging and scrolling
 
 Logging 100 messages
 activeCountAbove: 6, activeCountBelow: 8
-smallCount: 3, visibleCount: 11, maxActiveCount: 25
+smallCount: 3, visibleCount: 11, maxActiveCount: 25, minActiveCount: 21
 
 Running: addSmallCount
 Logging 3 messages
