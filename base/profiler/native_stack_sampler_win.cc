@@ -482,7 +482,7 @@ bool NativeStackSamplerWin::GetModuleForHandle(
     StackSamplingProfiler::Module* module) {
   wchar_t module_name[MAX_PATH];
   DWORD result_length =
-      GetModuleFileName(module_handle, module_name, arraysize(module_name));
+      ::GetModuleFileName(module_handle, module_name, arraysize(module_name));
   if (result_length == 0)
     return false;
 
@@ -491,10 +491,7 @@ bool NativeStackSamplerWin::GetModuleForHandle(
   module->base_address = reinterpret_cast<uintptr_t>(module_handle);
 
   module->id = GetBuildIDForModule(module_handle);
-  if (module->id.empty())
-    return false;
-
-  return true;
+  return !module->id.empty();
 }
 
 size_t NativeStackSamplerWin::GetModuleIndex(
@@ -523,7 +520,7 @@ void NativeStackSamplerWin::CopyToSample(
   sample->frames.clear();
   sample->frames.reserve(stack.size());
 
-  for (const RecordedFrame& frame : stack) {
+  for (const auto& frame : stack) {
     sample->frames.push_back(StackSamplingProfiler::Frame(
         reinterpret_cast<uintptr_t>(frame.instruction_pointer),
         GetModuleIndex(frame.module.Get(), modules)));
