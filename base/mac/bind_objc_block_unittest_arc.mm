@@ -105,6 +105,36 @@ TEST(BindObjcBlockTestARC, TestSixArguments) {
   EXPECT_EQ(result2, 6);
 }
 
+TEST(BindObjcBlockTestARC, TestBlockMoveable) {
+  base::OnceClosure c;
+  __block BOOL invoked_block = NO;
+  @autoreleasepool {
+    c = base::BindOnce(
+        ^(std::unique_ptr<BOOL> v) {
+          invoked_block = *v;
+        },
+        std::make_unique<BOOL>(YES));
+  };
+  std::move(c).Run();
+  EXPECT_TRUE(invoked_block);
+}
+
+// Tests that the bound block is retained until the end of its execution,
+// even if the callback itself is destroyed during the invocation. It was
+// found that some code depends on this behaviour (see crbug.com/845687).
+TEST(BindObjcBlockTestARC, TestBlockDeallocation) {
+  base::RepeatingClosure closure;
+  __block BOOL invoked_block = NO;
+  closure = base::BindRepeating(
+      ^(base::RepeatingClosure* this_closure) {
+        *this_closure = base::RepeatingClosure();
+        invoked_block = YES;
+      },
+      &closure);
+  closure.Run();
+  EXPECT_TRUE(invoked_block);
+}
+
 #if defined(OS_IOS)
 
 TEST(BindObjcBlockTestARC, TestBlockReleased) {
