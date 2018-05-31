@@ -775,14 +775,6 @@ void ThreatDetails::OnCacheCollectionReady() {
     return;
   }
 
-  // For measuring performance impact of ad sampling reports, we may want to
-  // do all the heavy lifting of creating the report but not actually send it.
-  if (report_->type() == ClientSafeBrowsingReportRequest::AD_SAMPLE &&
-      base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature)) {
-    AllDone();
-    return;
-  }
-
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WebUIInfoSingleton::AddToReportsSent,

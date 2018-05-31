@@ -19,7 +19,6 @@ class ListValue;
 
 namespace safe_browsing {
 // Features list
-extern const base::Feature kAdSamplerCollectButDontSendFeature;
 extern const base::Feature kAdSamplerTriggerFeature;
 extern const base::Feature kCheckByURLLoaderThrottle;
 
