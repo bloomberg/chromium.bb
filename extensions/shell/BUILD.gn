@@ -490,6 +490,8 @@ source_set("browser_tests") {
     "test/shell_test_launcher_delegate.cc",
     "test/shell_test_launcher_delegate.h",
     "test/shell_tests_main.cc",
+    "test/test_shell_main_delegate.cc",
+    "test/test_shell_main_delegate.h",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
