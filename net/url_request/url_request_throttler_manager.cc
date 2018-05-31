@@ -18,7 +18,6 @@ const unsigned int URLRequestThrottlerManager::kRequestsBetweenCollecting = 200;
 
 URLRequestThrottlerManager::URLRequestThrottlerManager()
     : requests_since_last_gc_(0),
-      enable_thread_checks_(false),
       logged_for_localhost_disabled_(false),
       registered_from_thread_(base::kInvalidThreadId) {
   url_id_replacements_.ClearPassword();
@@ -51,9 +50,7 @@ URLRequestThrottlerManager::~URLRequestThrottlerManager() {
 
 scoped_refptr<URLRequestThrottlerEntryInterface>
     URLRequestThrottlerManager::RegisterRequestUrl(const GURL &url) {
-#if DCHECK_IS_ON()
-  DCHECK(!enable_thread_checks_ || thread_checker_.CalledOnValidThread());
-#endif
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
@@ -113,14 +110,6 @@ void URLRequestThrottlerManager::EraseEntryForTests(const GURL& url) {
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
   url_entries_.erase(url_id);
-}
-
-void URLRequestThrottlerManager::set_enable_thread_checks(bool enable) {
-  enable_thread_checks_ = enable;
-}
-
-bool URLRequestThrottlerManager::enable_thread_checks() const {
-  return enable_thread_checks_;
 }
 
 void URLRequestThrottlerManager::set_net_log(NetLog* net_log) {

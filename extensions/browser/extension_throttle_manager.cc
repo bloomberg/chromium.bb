@@ -25,7 +25,6 @@ const unsigned int ExtensionThrottleManager::kRequestsBetweenCollecting = 200;
 
 ExtensionThrottleManager::ExtensionThrottleManager()
     : requests_since_last_gc_(0),
-      enable_thread_checks_(false),
       logged_for_localhost_disabled_(false),
       registered_from_thread_(base::kInvalidThreadId),
       ignore_user_gesture_load_flag_for_tests_(false) {
@@ -66,9 +65,7 @@ ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
 
 scoped_refptr<ExtensionThrottleEntryInterface>
 ExtensionThrottleManager::RegisterRequestUrl(const GURL& url) {
-#if DCHECK_IS_ON()
-  DCHECK(!enable_thread_checks_ || sequence_checker_.CalledOnValidSequence());
-#endif  // DCHECK_IS_ON()
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
@@ -145,14 +142,6 @@ void ExtensionThrottleManager::EraseEntryForTests(const GURL& url) {
 void ExtensionThrottleManager::SetIgnoreUserGestureLoadFlagForTests(
     bool ignore_user_gesture_load_flag_for_tests) {
   ignore_user_gesture_load_flag_for_tests_ = true;
-}
-
-void ExtensionThrottleManager::set_enable_thread_checks(bool enable) {
-  enable_thread_checks_ = enable;
-}
-
-bool ExtensionThrottleManager::enable_thread_checks() const {
-  return enable_thread_checks_;
 }
 
 void ExtensionThrottleManager::set_net_log(net::NetLog* net_log) {
