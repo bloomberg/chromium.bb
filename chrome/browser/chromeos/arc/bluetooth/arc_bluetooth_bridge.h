@@ -229,6 +229,7 @@ class ArcBluetoothBridge
       mojom::BluetoothGattServiceIDPtr service_id,
       mojom::BluetoothGattIDPtr char_id,
       mojom::BluetoothGattValuePtr value,
+      bool prepare,
       WriteGattCharacteristicCallback callback) override;
   void ReadGattDescriptor(mojom::BluetoothAddressPtr remote_addr,
                           mojom::BluetoothGattServiceIDPtr service_id,
@@ -241,6 +242,9 @@ class ArcBluetoothBridge
                            mojom::BluetoothGattIDPtr desc_id,
                            mojom::BluetoothGattValuePtr value,
                            WriteGattDescriptorCallback callback) override;
+  void ExecuteWrite(mojom::BluetoothAddressPtr remote_addr,
+                    bool execute,
+                    ExecuteWriteCallback callback) override;
   void RegisterForGattNotification(
       mojom::BluetoothAddressPtr remote_addr,
       mojom::BluetoothGattServiceIDPtr service_id,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -292,7 +292,7 @@ struct BluetoothCreateSdpRecordResult {
   uint32 service_handle;
 };
 
-// Next Method ID: 44
+// Next Method ID: 45
 interface BluetoothHost {
   EnableAdapter@0() => (BluetoothAdapterState state);
   DisableAdapter@1() => (BluetoothAdapterState state);
@@ -329,7 +329,8 @@ interface BluetoothHost {
   [MinVersion=1] WriteGattCharacteristic@23(BluetoothAddress remote_addr,
                                             BluetoothGattServiceID service_id,
                                             BluetoothGattID char_id,
-                                            BluetoothGattValue value)
+                                            BluetoothGattValue value,
+                                            [MinVersion=11] bool prepare)
       => (BluetoothGattStatus status);
   [MinVersion=1] ReadGattDescriptor@24(BluetoothAddress remote_addr,
                                        BluetoothGattServiceID service_id,
@@ -341,6 +342,9 @@ interface BluetoothHost {
                                         BluetoothGattID char_id,
                                         BluetoothGattID desc_id,
                                         BluetoothGattValue value)
+      => (BluetoothGattStatus status);
+  [MinVersion=11] ExecuteWrite@44(BluetoothAddress remote_addr,
+                                  bool execute)
       => (BluetoothGattStatus status);
   [MinVersion=1] RegisterForGattNotification@26(
       BluetoothAddress remote_addr,
