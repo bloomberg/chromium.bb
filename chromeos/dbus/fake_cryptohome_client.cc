@@ -683,6 +683,17 @@ void FakeCryptohomeClient::GetSupportedKeyPolicies(
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
+void FakeCryptohomeClient::IsQuotaSupported(DBusMethodCallback<bool> callback) {
+}
+
+void FakeCryptohomeClient::GetCurrentSpaceForUid(
+    uid_t uid,
+    DBusMethodCallback<int64_t> callback) {}
+
+void FakeCryptohomeClient::GetCurrentSpaceForGid(
+    gid_t gid,
+    DBusMethodCallback<int64_t> callback) {}
+
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
   if (!is_available)

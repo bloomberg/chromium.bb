@@ -592,6 +592,18 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::GetSupportedKeyPoliciesRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
+  // Calls IsQuotaSupported to know whether quota is supported by cryptohome.
+  virtual void IsQuotaSupported(
+      DBusMethodCallback<bool> callback) = 0;
+
+  // Calls GetCurrentSpaceForUid to get the current disk space for a uid.
+  virtual void GetCurrentSpaceForUid(const uid_t uid,
+                                     DBusMethodCallback<int64_t> callback) = 0;
+
+  // Calls GetCurrentSpaceForGid to get the current disk space for a gid.
+  virtual void GetCurrentSpaceForGid(const gid_t gid,
+                                     DBusMethodCallback<int64_t> callback) = 0;
+
  protected:
   // Create() should be used instead.
   CryptohomeClient();

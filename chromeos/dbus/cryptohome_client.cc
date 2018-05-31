@@ -932,6 +932,46 @@ class CryptohomeClientImpl : public CryptohomeClient {
                          request, std::move(callback));
   }
 
+  void IsQuotaSupported(DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kCryptohomeIsQuotaSupported);
+
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnBoolMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  }
+
+  void GetCurrentSpaceForUid(const uid_t uid,
+                             DBusMethodCallback<int64_t> callback) override {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeGetCurrentSpaceForUid);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(uid);
+
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnInt64DBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetCurrentSpaceForGid(const gid_t gid,
+                             DBusMethodCallback<int64_t> callback) override {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeGetCurrentSpaceForGid);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint32(gid);
+
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CryptohomeClientImpl::OnInt64DBusMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(
@@ -1051,6 +1091,21 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     std::move(callback).Run(result);
+  }
+
+  void OnInt64DBusMethod(DBusMethodCallback<int64_t> callback,
+                          dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    int64_t value = 0;
+    dbus::MessageReader reader(response);
+    if (!reader.PopInt64(&value)) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(value);
   }
 
   // Handles responses for methods with a string value result.
