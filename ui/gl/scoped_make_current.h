@@ -28,17 +28,11 @@ class GL_EXPORT ScopedMakeCurrent {
   ScopedMakeCurrent(gl::GLContext* context, gl::GLSurface* surface);
   ~ScopedMakeCurrent();
 
-  bool Succeeded() const;
-
-  bool Restore() WARN_UNUSED_RESULT;
-
  private:
   scoped_refptr<gl::GLContext> previous_context_;
   scoped_refptr<gl::GLSurface> previous_surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
-  bool succeeded_ = false;
-  bool restored_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMakeCurrent);
 };
@@ -50,12 +44,9 @@ class GL_EXPORT ScopedReleaseCurrent {
   ScopedReleaseCurrent();
   ~ScopedReleaseCurrent();
 
-  bool Restore() WARN_UNUSED_RESULT;
-
  private:
   scoped_refptr<gl::GLContext> previous_context_;
   scoped_refptr<gl::GLSurface> previous_surface_;
-  bool restored_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedReleaseCurrent);
 };

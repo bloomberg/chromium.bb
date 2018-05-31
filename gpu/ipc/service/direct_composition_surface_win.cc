@@ -34,7 +34,6 @@
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
-#include "ui/gl/scoped_make_current.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
 #define EGL_ANGLE_flexible_surface_compatibility 1
@@ -1493,24 +1492,17 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     const PresentationCallback& callback) {
   gl::GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), callback);
-  ui::ScopedReleaseCurrent release_current;
 
   child_window_.ClearInvalidContents();
 
-  bool failed = false;
-
   if (root_surface_->SwapBuffers(PresentationCallback()) ==
       gfx::SwapResult::SWAP_FAILED)
-    failed = true;
+    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
 
   if (!layer_tree_->CommitAndClearPendingOverlays())
-    failed = true;
-
-  if (!release_current.Restore())
-    failed = true;
-
-  if (failed) {
     scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
+
+  if (scoped_swap_buffers.result() == gfx::SwapResult::SWAP_FAILED) {
     base::UmaHistogramSparse("GPU.DirectComposition.SwapBuffersLastError",
                              ::GetLastError());
   }
@@ -1590,39 +1582,8 @@ bool DirectCompositionSurfaceWin::SupportsProtectedVideo() const {
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
-  if (root_surface_) {
-    // TODO(sunnyps): Remove after https://crbug.com/724999 is fixed.
-    CHECK(gl::GLContext::GetCurrent());
-    CHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
-    bool was_surface_current = gl::GLSurface::GetCurrent() == this;
-    base::debug::Alias(&was_surface_current);
-    EGLSurface default_surface = root_surface_->default_surface_for_debugging();
-    base::debug::Alias(&default_surface);
-    EGLSurface old_real_surface = root_surface_->real_surface_for_debugging();
-    base::debug::Alias(&old_real_surface);
-    EGLSurface old_surface_handle = GetHandle();
-    base::debug::Alias(&old_surface_handle);
-    EGLSurface old_egl_current_surface = eglGetCurrentSurface(EGL_DRAW);
-    base::debug::Alias(&old_egl_current_surface);
-
-    bool succeeded = root_surface_->SetDrawRectangle(rectangle);
-
-    // TODO(sunnyps): Remove after https://crbug.com/724999 is fixed.
-    if (succeeded) {
-      bool is_surface_current = gl::GLSurface::GetCurrent() == this;
-      base::debug::Alias(&is_surface_current);
-      EGLSurface new_real_surface = root_surface_->real_surface_for_debugging();
-      base::debug::Alias(&new_real_surface);
-      EGLSurface new_surface_handle = GetHandle();
-      base::debug::Alias(&new_surface_handle);
-      EGLSurface new_egl_current_surface = eglGetCurrentSurface(EGL_DRAW);
-      base::debug::Alias(&new_egl_current_surface);
-      CHECK(gl::GLContext::GetCurrent());
-      CHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
-    }
-
-    return succeeded;
-  }
+  if (root_surface_)
+    return root_surface_->SetDrawRectangle(rectangle);
   return false;
 }
 

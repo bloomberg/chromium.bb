@@ -1251,45 +1251,29 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
                                     bool has_alpha) {
   if (size == GetSize())
     return true;
-
   size_ = size;
-
-  ui::ScopedReleaseCurrent release_current;
-
-  Destroy();
-
-  if (!Initialize(format_)) {
-    LOG(ERROR) << "Failed to resize window.";
-    return false;
+  {
+    ui::ScopedReleaseCurrent release_current;
+    Destroy();
+    if (!Initialize(format_)) {
+      LOG(ERROR) << "Failed to resize window.";
+      return false;
+    }
   }
-
-  if (!release_current.Restore()) {
-    LOG(ERROR) << "Could not MakeCurrent after Resize";
-    return false;
-  }
-
   SetVSyncEnabled(vsync_enabled_);
-
   return true;
 }
 
 bool NativeViewGLSurfaceEGL::Recreate() {
-  ui::ScopedReleaseCurrent release_current;
-
-  Destroy();
-
-  if (!Initialize(format_)) {
-    LOG(ERROR) << "Failed to create surface.";
-    return false;
+  {
+    ui::ScopedReleaseCurrent release_current;
+    Destroy();
+    if (!Initialize(format_)) {
+      LOG(ERROR) << "Failed to create surface.";
+      return false;
+    }
   }
-
-  if (!release_current.Restore()) {
-    LOG(ERROR) << "Failed to MakeCurrent after Recreate";
-    return false;
-  }
-
   SetVSyncEnabled(vsync_enabled_);
-
   return true;
 }
 
@@ -1540,11 +1524,6 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size,
 
   if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to resize pbuffer.";
-    return false;
-  }
-
-  if (!release_current.Restore()) {
-    LOG(ERROR) << "Failed to MakeCurrent after Resize";
     return false;
   }
 
