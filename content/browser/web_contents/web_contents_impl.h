@@ -452,7 +452,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     ImageDownloadCallback callback) override;
-  bool IsSubframe() const override;
   void Find(int request_id,
             const base::string16& search_text,
             const blink::WebFindOptions& options) override;
@@ -1616,10 +1615,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // fullscreen widget is destroyed, and 2) the WebContentsDelegate has
   // completed making layout changes to effect an exit from fullscreen mode.
   bool fullscreen_widget_had_focus_at_shutdown_;
-
-  // Whether this WebContents is responsible for displaying a subframe in a
-  // different process from its parent page.
-  bool is_subframe_;
 
   // When a new tab is created asynchronously, stores the OpenURLParams needed
   // to continue loading the page once the tab is ready.

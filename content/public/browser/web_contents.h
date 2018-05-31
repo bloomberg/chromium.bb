@@ -752,13 +752,6 @@ class WebContents : public PageNavigator,
                             bool bypass_cache,
                             ImageDownloadCallback callback) = 0;
 
-  // Returns true if the WebContents is responsible for displaying a subframe
-  // in a different process from its parent page.
-  // TODO(lazyboy): https://crbug.com/542893: this doesn't really belong here.
-  // With site isolation, this should be removed since we can then embed iframes
-  // in different processes.
-  virtual bool IsSubframe() const = 0;
-
   // Finds text on a page. |search_text| should not be empty.
   virtual void Find(int request_id,
                     const base::string16& search_text,
