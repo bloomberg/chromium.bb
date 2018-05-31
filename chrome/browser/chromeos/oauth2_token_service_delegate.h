@@ -48,11 +48,11 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
                          const std::string& refresh_token) override;
   net::URLRequestContextGetter* GetRequestContext() const override;
   LoadCredentialsState GetLoadCredentialsState() const override;
+  void RevokeCredentials(const std::string& account_id) override;
+  void RevokeAllCredentials() override;
 
   // |AccountManager::Observer| overrides
   void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
-
-  // TODO(sinhak): Implement server token revocation.
 
  private:
   // Callback handler for |AccountManager::GetAccounts|.
