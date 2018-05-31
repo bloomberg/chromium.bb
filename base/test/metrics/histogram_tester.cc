@@ -32,8 +32,8 @@ void HistogramTester::ExpectUniqueSample(
     HistogramBase::Sample sample,
     HistogramBase::Count expected_count) const {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(name);
-  EXPECT_NE(nullptr, histogram) << "Histogram \"" << name
-                                << "\" does not exist.";
+  EXPECT_NE(nullptr, histogram)
+      << "Histogram \"" << name << "\" does not exist.";
 
   if (histogram) {
     std::unique_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
@@ -47,8 +47,8 @@ void HistogramTester::ExpectBucketCount(
     HistogramBase::Sample sample,
     HistogramBase::Count expected_count) const {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(name);
-  EXPECT_NE(nullptr, histogram) << "Histogram \"" << name
-                                << "\" does not exist.";
+  EXPECT_NE(nullptr, histogram)
+      << "Histogram \"" << name << "\" does not exist.";
 
   if (histogram) {
     std::unique_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
