@@ -85,7 +85,7 @@ class SDKFetcher(object):
   MISC_CACHE = 'misc'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
-  QEMU_BIN_KEY = 'app-emulation/qemu-2.6.0-r3.tbz2'
+  QEMU_BIN_KEY = 'app-emulation/qemu-2.6.0-r4.tbz2'
   PREBUILT_CONF_PATH = ('chromiumos/overlays/board-overlays.git/+/'
                         'master/overlay-amd64-host/prebuilt.conf')
 
