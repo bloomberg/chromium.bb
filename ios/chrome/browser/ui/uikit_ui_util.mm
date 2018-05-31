@@ -17,6 +17,7 @@
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -573,18 +574,35 @@ bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
          !IsCompactHeight(environment);
 }
 
-// Returns the current first responder.
+// Returns the first responder in the subviews of |view|, or nil if no view in
+// the subtree is the first responder.
+UIView* GetFirstResponderSubview(UIView* view) {
+  if ([view isFirstResponder])
+    return view;
+
+  for (UIView* subview in [view subviews]) {
+    UIView* firstResponder = GetFirstResponderSubview(subview);
+    if (firstResponder)
+      return firstResponder;
+  }
+
+  return nil;
+}
+
 UIResponder* GetFirstResponder() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  DCHECK(!gFirstResponder);
-  [[UIApplication sharedApplication]
-      sendAction:@selector(cr_markSelfCurrentFirstResponder)
-              to:nil
-            from:nil
-        forEvent:nil];
-  UIResponder* firstResponder = gFirstResponder;
-  gFirstResponder = nil;
-  return firstResponder;
+  if (!base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
+    DCHECK_CURRENTLY_ON(web::WebThread::UI);
+    DCHECK(!gFirstResponder);
+    [[UIApplication sharedApplication]
+        sendAction:@selector(cr_markSelfCurrentFirstResponder)
+                to:nil
+              from:nil
+          forEvent:nil];
+    UIResponder* firstResponder = gFirstResponder;
+    gFirstResponder = nil;
+    return firstResponder;
+  }
+  return GetFirstResponderSubview([UIApplication sharedApplication].keyWindow);
 }
 
 // Trigger a haptic vibration for the user selecting an action. This is a no-op
