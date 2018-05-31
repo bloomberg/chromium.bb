@@ -1225,6 +1225,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -1690,6 +1696,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -2143,6 +2155,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -2613,6 +2631,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -3073,6 +3097,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -3543,6 +3573,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -4003,6 +4039,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -9763,6 +9805,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -10249,6 +10297,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -10675,6 +10729,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -11145,6 +11205,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -11605,6 +11671,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -12075,6 +12147,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -12535,6 +12613,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -13005,6 +13089,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -13465,6 +13555,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -13935,6 +14031,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -14400,6 +14502,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
@@ -14860,6 +14968,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
@@ -15973,6 +16087,17 @@
           ]
         },
         "test": "mojo_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10"
+            }
+          ]
+        },
+        "test": "nacl_loader_unittests"
       },
       {
         "swarming": {
