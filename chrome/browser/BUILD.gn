@@ -2732,6 +2732,8 @@ jumbo_split_static_library("browser") {
       "search/local_ntp_source.h",
       "search/most_visited_iframe_source.cc",
       "search/most_visited_iframe_source.h",
+      "search/ntp_features.cc",
+      "search/ntp_features.h",
       "search/one_google_bar/one_google_bar_data.cc",
       "search/one_google_bar/one_google_bar_data.h",
       "search/one_google_bar/one_google_bar_loader.h",

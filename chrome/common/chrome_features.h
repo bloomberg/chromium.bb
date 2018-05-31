@@ -227,12 +227,6 @@ extern const base::Feature kNetworkPrediction;
 extern const base::Feature kNtlmV2Enabled;
 #endif
 
-extern const base::Feature kNtpBackgrounds;
-
-extern const base::Feature kNtpIcons;
-
-extern const base::Feature kNtpUIMd;
-
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
 #if defined(OS_ANDROID)

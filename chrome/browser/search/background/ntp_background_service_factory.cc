@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -38,7 +39,7 @@ NtpBackgroundServiceFactory::~NtpBackgroundServiceFactory() = default;
 
 KeyedService* NtpBackgroundServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!base::FeatureList::IsEnabled(features::kNtpBackgrounds)) {
+  if (!features::IsCustomBackgroundsEnabled()) {
     return nullptr;
   }
 

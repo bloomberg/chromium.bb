@@ -25,6 +25,7 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/browser/search/local_ntp_js_integrity.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
@@ -133,9 +134,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 
   if (is_google) {
     AddString(translated_strings.get(), "searchboxPlaceholder",
-              base::FeatureList::IsEnabled(features::kNtpUIMd)
-                  ? IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD
-                  : IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
+              features::IsMDUIEnabled() ? IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD
+                                        : IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
@@ -182,16 +182,12 @@ std::string GetConfigData(bool is_google, const GURL& google_base_url) {
       base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
   config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
 
-  bool is_md_ui_enabled = base::FeatureList::IsEnabled(features::kNtpUIMd);
-  config_data.SetBoolean("isMDUIEnabled", is_md_ui_enabled);
+  config_data.SetBoolean("isMDUIEnabled", features::IsMDUIEnabled());
 
-  bool is_md_icons_enabled = base::FeatureList::IsEnabled(features::kNtpIcons);
-  config_data.SetBoolean("isMDIconsEnabled", is_md_icons_enabled);
+  config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
 
-  bool is_custom_backgrounds_enabled =
-      base::FeatureList::IsEnabled(features::kNtpBackgrounds);
   config_data.SetBoolean("isCustomBackgroundsEnabled",
-                         is_custom_backgrounds_enabled);
+                         features::IsCustomBackgroundsEnabled());
 
   // Serialize the dictionary.
   std::string js_text;
