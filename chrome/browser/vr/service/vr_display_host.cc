@@ -52,12 +52,14 @@ VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
   binding_.Bind(mojo::MakeRequest(&display));
   display_ = std::make_unique<device::VRDisplayImpl>(
       device->GetDevice(), std::move(service_client), std::move(display_info),
-      std::move(display), mojo::MakeRequest(&client_), in_focused_frame_);
+      std::move(display), mojo::MakeRequest(&client_));
+  display_->SetFrameDataRestricted(!in_focused_frame_);
   browser_device_->OnDisplayHostAdded(this);
 }
 
 VRDisplayHost::~VRDisplayHost() {
   browser_device_->OnDisplayHostRemoved(this);
+  display_->StopSession();
 }
 
 void VRDisplayHost::RequestSession(RequestSessionCallback callback) {
@@ -66,7 +68,17 @@ void VRDisplayHost::RequestSession(RequestSessionCallback callback) {
     return;
   }
 
+  if (IsAnotherHostPresenting() || !in_focused_frame_) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   display_->RequestSession(std::move(callback));
+}
+
+bool VRDisplayHost::IsAnotherHostPresenting() {
+  return (browser_device_->GetPresentingDisplayHost() != this &&
+          browser_device_->GetPresentingDisplayHost() != nullptr);
 }
 
 void VRDisplayHost::RequestPresent(
@@ -85,10 +97,7 @@ void VRDisplayHost::RequestPresent(
   }
 
   // Check with browser-side device for whether something is already presenting.
-  bool another_page_presenting =
-      (browser_device_->GetPresentingDisplayHost() != this &&
-       browser_device_->GetPresentingDisplayHost() != nullptr);
-  if (another_page_presenting || !in_focused_frame_) {
+  if (IsAnotherHostPresenting() || !in_focused_frame_) {
     std::move(callback).Run(false, nullptr);
     return;
   }
@@ -123,7 +132,7 @@ void VRDisplayHost::SetListeningForActivate(bool listening) {
 void VRDisplayHost::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
   browser_device_->UpdateListeningForActivate(this);
-  display_->SetInFocusedFrame(in_focused_frame);
+  display_->SetFrameDataRestricted(!in_focused_frame_);
 }
 
 void VRDisplayHost::OnChanged(device::mojom::VRDisplayInfoPtr vr_device_info) {

@@ -191,7 +191,7 @@ void GvrDevice::OnRequestPresentResult(
     bool result,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
   if (result)
-    SetIsPresenting();
+    OnStartPresenting();
   std::move(callback).Run(result, std::move(transport_options));
 }
 

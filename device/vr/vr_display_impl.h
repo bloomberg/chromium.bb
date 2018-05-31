@@ -19,32 +19,38 @@ namespace device {
 class VRDevice;
 class VRDeviceBase;
 
+class XrSessionController {
+ public:
+  // Give out null frame data and hittest results when restricted.
+  virtual void SetFrameDataRestricted(bool restricted) = 0;
+
+  // Break binding connection.
+  virtual void StopSession() = 0;
+};
+
 // Browser process representation of a VRDevice within a WebVR site session
 // (see VRServiceImpl). VRDisplayImpl receives/sends VR device events
 // from/to mojom::VRDisplayClient (the render process representation of a VR
 // device).
 // VRDisplayImpl objects are owned by their respective VRServiceImpl instances.
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
-class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
+class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
+                                       public XrSessionController {
  public:
   VRDisplayImpl(VRDevice* device,
                 mojom::VRServiceClient* service_client,
                 mojom::VRDisplayInfoPtr display_info,
                 mojom::VRDisplayHostPtr display_host,
-                mojom::VRDisplayClientRequest client_request,
-                bool in_frame_focused);
+                mojom::VRDisplayClientRequest client_request);
   ~VRDisplayImpl() override;
-
-  void SetListeningForActivate(bool listening);
-  void SetInFocusedFrame(bool in_focused_frame);
-  virtual bool ListeningForActivate();
-  virtual bool InFocusedFrame();
 
   void RequestSession(mojom::VRDisplayHost::RequestSessionCallback callback);
 
- private:
-  bool IsPrivilegedOperationAllowed();
+  // XrSessionController
+  void SetFrameDataRestricted(bool paused) override;
+  void StopSession() override;
 
+ private:
   // mojom::VRMagicWindowProvider
   void GetPose(GetPoseCallback callback) override;
   void GetFrameData(const gfx::Size& frame_size,
@@ -55,8 +61,8 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   device::VRDeviceBase* device_;
-  bool listening_for_activate_ = false;
-  bool in_focused_frame_ = false;
+
+  bool restrict_frame_data_ = true;
 };
 
 }  // namespace device

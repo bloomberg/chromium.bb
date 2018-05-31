@@ -59,6 +59,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
 
  private:
   void ReportRequestPresent();
+  bool IsAnotherHostPresenting();
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.

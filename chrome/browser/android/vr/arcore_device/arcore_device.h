@@ -38,7 +38,7 @@ class ARCoreDevice : public VRDeviceBase {
 
  private:
   // VRDeviceBase implementation
-  bool ShouldPauseAndResumeOnFocusChange() override;
+  bool ShouldPauseTrackingWhenFrameDataRestricted() override;
   void OnMagicWindowFrameDataRequest(
       const gfx::Size& frame_size,
       display::Display::Rotation display_rotation,

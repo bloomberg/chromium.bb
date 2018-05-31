@@ -41,9 +41,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   void ExitPresent() override;
   void SetListeningForActivate(bool is_listening) override;
 
-  bool IsAccessAllowed(VRDisplayImpl* display);
-  void OnListeningForActivateChanged(VRDisplayImpl* display);
-  void OnFrameFocusChanged(VRDisplayImpl* display);
   void GetMagicWindowPose(
       mojom::VRMagicWindowProvider::GetPoseCallback callback);
   // TODO(https://crbug.com/836478): Rename this, and probably
@@ -56,24 +53,24 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
       mojom::XRRayPtr ray,
       mojom::VRMagicWindowProvider::RequestHitTestCallback callback);
 
+  bool HasExclusiveSession();
+
+  // TODO(https://crbug.com/845283): This method is a temporary solution
+  // until a XR related refactor lands. It allows to keep using the
+  // existing PauseTracking/ResumeTracking while not changing the
+  // existing VR functionality.
+  virtual bool ShouldPauseTrackingWhenFrameDataRestricted();
+
  protected:
-  void SetIsPresenting();
+  // Devices tell VRDeviceBase when they start presenting.  It will be paired
+  // with an OnExitPresent when the device stops presenting.
+  void OnStartPresenting();
   bool IsPresenting() { return presenting_; }  // Exposed for test.
   void SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info);
   void OnActivate(mojom::VRDisplayEventReason reason,
                   base::Callback<void(bool)> on_handled);
 
  private:
-  // Subclasses should implement these methods if they need to perform
-  // device-specific operations.
-  virtual void UpdateListeningForActivate(VRDisplayImpl* display);
-
-  // TODO(https://crbug.com/845283): This method is a temporary solution
-  // until a XR related refactor lands. It allows to keep using the
-  // existing PauseTracking/ResumeTracking while not changing the
-  // existing VR functionality.
-  virtual bool ShouldPauseAndResumeOnFocusChange();
-
   // TODO(https://crbug.com/842227): Rename methods to HandleOnXXX
   virtual void OnListeningForActivate(bool listening);
   virtual void OnMagicWindowPoseRequest(
@@ -84,8 +81,6 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
   VRDeviceEventListener* listener_ = nullptr;
-
-  VRDisplayImpl* listening_for_activate_diplay_ = nullptr;
 
   mojom::VRDisplayInfoPtr display_info_;
 

@@ -30,15 +30,18 @@ class VRDisplayImplTest : public testing::Test {
  protected:
   void SetUp() override {
     device_ = std::make_unique<FakeVRDevice>();
+    device_->SetPose(mojom::VRPose::New());
     mojom::VRServiceClientPtr proxy;
     client_ = std::make_unique<FakeVRServiceClient>(mojo::MakeRequest(&proxy));
   }
 
   std::unique_ptr<VRDisplayImpl> MakeDisplay() {
     mojom::VRDisplayClientPtr display_client;
-    return std::make_unique<VRDisplayImpl>(
+    auto display = std::make_unique<VRDisplayImpl>(
         device(), client(), device()->GetVRDisplayInfo(), nullptr,
-        mojo::MakeRequest(&display_client), false);
+        mojo::MakeRequest(&display_client));
+    display->SetFrameDataRestricted(true);
+    return display;
   }
 
   void RequestPresent(VRDisplayImpl* display_impl) {
@@ -69,29 +72,66 @@ class VRDisplayImplTest : public testing::Test {
 
 TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   std::unique_ptr<VRDisplayImpl> display_1 = MakeDisplay();
+  display_1->SetFrameDataRestricted(false);
   std::unique_ptr<VRDisplayImpl> display_2 = MakeDisplay();
+  display_2->SetFrameDataRestricted(false);
 
   // When not presenting either service should be able to access the device.
-  EXPECT_TRUE(device()->IsAccessAllowed(display_1.get()));
-  EXPECT_TRUE(device()->IsAccessAllowed(display_2.get()));
+  EXPECT_FALSE(device()->HasExclusiveSession());
+
+  bool was_called = false;
+  auto callback = [](bool expect_null, bool* was_called,
+                     mojom::VRPosePtr pose) {
+    *was_called = true;
+    EXPECT_EQ(expect_null, !pose);
+  };
+
+  static_cast<mojom::VRMagicWindowProvider*>(display_1.get())
+      ->GetPose(base::BindOnce(callback, false, &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  was_called = false;
+  static_cast<mojom::VRMagicWindowProvider*>(display_2.get())
+      ->GetPose(base::BindOnce(callback, false, &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  was_called = false;
 
   // Attempt to present.
   RequestPresent(display_1.get());
   EXPECT_TRUE(is_request_presenting_success_);
   EXPECT_TRUE(presenting());
+  EXPECT_TRUE(device()->HasExclusiveSession());
 
   // While a device is presenting, noone should have access to magic window.
-  EXPECT_FALSE(device()->IsAccessAllowed(display_1.get()));
-  EXPECT_FALSE(device()->IsAccessAllowed(display_2.get()));
+  static_cast<mojom::VRMagicWindowProvider*>(display_1.get())
+      ->GetPose(base::BindOnce(callback, true, &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  was_called = false;
+  static_cast<mojom::VRMagicWindowProvider*>(display_2.get())
+      ->GetPose(base::BindOnce(callback, true, &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  was_called = false;
 
   // Service 1 should be able to exit the presentation it initiated.
   ExitPresent();
   EXPECT_FALSE(presenting());
+  EXPECT_FALSE(device()->HasExclusiveSession());
 
   // Once presentation had ended both services should be able to access the
   // device.
-  EXPECT_TRUE(device()->IsAccessAllowed(display_1.get()));
-  EXPECT_TRUE(device()->IsAccessAllowed(display_2.get()));
+  static_cast<mojom::VRMagicWindowProvider*>(display_1.get())
+      ->GetPose(base::BindOnce(callback, false, &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  was_called = false;
+  static_cast<mojom::VRMagicWindowProvider*>(display_2.get())
+      ->GetPose(base::BindOnce(callback, false, &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  was_called = false;
 }
 
 }

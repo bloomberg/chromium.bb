@@ -141,7 +141,7 @@ void ARCoreDevice::RequestSession(
   std::move(callback).Run(true);
 }
 
-bool ARCoreDevice::ShouldPauseAndResumeOnFocusChange() {
+bool ARCoreDevice::ShouldPauseTrackingWhenFrameDataRestricted() {
   return true;
 }
 
