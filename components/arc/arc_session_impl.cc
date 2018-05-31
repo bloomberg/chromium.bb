@@ -180,7 +180,9 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
 
   mojo::PlatformChannel channel;
   mojo::OutgoingInvitation invitation;
-  std::string token = base::NumberToString(base::RandUint64());
+  // Generate an arbitrary 32-byte string. ARC uses this length as a protocol
+  // version identifier.
+  std::string token = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(token);
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  base::kNullProcessHandle,
