@@ -400,9 +400,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       "FeaturePolicyForPermissions",
       base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions));
 
-  if (base::FeatureList::IsEnabled(features::kKeyboardLockAPI))
-    WebRuntimeFeatures::EnableFeatureFromString("KeyboardLock", true);
-
   if (base::FeatureList::IsEnabled(features::kLazyFrameLoading))
     WebRuntimeFeatures::EnableLazyFrameLoading(true);
   if (base::FeatureList::IsEnabled(features::kLazyFrameVisibleLoadTimeMetrics))

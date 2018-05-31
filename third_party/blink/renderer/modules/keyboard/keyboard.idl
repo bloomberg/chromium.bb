@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(joedow): Remove RuntimeEnabled flag after the next branch point.
 [
     Exposed=Window,
-    RuntimeEnabled=KeyboardLock,
     SecureContext
 ] interface Keyboard {
     // Keyboard Lock specification: https://w3c.github.io/keyboard-lock/
