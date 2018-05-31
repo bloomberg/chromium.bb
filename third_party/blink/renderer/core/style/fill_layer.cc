@@ -364,16 +364,6 @@ bool FillLayer::ClipOccludesNextLayers() const {
   return Clip() == ThisOrNextLayersClipMax();
 }
 
-bool FillLayer::ContainsImage(StyleImage* s) const {
-  if (!s)
-    return false;
-  if (image_ && *s == *image_)
-    return true;
-  if (next_)
-    return next_->ContainsImage(s);
-  return false;
-}
-
 bool FillLayer::ImagesAreLoaded() const {
   const FillLayer* curr;
   for (curr = this; curr; curr = curr->Next()) {

@@ -214,7 +214,6 @@ class CORE_EXPORT FillLayer {
 
   bool VisuallyEqual(const FillLayer&) const;
 
-  bool ContainsImage(StyleImage*) const;
   bool ImagesAreLoaded() const;
 
   bool HasImage() const {
