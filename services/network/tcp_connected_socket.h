@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
@@ -20,7 +19,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/net_adapters.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/socket_data_pump.h"
 
@@ -69,7 +68,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
       mojom::NetworkContext::CreateTCPConnectedSocketCallback callback);
 
   // mojom::TCPConnectedSocket implementation.
-  void GetLocalAddress(GetLocalAddressCallback callback) override;
   void UpgradeToTLS(
       const net::HostPortPair& host_port_pair,
       mojom::TLSClientSocketOptionsPtr socket_options,

@@ -16,13 +16,6 @@ import "services/network/public/mojom/mutable_network_traffic_annotation_tag.moj
 // during reading or writing to data pipes. Consumer can close the socket by
 // destroying the interface pointer.
 interface TCPConnectedSocket {
-  // Gets the local address of this connected socket. On success, |net_error| is
-  // net::OK and |local_addr| contains the local address of the socket. On
-  // failure, |local_addr| is null and |net_error| is a net error code.
-  // DEPRECATED: Please use the |local_addr| returned in
-  // CreateTCPConnectedSocketCallback.
-  GetLocalAddress() => (int32 net_error, net.interfaces.IPEndPoint? local_addr);
-
   // Upgrades a TCP socket to a TLS client socket. Caller can optionally specify
   // a TLSClientSocketOptions to configure the connection.
   // IMPORTANT: Caller needs close the previous send and receive pipes before
@@ -93,11 +86,4 @@ interface TCPServerSocket {
           TCPConnectedSocket? connected_socket,
           handle<data_pipe_consumer>? send_stream,
           handle<data_pipe_producer>? receive_stream);
-
-  // Gets the local address of this server socket. On success, |net_error| is
-  // net::OK and |local_addr| contains the local address of the socket. On
-  // failure, |local_addr| is null and |net_error| is a net error code.
-  // DEPRECATED: Please use the |local_addr| returned in
-  // CreateTCPServerSocketCallback.
-  GetLocalAddress() => (int32 net_error, net.interfaces.IPEndPoint? local_addr);
 };

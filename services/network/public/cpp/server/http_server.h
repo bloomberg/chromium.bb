@@ -99,12 +99,6 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
   bool SetReceiveBufferSize(int connection_id, int32_t size);
   bool SetSendBufferSize(int connection_id, int32_t size);
 
-  // Asynchronously gets the local address of this http server. On completion,
-  // |callback| will be called with a network error code and the local address
-  // as arguments.
-  void GetLocalAddress(
-      mojom::TCPServerSocket::GetLocalAddressCallback callback);
-
  private:
   friend class HttpServerTest;
 

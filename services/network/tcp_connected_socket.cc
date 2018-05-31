@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
@@ -71,18 +70,6 @@ void TCPConnectedSocket::Connect(
   if (result == net::ERR_IO_PENDING)
     return;
   OnConnectCompleted(result);
-}
-
-void TCPConnectedSocket::GetLocalAddress(GetLocalAddressCallback callback) {
-  DCHECK(socket_);
-
-  net::IPEndPoint local_addr;
-  int result = socket_->GetLocalAddress(&local_addr);
-  if (result != net::OK) {
-    std::move(callback).Run(result, base::nullopt);
-    return;
-  }
-  std::move(callback).Run(result, local_addr);
 }
 
 void TCPConnectedSocket::UpgradeToTLS(
