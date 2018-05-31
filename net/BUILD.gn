@@ -5531,6 +5531,10 @@ test("net_unittests") {
     ]
   }
 
+  if (enable_built_in_dns) {
+    sources += [ "url_request/http_with_dns_over_https_unittest.cc" ]
+  }
+
   if (use_v8_in_net) {
     deps += [ ":net_with_v8" ]
   } else {
