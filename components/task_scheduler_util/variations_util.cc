@@ -68,9 +68,9 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
                                                 offset),
       base::TimeDelta::FromMilliseconds(detach_milliseconds));
 
-  if (params->max_threads() <= 0) {
-    DLOG(ERROR) << "Invalid max threads in the Worker Pool Descriptor: "
-                << params->max_threads();
+  if (params->max_tasks() <= 0) {
+    DLOG(ERROR) << "Invalid max tasks in the Worker Pool Descriptor: "
+                << params->max_tasks();
     return nullptr;
   }
 

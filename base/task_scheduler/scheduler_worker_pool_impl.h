@@ -133,8 +133,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Returns the number of workers in this worker pool.
   size_t NumberOfWorkersForTesting() const;
 
-  // Returns |worker_capacity_|.
-  size_t GetWorkerCapacityForTesting() const;
+  // Returns |max_tasks_|.
+  size_t GetMaxTasksForTesting() const;
 
   // Returns the number of workers that are idle (i.e. not running tasks).
   size_t NumberOfIdleWorkersForTesting() const;
@@ -150,9 +150,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   friend class TaskSchedulerWorkerPoolBlockingTest;
   friend class TaskSchedulerWorkerPoolMayBlockTest;
 
-  // The period between calls to AdjustWorkerCapacity() when the pool is at
-  // capacity. This value was set unscientifically based on intuition and may be
-  // adjusted in the future.
+  // The period between calls to AdjustMaxTasks() when the pool is at capacity.
+  // This value was set unscientifically based on intuition and may be adjusted
+  // in the future.
   static constexpr TimeDelta kBlockedWorkersPollPeriod =
       TimeDelta::FromMilliseconds(50);
 
@@ -171,7 +171,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // permitted.
   bool WakeUpOneWorkerLockRequired();
 
-  // Adds a worker, if needed, to maintain one idle worker, |worker_capacity_|
+  // Adds a worker, if needed, to maintain one idle worker, |max_tasks_|
   // permitting.
   void MaintainAtLeastOneIdleWorkerLockRequired();
 
@@ -193,32 +193,31 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   SchedulerWorker* CreateRegisterAndStartSchedulerWorkerLockRequired();
 
   // Returns the number of workers in the pool that should not run tasks due to
-  // the pool being over worker capacity.
+  // the pool being over capacity.
   size_t NumberOfExcessWorkersLockRequired() const;
 
-  // Examines the list of SchedulerWorkers and increments |worker_capacity_| for
-  // each worker that has been within the scope of a MAY_BLOCK
-  // ScopedBlockingCall for more than BlockedThreshold().
-  void AdjustWorkerCapacity();
+  // Examines the list of SchedulerWorkers and increments |max_tasks_| for each
+  // worker that has been within the scope of a MAY_BLOCK ScopedBlockingCall for
+  // more than BlockedThreshold().
+  void AdjustMaxTasks();
 
-  // Returns the threshold after which the worker capacity is increased to
-  // compensate for a worker that is within a MAY_BLOCK ScopedBlockingCall.
+  // Returns the threshold after which the max tasks is increased to compensate
+  // for a worker that is within a MAY_BLOCK ScopedBlockingCall.
   TimeDelta MayBlockThreshold() const;
 
-  // Starts calling AdjustWorkerCapacity() periodically on
+  // Starts calling AdjustMaxTasks() periodically on
   // |service_thread_task_runner_| if not already requested.
-  void PostAdjustWorkerCapacityTaskIfNeeded();
+  void ScheduleAdjustMaxTasksIfNeeded();
 
-  // Calls AdjustWorkerCapacity() and schedules it again as necessary. May only
-  // be called from the service thread.
-  void AdjustWorkerCapacityTaskFunction();
+  // Calls AdjustMaxTasks() and schedules it again as necessary. May only be
+  // called from the service thread.
+  void AdjustMaxTasksFunction();
 
-  // Returns true if AdjustWorkerCapacity() should periodically be called on
+  // Returns true if AdjustMaxTasks() should periodically be called on
   // |service_thread_task_runner_|.
-  bool ShouldPeriodicallyAdjustWorkerCapacityLockRequired();
-
-  void DecrementWorkerCapacityLockRequired();
-  void IncrementWorkerCapacityLockRequired();
+  bool ShouldPeriodicallyAdjustMaxTasksLockRequired();
+  void DecrementMaxTasksLockRequired();
+  void IncrementMaxTasksLockRequired();
 
   const std::string pool_label_;
   const ThreadPriority priority_hint_;
@@ -232,15 +231,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   SchedulerBackwardCompatibility backward_compatibility_;
 
-  // Synchronizes accesses to |workers_|, |worker_capacity_|,
+  // Synchronizes accesses to |workers_|, |max_tasks_|,
   // |num_pending_may_block_workers_|, |idle_workers_stack_|,
   // |idle_workers_stack_cv_for_testing_|, |num_wake_ups_before_start_|,
-  // |cleanup_timestamps_|, |polling_worker_capacity_|,
+  // |cleanup_timestamps_|, |polling_max_tasks_|,
   // |worker_cleanup_disallowed_for_testing_|,
   // |num_workers_cleaned_up_for_testing_|,
   // |SchedulerWorkerDelegateImpl::is_on_idle_workers_stack_|,
-  // |SchedulerWorkerDelegateImpl::incremented_worker_capacity_since_blocked_|
-  // and |SchedulerWorkerDelegateImpl::may_block_start_time_|. Has
+  // |SchedulerWorkerDelegateImpl::incremented_max_tasks_since_blocked_| and
+  // |SchedulerWorkerDelegateImpl::may_block_start_time_|. Has
   // |shared_priority_queue_|'s lock as its predecessor so that a worker can be
   // pushed to |idle_workers_stack_| within the scope of a Transaction (more
   // details in GetWork()).
@@ -249,15 +248,15 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // All workers owned by this worker pool.
   std::vector<scoped_refptr<SchedulerWorker>> workers_;
 
-  // Workers can be added as needed up until there are |worker_capacity_|
-  // workers.
-  size_t worker_capacity_ = 0;
+  // The maximum number of tasks that can run concurrently in this pool. Workers
+  // can be added as needed up until there are |max_tasks_| workers.
+  size_t max_tasks_ = 0;
 
-  // Initial value of |worker_capacity_| as set in Start().
-  size_t initial_worker_capacity_ = 0;
+  // Initial value of |max_tasks_| as set in Start().
+  size_t initial_max_tasks_ = 0;
 
   // Number workers that are within the scope of a MAY_BLOCK ScopedBlockingCall
-  // but haven't caused a worker capacity increase yet.
+  // but haven't caused a max tasks increase yet.
   int num_pending_may_block_workers_ = 0;
 
   // Environment to be initialized per worker.
@@ -281,9 +280,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Timestamps get popped off the stack as new workers are added.
   base::stack<TimeTicks, std::vector<TimeTicks>> cleanup_timestamps_;
 
-  // Whether we are currently polling for necessary adjustments to
-  // |worker_capacity_|.
-  bool polling_worker_capacity_ = false;
+  // Whether we are currently polling for necessary adjustments to |max_tasks_|.
+  bool polling_max_tasks_ = false;
 
   // Indicates to the delegates that workers are not permitted to cleanup.
   bool worker_cleanup_disallowed_for_testing_ = false;
