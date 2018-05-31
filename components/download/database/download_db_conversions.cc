@@ -145,7 +145,10 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   download_pb::InProgressInfo proto;
   for (size_t i = 0; i < in_progress_info.url_chain.size(); ++i)
     proto.add_url_chain(in_progress_info.url_chain[i].spec());
+  proto.set_referrer_url(in_progress_info.referrer_url.spec());
   proto.set_site_url(in_progress_info.site_url.spec());
+  proto.set_tab_url(in_progress_info.tab_url.spec());
+  proto.set_tab_referrer_url(in_progress_info.tab_referrer_url.spec());
   proto.set_fetch_error_body(in_progress_info.fetch_error_body);
   for (const auto& header : in_progress_info.request_headers) {
     auto* proto_header = proto.add_request_headers();
@@ -153,6 +156,8 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   }
   proto.set_etag(in_progress_info.etag);
   proto.set_last_modified(in_progress_info.last_modified);
+  proto.set_mime_type(in_progress_info.mime_type);
+  proto.set_original_mime_type(in_progress_info.original_mime_type);
   proto.set_total_bytes(in_progress_info.total_bytes);
   base::Pickle current_path;
   in_progress_info.current_path.WriteToPickle(&current_path);
@@ -161,8 +166,15 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   in_progress_info.target_path.WriteToPickle(&target_path);
   proto.set_target_path(target_path.data(), target_path.size());
   proto.set_received_bytes(in_progress_info.received_bytes);
-  proto.set_end_time(
-      in_progress_info.end_time.ToDeltaSinceWindowsEpoch().InMilliseconds());
+  proto.set_start_time(
+      in_progress_info.start_time.is_null()
+          ? -1
+          : in_progress_info.start_time.ToDeltaSinceWindowsEpoch()
+                .InMilliseconds());
+  proto.set_end_time(in_progress_info.end_time.is_null()
+                         ? -1
+                         : in_progress_info.end_time.ToDeltaSinceWindowsEpoch()
+                               .InMilliseconds());
   for (size_t i = 0; i < in_progress_info.received_slices.size(); ++i) {
     download_pb::ReceivedSlice* slice = proto.add_received_slices();
     slice->set_received_bytes(
@@ -187,12 +199,17 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
   InProgressInfo info;
   for (const auto& url : proto.url_chain())
     info.url_chain.emplace_back(url);
+  info.referrer_url = GURL(proto.referrer_url());
   info.site_url = GURL(proto.site_url());
+  info.tab_url = GURL(proto.tab_url());
+  info.tab_referrer_url = GURL(proto.tab_referrer_url());
   info.fetch_error_body = proto.fetch_error_body();
   for (const auto& header : proto.request_headers())
     info.request_headers.emplace_back(HttpRequestHeaderFromProto(header));
   info.etag = proto.etag();
   info.last_modified = proto.last_modified();
+  info.mime_type = proto.mime_type();
+  info.original_mime_type = proto.original_mime_type();
   info.total_bytes = proto.total_bytes();
   base::PickleIterator current_path(
       base::Pickle(proto.current_path().data(), proto.current_path().size()));
@@ -201,8 +218,16 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
       base::Pickle(proto.target_path().data(), proto.target_path().size()));
   info.target_path.ReadFromPickle(&target_path);
   info.received_bytes = proto.received_bytes();
-  info.end_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMilliseconds(proto.end_time()));
+  info.start_time =
+      proto.start_time() == -1
+          ? base::Time()
+          : base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromMilliseconds(proto.start_time()));
+  info.end_time =
+      proto.end_time() == -1
+          ? base::Time()
+          : base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromMilliseconds(proto.end_time()));
 
   for (int i = 0; i < proto.received_slices_size(); ++i) {
     info.received_slices.emplace_back(proto.received_slices(i).offset(),
@@ -241,6 +266,7 @@ DownloadInfo DownloadDBConversions::DownloadInfoFromProto(
     const download_pb::DownloadInfo& proto) {
   DownloadInfo info;
   info.guid = proto.guid();
+  info.id = proto.id();
   if (proto.has_ukm_info())
     info.ukm_info = UkmInfoFromProto(proto.ukm_info());
   if (proto.has_in_progress_info())
@@ -252,6 +278,7 @@ download_pb::DownloadInfo DownloadDBConversions::DownloadInfoToProto(
     const DownloadInfo& info) {
   download_pb::DownloadInfo proto;
   proto.set_guid(info.guid);
+  proto.set_id(info.id);
   if (info.ukm_info.has_value()) {
     auto ukm_info = std::make_unique<download_pb::UkmInfo>(
         UkmInfoToProto(info.ukm_info.value()));

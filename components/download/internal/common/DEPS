@@ -3,6 +3,7 @@ include_rules = [
   "+components/download/downloader/in_progress",
   "+components/download/public/common",
   "+components/download/quarantine",
+  "+components/leveldb_proto",
   "+components/ukm/test_ukm_recorder.h",
   "+crypto",
   "+mojo/public/c/system",

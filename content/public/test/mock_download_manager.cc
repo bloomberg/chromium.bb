@@ -153,4 +153,9 @@ download::DownloadItem* MockDownloadManager::CreateDownloadItem(
   return MockCreateDownloadItem(adapter);
 }
 
+void MockDownloadManager::OnHistoryQueryComplete(
+    base::OnceClosure load_history_downloads_cb) {
+  std::move(load_history_downloads_cb).Run();
+}
+
 }  // namespace content
