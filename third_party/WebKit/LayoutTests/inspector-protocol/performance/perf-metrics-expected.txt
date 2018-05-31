@@ -1,66 +1,24 @@
-Test that page performance metrics are retrieved.
-Received metrics:
-Received metrics:
-	Timestamp
-	AudioHandlers
-	Documents
-	Frames
-	JSEventListeners
-	LayoutObjects
-	MediaKeySessions
-	MediaKeys
-	Nodes
-	Resources
-	ScriptPromises
-	PausableObjects
-	V8PerContextDatas
-	WorkerGlobalScopes
-	UACSSResources
-	RTCPeerConnections
-	ResourceFetchers
-	AdSubframes
-	DetachedScriptStates
-	LayoutCount
-	RecalcStyleCount
-	LayoutDuration
-	RecalcStyleDuration
-	ScriptDuration
-	TaskDuration
-	JSHeapUsedSize
-	JSHeapTotalSize
-	FirstMeaningfulPaint
-	DomContentLoaded
-	NavigationStart
-Received metrics:
-	Timestamp
-	AudioHandlers
-	Documents
-	Frames
-	JSEventListeners
-	LayoutObjects
-	MediaKeySessions
-	MediaKeys
-	Nodes
-	Resources
-	ScriptPromises
-	PausableObjects
-	V8PerContextDatas
-	WorkerGlobalScopes
-	UACSSResources
-	RTCPeerConnections
-	ResourceFetchers
-	AdSubframes
-	DetachedScriptStates
-	LayoutCount
-	RecalcStyleCount
-	LayoutDuration
-	RecalcStyleDuration
-	ScriptDuration
-	TaskDuration
-	JSHeapUsedSize
-	JSHeapTotalSize
-	FirstMeaningfulPaint
-	DomContentLoaded
-	NavigationStart
-Received metrics:
+Test that page performance metrics are retrieved and the list is stable.
+DO NOT modify the list, it's exposed over public protocol.
+
+Metrics:
+
+
+Metrics:
+Documents
+Frames
+JSEventListeners
+JSHeapTotalSize
+JSHeapUsedSize
+LayoutCount
+LayoutDuration
+Nodes
+RecalcStyleCount
+RecalcStyleDuration
+ScriptDuration
+TaskDuration
+Timestamp
+
+Metrics:
+
 
