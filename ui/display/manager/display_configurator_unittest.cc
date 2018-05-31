@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chromeos/chromeos_switches.cc"
+#include "chromeos/chromeos_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
