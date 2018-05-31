@@ -38,11 +38,11 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   void OnWorkerSchedulerCreated(
       base::WeakPtr<WorkerScheduler> worker_scheduler);
 
-  void OnLifecycleStateChanged(
-      SchedulingLifecycleState throttling_state) override;
+  void OnThrottlingStateChanged(
+      FrameOrWorkerScheduler::ThrottlingState throttling_state) override;
 
   // Accessed only during init.
-  SchedulingLifecycleState throttling_state() const {
+  FrameOrWorkerScheduler::ThrottlingState throttling_state() const {
     DCHECK(!initialized_);
     return throttling_state_;
   }
@@ -60,10 +60,10 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   // Const after init on the worker thread.
   scoped_refptr<base::SingleThreadTaskRunner> worker_thread_task_runner_;
 
-  SchedulingLifecycleState throttling_state_ =
-      SchedulingLifecycleState::kNotThrottled;
+  FrameOrWorkerScheduler::ThrottlingState throttling_state_ =
+      FrameOrWorkerScheduler::ThrottlingState::kNotThrottled;
 
-  std::unique_ptr<FrameOrWorkerScheduler::LifecycleObserverHandle>
+  std::unique_ptr<FrameOrWorkerScheduler::ThrottlingObserverHandle>
       throttling_observer_handle_;
 
   bool initialized_ = false;
