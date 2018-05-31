@@ -8,6 +8,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -2299,4 +2300,24 @@ static_library("device_policy_remover_generated") {
   public_deps = [
     ":device_policy_remover_generate",
   ]
+}
+
+fuzzer_test("smb_url_fuzzer") {
+  sources = [
+    "smb_client/smb_constants.cc",
+    "smb_client/smb_constants.h",
+    "smb_client/smb_url.cc",
+    "smb_client/smb_url.h",
+    "smb_client/smb_url_fuzzer.cc",
+  ]
+
+  deps = [
+    "//base:i18n",
+    "//base/test:test_support",
+    "//url",
+  ]
+
+  dict = "smb_client/fuzzer_data/smb_url_fuzzer.dict"
+
+  # Corpus is stored at gs://clusterfuzz-corpus/libfuzzer/smb_url_corpus_static.
 }
