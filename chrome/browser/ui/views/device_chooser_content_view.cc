@@ -261,7 +261,7 @@ void DeviceChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   // of a previously selected row.
   table_view_->Select(-1);
   UpdateTableView();
-  table_view_->SetVisible(enabled);
+  table_parent_->SetVisible(enabled);
   adapter_off_help_->SetVisible(!enabled);
 
   bluetooth_status_container_->ShowReScanButton(enabled);
