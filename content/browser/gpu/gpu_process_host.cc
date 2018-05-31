@@ -35,6 +35,7 @@
 #include "components/viz/common/switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/field_trial_recorder.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -1228,6 +1229,18 @@ void GpuProcessHost::DidLoseContext(bool offscreen,
   }
 
   GpuDataManagerImpl::GetInstance()->BlockDomainFrom3DAPIs(active_url, guilt);
+}
+
+void GpuProcessHost::DisableGpuCompositing() {
+#if !defined(OS_ANDROID)
+  // TODO(crbug.com/819474): The switch from GPU to software compositing should
+  // be handled here instead of by ImageTransportFactory.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::BindOnce([]() {
+        if (auto* factory = ImageTransportFactory::GetInstance())
+          factory->DisableGpuCompositing();
+      }));
+#endif
 }
 
 void GpuProcessHost::SetChildSurface(gpu::SurfaceHandle parent_handle,
