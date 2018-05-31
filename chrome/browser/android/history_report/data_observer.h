@@ -80,6 +80,7 @@ class DataObserver : public bookmarks::BookmarkModelObserver,
  private:
   void DeleteBookmarks(const std::set<GURL>& removed_urls);
 
+  bookmarks::BookmarkModel* bookmark_model_;
   base::Callback<void(void)> data_changed_callback_;
   base::Callback<void(void)> data_cleared_callback_;
   base::Callback<void(void)> stop_reporting_callback_;

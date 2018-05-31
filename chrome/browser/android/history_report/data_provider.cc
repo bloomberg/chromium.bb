@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/model_loader.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -132,7 +133,7 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
                      base::Unretained(&context),
                      base::Unretained(entries.get())));
       std::vector<UrlAndTitle> bookmarks;
-      bookmark_model_->BlockTillLoaded();
+      bookmark_model_->model_loader()->BlockTillLoaded();
       bookmark_model_->GetBookmarks(&bookmarks);
       BookmarkMap bookmark_map;
       for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -195,7 +196,7 @@ void DataProvider::RecreateLog() {
   }
 
   std::vector<UrlAndTitle> bookmarks;
-  bookmark_model_->BlockTillLoaded();
+  bookmark_model_->model_loader()->BlockTillLoaded();
   bookmark_model_->GetBookmarks(&bookmarks);
   urls.reserve(urls.size() + bookmarks.size());
   for (size_t i = 0; i < bookmarks.size(); i++) {

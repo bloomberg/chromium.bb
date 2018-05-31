@@ -8,17 +8,18 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/history/core/browser/history_backend_client.h"
 
 class GURL;
 
 namespace bookmarks {
-class BookmarkModel;
+class ModelLoader;
 }
 
 class HistoryBackendClientImpl : public history::HistoryBackendClient {
  public:
-  explicit HistoryBackendClientImpl(bookmarks::BookmarkModel* bookmark_model);
+  explicit HistoryBackendClientImpl(bookmarks::ModelLoader* model_loader);
   ~HistoryBackendClientImpl() override;
 
  private:
@@ -28,9 +29,8 @@ class HistoryBackendClientImpl : public history::HistoryBackendClient {
   bool ShouldReportDatabaseError() override;
   bool IsWebSafe(const GURL& url) override;
 
-  // BookmarkModel instance providing access to bookmarks. May be null during
-  // testing but must outlive HistoryBackendClientImpl if non-null.
-  bookmarks::BookmarkModel* bookmark_model_;
+  // ModelLoader is used to access bookmarks. May be null during testing.
+  scoped_refptr<bookmarks::ModelLoader> model_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendClientImpl);
 };

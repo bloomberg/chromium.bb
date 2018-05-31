@@ -6,18 +6,19 @@
 #define CHROME_BROWSER_HISTORY_CHROME_HISTORY_BACKEND_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
 
 namespace bookmarks {
-class BookmarkModel;
+class ModelLoader;
 }
 
 // ChromeHistoryBackendClient implements history::HistoryBackendClient interface
 // to provides access to embedder-specific features.
 class ChromeHistoryBackendClient : public history::HistoryBackendClient {
  public:
-  explicit ChromeHistoryBackendClient(bookmarks::BookmarkModel* bookmark_model);
+  explicit ChromeHistoryBackendClient(bookmarks::ModelLoader* model_loader);
   ~ChromeHistoryBackendClient() override;
 
   // history::HistoryBackendClient implementation.
@@ -36,9 +37,8 @@ class ChromeHistoryBackendClient : public history::HistoryBackendClient {
 #endif  // defined(OS_ANDROID)
 
  private:
-  // BookmarkModel instance providing access to bookmarks. May be null during
-  // testing but must outlive ChromeHistoryBackendClient if non-null.
-  bookmarks::BookmarkModel* bookmark_model_;
+  // ModelLoader is used to access bookmarks. May be null during testing.
+  scoped_refptr<bookmarks::ModelLoader> model_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeHistoryBackendClient);
 };

@@ -14,15 +14,24 @@
 #include "url/gurl.h"
 
 HistoryClientImpl::HistoryClientImpl(bookmarks::BookmarkModel* bookmark_model)
-    : bookmark_model_(bookmark_model), is_bookmark_model_observer_(false) {
+    : bookmark_model_(bookmark_model) {
+  if (bookmark_model_)
+    bookmark_model_->AddObserver(this);
 }
 
 HistoryClientImpl::~HistoryClientImpl() {
+  StopObservingBookmarkModel();
+}
+
+void HistoryClientImpl::StopObservingBookmarkModel() {
+  if (!bookmark_model_)
+    return;
+  bookmark_model_->RemoveObserver(this);
+  bookmark_model_ = nullptr;
 }
 
 void HistoryClientImpl::OnHistoryServiceCreated(
     history::HistoryService* history_service) {
-  DCHECK(!is_bookmark_model_observer_);
   if (bookmark_model_) {
     on_bookmarks_removed_ =
         base::Bind(&history::HistoryService::URLsNoLongerBookmarked,
@@ -31,28 +40,12 @@ void HistoryClientImpl::OnHistoryServiceCreated(
         history_service->AddFaviconsChangedCallback(
             base::Bind(&bookmarks::BookmarkModel::OnFaviconsChanged,
                        base::Unretained(bookmark_model_)));
-    bookmark_model_->AddObserver(this);
-    is_bookmark_model_observer_ = true;
   }
 }
 
 void HistoryClientImpl::Shutdown() {
-  // It's possible that bookmarks haven't loaded and history is waiting for
-  // bookmarks to complete loading. In such a situation history can't shutdown
-  // (meaning if we invoked HistoryService::Cleanup now, we would deadlock). To
-  // break the deadlock we tell BookmarkModel it's about to be deleted so that
-  // it can release the signal history is waiting on, allowing history to
-  // shutdown (HistoryService::Cleanup to complete). In such a scenario history
-  // sees an incorrect view of bookmarks, but it's better than a deadlock.
-  if (bookmark_model_) {
-    if (is_bookmark_model_observer_) {
-      is_bookmark_model_observer_ = false;
-      bookmark_model_->RemoveObserver(this);
-      favicons_changed_subscription_.reset();
-      on_bookmarks_removed_.Reset();
-    }
-    bookmark_model_->Shutdown();
-  }
+  favicons_changed_subscription_.reset();
+  StopObservingBookmarkModel();
 }
 
 bool HistoryClientImpl::CanAddURL(const GURL& url) {
@@ -64,10 +57,17 @@ void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status,
 
 std::unique_ptr<history::HistoryBackendClient>
 HistoryClientImpl::CreateBackendClient() {
-  return std::make_unique<HistoryBackendClientImpl>(bookmark_model_);
+  return std::make_unique<HistoryBackendClientImpl>(
+      bookmark_model_ ? bookmark_model_->model_loader() : nullptr);
 }
 
 void HistoryClientImpl::BookmarkModelChanged() {
+}
+
+void HistoryClientImpl::BookmarkModelBeingDeleted(
+    bookmarks::BookmarkModel* model) {
+  DCHECK_EQ(model, bookmark_model_);
+  StopObservingBookmarkModel();
 }
 
 void HistoryClientImpl::BookmarkNodeRemoved(
@@ -76,13 +76,13 @@ void HistoryClientImpl::BookmarkNodeRemoved(
     int old_index,
     const bookmarks::BookmarkNode* node,
     const std::set<GURL>& no_longer_bookmarked) {
-  if (!on_bookmarks_removed_.is_null())
+  if (on_bookmarks_removed_)
     on_bookmarks_removed_.Run(no_longer_bookmarked);
 }
 
 void HistoryClientImpl::BookmarkAllUserNodesRemoved(
     bookmarks::BookmarkModel* model,
     const std::set<GURL>& removed_urls) {
-  if (!on_bookmarks_removed_.is_null())
+  if (on_bookmarks_removed_)
     on_bookmarks_removed_.Run(removed_urls);
 }

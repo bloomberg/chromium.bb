@@ -155,11 +155,7 @@ bool BookmarkLoadDetails::LoadExtraNodes() {
 }
 
 void BookmarkLoadDetails::CreateUrlIndex() {
-  url_index_ = std::make_unique<UrlIndex>(std::move(root_node_));
-}
-
-std::unique_ptr<UrlIndex> BookmarkLoadDetails::owned_url_index() {
-  return std::move(url_index_);
+  url_index_ = base::MakeRefCounted<UrlIndex>(std::move(root_node_));
 }
 
 BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(

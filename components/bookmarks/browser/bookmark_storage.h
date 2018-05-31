@@ -16,6 +16,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/titled_url_index.h"
@@ -104,7 +105,7 @@ class BookmarkLoadDetails {
   bool ids_reassigned() const { return ids_reassigned_; }
 
   void CreateUrlIndex();
-  std::unique_ptr<UrlIndex> owned_url_index();
+  UrlIndex* url_index() { return url_index_.get(); }
 
  private:
   // Creates one of the possible permanent nodes (bookmark bar node, other node
@@ -125,7 +126,7 @@ class BookmarkLoadDetails {
   std::string computed_checksum_;
   std::string stored_checksum_;
   bool ids_reassigned_ = false;
-  std::unique_ptr<UrlIndex> url_index_;
+  scoped_refptr<UrlIndex> url_index_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadDetails);
 };
