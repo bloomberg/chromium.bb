@@ -6,12 +6,6 @@
 
 #include "rar.hpp"
 
-ErrorHandler::ErrorHandler()
-{
-  Clean();
-}
-
-
 void ErrorHandler::Clean()
 {
   ExitCode=RARX_SUCCESS;

@@ -21,13 +21,12 @@ enum RAR_EXIT // RAR exit code.
 class ErrorHandler
 {
   private:
-    RAR_EXIT ExitCode;
-    uint ErrCount;
-    bool EnableBreak;
-    bool Silent;
-    bool DisableShutdown; // Shutdown is not suitable after last error.
+    RAR_EXIT ExitCode = RARX_SUCCESS;
+    uint ErrCount = 0;
+    bool EnableBreak = true;
+    bool Silent = false;
+    bool DisableShutdown = false; // Shutdown is not suitable after last error.
   public:
-    ErrorHandler();
     void Clean();
     void MemoryError();
     void OpenError(const wchar *FileName);
@@ -62,8 +61,8 @@ class ErrorHandler
     void SetSystemErrorCode(int Code);
     bool IsShutdownEnabled() {return !DisableShutdown;}
 
-    bool UserBreak; // Ctrl+Break is pressed.
-    bool MainExit; // main() is completed.
+    bool UserBreak = false; // Ctrl+Break is pressed.
+    bool MainExit = false; // main() is completed.
 };
 
 
