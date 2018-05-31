@@ -12,20 +12,23 @@ Run audits: enabled visible
 
 =============== Audits run ===============
 bootup-time
-consistently-interactive
 critical-request-chains
 dom-size
+efficient-animated-content
 estimated-input-latency
-first-interactive
+first-contentful-paint
+first-cpu-idle
 first-meaningful-paint
 font-display
-link-blocking-first-paint
+interactive
 mainthread-work-breakdown
+metrics
+network-requests
 offscreen-images
 redirects
+render-blocking-resources
 screenshot-thumbnails
-script-blocking-first-paint
-speed-index-metric
+speed-index
 time-to-first-byte
 total-byte-weight
 unminified-css
@@ -34,8 +37,9 @@ unused-css-rules
 user-timings
 uses-long-cache-ttl
 uses-optimized-images
+uses-rel-preconnect
 uses-rel-preload
-uses-request-compression
 uses-responsive-images
+uses-text-compression
 uses-webp-images
 
