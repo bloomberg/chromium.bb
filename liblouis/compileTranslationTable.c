@@ -2373,6 +2373,10 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		passLine.chars[endTest] = pass_endTest;
 		passLinepos = 0;
 		while (passLinepos <= endTest) {
+			if (passIC >= MAXSTRING) {
+				compileError(passNested, "Test part in multipass operand too long");
+				return 0;
+			}
 			switch ((passSubOp = passLine.chars[passLinepos])) {
 			case pass_lookback:
 				passInstructions[passIC++] = pass_lookback;
@@ -2548,6 +2552,10 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		while (passLinepos < passLine.length && passLine.chars[passLinepos] <= 32)
 			passLinepos++;
 		while (passLinepos < passLine.length && passLine.chars[passLinepos] > 32) {
+			if (passIC >= MAXSTRING) {
+				compileError(passNested, "Action part in multipass operand too long");
+				return 0;
+			}
 			switch ((passSubOp = passLine.chars[passLinepos])) {
 			case pass_string:
 				if (!verifyStringOrDots(nested, opcode, 1, 1, nofor)) {
@@ -2567,8 +2575,14 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			actionDoCharsDots:
 				if (passHoldString.length == 0) return 0;
 				passInstructions[passIC++] = passHoldString.length;
-				for (kk = 0; kk < passHoldString.length; kk++)
+				for (kk = 0; kk < passHoldString.length; kk++) {
+					if (passIC >= MAXSTRING) {
+						compileError(passNested,
+								"@ operand in action part of multipass operand too long");
+						return 0;
+					}
 					passInstructions[passIC++] = passHoldString.chars[kk];
+				}
 				break;
 			case pass_variable:
 				passLinepos++;
