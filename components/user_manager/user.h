@@ -100,6 +100,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns true if user is supervised.
   virtual bool IsSupervised() const;
 
+  // Returns true if user is child.
+  virtual bool IsChild() const;
+
   // True if user image can be synced.
   virtual bool CanSyncImage() const;
 

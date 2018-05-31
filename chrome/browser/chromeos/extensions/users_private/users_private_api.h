@@ -74,28 +74,6 @@ class UsersPrivateRemoveWhitelistedUserFunction
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateRemoveWhitelistedUserFunction);
 };
 
-// Implements the chrome.usersPrivate.isCurrentUserOwner method.
-class UsersPrivateIsCurrentUserOwnerFunction
-    : public UIThreadExtensionFunction {
- public:
-  UsersPrivateIsCurrentUserOwnerFunction();
-  DECLARE_EXTENSION_FUNCTION("usersPrivate.isCurrentUserOwner",
-                             USERSPRIVATE_ISCURRENTUSEROWNER);
-
- protected:
-  ~UsersPrivateIsCurrentUserOwnerFunction() override;
-
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-
- private:
-  void IsOwnerCallback(bool is_owner);
-
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  DISALLOW_COPY_AND_ASSIGN(UsersPrivateIsCurrentUserOwnerFunction);
-};
-
 // Implements the chrome.usersPrivate.isWhitelistManaged method.
 class UsersPrivateIsWhitelistManagedFunction
     : public UIThreadExtensionFunction {
@@ -112,6 +90,24 @@ class UsersPrivateIsWhitelistManagedFunction
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateIsWhitelistManagedFunction);
+};
+
+// Implements the chrome.usersPrivate.getCurrentUser method.
+class UsersPrivateGetCurrentUserFunction : public UIThreadExtensionFunction {
+ public:
+  UsersPrivateGetCurrentUserFunction();
+  DECLARE_EXTENSION_FUNCTION("usersPrivate.getCurrentUser",
+                             USERSPRIVATE_GETCURRENTUSER);
+
+ protected:
+  ~UsersPrivateGetCurrentUserFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+  DISALLOW_COPY_AND_ASSIGN(UsersPrivateGetCurrentUserFunction);
 };
 
 }  // namespace extensions
