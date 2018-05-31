@@ -235,8 +235,8 @@ TEST(MathExtrasTest, clampToUnsignedLongLongUnsignedLongLong) {
             clampTo<unsigned long long>(0xFFFFFFFFFFFFFFF5ULL));
 }
 
-// Make sure that various +-inf cases are handled properly (they aren't
-// by default on VS).
+// Make sure that various +-inf cases are handled properly (they weren't
+// by default on older VS).
 TEST(MathExtrasTest, infinityMath) {
   double pos_inf = std::numeric_limits<double>::infinity();
   double neg_inf = -std::numeric_limits<double>::infinity();

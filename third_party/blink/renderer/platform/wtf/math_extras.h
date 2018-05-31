@@ -60,51 +60,6 @@ const float piOverFourFloat = static_cast<float>(M_PI_4);
 const double twoPiDouble = piDouble * 2.0;
 const float twoPiFloat = piFloat * 2.0f;
 
-#if defined(COMPILER_MSVC)
-
-// VS2013 has most of the math functions now, but we still need to work
-// around various differences in behavior of Inf.
-
-// Work around a bug in Win, where atan2(+-infinity, +-infinity) yields NaN
-// instead of specific values.
-inline double wtf_atan2(double x, double y) {
-  double posInf = std::numeric_limits<double>::infinity();
-  double negInf = -std::numeric_limits<double>::infinity();
-  double nan = std::numeric_limits<double>::quiet_NaN();
-
-  double result = nan;
-
-  if (x == posInf && y == posInf)
-    result = piOverFourDouble;
-  else if (x == posInf && y == negInf)
-    result = 3 * piOverFourDouble;
-  else if (x == negInf && y == posInf)
-    result = -piOverFourDouble;
-  else if (x == negInf && y == negInf)
-    result = -3 * piOverFourDouble;
-  else
-    result = ::atan2(x, y);
-
-  return result;
-}
-
-// Work around a bug in the Microsoft CRT, where fmod(x, +-infinity) yields NaN
-// instead of x.
-inline double wtf_fmod(double x, double y) {
-  return (!std::isinf(x) && std::isinf(y)) ? x : fmod(x, y);
-}
-
-// Work around a bug in the Microsoft CRT, where pow(NaN, 0) yields NaN instead
-// of 1.
-inline double wtf_pow(double x, double y) {
-  return y == 0 ? 1 : pow(x, y);
-}
-
-#define atan2(x, y) wtf_atan2(x, y)
-#define fmod(x, y) wtf_fmod(x, y)
-#define pow(x, y) wtf_pow(x, y)
-
-#endif  // defined(COMPILER_MSVC)
 
 inline double deg2rad(double d) {
   return d * piDouble / 180.0;
