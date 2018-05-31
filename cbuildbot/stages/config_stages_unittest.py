@@ -18,6 +18,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
+from chromite.lib import osutils
 
 
 # pylint: disable=protected-access
@@ -35,6 +36,7 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
               'build_config.release-R54-7978.B.json')
 
   def setUp(self):
+    self.maxDiff = None
     self._Prepare()
     self.PatchObject(repository, 'CloneWorkingRepo')
     self.PatchObject(gs, 'GSContext')
@@ -99,17 +101,70 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.chromite_dir = config_stages.GetProjectRepoDir(
         'chromite', constants.CHROMITE_URL)
 
+  def tearDown(self):
+    osutils.RmDir(self.chromite_dir, ignore_missing=True)
+
   # pylint: disable=W0221
-  def ConstructStage(self, template):
+  def ConstructStage(self, template, new_config=True):
     template_path = config_stages.GS_GE_TEMPLATE_BUCKET + template
     branch = config_stages.GetBranchName(template)
-    return config_stages.UpdateConfigStage(
+    stage = config_stages.UpdateConfigStage(
         self._run, template_path, branch, self.chromite_dir, True)
+
+    if new_config:
+      fake_config_path = os.path.join(self.chromite_dir, 'config',
+                                      config_stages.GE_BUILD_CONFIG_FILE)
+    else:
+      fake_config_path = os.path.join(self.chromite_dir, 'cbuildbot',
+                                      config_stages.GE_BUILD_CONFIG_FILE)
+
+    osutils.Touch(fake_config_path, makedirs=True)
+
+    stage._SetupConfigPaths()
+    return stage
+
+  def testSetupConfigPathsOld(self):
+    """Test _CreateConfigPatch."""
+    template = 'build_config.ToT.json'
+    stage = self.ConstructStage(template, new_config=False)
+
+    expected = [
+        os.path.join(self.chromite_dir, 'cbuildbot/ge_build_config.json'),
+        os.path.join(self.chromite_dir, 'cbuildbot/config_dump.json'),
+        os.path.join(self.chromite_dir, 'cbuildbot/waterfall_layout_dump.txt'),
+    ]
+
+    self.assertEqual(stage.config_paths, expected)
+    self.assertEqual(stage.ge_config_local_path, expected[0])
+
+  def testSetupConfigPathsNew(self):
+    """Test _CreateConfigPatch."""
+    template = 'build_config.ToT.json'
+    stage = self.ConstructStage(template, new_config=True)
+
+    expected = [
+        os.path.join(self.chromite_dir, 'config/ge_build_config.json'),
+        os.path.join(self.chromite_dir, 'config/config_dump.json'),
+        os.path.join(self.chromite_dir, 'config/waterfall_layout_dump.txt'),
+    ]
+
+    self.assertEqual(stage.config_paths, expected)
+    self.assertEqual(stage.ge_config_local_path, expected[0])
 
   def testCreateConfigPatch(self):
     """Test _CreateConfigPatch."""
     template = 'build_config.ToT.json'
     stage = self.ConstructStage(template)
+
+    with mock.patch('__builtin__.open'):
+      config_change_patch = stage._CreateConfigPatch()
+      self.assertEqual(os.path.basename(config_change_patch),
+                       'config_change.patch')
+
+  def testCreateConfigPatchOldPath(self):
+    """Test _CreateConfigPatch."""
+    template = 'build_config.ToT.json'
+    stage = self.ConstructStage(template, new_config=False)
 
     with mock.patch('__builtin__.open'):
       config_change_patch = stage._CreateConfigPatch()

@@ -37,6 +37,9 @@ class UpdateConfigException(Exception):
 class BranchNotFoundException(Exception):
   """Didn't find the corresponding branch."""
 
+class ConfigNotFoundException(Exception):
+  """Didn't find existing config files in branch."""
+
 
 def GetProjectTmpDir(project):
   """Return the project tmp directory inside chroot.
@@ -210,15 +213,6 @@ class UpdateConfigStage(generic_stages.BuilderStage):
   based on the new template file, verifies the changes,
   and submits the changes to the corresponding branch.
   """
-
-  CONFIG_DUMP_PATH = os.path.join('cbuildbot', 'config_dump.json')
-  WATERFALL_DUMP_PATH = os.path.join('cbuildbot', 'waterfall_layout_dump.txt')
-  GE_CONFIG_LOCAL_PATH = os.path.join('cbuildbot', GE_BUILD_CONFIG_FILE)
-
-  CONFIG_PATHS = (GE_CONFIG_LOCAL_PATH,
-                  CONFIG_DUMP_PATH,
-                  WATERFALL_DUMP_PATH)
-
   def __init__(self, builder_run, template_gs_path,
                branch, chromite_dir, dry_run, **kwargs):
     super(UpdateConfigStage, self).__init__(builder_run, **kwargs)
@@ -228,6 +222,10 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
     self.ctx = gs.GSContext(init_boto=True)
     self.dry_run = dry_run
+
+    # Filled in by _SetupConfigPaths, will cause errors if not filled in.
+    self.config_paths = None
+    self.ge_config_local_path = None
 
   def _CheckoutBranch(self):
     """Checkout to the corresponding branch in the temp repository.
@@ -245,11 +243,30 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       raise BranchNotFoundException(
           "Failed to checkout to branch %s." % self.branch)
 
+  def _SetupConfigPaths(self):
+    """These config files can move based on the branch.
+
+    Detect and save off the paths to them for the current path.
+    """
+    # These are the two directories inside cbuildbot where these files can
+    # exist, and order of preference.
+    dirs = ('config', 'cbuildbot')
+    files = (GE_BUILD_CONFIG_FILE,
+             'config_dump.json',
+             'waterfall_layout_dump.txt')
+
+    for d in dirs:
+      self.config_paths = [os.path.join(self.chromite_dir, d, f) for f in files]
+      self.ge_config_local_path = self.config_paths[0]
+      if os.path.exists(self.ge_config_local_path):
+        break
+    else:
+      raise ConfigNotFoundException(
+          'Failed to find configs in branch %s.' % self.branch)
+
   def _DownloadTemplate(self):
     """Download the template file from gs."""
-    dest_path = os.path.join(self.chromite_dir, 'cbuildbot',
-                             GE_BUILD_CONFIG_FILE)
-    self.ctx.Copy(self.template_gs_path, dest_path)
+    self.ctx.Copy(self.template_gs_path, self.ge_config_local_path)
 
   def _ContainsConfigUpdates(self):
     """Check if updates exist and requires a push.
@@ -259,7 +276,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     """
     modifications = git.RunGit(
         self.chromite_dir,
-        ['status', '--porcelain', '--'] + list(self.CONFIG_PATHS),
+        ['status', '--porcelain', '--'] + self.config_paths,
         capture_output=True,
         print_cmd=True).output
     if modifications:
@@ -282,7 +299,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     except:
       logging.error('Failed to update configs. Please check the format of the '
                     'remote template file %s and the local template copy %s',
-                    self.template_gs_path, self.CONFIG_DUMP_PATH)
+                    self.template_gs_path, GE_BUILD_CONFIG_FILE)
       raise
 
     show_waterfall_path = os.path.join(
@@ -311,7 +328,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       if e.errno != errno.ENOENT:
         raise
 
-    result = git.RunGit(self.chromite_dir, ['diff'] + list(self.CONFIG_PATHS),
+    result = git.RunGit(self.chromite_dir, ['diff'] + self.config_paths,
                         print_cmd=True)
     with open(config_change_patch, 'w') as f:
       f.write(result.output)
@@ -329,12 +346,12 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     test_stages.BinhostTestStage(self._run, suffix='_' + self.branch).Run()
 
     # Clean config patch.
-    git.RunGit(constants.CHROMITE_DIR, ['checkout'] + list(self.CONFIG_PATHS),
+    git.RunGit(constants.CHROMITE_DIR, ['checkout'] + self.config_paths,
                print_cmd=True)
 
   def _PushCommits(self):
     """Commit and push changes to current branch."""
-    git.RunGit(self.chromite_dir, ['add'] + list(self.CONFIG_PATHS),
+    git.RunGit(self.chromite_dir, ['add'] + self.config_paths,
                print_cmd=True)
     commit_msg = "Update config settings by config-updater."
     git.RunGit(self.chromite_dir,
@@ -350,6 +367,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
                  self.branch, self.template_gs_path)
     try:
       self._CheckoutBranch()
+      self._SetupConfigPaths()
       self._DownloadTemplate()
       self._UpdateConfigDump()
       self._RunUnitTest()
