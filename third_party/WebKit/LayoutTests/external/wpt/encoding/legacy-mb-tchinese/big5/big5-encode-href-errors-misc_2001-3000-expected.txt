@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Big5 encoding errors (href, misc) Uncaught ReferenceError: eucjpEncoder is not defined
+Harness: the test ran to completion.
+
