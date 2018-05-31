@@ -1281,28 +1281,28 @@ TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
       FILE_PATH_LITERAL("intersecting_blue_green.png"));
 }
 
-static inline SkColor GetSkiaOrGLColor(const SkColor& color) {
+static inline uint32_t GetSkiaOrGLColor(const SkColor& color) {
   return SkColorSetARGB(SkColorGetA(color), SkColorGetB(color),
                         SkColorGetG(color), SkColorGetR(color));
 }
 
 template <typename TypeParam>
-SkColor GetColor(const SkColor& color) {
+uint32_t GetColor(const SkColor& color) {
   return color;
 }
 
 template <>
-SkColor GetColor<GLRenderer>(const SkColor& color) {
+uint32_t GetColor<GLRenderer>(const SkColor& color) {
   return GetSkiaOrGLColor(color);
 }
 
 template <>
-SkColor GetColor<SkiaRenderer>(const SkColor& color) {
+uint32_t GetColor<SkiaRenderer>(const SkColor& color) {
   return GetSkiaOrGLColor(color);
 }
 
 template <>
-SkColor GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
+uint32_t GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
   return GetSkiaOrGLColor(color);
 }
 
