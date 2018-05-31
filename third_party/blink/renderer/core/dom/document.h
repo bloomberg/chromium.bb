@@ -712,10 +712,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void SetPrinting(PrintingState);
 
-  bool PaginatedForScreen() const { return paginated_for_screen_; }
-  void SetPaginatedForScreen(bool p) { paginated_for_screen_ = p; }
-
-  bool Paginated() const { return Printing() || PaginatedForScreen(); }
+  bool Paginated() const { return Printing(); }
 
   enum CompatibilityMode { kQuirksMode, kLimitedQuirksMode, kNoQuirksMode };
 
@@ -1614,7 +1611,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<CSSStyleSheet> elem_sheet_;
 
   PrintingState printing_;
-  bool paginated_for_screen_;
 
   CompatibilityMode compatibility_mode_;
   // This is cheaper than making setCompatibilityMode virtual.
