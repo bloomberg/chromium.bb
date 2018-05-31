@@ -7,26 +7,6 @@
 #include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
 
-namespace base {
-
-using RunnerMethodType =
-    void (blink::TaskHandle::Runner::*)(const blink::TaskHandle&);
-
-template <>
-struct CallbackCancellationTraits<
-    RunnerMethodType,
-    std::tuple<base::WeakPtr<blink::TaskHandle::Runner>, blink::TaskHandle>> {
-  static constexpr bool is_cancellable = true;
-
-  static bool IsCancelled(RunnerMethodType,
-                          const base::WeakPtr<blink::TaskHandle::Runner>&,
-                          const blink::TaskHandle& handle) {
-    return !handle.IsActive();
-  }
-};
-
-}  // namespace base
-
 namespace blink {
 
 namespace {
@@ -81,6 +61,30 @@ class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
 
   DISALLOW_COPY_AND_ASSIGN(Runner);
 };
+
+}  // namespace blink
+
+namespace base {
+
+using RunnerMethodType =
+    void (blink::TaskHandle::Runner::*)(const blink::TaskHandle&);
+
+template <>
+struct CallbackCancellationTraits<
+    RunnerMethodType,
+    std::tuple<base::WeakPtr<blink::TaskHandle::Runner>, blink::TaskHandle>> {
+  static constexpr bool is_cancellable = true;
+
+  static bool IsCancelled(RunnerMethodType,
+                          const base::WeakPtr<blink::TaskHandle::Runner>&,
+                          const blink::TaskHandle& handle) {
+    return !handle.IsActive();
+  }
+};
+
+}  // namespace base
+
+namespace blink {
 
 bool TaskHandle::IsActive() const {
   return runner_ && runner_->IsActive();
