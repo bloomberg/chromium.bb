@@ -11,6 +11,7 @@
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
+#include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,22 +55,6 @@ base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
 
 }  // namespace
 
-TEST(SignedExchangeEnvelopeTest, ParseEncodedLength) {
-  constexpr struct {
-    uint8_t bytes[SignedExchangeEnvelope::kEncodedLengthInBytes];
-    size_t expected;
-  } kTestCases[] = {
-      {{0x00, 0x00, 0x01}, 1u}, {{0x01, 0xe2, 0x40}, 123456u},
-  };
-
-  int test_element_index = 0;
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "testing case " << test_element_index++);
-    EXPECT_EQ(SignedExchangeEnvelope::ParseEncodedLength(test_case.bytes),
-              test_case.expected);
-  }
-}
-
 TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
   base::FilePath test_htxg_path;
   base::PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
@@ -80,15 +65,15 @@ TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
   ASSERT_TRUE(base::ReadFileToString(test_htxg_path, &contents));
   auto* contents_bytes = reinterpret_cast<const uint8_t*>(contents.data());
 
-  ASSERT_GT(contents.size(), SignedExchangeEnvelope::kEncodedLengthInBytes);
+  ASSERT_GT(contents.size(), SignedExchangePrologue::kEncodedLengthInBytes);
   size_t header_size =
-      SignedExchangeEnvelope::ParseEncodedLength(base::make_span(
-          contents_bytes, SignedExchangeEnvelope::kEncodedLengthInBytes));
+      SignedExchangePrologue::ParseEncodedLength(base::make_span(
+          contents_bytes, SignedExchangePrologue::kEncodedLengthInBytes));
   ASSERT_GT(contents.size(),
-            SignedExchangeEnvelope::kEncodedLengthInBytes + header_size);
+            SignedExchangePrologue::kEncodedLengthInBytes + header_size);
 
   const auto cbor_bytes = base::make_span<const uint8_t>(
-      contents_bytes + SignedExchangeEnvelope::kEncodedLengthInBytes,
+      contents_bytes + SignedExchangePrologue::kEncodedLengthInBytes,
       header_size);
   const base::Optional<SignedExchangeEnvelope> header =
       SignedExchangeEnvelope::Parse(cbor_bytes, nullptr /* devtools_proxy */);

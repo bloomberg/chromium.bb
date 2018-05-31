@@ -12,6 +12,7 @@
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
+#include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -107,7 +108,7 @@ SignedExchangeHandler::SignedExchangeHandler(
   }
 
   // Triggering the read (asynchronously) for the encoded header length.
-  SetupBuffers(SignedExchangeEnvelope::kEncodedLengthInBytes);
+  SetupBuffers(SignedExchangePrologue::kEncodedLengthInBytes);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
@@ -202,15 +203,15 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
 
 bool SignedExchangeHandler::ParseHeadersLength() {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeHandler::ParseEncodedLength");
+                     "SignedExchangeHandler::ParseHeadersLength");
   DCHECK_EQ(state_, State::kReadingHeadersLength);
 
-  headers_length_ = SignedExchangeEnvelope::ParseEncodedLength(
+  headers_length_ = SignedExchangePrologue::ParseEncodedLength(
       base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
-                      SignedExchangeEnvelope::kEncodedLengthInBytes));
+                      SignedExchangePrologue::kEncodedLengthInBytes));
   if (headers_length_ == 0 || headers_length_ > kMaxHeadersCBORLength) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(
-        devtools_proxy_.get(), "SignedExchangeHandler::ParseEncodedLength",
+        devtools_proxy_.get(), "SignedExchangeHandler::ParseHeadersLength",
         base::StringPrintf("Invalid CBOR header length: %zu", headers_length_));
     return false;
   }
@@ -219,7 +220,7 @@ bool SignedExchangeHandler::ParseHeadersLength() {
   SetupBuffers(headers_length_);
   state_ = State::kReadingHeaders;
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
-                   "SignedExchangeHandler::ParseEncodedLength");
+                   "SignedExchangeHandler::ParseHeadersLength");
   return true;
 }
 
