@@ -17,6 +17,7 @@ namespace ash {
 // Central style provider for the system tray menu. Makes it easier to ensure
 // all visuals are consistent and easily updated in one spot instead of being
 // defined in multiple places throughout the code.
+// TODO(tetsui): Clean up this class after UnifiedSystemTray is launched.
 class TrayPopupItemStyle {
  public:
   // The different visual styles that a row can have.
@@ -52,9 +53,13 @@ class TrayPopupItemStyle {
 
   static constexpr double kInactiveIconAlpha = 0.54;
 
-  static SkColor GetIconColor(ColorStyle color_style);
+  static SkColor GetIconColor(ColorStyle color_style,
+                              bool use_unified_theme = false);
 
+  // The first constructor initializes |use_unified_theme_| with default. See
+  // the comment below.
   explicit TrayPopupItemStyle(FontStyle font_style);
+  TrayPopupItemStyle(FontStyle font_style, bool use_unified_theme);
   ~TrayPopupItemStyle();
 
   void set_color_style(ColorStyle color_style) { color_style_ = color_style; }
@@ -74,6 +79,11 @@ class TrayPopupItemStyle {
   FontStyle font_style_;
 
   ColorStyle color_style_;
+
+  // Use base colors for UnifiedSystemTray. If IsSystemTrayUnifiedEnabled() is
+  // true, the value is true by default.
+  // TODO(tetsui): Clean up this after UnifiedSystemTray is launched.
+  const bool use_unified_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPopupItemStyle);
 };

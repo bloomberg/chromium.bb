@@ -32,7 +32,9 @@ class ImeListView : public TrayDetailedView {
     HIDE_SINGLE_IME
   };
 
+  // The former uses default for |use_unified_theme|.
   explicit ImeListView(DetailedViewDelegate* delegate);
+  ImeListView(DetailedViewDelegate* delegate, bool use_unified_theme);
 
   ~ImeListView() override;
 
@@ -110,6 +112,8 @@ class ImeListView : public TrayDetailedView {
 
   // The item view of the current selected IME.
   views::View* current_ime_view_;
+
+  const bool use_unified_theme_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeListView);
 };

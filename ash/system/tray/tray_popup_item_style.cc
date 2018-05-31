@@ -22,10 +22,10 @@ constexpr int kDisabledAlpha = 0x61;
 }  // namespace
 
 // static
-SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style) {
-  const SkColor kBaseIconColor = features::IsSystemTrayUnifiedEnabled()
-                                     ? kUnifiedMenuIconColor
-                                     : gfx::kChromeIconGrey;
+SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style,
+                                         bool use_unified_theme) {
+  const SkColor kBaseIconColor =
+      use_unified_theme ? kUnifiedMenuIconColor : gfx::kChromeIconGrey;
   switch (color_style) {
     case ColorStyle::ACTIVE:
       return kBaseIconColor;
@@ -41,7 +41,13 @@ SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style) {
 }
 
 TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style)
-    : font_style_(font_style), color_style_(ColorStyle::ACTIVE) {
+    : TrayPopupItemStyle(font_style, features::IsSystemTrayUnifiedEnabled()) {}
+
+TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style,
+                                       bool use_unified_theme)
+    : font_style_(font_style),
+      color_style_(ColorStyle::ACTIVE),
+      use_unified_theme_(use_unified_theme) {
   if (font_style_ == FontStyle::SYSTEM_INFO)
     color_style_ = ColorStyle::INACTIVE;
 }
@@ -49,7 +55,7 @@ TrayPopupItemStyle::TrayPopupItemStyle(FontStyle font_style)
 TrayPopupItemStyle::~TrayPopupItemStyle() = default;
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
-  const SkColor kBaseTextColor = features::IsSystemTrayUnifiedEnabled()
+  const SkColor kBaseTextColor = use_unified_theme_
                                      ? kUnifiedMenuTextColor
                                      : SkColorSetA(SK_ColorBLACK, 0xDE);
 
@@ -68,7 +74,7 @@ SkColor TrayPopupItemStyle::GetTextColor() const {
 }
 
 SkColor TrayPopupItemStyle::GetIconColor() const {
-  return GetIconColor(color_style_);
+  return GetIconColor(color_style_, use_unified_theme_);
 }
 
 void TrayPopupItemStyle::SetupLabel(views::Label* label) const {

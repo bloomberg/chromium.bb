@@ -122,7 +122,8 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     title_label->SetBorder(
         views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 1, 0));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE,
+                             false /* use_unified_theme */);
     style.SetupLabel(title_label);
 
     AddChildView(title_label);
@@ -254,7 +255,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 // height depending on the number of IMEs in the list.
 class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
  public:
-  ImeMenuListView() : ImeListView(this) {
+  ImeMenuListView() : ImeListView(this, false /* use_unified_theme */) {
     set_should_focus_ime_after_selection_with_keyboard(true);
   }
 
