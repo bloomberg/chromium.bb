@@ -754,7 +754,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   if (server_shared_bitmap_manager_) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         server_shared_bitmap_manager_.get(), "viz::ServerSharedBitmapManager",
-        nullptr);
+        base::ThreadTaskRunnerHandle::Get());
   }
 #endif
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
