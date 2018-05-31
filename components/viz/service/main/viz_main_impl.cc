@@ -12,9 +12,11 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/gpu_display_provider.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -304,9 +306,14 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
+  server_shared_bitmap_manager_ = std::make_unique<ServerSharedBitmapManager>();
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      server_shared_bitmap_manager_.get(), "viz::ServerSharedBitmapManager",
+      base::ThreadTaskRunnerHandle::Get());
+
   display_provider_ = std::make_unique<GpuDisplayProvider>(
       params->restart_id, gpu_service_.get(), gpu_command_service_,
-      gpu_service_->gpu_channel_manager(),
+      gpu_service_->gpu_channel_manager(), server_shared_bitmap_manager_.get(),
       command_line->HasSwitch(switches::kHeadless),
       command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw));
 
@@ -316,7 +323,8 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
   if (params->use_activation_deadline)
     activation_deadline_in_frames = params->activation_deadline_in_frames;
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(
-      activation_deadline_in_frames, display_provider_.get());
+      server_shared_bitmap_manager_.get(), activation_deadline_in_frames,
+      display_provider_.get());
   frame_sink_manager_->BindAndSetClient(std::move(params->frame_sink_manager),
                                         nullptr, std::move(client));
 }
@@ -324,8 +332,12 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
 void VizMainImpl::TearDownOnCompositorThread() {
   DCHECK(compositor_thread_task_runner_->BelongsToCurrentThread());
 
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      server_shared_bitmap_manager_.get());
+
   frame_sink_manager_.reset();
   display_provider_.reset();
+  server_shared_bitmap_manager_.reset();
 }
 
 void VizMainImpl::CleanupForShutdownOnCompositorThread() {

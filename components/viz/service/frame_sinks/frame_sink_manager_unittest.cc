@@ -12,6 +12,7 @@
 #include "components/viz/common/constants.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/test/begin_frame_source_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
@@ -55,7 +56,9 @@ struct RootCompositorFrameSinkData {
 class FrameSinkManagerTest : public testing::Test {
  public:
   FrameSinkManagerTest()
-      : manager_(kDefaultActivationDeadlineInFrames, &display_provider_) {}
+      : manager_(&shared_bitmap_manager_,
+                 kDefaultActivationDeadlineInFrames,
+                 &display_provider_) {}
   ~FrameSinkManagerTest() override = default;
 
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
@@ -84,6 +87,7 @@ class FrameSinkManagerTest : public testing::Test {
   }
 
  protected:
+  ServerSharedBitmapManager shared_bitmap_manager_;
   TestDisplayProvider display_provider_;
   FrameSinkManagerImpl manager_;
 };

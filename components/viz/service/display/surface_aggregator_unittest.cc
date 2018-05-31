@@ -23,9 +23,9 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -33,7 +33,6 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/fake_surface_observer.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -109,7 +108,8 @@ class DisplayTimeSource {
 class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
  public:
   explicit SurfaceAggregatorTest(bool use_damage_rect)
-      : observer_(false),
+      : manager_(&shared_bitmap_manager_),
+        observer_(false),
         support_(std::make_unique<CompositorFrameSinkSupport>(
             &fake_client_,
             &manager_,
@@ -352,6 +352,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
   }
 
  protected:
+  ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
   FakeSurfaceObserver observer_;
   FakeCompositorFrameSinkClient fake_client_;
@@ -2952,10 +2953,11 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 class SurfaceAggregatorWithResourcesTest : public testing::Test,
                                            public DisplayTimeSource {
  public:
+  SurfaceAggregatorWithResourcesTest() : manager_(&shared_bitmap_manager_) {}
+
   void SetUp() override {
-    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        nullptr, shared_bitmap_manager_.get());
+        nullptr, &shared_bitmap_manager_);
 
     aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), false);
@@ -2963,8 +2965,8 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test,
   }
 
  protected:
+  ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
 };

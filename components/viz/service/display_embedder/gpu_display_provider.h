@@ -32,6 +32,7 @@ namespace viz {
 class Display;
 class ExternalBeginFrameControllerImpl;
 class GpuServiceImpl;
+class ServerSharedBitmapManager;
 class SoftwareOutputDevice;
 
 // In-process implementation of DisplayProvider.
@@ -42,6 +43,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
       GpuServiceImpl* gpu_service_impl,
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
       gpu::GpuChannelManager* gpu_channel_manager,
+      ServerSharedBitmapManager* server_shared_bitmap_manager,
       bool headless,
       bool wait_for_all_pipeline_stages_before_draw);
   ~GpuDisplayProvider() override;
@@ -68,6 +70,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
   gpu::GpuChannelManagerDelegate* const gpu_channel_manager_delegate_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* const image_factory_;
+  ServerSharedBitmapManager* const server_shared_bitmap_manager_;
 
 #if defined(OS_WIN)
   // Used for software compositing output on Windows.

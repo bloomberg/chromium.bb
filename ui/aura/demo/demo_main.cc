@@ -16,6 +16,8 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -147,7 +149,8 @@ int DemoMain() {
 
   // The ContextFactory must exist before any Compositors are created.
   viz::HostFrameSinkManager host_frame_sink_manager;
-  viz::FrameSinkManagerImpl frame_sink_manager;
+  viz::ServerSharedBitmapManager server_shared_bitmap_manager;
+  viz::FrameSinkManagerImpl frame_sink_manager(&server_shared_bitmap_manager);
   host_frame_sink_manager.SetLocalManager(&frame_sink_manager);
   frame_sink_manager.SetLocalClient(&host_frame_sink_manager);
   auto context_factory = std::make_unique<ui::InProcessContextFactory>(

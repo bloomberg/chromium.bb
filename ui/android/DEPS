@@ -25,6 +25,7 @@ include_rules = [
 
 specific_include_rules = {
   ".*test\.(cc|h)": [
+    "+components/viz/service/display_embedder",
     "+components/viz/test"
   ]
 }

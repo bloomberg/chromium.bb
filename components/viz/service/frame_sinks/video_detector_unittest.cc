@@ -13,6 +13,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/surface_aggregator.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/frame_sinks/video_detector.h"
@@ -74,7 +75,8 @@ class TestObserver : public mojom::VideoDetectorObserver {
 class VideoDetectorTest : public testing::Test {
  public:
   VideoDetectorTest()
-      : surface_aggregator_(frame_sink_manager_.surface_manager(),
+      : frame_sink_manager_(&shared_bitmap_manager_),
+        surface_aggregator_(frame_sink_manager_.surface_manager(),
                             nullptr,
                             false) {}
 
@@ -192,6 +194,7 @@ class VideoDetectorTest : public testing::Test {
         .Build();
   }
 
+  ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl frame_sink_manager_;
   FakeCompositorFrameSinkClient frame_sink_client_;
   ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;

@@ -13,6 +13,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -69,7 +70,8 @@ struct RootCompositorFrameSinkData {
 // A mock implementation of mojom::FrameSinkManager.
 class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
-  MockFrameSinkManagerImpl() = default;
+  explicit MockFrameSinkManagerImpl(SharedBitmapManager* shared_bitmap_manager)
+      : FrameSinkManagerImpl(shared_bitmap_manager) {}
   ~MockFrameSinkManagerImpl() override = default;
 
   // mojom::FrameSinkManager:
@@ -148,6 +150,7 @@ class HostFrameSinkManagerTestBase : public testing::Test {
   }
 
  protected:
+  ServerSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<HostFrameSinkManager> host_manager_;
   std::unique_ptr<testing::NiceMock<MockFrameSinkManagerImpl>> manager_impl_;
 
@@ -171,7 +174,8 @@ class HostFrameSinkManagerLocalTest : public HostFrameSinkManagerTestBase {
   // testing::Test:
   void SetUp() override {
     manager_impl_ =
-        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>();
+        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>(
+            &shared_bitmap_manager_);
     host_manager_ = std::make_unique<HostFrameSinkManager>();
 
     manager_impl_->SetLocalClient(host_manager_.get());
@@ -195,7 +199,8 @@ class HostFrameSinkManagerRemoteTest : public HostFrameSinkManagerTestBase {
     DCHECK(!manager_impl_);
 
     manager_impl_ =
-        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>();
+        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>(
+            &shared_bitmap_manager_);
 
     mojom::FrameSinkManagerPtr frame_sink_manager;
     mojom::FrameSinkManagerRequest frame_sink_manager_request =

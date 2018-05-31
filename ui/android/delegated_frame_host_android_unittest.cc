@@ -10,6 +10,7 @@
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,7 +76,8 @@ class MockCompositorLockManagerClient : public ui::CompositorLockManagerClient {
 class DelegatedFrameHostAndroidTest : public testing::Test {
  public:
   DelegatedFrameHostAndroidTest()
-      : frame_sink_id_(1, 1),
+      : frame_sink_manager_impl_(&shared_bitmap_manager_),
+        frame_sink_id_(1, 1),
         task_runner_(new base::TestMockTimeTaskRunner()),
         lock_manager_(task_runner_, &lock_manager_client_) {
     host_frame_sink_manager_.SetLocalManager(&frame_sink_manager_impl_);
@@ -116,6 +118,7 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
  protected:
   MockWindowAndroidCompositor compositor_;
   ui::ViewAndroid view_;
+  viz::ServerSharedBitmapManager shared_bitmap_manager_;
   viz::FrameSinkManagerImpl frame_sink_manager_impl_;
   viz::HostFrameSinkManager host_frame_sink_manager_;
   MockDelegatedFrameHostAndroidClient client_;

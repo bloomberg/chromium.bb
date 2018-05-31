@@ -154,7 +154,10 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   if (!cc::LayerTreeFrameSink::BindToClient(sink_client))
     return false;
 
-  frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>();
+  // The SharedBitmapManager is null since software compositing is not supported
+  // or used on Android.
+  frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
+      /*shared_bitmap_manager=*/nullptr);
 
   client_->SetBeginFrameSource(synthetic_begin_frame_source_
                                    ? synthetic_begin_frame_source_.get()

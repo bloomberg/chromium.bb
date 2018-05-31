@@ -345,6 +345,7 @@ executable("demo") {
     "//base:i18n",
     "//build/win:default_exe_manifest",
     "//components/viz/host",
+    "//components/viz/service",
     "//skia",
     "//third_party/icu",
     "//ui/base",

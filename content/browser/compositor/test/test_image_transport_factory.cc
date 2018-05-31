@@ -9,6 +9,7 @@
 
 #include "components/viz/common/features.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/test_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -61,7 +62,9 @@ TestImageTransportFactory::TestImageTransportFactory()
         std::move(frame_sink_manager_request),
         std::move(frame_sink_manager_client));
   } else {
-    frame_sink_manager_impl_ = std::make_unique<viz::FrameSinkManagerImpl>();
+    shared_bitmap_manager_ = std::make_unique<viz::ServerSharedBitmapManager>();
+    frame_sink_manager_impl_ = std::make_unique<viz::FrameSinkManagerImpl>(
+        shared_bitmap_manager_.get());
     surface_utils::ConnectWithLocalFrameSinkManager(
         &host_frame_sink_manager_, frame_sink_manager_impl_.get());
   }

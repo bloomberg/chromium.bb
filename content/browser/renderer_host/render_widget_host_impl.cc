@@ -421,6 +421,17 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
   enable_viz_ = base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
 
+  if (!enable_viz_) {
+#if !defined(OS_ANDROID)
+    // Software compositing is not supported or used on Android.
+    //
+    // The BrowserMainLoop is null in unit tests, but they do not use
+    // compositing and report SharedBitmapIds.
+    if (BrowserMainLoop* main_loop = BrowserMainLoop::GetInstance())
+      shared_bitmap_manager_ = main_loop->GetServerSharedBitmapManager();
+#endif
+  }
+
   delegate_->RenderWidgetCreated(this);
   render_frame_metadata_provider_.AddObserver(this);
 }
@@ -1991,8 +2002,15 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
   // The display compositor has ownership of shared memory for each
   // SharedBitmapId that has been reported from the client. Since the client is
   // gone that memory can be freed. If we don't then it would leak.
-  for (const auto& id : owned_bitmaps_)
-    viz::ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+  if (shared_bitmap_manager_) {
+    for (const auto& id : owned_bitmaps_)
+      shared_bitmap_manager_->ChildDeletedSharedBitmap(id);
+  } else {
+    // If the display compositor is not in the browser process, then the
+    // |bitmap_manager| is not present in the process either, and no bitmaps
+    // should have been registered with this class.
+    DCHECK(owned_bitmaps_.empty());
+  }
 
   process_->RemoveWidget(this);
   process_->RemoveRoute(routing_id_);
@@ -2150,8 +2168,8 @@ void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 void RenderWidgetHostImpl::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const viz::SharedBitmapId& id) {
-  if (!viz::ServerSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
-          std::move(buffer), id)) {
+  if (!shared_bitmap_manager_->ChildAllocatedSharedBitmap(std::move(buffer),
+                                                          id)) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RWH_SHARED_BITMAP);
   }
@@ -2160,7 +2178,7 @@ void RenderWidgetHostImpl::DidAllocateSharedBitmap(
 
 void RenderWidgetHostImpl::DidDeleteSharedBitmap(
     const viz::SharedBitmapId& id) {
-  viz::ServerSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
+  shared_bitmap_manager_->ChildDeletedSharedBitmap(id);
   owned_bitmaps_.erase(id);
 }
 
