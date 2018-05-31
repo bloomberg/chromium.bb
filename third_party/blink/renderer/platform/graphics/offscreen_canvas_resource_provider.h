@@ -14,6 +14,7 @@ class SharedMemory;
 }
 
 namespace viz {
+class SingleReleaseCallback;
 namespace mojom {
 namespace blink {
 class CompositorFrameSink;
@@ -24,6 +25,7 @@ class CompositorFrameSink;
 namespace blink {
 
 class OffscreenCanvasFrameDispatcher;
+class CanvasResource;
 
 class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
  public:
@@ -36,12 +38,11 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
 
   ~OffscreenCanvasResourceProvider();
 
-  void TransferResource(viz::TransferableResource*);
   void SetTransferableResourceToSharedBitmap(viz::TransferableResource&,
                                              scoped_refptr<StaticBitmapImage>);
   void SetTransferableResourceToStaticBitmapImage(
-      viz::TransferableResource&,
-      scoped_refptr<StaticBitmapImage>);
+      viz::TransferableResource* out_resource,
+      scoped_refptr<CanvasResource>);
 
   void ReclaimResource(unsigned resource_id);
   void ReclaimResources(const WTF::Vector<viz::ReturnedResource>& resources);
@@ -62,10 +63,6 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
     // TODO(junov):  What does this do?
     bool spare_lock = true;
 
-    // Holds the backing for a gpu-backed resource. The Mailbox() of the image
-    // is given to the display compositor to present it.
-    scoped_refptr<StaticBitmapImage> image;
-
     // Holds the backing for a software-backed resource.
     std::unique_ptr<base::SharedMemory> shared_memory;
     // The id given to  the display compositor to display a software-backed
@@ -75,6 +72,9 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
     // Back-pointer to the OffscreenCanvasResourceProvider. FrameResource does
     // not outlive the provider.
     OffscreenCanvasResourceProvider* provider = nullptr;
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback;
+    gpu::SyncToken sync_token;
+    bool is_lost = false;
   };
 
   using ResourceMap = HashMap<unsigned, std::unique_ptr<FrameResource>>;
