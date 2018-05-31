@@ -1851,6 +1851,7 @@ jumbo_source_set("unit_tests") {
     "html/media/html_media_element_event_listeners_test.cc",
     "html/media/html_media_element_test.cc",
     "html/media/html_video_element_persistent_test.cc",
+    "html/media/html_video_element_test.cc",
     "html/media/media_custom_controls_fullscreen_detector_test.cc",
     "html/media_element_filling_viewport_test.cc",
     "html/parser/atomic_html_token_test.cc",

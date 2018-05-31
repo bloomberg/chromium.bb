@@ -3714,7 +3714,8 @@ TextTrackContainer& HTMLMediaElement::EnsureTextTrackContainer() {
     return ToTextTrackContainer(*first_child);
   Node* to_be_inserted = first_child;
 
-  if (first_child && first_child->IsMediaRemotingInterstitial()) {
+  if (first_child && (first_child->IsMediaRemotingInterstitial() ||
+                      first_child->IsPictureInPictureInterstitial())) {
     Node* second_child = first_child->nextSibling();
     if (second_child && second_child->IsTextTrackContainer())
       return ToTextTrackContainer(*second_child);
