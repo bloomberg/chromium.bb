@@ -114,9 +114,9 @@ idx = {{name}}.setHandlesInternal_(handles, idx)
 {%-   elif kind|is_enum_kind -%}
 {{generate_or_mutate_enum(obj, operation, kind, name)}}
 {%-   elif kind|is_struct_kind -%}
-{{build_call(obj, operation, 'Struct', kind.module.namespace ~ '.' ~ kind.name, kind.is_nullable|to_js_boolean)}}
+{{build_call(obj, operation, 'Struct', name, kind.module.namespace ~ '.' ~ kind.name, kind.is_nullable|to_js_boolean)}}
 {%-   elif kind|is_union_kind -%}
-{{build_call(obj, operation, 'Union', kind.module.namespace ~ '.' ~ kind.name, kind.is_nullable|to_js_boolean)}}
+{{build_call(obj, operation, 'Union', name, kind.module.namespace ~ '.' ~ kind.name, kind.is_nullable|to_js_boolean)}}
 {%-   elif kind|is_array_kind -%}
 {{generate_or_mutate_array(obj, operation, kind, name)}}
 {%-   elif kind|is_map_kind -%}
