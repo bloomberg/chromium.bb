@@ -62,8 +62,8 @@ void CommandBufferHelper::CalcImmediateEntries(int waiting_count) {
         total_entry_count_ /
         ((curr_get == last_flush_put_) ? kAutoFlushSmall : kAutoFlushBig);
 
-    int32_t pending =
-        (put_ + total_entry_count_ - last_flush_put_) % total_entry_count_;
+    int32_t pending = (put_ + total_entry_count_ - last_ordering_barrier_put_) %
+                      total_entry_count_;
 
     if (pending > 0 && pending >= limit) {
       // Time to force flush.
@@ -315,7 +315,14 @@ void CommandBufferHelper::WaitForAvailableEntries(int32_t count) {
   // Try to get 'count' entries without flushing.
   CalcImmediateEntries(count);
   if (immediate_entry_count_ < count) {
-    // Try again with a shallow Flush().
+    // Update cached_get_offset_ and try again.
+    UpdateCachedState(command_buffer_->GetLastState());
+    CalcImmediateEntries(count);
+  }
+
+  if (immediate_entry_count_ < count) {
+    // Try again with a shallow Flush(). Flush can change immediate_entry_count_
+    // because of the auto flush logic.
     FlushLazy();
     CalcImmediateEntries(count);
     if (immediate_entry_count_ < count) {
