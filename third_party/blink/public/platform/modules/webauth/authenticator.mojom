@@ -119,7 +119,7 @@ enum UserVerificationRequirement {
 // Cloud-assisted BLE extension data for getAssertion.
 struct CableAuthentication {
   // The caBLE version requested.
-  int32 version;
+  uint8 version;
 
   // A 16-byte ephemeral identifier that the browser will advertise.
   array<uint8, 16> client_eid;
@@ -136,7 +136,7 @@ struct CableAuthentication {
 // Cloud-assisted BLE extension data for makeCredential.
 struct CableRegistration {
   // The caBLE versions supported by the relying party.
-  array<int32> versions;
+  array<uint8> versions;
 
   // The 65-byte ECDSA ephemeral public key belonging to the relying party
   // for use in establishing an encrypted caBLE channel with an authenticator.
