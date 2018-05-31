@@ -6,6 +6,7 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -49,7 +50,8 @@ class ImeListItemView : public ActionableView {
                   const base::string16& id,
                   const base::string16& label,
                   bool selected,
-                  const SkColor button_color)
+                  const SkColor button_color,
+                  bool use_unified_theme)
       : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
@@ -82,8 +84,8 @@ class ImeListItemView : public ActionableView {
     // The label shows the IME full name.
     auto* label_view = TrayPopupUtils::CreateDefaultLabel();
     label_view->SetText(label);
-    TrayPopupItemStyle style(
-        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
+                             use_unified_theme);
     style.SetupLabel(label_view);
 
     label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -144,7 +146,7 @@ class KeyboardStatusRow : public views::View {
   views::ToggleButton* toggle() const { return toggle_; }
   bool is_toggled() const { return toggle_->is_on(); }
 
-  void Init(views::ButtonListener* listener) {
+  void Init(views::ButtonListener* listener, bool use_unified_theme) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -161,8 +163,8 @@ class KeyboardStatusRow : public views::View {
     auto* label = TrayPopupUtils::CreateDefaultLabel();
     label->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
-    TrayPopupItemStyle style(
-        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
+                             use_unified_theme);
     style.SetupLabel(label);
     tri_view->AddView(TriView::Container::CENTER, label);
 
@@ -181,10 +183,14 @@ class KeyboardStatusRow : public views::View {
 };
 
 ImeListView::ImeListView(DetailedViewDelegate* delegate)
+    : ImeListView(delegate, features::IsSystemTrayUnifiedEnabled()) {}
+
+ImeListView::ImeListView(DetailedViewDelegate* delegate, bool use_unified_theme)
     : TrayDetailedView(delegate),
       last_item_selected_with_keyboard_(false),
       should_focus_ime_after_selection_with_keyboard_(false),
-      current_ime_view_(nullptr) {}
+      current_ime_view_(nullptr),
+      use_unified_theme_(use_unified_theme) {}
 
 ImeListView::~ImeListView() = default;
 
@@ -249,8 +255,9 @@ void ImeListView::AppendImeListAndProperties(
   DCHECK(ime_map_.empty());
   for (size_t i = 0; i < list.size(); i++) {
     const bool selected = current_ime_id == list[i].id;
-    views::View* ime_view = new ImeListItemView(
-        this, list[i].short_name, list[i].name, selected, gfx::kGoogleGreen700);
+    views::View* ime_view =
+        new ImeListItemView(this, list[i].short_name, list[i].name, selected,
+                            gfx::kGoogleGreen700, use_unified_theme_);
     scroll_content()->AddChildView(ime_view);
     ime_map_[ime_view] = list[i].id;
 
@@ -265,9 +272,9 @@ void ImeListView::AppendImeListAndProperties(
 
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
-        ImeListItemView* property_view =
-            new ImeListItemView(this, base::string16(), property_list[i].label,
-                                property_list[i].checked, kMenuIconColor);
+        ImeListItemView* property_view = new ImeListItemView(
+            this, base::string16(), property_list[i].label,
+            property_list[i].checked, kMenuIconColor, use_unified_theme_);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
       }
@@ -284,7 +291,7 @@ void ImeListView::AppendImeListAndProperties(
 void ImeListView::PrependKeyboardStatusRow() {
   DCHECK(!keyboard_status_row_);
   keyboard_status_row_ = new KeyboardStatusRow;
-  keyboard_status_row_->Init(this);
+  keyboard_status_row_->Init(this, use_unified_theme_);
   scroll_content()->AddChildViewAt(keyboard_status_row_, 0);
 }
 

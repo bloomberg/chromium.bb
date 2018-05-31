@@ -160,14 +160,15 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
 views::Label* TrayPopupUtils::CreateDefaultLabel() {
   views::Label* label = new views::Label();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  // Frequently the label will paint to a layer that's non-opaque, so subpixel
-  // rendering won't work unless we explicitly set a background. See
-  // crbug.com/686363
-  label->SetBackground(
-      features::IsSystemTrayUnifiedEnabled()
-          ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
-          : views::CreateThemedSolidBackground(
-                label, ui::NativeTheme::kColorId_BubbleBackground));
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    label->SetSubpixelRenderingEnabled(false);
+  } else {
+    // Frequently the label will paint to a layer that's non-opaque, so subpixel
+    // rendering won't work unless we explicitly set a background. See
+    // https://crbug.com/686363
+    label->SetBackground(views::CreateThemedSolidBackground(
+        label, ui::NativeTheme::kColorId_BubbleBackground));
+  }
   return label;
 }
 

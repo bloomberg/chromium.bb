@@ -52,13 +52,9 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
 void SystemMenuButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, features::IsSystemTrayUnifiedEnabled()
-                                           ? kUnifiedMenuIconColor
-                                           : kMenuIconColor));
+           gfx::CreateVectorIcon(icon, kMenuIconColor));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, features::IsSystemTrayUnifiedEnabled()
-                                           ? kUnifiedMenuIconColorDisabled
-                                           : kMenuIconColorDisabled));
+           gfx::CreateVectorIcon(icon, kMenuIconColorDisabled));
 }
 
 SystemMenuButton::~SystemMenuButton() = default;

@@ -95,7 +95,8 @@ class TitleView : public views::View, public views::ButtonListener {
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(title_label);
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE,
+                             false /* use_unified_theme */);
     style.SetupLabel(title_label);
     layout_ptr->SetFlexForView(title_label, 1);
     help_button_ = new SystemMenuButton(this, kSystemMenuHelpIcon,
