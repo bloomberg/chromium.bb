@@ -52,8 +52,8 @@ class NativeStackSampler {
 
   virtual ~NativeStackSampler();
 
-  // Creates a stack sampler that records samples for |thread_handle|. Returns
-  // null if this platform does not support stack sampling.
+  // Creates a stack sampler that records samples for thread with |thread_id|.
+  // Returns null if this platform does not support stack sampling.
   static std::unique_ptr<NativeStackSampler> Create(
       PlatformThreadId thread_id,
       AnnotateCallback annotator,
