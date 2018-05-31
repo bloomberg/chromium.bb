@@ -43,17 +43,22 @@ static inline void CriticalSectionEnd(CRITSECT_HANDLE *CritSection)
 }
 
 
-static struct GlobalPoolCreateSync
+struct GlobalPoolCreateSync
 {
   CRITSECT_HANDLE CritSection;
   GlobalPoolCreateSync()  { CriticalSectionCreate(&CritSection); }
   ~GlobalPoolCreateSync() { CriticalSectionDelete(&CritSection); }
-} PoolCreateSync;
+};
+
+static GlobalPoolCreateSync& GetPoolCreateSync() {
+  static GlobalPoolCreateSync PoolCreateSync;
+  return PoolCreateSync;
+}
 
 
 ThreadPool* CreateThreadPool()
 {
-  CriticalSectionStart(&PoolCreateSync.CritSection); 
+  CriticalSectionStart(&(GetPoolCreateSync().CritSection));
 
   if (GlobalPoolUseCount++ == 0)
     GlobalPool=new ThreadPool(MaxPoolThreads);
@@ -66,11 +71,11 @@ ThreadPool* CreateThreadPool()
   if (GlobalPoolUseCount > 1)
   {
     ThreadPool *Pool = new ThreadPool(MaxPoolThreads);
-    CriticalSectionEnd(&PoolCreateSync.CritSection); 
+    CriticalSectionEnd(&(GetPoolCreateSync().CritSection));
     return Pool;
   }
 
-  CriticalSectionEnd(&PoolCreateSync.CritSection); 
+  CriticalSectionEnd(&(GetPoolCreateSync().CritSection));
   return GlobalPool;
 }
 
@@ -79,7 +84,7 @@ void DestroyThreadPool(ThreadPool *Pool)
 {
   if (Pool!=NULL)
   {
-    CriticalSectionStart(&PoolCreateSync.CritSection); 
+    CriticalSectionStart(&(GetPoolCreateSync().CritSection));
 
     if (Pool==GlobalPool && GlobalPoolUseCount > 0 && --GlobalPoolUseCount == 0)
       delete GlobalPool;
@@ -89,7 +94,7 @@ void DestroyThreadPool(ThreadPool *Pool)
     if (Pool!=GlobalPool)
       delete Pool;
 
-    CriticalSectionEnd(&PoolCreateSync.CritSection); 
+    CriticalSectionEnd(&(GetPoolCreateSync().CritSection));
   }
 }
 
