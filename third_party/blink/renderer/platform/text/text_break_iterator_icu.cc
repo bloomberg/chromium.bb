@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
