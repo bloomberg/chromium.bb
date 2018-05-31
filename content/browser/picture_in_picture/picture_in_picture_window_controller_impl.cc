@@ -47,16 +47,16 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
   if (initiator_->IsBeingDestroyed())
     return;
 
+  initiator_->SetHasPictureInPictureVideo(false);
   OnLeavingPictureInPicture();
 }
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
     WebContents* initiator)
-    : initiator_(initiator) {
+    : initiator_(static_cast<WebContentsImpl* const>(initiator)) {
   DCHECK(initiator_);
 
-  media_web_contents_observer_ = static_cast<WebContentsImpl* const>(initiator_)
-                                     ->media_web_contents_observer();
+  media_web_contents_observer_ = initiator_->media_web_contents_observer();
 
   window_ =
       GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
@@ -68,13 +68,16 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   DCHECK(surface_id_.is_valid());
 
   window_->Show();
+  initiator_->SetHasPictureInPictureVideo(true);
 
   return window_->GetBounds().size();
 }
 
 void PictureInPictureWindowControllerImpl::Close() {
   DCHECK(window_);
+
   window_->Hide();
+  initiator_->SetHasPictureInPictureVideo(false);
 
   surface_id_ = viz::SurfaceId();
 

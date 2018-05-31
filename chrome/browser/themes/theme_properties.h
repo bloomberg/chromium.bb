@@ -129,6 +129,7 @@ class ThemeProperties {
     // The colors used by the various alert indicator icons in the tab.
     COLOR_TAB_ALERT_AUDIO,
     COLOR_TAB_ALERT_RECORDING,
+    COLOR_TAB_PIP_PLAYING,
     COLOR_TAB_ALERT_CAPTURING,
 
     // These colors don't have constant default values. They are derived from

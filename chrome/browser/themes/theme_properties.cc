@@ -179,6 +179,8 @@ base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
       return incognito ? gfx::kGoogleGrey600 : gfx::kGoogleGrey300;
     case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
       return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleRed600;
+    case ThemeProperties::COLOR_TAB_PIP_PLAYING:
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleBlue600;
     case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
       return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleBlue600;
 

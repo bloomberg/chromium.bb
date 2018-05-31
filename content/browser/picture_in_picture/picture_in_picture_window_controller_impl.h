@@ -58,7 +58,7 @@ class PictureInPictureWindowControllerImpl
 
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
-  WebContents* const initiator_;
+  WebContentsImpl* const initiator_;
 
   // Used to determine the state of the media player and route messages to
   // the corresponding media player with id |media_player_id_|.
