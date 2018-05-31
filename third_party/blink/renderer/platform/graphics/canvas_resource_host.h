@@ -25,6 +25,8 @@ class PLATFORM_EXPORT CanvasResourceHost {
   std::unique_ptr<CanvasResourceProvider> ReplaceResourceProvider(
       std::unique_ptr<CanvasResourceProvider>);
 
+  virtual void DiscardResourceProvider();
+
  private:
   std::unique_ptr<CanvasResourceProvider> resource_provider_;
 };

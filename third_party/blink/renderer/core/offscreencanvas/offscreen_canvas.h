@@ -85,11 +85,8 @@ class CORE_EXPORT OffscreenCanvas final
     disable_reading_from_canvas_ = true;
   }
 
-  void DiscardResourceProvider() override;
-  CanvasResourceProvider* GetResourceProvider() const {
-    return resource_provider_.get();
-  }
   CanvasResourceProvider* GetOrCreateResourceProvider();
+  void DiscardResourceProvider() override;
 
   void SetFrameSinkId(uint32_t client_id, uint32_t sink_id) {
     client_id_ = client_id;
@@ -189,7 +186,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   SkIRect current_frame_damage_rect_;
 
-  std::unique_ptr<CanvasResourceProvider> resource_provider_;
   bool needs_matrix_clip_restore_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used

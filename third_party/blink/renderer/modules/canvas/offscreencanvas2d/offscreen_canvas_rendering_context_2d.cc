@@ -96,7 +96,7 @@ bool OffscreenCanvasRenderingContext2D::CanCreateCanvas2dResourceProvider()
 
 CanvasResourceProvider*
 OffscreenCanvasRenderingContext2D::GetCanvasResourceProvider() const {
-  return offscreenCanvasForBinding()->GetResourceProvider();
+  return Host()->ResourceProvider();
 }
 void OffscreenCanvasRenderingContext2D::Reset() {
   Host()->DiscardResourceProvider();
@@ -214,7 +214,7 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
-  return offscreenCanvasForBinding()->GetResourceProvider();
+  return offscreenCanvasForBinding()->ResourceProvider();
 }
 
 String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
@@ -236,7 +236,7 @@ bool OffscreenCanvasRenderingContext2D::WritePixels(
     int x,
     int y) {
   DCHECK(IsPaintable());
-  return offscreenCanvasForBinding()->GetResourceProvider()->WritePixels(
+  return offscreenCanvasForBinding()->ResourceProvider()->WritePixels(
       orig_info, pixels, row_bytes, x, y);
 }
 

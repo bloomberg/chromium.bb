@@ -243,12 +243,12 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
 }
 
 void OffscreenCanvas::DiscardResourceProvider() {
-  resource_provider_.reset();
+  CanvasResourceHost::DiscardResourceProvider();
   needs_matrix_clip_restore_ = true;
 }
 
 CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
-  if (!resource_provider_) {
+  if (!ResourceProvider()) {
     bool is_accelerated_2d_canvas_blacklisted = true;
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -267,32 +267,32 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     IntSize surface_size(width(), height());
     if (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
         !is_accelerated_2d_canvas_blacklisted) {
-      resource_provider_ = CanvasResourceProvider::Create(
+      ReplaceResourceProvider(CanvasResourceProvider::Create(
           surface_size, CanvasResourceProvider::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0,
-          context_->ColorParams());
+          context_->ColorParams()));
     }
 
-    if (!resource_provider_ || !resource_provider_->IsValid()) {
-      resource_provider_ = CanvasResourceProvider::Create(
+    if (!ResourceProvider() || !ResourceProvider()->IsValid()) {
+      ReplaceResourceProvider(CanvasResourceProvider::Create(
           surface_size, CanvasResourceProvider::kSoftwareResourceUsage, nullptr,
-          0, context_->ColorParams());
+          0, context_->ColorParams()));
     }
 
-    if (resource_provider_ && resource_provider_->IsValid()) {
-      resource_provider_->Clear();
+    if (ResourceProvider() && ResourceProvider()->IsValid()) {
+      ResourceProvider()->Clear();
       // Always save an initial frame, to support resetting the top level matrix
       // and clip.
-      resource_provider_->Canvas()->save();
+      ResourceProvider()->Canvas()->save();
     }
 
-    if (resource_provider_ && needs_matrix_clip_restore_) {
+    if (ResourceProvider() && needs_matrix_clip_restore_) {
       needs_matrix_clip_restore_ = false;
-      context_->RestoreCanvasMatrixClipStack(resource_provider_->Canvas());
+      context_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
     }
   }
 
-  return resource_provider_.get();
+  return ResourceProvider();
 }
 
 void OffscreenCanvas::DidDraw() {

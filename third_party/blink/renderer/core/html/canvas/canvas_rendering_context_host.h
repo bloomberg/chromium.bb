@@ -49,8 +49,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual DispatchEventResult HostDispatchEvent(Event*) = 0;
   virtual const KURL& GetExecutionContextUrl() const = 0;
 
-  virtual void DiscardResourceProvider() = 0;
-
   // If WebGL1 is disabled by enterprise policy or command line switch.
   virtual bool IsWebGL1Enabled() const = 0;
   // If WebGL2 is disabled by enterprise policy or command line switch.

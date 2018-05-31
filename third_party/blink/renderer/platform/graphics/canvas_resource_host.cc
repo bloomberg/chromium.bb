@@ -22,4 +22,9 @@ CanvasResourceHost::ReplaceResourceProvider(
   return old_resource_provider;
 }
 
+void CanvasResourceHost::DiscardResourceProvider() {
+  resource_provider_ = nullptr;
+  UpdateMemoryUsage();
+}
+
 }  // namespace blink
