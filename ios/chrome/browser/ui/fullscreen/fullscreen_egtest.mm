@@ -93,7 +93,7 @@ void AssertURLIs(const GURL& expectedURL) {
   CGFloat yOffset = 0;
   if (IsUIRefreshPhase1Enabled()) {
     if (IsIPadIdiom()) {
-      yOffset = -104.0;
+      yOffset = -89.0;
     } else {
       yOffset = -48.0;
     }
