@@ -16,6 +16,7 @@
 @property(nonatomic) ui::PageTransition transition;
 @property(nonatomic) BOOL rendererInitiated;
 @property(nonatomic) BOOL inIncognito;
+@property(nonatomic, copy) NSDictionary* extraHeaders;
 @end
 
 @implementation FakeURLLoader
@@ -23,12 +24,14 @@
 @synthesize transition = _transition;
 @synthesize rendererInitiated = _rendererInitiated;
 @synthesize inIncognito = _inIncognito;
+@synthesize extraHeaders = _extraHeaders;
 
 - (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
   _url = params.url;
   _referrer = params.referrer;
   self.transition = params.transition_type;
   self.rendererInitiated = params.is_renderer_initiated;
+  self.extraHeaders = params.extra_headers;
 }
 
 - (void)webPageOrderedOpen:(const GURL&)url
