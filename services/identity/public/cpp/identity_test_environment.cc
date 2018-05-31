@@ -65,8 +65,8 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
 
   account_tracker_.Initialize(&signin_client_);
 
-  identity_manager_.reset(
-      new IdentityManager(&signin_manager_, &token_service_));
+  identity_manager_.reset(new IdentityManager(&signin_manager_, &token_service_,
+                                              &account_tracker_));
 }
 
 IdentityTestEnvironmentInternal::~IdentityTestEnvironmentInternal() {}

@@ -9,8 +9,11 @@
 namespace identity {
 
 IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service)
-    : signin_manager_(signin_manager), token_service_(token_service) {
+                                 ProfileOAuth2TokenService* token_service,
+                                 AccountTrackerService* account_tracker_service)
+    : signin_manager_(signin_manager),
+      token_service_(token_service),
+      account_tracker_service_(account_tracker_service) {
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
   signin_manager_->AddObserver(this);
 #if !defined(OS_CHROMEOS)

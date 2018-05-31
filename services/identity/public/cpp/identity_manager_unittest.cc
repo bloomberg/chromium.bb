@@ -269,8 +269,8 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
 
-    identity_manager_.reset(
-        new IdentityManager(&signin_manager_, &token_service_));
+    identity_manager_.reset(new IdentityManager(
+        &signin_manager_, &token_service_, &account_tracker_));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
