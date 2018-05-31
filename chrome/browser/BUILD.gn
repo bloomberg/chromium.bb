@@ -3052,6 +3052,8 @@ jumbo_split_static_library("browser") {
         "conflicts/module_blacklist_cache_util_win.h",
         "conflicts/module_list_filter_win.cc",
         "conflicts/module_list_filter_win.h",
+        "conflicts/module_load_attempt_log_listener_win.cc",
+        "conflicts/module_load_attempt_log_listener_win.h",
         "conflicts/msi_util_win.cc",
         "conflicts/msi_util_win.h",
         "conflicts/registry_key_watcher_win.cc",

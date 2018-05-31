@@ -92,6 +92,8 @@ static_library("test_stubs") {
   ]
 
   deps = [
+    ":sha1",
+    ":third_party_shared_defines",
     "//base",
     "//chrome/common:constants",
   ]

@@ -12,6 +12,7 @@
 
 namespace base {
 class FilePath;
+class Time;
 struct MD5Digest;
 }  // namespace base
 
@@ -21,6 +22,11 @@ struct PackedListModule;
 }  // namespace third_party_dlls
 
 class ModuleListFilter;
+
+// Returns the time date stamp to be used in the module blacklist cache.
+// Represents the number of hours between |time| and the Windows epoch
+// (1601-01-01 00:00:00 UTC).
+uint32_t CalculateTimeDateStamp(base::Time time);
 
 // Reads an existing module blacklist cache at |module_blacklist_cache_path|
 // into |metadata| and |blacklisted_modules|. Returns false on failure or if
