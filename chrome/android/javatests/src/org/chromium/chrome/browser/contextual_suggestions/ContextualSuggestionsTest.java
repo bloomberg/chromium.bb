@@ -468,7 +468,7 @@ public class ContextualSuggestionsTest {
                 activity1, new LoadUrlParams(mTestServer.getURL(TEST_PAGE)));
         ChromeActivityTestRule.waitForActivityNativeInitializationComplete(activity2);
 
-        CallbackHelper itemRangeInsertedCallback = new CallbackHelper();
+        CallbackHelper allItemsInsertedCallback = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator2 = activity2.getContextualSuggestionsCoordinatorForTesting();
             mMediator2 = mCoordinator2.getMediatorForTesting();
@@ -478,7 +478,13 @@ public class ContextualSuggestionsTest {
             mModel2.getClusterList().addObserver(new ListObserver() {
                 @Override
                 public void onItemRangeInserted(ListObservable source, int index, int count) {
-                    itemRangeInsertedCallback.notifyCalled();
+                    // There will be two calls to this method, one for each cluster that is added
+                    // to the list. Wait for the expected number of items to ensure the model
+                    // is finished updating.
+                    if (mModel2.getClusterList().getItemCount()
+                            == FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT) {
+                        allItemsInsertedCallback.notifyCalled();
+                    }
                 }
             });
 
@@ -493,10 +499,12 @@ public class ContextualSuggestionsTest {
                 mContextualSuggestionsDeps.getFactory()
                         .createSuggestionsSourceCallback.getCallCount());
 
-        itemRangeInsertedCallback.waitForCallback(0);
+        allItemsInsertedCallback.waitForCallback(0);
+
+        int itemCount = ThreadUtils.runOnUiThreadBlocking(
+                () -> { return mModel.getClusterList().getItemCount(); });
         assertEquals("Second model has incorrect number of items.",
-                (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
-                mModel2.getClusterList().getItemCount());
+                (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT, itemCount);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mMediator2.showContentInSheetForTesting(true, true);
