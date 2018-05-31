@@ -29,19 +29,23 @@ enum class VisibilityPriority {
   DEFAULT = 0,
 
   // The activity wants to occupy the full screen for some period of time and
-  // then become hidden after a timeout.
-  TRANSIENT_ACTIVITY = 1,
+  // then become hidden after a timeout. When timeout, it returns to the
+  // previous activity.
+  TRANSIENT_TIMEOUTABLE = 1,
 
   // A high priority interruption occupies half of the screen if a sticky
   // activity is showing on the screen. Otherwise, it occupies the full screen.
   HIGH_PRIORITY_INTERRUPTION = 2,
 
-  // The activity wants to be persistently visible. Unlike TRANSIENT_ACTIVITY,
-  // there should be no timeout.
+  // The activity takes place of other activity and won't be timeout.
   STICKY_ACTIVITY = 3,
 
+  // The activity stays on top of others (transient) but won't be timeout.
+  // When the activity finishes, it returns to the previous one.
+  TRANSIENT_STICKY = 4,
+
   // The activity should not be visible.
-  HIDDEN = 4,
+  HIDDEN = 5,
 };
 
 enum class GestureType { NO_GESTURE = 0, GO_BACK = 1 };
