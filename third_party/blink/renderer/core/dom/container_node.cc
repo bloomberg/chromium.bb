@@ -404,6 +404,10 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   // 5. Insert node into parent before reference child.
   NodeVector post_insertion_notification_targets;
   {
+#if DCHECK_IS_ON()
+    NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+        GetDocument().SlotAssignmentRecalcForbiddenRecursionDepth());
+#endif
     ChildListMutationScope mutation(*this);
     InsertNodeVector(targets, ref_child, AdoptAndInsertBefore(),
                      &post_insertion_notification_targets);
@@ -567,6 +571,11 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
       if (!detector.HadAtMostOneDOMMutation())
         needs_recheck = true;
     }
+
+#if DCHECK_IS_ON()
+    NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+        GetDocument().SlotAssignmentRecalcForbiddenRecursionDepth());
+#endif
 
     // 13. Let nodes be node’s children if node is a DocumentFragment node, and
     // a list containing solely node otherwise.
