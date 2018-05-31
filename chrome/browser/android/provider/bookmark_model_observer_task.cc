@@ -5,6 +5,7 @@
 #include "chrome/browser/android/provider/bookmark_model_observer_task.h"
 
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/model_loader.h"
 #include "content/public/browser/browser_thread.h"
 
 using bookmarks::BookmarkModel;
@@ -16,7 +17,7 @@ BookmarkModelTask::BookmarkModelTask(BookmarkModel* model)
   // Ensure the initialization of the native bookmark model.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(model_);
-  model_->BlockTillLoaded();
+  model_->model_loader()->BlockTillLoaded();
 }
 
 BookmarkModel* BookmarkModelTask::model() const {

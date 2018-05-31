@@ -15,11 +15,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
@@ -50,6 +49,7 @@ class BookmarkLoadDetails;
 class BookmarkModelObserver;
 class BookmarkStorage;
 class BookmarkUndoDelegate;
+class ModelLoader;
 class ScopedGroupBookmarkActions;
 class TestBookmarkClient;
 class TitledUrlIndex;
@@ -74,9 +74,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   explicit BookmarkModel(std::unique_ptr<BookmarkClient> client);
   ~BookmarkModel() override;
 
-  // KeyedService:
-  void Shutdown() override;
-
   // Loads the bookmarks. This is called upon creation of the BookmarkModel. You
   // need not invoke this directly. All load operations will be executed on
   // |io_task_runner|. |ui_task_runner| is the task runner the model runs on.
@@ -87,6 +84,9 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   // Returns true if the model finished loading.
   bool loaded() const { return loaded_; }
+
+  // Returns the object responsible for tracking loading.
+  ModelLoader* model_loader() { return model_loader_.get(); }
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
@@ -191,10 +191,6 @@ class BookmarkModel : public BookmarkUndoProvider,
   //
   // If not on the main thread you *must* invoke BlockTillLoaded first.
   void GetBookmarks(std::vector<UrlAndTitle>* urls);
-
-  // Blocks until loaded. This is intended for usage on a thread other than
-  // the main thread.
-  void BlockTillLoaded();
 
   // Adds a new folder node at the specified position.
   const BookmarkNode* AddFolder(const BookmarkNode* parent,
@@ -413,9 +409,13 @@ class BookmarkModel : public BookmarkUndoProvider,
   std::unique_ptr<BookmarkStorage> store_;
 
   std::unique_ptr<TitledUrlIndex> index_;
-  std::unique_ptr<UrlIndex> url_index_;
 
-  base::WaitableEvent loaded_signal_;
+  // Owned by |model_loader_|.
+  // WARNING: in some tests this does *not* refer to
+  // |ModelLoader::history_bookmark_model_|. This is because some tests
+  // directly call DoneLoading().
+  // TODO: this is confusing, fix tests not to circumvent ModelLoader.
+  scoped_refptr<UrlIndex> url_index_;
 
   // See description of IsDoingExtensiveChanges above.
   int extensive_changes_ = 0;
@@ -426,6 +426,8 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   BookmarkUndoDelegate* undo_delegate_ = nullptr;
   std::unique_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
+
+  scoped_refptr<ModelLoader> model_loader_;
 
   base::WeakPtrFactory<BookmarkModel> weak_factory_{this};
 

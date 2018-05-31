@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/history_bookmark_model.h"
 #include "url/gurl.h"
 
 namespace bookmarks {
@@ -22,18 +23,19 @@ struct UrlAndTitle;
 
 // UrlIndex maintains the bookmark nodes of type url. The nodes are ordered by
 // url for lookup using the url. The mapping is done based on the nodes in the
-// model.
+// model. This class may outlive the BookmarkModel, necessitating this class
+// owning all the nodes.
 //
 // This class is accessed on multiple threads, so all mutation to the underlying
 // set must be done while holding a lock. While this class is accessed on
 // multiple threads, all mutation happens on main thread.
 //
 // This class is an implementation detail of BookmarkModel and is not intended
-// to be public.
-class UrlIndex {
+// to be public. The public functions implemented by way of
+// HistoryBookmarkModel define the public API of this class.
+class UrlIndex : public HistoryBookmarkModel {
  public:
   explicit UrlIndex(std::unique_ptr<BookmarkNode> root);
-  ~UrlIndex();
 
   BookmarkNode* root() { return root_.get(); }
 
@@ -56,11 +58,15 @@ class UrlIndex {
   // Returns true if there is at least one bookmark.
   bool HasBookmarks();
 
-  bool IsBookmarked(const GURL& url);
-
-  void GetBookmarks(std::vector<UrlAndTitle>* bookmarks);
+  // HistoryBookmarkModel:
+  bool IsBookmarked(const GURL& url) override;
+  void GetBookmarks(std::vector<UrlAndTitle>* bookmarks) override;
 
  private:
+  friend class base::RefCountedThreadSafe<UrlIndex>;
+
+  ~UrlIndex() override;
+
   // Used to order BookmarkNodes by URL.
   class NodeUrlComparator {
    public:

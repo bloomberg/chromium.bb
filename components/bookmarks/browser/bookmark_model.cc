@@ -23,6 +23,7 @@
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/model_loader.h"
 #include "components/bookmarks/browser/titled_url_index.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/typed_count_sorter.h"
@@ -113,23 +114,6 @@ class EmptyUndoDelegate : public BookmarkUndoDelegate {
   DISALLOW_COPY_AND_ASSIGN(EmptyUndoDelegate);
 };
 
-void FinishedLoadOnMainThread(
-    base::OnceCallback<void(std::unique_ptr<BookmarkLoadDetails>)> callback,
-    std::unique_ptr<BookmarkLoadDetails> details) {
-  std::move(callback).Run(std::move(details));
-}
-
-void DoLoadOnBackgroundThread(
-    const base::FilePath& profile_path,
-    scoped_refptr<base::SequencedTaskRunner> result_task_runner,
-    base::OnceCallback<void(std::unique_ptr<BookmarkLoadDetails>)> callback,
-    std::unique_ptr<BookmarkLoadDetails> details) {
-  LoadBookmarks(profile_path, details.get());
-  result_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&FinishedLoadOnMainThread, std::move(callback),
-                                std::move(details)));
-}
-
 }  // namespace
 
 // BookmarkModel --------------------------------------------------------------
@@ -155,15 +139,6 @@ BookmarkModel::~BookmarkModel() {
   }
 }
 
-void BookmarkModel::Shutdown() {
-  if (loaded_)
-    return;
-
-  // See comment in HistoryService::ShutdownOnUIThread where this is invoked for
-  // details. It is also called when the BookmarkModel is deleted.
-  loaded_signal_.Signal();
-}
-
 void BookmarkModel::Load(
     PrefService* pref_service,
     const base::FilePath& profile_path,
@@ -178,14 +153,11 @@ void BookmarkModel::Load(
 
   store_ = std::make_unique<BookmarkStorage>(this, profile_path,
                                              io_task_runner.get());
-  auto done_loading_callback =
-      base::BindOnce(&BookmarkModel::DoneLoading, weak_factory_.GetWeakPtr());
-  io_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DoLoadOnBackgroundThread,
-                     profile_path.Append(kBookmarksFileName), ui_task_runner,
-                     std::move(done_loading_callback),
-                     std::make_unique<BookmarkLoadDetails>(client_.get())));
+  // Creating ModelLoader schedules the load on |io_task_runner|.
+  model_loader_ = base::MakeRefCounted<ModelLoader>(
+      profile_path.Append(kBookmarksFileName), io_task_runner.get(),
+      std::make_unique<BookmarkLoadDetails>(client_.get()),
+      base::BindOnce(&BookmarkModel::DoneLoading, weak_factory_.GetWeakPtr()));
 }
 
 void BookmarkModel::AddObserver(BookmarkModelObserver* observer) {
@@ -591,10 +563,6 @@ void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
     url_index_->GetBookmarks(bookmarks);
 }
 
-void BookmarkModel::BlockTillLoaded() {
-  loaded_signal_.Wait();
-}
-
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
                                              int index,
                                              const base::string16& title) {
@@ -827,7 +795,7 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   }
 
   index_ = details->owned_index();
-  url_index_ = details->owned_url_index();
+  url_index_ = details->url_index();
   root_ = details->root_node();
   // See declaration for details on why |owned_root_| is reset.
   owned_root_.reset();
@@ -846,8 +814,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
       details->model_sync_transaction_version());
 
   loaded_ = true;
-
-  loaded_signal_.Signal();
 
   // Notify our direct observers.
   for (BookmarkModelObserver& observer : observers_)
