@@ -339,16 +339,30 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   NSWindow* target = [self window];
   DCHECK(target);
 
+  BOOL isScrollEvent = [theEvent type] == NSScrollWheel;
+
   // If it's the view's window, process normally.
   if ([target isEqual:source]) {
-    [self mouseEvent:theEvent];
+    if (isScrollEvent)
+      [self scrollWheel:theEvent];
+    else
+      [self mouseEvent:theEvent];
+
     return;
   }
 
-  ui::MouseEvent event(theEvent);
-  event.set_location(
-      MovePointToWindow([theEvent locationInWindow], source, target));
-  hostedView_->GetWidget()->OnMouseEvent(&event);
+  gfx::Point event_location =
+      MovePointToWindow([theEvent locationInWindow], source, target);
+
+  if (isScrollEvent) {
+    ui::ScrollEvent event(theEvent);
+    event.set_location(event_location);
+    hostedView_->GetWidget()->OnScrollEvent(&event);
+  } else {
+    ui::MouseEvent event(theEvent);
+    event.set_location(event_location);
+    hostedView_->GetWidget()->OnMouseEvent(&event);
+  }
 }
 
 - (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent {
@@ -577,6 +591,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (!hostedView_)
     return;
 
+  DCHECK([theEvent type] != NSScrollWheel);
   ui::MouseEvent event(theEvent);
 
   // ui::EventLocationFromNative() assumes the event hit the contentView.
