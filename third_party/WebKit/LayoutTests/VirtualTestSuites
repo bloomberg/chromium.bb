@@ -680,5 +680,10 @@
     "base": "fast/canvas/display-compositor-pixel-dump",
     "args": ["--enable-display-compositor-pixel-dump",
              "--enable-accelerated-2d-canvas"]
+  },
+  {
+    "prefix": "mojo-blob-urls",
+    "base": "external/wpt/FileAPI/url",
+    "args": ["--enable-blink-features=MojoBlobURLs"]
   }
 ]

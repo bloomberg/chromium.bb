@@ -111,6 +111,7 @@ crbug.com/820617 external/wpt/fullscreen/api/element-ready-check-not-allowed-cro
 # for the foreseeable future.
 Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ Skip ]
 Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
+Bug(none) virtual/mojo-blob-urls/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Skip ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Skip ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ Skip ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Skip ]
