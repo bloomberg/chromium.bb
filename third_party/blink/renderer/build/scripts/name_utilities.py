@@ -27,16 +27,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os.path
-import re
 
-from blinkbuild.name_style_converter import NameStyleConverter, tokenize_name
-
-
-def _upper_first_letter(name):
-    """Return name with first letter uppercased."""
-    if not name:
-        return ''
-    return name[0].upper() + name[1:]
+from blinkbuild.name_style_converter import NameStyleConverter
 
 
 def script_name(entry):
@@ -69,43 +61,3 @@ def enum_for_css_property(property_name):
 
 def enum_for_css_property_alias(property_name):
     return 'CSSPropertyAlias' + property_name.to_upper_camel_case()
-
-# FIXME: Merge these with the above methods.
-# and update all the generators to use these ones.
-# FIXME: Switch external callers of these methods to use the high level
-# API below instead.
-
-
-def naming_style(f):
-    """Decorator for name utility functions.
-
-    Wraps a name utility function in a function that takes one or more names,
-    splits them into a list of words, and passes the list to the utility function.
-    """
-    def inner(name_or_names):
-        names = name_or_names if isinstance(name_or_names, list) else [name_or_names]
-        words = []
-        for name in names:
-            if name:
-                words.extend(tokenize_name(name))
-        return f(words)
-    return inner
-
-
-@naming_style
-def _upper_camel_case(words):
-    return ''.join(_upper_first_letter(word) for word in words)
-
-
-@naming_style
-def snake_case(words):
-    return '_'.join(word.lower() for word in words)
-
-
-# Use these high level naming functions which describe the semantics of the name,
-# rather than a particular style.
-
-
-@naming_style
-def enum_type_name(words):
-    return _upper_camel_case(words)
