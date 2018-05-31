@@ -47,8 +47,6 @@
   self.view.blur.hidden = YES;
   self.view.backgroundColor =
       self.buttonFactory.toolbarConfiguration.backgroundColor;
-  // TODO(crbug.com/804850): Have the correct background color for incognito
-  // NTP.
 }
 
 - (void)resetAfterSideSwipeSnapshot {
@@ -151,7 +149,7 @@
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
-  // TODO(crbug.com/803379): Implement that.
+  // No-op, not needed in UI refresh.
 }
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {

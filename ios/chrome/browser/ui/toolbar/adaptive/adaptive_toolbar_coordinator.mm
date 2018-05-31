@@ -92,7 +92,7 @@
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
-  // TODO(crbug.com/803379): Implement that.
+  // No-op, not needed in UI refresh.
 }
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
