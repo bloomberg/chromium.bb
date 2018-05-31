@@ -29,6 +29,21 @@ interface AudioInputStreamClient {
 // AudioInputStream. DidStartRecording() is invoked when the stream starts
 // recording. Stream destruction is notified through binding connection error.
 interface AudioInputStreamObserver {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum DisconnectReason {
+    // The Disconnect reason wasn't given explicitly. This probably means that
+    // the audio service crashed.
+    kDefault = 0,
+    // This code is used as disconnect reason when stream ended or failed to
+    // start due to an unrecoverable platform error, e.g. the hardware device is
+    // busy or disconnected.
+    kPlatformError = 1,
+    kTerminatedByClient = 2,
+    kStreamCreationFailed = 3,
+    kDocumentDestroyed = 4,
+  };
+
   // It will be called only once when input stream starts recording.
   DidStartRecording();
 };

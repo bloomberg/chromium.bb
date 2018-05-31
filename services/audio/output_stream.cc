@@ -85,6 +85,12 @@ OutputStream::~OutputStream() {
 
   log_->get()->OnClosed();
 
+  if (observer_)
+    observer_.ResetWithReason(
+        static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                  DisconnectReason::kTerminatedByClient),
+        std::string());
+
   controller_.Close();
   coordinator_->UnregisterGroupMember(&controller_);
 
@@ -119,7 +125,7 @@ void OutputStream::SetVolume(double volume) {
 
   if (volume < 0 || volume > 1) {
     mojo::ReportBadMessage("Invalid volume");
-    OnError();
+    OnControllerError();
     return;
   }
 
@@ -202,11 +208,15 @@ void OutputStream::OnControllerError() {
   // torn down.
   poll_timer_.Stop();
 
-  // Only propagate platform errors to the observer.
-  observer_.ResetWithReason(
-      media::mojom::AudioOutputStreamObserver::kPlatformErrorDisconnectReason,
-      std::string());
   log_->get()->OnError();
+
+  if (observer_) {
+    observer_.ResetWithReason(
+        static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                  DisconnectReason::kPlatformError),
+        std::string());
+  }
+
   OnError();
 }
 

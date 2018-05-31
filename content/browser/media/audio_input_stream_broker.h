@@ -52,6 +52,9 @@ class CONTENT_EXPORT AudioInputStreamBroker final
                      media::mojom::AudioDataPipePtr data_pipe,
                      bool initially_muted,
                      const base::Optional<base::UnguessableToken>& stream_id);
+
+  void ObserverBindingLost(uint32_t reason, const std::string& description);
+
   void Cleanup();
 
   const std::string device_id_;
@@ -68,6 +71,10 @@ class CONTENT_EXPORT AudioInputStreamBroker final
   mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client_;
   mojo::Binding<AudioInputStreamObserver> observer_binding_;
   media::mojom::AudioInputStreamClientRequest client_request_;
+
+  media::mojom::AudioInputStreamObserver::DisconnectReason disconnect_reason_ =
+      media::mojom::AudioInputStreamObserver::DisconnectReason::
+          kDocumentDestroyed;
 
   base::WeakPtrFactory<AudioInputStreamBroker> weak_ptr_factory_;
 

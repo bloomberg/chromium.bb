@@ -130,7 +130,9 @@ void MojoAudioOutputIPC::ProviderClientBindingDisconnected(
     const std::string& description) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
-  if (disconnect_reason == kPlatformErrorDisconnectReason) {
+  if (disconnect_reason ==
+      static_cast<uint32_t>(media::mojom::AudioOutputStreamObserver::
+                                DisconnectReason::kPlatformError)) {
     delegate_->OnError();
   }
   // Otherwise, disconnection was due to the frame owning |this| being

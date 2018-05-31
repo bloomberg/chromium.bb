@@ -66,7 +66,7 @@ class InputStream final : public media::mojom::AudioInputStream,
   void OnMuted(bool is_muted) override;
 
  private:
-  void OnStreamError();
+  void OnStreamError(bool signalPlatformError);
   void CallDeleter();
 
   const base::UnguessableToken id_;
