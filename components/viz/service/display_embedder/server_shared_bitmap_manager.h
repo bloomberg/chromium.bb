@@ -36,6 +36,8 @@ class VIZ_SERVICE_EXPORT ServerSharedBitmapManager
       const gfx::Size& size,
       ResourceFormat format,
       const SharedBitmapId& id) override;
+  base::UnguessableToken GetSharedBitmapTracingGUIDFromId(
+      const SharedBitmapId& id) override;
   bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                   const SharedBitmapId& id) override;
   void ChildDeletedSharedBitmap(const SharedBitmapId& id) override;
