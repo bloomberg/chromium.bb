@@ -141,9 +141,10 @@ TEST_F(ServerSharedBitmapManagerTest, SharedMemoryHandle) {
       mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
   manager()->ChildAllocatedSharedBitmap(std::move(buffer_handle), id);
 
-  base::UnguessableToken tracing_guid =
-      manager()->GetSharedBitmapTracingGUIDFromId(id);
-  EXPECT_EQ(tracing_guid, shared_memory_guid);
+  std::unique_ptr<SharedBitmap> shared_bitmap;
+  shared_bitmap =
+      manager()->GetSharedBitmapFromId(gfx::Size(1, 1), RGBA_8888, id);
+  EXPECT_EQ(shared_bitmap->GetCrossProcessGUID(), shared_memory_guid);
 
   manager()->ChildDeletedSharedBitmap(id);
 }

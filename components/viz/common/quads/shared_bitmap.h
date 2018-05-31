@@ -16,6 +16,10 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace viz {
 using SharedBitmapId = gpu::Mailbox;
 
@@ -25,22 +29,34 @@ struct SharedBitmapIdHash {
   }
 };
 
-// An object returned by the SharedBitmapGenerator that exposes the
-// pixels for a SharedBitmapId. They are exposed via a class so that
-// this object (or its subclass) can ensure the lifetime of the pixels
-// is not cut short. While this object is kept alive, the pixels should
-// remain valid.
+VIZ_COMMON_EXPORT base::trace_event::MemoryAllocatorDumpGuid
+GetSharedBitmapGUIDForTracing(const SharedBitmapId& bitmap_id);
+
 class VIZ_COMMON_EXPORT SharedBitmap {
  public:
-  static SharedBitmapId GenerateId();
+  SharedBitmap(uint8_t* pixels,
+               const SharedBitmapId& id,
+               uint32_t sequence_number);
 
-  explicit SharedBitmap(uint8_t* pixels);
   virtual ~SharedBitmap();
 
   uint8_t* pixels() { return pixels_; }
+  const SharedBitmapId& id() { return id_; }
+
+  // The sequence number that ClientSharedBitmapManager assigned to this
+  // SharedBitmap.
+  uint32_t sequence_number() const { return sequence_number_; }
+
+  // Returns the GUID for tracing when the SharedBitmap supports cross-process
+  // use via shared memory. Otherwise, this returns empty.
+  virtual base::UnguessableToken GetCrossProcessGUID() const = 0;
+
+  static SharedBitmapId GenerateId();
 
  private:
   uint8_t* pixels_;
+  SharedBitmapId id_;
+  const uint32_t sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBitmap);
 };

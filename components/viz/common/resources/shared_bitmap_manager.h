@@ -21,11 +21,9 @@ class SharedBitmapManager {
 
   // Used in the display compositor to find the bitmap associated with an id.
   virtual std::unique_ptr<SharedBitmap> GetSharedBitmapFromId(
-      const gfx::Size& size,
-      ResourceFormat format,
-      const SharedBitmapId& id) = 0;
-  virtual base::UnguessableToken GetSharedBitmapTracingGUIDFromId(
-      const SharedBitmapId& id) = 0;
+      const gfx::Size&,
+      ResourceFormat,
+      const SharedBitmapId&) = 0;
   // Used in the display compositor to associate an id to a shm handle.
   virtual bool ChildAllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                           const SharedBitmapId& id) = 0;
