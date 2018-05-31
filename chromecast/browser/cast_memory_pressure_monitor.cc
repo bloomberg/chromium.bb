@@ -44,7 +44,13 @@ int GetSystemReservedKb() {
 }  // namespace
 
 CastMemoryPressureMonitor::CastMemoryPressureMonitor()
-    : current_level_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
+    : critical_memory_fraction_(
+          GetSwitchValueDouble(switches::kCastMemoryPressureCriticalFraction,
+                               kCriticalMemoryFraction)),
+      moderate_memory_fraction_(
+          GetSwitchValueDouble(switches::kCastMemoryPressureModerateFraction,
+                               kModerateMemoryFraction)),
+      current_level_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       system_reserved_kb_(GetSystemReservedKb()),
       dispatch_callback_(
           base::Bind(&base::MemoryPressureListener::NotifyMemoryPressure)),
@@ -80,9 +86,9 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
     DCHECK_GT(total, 0);
     const float ratio = available / static_cast<float>(total);
 
-    if (ratio < kCriticalMemoryFraction)
+    if (ratio < critical_memory_fraction_)
       level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-    else if (ratio < kModerateMemoryFraction)
+    else if (ratio < moderate_memory_fraction_)
       level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
   } else {
     // Backup method purely using 'free' memory.  It may generate more

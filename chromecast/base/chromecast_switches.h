@@ -79,6 +79,9 @@ extern const char kBackGestureHorizontalThreshold[];
 // Background color used when Chromium hasn't rendered anything yet.
 extern const char kCastAppBackgroundColor[];
 
+extern const char kCastMemoryPressureCriticalFraction[];
+extern const char kCastMemoryPressureModerateFraction[];
+
 }  // namespace switches
 
 namespace chromecast {
