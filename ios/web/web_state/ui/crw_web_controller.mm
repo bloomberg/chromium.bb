@@ -2941,21 +2941,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)handleLoadError:(NSError*)error
           forNavigation:(WKNavigation*)navigation {
-  if ([error code] == NSURLErrorUnsupportedURL)
+  if (error.code == NSURLErrorUnsupportedURL)
     return;
-  // In cases where a Plug-in handles the load do not take any further action.
-  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      (error.code == web::kWebKitErrorPlugInLoadFailed ||
-       error.code == web::kWebKitErrorCannotShowUrl))
-    return;
-
-  // If URL is blocked due to Restriction, do not take any further action as
-  // WKWebView will show a built-in error.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
-    return;
-  }
 
   if (error.code == NSURLErrorCancelled) {
     [self handleCancelledError:error forNavigation:navigation];
@@ -2964,12 +2951,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  // Reset SSL status to default, unless the load was cancelled (manually or by
-  // back-forward navigation).
-  NavigationManager* navManager = self.webState->GetNavigationManager();
-  web::NavigationItem* lastCommittedItem = navManager->GetLastCommittedItem();
-  if (lastCommittedItem)
-    lastCommittedItem->GetSSL() = web::SSLStatus();
+  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      (error.code == web::kWebKitErrorPlugInLoadFailed ||
+       error.code == web::kWebKitErrorCannotShowUrl)) {
+    // In cases where a Plug-in handles the load do not take any further action.
+    return;
+  }
+
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
+    // If URL is blocked due to Restriction, do not take any further action as
+    // WKWebView will show a built-in error.
+    return;
+  }
 
   web::NavigationContextImpl* navigationContext =
       [_navigationStates contextForNavigation:navigation];
@@ -3016,6 +3011,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // to start the download task.
     _webStateImpl->SetIsLoading(false);
     return;
+  }
+
+  NavigationManager* navManager = self.webState->GetNavigationManager();
+  web::NavigationItem* lastCommittedItem = navManager->GetLastCommittedItem();
+  if (lastCommittedItem) {
+    // Reset SSL status for last committed navigation to avoid showing security
+    // status for error pages.
+    lastCommittedItem->GetSSL() = web::SSLStatus();
   }
 
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
