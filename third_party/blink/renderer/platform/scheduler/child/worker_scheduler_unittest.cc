@@ -177,17 +177,20 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler) {
   EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(
       worker_scheduler_->ThrottleableTaskQueue().get()));
 
-  scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kThrottled);
+  scheduler_->OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState::kThrottled);
   EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
       worker_scheduler_->ThrottleableTaskQueue().get()));
 
-  scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kThrottled);
+  scheduler_->OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState::kThrottled);
   EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
       worker_scheduler_->ThrottleableTaskQueue().get()));
 
   // Ensure that two calls with kThrottled do not mess with throttling
   // refcount.
-  scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kNotThrottled);
+  scheduler_->OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState::kNotThrottled);
   EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(
       worker_scheduler_->ThrottleableTaskQueue().get()));
 }
@@ -195,7 +198,8 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler) {
 TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_CreateThrottled) {
   scheduler_->CreateTaskQueueThrottler();
 
-  scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kThrottled);
+  scheduler_->OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState::kThrottled);
 
   std::unique_ptr<WorkerSchedulerForTest> worker_scheduler2 =
       std::make_unique<WorkerSchedulerForTest>(scheduler_.get());
@@ -216,7 +220,8 @@ TEST_F(WorkerSchedulerTest, ThrottleWorkerScheduler_RunThrottledTasks) {
   worker_scheduler_ =
       std::make_unique<WorkerSchedulerForTest>(scheduler_.get());
 
-  scheduler_->OnLifecycleStateChanged(SchedulingLifecycleState::kThrottled);
+  scheduler_->OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState::kThrottled);
 
   std::vector<base::TimeTicks> tasks;
 

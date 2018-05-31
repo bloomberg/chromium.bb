@@ -123,7 +123,7 @@ void CPUTimeBudgetPool::OnQueueNextWakeUpChanged(
     TaskQueue* queue,
     base::TimeTicks now,
     base::TimeTicks desired_run_time) {
-  budget_pool_controller_->UpdateQueueSchedulingLifecycleState(now, queue);
+  budget_pool_controller_->UpdateQueueThrottlingState(now, queue);
 }
 
 void CPUTimeBudgetPool::OnWakeUp(base::TimeTicks now) {}

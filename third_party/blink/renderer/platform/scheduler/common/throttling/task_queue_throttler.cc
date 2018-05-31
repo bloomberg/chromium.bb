@@ -239,8 +239,7 @@ void TaskQueueThrottler::PumpThrottledTasks() {
 
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
     TaskQueue* task_queue = map_entry.first;
-    UpdateQueueSchedulingLifecycleStateInternal(lazy_now.Now(), task_queue,
-                                                true);
+    UpdateQueueThrottlingStateInternal(lazy_now.Now(), task_queue, true);
   }
 }
 
@@ -315,16 +314,14 @@ void TaskQueueThrottler::OnTaskRunTimeReported(TaskQueue* task_queue,
   }
 }
 
-void TaskQueueThrottler::UpdateQueueSchedulingLifecycleState(
-    base::TimeTicks now,
-    TaskQueue* queue) {
-  UpdateQueueSchedulingLifecycleStateInternal(now, queue, false);
+void TaskQueueThrottler::UpdateQueueThrottlingState(base::TimeTicks now,
+                                                    TaskQueue* queue) {
+  UpdateQueueThrottlingStateInternal(now, queue, false);
 }
 
-void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
-    base::TimeTicks now,
-    TaskQueue* queue,
-    bool is_wake_up) {
+void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
+                                                            TaskQueue* queue,
+                                                            bool is_wake_up) {
   if (!queue->IsQueueEnabled() || !IsThrottled(queue)) {
     return;
   }
@@ -575,7 +572,7 @@ void TaskQueueThrottler::EnableThrottling() {
     // to enforce task alignment.
     queue->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
     queue->SetTimeDomain(time_domain_.get());
-    UpdateQueueSchedulingLifecycleState(lazy_now.Now(), queue);
+    UpdateQueueThrottlingState(lazy_now.Now(), queue);
   }
 
   TRACE_EVENT0("renderer.scheduler", "TaskQueueThrottler_EnableThrottling");

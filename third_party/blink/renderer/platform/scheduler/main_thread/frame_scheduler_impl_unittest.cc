@@ -95,9 +95,9 @@ class FrameSchedulerImplTest : public testing::Test {
         throttleable_task_queue().get());
   }
 
-  SchedulingLifecycleState CalculateLifecycleState(
+  FrameScheduler::ThrottlingState CalculateThrottlingState(
       FrameScheduler::ObserverType type) {
-    return frame_scheduler_->CalculateLifecycleState(type);
+    return frame_scheduler_->CalculateThrottlingState(type);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -108,9 +108,9 @@ class FrameSchedulerImplTest : public testing::Test {
 
 namespace {
 
-class MockLifecycleObserver final : public FrameScheduler::Observer {
+class MockThrottlingObserver final : public FrameScheduler::Observer {
  public:
-  MockLifecycleObserver()
+  MockThrottlingObserver()
       : not_throttled_count_(0u),
         hidden_count_(0u),
         throttled_count_(0u),
@@ -128,18 +128,19 @@ class MockLifecycleObserver final : public FrameScheduler::Observer {
     EXPECT_EQ(stopped_count_expectation, stopped_count_) << from.ToString();
   }
 
-  void OnLifecycleStateChanged(SchedulingLifecycleState state) override {
+  void OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState state) override {
     switch (state) {
-      case SchedulingLifecycleState::kNotThrottled:
+      case FrameScheduler::ThrottlingState::kNotThrottled:
         not_throttled_count_++;
         break;
-      case SchedulingLifecycleState::kHidden:
+      case FrameScheduler::ThrottlingState::kHidden:
         hidden_count_++;
         break;
-      case SchedulingLifecycleState::kThrottled:
+      case FrameScheduler::ThrottlingState::kThrottled:
         throttled_count_++;
         break;
-      case SchedulingLifecycleState::kStopped:
+      case FrameScheduler::ThrottlingState::kStopped:
         stopped_count_++;
         break;
         // We should not have another state, and compiler checks it.
@@ -459,9 +460,9 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
 }
 
 // Tests if throttling observer interfaces work.
-TEST_F(FrameSchedulerImplTest, LifecycleObserver) {
-  std::unique_ptr<MockLifecycleObserver> observer =
-      std::make_unique<MockLifecycleObserver>();
+TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
+  std::unique_ptr<MockThrottlingObserver> observer =
+      std::make_unique<MockThrottlingObserver>();
 
   size_t not_throttled_count = 0u;
   size_t hidden_count = 0u;
@@ -471,7 +472,7 @@ TEST_F(FrameSchedulerImplTest, LifecycleObserver) {
   observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
                                throttled_count, stopped_count);
 
-  auto observer_handle = frame_scheduler_->AddLifecycleObserver(
+  auto observer_handle = frame_scheduler_->AddThrottlingObserver(
       FrameScheduler::ObserverType::kLoader, observer.get());
 
   // Initial state should be synchronously notified here.
@@ -533,12 +534,12 @@ TEST_F(FrameSchedulerImplTest, LifecycleObserver) {
                                throttled_count, stopped_count);
 }
 
-TEST_F(FrameSchedulerImplTest, DefaultSchedulingLifecycleState) {
-  EXPECT_EQ(CalculateLifecycleState(FrameScheduler::ObserverType::kLoader),
-            SchedulingLifecycleState::kNotThrottled);
+TEST_F(FrameSchedulerImplTest, DefaultThrottlingState) {
+  EXPECT_EQ(CalculateThrottlingState(FrameScheduler::ObserverType::kLoader),
+            FrameScheduler::ThrottlingState::kNotThrottled);
   EXPECT_EQ(
-      CalculateLifecycleState(FrameScheduler::ObserverType::kWorkerScheduler),
-      SchedulingLifecycleState::kNotThrottled);
+      CalculateThrottlingState(FrameScheduler::ObserverType::kWorkerScheduler),
+      FrameScheduler::ThrottlingState::kNotThrottled);
 }
 
 }  // namespace frame_scheduler_impl_unittest

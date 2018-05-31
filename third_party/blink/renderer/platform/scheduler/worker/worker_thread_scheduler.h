@@ -70,10 +70,10 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 
   // Virtual for test.
-  virtual void OnLifecycleStateChanged(
-      SchedulingLifecycleState throttling_state);
+  virtual void OnThrottlingStateChanged(
+      FrameScheduler::ThrottlingState throttling_state);
 
-  SchedulingLifecycleState throttling_state() const {
+  FrameScheduler::ThrottlingState throttling_state() const {
     return throttling_state_;
   }
 
@@ -112,7 +112,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   scoped_refptr<WorkerTaskQueue> control_task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> v8_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  SchedulingLifecycleState throttling_state_;
+  FrameScheduler::ThrottlingState throttling_state_;
 
   WorkerMetricsHelper worker_metrics_helper_;
 
