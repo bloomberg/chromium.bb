@@ -4557,8 +4557,16 @@ TEST_F(PersonalDataManagerTest, DeleteDisusedCreditCards_OncePerVersion) {
 }
 
 // Tests that DeleteDisusedCreditCards deletes desired credit cards only.
+// Disabled on Android, see crbug.com/848227
+#if defined(OS_ANDROID)
+#define MAYBE_DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards \
+  DISABLED_DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards
+#else
+#define MAYBE_DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards \
+  DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards
+#endif
 TEST_F(PersonalDataManagerTest,
-       DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards) {
+       MAYBE_DeleteDisusedCreditCards_OnlyDeleteExpiredDisusedLocalCards) {
   // Enable the feature.
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitAndEnableFeature(kAutofillDeleteDisusedCreditCards);
