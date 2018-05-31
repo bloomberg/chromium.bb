@@ -126,9 +126,7 @@ class TrackedRefFactory {
 
   ~TrackedRefFactory() {
     // Enter the destruction phase.
-    ready_to_destroy_ = std::make_unique<WaitableEvent>(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED);
+    ready_to_destroy_ = std::make_unique<WaitableEvent>();
 
     // Release self-ref (if this was the last one it will signal the event right
     // away).

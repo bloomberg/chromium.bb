@@ -78,11 +78,7 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
 class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
  protected:
   TaskSchedulerWorkerTest()
-      : main_entry_called_(WaitableEvent::ResetPolicy::MANUAL,
-                           WaitableEvent::InitialState::NOT_SIGNALED),
-        num_get_work_cv_(lock_.CreateConditionVariable()),
-        worker_set_(WaitableEvent::ResetPolicy::MANUAL,
-                    WaitableEvent::InitialState::NOT_SIGNALED) {}
+      : num_get_work_cv_(lock_.CreateConditionVariable()) {}
 
   void SetUp() override {
     worker_ = MakeRefCounted<SchedulerWorker>(
@@ -376,17 +372,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
  public:
   class Controls : public RefCountedThreadSafe<Controls> {
    public:
-    Controls()
-        : work_running_(WaitableEvent::ResetPolicy::MANUAL,
-                        WaitableEvent::InitialState::SIGNALED),
-          work_processed_(WaitableEvent::ResetPolicy::MANUAL,
-                          WaitableEvent::InitialState::NOT_SIGNALED),
-          cleanup_requested_(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED),
-          destroyed_(WaitableEvent::ResetPolicy::MANUAL,
-                     WaitableEvent::InitialState::NOT_SIGNALED),
-          exited_(WaitableEvent::ResetPolicy::MANUAL,
-                  WaitableEvent::InitialState::NOT_SIGNALED) {}
+    Controls() = default;
 
     void HaveWorkBlock() { work_running_.Reset(); }
 
@@ -419,7 +405,8 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
     friend class RefCountedThreadSafe<Controls>;
     ~Controls() = default;
 
-    WaitableEvent work_running_;
+    WaitableEvent work_running_{WaitableEvent::ResetPolicy::MANUAL,
+                                WaitableEvent::InitialState::SIGNALED};
     WaitableEvent work_processed_;
     WaitableEvent cleanup_requested_;
     WaitableEvent destroyed_;
@@ -640,9 +627,7 @@ class CallJoinFromDifferentThread : public SimpleThread {
  public:
   CallJoinFromDifferentThread(SchedulerWorker* worker_to_join)
       : SimpleThread("SchedulerWorkerJoinThread"),
-        worker_to_join_(worker_to_join),
-        run_started_event_(WaitableEvent::ResetPolicy::MANUAL,
-                           WaitableEvent::InitialState::NOT_SIGNALED) {}
+        worker_to_join_(worker_to_join) {}
 
   ~CallJoinFromDifferentThread() override = default;
 
@@ -831,9 +816,7 @@ namespace {
 
 class CoInitializeDelegate : public SchedulerWorkerDefaultDelegate {
  public:
-  CoInitializeDelegate()
-      : get_work_returned_(WaitableEvent::ResetPolicy::MANUAL,
-                           WaitableEvent::InitialState::NOT_SIGNALED) {}
+  CoInitializeDelegate() = default;
 
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     EXPECT_FALSE(get_work_returned_.IsSignaled());

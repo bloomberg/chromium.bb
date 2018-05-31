@@ -217,8 +217,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, PostTasksWithOneAvailableWorker) {
   // Post blocking tasks to keep all workers busy except one until |event| is
   // signaled. Use different factories so that tasks are added to different
   // sequences and can run simultaneously when the execution mode is SEQUENCED.
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   std::vector<std::unique_ptr<test::TestTaskFactory>> blocked_task_factories;
   for (size_t i = 0; i < (kMaxTasks - 1); ++i) {
     blocked_task_factories.push_back(std::make_unique<test::TestTaskFactory>(
@@ -252,8 +251,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, Saturate) {
   // tasks/sequences running simultaneously. Use different factories so that the
   // blocking tasks are added to different sequences and can run simultaneously
   // when the execution mode is SEQUENCED.
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kMaxTasks; ++i) {
     factories.push_back(std::make_unique<test::TestTaskFactory>(
@@ -280,8 +278,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, NoEnvironment) {
   scoped_refptr<TaskRunner> task_runner =
       CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
 
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   task_runner->PostTask(
       FROM_HERE, BindOnce(
                      [](WaitableEvent* task_running) {
@@ -339,8 +336,7 @@ TEST_P(TaskSchedulerWorkerPoolImplTestCOMMTAParam, COMMTAInitialized) {
   scoped_refptr<TaskRunner> task_runner =
       CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
 
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   task_runner->PostTask(
       FROM_HERE, BindOnce(
                      [](WaitableEvent* task_running) {
@@ -390,17 +386,14 @@ TEST_F(TaskSchedulerWorkerPoolImplPostTaskBeforeStartTest,
        PostTasksBeforeStart) {
   PlatformThreadRef task_1_thread_ref;
   PlatformThreadRef task_2_thread_ref;
-  WaitableEvent task_1_running(WaitableEvent::ResetPolicy::MANUAL,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_2_running(WaitableEvent::ResetPolicy::MANUAL,
-                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_1_running;
+  WaitableEvent task_2_running;
 
   // This event is used to prevent a task from completing before the other task
   // starts running. If that happened, both tasks could run on the same worker
   // and this test couldn't verify that the correct number of workers were woken
   // up.
-  WaitableEvent barrier(WaitableEvent::ResetPolicy::MANUAL,
-                        WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent barrier;
 
   worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()})
       ->PostTask(
@@ -472,9 +465,7 @@ class TaskSchedulerWorkerPoolCheckTlsReuse
   }
 
  protected:
-  TaskSchedulerWorkerPoolCheckTlsReuse() :
-      waiter_(WaitableEvent::ResetPolicy::MANUAL,
-              WaitableEvent::InitialState::NOT_SIGNALED) {}
+  TaskSchedulerWorkerPoolCheckTlsReuse() = default;
 
   void SetUp() override {
     CreateAndStartWorkerPool(kReclaimTimeForCleanupTests, kMaxTasks);
@@ -521,9 +512,7 @@ TEST_F(TaskSchedulerWorkerPoolCheckTlsReuse, CheckCleanupWorkers) {
   // If the value is not there, that means we're at a new worker.
   std::vector<std::unique_ptr<WaitableEvent>> count_waiters;
   for (auto& factory : factories) {
-    count_waiters.push_back(WrapUnique(new WaitableEvent(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED)));
+    count_waiters.push_back(std::make_unique<WaitableEvent>());
     ASSERT_TRUE(factory->PostTask(
           PostNestedTask::NO,
           Bind(&TaskSchedulerWorkerPoolCheckTlsReuse::CountZeroTlsValuesAndWait,
@@ -567,8 +556,7 @@ class TaskSchedulerWorkerPoolHistogramTest
 
     const auto max_tasks = worker_pool_->GetMaxTasksForTesting();
 
-    WaitableEvent workers_flooded(WaitableEvent::ResetPolicy::MANUAL,
-                                  WaitableEvent::InitialState::NOT_SIGNALED);
+    WaitableEvent workers_flooded;
     RepeatingClosure all_workers_running_barrier = BarrierClosure(
         max_tasks,
         BindOnce(&WaitableEvent::Signal, Unretained(&workers_flooded)));
@@ -595,8 +583,7 @@ class TaskSchedulerWorkerPoolHistogramTest
 }  // namespace
 
 TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   CreateAndStartWorkerPool(TimeDelta::Max(), kMaxTasks);
   auto task_runner = worker_pool_->CreateSequencedTaskRunnerWithTraits(
       {WithBaseSyncPrimitives()});
@@ -632,12 +619,10 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBetweenWaits) {
 // idle and cleanup periods.
 TEST_F(TaskSchedulerWorkerPoolHistogramTest,
        NumTasksBetweenWaitsWithIdlePeriodAndCleanup) {
-  WaitableEvent tasks_can_exit_event(WaitableEvent::ResetPolicy::MANUAL,
-                                     WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent tasks_can_exit_event;
   CreateAndStartWorkerPool(kReclaimTimeForCleanupTests, kMaxTasks);
 
-  WaitableEvent workers_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent workers_continue;
 
   FloodPool(&workers_continue);
 
@@ -707,12 +692,8 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
                      },
                      Unretained(&thread_ref)));
 
-  WaitableEvent cleanup_thread_running(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent cleanup_thread_continue(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent cleanup_thread_running;
+  WaitableEvent cleanup_thread_continue;
   histogrammed_thread_task_runner->PostTask(
       FROM_HERE,
       BindOnce(
@@ -753,12 +734,8 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
   // release and go idle first and then |task_runner_for_top_idle| should
   // release and go idle. This allows the SchedulerWorker associated with
   // |histogrammed_thread_task_runner| to cleanup.
-  WaitableEvent top_idle_thread_running(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent top_idle_thread_continue(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent top_idle_thread_running;
+  WaitableEvent top_idle_thread_continue;
   auto task_runner_for_top_idle =
       worker_pool_->CreateSequencedTaskRunnerWithTraits(
           {WithBaseSyncPrimitives()});
@@ -840,8 +817,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
 
   WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
                                WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent thread_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_continue;
 
   RepeatingClosure closure = BindRepeating(
       [](WaitableEvent* thread_running, WaitableEvent* thread_continue) {
@@ -917,11 +893,7 @@ class TaskSchedulerWorkerPoolBlockingTest
     : public TaskSchedulerWorkerPoolImplTestBase,
       public testing::TestWithParam<NestedBlockingType> {
  public:
-  TaskSchedulerWorkerPoolBlockingTest()
-      : blocking_thread_running_(WaitableEvent::ResetPolicy::AUTOMATIC,
-                                 WaitableEvent::InitialState::NOT_SIGNALED),
-        blocking_thread_continue_(WaitableEvent::ResetPolicy::MANUAL,
-                                  WaitableEvent::InitialState::NOT_SIGNALED) {}
+  TaskSchedulerWorkerPoolBlockingTest() = default;
 
   static std::string ParamInfoToString(
       ::testing::TestParamInfo<NestedBlockingType> param_info) {
@@ -998,7 +970,9 @@ class TaskSchedulerWorkerPoolBlockingTest
   scoped_refptr<TaskRunner> task_runner_;
 
  private:
-  WaitableEvent blocking_thread_running_;
+  WaitableEvent blocking_thread_running_{
+      WaitableEvent::ResetPolicy::AUTOMATIC,
+      WaitableEvent::InitialState::NOT_SIGNALED};
   WaitableEvent blocking_thread_continue_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolBlockingTest);
@@ -1029,10 +1003,8 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockedUnblocked) {
 TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
   WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
                                WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent thread_can_block(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent thread_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_can_block;
+  WaitableEvent thread_continue;
 
   for (size_t i = 0; i < kMaxTasks; ++i) {
     task_runner_->PostTask(
@@ -1058,11 +1030,8 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, PostBeforeBlocking) {
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), kMaxTasks);
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 
-  WaitableEvent extra_thread_running(WaitableEvent::ResetPolicy::MANUAL,
-                                     WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent extra_threads_continue(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent extra_thread_running;
+  WaitableEvent extra_threads_continue;
   RepeatingClosure extra_threads_running_barrier = BarrierClosure(
       kMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&extra_thread_running)));
@@ -1109,8 +1078,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
 
   WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
                                WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent thread_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_continue;
 
   RepeatingClosure thread_running_barrier = BarrierClosure(
       kMaxTasks, BindOnce(&WaitableEvent::Signal, Unretained(&thread_running)));
@@ -1213,8 +1181,7 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
   auto task_runner =
       worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
-  WaitableEvent can_return(WaitableEvent::ResetPolicy::MANUAL,
-                           WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent can_return;
 
   // Saturate the pool so that a MAY_BLOCK ScopedBlockingCall would increment
   // the max tasks.
@@ -1223,12 +1190,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
                                               Unretained(&can_return)));
   }
 
-  WaitableEvent can_instantiate_will_block(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent did_instantiate_will_block(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent can_instantiate_will_block;
+  WaitableEvent did_instantiate_will_block;
 
   // Post a task that instantiates a MAY_BLOCK ScopedBlockingCall.
   task_runner->PostTask(
@@ -1285,16 +1248,12 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
 
   WaitableEvent threads_running(WaitableEvent::ResetPolicy::AUTOMATIC,
                                 WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent threads_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent threads_continue;
   RepeatingClosure threads_running_barrier = BarrierClosure(
       kLocalMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
-  WaitableEvent blocked_call_continue(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-
+  WaitableEvent blocked_call_continue;
   RepeatingClosure closure = BindRepeating(
       [](Closure* threads_running_barrier, WaitableEvent* threads_continue,
          WaitableEvent* blocked_call_continue) {
@@ -1313,12 +1272,8 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
 
   threads_running.Wait();
 
-  WaitableEvent extra_threads_running(
-      WaitableEvent::ResetPolicy::AUTOMATIC,
-      WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent extra_threads_continue(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent extra_threads_running;
+  WaitableEvent extra_threads_continue;
 
   RepeatingClosure extra_threads_running_barrier = BarrierClosure(
       kLocalMaxTasks,
@@ -1366,24 +1321,18 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   constexpr size_t kMaxNumberOfWorkers = 256;
   constexpr size_t kNumExtraTasks = 10;
 
-  WaitableEvent early_blocking_thread_running(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent early_blocking_thread_running;
   RepeatingClosure early_threads_barrier_closure =
       BarrierClosure(kMaxNumberOfWorkers,
                      BindOnce(&WaitableEvent::Signal,
                               Unretained(&early_blocking_thread_running)));
 
-  WaitableEvent early_threads_finished(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent early_threads_finished;
   RepeatingClosure early_threads_finished_barrier = BarrierClosure(
       kMaxNumberOfWorkers,
       BindOnce(&WaitableEvent::Signal, Unretained(&early_threads_finished)));
 
-  WaitableEvent early_release_thread_continue(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent early_release_thread_continue;
 
   // Post ScopedBlockingCall tasks to hit the worker cap.
   for (size_t i = 0; i < kMaxNumberOfWorkers; ++i) {
@@ -1410,13 +1359,9 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(),
             kMaxTasks + kMaxNumberOfWorkers);
 
-  WaitableEvent late_release_thread_contine(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent late_release_thread_contine;
+  WaitableEvent late_blocking_thread_running;
 
-  WaitableEvent late_blocking_thread_running(
-      WaitableEvent::ResetPolicy::MANUAL,
-      WaitableEvent::InitialState::NOT_SIGNALED);
   RepeatingClosure late_threads_barrier_closure = BarrierClosure(
       kNumExtraTasks, BindOnce(&WaitableEvent::Signal,
                                Unretained(&late_blocking_thread_running)));
@@ -1446,10 +1391,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
   early_threads_finished.Wait();
   late_blocking_thread_running.Wait();
 
-  WaitableEvent final_tasks_running(WaitableEvent::ResetPolicy::MANUAL,
-                                    WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent final_tasks_continue(WaitableEvent::ResetPolicy::MANUAL,
-                                     WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent final_tasks_running;
+  WaitableEvent final_tasks_continue;
   RepeatingClosure final_tasks_running_barrier = BarrierClosure(
       kMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&final_tasks_running)));
@@ -1504,8 +1447,7 @@ TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
 
   WaitableEvent threads_running(WaitableEvent::ResetPolicy::AUTOMATIC,
                                 WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent unblock_threads(WaitableEvent::ResetPolicy::MANUAL,
-                                WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent unblock_threads;
   RepeatingClosure threads_running_barrier = BarrierClosure(
       kLocalMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));

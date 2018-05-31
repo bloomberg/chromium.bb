@@ -255,8 +255,7 @@ class TaskSchedulerImplTest
 // restrictions. The ExecutionMode parameter is ignored by this test.
 TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelay) {
   StartTaskScheduler();
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran;
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
@@ -271,8 +270,7 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelay) {
 // ignored by this test.
 TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelay) {
   StartTaskScheduler();
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran;
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
@@ -305,8 +303,7 @@ TEST_P(TaskSchedulerImplTest, PostTasksViaTaskRunner) {
 // Verifies that a task posted via PostDelayedTaskWithTraits without a delay
 // doesn't run before Start() is called.
 TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelayBeforeStart) {
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTaskEnvironmentAndSignalEvent, GetParam().traits,
@@ -327,8 +324,7 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelayBeforeStart) {
 // Verifies that a task posted via PostDelayedTaskWithTraits with a delay
 // doesn't run before Start() is called.
 TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
       BindOnce(&VerifyTimeAndTaskEnvironmentAndSignalEvent, GetParam().traits,
@@ -350,8 +346,7 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
 // Verifies that a task posted via a TaskRunner doesn't run before Start() is
 // called.
 TEST_P(TaskSchedulerImplTest, PostTaskViaTaskRunnerBeforeStart) {
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   CreateTaskRunnerWithTraitsAndExecutionMode(&scheduler_, GetParam().traits,
                                              GetParam().execution_mode)
       ->PostTask(FROM_HERE,
@@ -378,8 +373,7 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
   EnableAllTasksUserBlocking();
   StartTaskScheduler();
 
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   CreateTaskRunnerWithTraitsAndExecutionMode(&scheduler_, GetParam().traits,
                                              GetParam().execution_mode)
       ->PostTask(FROM_HERE,
@@ -397,8 +391,7 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
   EnableAllTasksUserBlocking();
   StartTaskScheduler();
 
-  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_running;
   // Ignore |params.execution_mode| in this test.
   scheduler_.PostDelayedTaskWithTraits(
       FROM_HERE, GetParam().traits,
@@ -415,8 +408,7 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
 TEST_P(TaskSchedulerImplTest, FlushAsyncForTestingSimple) {
   StartTaskScheduler();
 
-  WaitableEvent unblock_task(WaitableEvent::ResetPolicy::MANUAL,
-                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent unblock_task;
   CreateTaskRunnerWithTraitsAndExecutionMode(
       &scheduler_,
       TaskTraits::Override(GetParam().traits, {WithBaseSyncPrimitives()}),
@@ -424,8 +416,7 @@ TEST_P(TaskSchedulerImplTest, FlushAsyncForTestingSimple) {
       ->PostTask(FROM_HERE,
                  BindOnce(&WaitableEvent::Wait, Unretained(&unblock_task)));
 
-  WaitableEvent flush_event(WaitableEvent::ResetPolicy::MANUAL,
-                            WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent flush_event;
   scheduler_.FlushAsyncForTesting(
       BindOnce(&WaitableEvent::Signal, Unretained(&flush_event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
@@ -487,8 +478,7 @@ TEST_F(TaskSchedulerImplTest, SequencedRunsTasksInCurrentSequence) {
   auto sequenced_task_runner =
       scheduler_.CreateSequencedTaskRunnerWithTraits(TaskTraits());
 
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran;
   single_thread_task_runner->PostTask(
       FROM_HERE,
       BindOnce(
@@ -512,8 +502,7 @@ TEST_F(TaskSchedulerImplTest, SingleThreadRunsTasksInCurrentSequence) {
       scheduler_.CreateSingleThreadTaskRunnerWithTraits(
           TaskTraits(), SingleThreadTaskRunnerThreadMode::SHARED);
 
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran;
   sequenced_task_runner->PostTask(
       FROM_HERE,
       BindOnce(
@@ -533,8 +522,7 @@ TEST_F(TaskSchedulerImplTest, COMSTATaskRunnersRunWithCOMSTA) {
   auto com_sta_task_runner = scheduler_.CreateCOMSTATaskRunnerWithTraits(
       TaskTraits(), SingleThreadTaskRunnerThreadMode::SHARED);
 
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_ran;
   com_sta_task_runner->PostTask(
       FROM_HERE, Bind(
                      [](WaitableEvent* task_ran) {

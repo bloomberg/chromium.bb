@@ -616,8 +616,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, FlushAsyncForTestingPendingUndelayedTask) {
   tracker_.WillPostTask(undelayed_task);
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs.
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   tracker_.FlushAsyncForTesting(
       BindOnce(&WaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
@@ -661,8 +660,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostTaskDuringFlushAsyncForTesting) {
   tracker_.WillPostTask(undelayed_task);
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs.
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   tracker_.FlushAsyncForTesting(
       BindOnce(&WaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
@@ -726,8 +724,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, RunDelayedTaskDuringFlushAsyncForTesting) {
   tracker_.WillPostTask(undelayed_task);
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs.
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   tracker_.FlushAsyncForTesting(
       BindOnce(&WaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
@@ -822,8 +819,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, ShutdownDuringFlushAsyncForTesting) {
 
   // FlushAsyncForTesting() shouldn't callback before the undelayed task runs or
   // shutdown completes.
-  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
-                      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event;
   tracker_.FlushAsyncForTesting(
       BindOnce(&WaitableEvent::Signal, Unretained(&event)));
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
