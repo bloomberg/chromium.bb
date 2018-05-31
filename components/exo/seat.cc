@@ -107,6 +107,9 @@ void Seat::OnWindowFocused(aura::Window* gained_focus,
 // ui::EventHandler overrides:
 
 void Seat::OnKeyEvent(ui::KeyEvent* event) {
+  // Ignore synthetic key repeat events.
+  if (event->is_repeat())
+    return;
   switch (event->type()) {
     case ui::ET_KEY_PRESSED:
       pressed_keys_.insert(event->code());
