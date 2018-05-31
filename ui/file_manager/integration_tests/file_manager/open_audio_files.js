@@ -120,7 +120,6 @@ function audioOpen(path) {
   var expectedFilesAfter =
       expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
 
-  var caller = getCaller();
   StepsRunner.run([
     // Open Files.App on the given (volume) path.
     function() {
@@ -152,28 +151,24 @@ function audioOpen(path) {
       const playFile = audioPlayingQuery('Beautiful Song.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
-    // Verify the track 0 is active, verify the track titles.
+    // Check: track 0 should be active.
     function() {
-      var query1 = 'audio-player /deep/ .track[index="0"][active]';
-      var query2 = 'audio-player /deep/ .track[index="1"]:not([active])';
-      repeatUntil(function() {
-        var trackText1 = getTrackText(audioAppId, query1);
-        var trackText2 = getTrackText(audioAppId, query2);
-        return Promise.all([trackText1, trackText2]).then(function(tracks) {
-          var expected = [
-            {title: 'Beautiful Song', artist: 'Unknown Artist'},
-            {title: 'newly added file', artist: 'Unknown Artist'}
-          ];
-          if (!chrome.test.checkDeepEq(expected, tracks)) {
-            return pending(
-                caller, 'Tracks are expected as: %j, but is %j.', expected,
-                tracks);
-          }
-        });
-      }).then(this.next, function(e) { chrome.test.fail(e); });
+      getTrackText(audioAppId, '.track[index="0"][active]').then(this.next);
+    },
+    // Check: track 0 should have the correct title and artist.
+    function(song) {
+      chrome.test.assertEq('Beautiful Song', song.title);
+      chrome.test.assertEq('Unknown Artist', song.artist);
+      this.next();
+    },
+    // Check: track 1 should be inactive.
+    function() {
+      const inactive = '.track[index="1"]:not([active])';
+      audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
     },
     // Open another file.
-    function() {
+    function(element) {
+      chrome.test.assertTrue(!!element);
       remoteCall.callRemoteTestUtil(
           'openFile', appId, ['newly added file.ogg'], this.next);
     },
@@ -183,27 +178,23 @@ function audioOpen(path) {
       const playFile = audioPlayingQuery('newly added file.ogg');
       audioPlayerApp.waitForElement(audioAppId, playFile).then(this.next);
     },
-    // Verify the track 1 is active, verify the track titles.
+    // Check: track 1 should be active.
     function() {
-      var query1 = 'audio-player /deep/ .track[index="0"]:not([active])';
-      var query2 = 'audio-player /deep/ .track[index="1"][active]';
-      repeatUntil(function() {
-        var trackText1 = getTrackText(audioAppId, query1);
-        var trackText2 = getTrackText(audioAppId, query2);
-        return Promise.all([trackText1, trackText2]).then(function(tracks) {
-          var expected = [
-            {title: 'Beautiful Song', artist: 'Unknown Artist'},
-            {title: 'newly added file', artist: 'Unknown Artist'}
-          ];
-          if (!chrome.test.checkDeepEq(expected, tracks)) {
-            return pending(
-                caller, 'Tracks are expected as: %j, but is %j.', expected,
-                tracks);
-          }
-        });
-      }).then(this.next, function(e) { chrome.test.fail(e); });
+      getTrackText(audioAppId, '.track[index="1"][active]').then(this.next);
     },
+    // Check: track 1 should have the correct title and artist.
+    function(song) {
+      chrome.test.assertEq('newly added file', song.title);
+      chrome.test.assertEq('Unknown Artist', song.artist);
+      this.next();
+    },
+    // Check: track 0 should be inactive.
     function() {
+      const inactive = '.track[index="0"]:not([active])';
+      audioPlayerApp.waitForElement(audioAppId, inactive).then(this.next);
+    },
+    function(element) {
+      chrome.test.assertTrue(!!element);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
