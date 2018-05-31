@@ -25,6 +25,7 @@ component("chromeos") {
     ":attestation_proto",
     ":authpolicy_proto",
     ":biod_proto",
+    ":cicerone_proto",
     ":concierge_proto",
     ":cryptohome_proto",
     ":login_manager_proto",
@@ -160,6 +161,8 @@ component("chromeos") {
     "dbus/blocking_method_caller.h",
     "dbus/cec_service_client.cc",
     "dbus/cec_service_client.h",
+    "dbus/cicerone_client.cc",
+    "dbus/cicerone_client.h",
     "dbus/concierge_client.cc",
     "dbus/concierge_client.h",
     "dbus/cras_audio_client.cc",
@@ -193,6 +196,8 @@ component("chromeos") {
     "dbus/fake_auth_policy_client.h",
     "dbus/fake_cec_service_client.cc",
     "dbus/fake_cec_service_client.h",
+    "dbus/fake_cicerone_client.cc",
+    "dbus/fake_cicerone_client.h",
     "dbus/fake_concierge_client.cc",
     "dbus/fake_concierge_client.h",
     "dbus/fake_cras_audio_client.cc",
@@ -937,6 +942,14 @@ proto_library("account_manager_proto") {
   ]
 
   proto_out_dir = "chromeos/account_manager"
+}
+
+proto_library("cicerone_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_cicerone/cicerone_service.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/cicerone"
 }
 
 proto_library("concierge_proto") {

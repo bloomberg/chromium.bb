@@ -38,6 +38,10 @@ constexpr int64_t kMinimumDiskSize = 1ll * 1024 * 1024 * 1024;  // 1 GiB
 constexpr base::FilePath::CharType kHomeDirectory[] =
     FILE_PATH_LITERAL("/home");
 
+chromeos::CiceroneClient* GetCiceroneClient() {
+  return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
+}
+
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
@@ -373,6 +377,20 @@ void CrostiniRestarterService::ErasePending(CrostiniRestarter* restarter) {
   NOTREACHED();
 }
 
+void OnConciergeServiceAvailable(
+    CrostiniManager::StartConciergeCallback callback,
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Concierge service did not become available";
+    std::move(callback).Run(success);
+    return;
+  }
+  VLOG(1) << "Concierge service announced availability";
+  VLOG(1) << "Waiting for Cicerone to announce availability.";
+
+  GetCiceroneClient()->WaitForServiceToBeAvailable(std::move(callback));
+}
+
 }  // namespace
 
 // static
@@ -381,9 +399,10 @@ CrostiniManager* CrostiniManager::GetInstance() {
 }
 
 CrostiniManager::CrostiniManager() : weak_ptr_factory_(this) {
-  // ConciergeClient and its observer_list_ will be destroyed together.
+  // Cicerone/ConciergeClient and its observer_list_ will be destroyed together.
   // We add, but don't need to remove the observer. (Doing so would force a
-  // "destroyed before" dependency on the owner of ConciergeClient).
+  // "destroyed before" dependency on the owner of Cicerone/ConciergeClient).
+  GetCiceroneClient()->AddObserver(this);
   GetConciergeClient()->AddObserver(this);
 }
 
@@ -414,7 +433,8 @@ void CrostiniManager::OnStartConcierge(StartConciergeCallback callback,
   VLOG(1) << "Concierge service started";
   VLOG(1) << "Waiting for Concierge to announce availability.";
 
-  GetConciergeClient()->WaitForServiceToBeAvailable(std::move(callback));
+  GetConciergeClient()->WaitForServiceToBeAvailable(
+      base::BindOnce(&OnConciergeServiceAvailable, std::move(callback)));
 }
 
 void CrostiniManager::StopConcierge(StopConciergeCallback callback) {
@@ -623,7 +643,8 @@ void CrostiniManager::StartContainer(std::string vm_name,
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
-  if (!GetConciergeClient()->IsContainerStartedSignalConnected()) {
+  if (!GetConciergeClient()->IsContainerStartedSignalConnected() ||
+      !GetCiceroneClient()->IsContainerStartedSignalConnected()) {
     LOG(ERROR) << "Async call to StartContainer can't complete when signal "
                   "is not connected.";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
@@ -909,6 +930,22 @@ void CrostiniManager::OnContainerStartupFailed(
       std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::CONTAINER_START_FAILED);
+  }
+  start_container_callbacks_.erase(range.first, range.second);
+}
+
+void CrostiniManager::OnContainerStarted(
+    const vm_tools::cicerone::ContainerStartedSignal& signal) {
+  // Find the callbacks to call, then erase them from the map.
+  std::string owner_id = signal.owner_id();
+  // TODO(jkardatzke): remove this check once Cicerone always fills in owner_id.
+  if (owner_id.empty()) {
+    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
+  }
+  auto range = start_container_callbacks_.equal_range(
+      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
   start_container_callbacks_.erase(range.first, range.second);
 }

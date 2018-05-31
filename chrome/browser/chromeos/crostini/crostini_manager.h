@@ -12,6 +12,8 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
+#include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
 
@@ -43,10 +45,14 @@ struct Icon {
   std::string content;
 };
 
-// CrostiniManager is a singleton which is used to check arguments for the
-// ConciergeClient. ConciergeClient is dedicated to communication with the
-// Concierge service and should remain as thin as possible.
-class CrostiniManager : public chromeos::ConciergeClient::Observer {
+// CrostiniManager is a singleton which is used to check arguments for
+// ConciergeClient and CiceroneClient. ConciergeClient is dedicated to
+// communication with the Concierge service, CiceroneClient is dedicated to
+// communication with the Cicerone service and both should remain as thin as
+// possible. The existence of Cicerone is abstracted behind this class and
+// only the Concierge name is exposed outside of here.
+class CrostiniManager : public chromeos::ConciergeClient::Observer,
+                        public chromeos::CiceroneClient::Observer {
  public:
   using ConciergeClientCallback =
       base::OnceCallback<void(ConciergeClientResult result)>;
@@ -209,6 +215,10 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
+
+  // CiceroneClient::Observer:
+  void OnContainerStarted(
+      const vm_tools::cicerone::ContainerStartedSignal& signal) override;
 
   void RemoveCrostini(Profile* profile,
                       std::string vm_name,

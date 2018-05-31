@@ -27,6 +27,7 @@ source_set("chromeos") {
     "//chrome:strings",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
+    "//chromeos:cicerone_proto",
     "//chromeos:concierge_proto",
     "//chromeos:power_manager_proto",
     "//chromeos:vm_applications_apps_proto",

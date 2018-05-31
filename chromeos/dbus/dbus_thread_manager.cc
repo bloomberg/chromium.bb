@@ -18,6 +18,7 @@
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "chromeos/dbus/cec_service_client.h"
+#include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -146,6 +147,10 @@ BiodClient* DBusThreadManager::GetBiodClient() {
 
 CecServiceClient* DBusThreadManager::GetCecServiceClient() {
   return clients_common_->cec_service_client_.get();
+}
+
+CiceroneClient* DBusThreadManager::GetCiceroneClient() {
+  return clients_browser_ ? clients_browser_->cicerone_client_.get() : nullptr;
 }
 
 ConciergeClient* DBusThreadManager::GetConciergeClient() {
@@ -361,6 +366,12 @@ void DBusThreadManagerSetter::SetAuthPolicyClient(
 void DBusThreadManagerSetter::SetBiodClient(
     std::unique_ptr<BiodClient> client) {
   DBusThreadManager::Get()->clients_common_->biod_client_ = std::move(client);
+}
+
+void DBusThreadManagerSetter::SetCiceroneClient(
+    std::unique_ptr<CiceroneClient> client) {
+  DBusThreadManager::Get()->clients_browser_->cicerone_client_ =
+      std::move(client);
 }
 
 void DBusThreadManagerSetter::SetConciergeClient(

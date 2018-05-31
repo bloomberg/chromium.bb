@@ -9,6 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,11 +94,14 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   CrostiniManagerTest()
-      : fake_concierge_client_(new chromeos::FakeConciergeClient()),
+      : fake_cicerone_client_(new chromeos::FakeCiceroneClient()),
+        fake_concierge_client_(new chromeos::FakeConciergeClient()),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         test_browser_thread_bundle_(
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCiceroneClient(
+        base::WrapUnique(fake_cicerone_client_));
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
         base::WrapUnique(fake_concierge_client_));
     chromeos::DBusThreadManager::Initialize();
@@ -119,7 +123,10 @@ class CrostiniManagerTest : public testing::Test {
   base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
 
+  // Owned by chromeos::DBusThreadManager
+  chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeConciergeClient* fake_concierge_client_;
+
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
@@ -304,8 +311,17 @@ TEST_F(CrostiniManagerTest, StartContainerContainerCryptohomeIdError) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerSignalNotConnectedError) {
+TEST_F(CrostiniManagerTest, StartContainerSignalConciergeNotConnectedError) {
   fake_concierge_client_->set_container_started_signal_connected(false);
+  CrostiniManager::GetInstance()->StartContainer(
+      kVmName, kContainerName, kContainerUserName, kCryptohomeId,
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerSignalCiceroneNotConnectedError) {
+  fake_cicerone_client_->set_container_started_signal_connected(false);
   CrostiniManager::GetInstance()->StartContainer(
       kVmName, kContainerName, kContainerUserName, kCryptohomeId,
       base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
