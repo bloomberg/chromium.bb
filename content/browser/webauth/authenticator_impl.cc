@@ -674,6 +674,11 @@ void AuthenticatorImpl::GetAssertion(
   }
 }
 
+void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
+    IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
+  std::move(callback).Run(false);
+}
+
 void AuthenticatorImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted() ||

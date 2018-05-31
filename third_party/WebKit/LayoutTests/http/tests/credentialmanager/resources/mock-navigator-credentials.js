@@ -125,6 +125,10 @@ class MockAuthenticator {
     return {status, credential: response};
   }
 
+  async isUserVerifyingPlatformAuthenticatorAvailable() {
+    return false;
+  }
+
   // Resets state of mock Authenticator.
   reset() {
     this.status_ = webauth.mojom.AuthenticatorStatus.UNKNOWN_ERROR;

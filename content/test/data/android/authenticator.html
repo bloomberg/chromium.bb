@@ -73,6 +73,30 @@
                     }
                 });
             }
+
+            function doIsUserVerifyingPlatformAuthenticatorAvailable() {
+                if (window.PublicKeyCredential === undefined) {
+                    window.document.title = 'Fail: isUserVerifyingPlatformAuthenticatorAvailable() === undefined';
+                    return;
+                }
+
+                if (window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === undefined) {
+                    window.document.title = 'Fail: isUserVerifyingPlatformAuthenticatorAvailable() === undefined';
+                    return;
+                }
+
+                PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+                    .then(r => {
+                        if (r == false) {
+                            window.document.title = 'Success';
+                        } else {
+                            window.document.title = 'Fail';
+                        }
+                    })
+                    .catch(e => {
+                        window.document.title = 'Fail: ' + e.name + " " + e.message;
+                });
+            }
         </script>
     </head>
     <body>

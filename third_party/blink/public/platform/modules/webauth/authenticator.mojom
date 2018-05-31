@@ -279,4 +279,9 @@ interface Authenticator {
   // |GetAssertionResponse| will be set if and only if status == SUCCESS.
   GetAssertion(PublicKeyCredentialRequestOptions options)
       => (AuthenticatorStatus status, GetAssertionAuthenticatorResponse? credential);
+
+  // Returns true if the user platform provides an authenticator. Relying
+  // Parties use this method to determine whether they can create a new
+  // credential using a user-verifying platform authenticator.
+  IsUserVerifyingPlatformAuthenticatorAvailable() => (bool available);
 };
