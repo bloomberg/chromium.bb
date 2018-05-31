@@ -20,8 +20,10 @@ interface DriveFsBootstrap {
 
 // Implemented by DriveFS, used from Chrome.
 interface DriveFs {
-  // Returns the metadata for |path|.
-  GetMetadata(mojo_base.mojom.FilePath path) => (
+  // Returns the metadata for |path|. Thumbnail requests may require requesting
+  // a thumbnail from the server so thumbnails are only populated for requests
+  // where |want_thumbnail| is true.
+  GetMetadata(mojo_base.mojom.FilePath path, bool want_thumbnail) => (
       FileError error, FileMetadata? metadata);
 
   // Sets the file at |path| to pinned or unpinned depending on the value of
@@ -90,6 +92,9 @@ struct FileMetadata {
   // A URL to open the file in the Drive website.
   string alternate_url;
 
+  // A URL to download the file.
+  string download_url;
+
   mojo_base.mojom.Time modification_time;
   mojo_base.mojom.Time modification_by_me_time;
 
@@ -102,6 +107,10 @@ struct FileMetadata {
 
   // May be present if the file is an image.
   ImageMetadata? image_metadata;
+
+  // The thumbnail as a PNG. It is only set if |want_thumbnail| is true in the
+  // request and the file has a thumbnail available.
+  array<uint8>? thumbnail;
 };
 
 struct ImageMetadata {

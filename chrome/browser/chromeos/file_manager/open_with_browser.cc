@@ -193,7 +193,7 @@ bool OpenFileWithBrowser(Profile* profile,
           integration_service->GetDriveFsInterface() &&
           integration_service->GetMountPointPath().IsParent(file_path)) {
         integration_service->GetDriveFsInterface()->GetMetadata(
-            file_path,
+            file_path, false,
             base::BindOnce(&OpenHostedDriveFsFile, file_path, profile));
         return true;
       }
