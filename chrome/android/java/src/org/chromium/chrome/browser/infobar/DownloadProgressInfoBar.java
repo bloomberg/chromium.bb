@@ -63,6 +63,11 @@ public class DownloadProgressInfoBar extends InfoBar {
     }
 
     @Override
+    public boolean isBottomMostInfoBar() {
+        return true;
+    }
+
+    @Override
     public void onCloseButtonClicked() {
         mClient.onInfoBarClosed(true);
         super.onCloseButtonClicked();
