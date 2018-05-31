@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("features") {
+source_set("feature_flags") {
   sources = [
     "browsing_data_features.cc",
     "browsing_data_features.h",

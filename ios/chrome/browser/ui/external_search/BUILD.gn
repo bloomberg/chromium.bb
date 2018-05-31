@@ -19,7 +19,7 @@ source_set("external_search") {
   ]
 }
 
-source_set("features") {
+source_set("feature_flags") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "features.cc",
