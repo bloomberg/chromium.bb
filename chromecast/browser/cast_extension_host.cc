@@ -83,6 +83,16 @@ void CastExtensionHost::DidStartNavigation(
 #endif
 }
 
+bool CastExtensionHost::DidAddMessageToConsole(
+    content::WebContents* source,
+    int32_t level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
+  return delegate_->OnAddMessageToConsoleReceived(source, level, message,
+                                                  line_no, source_id);
+}
+
 void CastExtensionHost::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
