@@ -1153,9 +1153,8 @@ scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
 
 void HTMLCanvasElement::DiscardResourceProvider() {
   canvas2d_bridge_.reset();
-  ReplaceResourceProvider(nullptr);
+  CanvasResourceHost::DiscardResourceProvider();
   dirty_rect_ = FloatRect();
-  UpdateMemoryUsage();
 }
 
 void HTMLCanvasElement::ClearCopiedImage() {
