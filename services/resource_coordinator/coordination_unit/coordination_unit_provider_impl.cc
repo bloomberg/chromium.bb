@@ -30,8 +30,6 @@ CoordinationUnitProviderImpl::~CoordinationUnitProviderImpl() = default;
 
 void CoordinationUnitProviderImpl::OnConnectionError(
     CoordinationUnitBase* coordination_unit) {
-  coordination_unit_graph_->OnBeforeCoordinationUnitDestroyed(
-      coordination_unit);
   coordination_unit->Destruct();
 }
 
@@ -43,7 +41,6 @@ void CoordinationUnitProviderImpl::CreateFrameCoordinationUnit(
           id, service_ref_factory_->CreateRef());
 
   frame_cu->Bind(std::move(request));
-  coordination_unit_graph_->OnCoordinationUnitCreated(frame_cu);
   auto& frame_cu_binding = frame_cu->binding();
 
   frame_cu_binding.set_connection_error_handler(
@@ -59,7 +56,6 @@ void CoordinationUnitProviderImpl::CreatePageCoordinationUnit(
           id, service_ref_factory_->CreateRef());
 
   page_cu->Bind(std::move(request));
-  coordination_unit_graph_->OnCoordinationUnitCreated(page_cu);
   auto& page_cu_binding = page_cu->binding();
 
   page_cu_binding.set_connection_error_handler(
@@ -75,7 +71,6 @@ void CoordinationUnitProviderImpl::CreateProcessCoordinationUnit(
           id, service_ref_factory_->CreateRef());
 
   process_cu->Bind(std::move(request));
-  coordination_unit_graph_->OnCoordinationUnitCreated(process_cu);
   auto& process_cu_binding = process_cu->binding();
 
   process_cu_binding.set_connection_error_handler(
