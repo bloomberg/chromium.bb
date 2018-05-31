@@ -176,14 +176,6 @@ int GetInkDropCornerRadius(const views::View* host_view) {
       views::EMPHASIS_HIGH, host_view->size());
 }
 
-SkColor GetBookmarkButtonInkDropBaseColor(const ui::ThemeProvider* tp) {
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
-    return color_utils::BlendTowardOppositeLuma(
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR), SK_AlphaOPAQUE);
-  }
-  return tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-}
-
 std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
     std::unique_ptr<views::InkDropImpl> ink_drop) {
   ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
@@ -195,7 +187,7 @@ std::unique_ptr<views::InkDropRipple> CreateBookmarkButtonInkDropRipple(
     const gfx::Point& center_point) {
   return std::make_unique<views::FloodFillInkDropRipple>(
       host_view->size(), GetInkDropInsets(), center_point,
-      GetBookmarkButtonInkDropBaseColor(host_view->GetThemeProvider()),
+      GetToolbarInkDropBaseColor(host_view),
       host_view->ink_drop_visible_opacity());
 }
 
@@ -211,9 +203,8 @@ std::unique_ptr<views::InkDropHighlight> CreateBookmarkButtonInkDropHighlight(
       new views::InkDropHighlight(
           host_view->size(), GetInkDropCornerRadius(host_view),
           gfx::RectF(gfx::Rect(host_view->size())).CenterPoint(),
-          GetBookmarkButtonInkDropBaseColor(host_view->GetThemeProvider())));
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    highlight->set_visible_opacity(kTouchToolbarHighlightVisibleOpacity);
+          GetToolbarInkDropBaseColor(host_view)));
+  highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
   return highlight;
 }
 
@@ -239,8 +230,7 @@ class BookmarkButtonBase : public views::LabelButton {
     SetElideBehavior(GetElideBehavior());
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
-    if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-      set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
+    set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -382,8 +372,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
         DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
     SetInkDropMode(InkDropMode::ON);
-    if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-      set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
+    set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
     SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
   }

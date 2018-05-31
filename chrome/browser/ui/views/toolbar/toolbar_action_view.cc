@@ -77,8 +77,7 @@ ToolbarActionView::ToolbarActionView(
   if (delegate_->ShownInsideMenu())
     SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
+  set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
   const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
   const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
