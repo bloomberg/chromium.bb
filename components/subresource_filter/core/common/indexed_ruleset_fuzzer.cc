@@ -11,7 +11,9 @@
 #include "base/strings/string_piece.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
+#include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "components/url_pattern_index/url_pattern_index.h"
+#include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -36,15 +38,32 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
 
   const std::string remaining_bytes = fuzzed_data.ConsumeRemainingBytes();
-  const uint8_t* remaining_data =
-      reinterpret_cast<const uint8_t*>(remaining_bytes.data());
-  if (!subresource_filter::IndexedRulesetMatcher::Verify(
-          remaining_data, remaining_bytes.size())) {
-    return 0;
-  }
 
-  subresource_filter::IndexedRulesetMatcher matcher(remaining_data,
-                                                    remaining_bytes.size());
+  // First, interpret the remaining fuzzed data as an unindexed ruleset.
+  google::protobuf::io::ArrayInputStream input_stream(remaining_bytes.data(),
+                                                      remaining_bytes.size());
+  url_pattern_index::UnindexedRulesetReader reader(&input_stream);
+
+  // Use the unindexed ruleset to build a flat indexed ruleset.
+  subresource_filter::RulesetIndexer indexer;
+  url_pattern_index::proto::FilteringRules ruleset_chunk;
+  while (reader.ReadNextChunk(&ruleset_chunk)) {
+    for (const auto& rule : ruleset_chunk.url_rules())
+      indexer.AddUrlRule(rule);
+  }
+  indexer.Finish();
+
+  // Error out if we were unable to fully read the unindexed version.
+  if (reader.num_bytes_read() != static_cast<int64_t>(remaining_bytes.size()))
+    return 0;
+
+  CHECK(subresource_filter::IndexedRulesetMatcher::Verify(indexer.data(),
+                                                          indexer.size()));
+
+  // Lastly, read into the indexed ruleset by matching the URL from the
+  // beginning of the fuzzed data.
+  subresource_filter::IndexedRulesetMatcher matcher(indexer.data(),
+                                                    indexer.size());
   // TODO(csharrison): Consider fuzzing things like the parent origin, the
   // activation type, and the element type.
   matcher.ShouldDisableFilteringForDocument(
