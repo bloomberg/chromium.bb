@@ -67,6 +67,8 @@ public class NonOverlappingStack extends Stack {
     }
 
     private int getNonDyingTabCount() {
+        if (mStackTabs == null) return 0;
+
         int dyingCount = 0;
         for (int i = 0; i < mStackTabs.length; i++) {
             if (mStackTabs[i].isDying()) dyingCount++;
