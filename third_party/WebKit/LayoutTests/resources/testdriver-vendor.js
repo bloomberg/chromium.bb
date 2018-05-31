@@ -18,7 +18,18 @@
             }],
             resolve);
       } else {
-        reject(new Error("GPU benchmarnking is not enabled."));
+        reject(new Error("GPU benchmarking is not enabled."));
+      }
+    });
+  };
+
+  window.test_driver_internal.freeze = function() {
+    return new Promise(function(resolve, reject) {
+      if (window.chrome && chrome.gpuBenchmarking) {
+        chrome.gpuBenchmarking.freeze();
+        resolve();
+      } else {
+        reject(new Error("GPU benchmarking is not enabled."));
       }
     });
   };
