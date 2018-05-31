@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -89,6 +90,15 @@ class CONTENT_EXPORT NotificationDatabase {
       const std::string& notification_id,
       const GURL& origin,
       NotificationDatabaseData* notification_data) const;
+
+  // This function is identical to ReadNotificationData above, but also records
+  // an interaction with that notification in the database for UKM logging
+  // purposes.
+  Status ReadNotificationDataAndRecordInteraction(
+      const std::string& notification_id,
+      const GURL& origin,
+      PlatformNotificationContext::Interaction interaction,
+      NotificationDatabaseData* notification_data);
 
   // Reads all notification data for all origins from the database, and appends
   // the data to |notification_data_vector|. Returns the status code.

@@ -394,6 +394,44 @@ TEST_F(NotificationDatabaseTest, ReadWriteMultipleNotificationData) {
   }
 }
 
+TEST_F(NotificationDatabaseTest, ReadNotificationUpdateInteraction) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  GURL origin("https://example.com");
+
+  NotificationDatabaseData database_data, read_database_data;
+  database_data.notification_id = GenerateNotificationId();
+  database_data.notification_data.title = base::UTF8ToUTF16("My Notification");
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->WriteNotificationData(origin, database_data));
+
+  // Check that when a notification has an interaction, the appropriate field is
+  // updated on the read.
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationDataAndRecordInteraction(
+                database_data.notification_id, origin,
+                PlatformNotificationContext::Interaction::CLICKED,
+                &read_database_data));
+  EXPECT_EQ(1, read_database_data.num_clicks);
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationDataAndRecordInteraction(
+                database_data.notification_id, origin,
+                PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED,
+                &read_database_data));
+  EXPECT_EQ(1, read_database_data.num_action_button_clicks);
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationDataAndRecordInteraction(
+                database_data.notification_id, origin,
+                PlatformNotificationContext::Interaction::ACTION_BUTTON_CLICKED,
+                &read_database_data));
+  EXPECT_EQ(2, read_database_data.num_action_button_clicks);
+}
+
 TEST_F(NotificationDatabaseTest, DeleteInvalidNotificationData) {
   std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,

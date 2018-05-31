@@ -81,9 +81,11 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   }
 
   // PlatformNotificationContext implementation.
-  void ReadNotificationData(const std::string& notification_id,
-                            const GURL& origin,
-                            const ReadResultCallback& callback) override;
+  void ReadNotificationDataAndRecordInteraction(
+      const std::string& notification_id,
+      const GURL& origin,
+      Interaction interaction,
+      const ReadResultCallback& callback) override;
   void WriteNotificationData(const GURL& origin,
                              const NotificationDatabaseData& database_data,
                              const WriteResultCallback& callback) override;
@@ -136,6 +138,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // IO thread when the operation has completed.
   void DoReadNotificationData(const std::string& notification_id,
                               const GURL& origin,
+                              Interaction interaction,
                               const ReadResultCallback& callback);
 
   // Updates the database (and the result callback) based on
