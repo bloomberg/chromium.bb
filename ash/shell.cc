@@ -135,7 +135,6 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/native_cursor_manager_ash_classic.h"
-#include "ash/wm/native_cursor_manager_ash_mus.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
@@ -1031,10 +1030,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
     native_cursor_manager_ = new NativeCursorManagerAshClassic;
     cursor_manager_ = std::make_unique<CursorManager>(
         base::WrapUnique(native_cursor_manager_));
-  } else if (config == Config::MUS) {
-    native_cursor_manager_ = new NativeCursorManagerAshMus;
-    cursor_manager_ = std::make_unique<CursorManager>(
-        base::WrapUnique(native_cursor_manager_));
+  } else {
+    // TODO(jamescook|estade): Cursor manager for Config::MASH. We might be able
+    // to use most of the classic version after we switch to ws2.
   }
 
   shell_delegate_->PreInit();

@@ -16,6 +16,9 @@ namespace ash {
 // Ash specific extensions to NativeCursorManager. This lets us switch whether
 // we're using the native cursor, along with exposing additional data about how
 // we're going to render cursors.
+// TODO(jamescook): If we don't end up with a mash implementation of this
+// interface then collapse it with NativeCursorManagerAshClassic, which is the
+// only subclass.
 class ASH_EXPORT NativeCursorManagerAsh : public ::wm::NativeCursorManager {
  public:
   ~NativeCursorManagerAsh() override = default;
