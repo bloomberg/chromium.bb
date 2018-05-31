@@ -202,6 +202,10 @@ bool User::IsSupervised() const {
           type == USER_TYPE_CHILD;
 }
 
+bool User::IsChild() const {
+  return GetType() == USER_TYPE_CHILD;
+}
+
 std::string User::GetAccountName(bool use_display_email) const {
   if (use_display_email && !display_email_.empty())
     return GetUserName(display_email_);

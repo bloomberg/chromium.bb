@@ -298,7 +298,8 @@
 </if>
 
         <div id="manage-other-people-subpage-trigger"
-            class="settings-box" on-click="onManageOtherPeople_" actionable>
+            class="settings-box" on-click="onManageOtherPeople_" actionable
+            hidden="[[isChild_]]">
           <div class="start">$i18n{manageOtherPeople}</div>
           <paper-icon-button-light class="subpage-arrow">
             <button aria-label="$i18n{manageOtherPeople}"></button>

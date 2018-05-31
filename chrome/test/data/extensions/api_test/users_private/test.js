@@ -68,9 +68,9 @@ var availableTests = [
   },
 
   function isOwner() {
-    chrome.usersPrivate.isCurrentUserOwner(function(isOwner) {
+    chrome.usersPrivate.getCurrentUser(function(user) {
       // Since we are testing with --stub-cros-settings this should be true.
-      chrome.test.assertTrue(isOwner);
+      chrome.test.assertTrue(user.isOwner);
       chrome.test.succeed();
     });
   },

@@ -34,8 +34,8 @@ Polymer({
 
   /** @override */
   created: function() {
-    chrome.usersPrivate.isCurrentUserOwner(isOwner => {
-      this.isOwner_ = isOwner;
+    chrome.usersPrivate.getCurrentUser(user => {
+      this.isOwner_ = user.isOwner;
     });
 
     chrome.usersPrivate.isWhitelistManaged(isWhitelistManaged => {
