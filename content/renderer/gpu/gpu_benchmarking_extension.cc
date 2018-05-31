@@ -550,7 +550,8 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("getGpuDriverBugWorkarounds",
                  &GpuBenchmarking::GetGpuDriverBugWorkarounds)
       .SetMethod("startProfiling", &GpuBenchmarking::StartProfiling)
-      .SetMethod("stopProfiling", &GpuBenchmarking::StopProfiling);
+      .SetMethod("stopProfiling", &GpuBenchmarking::StopProfiling)
+      .SetMethod("freeze", &GpuBenchmarking::Freeze);
 }
 
 void GpuBenchmarking::SetNeedsDisplayOnAllLayers() {
@@ -1111,6 +1112,13 @@ void GpuBenchmarking::StartProfiling(gin::Arguments* args) {
 void GpuBenchmarking::StopProfiling() {
   if (base::debug::BeingProfiled())
     base::debug::StopProfiling();
+}
+
+void GpuBenchmarking::Freeze() {
+  GpuBenchmarkingContext context;
+  if (!context.Init(true))
+    return;
+  context.web_view()->FreezePage();
 }
 
 }  // namespace content

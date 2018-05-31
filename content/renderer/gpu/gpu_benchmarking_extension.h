@@ -91,6 +91,9 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   void StartProfiling(gin::Arguments* args);
   void StopProfiling();
 
+  // Freezes a page, used to transition the page to the FROZEN lifecycle state.
+  void Freeze();
+
   RenderFrameImpl* render_frame_;
   mojom::InputInjectorPtr input_injector_;
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
