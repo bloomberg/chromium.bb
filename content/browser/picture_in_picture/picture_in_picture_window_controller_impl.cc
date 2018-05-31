@@ -76,6 +76,9 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
 void PictureInPictureWindowControllerImpl::Close() {
   DCHECK(window_);
 
+  if (!window_->IsVisible())
+    return;
+
   window_->Hide();
   initiator_->SetHasPictureInPictureVideo(false);
 
