@@ -921,7 +921,7 @@ int BrowserMainLoop::CreateThreads() {
       task_scheduler_init_params->foreground_worker_pool_params =
           base::SchedulerWorkerPoolParams(
               std::max(GetMinThreadsInRendererTaskSchedulerForegroundPool(),
-                       current_foreground_worker_pool_params.max_threads()),
+                       current_foreground_worker_pool_params.max_tasks()),
               current_foreground_worker_pool_params.suggested_reclaim_time(),
               current_foreground_worker_pool_params.backward_compatibility());
     }

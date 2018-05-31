@@ -47,7 +47,7 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   auto init_params = GetTaskSchedulerInitParams("Renderer");
   ASSERT_TRUE(init_params);
 
-  EXPECT_EQ(1, init_params->background_worker_pool_params.max_threads());
+  EXPECT_EQ(1, init_params->background_worker_pool_params.max_tasks());
   EXPECT_EQ(
       base::TimeDelta::FromMilliseconds(42),
       init_params->background_worker_pool_params.suggested_reclaim_time());
@@ -55,8 +55,7 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
       base::SchedulerBackwardCompatibility::DISABLED,
       init_params->background_worker_pool_params.backward_compatibility());
 
-  EXPECT_EQ(2,
-            init_params->background_blocking_worker_pool_params.max_threads());
+  EXPECT_EQ(2, init_params->background_blocking_worker_pool_params.max_tasks());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(52),
             init_params->background_blocking_worker_pool_params
                 .suggested_reclaim_time());
@@ -64,7 +63,7 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
             init_params->background_blocking_worker_pool_params
                 .backward_compatibility());
 
-  EXPECT_EQ(4, init_params->foreground_worker_pool_params.max_threads());
+  EXPECT_EQ(4, init_params->foreground_worker_pool_params.max_tasks());
   EXPECT_EQ(
       base::TimeDelta::FromMilliseconds(62),
       init_params->foreground_worker_pool_params.suggested_reclaim_time());
@@ -72,8 +71,7 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
       base::SchedulerBackwardCompatibility::DISABLED,
       init_params->foreground_worker_pool_params.backward_compatibility());
 
-  EXPECT_EQ(8,
-            init_params->foreground_blocking_worker_pool_params.max_threads());
+  EXPECT_EQ(8, init_params->foreground_blocking_worker_pool_params.max_tasks());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(72),
             init_params->foreground_blocking_worker_pool_params
                 .suggested_reclaim_time());
