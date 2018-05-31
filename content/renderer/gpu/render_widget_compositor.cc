@@ -52,7 +52,6 @@
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/switches.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/layer_tree_settings_factory.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -410,7 +409,23 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       cmd.HasSwitch(switches::kEnableOOPRasterization);
 
   // Build LayerTreeSettings from command line args.
-  LayerTreeSettingsFactory::SetBrowserControlsSettings(settings, cmd);
+  if (cmd.HasSwitch(cc::switches::kBrowserControlsShowThreshold)) {
+    std::string top_threshold_str =
+        cmd.GetSwitchValueASCII(cc::switches::kBrowserControlsShowThreshold);
+    double show_threshold;
+    if (base::StringToDouble(top_threshold_str, &show_threshold) &&
+        show_threshold >= 0.f && show_threshold <= 1.f)
+      settings.top_controls_show_threshold = show_threshold;
+  }
+
+  if (cmd.HasSwitch(cc::switches::kBrowserControlsHideThreshold)) {
+    std::string top_threshold_str =
+        cmd.GetSwitchValueASCII(cc::switches::kBrowserControlsHideThreshold);
+    double hide_threshold;
+    if (base::StringToDouble(top_threshold_str, &hide_threshold) &&
+        hide_threshold >= 0.f && hide_threshold <= 1.f)
+      settings.top_controls_hide_threshold = hide_threshold;
+  }
 
   settings.use_layer_lists = cmd.HasSwitch(cc::switches::kEnableLayerLists);
 
