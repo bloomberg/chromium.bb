@@ -10,13 +10,12 @@
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/fake_active_connection_manager.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_multiplexed_channel.h"
 #include "chromeos/services/secure_channel/multiplexed_channel_impl.h"
-#include "chromeos/services/secure_channel/test_client_connection_parameters_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -48,7 +47,8 @@ class FakeMultiplexedChannelFactory : public MultiplexedChannelImpl::Factory {
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
       MultiplexedChannel::Delegate* delegate,
       ConnectionDetails connection_details,
-      std::vector<ClientConnectionParameters>* initial_clients) override {
+      std::vector<std::unique_ptr<ClientConnectionParameters>>* initial_clients)
+      override {
     EXPECT_EQ(expected_delegate_, delegate);
     EXPECT_EQ(next_expected_authenticated_channel_,
               authenticated_channel.get());
@@ -88,11 +88,12 @@ class FakeMultiplexedChannelFactory : public MultiplexedChannelImpl::Factory {
 };
 
 std::vector<base::UnguessableToken> ClientListToIdList(
-    const std::vector<ClientConnectionParameters>& client_list) {
+    const std::vector<std::unique_ptr<ClientConnectionParameters>>&
+        client_list) {
   std::vector<base::UnguessableToken> id_list;
   std::transform(client_list.begin(), client_list.end(),
                  std::back_inserter(id_list),
-                 [](auto& client) { return client.id(); });
+                 [](auto& client) { return client->id(); });
   return id_list;
 }
 
@@ -124,7 +125,8 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
 
   void AddActiveConnectionAndVerifyState(
       const std::string& device_id,
-      std::vector<ClientConnectionParameters> initial_clients) {
+      std::vector<std::unique_ptr<ClientConnectionParameters>>
+          initial_clients) {
     EXPECT_EQ(ActiveConnectionManager::ConnectionState::kNoConnectionExists,
               GetConnectionState(device_id));
 
@@ -149,9 +151,9 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
                   GetActiveChannelForDeviceId(device_id)->added_clients()));
   }
 
-  void AddNewClientAndVerifyState(
-      const std::string& device_id,
-      ClientConnectionParameters client_connection_parameters) {
+  void AddNewClientAndVerifyState(const std::string& device_id,
+                                  std::unique_ptr<ClientConnectionParameters>
+                                      client_connection_parameters) {
     EXPECT_EQ(ActiveConnectionManager::ConnectionState::kActiveConnectionExists,
               GetConnectionState(device_id));
 
@@ -160,7 +162,7 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
         GetActiveChannelForDeviceId(device_id)->added_clients());
 
     // Add in the new ID for this new client.
-    client_ids.push_back(client_connection_parameters.id());
+    client_ids.push_back(client_connection_parameters->id());
 
     manager_->AddClientToChannel(
         std::move(client_connection_parameters),
@@ -229,16 +231,16 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
 };
 
 TEST_F(SecureChannelActiveConnectionManagerImplTest, EdgeCases) {
-  auto* client_factory = TestClientConnectionParametersFactory::Get();
-
-  std::vector<ClientConnectionParameters> client_list;
-  client_list.push_back(client_factory->Create("feature"));
+  std::vector<std::unique_ptr<ClientConnectionParameters>> client_list;
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature"));
 
   AddActiveConnectionAndVerifyState("deviceId", std::move(client_list));
 
   // Try to add another channel for the same ConnectionDetails; this should
   // fail, since one already exists.
-  client_list.push_back(client_factory->Create("feature"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature"));
   EXPECT_DCHECK_DEATH(active_connection_manager()->AddActiveConnection(
       std::make_unique<FakeAuthenticatedChannel>(), std::move(client_list),
       ConnectionDetails("deviceId", ConnectionMedium::kBluetoothLowEnergy)));
@@ -250,14 +252,15 @@ TEST_F(SecureChannelActiveConnectionManagerImplTest, EdgeCases) {
       GetConnectionState("deviceId"));
 
   // Try to add another channel; this should still fail while disconnecting.
-  client_list.push_back(client_factory->Create("feature"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature"));
   EXPECT_DCHECK_DEATH(active_connection_manager()->AddActiveConnection(
       std::make_unique<FakeAuthenticatedChannel>(), std::move(client_list),
       ConnectionDetails("deviceId", ConnectionMedium::kBluetoothLowEnergy)));
 
   // Try to add an additional client; this should also fail while disconnecting.
   EXPECT_DCHECK_DEATH(active_connection_manager()->AddClientToChannel(
-      client_factory->Create("feature"),
+      std::make_unique<FakeClientConnectionParameters>("feature"),
       ConnectionDetails("deviceId", ConnectionMedium::kBluetoothLowEnergy)));
 
   GetActiveChannelForDeviceId("deviceId")->SetDisconnected();
@@ -266,15 +269,14 @@ TEST_F(SecureChannelActiveConnectionManagerImplTest, EdgeCases) {
 
   // Try to add an additional client; this should also fail while disconnected.
   EXPECT_DCHECK_DEATH(active_connection_manager()->AddClientToChannel(
-      client_factory->Create("feature"),
+      std::make_unique<FakeClientConnectionParameters>("feature"),
       ConnectionDetails("deviceId", ConnectionMedium::kBluetoothLowEnergy)));
 }
 
 TEST_F(SecureChannelActiveConnectionManagerImplTest, SingleChannel_OneClient) {
-  auto* client_factory = TestClientConnectionParametersFactory::Get();
-
-  std::vector<ClientConnectionParameters> client_list;
-  client_list.push_back(client_factory->Create("feature"));
+  std::vector<std::unique_ptr<ClientConnectionParameters>> client_list;
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature"));
 
   AddActiveConnectionAndVerifyState("deviceId", std::move(client_list));
   EXPECT_EQ(1u, GetNumActiveChannels());
@@ -294,16 +296,17 @@ TEST_F(SecureChannelActiveConnectionManagerImplTest, SingleChannel_OneClient) {
 
 TEST_F(SecureChannelActiveConnectionManagerImplTest,
        SingleChannel_MultipleClients) {
-  auto* client_factory = TestClientConnectionParametersFactory::Get();
-
-  std::vector<ClientConnectionParameters> client_list;
-  client_list.push_back(client_factory->Create("feature1"));
-  client_list.push_back(client_factory->Create("feature2"));
+  std::vector<std::unique_ptr<ClientConnectionParameters>> client_list;
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature1"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature2"));
 
   AddActiveConnectionAndVerifyState("deviceId", std::move(client_list));
   EXPECT_EQ(1u, GetNumActiveChannels());
 
-  AddNewClientAndVerifyState("deviceId", client_factory->Create("feature3"));
+  AddNewClientAndVerifyState(
+      "deviceId", std::make_unique<FakeClientConnectionParameters>("feature3"));
   EXPECT_EQ(1u, GetNumActiveChannels());
 
   GetActiveChannelForDeviceId("deviceId")->SetDisconnecting();
@@ -321,29 +324,35 @@ TEST_F(SecureChannelActiveConnectionManagerImplTest,
 
 TEST_F(SecureChannelActiveConnectionManagerImplTest,
        MultipleChannels_MultipleClients) {
-  auto* client_factory = TestClientConnectionParametersFactory::Get();
-
   // Add an initial channel with two clients.
-  std::vector<ClientConnectionParameters> client_list;
-  client_list.push_back(client_factory->Create("feature1"));
-  client_list.push_back(client_factory->Create("feature2"));
+  std::vector<std::unique_ptr<ClientConnectionParameters>> client_list;
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature1"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature2"));
 
   AddActiveConnectionAndVerifyState("deviceId1", std::move(client_list));
   EXPECT_EQ(1u, GetNumActiveChannels());
 
   // Add another channel with two more clients.
-  client_list.push_back(client_factory->Create("feature3"));
-  client_list.push_back(client_factory->Create("feature4"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature3"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature4"));
 
   AddActiveConnectionAndVerifyState("deviceId2", std::move(client_list));
   EXPECT_EQ(2u, GetNumActiveChannels());
 
   // Add a new client to the first channel.
-  AddNewClientAndVerifyState("deviceId1", client_factory->Create("feature5"));
+  AddNewClientAndVerifyState(
+      "deviceId1",
+      std::make_unique<FakeClientConnectionParameters>("feature5"));
   EXPECT_EQ(2u, GetNumActiveChannels());
 
   // Add a new client to the second channel.
-  AddNewClientAndVerifyState("deviceId2", client_factory->Create("feature6"));
+  AddNewClientAndVerifyState(
+      "deviceId2",
+      std::make_unique<FakeClientConnectionParameters>("feature6"));
   EXPECT_EQ(2u, GetNumActiveChannels());
 
   // Start disconnecting the first channel.
@@ -361,8 +370,10 @@ TEST_F(SecureChannelActiveConnectionManagerImplTest,
   EXPECT_EQ(1u, GetNumDisconnections("deviceId1"));
 
   // Now, add another channel for the same device that just disconnected.
-  client_list.push_back(client_factory->Create("feature7"));
-  client_list.push_back(client_factory->Create("feature8"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature7"));
+  client_list.push_back(
+      std::make_unique<FakeClientConnectionParameters>("feature8"));
 
   AddActiveConnectionAndVerifyState("deviceId1", std::move(client_list));
   EXPECT_EQ(2u, GetNumActiveChannels());

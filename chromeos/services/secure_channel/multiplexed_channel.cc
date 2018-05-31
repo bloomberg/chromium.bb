@@ -20,7 +20,7 @@ MultiplexedChannel::MultiplexedChannel(Delegate* delegate,
 MultiplexedChannel::~MultiplexedChannel() = default;
 
 bool MultiplexedChannel::AddClientToChannel(
-    ClientConnectionParameters client_connection_parameters) {
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters) {
   if (IsDisconnecting() || IsDisconnected())
     return false;
 

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_MULTIPLEXED_CHANNEL_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_MULTIPLEXED_CHANNEL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_details.h"
@@ -37,7 +39,7 @@ class MultiplexedChannel {
   // was successful; all calls are expected to succeed unless the channel is
   // disconnected or disconnecting.
   bool AddClientToChannel(
-      ClientConnectionParameters client_connection_parameters);
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters);
 
   const ConnectionDetails& connection_details() { return connection_details_; }
 
@@ -45,7 +47,8 @@ class MultiplexedChannel {
   MultiplexedChannel(Delegate* delegate, ConnectionDetails connection_details);
 
   virtual void PerformAddClientToChannel(
-      ClientConnectionParameters client_connection_parameters) = 0;
+      std::unique_ptr<ClientConnectionParameters>
+          client_connection_parameters) = 0;
 
   void NotifyDisconnected();
 

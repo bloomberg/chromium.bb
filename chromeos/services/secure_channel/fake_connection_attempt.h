@@ -35,7 +35,8 @@ class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
   const IdToRequestMap& id_to_request_map() const { return id_to_request_map_; }
 
   void set_client_data_for_extraction(
-      std::vector<ClientConnectionParameters> client_data_for_extraction) {
+      std::vector<std::unique_ptr<ClientConnectionParameters>>
+          client_data_for_extraction) {
     client_data_for_extraction_ = std::move(client_data_for_extraction);
   }
 
@@ -49,12 +50,13 @@ class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
   // ConnectionAttempt<std::string>:
   void ProcessAddingNewConnectionRequest(
       std::unique_ptr<PendingConnectionRequest<std::string>> request) override;
-  std::vector<ClientConnectionParameters> ExtractClientConnectionParameters()
-      override;
+  std::vector<std::unique_ptr<ClientConnectionParameters>>
+  ExtractClientConnectionParameters() override;
 
   IdToRequestMap id_to_request_map_;
 
-  std::vector<ClientConnectionParameters> client_data_for_extraction_;
+  std::vector<std::unique_ptr<ClientConnectionParameters>>
+      client_data_for_extraction_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionAttempt);
 };

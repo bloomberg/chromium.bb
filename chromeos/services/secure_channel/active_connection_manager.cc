@@ -21,7 +21,7 @@ ActiveConnectionManager::~ActiveConnectionManager() = default;
 
 void ActiveConnectionManager::AddActiveConnection(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-    std::vector<ClientConnectionParameters> initial_clients,
+    std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
     const ConnectionDetails& connection_details) {
   DCHECK(authenticated_channel);
   DCHECK(!authenticated_channel->is_disconnected());
@@ -41,7 +41,7 @@ void ActiveConnectionManager::AddActiveConnection(
 }
 
 void ActiveConnectionManager::AddClientToChannel(
-    ClientConnectionParameters client_connection_parameters,
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     const ConnectionDetails& connection_details) {
   auto connection_state = GetConnectionState(connection_details);
   if (connection_state != ConnectionState::kActiveConnectionExists) {

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
@@ -35,7 +34,7 @@ class FakePendingConnectionRequest
   }
 
   void set_client_data_for_extraction(
-      ClientConnectionParameters client_data_for_extraction) {
+      std::unique_ptr<ClientConnectionParameters> client_data_for_extraction) {
     client_data_for_extraction_ = std::move(client_data_for_extraction);
   }
 
@@ -49,13 +48,14 @@ class FakePendingConnectionRequest
  private:
   // PendingConnectionRequest<std::string>:
   void HandleConnectionFailure(std::string failure_detail) override;
-  ClientConnectionParameters ExtractClientConnectionParameters() override;
+  std::unique_ptr<ClientConnectionParameters>
+  ExtractClientConnectionParameters() override;
 
   const base::UnguessableToken id_;
 
   std::vector<std::string> handled_failure_details_;
 
-  base::Optional<ClientConnectionParameters> client_data_for_extraction_;
+  std::unique_ptr<ClientConnectionParameters> client_data_for_extraction_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePendingConnectionRequest);
 };

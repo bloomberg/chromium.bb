@@ -29,12 +29,12 @@ class FakeActiveConnectionManager : public ActiveConnectionManager {
   FakeActiveConnectionManager(ActiveConnectionManager::Delegate* delegate);
   ~FakeActiveConnectionManager() override;
 
-  using DetailsToMetadataMap =
-      std::unordered_map<ConnectionDetails,
-                         std::tuple<ConnectionState,
-                                    std::unique_ptr<AuthenticatedChannel>,
-                                    std::vector<ClientConnectionParameters>>,
-                         ConnectionDetailsHash>;
+  using DetailsToMetadataMap = std::unordered_map<
+      ConnectionDetails,
+      std::tuple<ConnectionState,
+                 std::unique_ptr<AuthenticatedChannel>,
+                 std::vector<std::unique_ptr<ClientConnectionParameters>>>,
+      ConnectionDetailsHash>;
 
   DetailsToMetadataMap& connection_details_to_channel_map() {
     return connection_details_to_channel_map_;
@@ -49,10 +49,10 @@ class FakeActiveConnectionManager : public ActiveConnectionManager {
       const ConnectionDetails& connection_details) const override;
   void PerformAddActiveConnection(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-      std::vector<ClientConnectionParameters> initial_clients,
+      std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
       const ConnectionDetails& connection_details) override;
   void PerformAddClientToChannel(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       const ConnectionDetails& connection_details) override;
 
   DetailsToMetadataMap connection_details_to_channel_map_;

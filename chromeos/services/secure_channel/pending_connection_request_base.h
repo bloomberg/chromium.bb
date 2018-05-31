@@ -30,32 +30,29 @@ namespace secure_channel {
 // from PendingConnectionRequestBase.
 template <typename FailureDetailType>
 class PendingConnectionRequestBase
-    : public PendingConnectionRequest<FailureDetailType> {
+    : public PendingConnectionRequest<FailureDetailType>,
+      public ClientConnectionParameters::Observer {
  public:
-  ~PendingConnectionRequestBase() override = default;
+  ~PendingConnectionRequestBase() override {
+    if (client_connection_parameters_)
+      client_connection_parameters_->RemoveObserver(this);
+  }
 
   // PendingConnectionRequest<FailureDetailType>:
   const base::UnguessableToken& GetRequestId() const override {
-    return client_connection_parameters_.id();
+    return client_connection_parameters_->id();
   }
 
  protected:
   PendingConnectionRequestBase(
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       const std::string& readable_request_type_for_logging,
       PendingConnectionRequestDelegate* delegate)
       : PendingConnectionRequest<FailureDetailType>(delegate),
         client_connection_parameters_(std::move(client_connection_parameters)),
         readable_request_type_for_logging_(readable_request_type_for_logging),
         weak_ptr_factory_(this) {
-    // If the client disconnects its delegate, the client is signaling that the
-    // connection request has been canceled.
-    client_connection_parameters_.connection_delegate_ptr()
-        .set_connection_error_handler(base::BindOnce(
-            &PendingConnectionRequestBase::OnFinishedWithoutConnection,
-            weak_ptr_factory_.GetWeakPtr(),
-            PendingConnectionRequestDelegate::FailedConnectionReason::
-                kRequestCanceledByClient));
+    client_connection_parameters_->AddObserver(this);
   }
 
   // Derived classes should invoke this function if they would like to give up
@@ -69,8 +66,7 @@ class PendingConnectionRequestBase
       return;
     }
 
-    client_connection_parameters_.connection_delegate_ptr()
-        ->OnConnectionAttemptFailure(failure_reason);
+    client_connection_parameters_->SetConnectionAttemptFailed(failure_reason);
 
     OnFinishedWithoutConnection(PendingConnectionRequestDelegate::
                                     FailedConnectionReason::kRequestFailed);
@@ -83,8 +79,17 @@ class PendingConnectionRequestBase
       FailureDetailType>::NotifyRequestFinishedWithoutConnection;
 
   // PendingConnectionRequest<FailureDetailType>:
-  ClientConnectionParameters ExtractClientConnectionParameters() override {
+  std::unique_ptr<ClientConnectionParameters>
+  ExtractClientConnectionParameters() override {
+    client_connection_parameters_->RemoveObserver(this);
     return std::move(client_connection_parameters_);
+  }
+
+  // ClientConnectionParameters::Observer
+  void OnConnectionRequestCanceled() override {
+    OnFinishedWithoutConnection(
+        PendingConnectionRequestDelegate::FailedConnectionReason::
+            kRequestCanceledByClient);
   }
 
   void OnFinishedWithoutConnection(
@@ -95,11 +100,11 @@ class PendingConnectionRequestBase
     PA_LOG(INFO) << "Request finished without connection; notifying delegate. "
                  << "Request type: \"" << readable_request_type_for_logging_
                  << "\", Reason: " << reason
-                 << ", Client parameters: " << client_connection_parameters_;
+                 << ", Client parameters: " << *client_connection_parameters_;
     NotifyRequestFinishedWithoutConnection(reason);
   }
 
-  ClientConnectionParameters client_connection_parameters_;
+  std::unique_ptr<ClientConnectionParameters> client_connection_parameters_;
   const std::string readable_request_type_for_logging_;
 
   bool has_finished_without_connection_ = false;

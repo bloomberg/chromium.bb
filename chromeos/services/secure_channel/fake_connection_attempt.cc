@@ -25,7 +25,7 @@ void FakeConnectionAttempt::ProcessAddingNewConnectionRequest(
   id_to_request_map_[request->GetRequestId()] = std::move(request);
 }
 
-std::vector<ClientConnectionParameters>
+std::vector<std::unique_ptr<ClientConnectionParameters>>
 FakeConnectionAttempt::ExtractClientConnectionParameters() {
   return std::move(client_data_for_extraction_);
 }

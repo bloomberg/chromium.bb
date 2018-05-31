@@ -43,7 +43,7 @@ bool FakeMultiplexedChannel::IsDisconnected() const {
 }
 
 void FakeMultiplexedChannel::PerformAddClientToChannel(
-    ClientConnectionParameters client_connection_parameters) {
+    std::unique_ptr<ClientConnectionParameters> client_connection_parameters) {
   added_clients_.push_back(std::move(client_connection_parameters));
 }
 

@@ -29,7 +29,7 @@ class PendingConnectionManager {
     virtual ~Delegate() = default;
     virtual void OnConnection(
         std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-        std::vector<ClientConnectionParameters> clients,
+        std::vector<std::unique_ptr<ClientConnectionParameters>> clients,
         const ConnectionDetails& connection_details) = 0;
   };
 
@@ -41,7 +41,7 @@ class PendingConnectionManager {
   // to connect to the same device.
   virtual void HandleConnectionRequest(
       const ConnectionDetails& connection_details,
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionRole connection_role) = 0;
 
  protected:
@@ -49,7 +49,7 @@ class PendingConnectionManager {
 
   void NotifyOnConnection(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel,
-      std::vector<ClientConnectionParameters> clients,
+      std::vector<std::unique_ptr<ClientConnectionParameters>> clients,
       const ConnectionDetails& connection_details);
 
  private:

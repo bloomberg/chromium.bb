@@ -41,7 +41,7 @@ class PendingConnectionManagerImpl : public PendingConnectionManager {
 
   void HandleConnectionRequest(
       const ConnectionDetails& connection_details,
-      ClientConnectionParameters client_connection_parameters,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionRole connection_role) override;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionManagerImpl);

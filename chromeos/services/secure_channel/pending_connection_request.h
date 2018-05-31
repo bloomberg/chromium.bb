@@ -29,7 +29,8 @@ class PendingConnectionRequest {
   // Extracts |request|'s ClientConnectionParameters. This function deletes
   // |request| as part of this process to ensure that it is no longer used after
   // extraction is complete.
-  static ClientConnectionParameters ExtractClientConnectionParameters(
+  static std::unique_ptr<ClientConnectionParameters>
+  ExtractClientConnectionParameters(
       std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request) {
     return request->ExtractClientConnectionParameters();
   }
@@ -49,7 +50,8 @@ class PendingConnectionRequest {
   }
 
   // Extracts the feature and ConnectionDelegate from this request.
-  virtual ClientConnectionParameters ExtractClientConnectionParameters() = 0;
+  virtual std::unique_ptr<ClientConnectionParameters>
+  ExtractClientConnectionParameters() = 0;
 
   void NotifyRequestFinishedWithoutConnection(
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {
