@@ -328,10 +328,6 @@ bool LocalSafeBrowsingDatabaseManager::CanCheckResourceType(
   return true;
 }
 
-bool LocalSafeBrowsingDatabaseManager::CanCheckSubresourceFilter() const {
-  return false;
-}
-
 bool LocalSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIsWSOrWSS();
@@ -540,7 +536,6 @@ bool LocalSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {
   // The check for the Subresource Filter in only implemented for pver4.
-  NOTREACHED();
   return true;
 }
 
