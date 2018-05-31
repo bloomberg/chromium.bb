@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
@@ -41,7 +42,6 @@
 
 namespace base {
 class TickClock;
-class TaskRunner;
 }  // namespace base
 
 namespace net {
@@ -214,13 +214,17 @@ class NET_EXPORT NetworkQualityEstimator
 
   const NetworkQualityEstimatorParams* params() { return params_.get(); }
 
+#if defined(OS_CHROMEOS)
+  // Enables getting the network id asynchronously when
+  // GatherEstimatesForNextConnectionType(). This should always be called in
+  // production, because getting the network id involves a blocking call to
+  // recv() in AddressTrackerLinux, and the IO thread should never be blocked.
+  // TODO(https://crbug.com/821607): Remove after the bug is resolved.
+  void EnableGetNetworkIdAsynchronously();
+#endif  // defined(OS_CHROMEOS)
+
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
-
-  void set_get_network_id_task_runner(
-      scoped_refptr<base::TaskRunner> task_runner) {
-    get_network_id_task_runner_ = task_runner;
-  }
 
  protected:
   // NetworkChangeNotifier::ConnectionTypeObserver implementation:
@@ -490,7 +494,7 @@ class NET_EXPORT NetworkQualityEstimator
   void GatherEstimatesForNextConnectionType();
 
   // Invoked to continue GatherEstimatesForNextConnectionType work after getting
-  // network id. If |get_network_id_task_runner_| is set, the network id is
+  // network id. If |get_network_id_asynchronously_| is set, the network id is
   // fetched on a worker thread. Otherwise, GatherEstimatesForNextConnectionType
   // calls this directly. This is a workaround for https://crbug.com/821607
   // where net::GetWifiSSID() call gets stuck.
@@ -627,8 +631,10 @@ class NET_EXPORT NetworkQualityEstimator
   // Time when the last RTT observation from a socket watcher was received.
   base::TimeTicks last_socket_watcher_rtt_notification_;
 
-  // Optional task runner to get network id.
-  scoped_refptr<base::TaskRunner> get_network_id_task_runner_;
+#if defined(OS_CHROMEOS)
+  // Whether the network id should be obtained on a worker thread.
+  bool get_network_id_asynchronously_ = false;
+#endif
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
 

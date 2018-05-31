@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -50,6 +51,17 @@ namespace net {
 class HostResolver;
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+// SequencedTaskRunner to get the network id. A SequencedTaskRunner is used
+// rather than parallel tasks to avoid having many threads getting the network
+// id concurrently.
+base::LazySequencedTaskRunner g_get_network_id_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
+                         base::TaskPriority::BACKGROUND,
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
+#endif
 
 NetworkQualityObservationSource ProtocolSourceToObservationSource(
     SocketPerformanceWatcherFactory::Protocol protocol) {
@@ -702,28 +714,30 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
 void NetworkQualityEstimator::GatherEstimatesForNextConnectionType() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!get_network_id_task_runner_) {
-    ContinueGatherEstimatesForNextConnectionType(GetCurrentNetworkID());
+#if defined(OS_CHROMEOS)
+  if (get_network_id_asynchronously_) {
+    // Doing PostTaskAndReplyWithResult by handle because it requires the result
+    // type have a default constructor and nqe::internal::NetworkID does not
+    // have that.
+    g_get_network_id_task_runner.Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](scoped_refptr<base::TaskRunner> reply_task_runner,
+               base::OnceCallback<void(const nqe::internal::NetworkID&)>
+                   reply_callback) {
+              reply_task_runner->PostTask(
+                  FROM_HERE, base::BindOnce(std::move(reply_callback),
+                                            DoGetCurrentNetworkID()));
+            },
+            base::ThreadTaskRunnerHandle::Get(),
+            base::BindOnce(&NetworkQualityEstimator::
+                               ContinueGatherEstimatesForNextConnectionType,
+                           weak_ptr_factory_.GetWeakPtr())));
     return;
   }
+#endif  // defined(OS_CHROMEOS)
 
-  // Doing PostTaskAndReplyWithResult by handle because it requires the result
-  // type have a default constructor and nqe::internal::NetworkID does not have
-  // that.
-  get_network_id_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<base::TaskRunner> reply_task_runner,
-             base::OnceCallback<void(const nqe::internal::NetworkID&)>
-                 reply_callback) {
-            reply_task_runner->PostTask(
-                FROM_HERE, base::BindOnce(std::move(reply_callback),
-                                          DoGetCurrentNetworkID()));
-          },
-          base::ThreadTaskRunnerHandle::Get(),
-          base::BindOnce(&NetworkQualityEstimator::
-                             ContinueGatherEstimatesForNextConnectionType,
-                         weak_ptr_factory_.GetWeakPtr())));
+  ContinueGatherEstimatesForNextConnectionType(GetCurrentNetworkID());
 }
 
 void NetworkQualityEstimator::ContinueGatherEstimatesForNextConnectionType(
@@ -1683,6 +1697,12 @@ void NetworkQualityEstimator::OnPrefsRead(
   }
   ReadCachedNetworkQualityEstimate();
 }
+
+#if defined(OS_CHROMEOS)
+void NetworkQualityEstimator::EnableGetNetworkIdAsynchronously() {
+  get_network_id_asynchronously_ = true;
+}
+#endif  // defined(OS_CHROMEOS)
 
 base::Optional<base::TimeDelta> NetworkQualityEstimator::GetHttpRTT() const {
   DCHECK(thread_checker_.CalledOnValidThread());

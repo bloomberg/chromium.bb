@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
 #include "components/data_reduction_proxy/core/browser/warmup_url_fetcher.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -192,10 +193,14 @@ class DataReductionProxyConfig
       std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
   GetInFlightWarmupProxyDetails() const;
 
-  void set_get_network_id_task_runner(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    get_network_id_task_runner_ = task_runner;
-  }
+#if defined(OS_CHROMEOS)
+  // Enables getting the network id asynchronously when
+  // GatherEstimatesForNextConnectionType(). This should always be called in
+  // production, because getting the network id involves a blocking call to
+  // recv() in AddressTrackerLinux, and the IO thread should never be blocked.
+  // TODO(https://crbug.com/821607): Remove after the bug is resolved.
+  void EnableGetNetworkIdAsynchronously();
+#endif  // defined(OS_CHROMEOS)
 
  protected:
   virtual base::TimeTicks GetTicksNow() const;
@@ -264,7 +269,7 @@ class DataReductionProxyConfig
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Invoked to continue network changed handling after the network id is
-  // retrieved. If |get_network_id_task_runner_| is set, the network id is
+  // retrieved. If |get_network_id_asynchronously_| is set, the network id is
   // fetched on the worker thread. Otherwise, OnNetworkChanged calls this
   // directly. This is a workaround for https://crbug.com/821607 where
   // net::GetWifiSSID() call gets stuck.
@@ -327,8 +332,10 @@ class DataReductionProxyConfig
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // Optional task runner for GetCurrentNetworkID.
-  scoped_refptr<base::SingleThreadTaskRunner> get_network_id_task_runner_;
+#if defined(OS_CHROMEOS)
+  // Whether the network id should be obtained on a worker thread.
+  bool get_network_id_asynchronously_ = false;
+#endif
 
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
   // It is used to create new instances of |net_log_with_source_| on secure
