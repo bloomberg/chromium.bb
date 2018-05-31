@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
@@ -62,7 +63,8 @@ class CONTENT_EXPORT WorkerFetchContextImpl
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      std::unique_ptr<service_manager::Connector> service_manager_connection);
   ~WorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
@@ -130,8 +132,6 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info_;
   // Consumed on the worker thread to create |fallback_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info_;
-  // Consumed on the worker thread to create |blob_registry_|.
-  blink::mojom::BlobRegistryPtrInfo blob_registry_ptr_info_;
 
   int service_worker_provider_id_ = kInvalidServiceWorkerProviderId;
   bool is_controlled_by_service_worker_ = false;
@@ -191,6 +191,8 @@ class CONTENT_EXPORT WorkerFetchContextImpl
       websocket_handshake_throttle_provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  std::unique_ptr<service_manager::Connector> service_manager_connection_;
 };
 
 }  // namespace content
