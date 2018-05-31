@@ -159,7 +159,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       override;
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
   WebThreadScheduler* GetWebMainThreadSchedulerForTest() override;
-  NonMainThreadScheduler* AsNonMainThreadScheduler() override {
+  NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
 

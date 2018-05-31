@@ -14,9 +14,9 @@
 #include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 #include "third_party/blink/renderer/platform/scheduler/util/thread_load_tracker.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 
 namespace base {
 namespace sequence_manager {
@@ -30,7 +30,7 @@ namespace scheduler {
 class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WorkerThreadScheduler
-    : public NonMainThreadScheduler,
+    : public NonMainThreadSchedulerImpl,
       public IdleHelper::Delegate,
       public base::sequence_manager::TaskTimeObserver {
  public:
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
 
-  // NonMainThreadScheduler implementation:
+  // NonMainThreadSchedulerImpl implementation:
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
   void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                        const base::sequence_manager::TaskQueue::Task& task,

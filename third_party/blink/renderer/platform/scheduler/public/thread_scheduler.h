@@ -16,7 +16,7 @@
 
 namespace blink {
 namespace scheduler {
-class NonMainThreadScheduler;
+class NonMainThreadSchedulerImpl;
 }
 
 // This class is used to submit tasks and pass other information from Blink to
@@ -108,7 +108,7 @@ class PLATFORM_EXPORT ThreadScheduler {
     return nullptr;
   }
 
-  virtual scheduler::NonMainThreadScheduler* AsNonMainThreadScheduler() = 0;
+  virtual scheduler::NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() = 0;
 };
 
 }  // namespace blink

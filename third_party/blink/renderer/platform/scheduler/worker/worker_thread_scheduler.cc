@@ -106,7 +106,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
     std::unique_ptr<base::sequence_manager::TaskQueueManager>
         task_queue_manager,
     WorkerSchedulerProxy* proxy)
-    : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
+    : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),
           this,
           TaskType::kWorkerThreadTaskQueueDefault)),
@@ -280,7 +280,7 @@ void WorkerThreadScheduler::OnThrottlingStateChanged(
 
 void WorkerThreadScheduler::RegisterWorkerScheduler(
     WorkerScheduler* worker_scheduler) {
-  NonMainThreadScheduler::RegisterWorkerScheduler(worker_scheduler);
+  NonMainThreadSchedulerImpl::RegisterWorkerScheduler(worker_scheduler);
   worker_scheduler->OnThrottlingStateChanged(throttling_state_);
 }
 

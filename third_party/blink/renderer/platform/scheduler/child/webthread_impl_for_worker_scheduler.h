@@ -28,7 +28,7 @@ namespace blink {
 namespace scheduler {
 
 class SingleThreadIdleTaskRunner;
-class NonMainThreadScheduler;
+class NonMainThreadSchedulerImpl;
 class WorkerSchedulerProxy;
 
 class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
@@ -51,7 +51,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   // base::MessageLoopCurrent::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
 
-  scheduler::NonMainThreadScheduler* GetNonMainThreadScheduler() {
+  scheduler::NonMainThreadSchedulerImpl* GetNonMainThreadScheduler() {
     return non_main_thread_scheduler_.get();
   }
 
@@ -60,7 +60,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   }
 
  protected:
-  virtual std::unique_ptr<NonMainThreadScheduler>
+  virtual std::unique_ptr<NonMainThreadSchedulerImpl>
   CreateNonMainThreadScheduler();
 
   base::Thread* GetThread() const { return thread_.get(); }
@@ -80,7 +80,8 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   std::unique_ptr<base::Thread> thread_;
   const WebThreadType thread_type_;
   std::unique_ptr<scheduler::WorkerSchedulerProxy> worker_scheduler_proxy_;
-  std::unique_ptr<scheduler::NonMainThreadScheduler> non_main_thread_scheduler_;
+  std::unique_ptr<scheduler::NonMainThreadSchedulerImpl>
+      non_main_thread_scheduler_;
   scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;

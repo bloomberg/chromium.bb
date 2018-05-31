@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {
@@ -15,7 +15,7 @@ using base::sequence_manager::TaskQueue;
 WorkerTaskQueue::WorkerTaskQueue(
     std::unique_ptr<base::sequence_manager::internal::TaskQueueImpl> impl,
     const TaskQueue::Spec& spec,
-    NonMainThreadScheduler* non_main_thread_scheduler)
+    NonMainThreadSchedulerImpl* non_main_thread_scheduler)
     : TaskQueue(std::move(impl), spec),
       non_main_thread_scheduler_(non_main_thread_scheduler) {
   if (GetTaskQueueImpl()) {

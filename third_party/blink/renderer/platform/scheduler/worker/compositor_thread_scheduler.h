@@ -12,8 +12,8 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/child/compositor_metrics_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 
 namespace base {
 class Thread;
@@ -23,7 +23,7 @@ namespace blink {
 namespace scheduler {
 
 class PLATFORM_EXPORT CompositorThreadScheduler
-    : public NonMainThreadScheduler,
+    : public NonMainThreadSchedulerImpl,
       public SingleThreadIdleTaskRunner::Delegate {
  public:
   CompositorThreadScheduler(
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT CompositorThreadScheduler
 
   ~CompositorThreadScheduler() override;
 
-  // NonMainThreadScheduler:
+  // NonMainThreadSchedulerImpl:
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
   void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
                        const base::sequence_manager::TaskQueue::Task& task,
