@@ -1631,6 +1631,7 @@
     "IDBTombstoneSweeper": [
         {
             "platforms": [
+                "android",
                 "chromeos",
                 "linux",
                 "mac",
@@ -1638,9 +1639,9 @@
             ],
             "experiments": [
                 {
-                    "name": "TombstoneMetrics",
+                    "name": "TombstoneDeletion",
                     "enable_features": [
-                        "IDBTombstoneStatistics"
+                        "IDBTombstoneDeletion"
                     ]
                 }
             ]
