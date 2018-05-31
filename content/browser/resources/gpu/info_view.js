@@ -232,6 +232,7 @@ cr.define('gpu', function() {
         'rasterization': 'Rasterization',
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
+        'protected_video_decode': 'Hardware Protected Video Decode',
         'surface_synchronization': 'Surface Synchronization',
         'vpx_decode': 'VPx Video Decode',
         'webgl2': 'WebGL2',
