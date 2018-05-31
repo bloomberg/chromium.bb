@@ -295,4 +295,29 @@ TEST(LayoutUnitTest, LayoutUnitPlusPlus) {
   EXPECT_EQ(LayoutUnit::Max(), LayoutUnit(LayoutUnit::Max())++);
 }
 
+TEST(LayoutUnitTest, IntMod) {
+  EXPECT_EQ(LayoutUnit(5), IntMod(LayoutUnit(55), LayoutUnit(10)));
+  EXPECT_EQ(LayoutUnit(5), IntMod(LayoutUnit(55), LayoutUnit(-10)));
+  EXPECT_EQ(LayoutUnit(-5), IntMod(LayoutUnit(-55), LayoutUnit(10)));
+  EXPECT_EQ(LayoutUnit(-5), IntMod(LayoutUnit(-55), LayoutUnit(-10)));
+  EXPECT_EQ(LayoutUnit(1.5), IntMod(LayoutUnit(7.5), LayoutUnit(3)));
+  EXPECT_EQ(LayoutUnit(1.25), IntMod(LayoutUnit(7.5), LayoutUnit(3.125)));
+  EXPECT_EQ(LayoutUnit(), IntMod(LayoutUnit(7.5), LayoutUnit(2.5)));
+  EXPECT_EQ(LayoutUnit(), IntMod(LayoutUnit(), LayoutUnit(123)));
+}
+
+TEST(LayoutUnitTest, LayoutMod) {
+#define CHECK_LAYOUT_MOD(a, b) EXPECT_EQ(a, (a / b) * b + LayoutMod(a, b))
+  CHECK_LAYOUT_MOD(LayoutUnit(55), LayoutUnit(10));
+  CHECK_LAYOUT_MOD(LayoutUnit(1234), LayoutUnit(789));
+  CHECK_LAYOUT_MOD(LayoutUnit::Max(), LayoutUnit::Max());
+  CHECK_LAYOUT_MOD(LayoutUnit::Max(), LayoutUnit::Min());
+  CHECK_LAYOUT_MOD(LayoutUnit::Min(), LayoutUnit::Max());
+  CHECK_LAYOUT_MOD(LayoutUnit::Min(), LayoutUnit::Min());
+
+  EXPECT_EQ(LayoutUnit(), LayoutMod(LayoutUnit(123), 2));
+  EXPECT_EQ(LayoutUnit(LayoutUnit::Epsilon()),
+            LayoutMod(LayoutUnit(123 + LayoutUnit::Epsilon()), 2));
+}
+
 }  // namespace blink
