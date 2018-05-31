@@ -86,16 +86,22 @@ class ServiceFontManager::SkiaDiscardableManager
 
 ServiceFontManager::ServiceFontManager(Client* client)
     : client_(client), weak_factory_(this) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   strike_client_ = std::make_unique<SkStrikeClient>(
       sk_make_sp<SkiaDiscardableManager>(weak_factory_.GetWeakPtr()));
 }
 
-ServiceFontManager::~ServiceFontManager() = default;
+ServiceFontManager::~ServiceFontManager() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
 
 bool ServiceFontManager::Deserialize(
     const volatile char* memory,
     size_t memory_size,
     std::vector<SkDiscardableHandleId>* locked_handles) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(locked_handles->empty());
+
   // All new handles.
   Deserializer deserializer(memory, memory_size);
   size_t new_handles_created;
@@ -143,6 +149,8 @@ bool ServiceFontManager::Deserialize(
 
 bool ServiceFontManager::AddHandle(SkDiscardableHandleId handle_id,
                                    ServiceDiscardableHandle handle) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (discardable_handle_map_.find(handle_id) != discardable_handle_map_.end())
     return false;
   discardable_handle_map_[handle_id] = std::move(handle);
@@ -151,6 +159,8 @@ bool ServiceFontManager::AddHandle(SkDiscardableHandleId handle_id,
 
 bool ServiceFontManager::Unlock(
     const std::vector<SkDiscardableHandleId>& handles) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   for (auto handle_id : handles) {
     auto it = discardable_handle_map_.find(handle_id);
     if (it == discardable_handle_map_.end())
@@ -161,6 +171,8 @@ bool ServiceFontManager::Unlock(
 }
 
 bool ServiceFontManager::DeleteHandle(SkDiscardableHandleId handle_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   auto it = discardable_handle_map_.find(handle_id);
   if (it == discardable_handle_map_.end()) {
     LOG(ERROR) << "Tried to delete invalid SkDiscardableHandleId: "

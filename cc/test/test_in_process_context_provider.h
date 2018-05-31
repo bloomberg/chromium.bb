@@ -54,6 +54,8 @@ class TestInProcessContextProvider
   void AddObserver(viz::ContextLostObserver* obs) override {}
   void RemoveObserver(viz::ContextLostObserver* obs) override {}
 
+  void ExecuteOnGpuThread(base::OnceClosure task);
+
  protected:
   friend class base::RefCountedThreadSafe<TestInProcessContextProvider>;
   ~TestInProcessContextProvider() override;

@@ -125,4 +125,9 @@ ServiceTransferCache* RasterInProcessContext::GetTransferCacheForTest() const {
   return command_buffer_->GetTransferCacheForTest();
 }
 
+InProcessCommandBuffer* RasterInProcessContext::GetCommandBufferForTest()
+    const {
+  return command_buffer_.get();
+}
+
 }  // namespace gpu

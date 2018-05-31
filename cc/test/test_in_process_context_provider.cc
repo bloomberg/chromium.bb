@@ -172,4 +172,11 @@ const gpu::GpuFeatureInfo& TestInProcessContextProvider::GetGpuFeatureInfo()
   return gpu_feature_info_;
 }
 
+void TestInProcessContextProvider::ExecuteOnGpuThread(base::OnceClosure task) {
+  DCHECK(raster_context_);
+  raster_context_->GetCommandBufferForTest()
+      ->service_for_testing()
+      ->ScheduleTask(std::move(task));
+}
+
 }  // namespace cc
