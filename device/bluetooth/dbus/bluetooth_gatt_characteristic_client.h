@@ -109,6 +109,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
+  // Issues a request to prepare write the value of GATT characteristic with
+  // object path |object_path| with value |value|.
+  // Invokes |callback| on success and |error_callback| on failure.
+  virtual void PrepareWriteValue(const dbus::ObjectPath& object_path,
+                                 const std::vector<uint8_t>& value,
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback) = 0;
+
   // Starts a notification session from this characteristic with object path
   // |object_path| if it supports value notifications or indications. Invokes
   // |callback| on success and |error_callback| on failure.

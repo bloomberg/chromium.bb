@@ -58,6 +58,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
                   const std::vector<uint8_t>& value,
                   const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
+  void PrepareWriteValue(const dbus::ObjectPath& object_path,
+                         const std::vector<uint8_t>& value,
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) override;
   void StartNotify(const dbus::ObjectPath& object_path,
                    const base::Closure& callback,
                    const ErrorCallback& error_callback) override;

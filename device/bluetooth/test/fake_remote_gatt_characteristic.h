@@ -92,6 +92,12 @@ class FakeRemoteGattCharacteristic
   void WriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) override;
+#if defined(OS_CHROMEOS)
+  void PrepareWriteRemoteCharacteristic(
+      const std::vector<uint8_t>& value,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+#endif
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
  protected:

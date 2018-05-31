@@ -29,6 +29,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
@@ -623,6 +624,28 @@ void FakeBluetoothDeviceClient::GetServiceRecords(
     return;
   }
   callback.Run(CreateFakeServiceRecords());
+}
+
+void FakeBluetoothDeviceClient::ExecuteWrite(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  for (const auto& prepare_write_request : prepare_write_requests_) {
+    bluez::BluezDBusManager::Get()
+        ->GetBluetoothGattCharacteristicClient()
+        ->WriteValue(prepare_write_request.first, prepare_write_request.second,
+                     base::DoNothing(), base::DoNothing());
+  }
+  prepare_write_requests_.clear();
+  callback.Run();
+}
+
+void FakeBluetoothDeviceClient::AbortWrite(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  prepare_write_requests_.clear();
+  callback.Run();
 }
 
 void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
@@ -1883,6 +1906,12 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
   device_list_.push_back(device_path);
   for (auto& observer : observers_)
     observer.DeviceAdded(device_path);
+}
+
+void FakeBluetoothDeviceClient::AddPrepareWriteRequest(
+    const dbus::ObjectPath& object_path,
+    const std::vector<uint8_t>& value) {
+  prepare_write_requests_.emplace_back(object_path, value);
 }
 
 }  // namespace bluez
