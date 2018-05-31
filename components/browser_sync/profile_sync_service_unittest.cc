@@ -1191,5 +1191,48 @@ TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegate) {
   EXPECT_NE(nullptr, service()->GetOpenTabsUIDelegate());
 }
 
+// Test ConfigureDataTypeManagerReason on First and Nth start.
+TEST_F(ProfileSyncServiceTest, ConfigureDataTypeManagerReason) {
+  const syncer::DataTypeManager::ConfigureResult configure_result(
+      syncer::DataTypeManager::OK, syncer::ModelTypeSet());
+  syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
+
+  IssueTestTokens();
+
+  // First sync.
+  CreateService(ProfileSyncService::AUTO_START);
+  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
+      .WillOnce(ReturnNewDataTypeManager(
+          GetRecordingConfigureCalledCallback(&configure_reason)));
+  InitializeForFirstSync();
+  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(component_factory()));
+  EXPECT_EQ(syncer::CONFIGURE_REASON_NEW_CLIENT, configure_reason);
+  service()->OnConfigureDone(configure_result);
+
+  // Reconfiguration.
+  service()->ReconfigureDatatypeManager();
+  EXPECT_EQ(syncer::CONFIGURE_REASON_RECONFIGURATION, configure_reason);
+  service()->OnConfigureDone(configure_result);
+  ShutdownAndDeleteService();
+
+  // Nth sync.
+  CreateService(ProfileSyncService::AUTO_START);
+  EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
+      .WillOnce(ReturnNewDataTypeManager(
+          GetRecordingConfigureCalledCallback(&configure_reason)));
+  InitializeForNthSync();
+  ASSERT_TRUE(service()->IsSyncActive());
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(component_factory()));
+  EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE, configure_reason);
+  service()->OnConfigureDone(configure_result);
+
+  // Reconfiguration.
+  service()->ReconfigureDatatypeManager();
+  EXPECT_EQ(syncer::CONFIGURE_REASON_RECONFIGURATION, configure_reason);
+  service()->OnConfigureDone(configure_result);
+  ShutdownAndDeleteService();
+}
+
 }  // namespace
 }  // namespace browser_sync
